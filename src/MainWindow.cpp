@@ -5,185 +5,461 @@
 #include <QFileDialog>
 #include <QGroupBox>
 #include <QHBoxLayout>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QLabel>
 #include <QMessageBox>
 #include <QProgressBar>
 #include <QPushButton>
-#include <QStatusBar>
+#include <QScrollArea>
 #include <QVBoxLayout>
-#include <QFrame>
+#include <QFile>
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+static QProgressBar* makeVUBar()
+{
+    auto* b = new QProgressBar;
+    b->setRange(0, 100);
+    b->setValue(0);
+    b->setTextVisible(false);
+    b->setFixedHeight(10);
+    b->setStyleSheet(
+        "QProgressBar { border:1px solid #333; background:#222; border-radius:3px; }"
+        "QProgressBar::chunk { background: qlineargradient(x1:0,y1:0,x2:1,y2:0,"
+        "stop:0 #2a9d2a, stop:0.7 #d4a017, stop:1 #cc2222); border-radius:3px; }");
+    return b;
+}
+
+// ---------------------------------------------------------------------------
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , mEngine(std::make_unique<AudioEngine>())
 {
     setWindowTitle("NAM Player");
-    setMinimumSize(600, 420);
+    setMinimumSize(800, 560);
 
     setupUI();
     setupAudio();
 
     mMeterTimer = new QTimer(this);
     connect(mMeterTimer, &QTimer::timeout, this, &MainWindow::updateMeters);
-    mMeterTimer->start(50); // 20 fps
+    mMeterTimer->start(50);
+
+    mTunerTimer = new QTimer(this);
+    connect(mTunerTimer, &QTimer::timeout, this, &MainWindow::updateTuner);
+    mTunerTimer->start(100);
 }
 
 MainWindow::~MainWindow()
 {
     mMeterTimer->stop();
+    mTunerTimer->stop();
     mEngine->stop();
+}
+
+// ---------------------------------------------------------------------------
+// Helper: build a standard effect group row
+// ---------------------------------------------------------------------------
+
+QGroupBox* MainWindow::makeEffectGroup(const QString& title, QCheckBox*& enableChk,
+                                        const std::initializer_list<KnobWidget*>& knobs,
+                                        QWidget* extraWidget)
+{
+    auto* grp = new QGroupBox;
+    auto* row = new QHBoxLayout(grp);
+    row->setContentsMargins(6, 3, 6, 3);
+    row->setSpacing(4);
+
+    enableChk = new QCheckBox(title);
+    enableChk->setStyleSheet("font-size:8pt; font-weight:bold; color:#ccc;");
+    enableChk->setFixedWidth(110);
+    row->addWidget(enableChk);
+
+    if (extraWidget)
+        row->addWidget(extraWidget);
+
+    for (auto* k : knobs)
+        row->addWidget(k);
+
+    row->addStretch();
+    return grp;
 }
 
 // ---------------------------------------------------------------------------
 // UI setup
 // ---------------------------------------------------------------------------
 
-static QFrame* makeSeparator()
-{
-    auto* f = new QFrame;
-    f->setFrameShape(QFrame::VLine);
-    f->setFrameShadow(QFrame::Sunken);
-    return f;
-}
-
 void MainWindow::setupUI()
 {
     auto* central = new QWidget(this);
     setCentralWidget(central);
-    auto* mainLayout = new QVBoxLayout(central);
-    mainLayout->setSpacing(8);
-    mainLayout->setContentsMargins(12, 10, 12, 10);
+    auto* rootLayout = new QVBoxLayout(central);
+    rootLayout->setContentsMargins(10, 8, 10, 8);
+    rootLayout->setSpacing(5);
 
-    // ---- Title bar ----
-    {
-        auto* titleRow = new QHBoxLayout;
-        auto* title = new QLabel("<b><span style='font-size:16pt;color:#dc7828;'>NAM</span>"
-                                 "<span style='font-size:16pt;'> Player</span></b>");
-        title->setTextFormat(Qt::RichText);
-        auto* subtitle = new QLabel("Neural Amp Modeler  |  JACK Audio");
-        subtitle->setStyleSheet("color: #888; font-size: 9pt;");
-        titleRow->addWidget(title);
-        titleRow->addStretch();
-        titleRow->addWidget(subtitle);
-        mainLayout->addLayout(titleRow);
-    }
-
-    // ---- JACK status ----
+    // ---- Title / preset buttons ----
     {
         auto* row = new QHBoxLayout;
+        auto* title = new QLabel(
+            "<b><span style='font-size:15pt;color:#dc7828;'>NAM</span>"
+            "<span style='font-size:15pt;'> Player</span></b>");
+        title->setTextFormat(Qt::RichText);
+
         mLblJACKStatus = new QLabel("JACK: connecting…");
-        mLblJACKStatus->setStyleSheet("color: #aaa; font-size: 8pt;");
+        mLblJACKStatus->setStyleSheet("color:#aaa; font-size:8pt;");
+
+        auto* btnSave = new QPushButton("Save Preset…");
+        auto* btnLoad = new QPushButton("Load Preset…");
+        btnSave->setFixedHeight(24);
+        btnLoad->setFixedHeight(24);
+        connect(btnSave, &QPushButton::clicked, this, &MainWindow::onSavePreset);
+        connect(btnLoad, &QPushButton::clicked, this, &MainWindow::onLoadPreset);
+
+        row->addWidget(title);
         row->addWidget(mLblJACKStatus);
         row->addStretch();
-        mainLayout->addLayout(row);
+        row->addWidget(btnSave);
+        row->addWidget(btnLoad);
+        rootLayout->addLayout(row);
     }
 
-    // ---- Model / IR file loading ----
+    // ---- Model loading (top bar) ----
     {
-        auto* grp = new QGroupBox("Files");
-        auto* gl  = new QVBoxLayout(grp);
+        auto* grp = new QGroupBox("Model");
+        auto* r   = new QHBoxLayout(grp);
+        r->setContentsMargins(6, 4, 6, 4);
 
-        // NAM row
-        auto* namRow = new QHBoxLayout;
         mBtnLoadNAM   = new QPushButton("Load NAM…");
         mBtnUnloadNAM = new QPushButton("Unload");
         mBtnUnloadNAM->setEnabled(false);
         mLblNAMStatus = new QLabel("No model loaded");
-        mLblNAMStatus->setStyleSheet("color: #888; font-style: italic;");
-        mLblNAMStatus->setMinimumWidth(180);
-        namRow->addWidget(new QLabel("Model:"));
-        namRow->addWidget(mBtnLoadNAM);
-        namRow->addWidget(mBtnUnloadNAM);
-        namRow->addWidget(mLblNAMStatus, 1);
-        gl->addLayout(namRow);
+        mLblNAMStatus->setStyleSheet("color:#888; font-style:italic;");
 
-        // IR row
-        auto* irRow = new QHBoxLayout;
-        mBtnLoadIR   = new QPushButton("Load IR…");
-        mBtnUnloadIR = new QPushButton("Unload");
-        mBtnUnloadIR->setEnabled(false);
-        mChkIREnable = new QCheckBox("Enable");
-        mChkIREnable->setChecked(true);
-        mLblIRStatus = new QLabel("No IR loaded");
-        mLblIRStatus->setStyleSheet("color: #888; font-style: italic;");
-        mLblIRStatus->setMinimumWidth(180);
-        irRow->addWidget(new QLabel("Cab IR:"));
-        irRow->addWidget(mBtnLoadIR);
-        irRow->addWidget(mBtnUnloadIR);
-        irRow->addWidget(mChkIREnable);
-        irRow->addWidget(mLblIRStatus, 1);
-        gl->addLayout(irRow);
+        r->addWidget(mBtnLoadNAM);
+        r->addWidget(mBtnUnloadNAM);
+        r->addWidget(mLblNAMStatus, 1);
 
-        mainLayout->addWidget(grp);
-    }
+        connect(mBtnLoadNAM,   &QPushButton::clicked, this, &MainWindow::onLoadNAM);
+        connect(mBtnUnloadNAM, &QPushButton::clicked, this, &MainWindow::onUnloadNAM);
 
-    // ---- Knobs row ----
-    {
-        auto* grp    = new QGroupBox("Signal Chain");
-        auto* kRow   = new QHBoxLayout(grp);
-        kRow->setSpacing(4);
-
-        mKnobInputGain  = new KnobWidget("Input",   -20.0, 20.0,  0.0, "dB");
-        mKnobLow        = new KnobWidget("Low",     -12.0, 12.0,  0.0, "dB");
-        mKnobMid        = new KnobWidget("Mid",     -12.0, 12.0,  0.0, "dB");
-        mKnobTreble     = new KnobWidget("Treble",  -12.0, 12.0,  0.0, "dB");
-        mKnobOutputGain = new KnobWidget("Output",  -20.0, 20.0,  0.0, "dB");
-
-        kRow->addWidget(mKnobInputGain);
-        kRow->addWidget(makeSeparator());
-        kRow->addStretch();
-        kRow->addWidget(mKnobLow);
-        kRow->addWidget(mKnobMid);
-        kRow->addWidget(mKnobTreble);
-        kRow->addStretch();
-        kRow->addWidget(makeSeparator());
-        kRow->addWidget(mKnobOutputGain);
-
-        mainLayout->addWidget(grp);
+        rootLayout->addWidget(grp);
     }
 
     // ---- VU meters ----
     {
-        auto* meterRow = new QHBoxLayout;
-        meterRow->addWidget(new QLabel("In:"));
-        mMeterIn = new QProgressBar;
-        mMeterIn->setRange(0, 100);
-        mMeterIn->setValue(0);
-        mMeterIn->setTextVisible(false);
-        mMeterIn->setFixedHeight(10);
-        mMeterIn->setStyleSheet(
-            "QProgressBar { border: 1px solid #333; background: #222; border-radius:3px; }"
-            "QProgressBar::chunk { background: qlineargradient(x1:0,y1:0,x2:1,y2:0,"
-            "stop:0 #2a9d2a, stop:0.7 #d4a017, stop:1 #cc2222); border-radius:3px; }");
-        meterRow->addWidget(mMeterIn, 1);
-
-        meterRow->addSpacing(16);
-        meterRow->addWidget(new QLabel("Out:"));
-        mMeterOut = new QProgressBar;
-        mMeterOut->setRange(0, 100);
-        mMeterOut->setValue(0);
-        mMeterOut->setTextVisible(false);
-        mMeterOut->setFixedHeight(10);
-        mMeterOut->setStyleSheet(
-            "QProgressBar { border: 1px solid #333; background: #222; border-radius:3px; }"
-            "QProgressBar::chunk { background: qlineargradient(x1:0,y1:0,x2:1,y2:0,"
-            "stop:0 #2a9d2a, stop:0.7 #d4a017, stop:1 #cc2222); border-radius:3px; }");
-        meterRow->addWidget(mMeterOut, 1);
-        mainLayout->addLayout(meterRow);
+        auto* r = new QHBoxLayout;
+        r->addWidget(new QLabel("In:"));
+        mMeterIn = makeVUBar();
+        r->addWidget(mMeterIn, 1);
+        r->addSpacing(12);
+        r->addWidget(new QLabel("Out:"));
+        mMeterOut = makeVUBar();
+        r->addWidget(mMeterOut, 1);
+        rootLayout->addLayout(r);
     }
 
-    // ---- Wire signals ----
-    connect(mBtnLoadNAM,  &QPushButton::clicked, this, &MainWindow::onLoadNAM);
-    connect(mBtnUnloadNAM,&QPushButton::clicked, this, &MainWindow::onUnloadNAM);
-    connect(mBtnLoadIR,   &QPushButton::clicked, this, &MainWindow::onLoadIR);
-    connect(mBtnUnloadIR, &QPushButton::clicked, this, &MainWindow::onUnloadIR);
-    connect(mChkIREnable, &QCheckBox::toggled,   this, &MainWindow::onIREnabledToggled);
+    // ---- Scrollable signal chain ----
+    auto* scroll = new QScrollArea;
+    scroll->setWidgetResizable(true);
+    scroll->setFrameShape(QFrame::NoFrame);
 
-    connect(mKnobInputGain,  &KnobWidget::valueChanged, this, &MainWindow::onInputGainChanged);
-    connect(mKnobOutputGain, &KnobWidget::valueChanged, this, &MainWindow::onOutputGainChanged);
-    connect(mKnobLow,    &KnobWidget::valueChanged, this, &MainWindow::onLowChanged);
-    connect(mKnobMid,    &KnobWidget::valueChanged, this, &MainWindow::onMidChanged);
-    connect(mKnobTreble, &KnobWidget::valueChanged, this, &MainWindow::onTrebleChanged);
+    auto* chain       = new QWidget;
+    auto* chainLayout = new QVBoxLayout(chain);
+    chainLayout->setSpacing(3);
+    chainLayout->setContentsMargins(0, 0, 0, 0);
+
+    // --- Input gain ---
+    {
+        auto* grp = new QGroupBox("Input");
+        auto* r   = new QHBoxLayout(grp);
+        r->setContentsMargins(6, 3, 6, 3);
+        mKnobInputGain = new KnobWidget("Gain", -20.0, 20.0, 0.0, "dB");
+        connect(mKnobInputGain, &KnobWidget::valueChanged, this, &MainWindow::onInputGainChanged);
+        r->addWidget(mKnobInputGain);
+        r->addStretch();
+        chainLayout->addWidget(grp);
+    }
+
+    // --- Tuner ---
+    {
+        auto* grp = new QGroupBox;
+        auto* r   = new QHBoxLayout(grp);
+        r->setContentsMargins(6, 3, 6, 3);
+        r->setSpacing(8);
+
+        mChkTunerEnable = new QCheckBox("Tuner");
+        mChkTunerEnable->setStyleSheet("font-size:8pt; font-weight:bold; color:#ccc;");
+        mChkTunerEnable->setFixedWidth(80);
+
+        mChkTunerMute = new QCheckBox("Mute");
+        mChkTunerMute->setStyleSheet("font-size:8pt;");
+
+        mLblNote = new QLabel("--");
+        mLblNote->setStyleSheet(
+            "font-size:18pt; font-weight:bold; color:#dc7828; min-width:56px;");
+        mLblNote->setAlignment(Qt::AlignCenter);
+
+        mLblCents = new QLabel("±0¢");
+        mLblCents->setStyleSheet("font-size:9pt; color:#aaa; min-width:38px;");
+        mLblCents->setAlignment(Qt::AlignCenter);
+
+        mTunerBar = new QProgressBar;
+        mTunerBar->setRange(0, 100);
+        mTunerBar->setValue(50);
+        mTunerBar->setTextVisible(false);
+        mTunerBar->setFixedHeight(10);
+        mTunerBar->setStyleSheet(
+            "QProgressBar { border:1px solid #333; background:#222; border-radius:3px; }"
+            "QProgressBar::chunk { background:#4caf50; border-radius:3px; }");
+
+        r->addWidget(mChkTunerEnable);
+        r->addWidget(mChkTunerMute);
+        r->addWidget(mLblNote);
+        r->addWidget(mLblCents);
+        r->addWidget(mTunerBar, 1);
+
+        connect(mChkTunerEnable, &QCheckBox::toggled, this, &MainWindow::onTunerEnabledToggled);
+        connect(mChkTunerMute,   &QCheckBox::toggled, this, &MainWindow::onTunerMuteToggled);
+
+        chainLayout->addWidget(grp);
+    }
+
+    // --- Noise Gate ---
+    {
+        mKnobGateThresh  = new KnobWidget("Thresh",  -80.0, -10.0,  -40.0, "dB");
+        mKnobGateAttack  = new KnobWidget("Attack",    0.1, 100.0,   10.0, "ms");
+        mKnobGateRelease = new KnobWidget("Release",  10.0, 2000.0, 100.0, "ms");
+
+        auto* grp = makeEffectGroup("Noise Gate", mChkGateEnable,
+            {mKnobGateThresh, mKnobGateAttack, mKnobGateRelease});
+
+        connect(mChkGateEnable,   &QCheckBox::toggled,       this, &MainWindow::onGateEnabledToggled);
+        connect(mKnobGateThresh,  &KnobWidget::valueChanged, this, &MainWindow::onGateThresholdChanged);
+        connect(mKnobGateAttack,  &KnobWidget::valueChanged, this, &MainWindow::onGateAttackChanged);
+        connect(mKnobGateRelease, &KnobWidget::valueChanged, this, &MainWindow::onGateReleaseChanged);
+        chainLayout->addWidget(grp);
+    }
+
+    // --- Compressor ---
+    {
+        mKnobCompThresh  = new KnobWidget("Thresh",  -60.0,   0.0, -20.0, "dB");
+        mKnobCompRatio   = new KnobWidget("Ratio",     1.0,  20.0,   4.0, ":1");
+        mKnobCompAttack  = new KnobWidget("Attack",    0.1, 100.0,  10.0, "ms");
+        mKnobCompRelease = new KnobWidget("Release",  10.0, 2000.0, 100.0, "ms");
+        mKnobCompMakeup  = new KnobWidget("Makeup",    0.0,  30.0,   0.0, "dB");
+
+        auto* grp = makeEffectGroup("Compressor", mChkCompEnable,
+            {mKnobCompThresh, mKnobCompRatio, mKnobCompAttack, mKnobCompRelease, mKnobCompMakeup});
+
+        connect(mChkCompEnable,   &QCheckBox::toggled,       this, &MainWindow::onCompEnabledToggled);
+        connect(mKnobCompThresh,  &KnobWidget::valueChanged, this, &MainWindow::onCompThresholdChanged);
+        connect(mKnobCompRatio,   &KnobWidget::valueChanged, this, &MainWindow::onCompRatioChanged);
+        connect(mKnobCompAttack,  &KnobWidget::valueChanged, this, &MainWindow::onCompAttackChanged);
+        connect(mKnobCompRelease, &KnobWidget::valueChanged, this, &MainWindow::onCompReleaseChanged);
+        connect(mKnobCompMakeup,  &KnobWidget::valueChanged, this, &MainWindow::onCompMakeupChanged);
+        chainLayout->addWidget(grp);
+    }
+
+    // --- Chorus 1 (pre-amp, stereo-capable mono) ---
+    {
+        mKnobCh1Rate  = new KnobWidget("Rate",  0.1, 5.0, 1.0, "Hz");
+        mKnobCh1Depth = new KnobWidget("Depth", 0.0, 100.0, 50.0, "%");
+        mKnobCh1Mix   = new KnobWidget("Mix",   0.0, 100.0, 50.0, "%");
+
+        auto* grp = makeEffectGroup("Chorus", mChkChorus1Enable,
+            {mKnobCh1Rate, mKnobCh1Depth, mKnobCh1Mix});
+
+        connect(mChkChorus1Enable, &QCheckBox::toggled,       this, &MainWindow::onChorus1EnabledToggled);
+        connect(mKnobCh1Rate,      &KnobWidget::valueChanged, this, &MainWindow::onChorus1RateChanged);
+        connect(mKnobCh1Depth,     &KnobWidget::valueChanged, this, &MainWindow::onChorus1DepthChanged);
+        connect(mKnobCh1Mix,       &KnobWidget::valueChanged, this, &MainWindow::onChorus1MixChanged);
+        chainLayout->addWidget(grp);
+    }
+
+    // --- Flanger ---
+    {
+        mKnobFlRate     = new KnobWidget("Rate",     0.1,   5.0,  0.5, "Hz");
+        mKnobFlDepth    = new KnobWidget("Depth",    0.0, 100.0, 50.0, "%");
+        mKnobFlFeedback = new KnobWidget("Feedback", -99.0, 99.0, 0.0, "%");
+        mKnobFlMix      = new KnobWidget("Mix",      0.0, 100.0, 50.0, "%");
+
+        auto* grp = makeEffectGroup("Flanger", mChkFlangerEnable,
+            {mKnobFlRate, mKnobFlDepth, mKnobFlFeedback, mKnobFlMix});
+
+        connect(mChkFlangerEnable,   &QCheckBox::toggled,       this, &MainWindow::onFlangerEnabledToggled);
+        connect(mKnobFlRate,         &KnobWidget::valueChanged, this, &MainWindow::onFlangerRateChanged);
+        connect(mKnobFlDepth,        &KnobWidget::valueChanged, this, &MainWindow::onFlangerDepthChanged);
+        connect(mKnobFlFeedback,     &KnobWidget::valueChanged, this, &MainWindow::onFlangerFeedbackChanged);
+        connect(mKnobFlMix,          &KnobWidget::valueChanged, this, &MainWindow::onFlangerMixChanged);
+        chainLayout->addWidget(grp);
+    }
+
+    // --- Phaser ---
+    {
+        mKnobPhRate     = new KnobWidget("Rate",     0.1,  5.0, 1.0, "Hz");
+        mKnobPhDepth    = new KnobWidget("Depth",    0.0, 100.0, 50.0, "%");
+        mKnobPhFeedback = new KnobWidget("Feedback", 0.0,  99.0, 50.0, "%");
+        mKnobPhMix      = new KnobWidget("Mix",      0.0, 100.0, 50.0, "%");
+
+        auto* grp = makeEffectGroup("Phaser", mChkPhaserEnable,
+            {mKnobPhRate, mKnobPhDepth, mKnobPhFeedback, mKnobPhMix});
+
+        connect(mChkPhaserEnable,    &QCheckBox::toggled,       this, &MainWindow::onPhaserEnabledToggled);
+        connect(mKnobPhRate,         &KnobWidget::valueChanged, this, &MainWindow::onPhaserRateChanged);
+        connect(mKnobPhDepth,        &KnobWidget::valueChanged, this, &MainWindow::onPhaserDepthChanged);
+        connect(mKnobPhFeedback,     &KnobWidget::valueChanged, this, &MainWindow::onPhaserFeedbackChanged);
+        connect(mKnobPhMix,          &KnobWidget::valueChanged, this, &MainWindow::onPhaserMixChanged);
+        chainLayout->addWidget(grp);
+    }
+
+    // --- NAM DSP (pass-through row, status shown here) ---
+    {
+        auto* grp = new QGroupBox("NAM DSP");
+        auto* r   = new QHBoxLayout(grp);
+        r->setContentsMargins(6, 3, 6, 3);
+        // mLblNAMStatus already created above; add it here too as info
+        auto* info = new QLabel("Model:");
+        info->setStyleSheet("color:#aaa; font-size:8pt;");
+        r->addWidget(info);
+        r->addWidget(mLblNAMStatus, 1);
+        chainLayout->addWidget(grp);
+    }
+
+    // --- 3-band EQ ---
+    {
+        mKnobLow    = new KnobWidget("Low",    -12.0, 12.0, 0.0, "dB");
+        mKnobMid    = new KnobWidget("Mid",    -12.0, 12.0, 0.0, "dB");
+        mKnobTreble = new KnobWidget("Treble", -12.0, 12.0, 0.0, "dB");
+
+        auto* grp = new QGroupBox("EQ");
+        auto* r   = new QHBoxLayout(grp);
+        r->setContentsMargins(6, 3, 6, 3);
+        r->addWidget(mKnobLow);
+        r->addWidget(mKnobMid);
+        r->addWidget(mKnobTreble);
+        r->addStretch();
+
+        connect(mKnobLow,    &KnobWidget::valueChanged, this, &MainWindow::onLowChanged);
+        connect(mKnobMid,    &KnobWidget::valueChanged, this, &MainWindow::onMidChanged);
+        connect(mKnobTreble, &KnobWidget::valueChanged, this, &MainWindow::onTrebleChanged);
+
+        chainLayout->addWidget(grp);
+    }
+
+    // --- Chorus 2 (post-amp, stereo) ---
+    {
+        mKnobCh2Rate  = new KnobWidget("Rate",  0.1, 5.0, 1.0, "Hz");
+        mKnobCh2Depth = new KnobWidget("Depth", 0.0, 100.0, 50.0, "%");
+        mKnobCh2Mix   = new KnobWidget("Mix",   0.0, 100.0, 50.0, "%");
+
+        auto* grp = makeEffectGroup("Chorus ✦st", mChkChorus2Enable,
+            {mKnobCh2Rate, mKnobCh2Depth, mKnobCh2Mix});
+
+        connect(mChkChorus2Enable, &QCheckBox::toggled,       this, &MainWindow::onChorus2EnabledToggled);
+        connect(mKnobCh2Rate,      &KnobWidget::valueChanged, this, &MainWindow::onChorus2RateChanged);
+        connect(mKnobCh2Depth,     &KnobWidget::valueChanged, this, &MainWindow::onChorus2DepthChanged);
+        connect(mKnobCh2Mix,       &KnobWidget::valueChanged, this, &MainWindow::onChorus2MixChanged);
+        chainLayout->addWidget(grp);
+    }
+
+    // --- Tremolo (stereo) ---
+    {
+        mKnobTrRate  = new KnobWidget("Rate",  0.1, 20.0,  5.0, "Hz");
+        mKnobTrDepth = new KnobWidget("Depth", 0.0, 100.0, 50.0, "%");
+
+        auto* grp = makeEffectGroup("Tremolo", mChkTremoloEnable,
+            {mKnobTrRate, mKnobTrDepth});
+
+        connect(mChkTremoloEnable, &QCheckBox::toggled,       this, &MainWindow::onTremoloEnabledToggled);
+        connect(mKnobTrRate,       &KnobWidget::valueChanged, this, &MainWindow::onTremoloRateChanged);
+        connect(mKnobTrDepth,      &KnobWidget::valueChanged, this, &MainWindow::onTremoloDepthChanged);
+        chainLayout->addWidget(grp);
+    }
+
+    // --- Delay (stereo ping-pong) ---
+    {
+        mKnobDelTime     = new KnobWidget("Time",      0.0, 2000.0, 250.0, "ms");
+        mKnobDelFeedback = new KnobWidget("Feedback",  0.0,   99.0,  40.0, "%");
+        mKnobDelMix      = new KnobWidget("Mix",       0.0,  100.0,  30.0, "%");
+
+        auto* grp = makeEffectGroup("Delay", mChkDelayEnable,
+            {mKnobDelTime, mKnobDelFeedback, mKnobDelMix});
+
+        connect(mChkDelayEnable,   &QCheckBox::toggled,       this, &MainWindow::onDelayEnabledToggled);
+        connect(mKnobDelTime,      &KnobWidget::valueChanged, this, &MainWindow::onDelayTimeChanged);
+        connect(mKnobDelFeedback,  &KnobWidget::valueChanged, this, &MainWindow::onDelayFeedbackChanged);
+        connect(mKnobDelMix,       &KnobWidget::valueChanged, this, &MainWindow::onDelayMixChanged);
+        chainLayout->addWidget(grp);
+    }
+
+    // --- Reverb (stereo) ---
+    {
+        mKnobRevRoom    = new KnobWidget("Room",    0.0, 100.0,  50.0, "%");
+        mKnobRevDamping = new KnobWidget("Damping", 0.0, 100.0,  50.0, "%");
+        mKnobRevWidth   = new KnobWidget("Width",   0.0, 100.0, 100.0, "%");
+        mKnobRevMix     = new KnobWidget("Mix",     0.0, 100.0,  30.0, "%");
+
+        auto* grp = makeEffectGroup("Reverb", mChkReverbEnable,
+            {mKnobRevRoom, mKnobRevDamping, mKnobRevWidth, mKnobRevMix});
+
+        connect(mChkReverbEnable, &QCheckBox::toggled,       this, &MainWindow::onReverbEnabledToggled);
+        connect(mKnobRevRoom,     &KnobWidget::valueChanged, this, &MainWindow::onReverbRoomChanged);
+        connect(mKnobRevDamping,  &KnobWidget::valueChanged, this, &MainWindow::onReverbDampingChanged);
+        connect(mKnobRevWidth,    &KnobWidget::valueChanged, this, &MainWindow::onReverbWidthChanged);
+        connect(mKnobRevMix,      &KnobWidget::valueChanged, this, &MainWindow::onReverbMixChanged);
+        chainLayout->addWidget(grp);
+    }
+
+    // --- IR (cab sim) ---
+    {
+        auto* grp = new QGroupBox;
+        auto* r   = new QHBoxLayout(grp);
+        r->setContentsMargins(6, 3, 6, 3);
+        r->setSpacing(6);
+
+        mChkIREnable = new QCheckBox("IR (Cab Sim)");
+        mChkIREnable->setStyleSheet("font-size:8pt; font-weight:bold; color:#ccc;");
+        mChkIREnable->setChecked(true);
+        mChkIREnable->setFixedWidth(110);
+
+        mBtnLoadIR   = new QPushButton("Load IR…");
+        mBtnUnloadIR = new QPushButton("Unload");
+        mBtnUnloadIR->setEnabled(false);
+
+        mLblIRStatus = new QLabel("No IR loaded");
+        mLblIRStatus->setStyleSheet("color:#888; font-style:italic;");
+
+        r->addWidget(mChkIREnable);
+        r->addWidget(mBtnLoadIR);
+        r->addWidget(mBtnUnloadIR);
+        r->addWidget(mLblIRStatus, 1);
+
+        connect(mChkIREnable, &QCheckBox::toggled, this, &MainWindow::onIREnabledToggled);
+        connect(mBtnLoadIR,   &QPushButton::clicked, this, &MainWindow::onLoadIR);
+        connect(mBtnUnloadIR, &QPushButton::clicked, this, &MainWindow::onUnloadIR);
+
+        chainLayout->addWidget(grp);
+    }
+
+    // --- Output gain ---
+    {
+        auto* grp = new QGroupBox("Output");
+        auto* r   = new QHBoxLayout(grp);
+        r->setContentsMargins(6, 3, 6, 3);
+        mKnobOutputGain = new KnobWidget("Gain", -20.0, 20.0, 0.0, "dB");
+        connect(mKnobOutputGain, &KnobWidget::valueChanged, this, &MainWindow::onOutputGainChanged);
+        r->addWidget(mKnobOutputGain);
+        r->addStretch();
+        chainLayout->addWidget(grp);
+    }
+
+    chainLayout->addStretch();
+    scroll->setWidget(chain);
+    rootLayout->addWidget(scroll, 1);
 
     // Dark palette
     QPalette pal = QApplication::palette();
@@ -201,28 +477,26 @@ void MainWindow::setupAudio()
     if (mEngine->start("NAMPlayer"))
     {
         mLblJACKStatus->setText(
-            QString("JACK: connected  |  %1 Hz").arg(static_cast<int>(mEngine->sampleRate())));
-        mLblJACKStatus->setStyleSheet("color: #4caf50; font-size: 8pt;");
+            QString("JACK: connected  |  %1 Hz  |  stereo out")
+                .arg(static_cast<int>(mEngine->sampleRate())));
+        mLblJACKStatus->setStyleSheet("color:#4caf50; font-size:8pt;");
     }
     else
     {
         mLblJACKStatus->setText("JACK: not connected (check jackd)");
-        mLblJACKStatus->setStyleSheet("color: #f44336; font-size: 8pt;");
+        mLblJACKStatus->setStyleSheet("color:#f44336; font-size:8pt;");
     }
 }
 
 // ---------------------------------------------------------------------------
-// Slots
+// File slots
 // ---------------------------------------------------------------------------
 
 void MainWindow::onLoadNAM()
 {
     QString path = QFileDialog::getOpenFileName(
-        this, "Load NAM Model", QString(),
-        "NAM Files (*.nam);;All Files (*)");
-    if (path.isEmpty())
-        return;
-
+        this, "Load NAM Model", {}, "NAM Files (*.nam);;All Files (*)");
+    if (path.isEmpty()) return;
     if (!mEngine->loadModel(path.toStdString()))
     {
         QMessageBox::critical(this, "Error", "Failed to load NAM model:\n" + path);
@@ -242,14 +516,11 @@ void MainWindow::onUnloadNAM()
 void MainWindow::onLoadIR()
 {
     QString path = QFileDialog::getOpenFileName(
-        this, "Load Impulse Response", QString(),
-        "WAV Files (*.wav);;All Files (*)");
-    if (path.isEmpty())
-        return;
-
+        this, "Load Impulse Response", {}, "WAV Files (*.wav);;All Files (*)");
+    if (path.isEmpty()) return;
     if (!mEngine->loadIR(path.toStdString()))
     {
-        QMessageBox::critical(this, "Error", "Failed to load IR file:\n" + path);
+        QMessageBox::critical(this, "Error", "Failed to load IR:\n" + path);
         return;
     }
     updateStatusLabels();
@@ -263,59 +534,405 @@ void MainWindow::onUnloadIR()
     mBtnUnloadIR->setEnabled(false);
 }
 
-void MainWindow::onInputGainChanged(double dB)  { mEngine->setInputGain(static_cast<float>(dB)); }
+// ---------------------------------------------------------------------------
+// Gain / EQ / IR slots
+// ---------------------------------------------------------------------------
+
+void MainWindow::onInputGainChanged(double dB)  { mEngine->setInputGain (static_cast<float>(dB)); }
 void MainWindow::onOutputGainChanged(double dB) { mEngine->setOutputGain(static_cast<float>(dB)); }
-void MainWindow::onLowChanged(double dB)        { mEngine->setLowGain(static_cast<float>(dB)); }
-void MainWindow::onMidChanged(double dB)        { mEngine->setMidGain(static_cast<float>(dB)); }
+void MainWindow::onLowChanged(double dB)        { mEngine->setLowGain   (static_cast<float>(dB)); }
+void MainWindow::onMidChanged(double dB)        { mEngine->setMidGain   (static_cast<float>(dB)); }
 void MainWindow::onTrebleChanged(double dB)     { mEngine->setTrebleGain(static_cast<float>(dB)); }
 void MainWindow::onIREnabledToggled(bool en)    { mEngine->setIREnabled(en); }
 
+// ---------------------------------------------------------------------------
+// Tuner slots
+// ---------------------------------------------------------------------------
+
+void MainWindow::onTunerEnabledToggled(bool en) { mEngine->setTunerEnabled(en); }
+void MainWindow::onTunerMuteToggled(bool en)    { mEngine->setTunerMute(en);    }
+
+// ---------------------------------------------------------------------------
+// Noise gate slots
+// ---------------------------------------------------------------------------
+
+void MainWindow::onGateEnabledToggled(bool en)    { mEngine->setGateEnabled(en); }
+void MainWindow::onGateThresholdChanged(double v) { mEngine->gate().setThreshold(static_cast<float>(v)); }
+void MainWindow::onGateAttackChanged(double v)    { mEngine->gate().setAttack   (static_cast<float>(v)); }
+void MainWindow::onGateReleaseChanged(double v)   { mEngine->gate().setRelease  (static_cast<float>(v)); }
+
+// ---------------------------------------------------------------------------
+// Compressor slots
+// ---------------------------------------------------------------------------
+
+void MainWindow::onCompEnabledToggled(bool en)    { mEngine->setCompEnabled(en); }
+void MainWindow::onCompThresholdChanged(double v) { mEngine->comp().setThreshold(static_cast<float>(v)); }
+void MainWindow::onCompRatioChanged(double v)     { mEngine->comp().setRatio    (static_cast<float>(v)); }
+void MainWindow::onCompAttackChanged(double v)    { mEngine->comp().setAttack   (static_cast<float>(v)); }
+void MainWindow::onCompReleaseChanged(double v)   { mEngine->comp().setRelease  (static_cast<float>(v)); }
+void MainWindow::onCompMakeupChanged(double v)    { mEngine->comp().setMakeup   (static_cast<float>(v)); }
+
+// ---------------------------------------------------------------------------
+// Chorus 1 slots
+// ---------------------------------------------------------------------------
+
+void MainWindow::onChorus1EnabledToggled(bool en) { mEngine->setChorus1Enabled(en); }
+void MainWindow::onChorus1RateChanged(double v)   { mEngine->chorus1().setRate (static_cast<float>(v)); }
+void MainWindow::onChorus1DepthChanged(double v)  { mEngine->chorus1().setDepth(static_cast<float>(v)); }
+void MainWindow::onChorus1MixChanged(double v)    { mEngine->chorus1().setMix  (static_cast<float>(v)); }
+
+// ---------------------------------------------------------------------------
+// Flanger slots
+// ---------------------------------------------------------------------------
+
+void MainWindow::onFlangerEnabledToggled(bool en)   { mEngine->setFlangerEnabled(en); }
+void MainWindow::onFlangerRateChanged(double v)     { mEngine->flanger().setRate    (static_cast<float>(v)); }
+void MainWindow::onFlangerDepthChanged(double v)    { mEngine->flanger().setDepth   (static_cast<float>(v)); }
+void MainWindow::onFlangerFeedbackChanged(double v) { mEngine->flanger().setFeedback(static_cast<float>(v)); }
+void MainWindow::onFlangerMixChanged(double v)      { mEngine->flanger().setMix     (static_cast<float>(v)); }
+
+// ---------------------------------------------------------------------------
+// Phaser slots
+// ---------------------------------------------------------------------------
+
+void MainWindow::onPhaserEnabledToggled(bool en)    { mEngine->setPhaserEnabled(en); }
+void MainWindow::onPhaserRateChanged(double v)      { mEngine->phaser().setRate    (static_cast<float>(v)); }
+void MainWindow::onPhaserDepthChanged(double v)     { mEngine->phaser().setDepth   (static_cast<float>(v)); }
+void MainWindow::onPhaserFeedbackChanged(double v)  { mEngine->phaser().setFeedback(static_cast<float>(v)); }
+void MainWindow::onPhaserMixChanged(double v)       { mEngine->phaser().setMix     (static_cast<float>(v)); }
+
+// ---------------------------------------------------------------------------
+// Chorus 2 slots
+// ---------------------------------------------------------------------------
+
+void MainWindow::onChorus2EnabledToggled(bool en) { mEngine->setChorus2Enabled(en); }
+void MainWindow::onChorus2RateChanged(double v)   { mEngine->chorus2().setRate (static_cast<float>(v)); }
+void MainWindow::onChorus2DepthChanged(double v)  { mEngine->chorus2().setDepth(static_cast<float>(v)); }
+void MainWindow::onChorus2MixChanged(double v)    { mEngine->chorus2().setMix  (static_cast<float>(v)); }
+
+// ---------------------------------------------------------------------------
+// Tremolo slots
+// ---------------------------------------------------------------------------
+
+void MainWindow::onTremoloEnabledToggled(bool en) { mEngine->setTremoloEnabled(en); }
+void MainWindow::onTremoloRateChanged(double v)   { mEngine->tremolo().setRate (static_cast<float>(v)); }
+void MainWindow::onTremoloDepthChanged(double v)  { mEngine->tremolo().setDepth(static_cast<float>(v)); }
+
+// ---------------------------------------------------------------------------
+// Delay slots
+// ---------------------------------------------------------------------------
+
+void MainWindow::onDelayEnabledToggled(bool en)   { mEngine->setDelayEnabled(en); }
+void MainWindow::onDelayTimeChanged(double v)     { mEngine->delay().setTime    (static_cast<float>(v)); }
+void MainWindow::onDelayFeedbackChanged(double v) { mEngine->delay().setFeedback(static_cast<float>(v)); }
+void MainWindow::onDelayMixChanged(double v)      { mEngine->delay().setMix     (static_cast<float>(v)); }
+
+// ---------------------------------------------------------------------------
+// Reverb slots
+// ---------------------------------------------------------------------------
+
+void MainWindow::onReverbEnabledToggled(bool en)  { mEngine->setReverbEnabled(en); }
+void MainWindow::onReverbRoomChanged(double v)    { mEngine->reverb().setRoomSize(static_cast<float>(v)); }
+void MainWindow::onReverbDampingChanged(double v) { mEngine->reverb().setDamping (static_cast<float>(v)); }
+void MainWindow::onReverbWidthChanged(double v)   { mEngine->reverb().setWidth   (static_cast<float>(v)); }
+void MainWindow::onReverbMixChanged(double v)     { mEngine->reverb().setMix     (static_cast<float>(v)); }
+
+// ---------------------------------------------------------------------------
+// Meters & tuner refresh
+// ---------------------------------------------------------------------------
+
 void MainWindow::updateMeters()
 {
-    // Convert peak linear to a 0-100 scale (dB -60 to 0)
     auto toMeter = [](float peak) -> int {
         if (peak <= 0.0f) return 0;
         float dB = 20.0f * std::log10(peak);
-        // map [-60, 0] dB to [0, 100]
-        int v = static_cast<int>((dB + 60.0f) / 60.0f * 100.0f);
-        return std::max(0, std::min(100, v));
+        return std::max(0, std::min(100, static_cast<int>((dB + 60.0f) / 60.0f * 100.0f)));
     };
-
-    mMeterIn->setValue(toMeter(mEngine->inputPeak()));
+    mMeterIn ->setValue(toMeter(mEngine->inputPeak()));
     mMeterOut->setValue(toMeter(mEngine->outputPeak()));
 
-    // Also update JACK status if engine stopped
-    if (!mEngine->isRunning() &&
-        mLblJACKStatus->text().startsWith("JACK: connected"))
+    if (!mEngine->isRunning() && mLblJACKStatus->text().startsWith("JACK: connected"))
     {
         mLblJACKStatus->setText("JACK: disconnected");
-        mLblJACKStatus->setStyleSheet("color: #f44336; font-size: 8pt;");
+        mLblJACKStatus->setStyleSheet("color:#f44336; font-size:8pt;");
     }
 }
+
+void MainWindow::updateTuner()
+{
+    if (!mEngine->tunerEnabled()) return;
+
+    float freq = mEngine->tuner().detectPitch();
+    if (freq <= 0.0f)
+    {
+        mLblNote ->setText("--");
+        mLblCents->setText("±0¢");
+        mTunerBar->setValue(50);
+        return;
+    }
+
+    int   midi  = TunerProcessor::freqToMidi(freq);
+    float cents = TunerProcessor::centsOffset(freq);
+
+    mLblNote ->setText(QString::fromStdString(TunerProcessor::midiToName(midi)));
+    mLblCents->setText(QString("%1¢").arg(static_cast<int>(cents)));
+
+    // Map cents [-50,+50] to bar [0,100]; 50 = in-tune
+    int barVal = static_cast<int>(50.0f + cents);
+    mTunerBar->setValue(std::max(0, std::min(100, barVal)));
+}
+
+// ---------------------------------------------------------------------------
+// Status labels
+// ---------------------------------------------------------------------------
 
 void MainWindow::updateStatusLabels()
 {
     if (mEngine->isModelLoaded())
     {
         QString p = QString::fromStdString(mEngine->modelPath());
-        mLblNAMStatus->setText(p.section('/', -1).section('\\', -1));
-        mLblNAMStatus->setStyleSheet("color: #4caf50;");
+        mLblNAMStatus->setText(p.section('/', -1));
+        mLblNAMStatus->setStyleSheet("color:#4caf50;");
     }
     else
     {
         mLblNAMStatus->setText("No model loaded");
-        mLblNAMStatus->setStyleSheet("color: #888; font-style: italic;");
+        mLblNAMStatus->setStyleSheet("color:#888; font-style:italic;");
     }
 
     if (mEngine->isIRLoaded())
     {
         QString p = QString::fromStdString(mEngine->irPath());
-        mLblIRStatus->setText(p.section('/', -1).section('\\', -1));
-        mLblIRStatus->setStyleSheet("color: #4caf50;");
+        mLblIRStatus->setText(p.section('/', -1));
+        mLblIRStatus->setStyleSheet("color:#4caf50;");
     }
     else
     {
         mLblIRStatus->setText("No IR loaded");
-        mLblIRStatus->setStyleSheet("color: #888; font-style: italic;");
+        mLblIRStatus->setStyleSheet("color:#888; font-style:italic;");
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Preset save / load
+// ---------------------------------------------------------------------------
+
+void MainWindow::onSavePreset()
+{
+    QString path = QFileDialog::getSaveFileName(
+        this, "Save Preset", {},
+        "NAM Preset (*.nampreset);;JSON (*.json);;All Files (*)");
+    if (path.isEmpty()) return;
+
+    QJsonObject obj;
+
+    obj["inputGain"]  = mEngine->inputGain();
+    obj["outputGain"] = mEngine->outputGain();
+
+    QJsonObject eq;
+    eq["low"]    = mEngine->lowGain();
+    eq["mid"]    = mEngine->midGain();
+    eq["treble"] = mEngine->trebleGain();
+    obj["eq"] = eq;
+
+    QJsonObject tuner;
+    tuner["enabled"] = mEngine->tunerEnabled();
+    tuner["mute"]    = mEngine->tunerMute();
+    obj["tuner"] = tuner;
+
+    QJsonObject gate;
+    gate["enabled"]   = mEngine->gateEnabled();
+    gate["threshold"] = static_cast<double>(mEngine->gate().threshold());
+    gate["attack"]    = static_cast<double>(mEngine->gate().attack());
+    gate["release"]   = static_cast<double>(mEngine->gate().release());
+    obj["noiseGate"] = gate;
+
+    QJsonObject comp;
+    comp["enabled"]   = mEngine->compEnabled();
+    comp["threshold"] = static_cast<double>(mEngine->comp().threshold());
+    comp["ratio"]     = static_cast<double>(mEngine->comp().ratio());
+    comp["attack"]    = static_cast<double>(mEngine->comp().attack());
+    comp["release"]   = static_cast<double>(mEngine->comp().release());
+    comp["makeup"]    = static_cast<double>(mEngine->comp().makeup());
+    obj["compressor"] = comp;
+
+    QJsonObject ch1;
+    ch1["enabled"] = mEngine->chorus1Enabled();
+    ch1["rate"]    = static_cast<double>(mEngine->chorus1().rate());
+    ch1["depth"]   = static_cast<double>(mEngine->chorus1().depth());
+    ch1["mix"]     = static_cast<double>(mEngine->chorus1().mix());
+    obj["chorus1"] = ch1;
+
+    QJsonObject fl;
+    fl["enabled"]  = mEngine->flangerEnabled();
+    fl["rate"]     = static_cast<double>(mEngine->flanger().rate());
+    fl["depth"]    = static_cast<double>(mEngine->flanger().depth());
+    fl["feedback"] = static_cast<double>(mEngine->flanger().feedback());
+    fl["mix"]      = static_cast<double>(mEngine->flanger().mix());
+    obj["flanger"] = fl;
+
+    QJsonObject ph;
+    ph["enabled"]  = mEngine->phaserEnabled();
+    ph["rate"]     = static_cast<double>(mEngine->phaser().rate());
+    ph["depth"]    = static_cast<double>(mEngine->phaser().depth());
+    ph["feedback"] = static_cast<double>(mEngine->phaser().feedback());
+    ph["mix"]      = static_cast<double>(mEngine->phaser().mix());
+    obj["phaser"] = ph;
+
+    QJsonObject ch2;
+    ch2["enabled"] = mEngine->chorus2Enabled();
+    ch2["rate"]    = static_cast<double>(mEngine->chorus2().rate());
+    ch2["depth"]   = static_cast<double>(mEngine->chorus2().depth());
+    ch2["mix"]     = static_cast<double>(mEngine->chorus2().mix());
+    obj["chorus2"] = ch2;
+
+    QJsonObject tr;
+    tr["enabled"] = mEngine->tremoloEnabled();
+    tr["rate"]    = static_cast<double>(mEngine->tremolo().rate());
+    tr["depth"]   = static_cast<double>(mEngine->tremolo().depth());
+    obj["tremolo"] = tr;
+
+    QJsonObject del;
+    del["enabled"]  = mEngine->delayEnabled();
+    del["time"]     = static_cast<double>(mEngine->delay().time());
+    del["feedback"] = static_cast<double>(mEngine->delay().feedback());
+    del["mix"]      = static_cast<double>(mEngine->delay().mix());
+    obj["delay"] = del;
+
+    QJsonObject rev;
+    rev["enabled"]  = mEngine->reverbEnabled();
+    rev["roomSize"] = static_cast<double>(mEngine->reverb().roomSize());
+    rev["damping"]  = static_cast<double>(mEngine->reverb().damping());
+    rev["width"]    = static_cast<double>(mEngine->reverb().width());
+    rev["mix"]      = static_cast<double>(mEngine->reverb().mix());
+    obj["reverb"] = rev;
+
+    obj["irEnabled"] = mEngine->irEnabled();
+
+    QFile f(path);
+    if (!f.open(QIODevice::WriteOnly))
+    {
+        QMessageBox::critical(this, "Error", "Cannot write preset:\n" + path);
+        return;
+    }
+    f.write(QJsonDocument(obj).toJson());
+}
+
+void MainWindow::onLoadPreset()
+{
+    QString path = QFileDialog::getOpenFileName(
+        this, "Load Preset", {},
+        "NAM Preset (*.nampreset);;JSON (*.json);;All Files (*)");
+    if (path.isEmpty()) return;
+
+    QFile f(path);
+    if (!f.open(QIODevice::ReadOnly))
+    {
+        QMessageBox::critical(this, "Error", "Cannot read preset:\n" + path);
+        return;
+    }
+    QJsonParseError err;
+    auto doc = QJsonDocument::fromJson(f.readAll(), &err);
+    if (doc.isNull())
+    {
+        QMessageBox::critical(this, "Error", "Invalid preset:\n" + err.errorString());
+        return;
+    }
+
+    QJsonObject obj = doc.object();
+
+    auto getD = [](const QJsonObject& o, const QString& k, double def) -> double {
+        return o.contains(k) ? o[k].toDouble(def) : def;
+    };
+    auto getB = [](const QJsonObject& o, const QString& k, bool def) -> bool {
+        return o.contains(k) ? o[k].toBool(def) : def;
+    };
+
+    mKnobInputGain ->setValue(getD(obj, "inputGain",  0.0));
+    mKnobOutputGain->setValue(getD(obj, "outputGain", 0.0));
+
+    if (obj.contains("eq")) {
+        auto eq = obj["eq"].toObject();
+        mKnobLow   ->setValue(getD(eq, "low",    0.0));
+        mKnobMid   ->setValue(getD(eq, "mid",    0.0));
+        mKnobTreble->setValue(getD(eq, "treble", 0.0));
+    }
+    if (obj.contains("tuner")) {
+        auto t = obj["tuner"].toObject();
+        mChkTunerEnable->setChecked(getB(t, "enabled", false));
+        mChkTunerMute  ->setChecked(getB(t, "mute",    false));
+    }
+    if (obj.contains("noiseGate")) {
+        auto g = obj["noiseGate"].toObject();
+        mChkGateEnable  ->setChecked(getB(g, "enabled",   false));
+        mKnobGateThresh ->setValue(getD(g, "threshold", -40.0));
+        mKnobGateAttack ->setValue(getD(g, "attack",     10.0));
+        mKnobGateRelease->setValue(getD(g, "release",   100.0));
+    }
+    if (obj.contains("compressor")) {
+        auto c = obj["compressor"].toObject();
+        mChkCompEnable   ->setChecked(getB(c, "enabled",   false));
+        mKnobCompThresh  ->setValue(getD(c, "threshold", -20.0));
+        mKnobCompRatio   ->setValue(getD(c, "ratio",       4.0));
+        mKnobCompAttack  ->setValue(getD(c, "attack",     10.0));
+        mKnobCompRelease ->setValue(getD(c, "release",   100.0));
+        mKnobCompMakeup  ->setValue(getD(c, "makeup",      0.0));
+    }
+    if (obj.contains("chorus1")) {
+        auto c = obj["chorus1"].toObject();
+        mChkChorus1Enable->setChecked(getB(c, "enabled", false));
+        mKnobCh1Rate ->setValue(getD(c, "rate",   1.0));
+        mKnobCh1Depth->setValue(getD(c, "depth", 50.0));
+        mKnobCh1Mix  ->setValue(getD(c, "mix",   50.0));
+    }
+    if (obj.contains("flanger")) {
+        auto f2 = obj["flanger"].toObject();
+        mChkFlangerEnable->setChecked(getB(f2, "enabled", false));
+        mKnobFlRate     ->setValue(getD(f2, "rate",      0.5));
+        mKnobFlDepth    ->setValue(getD(f2, "depth",    50.0));
+        mKnobFlFeedback ->setValue(getD(f2, "feedback",  0.0));
+        mKnobFlMix      ->setValue(getD(f2, "mix",      50.0));
+    }
+    if (obj.contains("phaser")) {
+        auto p = obj["phaser"].toObject();
+        mChkPhaserEnable ->setChecked(getB(p, "enabled", false));
+        mKnobPhRate     ->setValue(getD(p, "rate",      1.0));
+        mKnobPhDepth    ->setValue(getD(p, "depth",    50.0));
+        mKnobPhFeedback ->setValue(getD(p, "feedback", 50.0));
+        mKnobPhMix      ->setValue(getD(p, "mix",      50.0));
+    }
+    if (obj.contains("chorus2")) {
+        auto c = obj["chorus2"].toObject();
+        mChkChorus2Enable->setChecked(getB(c, "enabled", false));
+        mKnobCh2Rate ->setValue(getD(c, "rate",   1.0));
+        mKnobCh2Depth->setValue(getD(c, "depth", 50.0));
+        mKnobCh2Mix  ->setValue(getD(c, "mix",   50.0));
+    }
+    if (obj.contains("tremolo")) {
+        auto t = obj["tremolo"].toObject();
+        mChkTremoloEnable->setChecked(getB(t, "enabled", false));
+        mKnobTrRate ->setValue(getD(t, "rate",   5.0));
+        mKnobTrDepth->setValue(getD(t, "depth", 50.0));
+    }
+    if (obj.contains("delay")) {
+        auto d = obj["delay"].toObject();
+        mChkDelayEnable  ->setChecked(getB(d, "enabled", false));
+        mKnobDelTime     ->setValue(getD(d, "time",     250.0));
+        mKnobDelFeedback ->setValue(getD(d, "feedback",  40.0));
+        mKnobDelMix      ->setValue(getD(d, "mix",       30.0));
+    }
+    if (obj.contains("reverb")) {
+        auto r = obj["reverb"].toObject();
+        mChkReverbEnable ->setChecked(getB(r, "enabled", false));
+        mKnobRevRoom     ->setValue(getD(r, "roomSize",  50.0));
+        mKnobRevDamping  ->setValue(getD(r, "damping",   50.0));
+        mKnobRevWidth    ->setValue(getD(r, "width",    100.0));
+        mKnobRevMix      ->setValue(getD(r, "mix",       30.0));
+    }
+    if (obj.contains("irEnabled"))
+    {
+        bool en = obj["irEnabled"].toBool(true);
+        mEngine->setIREnabled(en);
+        mChkIREnable->setChecked(en);
     }
 }

@@ -7,41 +7,51 @@
 
 #include "NAM/get_dsp.h"
 
-AudioEngine::AudioEngine()
-{
-}
-
-AudioEngine::~AudioEngine()
-{
-    stop();
-}
+AudioEngine::AudioEngine() {}
+AudioEngine::~AudioEngine() { stop(); }
 
 bool AudioEngine::start(const std::string& clientName)
 {
-    if (mRunning.load())
-        return true;
+    if (mRunning.load()) return true;
 
     jack_status_t status;
     mClient = jack_client_open(clientName.c_str(), JackNullOption, &status);
     if (!mClient)
     {
-        std::cerr << "[AudioEngine] jack_client_open failed, status=0x" << std::hex << status << "\n";
+        std::cerr << "[AudioEngine] jack_client_open failed, status=0x"
+                  << std::hex << status << "\n";
         return false;
     }
 
     mSampleRate = static_cast<double>(jack_get_sample_rate(mClient));
-    mEQ.setSampleRate(mSampleRate);
-
     const int maxBuf = static_cast<int>(jack_get_buffer_size(mClient));
-    mWorkBuf.resize(maxBuf, 0.0f);
+
+    // Allocate work buffers
+    mWorkBuf .resize(maxBuf, 0.0f);
+    mWorkBufL.resize(maxBuf, 0.0f);
+    mWorkBufR.resize(maxBuf, 0.0f);
+
+    // Initialise all effects with sample rate
+    mEQ.setSampleRate(mSampleRate);
+    mTuner  .setSampleRate(mSampleRate);
+    mGate   .setSampleRate(mSampleRate);
+    mComp   .setSampleRate(mSampleRate);
+    mChorus1.setSampleRate(mSampleRate);
+    mFlanger.setSampleRate(mSampleRate);
+    mPhaser .setSampleRate(mSampleRate);
+    mChorus2.setSampleRate(mSampleRate);
+    mTremolo.setSampleRate(mSampleRate);
+    mDelay  .setSampleRate(mSampleRate);
+    mReverb .setSampleRate(mSampleRate);
 
     jack_set_process_callback(mClient, jackProcessCallback, this);
     jack_on_shutdown(mClient, jackShutdownCallback, this);
 
-    mPortIn  = jack_port_register(mClient, "input",  JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput,  0);
-    mPortOut = jack_port_register(mClient, "output", JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
+    mPortIn   = jack_port_register(mClient, "input",    JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput,  0);
+    mPortOutL = jack_port_register(mClient, "output_L", JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
+    mPortOutR = jack_port_register(mClient, "output_R", JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
 
-    if (!mPortIn || !mPortOut)
+    if (!mPortIn || !mPortOutL || !mPortOutR)
     {
         std::cerr << "[AudioEngine] Failed to register JACK ports\n";
         jack_client_close(mClient);
@@ -58,14 +68,13 @@ bool AudioEngine::start(const std::string& clientName)
     }
 
     mRunning.store(true);
-    std::cout << "[AudioEngine] JACK started at " << mSampleRate << " Hz\n";
+    std::cout << "[AudioEngine] JACK started at " << mSampleRate << " Hz (stereo out)\n";
     return true;
 }
 
 void AudioEngine::stop()
 {
-    if (!mRunning.load())
-        return;
+    if (!mRunning.load()) return;
     mRunning.store(false);
     if (mClient)
     {
@@ -75,7 +84,7 @@ void AudioEngine::stop()
     }
 }
 
-// ---- Model management ------------------------------------------------
+// ---- Model management -------------------------------------------------
 
 bool AudioEngine::loadModel(const std::string& path)
 {
@@ -89,28 +98,16 @@ bool AudioEngine::loadModel(const std::string& path)
         std::cerr << "[AudioEngine] Failed to load model: " << e.what() << "\n";
         return false;
     }
-
-    if (!newModel)
-        return false;
+    if (!newModel) return false;
 
     newModel->Reset(mSampleRate, static_cast<int>(mWorkBuf.size()));
     newModel->prewarm();
 
     {
         std::lock_guard<std::mutex> lock(mModelMutex);
-        int current = mActiveModel.load();
-        if (current == 0)
-        {
-            mModelB = std::move(newModel);
-            mActiveModel.store(1);
-            mModelA.reset(); // destroy old
-        }
-        else
-        {
-            mModelA = std::move(newModel);
-            mActiveModel.store(0);
-            mModelB.reset();
-        }
+        int cur = mActiveModel.load();
+        if (cur == 0) { mModelB = std::move(newModel); mActiveModel.store(1); mModelA.reset(); }
+        else          { mModelA = std::move(newModel); mActiveModel.store(0); mModelB.reset(); }
         mModelPath = path;
         mModelLoaded.store(true);
     }
@@ -126,32 +123,14 @@ void AudioEngine::unloadModel()
     mModelPath = "";
 }
 
-// ---- IR management ---------------------------------------------------
+// ---- IR management ----------------------------------------------------
 
-bool AudioEngine::loadIR(const std::string& path)
-{
-    return mIRLoader.load(path);
-}
+bool        AudioEngine::loadIR(const std::string& path) { return mIRLoader.load(path); }
+void        AudioEngine::unloadIR()                       { mIRLoader.unload(); }
+bool        AudioEngine::isIRLoaded() const               { return mIRLoader.isLoaded(); }
+std::string AudioEngine::irPath()     const               { return mIRLoader.getFilePath(); }
 
-void AudioEngine::unloadIR()
-{
-    mIRLoader.unload();
-}
-
-bool AudioEngine::isIRLoaded() const
-{
-    return mIRLoader.isLoaded();
-}
-
-std::string AudioEngine::irPath() const
-{
-    return mIRLoader.getFilePath();
-}
-
-// ---- Parameter setters -----------------------------------------------
-
-void AudioEngine::setInputGain(float dB)  { mInputGainDB.store(dB); }
-void AudioEngine::setOutputGain(float dB) { mOutputGainDB.store(dB); }
+// ---- EQ parameter setters --------------------------------------------
 
 void AudioEngine::setLowGain(float dB)
 {
@@ -183,72 +162,147 @@ int AudioEngine::jackProcessCallback(jack_nframes_t nframes, void* arg)
 
 void AudioEngine::jackShutdownCallback(void* arg)
 {
-    auto* self = static_cast<AudioEngine*>(arg);
-    self->mRunning.store(false);
+    static_cast<AudioEngine*>(arg)->mRunning.store(false);
     std::cerr << "[AudioEngine] JACK server shut down\n";
 }
 
 int AudioEngine::processAudio(jack_nframes_t nframes)
 {
-    auto* inBuf  = static_cast<jack_default_audio_sample_t*>(jack_port_get_buffer(mPortIn,  nframes));
-    auto* outBuf = static_cast<jack_default_audio_sample_t*>(jack_port_get_buffer(mPortOut, nframes));
+    auto* inBuf  = static_cast<float*>(jack_port_get_buffer(mPortIn,   nframes));
+    auto* outL   = static_cast<float*>(jack_port_get_buffer(mPortOutL, nframes));
+    auto* outR   = static_cast<float*>(jack_port_get_buffer(mPortOutR, nframes));
 
     const int n = static_cast<int>(nframes);
 
-    // --- Input gain (smoothed) ---
+    // ----------------------------------------------------------------
+    // 1. Input gain (smoothed) → mWorkBuf (mono)
+    // ----------------------------------------------------------------
     const float targetInGain = dbToLinear(mInputGainDB.load());
     float inPeak = 0.0f;
     for (int i = 0; i < n; ++i)
     {
-        mInputGainSmooth = kSmoothCoeff * mInputGainSmooth + (1.0f - kSmoothCoeff) * targetInGain;
+        mInputGainSmooth = kSmoothCoeff * mInputGainSmooth
+                         + (1.0f - kSmoothCoeff) * targetInGain;
         float s = inBuf[i] * mInputGainSmooth;
         mWorkBuf[i] = s;
-        inPeak = std::max(inPeak, std::abs(s));
+        if (s < 0.0f) s = -s;
+        if (s > inPeak) inPeak = s;
     }
     mInputPeak.store(inPeak);
 
-    // --- NAM model ---
+    // ----------------------------------------------------------------
+    // 2. Tuner (analyze + optional mute) — pass-through
+    // ----------------------------------------------------------------
+    if (mTunerEnabled.load())
+        mTuner.processBlock(mWorkBuf.data(), n, mTunerMute.load());
+
+    // ----------------------------------------------------------------
+    // 3. Noise gate
+    // ----------------------------------------------------------------
+    if (mGateEnabled.load())
+        mGate.processBlock(mWorkBuf.data(), n);
+
+    // ----------------------------------------------------------------
+    // 4. Compressor
+    // ----------------------------------------------------------------
+    if (mCompEnabled.load())
+        mComp.processBlock(mWorkBuf.data(), n);
+
+    // ----------------------------------------------------------------
+    // 5. Chorus 1 (pre-NAM, mono)
+    // ----------------------------------------------------------------
+    if (mChorus1Enabled.load())
+        mChorus1.processBlock(mWorkBuf.data(), n);
+
+    // ----------------------------------------------------------------
+    // 6. Flanger (mono)
+    // ----------------------------------------------------------------
+    if (mFlangerEnabled.load())
+        mFlanger.processBlock(mWorkBuf.data(), n);
+
+    // ----------------------------------------------------------------
+    // 7. Phaser (mono)
+    // ----------------------------------------------------------------
+    if (mPhaserEnabled.load())
+        mPhaser.processBlock(mWorkBuf.data(), n);
+
+    // ----------------------------------------------------------------
+    // 8. NAM DSP (mono → writes to outL temporarily)
+    // ----------------------------------------------------------------
     nam::DSP* model = activeModel();
     if (mModelLoaded.load() && model)
     {
-        // NAM_SAMPLE == float (we defined NAM_SAMPLE_FLOAT)
         NAM_SAMPLE* inPtr  = mWorkBuf.data();
-        NAM_SAMPLE* outPtr = outBuf;
-
+        NAM_SAMPLE* outPtr = outL;         // borrow outL as scratch
         NAM_SAMPLE** inPtrs  = &inPtr;
         NAM_SAMPLE** outPtrs = &outPtr;
-
         model->process(inPtrs, outPtrs, n);
-        // outBuf now holds the model output
-    }
-    else
-    {
-        // Bypass: copy input to output
-        std::copy(mWorkBuf.begin(), mWorkBuf.begin() + n, outBuf);
+        // Copy NAM output back to mWorkBuf
+        std::copy(outL, outL + n, mWorkBuf.begin());
     }
 
-    // --- 3-band EQ ---
-    // Try-lock to avoid blocking audio thread if GUI is updating EQ params
+    // ----------------------------------------------------------------
+    // 9. 3-band EQ (mono, try_lock)
+    // ----------------------------------------------------------------
     if (mEQMutex.try_lock())
     {
         for (int i = 0; i < n; ++i)
-            outBuf[i] = mEQ.processSample(outBuf[i]);
+            mWorkBuf[i] = mEQ.processSample(mWorkBuf[i]);
         mEQMutex.unlock();
     }
-    // (if lock fails, just skip EQ this block — inaudible at typical block sizes)
 
-    // --- IR convolution (cab sim) ---
+    // ----------------------------------------------------------------
+    // 10. Widen to stereo — L = R = mono signal
+    // ----------------------------------------------------------------
+    std::copy(mWorkBuf.begin(), mWorkBuf.begin() + n, mWorkBufL.begin());
+    std::copy(mWorkBuf.begin(), mWorkBuf.begin() + n, mWorkBufR.begin());
+
+    // ----------------------------------------------------------------
+    // 11. Chorus 2 (post-NAM, stereo)
+    // ----------------------------------------------------------------
+    if (mChorus2Enabled.load())
+        mChorus2.processBlockStereo(mWorkBufL.data(), mWorkBufR.data(), n);
+
+    // ----------------------------------------------------------------
+    // 12. Tremolo (stereo)
+    // ----------------------------------------------------------------
+    if (mTremoloEnabled.load())
+        mTremolo.processBlockStereo(mWorkBufL.data(), mWorkBufR.data(), n);
+
+    // ----------------------------------------------------------------
+    // 13. Delay (stereo ping-pong)
+    // ----------------------------------------------------------------
+    if (mDelayEnabled.load())
+        mDelay.processBlockStereo(mWorkBufL.data(), mWorkBufR.data(), n);
+
+    // ----------------------------------------------------------------
+    // 14. Reverb (stereo)
+    // ----------------------------------------------------------------
+    if (mReverbEnabled.load())
+        mReverb.processBlockStereo(mWorkBufL.data(), mWorkBufR.data(), n);
+
+    // ----------------------------------------------------------------
+    // 15. IR convolution (cab sim, applied to both channels)
+    // ----------------------------------------------------------------
     if (mIREnabled.load() && mIRLoader.isLoaded())
-        mIRLoader.processBlock(outBuf, n);
+    {
+        mIRLoader.processBlock(mWorkBufL.data(), n);
+        mIRLoader.processBlock(mWorkBufR.data(), n);
+    }
 
-    // --- Output gain (smoothed) ---
+    // ----------------------------------------------------------------
+    // 16. Output gain (smoothed) + copy to JACK buffers
+    // ----------------------------------------------------------------
     const float targetOutGain = dbToLinear(mOutputGainDB.load());
     float outPeak = 0.0f;
     for (int i = 0; i < n; ++i)
     {
-        mOutputGainSmooth = kSmoothCoeff * mOutputGainSmooth + (1.0f - kSmoothCoeff) * targetOutGain;
-        outBuf[i] *= mOutputGainSmooth;
-        outPeak = std::max(outPeak, std::abs(outBuf[i]));
+        mOutputGainSmooth = kSmoothCoeff * mOutputGainSmooth
+                          + (1.0f - kSmoothCoeff) * targetOutGain;
+        outL[i] = mWorkBufL[i] * mOutputGainSmooth;
+        outR[i] = mWorkBufR[i] * mOutputGainSmooth;
+        float peak = std::abs(outL[i]);
+        if (peak > outPeak) outPeak = peak;
     }
     mOutputPeak.store(outPeak);
 

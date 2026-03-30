@@ -1,147 +1,108 @@
 #include "KnobWidget.h"
 
-#include <QPainter>
-#include <QPainterPath>
-#include <QMouseEvent>
-#include <QWheelEvent>
-#include <QFont>
-#include <cmath>
+#include <QDial>
+#include <QEvent>
+#include <QLabel>
+#include <QVBoxLayout>
+#include <QString>
 
 KnobWidget::KnobWidget(const QString& label, double minVal, double maxVal,
                        double defaultVal, const QString& unit, QWidget* parent)
     : QWidget(parent)
-    , mValue(defaultVal)
     , mMin(minVal)
     , mMax(maxVal)
     , mDefault(defaultVal)
-    , mLabel(label)
     , mUnit(unit)
 {
-    setMouseTracking(false);
-    setCursor(Qt::PointingHandCursor);
-    setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    auto* layout = new QVBoxLayout(this);
+    layout->setContentsMargins(2, 2, 2, 2);
+    layout->setSpacing(2);
+
+    auto* nameLabel = new QLabel(label);
+    nameLabel->setAlignment(Qt::AlignHCenter);
+    nameLabel->setStyleSheet("color: #aaa; font-size: 8pt;");
+
+    mDial = new QDial;
+    mDial->setMinimum(0);
+    mDial->setMaximum(kSteps);
+    mDial->setValue(valueToDial(defaultVal));
+    mDial->setNotchesVisible(true);
+    mDial->setWrapping(false);
+    mDial->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+
+    mLabelValue = new QLabel;
+    mLabelValue->setAlignment(Qt::AlignHCenter);
+    mLabelValue->setStyleSheet("color: #dc7828; font-size: 7pt; font-family: monospace;");
+
+    layout->addWidget(nameLabel);
+    layout->addWidget(mDial, 1);
+    layout->addWidget(mLabelValue);
+
+    // Update value display
+    onDialChanged(mDial->value());
+
+    connect(mDial, &QDial::valueChanged, this, &KnobWidget::onDialChanged);
+
+    // Double-click to reset — install on the dial
+    mDial->installEventFilter(this);
+}
+
+double KnobWidget::value() const
+{
+    return dialToValue(mDial->value());
 }
 
 void KnobWidget::setValue(double v)
 {
-    double clamped = clamp(v);
-    if (clamped == mValue)
-        return;
-    mValue = clamped;
-    update();
-    emit valueChanged(mValue);
+    // Clamp
+    if (v < mMin) v = mMin;
+    if (v > mMax) v = mMax;
+
+    // Block signals so we don't re-emit valueChanged
+    const bool blocked = mDial->blockSignals(true);
+    mDial->setValue(valueToDial(v));
+    mDial->blockSignals(blocked);
+
+    // Update display
+    QString txt = QString::number(v, 'f', 1);
+    if (!mUnit.isEmpty()) txt += " " + mUnit;
+    mLabelValue->setText(txt);
 }
 
 void KnobWidget::resetToDefault()
 {
     setValue(mDefault);
+    emit valueChanged(mDefault);
 }
 
-void KnobWidget::paintEvent(QPaintEvent*)
+void KnobWidget::onDialChanged(int dialVal)
 {
-    QPainter p(this);
-    p.setRenderHint(QPainter::Antialiasing);
-
-    const QRect r = rect();
-    const int   labelH  = 18;
-    const int   valueH  = 16;
-    const int   knobDia = std::min(r.width(), r.height() - labelH - valueH) - 8;
-    const int   knobX   = (r.width() - knobDia) / 2;
-    const int   knobY   = 4;
-
-    // ---- Background ----
-    p.fillRect(r, QColor(30, 30, 35));
-
-    // ---- Track arc (background) ----
-    const QRectF knobRect(knobX, knobY, knobDia, knobDia);
-    const QRectF arcRect = knobRect.adjusted(4, 4, -4, -4);
-
-    QPen trackPen(QColor(60, 60, 70), 4, Qt::SolidLine, Qt::FlatCap);
-    p.setPen(trackPen);
-    // Qt angle: 0=3 o'clock, CCW positive. We want start at 225 deg from 3'oclock going CW.
-    // Qt uses 16ths of a degree, and drawArc goes CCW.
-    // Start angle from 3 o'clock: 225 degrees clockwise = -(225)*16
-    const int startAngle = (90 + kArcSpanDeg / 2) * 16; // start at bottom-left
-    const int spanAngle  = -kArcSpanDeg * 16;
-    p.drawArc(arcRect, startAngle, spanAngle);
-
-    // ---- Value arc (filled portion) ----
-    const double norm     = normalised();
-    const int    fillSpan = static_cast<int>(-norm * kArcSpanDeg * 16);
-    QPen valuePen(QColor(220, 120, 40), 4, Qt::SolidLine, Qt::FlatCap);
-    p.setPen(valuePen);
-    p.drawArc(arcRect, startAngle, fillSpan);
-
-    // ---- Knob body ----
-    QRadialGradient grad(knobRect.center(), knobDia / 2.0);
-    grad.setColorAt(0.0, QColor(85, 85, 95));
-    grad.setColorAt(1.0, QColor(45, 45, 52));
-    p.setPen(QPen(QColor(20, 20, 25), 1));
-    p.setBrush(grad);
-    p.drawEllipse(knobRect.adjusted(6, 6, -6, -6));
-
-    // ---- Pointer line ----
-    const double angleDeg  = 225.0 - norm * kArcSpanDeg; // degrees CW from 12 o'clock
-    const double angleRad  = (angleDeg - 90.0) * M_PI / 180.0;
-    const QPointF center   = knobRect.adjusted(6, 6, -6, -6).center();
-    const double radius    = (knobDia / 2.0 - 8);
-    QPointF tipPt(center.x() + radius * 0.65 * std::cos(angleRad),
-                  center.y() + radius * 0.65 * std::sin(angleRad));
-    p.setPen(QPen(QColor(240, 200, 140), 2, Qt::SolidLine, Qt::RoundCap));
-    p.drawLine(center, tipPt);
-
-    // ---- Label ----
-    QFont lf("Sans", 8, QFont::Medium);
-    p.setFont(lf);
-    p.setPen(QColor(160, 160, 170));
-    QRect labelRect(0, knobY + knobDia + 2, r.width(), labelH);
-    p.drawText(labelRect, Qt::AlignHCenter | Qt::AlignTop, mLabel);
-
-    // ---- Value text ----
-    QFont vf("Monospace", 7);
-    p.setFont(vf);
-    p.setPen(QColor(220, 120, 40));
-    QString valStr = QString::number(mValue, 'f', 1) + " " + mUnit;
-    QRect valueRect(0, knobY + knobDia + labelH, r.width(), valueH);
-    p.drawText(valueRect, Qt::AlignHCenter | Qt::AlignTop, valStr);
+    double v = dialToValue(dialVal);
+    QString txt = QString::number(v, 'f', 1);
+    if (!mUnit.isEmpty()) txt += " " + mUnit;
+    mLabelValue->setText(txt);
+    emit valueChanged(v);
 }
 
-void KnobWidget::mousePressEvent(QMouseEvent* event)
+double KnobWidget::dialToValue(int d) const
 {
-    if (event->button() == Qt::LeftButton)
+    return mMin + (mMax - mMin) * static_cast<double>(d) / kSteps;
+}
+
+int KnobWidget::valueToDial(double v) const
+{
+    double norm = (v - mMin) / (mMax - mMin);
+    if (norm < 0.0) norm = 0.0;
+    if (norm > 1.0) norm = 1.0;
+    return static_cast<int>(norm * kSteps + 0.5);
+}
+
+bool KnobWidget::eventFilter(QObject* obj, QEvent* event)
+{
+    if (obj == mDial && event->type() == QEvent::MouseButtonDblClick)
     {
-        mDragging      = true;
-        mDragStartY    = event->pos().y();
-        mDragStartValue = mValue;
+        resetToDefault();
+        return true;
     }
-}
-
-void KnobWidget::mouseMoveEvent(QMouseEvent* event)
-{
-    if (!mDragging)
-        return;
-    const int   dy    = mDragStartY - event->pos().y();
-    const double range = mMax - mMin;
-    // 200 pixels = full range
-    double newVal = mDragStartValue + dy * (range / 200.0);
-    setValue(newVal);
-}
-
-void KnobWidget::mouseReleaseEvent(QMouseEvent* event)
-{
-    if (event->button() == Qt::LeftButton)
-        mDragging = false;
-}
-
-void KnobWidget::mouseDoubleClickEvent(QMouseEvent*)
-{
-    resetToDefault();
-}
-
-void KnobWidget::wheelEvent(QWheelEvent* event)
-{
-    const double step = (mMax - mMin) / 100.0;
-    const int    delta = event->angleDelta().y();
-    setValue(mValue + (delta > 0 ? step : -step));
-    event->accept();
+    return QWidget::eventFilter(obj, event);
 }

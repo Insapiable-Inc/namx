@@ -3,8 +3,12 @@
 #include <QWidget>
 #include <QString>
 
-/// A rotary knob widget that renders as a styled arc dial.
-/// Emits valueChanged(double) when the user drags or scrolls.
+class QDial;
+class QLabel;
+
+/// A knob widget built around Qt's QDial.
+/// Wraps QDial with a floating-point value range, name label, and value display.
+/// Emits valueChanged(double) when the user adjusts the dial.
 class KnobWidget : public QWidget
 {
     Q_OBJECT
@@ -12,13 +16,13 @@ class KnobWidget : public QWidget
 
 public:
     explicit KnobWidget(const QString& label, double minVal, double maxVal,
-                        double defaultVal, const QString& unit = "dB",
+                        double defaultVal, const QString& unit = "",
                         QWidget* parent = nullptr);
 
-    double value() const { return mValue; }
+    double value() const;
 
-    QSize sizeHint()    const override { return {90, 110}; }
-    QSize minimumSizeHint() const override { return {70, 90}; }
+    QSize sizeHint()        const override { return {80, 90}; }
+    QSize minimumSizeHint() const override { return {64, 76}; }
 
 public slots:
     void setValue(double v);
@@ -27,30 +31,23 @@ public slots:
 signals:
     void valueChanged(double newValue);
 
+private slots:
+    void onDialChanged(int dialVal);
+
 protected:
-    void paintEvent(QPaintEvent* event) override;
-    void mousePressEvent(QMouseEvent* event) override;
-    void mouseMoveEvent(QMouseEvent* event) override;
-    void mouseReleaseEvent(QMouseEvent* event) override;
-    void mouseDoubleClickEvent(QMouseEvent* event) override;
-    void wheelEvent(QWheelEvent* event) override;
+    bool eventFilter(QObject* obj, QEvent* event) override;
 
 private:
-    double mValue;
-    double mMin;
-    double mMax;
-    double mDefault;
-    QString mLabel;
+    QDial*  mDial;
+    QLabel* mLabelValue;
+    double  mMin;
+    double  mMax;
+    double  mDefault;
     QString mUnit;
 
-    bool   mDragging = false;
-    int    mDragStartY = 0;
-    double mDragStartValue = 0.0;
+    // Internal dial range [0, kSteps]
+    static constexpr int kSteps = 10000;
 
-    double clamp(double v) const { return std::max(mMin, std::min(mMax, v)); }
-    double normalised() const { return (mValue - mMin) / (mMax - mMin); }
-
-    // Visual constants
-    static constexpr int   kArcSpanDeg  = 270;  // total arc span in degrees
-    static constexpr int   kStartDeg    = 225;   // start angle (from 3 o'clock, CCW)
+    double dialToValue(int d) const;
+    int    valueToDial(double v) const;
 };

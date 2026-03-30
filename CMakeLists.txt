@@ -42,6 +42,25 @@ set(GUI_SOURCES
     src/IRLoader.h
     src/EQProcessor.cpp
     src/EQProcessor.h
+    src/EffectBase.h
+    src/TunerProcessor.cpp
+    src/TunerProcessor.h
+    src/NoiseGateProcessor.cpp
+    src/NoiseGateProcessor.h
+    src/CompressorProcessor.cpp
+    src/CompressorProcessor.h
+    src/ChorusProcessor.cpp
+    src/ChorusProcessor.h
+    src/FlangerProcessor.cpp
+    src/FlangerProcessor.h
+    src/PhaserProcessor.cpp
+    src/PhaserProcessor.h
+    src/TremoloProcessor.cpp
+    src/TremoloProcessor.h
+    src/DelayProcessor.cpp
+    src/DelayProcessor.h
+    src/ReverbProcessor.cpp
+    src/ReverbProcessor.h
 )
 
 add_executable(NAMPlayer ${GUI_SOURCES} ${NAM_SOURCES} ${WAV_SOURCES})
