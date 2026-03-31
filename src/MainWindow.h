@@ -109,9 +109,9 @@ private slots:
     void onReverbWidthChanged(double v);
     void onReverbMixChanged(double v);
 
-    // Reorder
-    void onMoveUp(int effectGlobalIndex);
-    void onMoveDown(int effectGlobalIndex);
+    // Reorder — identified by stable row widget pointer, index resolved at call time
+    void onMoveUp(QWidget* rowWidget);
+    void onMoveDown(QWidget* rowWidget);
 
     // Preset
     void onSavePreset();

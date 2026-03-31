@@ -84,7 +84,7 @@ MainWindow::~MainWindow()
 // Helper: build an effect row with ToggleSwitch, label, knobs, up/down buttons
 // ---------------------------------------------------------------------------
 
-QWidget* MainWindow::makeEffectRow(int globalIndex,
+QWidget* MainWindow::makeEffectRow(int /*unusedIndex*/,
                                    const QString& title,
                                    ToggleSwitch*& toggleOut,
                                    const std::initializer_list<KnobWidget*>& knobs,
@@ -95,7 +95,7 @@ QWidget* MainWindow::makeEffectRow(int globalIndex,
     lay->setContentsMargins(4, 2, 4, 2);
     lay->setSpacing(4);
 
-    // Up / Down reorder buttons
+    // Up / Down reorder buttons — capture the stable row pointer, not the index
     auto* btnUp   = new QPushButton("▲");
     auto* btnDown = new QPushButton("▼");
     btnUp  ->setFixedSize(18, 18);
@@ -111,9 +111,8 @@ QWidget* MainWindow::makeEffectRow(int globalIndex,
     reorderLay->addWidget(btnDown);
     lay->addWidget(reorderCol);
 
-    // Capture index by value for the lambda
-    connect(btnUp,   &QPushButton::clicked, this, [this, globalIndex]{ onMoveUp(globalIndex);   });
-    connect(btnDown, &QPushButton::clicked, this, [this, globalIndex]{ onMoveDown(globalIndex); });
+    connect(btnUp,   &QPushButton::clicked, this, [this, row]{ onMoveUp(row);   });
+    connect(btnDown, &QPushButton::clicked, this, [this, row]{ onMoveDown(row); });
 
     // Toggle switch + label
     toggleOut = new ToggleSwitch;
@@ -261,9 +260,8 @@ void MainWindow::setupUI()
         reorderLay->addWidget(btnDown);
         lay->addWidget(reorderCol);
 
-        int gi = static_cast<int>(mEffectRows.size());
-        connect(btnUp,   &QPushButton::clicked, this, [this, gi]{ onMoveUp(gi);   });
-        connect(btnDown, &QPushButton::clicked, this, [this, gi]{ onMoveDown(gi); });
+        connect(btnUp,   &QPushButton::clicked, this, [this, row]{ onMoveUp(row);   });
+        connect(btnDown, &QPushButton::clicked, this, [this, row]{ onMoveDown(row); });
 
         mSwTunerEnable = new ToggleSwitch;
         mSwTunerEnable->setCheckable(true);
@@ -570,9 +568,8 @@ void MainWindow::setupUI()
         reorderLay->addWidget(btnDown);
         lay->addWidget(reorderCol);
 
-        int gi = static_cast<int>(mEffectRows.size());
-        connect(btnUp,   &QPushButton::clicked, this, [this, gi]{ onMoveUp(gi);   });
-        connect(btnDown, &QPushButton::clicked, this, [this, gi]{ onMoveDown(gi); });
+        connect(btnUp,   &QPushButton::clicked, this, [this, row]{ onMoveUp(row);   });
+        connect(btnDown, &QPushButton::clicked, this, [this, row]{ onMoveDown(row); });
 
         mSwIREnable = new ToggleSwitch;
         mSwIREnable->setCheckable(true);
@@ -675,11 +672,16 @@ void MainWindow::rebuildEffectOrderFromUI()
     mEngine->setEffectOrder(order);
 }
 
-void MainWindow::onMoveUp(int gi)
+void MainWindow::onMoveUp(QWidget* rowWidget)
 {
-    if (gi <= 0 || gi >= static_cast<int>(mEffectRows.size())) return;
+    // Resolve current index by widget pointer — always correct even after previous reorders
+    int gi = -1;
+    for (int i = 0; i < static_cast<int>(mEffectRows.size()); ++i)
+        if (mEffectRows[i].widget == rowWidget) { gi = i; break; }
 
-    const bool isPost = mEffectRows[gi].isPost;
+    if (gi <= 0) return;
+
+    const bool isPost     = mEffectRows[gi].isPost;
     const bool prevIsPost = mEffectRows[gi - 1].isPost;
 
     // Can't cross the pre/post boundary
@@ -687,27 +689,28 @@ void MainWindow::onMoveUp(int gi)
 
     std::swap(mEffectRows[gi], mEffectRows[gi - 1]);
 
-    // Move widgets in the layout
     QVBoxLayout* lay = isPost ? mPostChainLayout : mPreChainLayout;
-    // Find current positions
-    int posA = lay->indexOf(mEffectRows[gi - 1].widget);  // after swap, gi-1 holds what was gi
+    int posA = lay->indexOf(mEffectRows[gi - 1].widget);  // after swap gi-1 has the moved row
     int posB = lay->indexOf(mEffectRows[gi].widget);
 
     if (posA >= 0 && posB >= 0 && posA != posB)
     {
-        // Remove the item at the lower index and re-insert above
-        auto* itemToMove = lay->takeAt(posB);
-        lay->insertItem(posA, itemToMove);
+        auto* item = lay->takeAt(posB);
+        lay->insertItem(posA, item);
     }
 
     rebuildEffectOrderFromUI();
 }
 
-void MainWindow::onMoveDown(int gi)
+void MainWindow::onMoveDown(QWidget* rowWidget)
 {
+    int gi = -1;
+    for (int i = 0; i < static_cast<int>(mEffectRows.size()); ++i)
+        if (mEffectRows[i].widget == rowWidget) { gi = i; break; }
+
     if (gi < 0 || gi >= static_cast<int>(mEffectRows.size()) - 1) return;
 
-    const bool isPost = mEffectRows[gi].isPost;
+    const bool isPost     = mEffectRows[gi].isPost;
     const bool nextIsPost = mEffectRows[gi + 1].isPost;
 
     if (isPost != nextIsPost) return;
@@ -715,13 +718,13 @@ void MainWindow::onMoveDown(int gi)
     std::swap(mEffectRows[gi], mEffectRows[gi + 1]);
 
     QVBoxLayout* lay = isPost ? mPostChainLayout : mPreChainLayout;
-    int posA = lay->indexOf(mEffectRows[gi].widget);      // after swap, gi holds what was gi+1
+    int posA = lay->indexOf(mEffectRows[gi].widget);      // after swap gi has the moved row
     int posB = lay->indexOf(mEffectRows[gi + 1].widget);
 
     if (posA >= 0 && posB >= 0 && posA != posB)
     {
-        auto* itemToMove = lay->takeAt(posA);
-        lay->insertItem(posB, itemToMove);
+        auto* item = lay->takeAt(posA);
+        lay->insertItem(posB, item);
     }
 
     rebuildEffectOrderFromUI();
@@ -972,6 +975,10 @@ void MainWindow::onSavePreset()
 
     QJsonObject obj;
 
+    // Asset paths — saved for reference / auto-reload on load
+    obj["namModelPath"] = QString::fromStdString(mEngine->modelPath());
+    obj["irPath"]       = QString::fromStdString(mEngine->irPath());
+
     obj["inputGain"]  = mEngine->inputGain();
     obj["outputGain"] = mEngine->outputGain();
 
@@ -1107,6 +1114,34 @@ void MainWindow::onLoadPreset()
     auto getB = [](const QJsonObject& o, const QString& k, bool def) -> bool {
         return o.contains(k) ? o[k].toBool(def) : def;
     };
+
+    // Reload NAM model if path is saved and the file still exists
+    if (obj.contains("namModelPath"))
+    {
+        QString p = obj["namModelPath"].toString();
+        if (!p.isEmpty() && QFile::exists(p))
+        {
+            if (mEngine->loadModel(p.toStdString()))
+            {
+                updateStatusLabels();
+                mBtnUnloadNAM->setEnabled(true);
+            }
+        }
+    }
+
+    // Reload IR if path is saved and the file still exists
+    if (obj.contains("irPath"))
+    {
+        QString p = obj["irPath"].toString();
+        if (!p.isEmpty() && QFile::exists(p))
+        {
+            if (mEngine->loadIR(p.toStdString()))
+            {
+                updateStatusLabels();
+                mBtnUnloadIR->setEnabled(true);
+            }
+        }
+    }
 
     mKnobInputGain ->setValue(getD(obj, "inputGain",  0.0));
     mKnobOutputGain->setValue(getD(obj, "outputGain", 0.0));

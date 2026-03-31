@@ -11,33 +11,44 @@ TunerProcessor::TunerProcessor()
 
 void TunerProcessor::reset()
 {
+    std::lock_guard<std::mutex> lock(mBufMutex);
     mRingBuf.fill(0.f);
-    mWritePos.store(0);
-    mBufferReady.store(false);
+    mWritePos    = 0;
+    mBufferReady = false;
 }
 
 void TunerProcessor::processBlock(float* buf, int nframes, bool mute)
 {
-    int wp = mWritePos.load(std::memory_order_relaxed);
-    for (int i = 0; i < nframes; ++i)
+    // try_lock: if the GUI thread is currently snapshotting, skip the write for this
+    // block. A ~5ms gap in ring-buffer data is completely unnoticeable in a tuner display.
+    if (mBufMutex.try_lock())
     {
-        mRingBuf[wp] = buf[i];
-        wp = (wp + 1) % kBufSize;
-        if (mute) buf[i] = 0.0f;
+        for (int i = 0; i < nframes; ++i)
+        {
+            mRingBuf[mWritePos] = buf[i];
+            mWritePos = (mWritePos + 1) % kBufSize;
+        }
+        mBufferReady = true;
+        mBufMutex.unlock();
     }
-    mWritePos.store(wp, std::memory_order_release);
-    mBufferReady.store(true, std::memory_order_release);
+
+    // Mute is audio-path logic — apply regardless of lock success
+    if (mute)
+        std::fill(buf, buf + nframes, 0.0f);
 }
 
 float TunerProcessor::detectPitch()
 {
-    if (!mBufferReady.load(std::memory_order_acquire))
-        return 0.0f;
+    // Take snapshot under the mutex, then release before heavy computation
+    {
+        std::lock_guard<std::mutex> lock(mBufMutex);
+        if (!mBufferReady)
+            return 0.0f;
 
-    // Copy ring buffer into contiguous snapshot (oldest → newest)
-    const int startPos = mWritePos.load(std::memory_order_acquire);
-    for (int i = 0; i < kBufSize; ++i)
-        mSnapBuf[i] = mRingBuf[(startPos + i) % kBufSize];
+        // Copy ring buffer into contiguous snapshot (oldest → newest)
+        for (int i = 0; i < kBufSize; ++i)
+            mSnapBuf[i] = mRingBuf[(mWritePos + i) % kBufSize];
+    }
 
     // RMS check — silence guard
     double rmsSum = 0.0;
@@ -56,16 +67,10 @@ float TunerProcessor::detectPitch()
     // --- Normalized Square Difference Function (NSDF / YIN-style) ---
     // nsdf[k] = 2*r[k] / (m0 + mk)
     // where r[k] = correlation, m0 = energy of first half, mk = energy of second half.
-    // nsdf ranges from -1 to +1; 1 = perfect periodicity.
-
-    // Pre-compute running energy sums using a sliding window
-    // m0 = sum x[n]^2 for n in [0, N-lag)
-    // mk = sum x[n+lag]^2 for n in [0, N-lag)
 
     float bestNSDF = -1.0f;
     int   bestLag  = 0;
 
-    // Use a reasonable window size to avoid O(N^2) being too slow
     const int winLen = std::min(N, 1024);
 
     double r0 = 0.0;
@@ -118,7 +123,6 @@ float TunerProcessor::detectPitch()
         if (std::abs(denom) > 1e-6f)
         {
             float delta = (y0 - y2) / denom;
-            // clamp interpolation correction to ±1 sample
             delta = std::max(-1.0f, std::min(1.0f, delta));
             return static_cast<float>(mSampleRate) / (bestLag + delta);
         }

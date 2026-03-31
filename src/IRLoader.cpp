@@ -6,10 +6,19 @@
 // AudioDSPTools wav loader
 #include "wav.h"
 
+static void initKernelBuffers(std::vector<float> buffers[2], int writePos[2])
+{
+    for (int ch = 0; ch < 2; ++ch)
+    {
+        buffers[ch].assign(IRLoader::kMaxIRLength, 0.0f);
+        writePos[ch] = 0;
+    }
+}
+
 IRLoader::IRLoader()
 {
-    mKernelA.buffer.resize(kMaxIRLength, 0.0f);
-    mKernelB.buffer.resize(kMaxIRLength, 0.0f);
+    initKernelBuffers(mKernelA.buffers, mKernelA.writePos);
+    initKernelBuffers(mKernelB.buffers, mKernelB.writePos);
 }
 
 bool IRLoader::load(const std::string& path)
@@ -24,15 +33,13 @@ bool IRLoader::load(const std::string& path)
     if (rawSamples.empty())
         return false;
 
-    // Take only the first channel if stereo (interleaved), and limit length
+    // Limit to kMaxIRLength samples
     const int irLen = static_cast<int>(std::min<size_t>(rawSamples.size(), kMaxIRLength));
 
     // Prepare the inactive kernel
     Kernel& k = inactiveKernel();
     k.ir.assign(rawSamples.begin(), rawSamples.begin() + irLen);
-    k.irLen   = irLen;
-    k.writePos = 0;
-    k.buffer.assign(kMaxIRLength, 0.0f);
+    k.irLen = irLen;
 
     // Normalize peak to 1.0
     float peak = 0.0f;
@@ -42,6 +49,9 @@ bool IRLoader::load(const std::string& path)
         for (float& s : k.ir)
             s /= peak;
 
+    // Reset both per-channel delay lines in the new kernel
+    initKernelBuffers(k.buffers, k.writePos);
+
     // Atomic swap
     {
         std::lock_guard<std::mutex> lock(mSwapMutex);
@@ -49,59 +59,68 @@ bool IRLoader::load(const std::string& path)
     }
 
     mFilePath = path;
-    mLoaded   = true;
+    mLoaded.store(true, std::memory_order_release);
     return true;
 }
 
 void IRLoader::unload()
 {
-    mLoaded   = false;
+    mLoaded.store(false, std::memory_order_release);
     mFilePath = "";
     mKernelA.irLen = 0;
     mKernelB.irLen = 0;
 }
 
-float IRLoader::processSample(float in)
+/*static*/ float IRLoader::processChannel(Kernel& k, int ch, float in)
 {
-    if (!mLoaded)
-        return in;
+    k.buffers[ch][k.writePos[ch]] = in;
 
-    Kernel& k = activeKernel();
-    if (k.irLen <= 0)
-        return in;
-
-    // Write input into circular buffer
-    k.buffer[k.writePos] = in;
-
-    // Convolve
     float out = 0.0f;
-    int   pos = k.writePos;
+    int   pos = k.writePos[ch];
     for (int i = 0; i < k.irLen; ++i)
     {
-        out += k.ir[i] * k.buffer[pos];
+        out += k.ir[i] * k.buffers[ch][pos];
         if (--pos < 0)
             pos = k.irLen - 1;
     }
 
-    if (++k.writePos >= k.irLen)
-        k.writePos = 0;
+    if (++k.writePos[ch] >= k.irLen)
+        k.writePos[ch] = 0;
 
     return out;
 }
 
 void IRLoader::processBlock(float* samples, int numFrames)
 {
-    if (!mLoaded)
+    if (!mLoaded.load(std::memory_order_acquire))
+        return;
+
+    Kernel& k = activeKernel();
+    if (k.irLen <= 0)
         return;
 
     for (int i = 0; i < numFrames; ++i)
-        samples[i] = processSample(samples[i]);
+        samples[i] = processChannel(k, 0, samples[i]);
+}
+
+void IRLoader::processBlockStereo(float* L, float* R, int numFrames)
+{
+    if (!mLoaded.load(std::memory_order_acquire))
+        return;
+
+    Kernel& k = activeKernel();
+    if (k.irLen <= 0)
+        return;
+
+    for (int i = 0; i < numFrames; ++i)
+    {
+        L[i] = processChannel(k, 0, L[i]);
+        R[i] = processChannel(k, 1, R[i]);
+    }
 }
 
 void IRLoader::reset()
 {
-    mKernelA.buffer.assign(kMaxIRLength, 0.0f);
-    mKernelA.writePos = 0;
-    mKernelB.buffer.assign(kMaxIRLength, 0.0f);
-    mKernelB.writePos = 0;
+    initKernelBuffers(mKernelA.buffers, mKernelA.writePos);
+    initKernelBuffers(mKernelB.buffers, mKernelB.writePos);
 }

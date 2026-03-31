@@ -8,7 +8,14 @@
 #include "NAM/get_dsp.h"
 
 AudioEngine::AudioEngine() {}
-AudioEngine::~AudioEngine() { stop(); }
+AudioEngine::~AudioEngine()
+{
+    stop(); // deactivates JACK — no more audio callbacks after this returns
+    // Safe to destroy models now that the audio thread is stopped
+    std::lock_guard<std::mutex> lock(mModelMutex);
+    mModelA.reset();
+    mModelB.reset();
+}
 
 bool AudioEngine::start(const std::string& clientName)
 {
@@ -107,8 +114,16 @@ bool AudioEngine::loadModel(const std::string& path)
     {
         std::lock_guard<std::mutex> lock(mModelMutex);
         int cur = mActiveModel.load();
-        if (cur == 0) { mModelB = std::move(newModel); mActiveModel.store(1); mModelA.reset(); }
-        else          { mModelA = std::move(newModel); mActiveModel.store(0); mModelB.reset(); }
+        if (cur == 0) {
+            // Write new model into inactive slot B, then flip.
+            // Old model in A stays alive until the next loadModel overwrites it,
+            // ensuring the audio thread can never access a destroyed object.
+            mModelB = std::move(newModel);
+            mActiveModel.store(1, std::memory_order_release);
+        } else {
+            mModelA = std::move(newModel);
+            mActiveModel.store(0, std::memory_order_release);
+        }
         mModelPath = path;
         mModelLoaded.store(true);
     }
@@ -117,10 +132,11 @@ bool AudioEngine::loadModel(const std::string& path)
 
 void AudioEngine::unloadModel()
 {
-    std::lock_guard<std::mutex> lock(mModelMutex);
+    // Clear the flag first. The audio thread may still be mid-callback with a valid
+    // pointer; that callback will complete safely. After the store, the audio thread
+    // won't call process() again. The unique_ptrs are destroyed in ~AudioEngine after
+    // JACK is stopped, or overwritten safely on the next loadModel() call.
     mModelLoaded.store(false);
-    mModelA.reset();
-    mModelB.reset();
     mModelPath = "";
 }
 
@@ -230,10 +246,7 @@ void AudioEngine::processPostNam(int id, float* L, float* R, int n)
             break;
         case EffectId::IR:
             if (mIREnabled.load() && mIRLoader.isLoaded())
-            {
-                mIRLoader.processBlock(L, n);
-                mIRLoader.processBlock(R, n);
-            }
+                mIRLoader.processBlockStereo(L, R, n);
             break;
         default: break;
     }
@@ -331,7 +344,7 @@ int AudioEngine::processAudio(jack_nframes_t nframes)
                           + (1.0f - kSmoothCoeff) * targetOutGain;
         outL[i] = mWorkBufL[i] * mOutputGainSmooth;
         outR[i] = mWorkBufR[i] * mOutputGainSmooth;
-        float peak = std::abs(outL[i]);
+        float peak = std::max(std::abs(outL[i]), std::abs(outR[i]));
         if (peak > outPeak) outPeak = peak;
     }
     mOutputPeak.store(outPeak);

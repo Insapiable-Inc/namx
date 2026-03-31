@@ -22,31 +22,29 @@ public:
     /// Unload the current IR (bypass mode)
     void unload();
 
-    bool isLoaded() const { return mLoaded; }
+    bool isLoaded() const { return mLoaded.load(std::memory_order_acquire); }
     std::string getFilePath() const { return mFilePath; }
 
-    /// Process a single sample (call in audio thread, not real-time safe if load() is
-    /// called concurrently -- use double-buffered swap below).
-    float processSample(float in);
-
-    /// Process a block of samples in-place. Uses the active kernel.
+    /// Process a block of samples in-place (mono). Uses channel 0 convolution state.
     void processBlock(float* samples, int numFrames);
+
+    /// Process a stereo block in-place. Uses independent convolution state per channel.
+    void processBlockStereo(float* L, float* R, int numFrames);
 
     /// Reset convolution state
     void reset();
 
 private:
-    bool mLoaded = false;
-    std::string mFilePath;
+    std::atomic<bool> mLoaded{false};
+    std::string       mFilePath;
 
-    // Double-buffered kernels: audio thread reads from mActive, GUI thread writes mPending
+    // Double-buffered kernels: audio thread reads from active, GUI thread writes inactive
     struct Kernel
     {
         std::vector<float> ir;
-        std::vector<float> buffer; // circular delay line
-
-        int writePos = 0;
-        int irLen    = 0;
+        std::vector<float> buffers[2]; // independent delay line per stereo channel
+        int                writePos[2] = {0, 0};
+        int                irLen       = 0;
     };
 
     Kernel mKernelA;
@@ -58,4 +56,7 @@ private:
 
     Kernel& activeKernel()   { return mActiveIndex.load() == 0 ? mKernelA : mKernelB; }
     Kernel& inactiveKernel() { return mActiveIndex.load() == 0 ? mKernelB : mKernelA; }
+
+    // Inner per-sample convolution for one channel
+    static float processChannel(Kernel& k, int ch, float in);
 };
