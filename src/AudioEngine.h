@@ -81,6 +81,8 @@ public:
     float trebleGain() const { return mTrebleDB.load(); }
 
     // ---- Effect enable flags ----
+    void setNAMEnabled(bool en)      { mNAMEnabled.store(en);      }
+    bool namEnabled()      const { return mNAMEnabled.load();      }
     void setIREnabled(bool en)       { mIREnabled.store(en);       }
     void setTunerEnabled(bool en)    { mTunerEnabled.store(en);    }
     void setTunerMute(bool en)       { mTunerMute.store(en);       }
@@ -176,6 +178,7 @@ private:
     IRLoader            mIRLoader;
 
     // Effect enable atomics
+    std::atomic<bool> mNAMEnabled    {true};
     std::atomic<bool> mIREnabled     {true};
     std::atomic<bool> mTunerEnabled  {false};
     std::atomic<bool> mTunerMute     {false};

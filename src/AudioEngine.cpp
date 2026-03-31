@@ -300,7 +300,7 @@ int AudioEngine::processAudio(jack_nframes_t nframes)
     // 3. NAM DSP (mono → writes to outL temporarily)
     // ----------------------------------------------------------------
     nam::DSP* model = activeModel();
-    if (mModelLoaded.load() && model)
+    if (mModelLoaded.load() && model && mNAMEnabled.load())
     {
         NAM_SAMPLE* inPtr  = mWorkBuf.data();
         NAM_SAMPLE* outPtr = outL;         // borrow outL as scratch

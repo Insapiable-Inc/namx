@@ -38,6 +38,9 @@ private slots:
     void onMidChanged(double dB);
     void onTrebleChanged(double dB);
 
+    // NAM
+    void onNAMEnabledToggled(bool en);
+
     // IR
     void onIREnabledToggled(bool enabled);
 
@@ -221,6 +224,9 @@ private:
     KnobWidget*   mKnobRevDamping   = nullptr;
     KnobWidget*   mKnobRevWidth     = nullptr;
     KnobWidget*   mKnobRevMix       = nullptr;
+
+    // NAM
+    ToggleSwitch* mSwNAMEnable = nullptr;
 
     // IR
     ToggleSwitch* mSwIREnable = nullptr;

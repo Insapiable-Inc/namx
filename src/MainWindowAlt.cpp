@@ -27,15 +27,17 @@
 // Helpers
 // ---------------------------------------------------------------------------
 
-static QProgressBar* makeVUBar()
+static QProgressBar* makeVUBarVertical()
 {
     auto* b = new QProgressBar;
+    b->setOrientation(Qt::Vertical);
     b->setRange(0, 100);
     b->setValue(0);
     b->setTextVisible(false);
-    b->setFixedHeight(10);
+    b->setFixedWidth(14);
+    b->setMinimumHeight(70);
     b->setStyleSheet(
-        "QProgressBar::chunk { background: qlineargradient(x1:0,y1:0,x2:1,y2:0,"
+        "QProgressBar::chunk { background: qlineargradient(x1:0,y1:1,x2:0,y2:0,"
         "stop:0 #2a9d2a, stop:0.7 #d4a017, stop:1 #cc2222); }");
     return b;
 }
@@ -47,7 +49,7 @@ MainWindowAlt::MainWindowAlt(QWidget* parent)
     , mEngine(std::make_unique<AudioEngine>())
 {
     setWindowTitle("NAM Player – Alt Layout");
-    setMinimumSize(900, 420);
+    setMinimumSize(1400, 500);
 
     setupUI();
     setupAudio();
@@ -78,6 +80,7 @@ QWidget* MainWindowAlt::makeEffectColumn(const QString& title,
 {
     auto* col = new QGroupBox(title);
     col->setAlignment(Qt::AlignHCenter);
+    col->setMinimumWidth(90);
     auto* lay = new QVBoxLayout(col);
     lay->setContentsMargins(4, 6, 4, 4);
     lay->setSpacing(2);
@@ -134,37 +137,41 @@ void MainWindowAlt::setupUI()
         rootLayout->addLayout(row);
     }
 
-    // ---- VU meters ----
+    // ---- NAM + IR file row (above the strip) ----
     {
-        auto* r = new QHBoxLayout;
-        r->addWidget(new QLabel("In:"));
-        mMeterIn = makeVUBar();
-        r->addWidget(mMeterIn, 1);
-        r->addSpacing(12);
-        r->addWidget(new QLabel("Out:"));
-        mMeterOut = makeVUBar();
-        r->addWidget(mMeterOut, 1);
-        rootLayout->addLayout(r);
-    }
+        auto* row = new QHBoxLayout;
 
-    // ---- NAM file row (above the strip) ----
-    {
-        auto* grp = new QGroupBox("NAM");
-        auto* r   = new QHBoxLayout(grp);
-        r->setContentsMargins(6, 3, 6, 3);
-
-        mBtnLoadNAM   = new QPushButton("Load NAM…");
+        // NAM sub-box
+        auto* namBox = new QGroupBox("NAM");
+        auto* namLay = new QHBoxLayout(namBox);
+        namLay->setContentsMargins(4, 4, 4, 4);
+        mBtnLoadNAM   = new QPushButton("Load…");
         mBtnUnloadNAM = new QPushButton("Unload");
         mBtnUnloadNAM->setEnabled(false);
         mLblNAMStatus = new QLabel("No model loaded");
-
         connect(mBtnLoadNAM,   &QPushButton::clicked, this, &MainWindowAlt::onLoadNAM);
         connect(mBtnUnloadNAM, &QPushButton::clicked, this, &MainWindowAlt::onUnloadNAM);
+        namLay->addWidget(mBtnLoadNAM);
+        namLay->addWidget(mBtnUnloadNAM);
+        namLay->addWidget(mLblNAMStatus, 1);
 
-        r->addWidget(mBtnLoadNAM);
-        r->addWidget(mBtnUnloadNAM);
-        r->addWidget(mLblNAMStatus, 1);
-        rootLayout->addWidget(grp);
+        // IR sub-box
+        auto* irBox  = new QGroupBox("IR (Cab)");
+        auto* irLay  = new QHBoxLayout(irBox);
+        irLay->setContentsMargins(4, 4, 4, 4);
+        mBtnLoadIR   = new QPushButton("Load…");
+        mBtnUnloadIR = new QPushButton("Unload");
+        mBtnUnloadIR->setEnabled(false);
+        mLblIRStatus = new QLabel("No IR loaded");
+        connect(mBtnLoadIR,   &QPushButton::clicked, this, &MainWindowAlt::onLoadIR);
+        connect(mBtnUnloadIR, &QPushButton::clicked, this, &MainWindowAlt::onUnloadIR);
+        irLay->addWidget(mBtnLoadIR);
+        irLay->addWidget(mBtnUnloadIR);
+        irLay->addWidget(mLblIRStatus, 1);
+
+        row->addWidget(namBox, 1);
+        row->addWidget(irBox, 1);
+        rootLayout->addLayout(row);
     }
 
     // ---- Horizontally scrollable effect strip ----
@@ -191,11 +198,14 @@ void MainWindowAlt::setupUI()
         using namespace NAMConstants;
         auto* col = new QGroupBox("Input");
         col->setAlignment(Qt::AlignHCenter);
+        col->setMinimumWidth(90);
         auto* lay = new QVBoxLayout(col);
         lay->setContentsMargins(4, 6, 4, 4);
         mKnobInputGain = new KnobWidget("Gain", kGainMin, kGainMax, kGainDefault, "dB");
         connect(mKnobInputGain, &KnobWidget::valueChanged, this, &MainWindowAlt::onInputGainChanged);
+        mMeterIn = makeVUBarVertical();
         lay->addWidget(mKnobInputGain);
+        lay->addWidget(mMeterIn, 0, Qt::AlignHCenter);
         lay->addStretch();
         stripLay->addWidget(col);
     }
@@ -206,6 +216,7 @@ void MainWindowAlt::setupUI()
     {
         auto* col = new QGroupBox("Tuner");
         col->setAlignment(Qt::AlignHCenter);
+        col->setMinimumWidth(90);
         auto* lay = new QVBoxLayout(col);
         lay->setContentsMargins(4, 6, 4, 4);
         lay->setSpacing(3);
@@ -229,10 +240,12 @@ void MainWindowAlt::setupUI()
         mLblCents->setAlignment(Qt::AlignCenter);
 
         mTunerBar = new QProgressBar;
+        mTunerBar->setOrientation(Qt::Vertical);
         mTunerBar->setRange(0, 100);
         mTunerBar->setValue(50);
         mTunerBar->setTextVisible(false);
-        mTunerBar->setFixedHeight(8);
+        mTunerBar->setFixedWidth(14);
+        mTunerBar->setMinimumHeight(60);
         mTunerBar->setStyleSheet("QProgressBar::chunk { background: #4caf50; }");
 
         mSwTunerMute = new ToggleSwitch;
@@ -363,11 +376,31 @@ void MainWindowAlt::setupUI()
 
     addDivider();
 
+    // ---- NAM toggle column ----
+    {
+        auto* col = new QGroupBox("NAM");
+        col->setAlignment(Qt::AlignHCenter);
+        col->setMinimumWidth(90);
+        auto* lay = new QVBoxLayout(col);
+        lay->setContentsMargins(4, 6, 4, 4);
+        lay->setSpacing(4);
+
+        mSwNAMEnable = new ToggleSwitch;
+        mSwNAMEnable->setCheckable(true);
+        mSwNAMEnable->setChecked(true);
+        lay->addWidget(mSwNAMEnable, 0, Qt::AlignHCenter);
+        lay->addStretch();
+
+        connect(mSwNAMEnable, &ToggleSwitch::toggled, this, &MainWindowAlt::onNAMEnabledToggled);
+        stripLay->addWidget(col);
+    }
+
     // ---- EQ column ----
     {
         using namespace NAMConstants;
         auto* col = new QGroupBox("EQ");
         col->setAlignment(Qt::AlignHCenter);
+        col->setMinimumWidth(90);
         auto* lay = new QVBoxLayout(col);
         lay->setContentsMargins(4, 6, 4, 4);
         lay->setSpacing(2);
@@ -456,10 +489,11 @@ void MainWindowAlt::setupUI()
         stripLay->addWidget(col);
     }
 
-    // ---- IR column ----
+    // ---- IR toggle column (in strip; load/unload is in the top file row) ----
     {
-        auto* col = new QGroupBox("IR (Cab)");
+        auto* col = new QGroupBox("IR");
         col->setAlignment(Qt::AlignHCenter);
+        col->setMinimumWidth(90);
         auto* lay = new QVBoxLayout(col);
         lay->setContentsMargins(4, 6, 4, 4);
         lay->setSpacing(4);
@@ -468,22 +502,9 @@ void MainWindowAlt::setupUI()
         mSwIREnable->setCheckable(true);
         mSwIREnable->setChecked(true);
         lay->addWidget(mSwIREnable, 0, Qt::AlignHCenter);
-
-        mBtnLoadIR   = new QPushButton("Load IR…");
-        mBtnUnloadIR = new QPushButton("Unload");
-        mBtnUnloadIR->setEnabled(false);
-        mLblIRStatus = new QLabel("No IR loaded");
-        mLblIRStatus->setWordWrap(true);
-        mLblIRStatus->setAlignment(Qt::AlignHCenter);
-
-        connect(mSwIREnable,  &ToggleSwitch::toggled, this, &MainWindowAlt::onIREnabledToggled);
-        connect(mBtnLoadIR,   &QPushButton::clicked,  this, &MainWindowAlt::onLoadIR);
-        connect(mBtnUnloadIR, &QPushButton::clicked,  this, &MainWindowAlt::onUnloadIR);
-
-        lay->addWidget(mBtnLoadIR);
-        lay->addWidget(mBtnUnloadIR);
-        lay->addWidget(mLblIRStatus);
         lay->addStretch();
+
+        connect(mSwIREnable, &ToggleSwitch::toggled, this, &MainWindowAlt::onIREnabledToggled);
         stripLay->addWidget(col);
     }
 
@@ -494,11 +515,14 @@ void MainWindowAlt::setupUI()
         using namespace NAMConstants;
         auto* col = new QGroupBox("Output");
         col->setAlignment(Qt::AlignHCenter);
+        col->setMinimumWidth(90);
         auto* lay = new QVBoxLayout(col);
         lay->setContentsMargins(4, 6, 4, 4);
         mKnobOutputGain = new KnobWidget("Gain", kGainMin, kGainMax, kGainDefault, "dB");
         connect(mKnobOutputGain, &KnobWidget::valueChanged, this, &MainWindowAlt::onOutputGainChanged);
+        mMeterOut = makeVUBarVertical();
         lay->addWidget(mKnobOutputGain);
+        lay->addWidget(mMeterOut, 0, Qt::AlignHCenter);
         lay->addStretch();
         stripLay->addWidget(col);
     }
@@ -579,6 +603,7 @@ void MainWindowAlt::onOutputGainChanged(double dB) { mEngine->setOutputGain(stat
 void MainWindowAlt::onLowChanged(double dB)        { mEngine->setLowGain   (static_cast<float>(dB)); }
 void MainWindowAlt::onMidChanged(double dB)        { mEngine->setMidGain   (static_cast<float>(dB)); }
 void MainWindowAlt::onTrebleChanged(double dB)     { mEngine->setTrebleGain(static_cast<float>(dB)); }
+void MainWindowAlt::onNAMEnabledToggled(bool en)   { mEngine->setNAMEnabled(en); }
 void MainWindowAlt::onIREnabledToggled(bool en)    { mEngine->setIREnabled(en); }
 
 // ---------------------------------------------------------------------------
