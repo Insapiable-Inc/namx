@@ -209,15 +209,15 @@ void AudioEngine::processPreNam(int id, float* buf, int n)
                 mPitch.processBlock(buf, n);
             break;
         case EffectId::Chorus1:
-            if (mChorus1Enabled.load())
+            if (mChorus1Enabled.load() && !mChorus1Stereo.load())
                 mChorus1.processBlock(buf, n);
             break;
         case EffectId::Flanger:
-            if (mFlangerEnabled.load())
+            if (mFlangerEnabled.load() && !mFlangerStereo.load())
                 mFlanger.processBlock(buf, n);
             break;
         case EffectId::Phaser:
-            if (mPhaserEnabled.load())
+            if (mPhaserEnabled.load() && !mPhaserStereo.load())
                 mPhaser.processBlock(buf, n);
             break;
         default: break;
@@ -237,8 +237,14 @@ void AudioEngine::processPostNam(int id, float* L, float* R, int n)
                 mTremolo.processBlockStereo(L, R, n);
             break;
         case EffectId::Delay:
-            if (mDelayEnabled.load())
-                mDelay.processBlockStereo(L, R, n);
+            if (mDelayEnabled.load()) {
+                if (mDelayStereo.load())
+                    mDelay.processBlockStereo(L, R, n);
+                else {
+                    mDelay.processBlock(L, n);
+                    std::copy(L, L + n, R);
+                }
+            }
             break;
         case EffectId::Reverb:
             if (mReverbEnabled.load())
@@ -314,7 +320,7 @@ int AudioEngine::processAudio(jack_nframes_t nframes)
     // ----------------------------------------------------------------
     // 4. 3-band EQ (mono, try_lock)
     // ----------------------------------------------------------------
-    if (mEQMutex.try_lock())
+    if (mEQEnabled.load() && mEQMutex.try_lock())
     {
         for (int i = 0; i < n; ++i)
             mWorkBuf[i] = mEQ.processSample(mWorkBuf[i]);
@@ -326,6 +332,16 @@ int AudioEngine::processAudio(jack_nframes_t nframes)
     // ----------------------------------------------------------------
     std::copy(mWorkBuf.begin(), mWorkBuf.begin() + n, mWorkBufL.begin());
     std::copy(mWorkBuf.begin(), mWorkBuf.begin() + n, mWorkBufR.begin());
+
+    // ----------------------------------------------------------------
+    // 5.5. Pre-NAM effects in stereo mode (applied after L/R split)
+    // ----------------------------------------------------------------
+    if (mChorus1Enabled.load() && mChorus1Stereo.load())
+        mChorus1.processBlockStereo(mWorkBufL.data(), mWorkBufR.data(), n);
+    if (mFlangerEnabled.load() && mFlangerStereo.load())
+        mFlanger.processBlockStereo(mWorkBufL.data(), mWorkBufR.data(), n);
+    if (mPhaserEnabled.load() && mPhaserStereo.load())
+        mPhaser.processBlockStereo(mWorkBufL.data(), mWorkBufR.data(), n);
 
     // ----------------------------------------------------------------
     // 6. Post-NAM effects (dynamic order)

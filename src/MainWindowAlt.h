@@ -41,6 +41,9 @@ private slots:
     // NAM
     void onNAMEnabledToggled(bool en);
 
+    // EQ
+    void onEQEnabledToggled(bool en);
+
     // IR
     void onIREnabledToggled(bool enabled);
 
@@ -69,12 +72,14 @@ private slots:
 
     // Chorus 1
     void onChorus1EnabledToggled(bool en);
+    void onChorus1StereoToggled(bool en);
     void onChorus1RateChanged(double v);
     void onChorus1DepthChanged(double v);
     void onChorus1MixChanged(double v);
 
     // Flanger
     void onFlangerEnabledToggled(bool en);
+    void onFlangerStereoToggled(bool en);
     void onFlangerRateChanged(double v);
     void onFlangerDepthChanged(double v);
     void onFlangerFeedbackChanged(double v);
@@ -82,6 +87,7 @@ private slots:
 
     // Phaser
     void onPhaserEnabledToggled(bool en);
+    void onPhaserStereoToggled(bool en);
     void onPhaserRateChanged(double v);
     void onPhaserDepthChanged(double v);
     void onPhaserFeedbackChanged(double v);
@@ -100,6 +106,7 @@ private slots:
 
     // Delay
     void onDelayEnabledToggled(bool en);
+    void onDelayStereoToggled(bool en);
     void onDelayTimeChanged(double v);
     void onDelayFeedbackChanged(double v);
     void onDelayMixChanged(double v);
@@ -125,9 +132,11 @@ private:
     void updateStatusLabels();
 
     /// Build a vertical effect column: enable toggle, title, then knobs as rows.
+    /// If stereoToggleOut is non-null a "Stereo" sub-toggle is inserted below the enable toggle.
     QWidget* makeEffectColumn(const QString& title,
                               ToggleSwitch*& toggleOut,
-                              const std::initializer_list<KnobWidget*>& knobs);
+                              const std::initializer_list<KnobWidget*>& knobs,
+                              ToggleSwitch** stereoToggleOut = nullptr);
 
     std::unique_ptr<AudioEngine> mEngine;
 
@@ -154,6 +163,7 @@ private:
     KnobWidget* mKnobOutputGain = nullptr;
 
     // EQ
+    ToggleSwitch* mSwEQEnable = nullptr;
     KnobWidget* mKnobLow    = nullptr;
     KnobWidget* mKnobMid    = nullptr;
     KnobWidget* mKnobTreble = nullptr;
@@ -182,13 +192,15 @@ private:
     KnobWidget*   mKnobPitchMix     = nullptr;
 
     // Chorus 1
-    ToggleSwitch* mSwChorus1Enable = nullptr;
+    ToggleSwitch* mSwChorus1Enable  = nullptr;
+    ToggleSwitch* mSwChorus1Stereo  = nullptr;
     KnobWidget*   mKnobCh1Rate     = nullptr;
     KnobWidget*   mKnobCh1Depth    = nullptr;
     KnobWidget*   mKnobCh1Mix      = nullptr;
 
     // Flanger
     ToggleSwitch* mSwFlangerEnable  = nullptr;
+    ToggleSwitch* mSwFlangerStereo  = nullptr;
     KnobWidget*   mKnobFlRate       = nullptr;
     KnobWidget*   mKnobFlDepth      = nullptr;
     KnobWidget*   mKnobFlFeedback   = nullptr;
@@ -196,6 +208,7 @@ private:
 
     // Phaser
     ToggleSwitch* mSwPhaserEnable   = nullptr;
+    ToggleSwitch* mSwPhaserStereo   = nullptr;
     KnobWidget*   mKnobPhRate       = nullptr;
     KnobWidget*   mKnobPhDepth      = nullptr;
     KnobWidget*   mKnobPhFeedback   = nullptr;
@@ -214,6 +227,7 @@ private:
 
     // Delay
     ToggleSwitch* mSwDelayEnable    = nullptr;
+    ToggleSwitch* mSwDelayStereo    = nullptr;
     KnobWidget*   mKnobDelTime      = nullptr;
     KnobWidget*   mKnobDelFeedback  = nullptr;
     KnobWidget*   mKnobDelMix       = nullptr;

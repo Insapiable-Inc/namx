@@ -1,6 +1,5 @@
 #include <QApplication>
 #include <QStyleFactory>
-#include "MainWindow.h"
 #include "MainWindowAlt.h"
 
 int main(int argc, char* argv[])
@@ -16,15 +15,7 @@ int main(int argc, char* argv[])
     else
         app.setStyle("Breeze");
 
-    // Pass --alt to use the column-based alternative layout.
-    const QStringList args = QCoreApplication::arguments();
-    if (args.contains("--alt")) {
-        MainWindowAlt w;
-        w.show();
-        return app.exec();
-    }
-
-    MainWindow w;
+    MainWindowAlt w;
     w.show();
     return app.exec();
 }

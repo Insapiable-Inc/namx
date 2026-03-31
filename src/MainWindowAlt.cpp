@@ -76,7 +76,8 @@ MainWindowAlt::~MainWindowAlt()
 
 QWidget* MainWindowAlt::makeEffectColumn(const QString& title,
                                           ToggleSwitch*& toggleOut,
-                                          const std::initializer_list<KnobWidget*>& knobs)
+                                          const std::initializer_list<KnobWidget*>& knobs,
+                                          ToggleSwitch** stereoToggleOut)
 {
     auto* col = new QGroupBox(title);
     col->setAlignment(Qt::AlignHCenter);
@@ -89,6 +90,17 @@ QWidget* MainWindowAlt::makeEffectColumn(const QString& title,
     toggleOut->setCheckable(true);
     toggleOut->setChecked(false);
     lay->addWidget(toggleOut, 0, Qt::AlignHCenter);
+
+    if (stereoToggleOut) {
+        auto* stereoSwitch = new ToggleSwitch;
+        stereoSwitch->setCheckable(true);
+        stereoSwitch->setChecked(false);
+        auto* stereoLabel = new QLabel("Stereo");
+        stereoLabel->setAlignment(Qt::AlignHCenter);
+        lay->addWidget(stereoSwitch, 0, Qt::AlignHCenter);
+        lay->addWidget(stereoLabel);
+        *stereoToggleOut = stereoSwitch;
+    }
 
     for (auto* k : knobs)
         lay->addWidget(k);
@@ -131,9 +143,16 @@ void MainWindowAlt::setupUI()
 
         mLblJACKStatus = new QLabel("JACK: connecting…");
 
+        auto* btnSavePreset = new QPushButton("Save Preset…");
+        auto* btnLoadPreset = new QPushButton("Load Preset…");
+        connect(btnSavePreset, &QPushButton::clicked, this, &MainWindowAlt::onSavePreset);
+        connect(btnLoadPreset, &QPushButton::clicked, this, &MainWindowAlt::onLoadPreset);
+
         row->addWidget(title);
         row->addWidget(mLblJACKStatus);
         row->addStretch();
+        row->addWidget(btnSavePreset);
+        row->addWidget(btnLoadPreset);
         rootLayout->addLayout(row);
     }
 
@@ -256,7 +275,7 @@ void MainWindowAlt::setupUI()
 
         lay->addWidget(mLblNote);
         lay->addWidget(mLblCents);
-        lay->addWidget(mTunerBar);
+        lay->addWidget(mTunerBar, 0, Qt::AlignHCenter);
         lay->addWidget(mSwTunerMute, 0, Qt::AlignHCenter);
         lay->addWidget(muteLabel);
         lay->addStretch();
@@ -328,9 +347,10 @@ void MainWindowAlt::setupUI()
         mKnobCh1Mix   = new KnobWidget("Mix",   kChorusMixMin,   kChorusMixMax,   kChorusMixDefault,   "%");
 
         auto* col = makeEffectColumn("Chorus 1", mSwChorus1Enable,
-            {mKnobCh1Rate, mKnobCh1Depth, mKnobCh1Mix});
+            {mKnobCh1Rate, mKnobCh1Depth, mKnobCh1Mix}, &mSwChorus1Stereo);
 
-        connect(mSwChorus1Enable, &ToggleSwitch::toggled,    this, &MainWindowAlt::onChorus1EnabledToggled);
+        connect(mSwChorus1Enable,  &ToggleSwitch::toggled, this, &MainWindowAlt::onChorus1EnabledToggled);
+        connect(mSwChorus1Stereo,  &ToggleSwitch::toggled, this, &MainWindowAlt::onChorus1StereoToggled);
         connect(mKnobCh1Rate,     &KnobWidget::valueChanged, this, &MainWindowAlt::onChorus1RateChanged);
         connect(mKnobCh1Depth,    &KnobWidget::valueChanged, this, &MainWindowAlt::onChorus1DepthChanged);
         connect(mKnobCh1Mix,      &KnobWidget::valueChanged, this, &MainWindowAlt::onChorus1MixChanged);
@@ -346,9 +366,10 @@ void MainWindowAlt::setupUI()
         mKnobFlMix      = new KnobWidget("Mix",      kFlangerMixMin,      kFlangerMixMax,      kFlangerMixDefault,      "%");
 
         auto* col = makeEffectColumn("Flanger", mSwFlangerEnable,
-            {mKnobFlRate, mKnobFlDepth, mKnobFlFeedback, mKnobFlMix});
+            {mKnobFlRate, mKnobFlDepth, mKnobFlFeedback, mKnobFlMix}, &mSwFlangerStereo);
 
-        connect(mSwFlangerEnable, &ToggleSwitch::toggled,    this, &MainWindowAlt::onFlangerEnabledToggled);
+        connect(mSwFlangerEnable, &ToggleSwitch::toggled, this, &MainWindowAlt::onFlangerEnabledToggled);
+        connect(mSwFlangerStereo, &ToggleSwitch::toggled, this, &MainWindowAlt::onFlangerStereoToggled);
         connect(mKnobFlRate,      &KnobWidget::valueChanged, this, &MainWindowAlt::onFlangerRateChanged);
         connect(mKnobFlDepth,     &KnobWidget::valueChanged, this, &MainWindowAlt::onFlangerDepthChanged);
         connect(mKnobFlFeedback,  &KnobWidget::valueChanged, this, &MainWindowAlt::onFlangerFeedbackChanged);
@@ -365,9 +386,10 @@ void MainWindowAlt::setupUI()
         mKnobPhMix      = new KnobWidget("Mix",      kPhaserMixMin,      kPhaserMixMax,      kPhaserMixDefault,      "%");
 
         auto* col = makeEffectColumn("Phaser", mSwPhaserEnable,
-            {mKnobPhRate, mKnobPhDepth, mKnobPhFeedback, mKnobPhMix});
+            {mKnobPhRate, mKnobPhDepth, mKnobPhFeedback, mKnobPhMix}, &mSwPhaserStereo);
 
-        connect(mSwPhaserEnable, &ToggleSwitch::toggled,    this, &MainWindowAlt::onPhaserEnabledToggled);
+        connect(mSwPhaserEnable, &ToggleSwitch::toggled, this, &MainWindowAlt::onPhaserEnabledToggled);
+        connect(mSwPhaserStereo, &ToggleSwitch::toggled, this, &MainWindowAlt::onPhaserStereoToggled);
         connect(mKnobPhRate,     &KnobWidget::valueChanged, this, &MainWindowAlt::onPhaserRateChanged);
         connect(mKnobPhDepth,    &KnobWidget::valueChanged, this, &MainWindowAlt::onPhaserDepthChanged);
         connect(mKnobPhFeedback, &KnobWidget::valueChanged, this, &MainWindowAlt::onPhaserFeedbackChanged);
@@ -377,9 +399,9 @@ void MainWindowAlt::setupUI()
 
     addDivider();
 
-    // ---- NAM toggle column ----
+    // ---- Amp toggle column ----
     {
-        auto* col = new QGroupBox("NAM");
+        auto* col = new QGroupBox("Amp");
         col->setAlignment(Qt::AlignHCenter);
         col->setMinimumWidth(90);
         auto* lay = new QVBoxLayout(col);
@@ -405,6 +427,12 @@ void MainWindowAlt::setupUI()
         auto* lay = new QVBoxLayout(col);
         lay->setContentsMargins(4, 6, 4, 4);
         lay->setSpacing(2);
+
+        mSwEQEnable = new ToggleSwitch;
+        mSwEQEnable->setCheckable(true);
+        mSwEQEnable->setChecked(true);
+        lay->addWidget(mSwEQEnable, 0, Qt::AlignHCenter);
+        connect(mSwEQEnable, &ToggleSwitch::toggled, this, &MainWindowAlt::onEQEnabledToggled);
 
         mKnobLow    = new KnobWidget("Low",    kEQBandMin, kEQBandMax, kEQBandDefault, "dB");
         mKnobMid    = new KnobWidget("Mid",    kEQBandMin, kEQBandMax, kEQBandDefault, "dB");
@@ -462,9 +490,11 @@ void MainWindowAlt::setupUI()
         mKnobDelMix      = new KnobWidget("Mix",      kDelayMixMin,      kDelayMixMax,      kDelayMixDefault,      "%");
 
         auto* col = makeEffectColumn("Delay", mSwDelayEnable,
-            {mKnobDelTime, mKnobDelFeedback, mKnobDelMix});
+            {mKnobDelTime, mKnobDelFeedback, mKnobDelMix}, &mSwDelayStereo);
+        mSwDelayStereo->setChecked(true);  // ping-pong on by default
 
-        connect(mSwDelayEnable,   &ToggleSwitch::toggled,    this, &MainWindowAlt::onDelayEnabledToggled);
+        connect(mSwDelayEnable,  &ToggleSwitch::toggled, this, &MainWindowAlt::onDelayEnabledToggled);
+        connect(mSwDelayStereo,  &ToggleSwitch::toggled, this, &MainWindowAlt::onDelayStereoToggled);
         connect(mKnobDelTime,     &KnobWidget::valueChanged, this, &MainWindowAlt::onDelayTimeChanged);
         connect(mKnobDelFeedback, &KnobWidget::valueChanged, this, &MainWindowAlt::onDelayFeedbackChanged);
         connect(mKnobDelMix,      &KnobWidget::valueChanged, this, &MainWindowAlt::onDelayMixChanged);
@@ -605,7 +635,8 @@ void MainWindowAlt::onLowChanged(double dB)        { mEngine->setLowGain   (stat
 void MainWindowAlt::onMidChanged(double dB)        { mEngine->setMidGain   (static_cast<float>(dB)); }
 void MainWindowAlt::onTrebleChanged(double dB)     { mEngine->setTrebleGain(static_cast<float>(dB)); }
 void MainWindowAlt::onNAMEnabledToggled(bool en)   { mEngine->setNAMEnabled(en); }
-void MainWindowAlt::onIREnabledToggled(bool en)    { mEngine->setIREnabled(en); }
+void MainWindowAlt::onEQEnabledToggled(bool en)    { mEngine->setEQEnabled(en);  }
+void MainWindowAlt::onIREnabledToggled(bool en)    { mEngine->setIREnabled(en);  }
 
 // ---------------------------------------------------------------------------
 // Tuner slots
@@ -647,6 +678,7 @@ void MainWindowAlt::onPitchMixChanged(double v)      { mEngine->pitch().setMix  
 // ---------------------------------------------------------------------------
 
 void MainWindowAlt::onChorus1EnabledToggled(bool en) { mEngine->setChorus1Enabled(en); }
+void MainWindowAlt::onChorus1StereoToggled(bool en)  { mEngine->setChorus1Stereo(en);  }
 void MainWindowAlt::onChorus1RateChanged(double v)   { mEngine->chorus1().setRate (static_cast<float>(v)); }
 void MainWindowAlt::onChorus1DepthChanged(double v)  { mEngine->chorus1().setDepth(static_cast<float>(v)); }
 void MainWindowAlt::onChorus1MixChanged(double v)    { mEngine->chorus1().setMix  (static_cast<float>(v)); }
@@ -656,6 +688,7 @@ void MainWindowAlt::onChorus1MixChanged(double v)    { mEngine->chorus1().setMix
 // ---------------------------------------------------------------------------
 
 void MainWindowAlt::onFlangerEnabledToggled(bool en)   { mEngine->setFlangerEnabled(en); }
+void MainWindowAlt::onFlangerStereoToggled(bool en)    { mEngine->setFlangerStereo(en);  }
 void MainWindowAlt::onFlangerRateChanged(double v)     { mEngine->flanger().setRate    (static_cast<float>(v)); }
 void MainWindowAlt::onFlangerDepthChanged(double v)    { mEngine->flanger().setDepth   (static_cast<float>(v)); }
 void MainWindowAlt::onFlangerFeedbackChanged(double v) { mEngine->flanger().setFeedback(static_cast<float>(v)); }
@@ -666,6 +699,7 @@ void MainWindowAlt::onFlangerMixChanged(double v)      { mEngine->flanger().setM
 // ---------------------------------------------------------------------------
 
 void MainWindowAlt::onPhaserEnabledToggled(bool en)   { mEngine->setPhaserEnabled(en); }
+void MainWindowAlt::onPhaserStereoToggled(bool en)    { mEngine->setPhaserStereo(en);  }
 void MainWindowAlt::onPhaserRateChanged(double v)     { mEngine->phaser().setRate    (static_cast<float>(v)); }
 void MainWindowAlt::onPhaserDepthChanged(double v)    { mEngine->phaser().setDepth   (static_cast<float>(v)); }
 void MainWindowAlt::onPhaserFeedbackChanged(double v) { mEngine->phaser().setFeedback(static_cast<float>(v)); }
@@ -693,6 +727,7 @@ void MainWindowAlt::onTremoloDepthChanged(double v)  { mEngine->tremolo().setDep
 // ---------------------------------------------------------------------------
 
 void MainWindowAlt::onDelayEnabledToggled(bool en)   { mEngine->setDelayEnabled(en); }
+void MainWindowAlt::onDelayStereoToggled(bool en)    { mEngine->setDelayStereo(en);  }
 void MainWindowAlt::onDelayTimeChanged(double v)     { mEngine->delay().setTime    (static_cast<float>(v)); }
 void MainWindowAlt::onDelayFeedbackChanged(double v) { mEngine->delay().setFeedback(static_cast<float>(v)); }
 void MainWindowAlt::onDelayMixChanged(double v)      { mEngine->delay().setMix     (static_cast<float>(v)); }
@@ -800,9 +835,10 @@ void MainWindowAlt::onSavePreset()
     obj["outputGain"]   = mEngine->outputGain();
 
     QJsonObject eq;
-    eq["low"]    = mEngine->lowGain();
-    eq["mid"]    = mEngine->midGain();
-    eq["treble"] = mEngine->trebleGain();
+    eq["enabled"] = mEngine->eqEnabled();
+    eq["low"]     = mEngine->lowGain();
+    eq["mid"]     = mEngine->midGain();
+    eq["treble"]  = mEngine->trebleGain();
     obj["eq"] = eq;
 
     QJsonObject tuner;
@@ -834,6 +870,7 @@ void MainWindowAlt::onSavePreset()
 
     QJsonObject ch1;
     ch1["enabled"] = mEngine->chorus1Enabled();
+    ch1["stereo"]  = mEngine->chorus1Stereo();
     ch1["rate"]    = static_cast<double>(mEngine->chorus1().rate());
     ch1["depth"]   = static_cast<double>(mEngine->chorus1().depth());
     ch1["mix"]     = static_cast<double>(mEngine->chorus1().mix());
@@ -841,6 +878,7 @@ void MainWindowAlt::onSavePreset()
 
     QJsonObject fl;
     fl["enabled"]  = mEngine->flangerEnabled();
+    fl["stereo"]   = mEngine->flangerStereo();
     fl["rate"]     = static_cast<double>(mEngine->flanger().rate());
     fl["depth"]    = static_cast<double>(mEngine->flanger().depth());
     fl["feedback"] = static_cast<double>(mEngine->flanger().feedback());
@@ -849,6 +887,7 @@ void MainWindowAlt::onSavePreset()
 
     QJsonObject ph;
     ph["enabled"]  = mEngine->phaserEnabled();
+    ph["stereo"]   = mEngine->phaserStereo();
     ph["rate"]     = static_cast<double>(mEngine->phaser().rate());
     ph["depth"]    = static_cast<double>(mEngine->phaser().depth());
     ph["feedback"] = static_cast<double>(mEngine->phaser().feedback());
@@ -870,6 +909,7 @@ void MainWindowAlt::onSavePreset()
 
     QJsonObject del;
     del["enabled"]  = mEngine->delayEnabled();
+    del["stereo"]   = mEngine->delayStereo();
     del["time"]     = static_cast<double>(mEngine->delay().time());
     del["feedback"] = static_cast<double>(mEngine->delay().feedback());
     del["mix"]      = static_cast<double>(mEngine->delay().mix());
@@ -954,6 +994,7 @@ void MainWindowAlt::onLoadPreset()
 
     if (obj.contains("eq")) {
         auto eq = obj["eq"].toObject();
+        mSwEQEnable->setChecked(getB(eq, "enabled", true));
         mKnobLow   ->setValue(getD(eq, "low",    0.0));
         mKnobMid   ->setValue(getD(eq, "mid",    0.0));
         mKnobTreble->setValue(getD(eq, "treble", 0.0));
@@ -988,6 +1029,7 @@ void MainWindowAlt::onLoadPreset()
     if (obj.contains("chorus1")) {
         auto c = obj["chorus1"].toObject();
         mSwChorus1Enable->setChecked(getB(c, "enabled", false));
+        mSwChorus1Stereo->setChecked(getB(c, "stereo",  false));
         mKnobCh1Rate ->setValue(getD(c, "rate",  NAMConstants::kChorusRateDefault));
         mKnobCh1Depth->setValue(getD(c, "depth", NAMConstants::kChorusDepthDefault));
         mKnobCh1Mix  ->setValue(getD(c, "mix",   NAMConstants::kChorusMixDefault));
@@ -995,6 +1037,7 @@ void MainWindowAlt::onLoadPreset()
     if (obj.contains("flanger")) {
         auto fl = obj["flanger"].toObject();
         mSwFlangerEnable->setChecked(getB(fl, "enabled", false));
+        mSwFlangerStereo->setChecked(getB(fl, "stereo",  false));
         mKnobFlRate     ->setValue(getD(fl, "rate",     NAMConstants::kFlangerRateDefault));
         mKnobFlDepth    ->setValue(getD(fl, "depth",    NAMConstants::kFlangerDepthDefault));
         mKnobFlFeedback ->setValue(getD(fl, "feedback", NAMConstants::kFlangerFeedbackDefault));
@@ -1003,6 +1046,7 @@ void MainWindowAlt::onLoadPreset()
     if (obj.contains("phaser")) {
         auto p = obj["phaser"].toObject();
         mSwPhaserEnable ->setChecked(getB(p, "enabled", false));
+        mSwPhaserStereo ->setChecked(getB(p, "stereo",  false));
         mKnobPhRate     ->setValue(getD(p, "rate",     NAMConstants::kPhaserRateDefault));
         mKnobPhDepth    ->setValue(getD(p, "depth",    NAMConstants::kPhaserDepthDefault));
         mKnobPhFeedback ->setValue(getD(p, "feedback", NAMConstants::kPhaserFeedbackDefault));
@@ -1024,6 +1068,7 @@ void MainWindowAlt::onLoadPreset()
     if (obj.contains("delay")) {
         auto d = obj["delay"].toObject();
         mSwDelayEnable  ->setChecked(getB(d, "enabled",  false));
+        mSwDelayStereo  ->setChecked(getB(d, "stereo",   true));
         mKnobDelTime    ->setValue(getD(d, "time",     NAMConstants::kDelayTimeDefault));
         mKnobDelFeedback->setValue(getD(d, "feedback", NAMConstants::kDelayFeedbackDefault));
         mKnobDelMix     ->setValue(getD(d, "mix",      NAMConstants::kDelayMixDefault));

@@ -83,6 +83,8 @@ public:
     // ---- Effect enable flags ----
     void setNAMEnabled(bool en)      { mNAMEnabled.store(en);      }
     bool namEnabled()      const { return mNAMEnabled.load();      }
+    void setEQEnabled(bool en)       { mEQEnabled.store(en);       }
+    bool eqEnabled()       const { return mEQEnabled.load();       }
     void setIREnabled(bool en)       { mIREnabled.store(en);       }
     void setTunerEnabled(bool en)    { mTunerEnabled.store(en);    }
     void setTunerMute(bool en)       { mTunerMute.store(en);       }
@@ -90,11 +92,19 @@ public:
     void setCompEnabled(bool en)     { mCompEnabled.store(en);     }
     void setPitchEnabled(bool en)    { mPitchEnabled.store(en);    }
     void setChorus1Enabled(bool en)  { mChorus1Enabled.store(en);  }
+    void setChorus1Stereo(bool en)   { mChorus1Stereo.store(en);   }
+    bool chorus1Stereo()   const { return mChorus1Stereo.load();   }
     void setFlangerEnabled(bool en)  { mFlangerEnabled.store(en);  }
+    void setFlangerStereo(bool en)   { mFlangerStereo.store(en);   }
+    bool flangerStereo()   const { return mFlangerStereo.load();   }
     void setPhaserEnabled(bool en)   { mPhaserEnabled.store(en);   }
+    void setPhaserStereo(bool en)    { mPhaserStereo.store(en);    }
+    bool phaserStereo()    const { return mPhaserStereo.load();    }
     void setChorus2Enabled(bool en)  { mChorus2Enabled.store(en);  }
     void setTremoloEnabled(bool en)  { mTremoloEnabled.store(en);  }
     void setDelayEnabled(bool en)    { mDelayEnabled.store(en);    }
+    void setDelayStereo(bool en)     { mDelayStereo.store(en);     }
+    bool delayStereo()     const { return mDelayStereo.load();     }
     void setReverbEnabled(bool en)   { mReverbEnabled.store(en);   }
 
     bool irEnabled()      const { return mIREnabled.load();      }
@@ -179,6 +189,7 @@ private:
 
     // Effect enable atomics
     std::atomic<bool> mNAMEnabled    {true};
+    std::atomic<bool> mEQEnabled     {true};
     std::atomic<bool> mIREnabled     {true};
     std::atomic<bool> mTunerEnabled  {false};
     std::atomic<bool> mTunerMute     {false};
@@ -186,11 +197,15 @@ private:
     std::atomic<bool> mCompEnabled   {false};
     std::atomic<bool> mPitchEnabled  {false};
     std::atomic<bool> mChorus1Enabled{false};
+    std::atomic<bool> mChorus1Stereo {false};
     std::atomic<bool> mFlangerEnabled{false};
+    std::atomic<bool> mFlangerStereo {false};
     std::atomic<bool> mPhaserEnabled {false};
+    std::atomic<bool> mPhaserStereo  {false};
     std::atomic<bool> mChorus2Enabled{false};
     std::atomic<bool> mTremoloEnabled{false};
     std::atomic<bool> mDelayEnabled  {false};
+    std::atomic<bool> mDelayStereo   {true};
     std::atomic<bool> mReverbEnabled {false};
 
     // Gain
