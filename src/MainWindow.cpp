@@ -1,12 +1,12 @@
 #include "MainWindow.h"
 
 #include <QApplication>
-#include <QCheckBox>
 #include <QFileDialog>
 #include <QGroupBox>
 #include <QHBoxLayout>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QJsonArray>
 #include <QLabel>
 #include <QMessageBox>
 #include <QProgressBar>
@@ -14,6 +14,9 @@
 #include <QScrollArea>
 #include <QVBoxLayout>
 #include <QFile>
+#include <QFrame>
+
+#include <cmath>
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -33,6 +36,22 @@ static QProgressBar* makeVUBar()
     return b;
 }
 
+static QFrame* makeSectionDivider(const QString& text)
+{
+    auto* w = new QFrame;
+    auto* lay = new QHBoxLayout(w);
+    lay->setContentsMargins(0, 4, 0, 2);
+    lay->setSpacing(6);
+    auto* lbl = new QLabel(text);
+    lbl->setStyleSheet("font-size:7pt; font-weight:bold; color:#666; text-transform:uppercase;");
+    auto* line = new QFrame;
+    line->setFrameShape(QFrame::HLine);
+    line->setStyleSheet("color:#333;");
+    lay->addWidget(lbl);
+    lay->addWidget(line, 1);
+    return w;
+}
+
 // ---------------------------------------------------------------------------
 
 MainWindow::MainWindow(QWidget* parent)
@@ -40,7 +59,7 @@ MainWindow::MainWindow(QWidget* parent)
     , mEngine(std::make_unique<AudioEngine>())
 {
     setWindowTitle("NAM Player");
-    setMinimumSize(800, 560);
+    setMinimumSize(820, 600);
 
     setupUI();
     setupAudio();
@@ -62,31 +81,59 @@ MainWindow::~MainWindow()
 }
 
 // ---------------------------------------------------------------------------
-// Helper: build a standard effect group row
+// Helper: build an effect row with ToggleSwitch, label, knobs, up/down buttons
 // ---------------------------------------------------------------------------
 
-QGroupBox* MainWindow::makeEffectGroup(const QString& title, QCheckBox*& enableChk,
-                                        const std::initializer_list<KnobWidget*>& knobs,
-                                        QWidget* extraWidget)
+QWidget* MainWindow::makeEffectRow(int globalIndex,
+                                   const QString& title,
+                                   ToggleSwitch*& toggleOut,
+                                   const std::initializer_list<KnobWidget*>& knobs,
+                                   QWidget* extraWidget)
 {
-    auto* grp = new QGroupBox;
-    auto* row = new QHBoxLayout(grp);
-    row->setContentsMargins(6, 3, 6, 3);
-    row->setSpacing(4);
+    auto* row = new QWidget;
+    auto* lay = new QHBoxLayout(row);
+    lay->setContentsMargins(4, 2, 4, 2);
+    lay->setSpacing(4);
 
-    enableChk = new QCheckBox(title);
-    enableChk->setStyleSheet("font-size:8pt; font-weight:bold; color:#ccc;");
-    enableChk->setFixedWidth(110);
-    row->addWidget(enableChk);
+    // Up / Down reorder buttons
+    auto* btnUp   = new QPushButton("▲");
+    auto* btnDown = new QPushButton("▼");
+    btnUp  ->setFixedSize(18, 18);
+    btnDown->setFixedSize(18, 18);
+    btnUp  ->setStyleSheet("font-size:7pt; padding:0;");
+    btnDown->setStyleSheet("font-size:7pt; padding:0;");
+
+    auto* reorderCol = new QWidget;
+    auto* reorderLay = new QVBoxLayout(reorderCol);
+    reorderLay->setContentsMargins(0, 0, 0, 0);
+    reorderLay->setSpacing(1);
+    reorderLay->addWidget(btnUp);
+    reorderLay->addWidget(btnDown);
+    lay->addWidget(reorderCol);
+
+    // Capture index by value for the lambda
+    connect(btnUp,   &QPushButton::clicked, this, [this, globalIndex]{ onMoveUp(globalIndex);   });
+    connect(btnDown, &QPushButton::clicked, this, [this, globalIndex]{ onMoveDown(globalIndex); });
+
+    // Toggle switch + label
+    toggleOut = new ToggleSwitch;
+    toggleOut->setCheckable(true);
+    toggleOut->setChecked(false);
+    auto* lbl = new QLabel(title);
+    lbl->setStyleSheet("font-size:8pt; font-weight:bold; color:#ccc;");
+    lbl->setFixedWidth(90);
+
+    lay->addWidget(toggleOut);
+    lay->addWidget(lbl);
 
     if (extraWidget)
-        row->addWidget(extraWidget);
+        lay->addWidget(extraWidget);
 
     for (auto* k : knobs)
-        row->addWidget(k);
+        lay->addWidget(k);
 
-    row->addStretch();
-    return grp;
+    lay->addStretch();
+    return row;
 }
 
 // ---------------------------------------------------------------------------
@@ -105,8 +152,8 @@ void MainWindow::setupUI()
     {
         auto* row = new QHBoxLayout;
         auto* title = new QLabel(
-            "<b><span style='font-size:15pt;color:#dc7828;'>NAM</span>"
-            "<span style='font-size:15pt;'> Player</span></b>");
+            "<b><span style='font-size:15pt;'>NAM</span>"
+            "<span style='font-size:15pt; font-weight:normal;'> Player</span></b>");
         title->setTextFormat(Qt::RichText);
 
         mLblJACKStatus = new QLabel("JACK: connecting…");
@@ -127,7 +174,7 @@ void MainWindow::setupUI()
         rootLayout->addLayout(row);
     }
 
-    // ---- Model loading (top bar) ----
+    // ---- Model loading ----
     {
         auto* grp = new QGroupBox("Model");
         auto* r   = new QHBoxLayout(grp);
@@ -169,7 +216,7 @@ void MainWindow::setupUI()
 
     auto* chain       = new QWidget;
     auto* chainLayout = new QVBoxLayout(chain);
-    chainLayout->setSpacing(3);
+    chainLayout->setSpacing(2);
     chainLayout->setContentsMargins(0, 0, 0, 0);
 
     // --- Input gain ---
@@ -184,27 +231,57 @@ void MainWindow::setupUI()
         chainLayout->addWidget(grp);
     }
 
-    // --- Tuner ---
+    // --- Pre-NAM section ---
+    chainLayout->addWidget(makeSectionDivider("Pre-NAM  (mono)"));
+
+    auto* preGrp = new QGroupBox;
+    mPreChainLayout = new QVBoxLayout(preGrp);
+    mPreChainLayout->setContentsMargins(4, 4, 4, 4);
+    mPreChainLayout->setSpacing(2);
+
+    // Tuner (special: no reorder row — it's always at the top for monitoring)
     {
-        auto* grp = new QGroupBox;
-        auto* r   = new QHBoxLayout(grp);
-        r->setContentsMargins(6, 3, 6, 3);
-        r->setSpacing(8);
+        auto* row = new QWidget;
+        auto* lay = new QHBoxLayout(row);
+        lay->setContentsMargins(4, 2, 4, 2);
+        lay->setSpacing(8);
 
-        mChkTunerEnable = new QCheckBox("Tuner");
-        mChkTunerEnable->setStyleSheet("font-size:8pt; font-weight:bold; color:#ccc;");
-        mChkTunerEnable->setFixedWidth(80);
+        // placeholder reorder buttons (disabled for tuner — it's a monitor, not a tone effect)
+        auto* btnUp   = new QPushButton("▲");
+        auto* btnDown = new QPushButton("▼");
+        btnUp  ->setFixedSize(18, 18);
+        btnDown->setFixedSize(18, 18);
+        btnUp  ->setStyleSheet("font-size:7pt; padding:0;");
+        btnDown->setStyleSheet("font-size:7pt; padding:0;");
+        auto* reorderCol = new QWidget;
+        auto* reorderLay = new QVBoxLayout(reorderCol);
+        reorderLay->setContentsMargins(0, 0, 0, 0);
+        reorderLay->setSpacing(1);
+        reorderLay->addWidget(btnUp);
+        reorderLay->addWidget(btnDown);
+        lay->addWidget(reorderCol);
 
-        mChkTunerMute = new QCheckBox("Mute");
-        mChkTunerMute->setStyleSheet("font-size:8pt;");
+        int gi = static_cast<int>(mEffectRows.size());
+        connect(btnUp,   &QPushButton::clicked, this, [this, gi]{ onMoveUp(gi);   });
+        connect(btnDown, &QPushButton::clicked, this, [this, gi]{ onMoveDown(gi); });
+
+        mSwTunerEnable = new ToggleSwitch;
+        mSwTunerEnable->setCheckable(true);
+        auto* lbl = new QLabel("Tuner");
+        lbl->setStyleSheet("font-size:8pt; font-weight:bold; color:#ccc;");
+        lbl->setFixedWidth(90);
+
+        mSwTunerMute = new ToggleSwitch;
+        mSwTunerMute->setCheckable(true);
+        auto* muteLabel = new QLabel("Mute");
+        muteLabel->setStyleSheet("font-size:7pt; color:#aaa;");
 
         mLblNote = new QLabel("--");
-        mLblNote->setStyleSheet(
-            "font-size:18pt; font-weight:bold; color:#dc7828; min-width:56px;");
+        mLblNote->setStyleSheet("font-size:16pt; font-weight:bold; min-width:52px;");
         mLblNote->setAlignment(Qt::AlignCenter);
 
         mLblCents = new QLabel("±0¢");
-        mLblCents->setStyleSheet("font-size:9pt; color:#aaa; min-width:38px;");
+        mLblCents->setStyleSheet("font-size:9pt; color:#aaa; min-width:36px;");
         mLblCents->setAlignment(Qt::AlignCenter);
 
         mTunerBar = new QProgressBar;
@@ -216,112 +293,149 @@ void MainWindow::setupUI()
             "QProgressBar { border:1px solid #333; background:#222; border-radius:3px; }"
             "QProgressBar::chunk { background:#4caf50; border-radius:3px; }");
 
-        r->addWidget(mChkTunerEnable);
-        r->addWidget(mChkTunerMute);
-        r->addWidget(mLblNote);
-        r->addWidget(mLblCents);
-        r->addWidget(mTunerBar, 1);
+        lay->addWidget(mSwTunerEnable);
+        lay->addWidget(lbl);
+        lay->addWidget(mSwTunerMute);
+        lay->addWidget(muteLabel);
+        lay->addWidget(mLblNote);
+        lay->addWidget(mLblCents);
+        lay->addWidget(mTunerBar, 1);
 
-        connect(mChkTunerEnable, &QCheckBox::toggled, this, &MainWindow::onTunerEnabledToggled);
-        connect(mChkTunerMute,   &QCheckBox::toggled, this, &MainWindow::onTunerMuteToggled);
+        connect(mSwTunerEnable, &ToggleSwitch::toggled, this, &MainWindow::onTunerEnabledToggled);
+        connect(mSwTunerMute,   &ToggleSwitch::toggled, this, &MainWindow::onTunerMuteToggled);
 
-        chainLayout->addWidget(grp);
+        mEffectRows.push_back({row, EffectId::Tuner, false});
+        mPreChainLayout->addWidget(row);
     }
 
-    // --- Noise Gate ---
+    // Noise Gate
     {
-        mKnobGateThresh  = new KnobWidget("Thresh",  -80.0, -10.0,  -40.0, "dB");
-        mKnobGateAttack  = new KnobWidget("Attack",    0.1, 100.0,   10.0, "ms");
-        mKnobGateRelease = new KnobWidget("Release",  10.0, 2000.0, 100.0, "ms");
+        mKnobGateThresh  = new KnobWidget("Thresh",  -80.0,  -10.0,  -40.0, "dB");
+        mKnobGateAttack  = new KnobWidget("Attack",    0.1,  100.0,   10.0, "ms");
+        mKnobGateRelease = new KnobWidget("Release",  10.0, 2000.0,  100.0, "ms");
 
-        auto* grp = makeEffectGroup("Noise Gate", mChkGateEnable,
+        int gi = static_cast<int>(mEffectRows.size());
+        auto* row = makeEffectRow(gi, "Noise Gate", mSwGateEnable,
             {mKnobGateThresh, mKnobGateAttack, mKnobGateRelease});
 
-        connect(mChkGateEnable,   &QCheckBox::toggled,       this, &MainWindow::onGateEnabledToggled);
-        connect(mKnobGateThresh,  &KnobWidget::valueChanged, this, &MainWindow::onGateThresholdChanged);
-        connect(mKnobGateAttack,  &KnobWidget::valueChanged, this, &MainWindow::onGateAttackChanged);
-        connect(mKnobGateRelease, &KnobWidget::valueChanged, this, &MainWindow::onGateReleaseChanged);
-        chainLayout->addWidget(grp);
+        connect(mSwGateEnable,    &ToggleSwitch::toggled,      this, &MainWindow::onGateEnabledToggled);
+        connect(mKnobGateThresh,  &KnobWidget::valueChanged,   this, &MainWindow::onGateThresholdChanged);
+        connect(mKnobGateAttack,  &KnobWidget::valueChanged,   this, &MainWindow::onGateAttackChanged);
+        connect(mKnobGateRelease, &KnobWidget::valueChanged,   this, &MainWindow::onGateReleaseChanged);
+
+        mEffectRows.push_back({row, EffectId::Gate, false});
+        mPreChainLayout->addWidget(row);
     }
 
-    // --- Compressor ---
+    // Compressor
     {
-        mKnobCompThresh  = new KnobWidget("Thresh",  -60.0,   0.0, -20.0, "dB");
-        mKnobCompRatio   = new KnobWidget("Ratio",     1.0,  20.0,   4.0, ":1");
-        mKnobCompAttack  = new KnobWidget("Attack",    0.1, 100.0,  10.0, "ms");
+        mKnobCompThresh  = new KnobWidget("Thresh",  -60.0,    0.0, -20.0, "dB");
+        mKnobCompRatio   = new KnobWidget("Ratio",     1.0,   20.0,   4.0, ":1");
+        mKnobCompAttack  = new KnobWidget("Attack",    0.1,  100.0,  10.0, "ms");
         mKnobCompRelease = new KnobWidget("Release",  10.0, 2000.0, 100.0, "ms");
-        mKnobCompMakeup  = new KnobWidget("Makeup",    0.0,  30.0,   0.0, "dB");
+        mKnobCompMakeup  = new KnobWidget("Makeup",    0.0,   30.0,   0.0, "dB");
 
-        auto* grp = makeEffectGroup("Compressor", mChkCompEnable,
+        int gi = static_cast<int>(mEffectRows.size());
+        auto* row = makeEffectRow(gi, "Compressor", mSwCompEnable,
             {mKnobCompThresh, mKnobCompRatio, mKnobCompAttack, mKnobCompRelease, mKnobCompMakeup});
 
-        connect(mChkCompEnable,   &QCheckBox::toggled,       this, &MainWindow::onCompEnabledToggled);
+        connect(mSwCompEnable,    &ToggleSwitch::toggled,    this, &MainWindow::onCompEnabledToggled);
         connect(mKnobCompThresh,  &KnobWidget::valueChanged, this, &MainWindow::onCompThresholdChanged);
         connect(mKnobCompRatio,   &KnobWidget::valueChanged, this, &MainWindow::onCompRatioChanged);
         connect(mKnobCompAttack,  &KnobWidget::valueChanged, this, &MainWindow::onCompAttackChanged);
         connect(mKnobCompRelease, &KnobWidget::valueChanged, this, &MainWindow::onCompReleaseChanged);
         connect(mKnobCompMakeup,  &KnobWidget::valueChanged, this, &MainWindow::onCompMakeupChanged);
-        chainLayout->addWidget(grp);
+
+        mEffectRows.push_back({row, EffectId::Comp, false});
+        mPreChainLayout->addWidget(row);
     }
 
-    // --- Chorus 1 (pre-amp, stereo-capable mono) ---
+    // Pitch Shift
+    {
+        mKnobPitchSemi = new KnobWidget("Semitones", -12.0, 12.0, 0.0, "st");
+        mKnobPitchSemi->setIntegerDisplay(true);
+        mKnobPitchMix  = new KnobWidget("Mix", 0.0, 100.0, 100.0, "%");
+
+        int gi = static_cast<int>(mEffectRows.size());
+        auto* row = makeEffectRow(gi, "Pitch Shift", mSwPitchEnable,
+            {mKnobPitchSemi, mKnobPitchMix});
+
+        connect(mSwPitchEnable,   &ToggleSwitch::toggled,    this, &MainWindow::onPitchEnabledToggled);
+        connect(mKnobPitchSemi,   &KnobWidget::valueChanged, this, &MainWindow::onPitchSemitonesChanged);
+        connect(mKnobPitchMix,    &KnobWidget::valueChanged, this, &MainWindow::onPitchMixChanged);
+
+        mEffectRows.push_back({row, EffectId::PitchShift, false});
+        mPreChainLayout->addWidget(row);
+    }
+
+    // Chorus 1
     {
         mKnobCh1Rate  = new KnobWidget("Rate",  0.1, 5.0, 1.0, "Hz");
         mKnobCh1Depth = new KnobWidget("Depth", 0.0, 100.0, 50.0, "%");
         mKnobCh1Mix   = new KnobWidget("Mix",   0.0, 100.0, 50.0, "%");
 
-        auto* grp = makeEffectGroup("Chorus", mChkChorus1Enable,
+        int gi = static_cast<int>(mEffectRows.size());
+        auto* row = makeEffectRow(gi, "Chorus", mSwChorus1Enable,
             {mKnobCh1Rate, mKnobCh1Depth, mKnobCh1Mix});
 
-        connect(mChkChorus1Enable, &QCheckBox::toggled,       this, &MainWindow::onChorus1EnabledToggled);
-        connect(mKnobCh1Rate,      &KnobWidget::valueChanged, this, &MainWindow::onChorus1RateChanged);
-        connect(mKnobCh1Depth,     &KnobWidget::valueChanged, this, &MainWindow::onChorus1DepthChanged);
-        connect(mKnobCh1Mix,       &KnobWidget::valueChanged, this, &MainWindow::onChorus1MixChanged);
-        chainLayout->addWidget(grp);
+        connect(mSwChorus1Enable, &ToggleSwitch::toggled,    this, &MainWindow::onChorus1EnabledToggled);
+        connect(mKnobCh1Rate,     &KnobWidget::valueChanged, this, &MainWindow::onChorus1RateChanged);
+        connect(mKnobCh1Depth,    &KnobWidget::valueChanged, this, &MainWindow::onChorus1DepthChanged);
+        connect(mKnobCh1Mix,      &KnobWidget::valueChanged, this, &MainWindow::onChorus1MixChanged);
+
+        mEffectRows.push_back({row, EffectId::Chorus1, false});
+        mPreChainLayout->addWidget(row);
     }
 
-    // --- Flanger ---
+    // Flanger
     {
-        mKnobFlRate     = new KnobWidget("Rate",     0.1,   5.0,  0.5, "Hz");
+        mKnobFlRate     = new KnobWidget("Rate",     0.1,  5.0,  0.5, "Hz");
         mKnobFlDepth    = new KnobWidget("Depth",    0.0, 100.0, 50.0, "%");
         mKnobFlFeedback = new KnobWidget("Feedback", -99.0, 99.0, 0.0, "%");
         mKnobFlMix      = new KnobWidget("Mix",      0.0, 100.0, 50.0, "%");
 
-        auto* grp = makeEffectGroup("Flanger", mChkFlangerEnable,
+        int gi = static_cast<int>(mEffectRows.size());
+        auto* row = makeEffectRow(gi, "Flanger", mSwFlangerEnable,
             {mKnobFlRate, mKnobFlDepth, mKnobFlFeedback, mKnobFlMix});
 
-        connect(mChkFlangerEnable,   &QCheckBox::toggled,       this, &MainWindow::onFlangerEnabledToggled);
-        connect(mKnobFlRate,         &KnobWidget::valueChanged, this, &MainWindow::onFlangerRateChanged);
-        connect(mKnobFlDepth,        &KnobWidget::valueChanged, this, &MainWindow::onFlangerDepthChanged);
-        connect(mKnobFlFeedback,     &KnobWidget::valueChanged, this, &MainWindow::onFlangerFeedbackChanged);
-        connect(mKnobFlMix,          &KnobWidget::valueChanged, this, &MainWindow::onFlangerMixChanged);
-        chainLayout->addWidget(grp);
+        connect(mSwFlangerEnable, &ToggleSwitch::toggled,    this, &MainWindow::onFlangerEnabledToggled);
+        connect(mKnobFlRate,      &KnobWidget::valueChanged, this, &MainWindow::onFlangerRateChanged);
+        connect(mKnobFlDepth,     &KnobWidget::valueChanged, this, &MainWindow::onFlangerDepthChanged);
+        connect(mKnobFlFeedback,  &KnobWidget::valueChanged, this, &MainWindow::onFlangerFeedbackChanged);
+        connect(mKnobFlMix,       &KnobWidget::valueChanged, this, &MainWindow::onFlangerMixChanged);
+
+        mEffectRows.push_back({row, EffectId::Flanger, false});
+        mPreChainLayout->addWidget(row);
     }
 
-    // --- Phaser ---
+    // Phaser
     {
         mKnobPhRate     = new KnobWidget("Rate",     0.1,  5.0, 1.0, "Hz");
         mKnobPhDepth    = new KnobWidget("Depth",    0.0, 100.0, 50.0, "%");
         mKnobPhFeedback = new KnobWidget("Feedback", 0.0,  99.0, 50.0, "%");
         mKnobPhMix      = new KnobWidget("Mix",      0.0, 100.0, 50.0, "%");
 
-        auto* grp = makeEffectGroup("Phaser", mChkPhaserEnable,
+        int gi = static_cast<int>(mEffectRows.size());
+        auto* row = makeEffectRow(gi, "Phaser", mSwPhaserEnable,
             {mKnobPhRate, mKnobPhDepth, mKnobPhFeedback, mKnobPhMix});
 
-        connect(mChkPhaserEnable,    &QCheckBox::toggled,       this, &MainWindow::onPhaserEnabledToggled);
-        connect(mKnobPhRate,         &KnobWidget::valueChanged, this, &MainWindow::onPhaserRateChanged);
-        connect(mKnobPhDepth,        &KnobWidget::valueChanged, this, &MainWindow::onPhaserDepthChanged);
-        connect(mKnobPhFeedback,     &KnobWidget::valueChanged, this, &MainWindow::onPhaserFeedbackChanged);
-        connect(mKnobPhMix,          &KnobWidget::valueChanged, this, &MainWindow::onPhaserMixChanged);
-        chainLayout->addWidget(grp);
+        connect(mSwPhaserEnable, &ToggleSwitch::toggled,    this, &MainWindow::onPhaserEnabledToggled);
+        connect(mKnobPhRate,     &KnobWidget::valueChanged, this, &MainWindow::onPhaserRateChanged);
+        connect(mKnobPhDepth,    &KnobWidget::valueChanged, this, &MainWindow::onPhaserDepthChanged);
+        connect(mKnobPhFeedback, &KnobWidget::valueChanged, this, &MainWindow::onPhaserFeedbackChanged);
+        connect(mKnobPhMix,      &KnobWidget::valueChanged, this, &MainWindow::onPhaserMixChanged);
+
+        mEffectRows.push_back({row, EffectId::Phaser, false});
+        mPreChainLayout->addWidget(row);
     }
 
-    // --- NAM DSP (pass-through row, status shown here) ---
+    chainLayout->addWidget(preGrp);
+
+    // --- NAM DSP (fixed, not reorderable) ---
     {
         auto* grp = new QGroupBox("NAM DSP");
         auto* r   = new QHBoxLayout(grp);
         r->setContentsMargins(6, 3, 6, 3);
-        // mLblNAMStatus already created above; add it here too as info
         auto* info = new QLabel("Model:");
         info->setStyleSheet("color:#aaa; font-size:8pt;");
         r->addWidget(info);
@@ -329,7 +443,7 @@ void MainWindow::setupUI()
         chainLayout->addWidget(grp);
     }
 
-    // --- 3-band EQ ---
+    // --- 3-band EQ (fixed after NAM) ---
     {
         mKnobLow    = new KnobWidget("Low",    -12.0, 12.0, 0.0, "dB");
         mKnobMid    = new KnobWidget("Mid",    -12.0, 12.0, 0.0, "dB");
@@ -350,100 +464,144 @@ void MainWindow::setupUI()
         chainLayout->addWidget(grp);
     }
 
-    // --- Chorus 2 (post-amp, stereo) ---
+    // --- Post-NAM section ---
+    chainLayout->addWidget(makeSectionDivider("Post-NAM  (stereo)"));
+
+    auto* postGrp = new QGroupBox;
+    mPostChainLayout = new QVBoxLayout(postGrp);
+    mPostChainLayout->setContentsMargins(4, 4, 4, 4);
+    mPostChainLayout->setSpacing(2);
+
+    // Chorus 2
     {
         mKnobCh2Rate  = new KnobWidget("Rate",  0.1, 5.0, 1.0, "Hz");
         mKnobCh2Depth = new KnobWidget("Depth", 0.0, 100.0, 50.0, "%");
         mKnobCh2Mix   = new KnobWidget("Mix",   0.0, 100.0, 50.0, "%");
 
-        auto* grp = makeEffectGroup("Chorus ✦st", mChkChorus2Enable,
+        int gi = static_cast<int>(mEffectRows.size());
+        auto* row = makeEffectRow(gi, "Chorus", mSwChorus2Enable,
             {mKnobCh2Rate, mKnobCh2Depth, mKnobCh2Mix});
 
-        connect(mChkChorus2Enable, &QCheckBox::toggled,       this, &MainWindow::onChorus2EnabledToggled);
-        connect(mKnobCh2Rate,      &KnobWidget::valueChanged, this, &MainWindow::onChorus2RateChanged);
-        connect(mKnobCh2Depth,     &KnobWidget::valueChanged, this, &MainWindow::onChorus2DepthChanged);
-        connect(mKnobCh2Mix,       &KnobWidget::valueChanged, this, &MainWindow::onChorus2MixChanged);
-        chainLayout->addWidget(grp);
+        connect(mSwChorus2Enable, &ToggleSwitch::toggled,    this, &MainWindow::onChorus2EnabledToggled);
+        connect(mKnobCh2Rate,     &KnobWidget::valueChanged, this, &MainWindow::onChorus2RateChanged);
+        connect(mKnobCh2Depth,    &KnobWidget::valueChanged, this, &MainWindow::onChorus2DepthChanged);
+        connect(mKnobCh2Mix,      &KnobWidget::valueChanged, this, &MainWindow::onChorus2MixChanged);
+
+        mEffectRows.push_back({row, EffectId::Chorus2, true});
+        mPostChainLayout->addWidget(row);
     }
 
-    // --- Tremolo (stereo) ---
+    // Tremolo
     {
         mKnobTrRate  = new KnobWidget("Rate",  0.1, 20.0,  5.0, "Hz");
         mKnobTrDepth = new KnobWidget("Depth", 0.0, 100.0, 50.0, "%");
 
-        auto* grp = makeEffectGroup("Tremolo", mChkTremoloEnable,
+        int gi = static_cast<int>(mEffectRows.size());
+        auto* row = makeEffectRow(gi, "Tremolo", mSwTremoloEnable,
             {mKnobTrRate, mKnobTrDepth});
 
-        connect(mChkTremoloEnable, &QCheckBox::toggled,       this, &MainWindow::onTremoloEnabledToggled);
-        connect(mKnobTrRate,       &KnobWidget::valueChanged, this, &MainWindow::onTremoloRateChanged);
-        connect(mKnobTrDepth,      &KnobWidget::valueChanged, this, &MainWindow::onTremoloDepthChanged);
-        chainLayout->addWidget(grp);
+        connect(mSwTremoloEnable, &ToggleSwitch::toggled,    this, &MainWindow::onTremoloEnabledToggled);
+        connect(mKnobTrRate,      &KnobWidget::valueChanged, this, &MainWindow::onTremoloRateChanged);
+        connect(mKnobTrDepth,     &KnobWidget::valueChanged, this, &MainWindow::onTremoloDepthChanged);
+
+        mEffectRows.push_back({row, EffectId::Tremolo, true});
+        mPostChainLayout->addWidget(row);
     }
 
-    // --- Delay (stereo ping-pong) ---
+    // Delay
     {
-        mKnobDelTime     = new KnobWidget("Time",      0.0, 2000.0, 250.0, "ms");
-        mKnobDelFeedback = new KnobWidget("Feedback",  0.0,   99.0,  40.0, "%");
-        mKnobDelMix      = new KnobWidget("Mix",       0.0,  100.0,  30.0, "%");
+        mKnobDelTime     = new KnobWidget("Time",     0.0, 2000.0, 250.0, "ms");
+        mKnobDelFeedback = new KnobWidget("Feedback", 0.0,   99.0,  40.0, "%");
+        mKnobDelMix      = new KnobWidget("Mix",      0.0,  100.0,  30.0, "%");
 
-        auto* grp = makeEffectGroup("Delay", mChkDelayEnable,
+        int gi = static_cast<int>(mEffectRows.size());
+        auto* row = makeEffectRow(gi, "Delay", mSwDelayEnable,
             {mKnobDelTime, mKnobDelFeedback, mKnobDelMix});
 
-        connect(mChkDelayEnable,   &QCheckBox::toggled,       this, &MainWindow::onDelayEnabledToggled);
-        connect(mKnobDelTime,      &KnobWidget::valueChanged, this, &MainWindow::onDelayTimeChanged);
-        connect(mKnobDelFeedback,  &KnobWidget::valueChanged, this, &MainWindow::onDelayFeedbackChanged);
-        connect(mKnobDelMix,       &KnobWidget::valueChanged, this, &MainWindow::onDelayMixChanged);
-        chainLayout->addWidget(grp);
+        connect(mSwDelayEnable,   &ToggleSwitch::toggled,    this, &MainWindow::onDelayEnabledToggled);
+        connect(mKnobDelTime,     &KnobWidget::valueChanged, this, &MainWindow::onDelayTimeChanged);
+        connect(mKnobDelFeedback, &KnobWidget::valueChanged, this, &MainWindow::onDelayFeedbackChanged);
+        connect(mKnobDelMix,      &KnobWidget::valueChanged, this, &MainWindow::onDelayMixChanged);
+
+        mEffectRows.push_back({row, EffectId::Delay, true});
+        mPostChainLayout->addWidget(row);
     }
 
-    // --- Reverb (stereo) ---
+    // Reverb
     {
         mKnobRevRoom    = new KnobWidget("Room",    0.0, 100.0,  50.0, "%");
         mKnobRevDamping = new KnobWidget("Damping", 0.0, 100.0,  50.0, "%");
         mKnobRevWidth   = new KnobWidget("Width",   0.0, 100.0, 100.0, "%");
         mKnobRevMix     = new KnobWidget("Mix",     0.0, 100.0,  30.0, "%");
 
-        auto* grp = makeEffectGroup("Reverb", mChkReverbEnable,
+        int gi = static_cast<int>(mEffectRows.size());
+        auto* row = makeEffectRow(gi, "Reverb", mSwReverbEnable,
             {mKnobRevRoom, mKnobRevDamping, mKnobRevWidth, mKnobRevMix});
 
-        connect(mChkReverbEnable, &QCheckBox::toggled,       this, &MainWindow::onReverbEnabledToggled);
+        connect(mSwReverbEnable,  &ToggleSwitch::toggled,    this, &MainWindow::onReverbEnabledToggled);
         connect(mKnobRevRoom,     &KnobWidget::valueChanged, this, &MainWindow::onReverbRoomChanged);
         connect(mKnobRevDamping,  &KnobWidget::valueChanged, this, &MainWindow::onReverbDampingChanged);
         connect(mKnobRevWidth,    &KnobWidget::valueChanged, this, &MainWindow::onReverbWidthChanged);
         connect(mKnobRevMix,      &KnobWidget::valueChanged, this, &MainWindow::onReverbMixChanged);
-        chainLayout->addWidget(grp);
+
+        mEffectRows.push_back({row, EffectId::Reverb, true});
+        mPostChainLayout->addWidget(row);
     }
 
-    // --- IR (cab sim) ---
+    // IR
     {
-        auto* grp = new QGroupBox;
-        auto* r   = new QHBoxLayout(grp);
-        r->setContentsMargins(6, 3, 6, 3);
-        r->setSpacing(6);
+        auto* row = new QWidget;
+        auto* lay = new QHBoxLayout(row);
+        lay->setContentsMargins(4, 2, 4, 2);
+        lay->setSpacing(4);
 
-        mChkIREnable = new QCheckBox("IR (Cab Sim)");
-        mChkIREnable->setStyleSheet("font-size:8pt; font-weight:bold; color:#ccc;");
-        mChkIREnable->setChecked(true);
-        mChkIREnable->setFixedWidth(110);
+        // Placeholder reorder col (same structure)
+        auto* btnUp   = new QPushButton("▲");
+        auto* btnDown = new QPushButton("▼");
+        btnUp  ->setFixedSize(18, 18);
+        btnDown->setFixedSize(18, 18);
+        btnUp  ->setStyleSheet("font-size:7pt; padding:0;");
+        btnDown->setStyleSheet("font-size:7pt; padding:0;");
+        auto* reorderCol = new QWidget;
+        auto* reorderLay = new QVBoxLayout(reorderCol);
+        reorderLay->setContentsMargins(0, 0, 0, 0);
+        reorderLay->setSpacing(1);
+        reorderLay->addWidget(btnUp);
+        reorderLay->addWidget(btnDown);
+        lay->addWidget(reorderCol);
+
+        int gi = static_cast<int>(mEffectRows.size());
+        connect(btnUp,   &QPushButton::clicked, this, [this, gi]{ onMoveUp(gi);   });
+        connect(btnDown, &QPushButton::clicked, this, [this, gi]{ onMoveDown(gi); });
+
+        mSwIREnable = new ToggleSwitch;
+        mSwIREnable->setCheckable(true);
+        mSwIREnable->setChecked(true);
+        auto* lbl = new QLabel("IR (Cab Sim)");
+        lbl->setStyleSheet("font-size:8pt; font-weight:bold; color:#ccc;");
+        lbl->setFixedWidth(90);
 
         mBtnLoadIR   = new QPushButton("Load IR…");
         mBtnUnloadIR = new QPushButton("Unload");
         mBtnUnloadIR->setEnabled(false);
-
         mLblIRStatus = new QLabel("No IR loaded");
         mLblIRStatus->setStyleSheet("color:#888; font-style:italic;");
 
-        r->addWidget(mChkIREnable);
-        r->addWidget(mBtnLoadIR);
-        r->addWidget(mBtnUnloadIR);
-        r->addWidget(mLblIRStatus, 1);
+        lay->addWidget(mSwIREnable);
+        lay->addWidget(lbl);
+        lay->addWidget(mBtnLoadIR);
+        lay->addWidget(mBtnUnloadIR);
+        lay->addWidget(mLblIRStatus, 1);
 
-        connect(mChkIREnable, &QCheckBox::toggled, this, &MainWindow::onIREnabledToggled);
-        connect(mBtnLoadIR,   &QPushButton::clicked, this, &MainWindow::onLoadIR);
-        connect(mBtnUnloadIR, &QPushButton::clicked, this, &MainWindow::onUnloadIR);
+        connect(mSwIREnable,  &ToggleSwitch::toggled,   this, &MainWindow::onIREnabledToggled);
+        connect(mBtnLoadIR,   &QPushButton::clicked,    this, &MainWindow::onLoadIR);
+        connect(mBtnUnloadIR, &QPushButton::clicked,    this, &MainWindow::onUnloadIR);
 
-        chainLayout->addWidget(grp);
+        mEffectRows.push_back({row, EffectId::IR, true});
+        mPostChainLayout->addWidget(row);
     }
+
+    chainLayout->addWidget(postGrp);
 
     // --- Output gain ---
     {
@@ -468,6 +626,7 @@ void MainWindow::setupUI()
     pal.setColor(QPalette::Base,       QColor(22, 22, 26));
     pal.setColor(QPalette::Button,     QColor(50, 50, 58));
     pal.setColor(QPalette::ButtonText, QColor(210, 210, 215));
+    pal.setColor(QPalette::Highlight,  QColor(42, 130, 218));
     setPalette(pal);
     central->setAutoFillBackground(true);
 }
@@ -486,6 +645,86 @@ void MainWindow::setupAudio()
         mLblJACKStatus->setText("JACK: not connected (check jackd)");
         mLblJACKStatus->setStyleSheet("color:#f44336; font-size:8pt;");
     }
+}
+
+// ---------------------------------------------------------------------------
+// Effect reorder
+// ---------------------------------------------------------------------------
+
+void MainWindow::rebuildEffectOrderFromUI()
+{
+    EffectOrder order;
+
+    int preIdx  = 0;
+    int postIdx = 0;
+
+    for (const auto& er : mEffectRows)
+    {
+        if (!er.isPost)
+        {
+            if (preIdx < EffectId::PreNamCount)
+                order.pre[preIdx++] = er.effectId;
+        }
+        else
+        {
+            if (postIdx < EffectId::PostNamCount)
+                order.post[postIdx++] = er.effectId;
+        }
+    }
+
+    mEngine->setEffectOrder(order);
+}
+
+void MainWindow::onMoveUp(int gi)
+{
+    if (gi <= 0 || gi >= static_cast<int>(mEffectRows.size())) return;
+
+    const bool isPost = mEffectRows[gi].isPost;
+    const bool prevIsPost = mEffectRows[gi - 1].isPost;
+
+    // Can't cross the pre/post boundary
+    if (isPost != prevIsPost) return;
+
+    std::swap(mEffectRows[gi], mEffectRows[gi - 1]);
+
+    // Move widgets in the layout
+    QVBoxLayout* lay = isPost ? mPostChainLayout : mPreChainLayout;
+    // Find current positions
+    int posA = lay->indexOf(mEffectRows[gi - 1].widget);  // after swap, gi-1 holds what was gi
+    int posB = lay->indexOf(mEffectRows[gi].widget);
+
+    if (posA >= 0 && posB >= 0 && posA != posB)
+    {
+        // Remove the item at the lower index and re-insert above
+        auto* itemToMove = lay->takeAt(posB);
+        lay->insertItem(posA, itemToMove);
+    }
+
+    rebuildEffectOrderFromUI();
+}
+
+void MainWindow::onMoveDown(int gi)
+{
+    if (gi < 0 || gi >= static_cast<int>(mEffectRows.size()) - 1) return;
+
+    const bool isPost = mEffectRows[gi].isPost;
+    const bool nextIsPost = mEffectRows[gi + 1].isPost;
+
+    if (isPost != nextIsPost) return;
+
+    std::swap(mEffectRows[gi], mEffectRows[gi + 1]);
+
+    QVBoxLayout* lay = isPost ? mPostChainLayout : mPreChainLayout;
+    int posA = lay->indexOf(mEffectRows[gi].widget);      // after swap, gi holds what was gi+1
+    int posB = lay->indexOf(mEffectRows[gi + 1].widget);
+
+    if (posA >= 0 && posB >= 0 && posA != posB)
+    {
+        auto* itemToMove = lay->takeAt(posA);
+        lay->insertItem(posB, itemToMove);
+    }
+
+    rebuildEffectOrderFromUI();
 }
 
 // ---------------------------------------------------------------------------
@@ -571,6 +810,14 @@ void MainWindow::onCompRatioChanged(double v)     { mEngine->comp().setRatio    
 void MainWindow::onCompAttackChanged(double v)    { mEngine->comp().setAttack   (static_cast<float>(v)); }
 void MainWindow::onCompReleaseChanged(double v)   { mEngine->comp().setRelease  (static_cast<float>(v)); }
 void MainWindow::onCompMakeupChanged(double v)    { mEngine->comp().setMakeup   (static_cast<float>(v)); }
+
+// ---------------------------------------------------------------------------
+// Pitch Shift slots
+// ---------------------------------------------------------------------------
+
+void MainWindow::onPitchEnabledToggled(bool en)  { mEngine->setPitchEnabled(en); }
+void MainWindow::onPitchSemitonesChanged(double v) { mEngine->pitch().setSemitones(static_cast<float>(v)); }
+void MainWindow::onPitchMixChanged(double v)       { mEngine->pitch().setMix      (static_cast<float>(v)); }
 
 // ---------------------------------------------------------------------------
 // Chorus 1 slots
@@ -677,7 +924,6 @@ void MainWindow::updateTuner()
     mLblNote ->setText(QString::fromStdString(TunerProcessor::midiToName(midi)));
     mLblCents->setText(QString("%1¢").arg(static_cast<int>(cents)));
 
-    // Map cents [-50,+50] to bar [0,100]; 50 = in-tune
     int barVal = static_cast<int>(50.0f + cents);
     mTunerBar->setValue(std::max(0, std::min(100, barVal)));
 }
@@ -756,6 +1002,12 @@ void MainWindow::onSavePreset()
     comp["makeup"]    = static_cast<double>(mEngine->comp().makeup());
     obj["compressor"] = comp;
 
+    QJsonObject pitch;
+    pitch["enabled"]   = mEngine->pitchEnabled();
+    pitch["semitones"] = static_cast<double>(mEngine->pitch().semitones());
+    pitch["mix"]       = static_cast<double>(mEngine->pitch().mix());
+    obj["pitchShift"] = pitch;
+
     QJsonObject ch1;
     ch1["enabled"] = mEngine->chorus1Enabled();
     ch1["rate"]    = static_cast<double>(mEngine->chorus1().rate());
@@ -809,6 +1061,14 @@ void MainWindow::onSavePreset()
 
     obj["irEnabled"] = mEngine->irEnabled();
 
+    // Save effect order
+    EffectOrder order = mEngine->currentOrder();
+    QJsonArray preArr, postArr;
+    for (int v : order.pre)  preArr.append(v);
+    for (int v : order.post) postArr.append(v);
+    obj["effectOrderPre"]  = preArr;
+    obj["effectOrderPost"] = postArr;
+
     QFile f(path);
     if (!f.open(QIODevice::WriteOnly))
     {
@@ -859,43 +1119,49 @@ void MainWindow::onLoadPreset()
     }
     if (obj.contains("tuner")) {
         auto t = obj["tuner"].toObject();
-        mChkTunerEnable->setChecked(getB(t, "enabled", false));
-        mChkTunerMute  ->setChecked(getB(t, "mute",    false));
+        mSwTunerEnable->setChecked(getB(t, "enabled", false));
+        mSwTunerMute  ->setChecked(getB(t, "mute",    false));
     }
     if (obj.contains("noiseGate")) {
         auto g = obj["noiseGate"].toObject();
-        mChkGateEnable  ->setChecked(getB(g, "enabled",   false));
+        mSwGateEnable   ->setChecked(getB(g, "enabled",   false));
         mKnobGateThresh ->setValue(getD(g, "threshold", -40.0));
         mKnobGateAttack ->setValue(getD(g, "attack",     10.0));
         mKnobGateRelease->setValue(getD(g, "release",   100.0));
     }
     if (obj.contains("compressor")) {
         auto c = obj["compressor"].toObject();
-        mChkCompEnable   ->setChecked(getB(c, "enabled",   false));
-        mKnobCompThresh  ->setValue(getD(c, "threshold", -20.0));
-        mKnobCompRatio   ->setValue(getD(c, "ratio",       4.0));
-        mKnobCompAttack  ->setValue(getD(c, "attack",     10.0));
-        mKnobCompRelease ->setValue(getD(c, "release",   100.0));
-        mKnobCompMakeup  ->setValue(getD(c, "makeup",      0.0));
+        mSwCompEnable   ->setChecked(getB(c, "enabled",   false));
+        mKnobCompThresh ->setValue(getD(c, "threshold", -20.0));
+        mKnobCompRatio  ->setValue(getD(c, "ratio",       4.0));
+        mKnobCompAttack ->setValue(getD(c, "attack",     10.0));
+        mKnobCompRelease->setValue(getD(c, "release",   100.0));
+        mKnobCompMakeup ->setValue(getD(c, "makeup",      0.0));
+    }
+    if (obj.contains("pitchShift")) {
+        auto p = obj["pitchShift"].toObject();
+        mSwPitchEnable ->setChecked(getB(p, "enabled",   false));
+        mKnobPitchSemi ->setValue(getD(p, "semitones",   0.0));
+        mKnobPitchMix  ->setValue(getD(p, "mix",       100.0));
     }
     if (obj.contains("chorus1")) {
         auto c = obj["chorus1"].toObject();
-        mChkChorus1Enable->setChecked(getB(c, "enabled", false));
+        mSwChorus1Enable->setChecked(getB(c, "enabled", false));
         mKnobCh1Rate ->setValue(getD(c, "rate",   1.0));
         mKnobCh1Depth->setValue(getD(c, "depth", 50.0));
         mKnobCh1Mix  ->setValue(getD(c, "mix",   50.0));
     }
     if (obj.contains("flanger")) {
-        auto f2 = obj["flanger"].toObject();
-        mChkFlangerEnable->setChecked(getB(f2, "enabled", false));
-        mKnobFlRate     ->setValue(getD(f2, "rate",      0.5));
-        mKnobFlDepth    ->setValue(getD(f2, "depth",    50.0));
-        mKnobFlFeedback ->setValue(getD(f2, "feedback",  0.0));
-        mKnobFlMix      ->setValue(getD(f2, "mix",      50.0));
+        auto fl = obj["flanger"].toObject();
+        mSwFlangerEnable->setChecked(getB(fl, "enabled", false));
+        mKnobFlRate     ->setValue(getD(fl, "rate",      0.5));
+        mKnobFlDepth    ->setValue(getD(fl, "depth",    50.0));
+        mKnobFlFeedback ->setValue(getD(fl, "feedback",  0.0));
+        mKnobFlMix      ->setValue(getD(fl, "mix",      50.0));
     }
     if (obj.contains("phaser")) {
         auto p = obj["phaser"].toObject();
-        mChkPhaserEnable ->setChecked(getB(p, "enabled", false));
+        mSwPhaserEnable ->setChecked(getB(p, "enabled", false));
         mKnobPhRate     ->setValue(getD(p, "rate",      1.0));
         mKnobPhDepth    ->setValue(getD(p, "depth",    50.0));
         mKnobPhFeedback ->setValue(getD(p, "feedback", 50.0));
@@ -903,36 +1169,50 @@ void MainWindow::onLoadPreset()
     }
     if (obj.contains("chorus2")) {
         auto c = obj["chorus2"].toObject();
-        mChkChorus2Enable->setChecked(getB(c, "enabled", false));
+        mSwChorus2Enable->setChecked(getB(c, "enabled", false));
         mKnobCh2Rate ->setValue(getD(c, "rate",   1.0));
         mKnobCh2Depth->setValue(getD(c, "depth", 50.0));
         mKnobCh2Mix  ->setValue(getD(c, "mix",   50.0));
     }
     if (obj.contains("tremolo")) {
         auto t = obj["tremolo"].toObject();
-        mChkTremoloEnable->setChecked(getB(t, "enabled", false));
+        mSwTremoloEnable->setChecked(getB(t, "enabled", false));
         mKnobTrRate ->setValue(getD(t, "rate",   5.0));
         mKnobTrDepth->setValue(getD(t, "depth", 50.0));
     }
     if (obj.contains("delay")) {
         auto d = obj["delay"].toObject();
-        mChkDelayEnable  ->setChecked(getB(d, "enabled", false));
-        mKnobDelTime     ->setValue(getD(d, "time",     250.0));
-        mKnobDelFeedback ->setValue(getD(d, "feedback",  40.0));
-        mKnobDelMix      ->setValue(getD(d, "mix",       30.0));
+        mSwDelayEnable  ->setChecked(getB(d, "enabled", false));
+        mKnobDelTime    ->setValue(getD(d, "time",     250.0));
+        mKnobDelFeedback->setValue(getD(d, "feedback",  40.0));
+        mKnobDelMix     ->setValue(getD(d, "mix",       30.0));
     }
     if (obj.contains("reverb")) {
         auto r = obj["reverb"].toObject();
-        mChkReverbEnable ->setChecked(getB(r, "enabled", false));
-        mKnobRevRoom     ->setValue(getD(r, "roomSize",  50.0));
-        mKnobRevDamping  ->setValue(getD(r, "damping",   50.0));
-        mKnobRevWidth    ->setValue(getD(r, "width",    100.0));
-        mKnobRevMix      ->setValue(getD(r, "mix",       30.0));
+        mSwReverbEnable ->setChecked(getB(r, "enabled", false));
+        mKnobRevRoom    ->setValue(getD(r, "roomSize",  50.0));
+        mKnobRevDamping ->setValue(getD(r, "damping",   50.0));
+        mKnobRevWidth   ->setValue(getD(r, "width",    100.0));
+        mKnobRevMix     ->setValue(getD(r, "mix",       30.0));
     }
     if (obj.contains("irEnabled"))
     {
         bool en = obj["irEnabled"].toBool(true);
         mEngine->setIREnabled(en);
-        mChkIREnable->setChecked(en);
+        mSwIREnable->setChecked(en);
+    }
+
+    // Restore effect order if present (best-effort: just push to engine)
+    if (obj.contains("effectOrderPre") && obj.contains("effectOrderPost"))
+    {
+        EffectOrder order = mEngine->currentOrder();
+        auto preArr  = obj["effectOrderPre"].toArray();
+        auto postArr = obj["effectOrderPost"].toArray();
+        for (int i = 0; i < std::min((int)preArr.size(),  (int)EffectId::PreNamCount);  ++i)
+            order.pre[i]  = preArr[i].toInt(i);
+        for (int i = 0; i < std::min((int)postArr.size(), (int)EffectId::PostNamCount); ++i)
+            order.post[i] = postArr[i].toInt(i);
+        mEngine->setEffectOrder(order);
+        // Note: UI rows are not reordered visually on load — audio order is applied.
     }
 }

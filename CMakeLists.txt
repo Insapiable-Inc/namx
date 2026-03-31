@@ -61,6 +61,10 @@ set(GUI_SOURCES
     src/DelayProcessor.h
     src/ReverbProcessor.cpp
     src/ReverbProcessor.h
+    src/ToggleSwitch.cpp
+    src/ToggleSwitch.h
+    src/PitchShiftProcessor.cpp
+    src/PitchShiftProcessor.h
 )
 
 add_executable(NAMPlayer ${GUI_SOURCES} ${NAM_SOURCES} ${WAV_SOURCES})

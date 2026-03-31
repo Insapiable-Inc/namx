@@ -32,10 +32,11 @@ bool AudioEngine::start(const std::string& clientName)
     mWorkBufR.resize(maxBuf, 0.0f);
 
     // Initialise all effects with sample rate
-    mEQ.setSampleRate(mSampleRate);
+    mEQ     .setSampleRate(mSampleRate);
     mTuner  .setSampleRate(mSampleRate);
     mGate   .setSampleRate(mSampleRate);
     mComp   .setSampleRate(mSampleRate);
+    mPitch  .setSampleRate(mSampleRate);
     mChorus1.setSampleRate(mSampleRate);
     mFlanger.setSampleRate(mSampleRate);
     mPhaser .setSampleRate(mSampleRate);
@@ -153,6 +154,91 @@ void AudioEngine::setTrebleGain(float dB)
     mEQ.setTrebleGain(static_cast<double>(dB));
 }
 
+// ---- Dynamic effect order --------------------------------------------
+
+void AudioEngine::setEffectOrder(const EffectOrder& order)
+{
+    std::lock_guard<std::mutex> lock(mOrderMutex);
+    // Write to the inactive buffer, then flip
+    int next = 1 - mOrderBuf.load(std::memory_order_relaxed);
+    mOrders[next] = order;
+    mOrderBuf.store(next, std::memory_order_release);
+}
+
+EffectOrder AudioEngine::currentOrder() const
+{
+    return mOrders[mOrderBuf.load(std::memory_order_acquire)];
+}
+
+// ---- Per-effect dispatch helpers -------------------------------------
+
+void AudioEngine::processPreNam(int id, float* buf, int n)
+{
+    switch (id)
+    {
+        case EffectId::Tuner:
+            if (mTunerEnabled.load())
+                mTuner.processBlock(buf, n, mTunerMute.load());
+            break;
+        case EffectId::Gate:
+            if (mGateEnabled.load())
+                mGate.processBlock(buf, n);
+            break;
+        case EffectId::Comp:
+            if (mCompEnabled.load())
+                mComp.processBlock(buf, n);
+            break;
+        case EffectId::PitchShift:
+            if (mPitchEnabled.load())
+                mPitch.processBlock(buf, n);
+            break;
+        case EffectId::Chorus1:
+            if (mChorus1Enabled.load())
+                mChorus1.processBlock(buf, n);
+            break;
+        case EffectId::Flanger:
+            if (mFlangerEnabled.load())
+                mFlanger.processBlock(buf, n);
+            break;
+        case EffectId::Phaser:
+            if (mPhaserEnabled.load())
+                mPhaser.processBlock(buf, n);
+            break;
+        default: break;
+    }
+}
+
+void AudioEngine::processPostNam(int id, float* L, float* R, int n)
+{
+    switch (id)
+    {
+        case EffectId::Chorus2:
+            if (mChorus2Enabled.load())
+                mChorus2.processBlockStereo(L, R, n);
+            break;
+        case EffectId::Tremolo:
+            if (mTremoloEnabled.load())
+                mTremolo.processBlockStereo(L, R, n);
+            break;
+        case EffectId::Delay:
+            if (mDelayEnabled.load())
+                mDelay.processBlockStereo(L, R, n);
+            break;
+        case EffectId::Reverb:
+            if (mReverbEnabled.load())
+                mReverb.processBlockStereo(L, R, n);
+            break;
+        case EffectId::IR:
+            if (mIREnabled.load() && mIRLoader.isLoaded())
+            {
+                mIRLoader.processBlock(L, n);
+                mIRLoader.processBlock(R, n);
+            }
+            break;
+        default: break;
+    }
+}
+
 // ---- JACK callbacks --------------------------------------------------
 
 int AudioEngine::jackProcessCallback(jack_nframes_t nframes, void* arg)
@@ -191,43 +277,14 @@ int AudioEngine::processAudio(jack_nframes_t nframes)
     mInputPeak.store(inPeak);
 
     // ----------------------------------------------------------------
-    // 2. Tuner (analyze + optional mute) — pass-through
+    // 2. Pre-NAM effects (dynamic order)
     // ----------------------------------------------------------------
-    if (mTunerEnabled.load())
-        mTuner.processBlock(mWorkBuf.data(), n, mTunerMute.load());
+    const EffectOrder& order = mOrders[mOrderBuf.load(std::memory_order_acquire)];
+    for (int id : order.pre)
+        processPreNam(id, mWorkBuf.data(), n);
 
     // ----------------------------------------------------------------
-    // 3. Noise gate
-    // ----------------------------------------------------------------
-    if (mGateEnabled.load())
-        mGate.processBlock(mWorkBuf.data(), n);
-
-    // ----------------------------------------------------------------
-    // 4. Compressor
-    // ----------------------------------------------------------------
-    if (mCompEnabled.load())
-        mComp.processBlock(mWorkBuf.data(), n);
-
-    // ----------------------------------------------------------------
-    // 5. Chorus 1 (pre-NAM, mono)
-    // ----------------------------------------------------------------
-    if (mChorus1Enabled.load())
-        mChorus1.processBlock(mWorkBuf.data(), n);
-
-    // ----------------------------------------------------------------
-    // 6. Flanger (mono)
-    // ----------------------------------------------------------------
-    if (mFlangerEnabled.load())
-        mFlanger.processBlock(mWorkBuf.data(), n);
-
-    // ----------------------------------------------------------------
-    // 7. Phaser (mono)
-    // ----------------------------------------------------------------
-    if (mPhaserEnabled.load())
-        mPhaser.processBlock(mWorkBuf.data(), n);
-
-    // ----------------------------------------------------------------
-    // 8. NAM DSP (mono → writes to outL temporarily)
+    // 3. NAM DSP (mono → writes to outL temporarily)
     // ----------------------------------------------------------------
     nam::DSP* model = activeModel();
     if (mModelLoaded.load() && model)
@@ -242,7 +299,7 @@ int AudioEngine::processAudio(jack_nframes_t nframes)
     }
 
     // ----------------------------------------------------------------
-    // 9. 3-band EQ (mono, try_lock)
+    // 4. 3-band EQ (mono, try_lock)
     // ----------------------------------------------------------------
     if (mEQMutex.try_lock())
     {
@@ -252,46 +309,19 @@ int AudioEngine::processAudio(jack_nframes_t nframes)
     }
 
     // ----------------------------------------------------------------
-    // 10. Widen to stereo — L = R = mono signal
+    // 5. Widen to stereo — L = R = mono signal
     // ----------------------------------------------------------------
     std::copy(mWorkBuf.begin(), mWorkBuf.begin() + n, mWorkBufL.begin());
     std::copy(mWorkBuf.begin(), mWorkBuf.begin() + n, mWorkBufR.begin());
 
     // ----------------------------------------------------------------
-    // 11. Chorus 2 (post-NAM, stereo)
+    // 6. Post-NAM effects (dynamic order)
     // ----------------------------------------------------------------
-    if (mChorus2Enabled.load())
-        mChorus2.processBlockStereo(mWorkBufL.data(), mWorkBufR.data(), n);
+    for (int id : order.post)
+        processPostNam(id, mWorkBufL.data(), mWorkBufR.data(), n);
 
     // ----------------------------------------------------------------
-    // 12. Tremolo (stereo)
-    // ----------------------------------------------------------------
-    if (mTremoloEnabled.load())
-        mTremolo.processBlockStereo(mWorkBufL.data(), mWorkBufR.data(), n);
-
-    // ----------------------------------------------------------------
-    // 13. Delay (stereo ping-pong)
-    // ----------------------------------------------------------------
-    if (mDelayEnabled.load())
-        mDelay.processBlockStereo(mWorkBufL.data(), mWorkBufR.data(), n);
-
-    // ----------------------------------------------------------------
-    // 14. Reverb (stereo)
-    // ----------------------------------------------------------------
-    if (mReverbEnabled.load())
-        mReverb.processBlockStereo(mWorkBufL.data(), mWorkBufR.data(), n);
-
-    // ----------------------------------------------------------------
-    // 15. IR convolution (cab sim, applied to both channels)
-    // ----------------------------------------------------------------
-    if (mIREnabled.load() && mIRLoader.isLoaded())
-    {
-        mIRLoader.processBlock(mWorkBufL.data(), n);
-        mIRLoader.processBlock(mWorkBufR.data(), n);
-    }
-
-    // ----------------------------------------------------------------
-    // 16. Output gain (smoothed) + copy to JACK buffers
+    // 7. Output gain (smoothed) + copy to JACK buffers
     // ----------------------------------------------------------------
     const float targetOutGain = dbToLinear(mOutputGainDB.load());
     float outPeak = 0.0f;

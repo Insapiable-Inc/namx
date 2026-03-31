@@ -3,8 +3,64 @@
 #include <QDial>
 #include <QEvent>
 #include <QLabel>
+#include <QMouseEvent>
+#include <QPalette>
 #include <QVBoxLayout>
-#include <QString>
+
+// ---------------------------------------------------------------------------
+// VerticalDial — QDial that maps vertical mouse drag to value changes.
+// ---------------------------------------------------------------------------
+
+class VerticalDial : public QDial
+{
+public:
+    explicit VerticalDial(QWidget* parent = nullptr) : QDial(parent)
+    {
+        setNotchesVisible(true);
+        setWrapping(false);
+    }
+
+protected:
+    void mousePressEvent(QMouseEvent* e) override
+    {
+        if (e->button() == Qt::LeftButton)
+        {
+            mDragStartY    = e->pos().y();
+            mDragStartVal  = value();
+            e->accept();
+        }
+        else QDial::mousePressEvent(e);
+    }
+
+    void mouseMoveEvent(QMouseEvent* e) override
+    {
+        if (e->buttons() & Qt::LeftButton)
+        {
+            int dy    = mDragStartY - e->pos().y(); // up → positive
+            int range = maximum() - minimum();
+            int newVal = mDragStartVal + (dy * range) / 200;
+            setValue(qBound(minimum(), newVal, maximum()));
+            e->accept();
+        }
+        else QDial::mouseMoveEvent(e);
+    }
+
+    void mouseReleaseEvent(QMouseEvent* e) override
+    {
+        e->accept(); // do not call base (prevents click-to-jump)
+    }
+
+    // Let double-click fall through for the eventFilter in KnobWidget
+    void mouseDoubleClickEvent(QMouseEvent* e) override { QDial::mouseDoubleClickEvent(e); }
+
+private:
+    int mDragStartY{0};
+    int mDragStartVal{0};
+};
+
+// ---------------------------------------------------------------------------
+// KnobWidget
+// ---------------------------------------------------------------------------
 
 KnobWidget::KnobWidget(const QString& label, double minVal, double maxVal,
                        double defaultVal, const QString& unit, QWidget* parent)
@@ -16,57 +72,40 @@ KnobWidget::KnobWidget(const QString& label, double minVal, double maxVal,
 {
     auto* layout = new QVBoxLayout(this);
     layout->setContentsMargins(2, 2, 2, 2);
-    layout->setSpacing(2);
+    layout->setSpacing(1);
 
     auto* nameLabel = new QLabel(label);
     nameLabel->setAlignment(Qt::AlignHCenter);
-    nameLabel->setStyleSheet("color: #aaa; font-size: 8pt;");
+    nameLabel->setStyleSheet("font-size: 8pt;");
 
-    mDial = new QDial;
+    mDial = new VerticalDial;
     mDial->setMinimum(0);
     mDial->setMaximum(kSteps);
     mDial->setValue(valueToDial(defaultVal));
-    mDial->setNotchesVisible(true);
-    mDial->setWrapping(false);
     mDial->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 
     mLabelValue = new QLabel;
     mLabelValue->setAlignment(Qt::AlignHCenter);
-    mLabelValue->setStyleSheet("color: #dc7828; font-size: 7pt; font-family: monospace;");
+    mLabelValue->setStyleSheet("font-size: 7pt; font-family: monospace;");
 
     layout->addWidget(nameLabel);
     layout->addWidget(mDial, 1);
     layout->addWidget(mLabelValue);
 
-    // Update value display
-    onDialChanged(mDial->value());
-
-    connect(mDial, &QDial::valueChanged, this, &KnobWidget::onDialChanged);
-
-    // Double-click to reset — install on the dial
+    updateLabel();
     mDial->installEventFilter(this);
+    connect(mDial, &QDial::valueChanged, this, &KnobWidget::onDialChanged);
 }
 
-double KnobWidget::value() const
-{
-    return dialToValue(mDial->value());
-}
+double KnobWidget::value() const { return dialToValue(mDial->value()); }
 
 void KnobWidget::setValue(double v)
 {
-    // Clamp
-    if (v < mMin) v = mMin;
-    if (v > mMax) v = mMax;
-
-    // Block signals so we don't re-emit valueChanged
+    v = qBound(mMin, v, mMax);
     const bool blocked = mDial->blockSignals(true);
     mDial->setValue(valueToDial(v));
     mDial->blockSignals(blocked);
-
-    // Update display
-    QString txt = QString::number(v, 'f', 1);
-    if (!mUnit.isEmpty()) txt += " " + mUnit;
-    mLabelValue->setText(txt);
+    updateLabel();
 }
 
 void KnobWidget::resetToDefault()
@@ -77,24 +116,24 @@ void KnobWidget::resetToDefault()
 
 void KnobWidget::onDialChanged(int dialVal)
 {
-    double v = dialToValue(dialVal);
-    QString txt = QString::number(v, 'f', 1);
-    if (!mUnit.isEmpty()) txt += " " + mUnit;
+    updateLabel();
+    emit valueChanged(dialToValue(dialVal));
+}
+
+void KnobWidget::updateLabel()
+{
+    double v = value();
+    QString txt = mIntDisplay
+        ? QString::number(static_cast<int>(std::round(v)))
+        : QString::number(v, 'f', 1);
+    if (!mUnit.isEmpty())
+        txt += " " + mUnit;
+
+    // Use theme highlight color for the value text
+    QColor hl = palette().color(QPalette::Highlight);
+    mLabelValue->setStyleSheet(
+        QString("font-size:7pt; font-family:monospace; color:%1;").arg(hl.name()));
     mLabelValue->setText(txt);
-    emit valueChanged(v);
-}
-
-double KnobWidget::dialToValue(int d) const
-{
-    return mMin + (mMax - mMin) * static_cast<double>(d) / kSteps;
-}
-
-int KnobWidget::valueToDial(double v) const
-{
-    double norm = (v - mMin) / (mMax - mMin);
-    if (norm < 0.0) norm = 0.0;
-    if (norm > 1.0) norm = 1.0;
-    return static_cast<int>(norm * kSteps + 0.5);
 }
 
 bool KnobWidget::eventFilter(QObject* obj, QEvent* event)
@@ -105,4 +144,16 @@ bool KnobWidget::eventFilter(QObject* obj, QEvent* event)
         return true;
     }
     return QWidget::eventFilter(obj, event);
+}
+
+double KnobWidget::dialToValue(int d) const
+{
+    return mMin + (mMax - mMin) * static_cast<double>(d) / kSteps;
+}
+
+int KnobWidget::valueToDial(double v) const
+{
+    double norm = (v - mMin) / (mMax - mMin);
+    norm = qBound(0.0, norm, 1.0);
+    return static_cast<int>(norm * kSteps + 0.5);
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <atomic>
 #include <cmath>
 #include <filesystem>
@@ -16,6 +17,7 @@
 #include "TunerProcessor.h"
 #include "NoiseGateProcessor.h"
 #include "CompressorProcessor.h"
+#include "PitchShiftProcessor.h"
 #include "ChorusProcessor.h"
 #include "FlangerProcessor.h"
 #include "PhaserProcessor.h"
@@ -23,11 +25,23 @@
 #include "DelayProcessor.h"
 #include "ReverbProcessor.h"
 
-/// Manages JACK audio I/O and routes audio through the full signal chain.
-/// Signal chain:
-///   Input → Gain → [Tuner] → [Gate] → [Comp] → [Chorus1] → [Flanger]
-///   → [Phaser] → NAM DSP → EQ → [Chorus2-stereo] → [Tremolo-stereo]
-///   → [Delay-stereo] → [Reverb-stereo] → [IR-stereo] → Output gain → stereo out
+/// Effect indices for the pre-NAM and post-NAM chains.
+/// The processing order of both lists is dynamic (see setEffectOrder).
+namespace EffectId
+{
+    // Pre-NAM (mono)
+    enum PreNam : int { Tuner=0, Gate, Comp, PitchShift, Chorus1, Flanger, Phaser, PreNamCount };
+    // Post-NAM (stereo)
+    enum PostNam : int { Chorus2=0, Tremolo, Delay, Reverb, IR, PostNamCount };
+}
+
+/// Holds the processing order for both chains (double-buffered, lock-free).
+struct EffectOrder
+{
+    std::array<int, EffectId::PreNamCount>  pre  = {0, 1, 2, 3, 4, 5, 6};
+    std::array<int, EffectId::PostNamCount> post = {0, 1, 2, 3, 4};
+};
+
 class AudioEngine
 {
 public:
@@ -37,54 +51,56 @@ public:
     bool start(const std::string& clientName = "NAMPlayer");
     void stop();
 
-    bool   isRunning()   const { return mRunning.load(); }
-    double sampleRate()  const { return mSampleRate; }
+    bool   isRunning()  const { return mRunning.load(); }
+    double sampleRate() const { return mSampleRate; }
 
-    // ---- Model management ----
+    // ---- Model ----
     bool        loadModel(const std::string& path);
     void        unloadModel();
     bool        isModelLoaded() const { return mModelLoaded.load(); }
     std::string modelPath()     const { return mModelPath; }
 
-    // ---- IR management ----
+    // ---- IR ----
     bool        loadIR(const std::string& path);
     void        unloadIR();
     bool        isIRLoaded()    const;
     std::string irPath()        const;
 
-    // ---- Gain parameters ----
-    void setInputGain(float dB)   { mInputGainDB.store(dB);  }
-    void setOutputGain(float dB)  { mOutputGainDB.store(dB); }
+    // ---- Gain ----
+    void  setInputGain(float dB)  { mInputGainDB.store(dB);  }
+    void  setOutputGain(float dB) { mOutputGainDB.store(dB); }
     float inputGain()  const { return mInputGainDB.load();  }
     float outputGain() const { return mOutputGainDB.load(); }
 
     // ---- EQ ----
-    void setLowGain(float dB);
-    void setMidGain(float dB);
-    void setTrebleGain(float dB);
+    void  setLowGain(float dB);
+    void  setMidGain(float dB);
+    void  setTrebleGain(float dB);
     float lowGain()    const { return mLowDB.load();    }
     float midGain()    const { return mMidDB.load();    }
     float trebleGain() const { return mTrebleDB.load(); }
 
-    // ---- Effect enable/disable ----
-    void setIREnabled(bool en)       { mIREnabled.store(en);        }
-    void setTunerEnabled(bool en)    { mTunerEnabled.store(en);     }
-    void setTunerMute(bool en)       { mTunerMute.store(en);        }
-    void setGateEnabled(bool en)     { mGateEnabled.store(en);      }
-    void setCompEnabled(bool en)     { mCompEnabled.store(en);      }
-    void setChorus1Enabled(bool en)  { mChorus1Enabled.store(en);   }
-    void setFlangerEnabled(bool en)  { mFlangerEnabled.store(en);   }
-    void setPhaserEnabled(bool en)   { mPhaserEnabled.store(en);    }
-    void setChorus2Enabled(bool en)  { mChorus2Enabled.store(en);   }
-    void setTremoloEnabled(bool en)  { mTremoloEnabled.store(en);   }
-    void setDelayEnabled(bool en)    { mDelayEnabled.store(en);     }
-    void setReverbEnabled(bool en)   { mReverbEnabled.store(en);    }
+    // ---- Effect enable flags ----
+    void setIREnabled(bool en)       { mIREnabled.store(en);       }
+    void setTunerEnabled(bool en)    { mTunerEnabled.store(en);    }
+    void setTunerMute(bool en)       { mTunerMute.store(en);       }
+    void setGateEnabled(bool en)     { mGateEnabled.store(en);     }
+    void setCompEnabled(bool en)     { mCompEnabled.store(en);     }
+    void setPitchEnabled(bool en)    { mPitchEnabled.store(en);    }
+    void setChorus1Enabled(bool en)  { mChorus1Enabled.store(en);  }
+    void setFlangerEnabled(bool en)  { mFlangerEnabled.store(en);  }
+    void setPhaserEnabled(bool en)   { mPhaserEnabled.store(en);   }
+    void setChorus2Enabled(bool en)  { mChorus2Enabled.store(en);  }
+    void setTremoloEnabled(bool en)  { mTremoloEnabled.store(en);  }
+    void setDelayEnabled(bool en)    { mDelayEnabled.store(en);    }
+    void setReverbEnabled(bool en)   { mReverbEnabled.store(en);   }
 
     bool irEnabled()      const { return mIREnabled.load();      }
     bool tunerEnabled()   const { return mTunerEnabled.load();   }
     bool tunerMute()      const { return mTunerMute.load();      }
     bool gateEnabled()    const { return mGateEnabled.load();    }
     bool compEnabled()    const { return mCompEnabled.load();    }
+    bool pitchEnabled()   const { return mPitchEnabled.load();   }
     bool chorus1Enabled() const { return mChorus1Enabled.load(); }
     bool flangerEnabled() const { return mFlangerEnabled.load(); }
     bool phaserEnabled()  const { return mPhaserEnabled.load();  }
@@ -93,17 +109,23 @@ public:
     bool delayEnabled()   const { return mDelayEnabled.load();   }
     bool reverbEnabled()  const { return mReverbEnabled.load();  }
 
-    // ---- Effect parameter access ----
-    NoiseGateProcessor& gate()     { return mGate;     }
-    CompressorProcessor& comp()    { return mComp;     }
-    ChorusProcessor&  chorus1()    { return mChorus1;  }
-    FlangerProcessor& flanger()    { return mFlanger;  }
-    PhaserProcessor&  phaser()     { return mPhaser;   }
-    ChorusProcessor&  chorus2()    { return mChorus2;  }
-    TremoloProcessor& tremolo()    { return mTremolo;  }
-    DelayProcessor&   delay()      { return mDelay;    }
-    ReverbProcessor&  reverb()     { return mReverb;   }
-    TunerProcessor&   tuner()      { return mTuner;    }
+    // ---- Effect parameter access (by reference for direct setter calls) ----
+    TunerProcessor&      tuner()   { return mTuner;   }
+    NoiseGateProcessor&  gate()    { return mGate;    }
+    CompressorProcessor& comp()    { return mComp;    }
+    PitchShiftProcessor& pitch()   { return mPitch;   }
+    ChorusProcessor&     chorus1() { return mChorus1; }
+    FlangerProcessor&    flanger() { return mFlanger; }
+    PhaserProcessor&     phaser()  { return mPhaser;  }
+    ChorusProcessor&     chorus2() { return mChorus2; }
+    TremoloProcessor&    tremolo() { return mTremolo; }
+    DelayProcessor&      delay()   { return mDelay;   }
+    ReverbProcessor&     reverb()  { return mReverb;  }
+
+    // ---- Dynamic effect ordering (lock-free double-buffer) ----
+    /// Set both pre-NAM and post-NAM processing order atomically.
+    void setEffectOrder(const EffectOrder& order);
+    EffectOrder currentOrder() const;
 
     // ---- VU meters ----
     float inputPeak()  const { return mInputPeak.load();  }
@@ -113,6 +135,9 @@ private:
     static int  jackProcessCallback(jack_nframes_t nframes, void* arg);
     int         processAudio(jack_nframes_t nframes);
     static void jackShutdownCallback(void* arg);
+
+    void processPreNam (int id, float* buf, int n);
+    void processPostNam(int id, float* L, float* R, int n);
 
     jack_client_t* mClient   = nullptr;
     jack_port_t*   mPortIn   = nullptr;
@@ -135,26 +160,28 @@ private:
     }
 
     // Effect processors
-    TunerProcessor    mTuner;
-    NoiseGateProcessor mGate;
+    TunerProcessor      mTuner;
+    NoiseGateProcessor  mGate;
     CompressorProcessor mComp;
-    ChorusProcessor   mChorus1;
-    FlangerProcessor  mFlanger;
-    PhaserProcessor   mPhaser;
-    EQProcessor       mEQ;
-    std::mutex        mEQMutex;
-    ChorusProcessor   mChorus2;
-    TremoloProcessor  mTremolo;
-    DelayProcessor    mDelay;
-    ReverbProcessor   mReverb;
-    IRLoader          mIRLoader;
+    PitchShiftProcessor mPitch;
+    ChorusProcessor     mChorus1;
+    FlangerProcessor    mFlanger;
+    PhaserProcessor     mPhaser;
+    EQProcessor         mEQ;
+    std::mutex          mEQMutex;
+    ChorusProcessor     mChorus2;
+    TremoloProcessor    mTremolo;
+    DelayProcessor      mDelay;
+    ReverbProcessor     mReverb;
+    IRLoader            mIRLoader;
 
-    // Effect enable flags
+    // Effect enable atomics
     std::atomic<bool> mIREnabled     {true};
     std::atomic<bool> mTunerEnabled  {false};
     std::atomic<bool> mTunerMute     {false};
     std::atomic<bool> mGateEnabled   {false};
     std::atomic<bool> mCompEnabled   {false};
+    std::atomic<bool> mPitchEnabled  {false};
     std::atomic<bool> mChorus1Enabled{false};
     std::atomic<bool> mFlangerEnabled{false};
     std::atomic<bool> mPhaserEnabled {false};
@@ -163,24 +190,29 @@ private:
     std::atomic<bool> mDelayEnabled  {false};
     std::atomic<bool> mReverbEnabled {false};
 
-    // Gain atomics
+    // Gain
     std::atomic<float> mInputGainDB {0.0f};
     std::atomic<float> mOutputGainDB{0.0f};
     std::atomic<float> mLowDB       {0.0f};
     std::atomic<float> mMidDB       {0.0f};
     std::atomic<float> mTrebleDB    {0.0f};
 
-    // Smoothed gains (audio thread only)
+    // Smoothed gain states (audio thread only)
     float mInputGainSmooth  = 1.0f;
     float mOutputGainSmooth = 1.0f;
 
     std::atomic<float> mInputPeak {0.0f};
     std::atomic<float> mOutputPeak{0.0f};
 
-    // Work buffers (mono pre-NAM, stereo post-NAM)
-    std::vector<float> mWorkBuf;  // mono scratch
-    std::vector<float> mWorkBufL; // stereo L (post-NAM)
-    std::vector<float> mWorkBufR; // stereo R (post-NAM)
+    // Work buffers
+    std::vector<float> mWorkBuf;
+    std::vector<float> mWorkBufL;
+    std::vector<float> mWorkBufR;
+
+    // Lock-free double-buffered effect order
+    EffectOrder        mOrders[2];
+    std::atomic<int>   mOrderBuf{0};
+    std::mutex         mOrderMutex; // guards concurrent GUI writes only
 
     static constexpr float kSmoothCoeff = 0.999f;
     static inline float dbToLinear(float dB) { return std::pow(10.0f, dB / 20.0f); }

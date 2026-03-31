@@ -3,12 +3,11 @@
 #include <QWidget>
 #include <QString>
 
-class QDial;
 class QLabel;
+class VerticalDial;
 
-/// A knob widget built around Qt's QDial.
-/// Wraps QDial with a floating-point value range, name label, and value display.
-/// Emits valueChanged(double) when the user adjusts the dial.
+/// Knob widget wrapping a VerticalDial (responds to vertical mouse drag).
+/// Emits valueChanged(double) and uses QPalette::Highlight for the value label.
 class KnobWidget : public QWidget
 {
     Q_OBJECT
@@ -21,8 +20,11 @@ public:
 
     double value() const;
 
-    QSize sizeHint()        const override { return {80, 90}; }
-    QSize minimumSizeHint() const override { return {64, 76}; }
+    /// When true, the value label shows a rounded integer.
+    void setIntegerDisplay(bool on) { mIntDisplay = on; updateLabel(); }
+
+    QSize sizeHint()        const override { return {72, 88}; }
+    QSize minimumSizeHint() const override { return {60, 76}; }
 
 public slots:
     void setValue(double v);
@@ -38,16 +40,15 @@ protected:
     bool eventFilter(QObject* obj, QEvent* event) override;
 
 private:
-    QDial*  mDial;
-    QLabel* mLabelValue;
-    double  mMin;
-    double  mMax;
-    double  mDefault;
+    VerticalDial* mDial;
+    QLabel*       mLabelValue;
+    double mMin, mMax, mDefault;
     QString mUnit;
+    bool    mIntDisplay{false};
 
-    // Internal dial range [0, kSteps]
     static constexpr int kSteps = 10000;
 
     double dialToValue(int d) const;
     int    valueToDial(double v) const;
+    void   updateLabel();
 };

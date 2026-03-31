@@ -6,13 +6,14 @@
 
 #include "AudioEngine.h"
 #include "KnobWidget.h"
+#include "ToggleSwitch.h"
 
 class QLabel;
 class QPushButton;
 class QProgressBar;
-class QCheckBox;
 class QGroupBox;
 class QScrollArea;
+class QVBoxLayout;
 
 class MainWindow : public QMainWindow
 {
@@ -59,6 +60,11 @@ private slots:
     void onCompReleaseChanged(double v);
     void onCompMakeupChanged(double v);
 
+    // Pitch Shift
+    void onPitchEnabledToggled(bool en);
+    void onPitchSemitonesChanged(double v);
+    void onPitchMixChanged(double v);
+
     // Chorus 1
     void onChorus1EnabledToggled(bool en);
     void onChorus1RateChanged(double v);
@@ -103,6 +109,10 @@ private slots:
     void onReverbWidthChanged(double v);
     void onReverbMixChanged(double v);
 
+    // Reorder
+    void onMoveUp(int effectGlobalIndex);
+    void onMoveDown(int effectGlobalIndex);
+
     // Preset
     void onSavePreset();
     void onLoadPreset();
@@ -115,11 +125,30 @@ private:
     void setupUI();
     void setupAudio();
     void updateStatusLabels();
-    QGroupBox* makeEffectGroup(const QString& title, QCheckBox*& enableChk,
-                               const std::initializer_list<KnobWidget*>& knobs,
-                               QWidget* extraWidget = nullptr);
+    void rebuildEffectOrderFromUI();
+
+    // Build a standard effect group row with ToggleSwitch + knobs + reorder buttons.
+    // effectGlobalIndex is the position in mEffectWidgets used for reorder buttons.
+    QWidget* makeEffectRow(int effectGlobalIndex,
+                           const QString& title,
+                           ToggleSwitch*& toggleOut,
+                           const std::initializer_list<KnobWidget*>& knobs,
+                           QWidget* extraWidget = nullptr);
 
     std::unique_ptr<AudioEngine> mEngine;
+
+    // All draggable effect rows in signal-chain order (pre-NAM then post-NAM).
+    // Index 0..PreNamCount-1 = pre-NAM, Index PreNamCount..end = post-NAM
+    // Matches EffectId::PreNam and EffectId::PostNam ordering initially.
+    struct EffectRow {
+        QWidget* widget = nullptr;  // the row QWidget
+        int      effectId = 0;      // EffectId enum value within its chain
+        bool     isPost = false;    // false = pre-NAM, true = post-NAM
+    };
+    std::vector<EffectRow> mEffectRows;
+
+    QVBoxLayout* mPreChainLayout  = nullptr;  // layout holding pre-NAM rows
+    QVBoxLayout* mPostChainLayout = nullptr;  // layout holding post-NAM rows
 
     // File buttons & labels
     QPushButton* mBtnLoadNAM    = nullptr;
@@ -149,69 +178,74 @@ private:
     KnobWidget* mKnobTreble = nullptr;
 
     // Tuner controls
-    QCheckBox* mChkTunerEnable = nullptr;
-    QCheckBox* mChkTunerMute   = nullptr;
+    ToggleSwitch* mSwTunerEnable = nullptr;
+    ToggleSwitch* mSwTunerMute   = nullptr;
 
-    // Noise gate knobs
-    QCheckBox* mChkGateEnable = nullptr;
-    KnobWidget* mKnobGateThresh  = nullptr;
-    KnobWidget* mKnobGateAttack  = nullptr;
-    KnobWidget* mKnobGateRelease = nullptr;
+    // Noise gate
+    ToggleSwitch* mSwGateEnable   = nullptr;
+    KnobWidget*   mKnobGateThresh  = nullptr;
+    KnobWidget*   mKnobGateAttack  = nullptr;
+    KnobWidget*   mKnobGateRelease = nullptr;
 
-    // Compressor knobs
-    QCheckBox* mChkCompEnable = nullptr;
-    KnobWidget* mKnobCompThresh   = nullptr;
-    KnobWidget* mKnobCompRatio    = nullptr;
-    KnobWidget* mKnobCompAttack   = nullptr;
-    KnobWidget* mKnobCompRelease  = nullptr;
-    KnobWidget* mKnobCompMakeup   = nullptr;
+    // Compressor
+    ToggleSwitch* mSwCompEnable    = nullptr;
+    KnobWidget*   mKnobCompThresh   = nullptr;
+    KnobWidget*   mKnobCompRatio    = nullptr;
+    KnobWidget*   mKnobCompAttack   = nullptr;
+    KnobWidget*   mKnobCompRelease  = nullptr;
+    KnobWidget*   mKnobCompMakeup   = nullptr;
 
-    // Chorus 1 knobs
-    QCheckBox* mChkChorus1Enable = nullptr;
-    KnobWidget* mKnobCh1Rate  = nullptr;
-    KnobWidget* mKnobCh1Depth = nullptr;
-    KnobWidget* mKnobCh1Mix   = nullptr;
+    // Pitch Shift
+    ToggleSwitch* mSwPitchEnable    = nullptr;
+    KnobWidget*   mKnobPitchSemi    = nullptr;
+    KnobWidget*   mKnobPitchMix     = nullptr;
 
-    // Flanger knobs
-    QCheckBox* mChkFlangerEnable = nullptr;
-    KnobWidget* mKnobFlRate     = nullptr;
-    KnobWidget* mKnobFlDepth    = nullptr;
-    KnobWidget* mKnobFlFeedback = nullptr;
-    KnobWidget* mKnobFlMix      = nullptr;
+    // Chorus 1
+    ToggleSwitch* mSwChorus1Enable = nullptr;
+    KnobWidget*   mKnobCh1Rate     = nullptr;
+    KnobWidget*   mKnobCh1Depth    = nullptr;
+    KnobWidget*   mKnobCh1Mix      = nullptr;
 
-    // Phaser knobs
-    QCheckBox* mChkPhaserEnable = nullptr;
-    KnobWidget* mKnobPhRate     = nullptr;
-    KnobWidget* mKnobPhDepth    = nullptr;
-    KnobWidget* mKnobPhFeedback = nullptr;
-    KnobWidget* mKnobPhMix      = nullptr;
+    // Flanger
+    ToggleSwitch* mSwFlangerEnable  = nullptr;
+    KnobWidget*   mKnobFlRate       = nullptr;
+    KnobWidget*   mKnobFlDepth      = nullptr;
+    KnobWidget*   mKnobFlFeedback   = nullptr;
+    KnobWidget*   mKnobFlMix        = nullptr;
 
-    // Chorus 2 knobs
-    QCheckBox* mChkChorus2Enable = nullptr;
-    KnobWidget* mKnobCh2Rate  = nullptr;
-    KnobWidget* mKnobCh2Depth = nullptr;
-    KnobWidget* mKnobCh2Mix   = nullptr;
+    // Phaser
+    ToggleSwitch* mSwPhaserEnable   = nullptr;
+    KnobWidget*   mKnobPhRate       = nullptr;
+    KnobWidget*   mKnobPhDepth      = nullptr;
+    KnobWidget*   mKnobPhFeedback   = nullptr;
+    KnobWidget*   mKnobPhMix        = nullptr;
 
-    // Tremolo knobs
-    QCheckBox* mChkTremoloEnable = nullptr;
-    KnobWidget* mKnobTrRate  = nullptr;
-    KnobWidget* mKnobTrDepth = nullptr;
+    // Chorus 2
+    ToggleSwitch* mSwChorus2Enable = nullptr;
+    KnobWidget*   mKnobCh2Rate     = nullptr;
+    KnobWidget*   mKnobCh2Depth    = nullptr;
+    KnobWidget*   mKnobCh2Mix      = nullptr;
 
-    // Delay knobs
-    QCheckBox* mChkDelayEnable = nullptr;
-    KnobWidget* mKnobDelTime     = nullptr;
-    KnobWidget* mKnobDelFeedback = nullptr;
-    KnobWidget* mKnobDelMix      = nullptr;
+    // Tremolo
+    ToggleSwitch* mSwTremoloEnable = nullptr;
+    KnobWidget*   mKnobTrRate      = nullptr;
+    KnobWidget*   mKnobTrDepth     = nullptr;
 
-    // Reverb knobs
-    QCheckBox* mChkReverbEnable = nullptr;
-    KnobWidget* mKnobRevRoom    = nullptr;
-    KnobWidget* mKnobRevDamping = nullptr;
-    KnobWidget* mKnobRevWidth   = nullptr;
-    KnobWidget* mKnobRevMix     = nullptr;
+    // Delay
+    ToggleSwitch* mSwDelayEnable    = nullptr;
+    KnobWidget*   mKnobDelTime      = nullptr;
+    KnobWidget*   mKnobDelFeedback  = nullptr;
+    KnobWidget*   mKnobDelMix       = nullptr;
+
+    // Reverb
+    ToggleSwitch* mSwReverbEnable   = nullptr;
+    KnobWidget*   mKnobRevRoom      = nullptr;
+    KnobWidget*   mKnobRevDamping   = nullptr;
+    KnobWidget*   mKnobRevWidth     = nullptr;
+    KnobWidget*   mKnobRevMix       = nullptr;
 
     // IR
-    QCheckBox* mChkIREnable = nullptr;
+    ToggleSwitch* mSwIREnable = nullptr;
 
     QTimer* mMeterTimer  = nullptr;
     QTimer* mTunerTimer  = nullptr;
