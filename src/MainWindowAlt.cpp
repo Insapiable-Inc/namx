@@ -185,6 +185,7 @@ void MainWindowAlt::setupUI()
     auto* stripLay = new QHBoxLayout(strip);
     stripLay->setContentsMargins(2, 2, 2, 2);
     stripLay->setSpacing(4);
+    stripLay->setAlignment(Qt::AlignTop);
 
     auto addDivider = [&] {
         auto* f = new QFrame;

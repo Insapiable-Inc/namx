@@ -6,9 +6,9 @@
 int main(int argc, char* argv[])
 {
     QApplication app(argc, argv);
-    app.setApplicationName("NAMPlayer");
+    app.setApplicationName("NAM Linux");
     app.setApplicationVersion("1.0");
-    app.setOrganizationName("NAM");
+    app.setOrganizationName("pichulero.cl");
 
     // Prefer Breeze for native KDE/Plasma look; fall back to Fusion.
     if (!QStyleFactory::keys().contains("Breeze", Qt::CaseInsensitive))
