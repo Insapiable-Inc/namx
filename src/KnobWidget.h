@@ -3,6 +3,7 @@
 #include <QWidget>
 #include <QString>
 
+class QContextMenuEvent;
 class QLabel;
 class VerticalDial;
 
@@ -38,6 +39,7 @@ private slots:
 
 protected:
     bool eventFilter(QObject* obj, QEvent* event) override;
+    void contextMenuEvent(QContextMenuEvent* event) override;
 
 private:
     VerticalDial* mDial;

@@ -1,8 +1,10 @@
 #include "KnobWidget.h"
 
+#include <QContextMenuEvent>
 #include <QDial>
 #include <QEvent>
 #include <QLabel>
+#include <QMenu>
 #include <QMouseEvent>
 #include <QPalette>
 #include <QVBoxLayout>
@@ -76,7 +78,6 @@ KnobWidget::KnobWidget(const QString& label, double minVal, double maxVal,
 
     auto* nameLabel = new QLabel(label);
     nameLabel->setAlignment(Qt::AlignHCenter);
-    nameLabel->setStyleSheet("font-size: 8pt;");
 
     mDial = new VerticalDial;
     mDial->setMinimum(0);
@@ -86,7 +87,6 @@ KnobWidget::KnobWidget(const QString& label, double minVal, double maxVal,
 
     mLabelValue = new QLabel;
     mLabelValue->setAlignment(Qt::AlignHCenter);
-    mLabelValue->setStyleSheet("font-size: 7pt; font-family: monospace;");
 
     layout->addWidget(nameLabel);
     layout->addWidget(mDial, 1);
@@ -129,11 +129,19 @@ void KnobWidget::updateLabel()
     if (!mUnit.isEmpty())
         txt += " " + mUnit;
 
-    // Use theme highlight color for the value text
-    QColor hl = palette().color(QPalette::Highlight);
-    mLabelValue->setStyleSheet(
-        QString("font-size:7pt; font-family:monospace; color:%1;").arg(hl.name()));
+    // Use theme highlight color for the value text via palette (Breeze-compatible)
+    QPalette p = mLabelValue->palette();
+    p.setColor(QPalette::WindowText, palette().color(QPalette::Highlight));
+    mLabelValue->setPalette(p);
     mLabelValue->setText(txt);
+}
+
+void KnobWidget::contextMenuEvent(QContextMenuEvent* event)
+{
+    QMenu menu(this);
+    auto* resetAction = menu.addAction("Reset to Default");
+    if (menu.exec(event->globalPos()) == resetAction)
+        resetToDefault();
 }
 
 bool KnobWidget::eventFilter(QObject* obj, QEvent* event)

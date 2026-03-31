@@ -34,6 +34,9 @@ set(GUI_SOURCES
     src/main.cpp
     src/MainWindow.cpp
     src/MainWindow.h
+    src/MainWindowAlt.cpp
+    src/MainWindowAlt.h
+    src/Constants.h
     src/AudioEngine.cpp
     src/AudioEngine.h
     src/KnobWidget.cpp
