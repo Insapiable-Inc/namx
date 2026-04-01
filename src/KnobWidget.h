@@ -24,6 +24,10 @@ public:
     /// When true, the value label shows a rounded integer.
     void setIntegerDisplay(bool on) { mIntDisplay = on; updateLabel(); }
 
+    /// Set the scroll-wheel increment in value units (e.g. 0.1 for 0.1 dB).
+    /// Pass 0 to use the default (1% of range).
+    void setScrollStep(double step) { mScrollStep = step; }
+
     QSize sizeHint()        const override { return {72, 88}; }
     QSize minimumSizeHint() const override { return {60, 76}; }
 
@@ -47,6 +51,7 @@ private:
     double mMin, mMax, mDefault;
     QString mUnit;
     bool    mIntDisplay{false};
+    double  mScrollStep{0.0};
 
     static constexpr int kSteps = 10000;
 

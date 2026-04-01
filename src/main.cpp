@@ -1,6 +1,6 @@
 #include <QApplication>
 #include <QStyleFactory>
-#include "MainWindowAlt.h"
+#include "MainWindow.h"
 
 int main(int argc, char* argv[])
 {
@@ -15,7 +15,7 @@ int main(int argc, char* argv[])
     else
         app.setStyle("Breeze");
 
-    MainWindowAlt w;
+    MainWindow w;
     w.show();
     return app.exec();
 }

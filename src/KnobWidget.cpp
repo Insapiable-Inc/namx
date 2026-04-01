@@ -8,6 +8,7 @@
 #include <QMouseEvent>
 #include <QPalette>
 #include <QVBoxLayout>
+#include <QWheelEvent>
 
 // ---------------------------------------------------------------------------
 // VerticalDial — QDial that maps vertical mouse drag to value changes.
@@ -149,6 +150,20 @@ bool KnobWidget::eventFilter(QObject* obj, QEvent* event)
     if (obj == mDial && event->type() == QEvent::MouseButtonDblClick)
     {
         resetToDefault();
+        return true;
+    }
+    if (obj == mDial && event->type() == QEvent::Wheel)
+    {
+        auto* we = static_cast<QWheelEvent*>(event);
+        int delta = we->angleDelta().y();
+        if (delta == 0) return true;
+        int dialStep;
+        if (mScrollStep > 0.0)
+            dialStep = qMax(1, static_cast<int>(mScrollStep / (mMax - mMin) * kSteps + 0.5));
+        else
+            dialStep = kSteps / 100;
+        int newVal = mDial->value() + (delta > 0 ? dialStep : -dialStep);
+        mDial->setValue(qBound(0, newVal, kSteps));
         return true;
     }
     return QWidget::eventFilter(obj, event);
