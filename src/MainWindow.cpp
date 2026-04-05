@@ -333,20 +333,19 @@ void MainWindow::setupUI()
         stripLay->addWidget(col);
     }
 
-    // ---- Pitch Shift column ----
+    // ---- Octave Pedal column ----
     {
         using namespace NAMConstants;
-        mKnobPitchSemi = new KnobWidget("Semitones", kPitchSemiMin, kPitchSemiMax, kPitchSemiDefault, "st");
-        mKnobPitchSemi->setIntegerDisplay(true);
-        mKnobPitchSemi->setScrollStep(1.0);
-        mKnobPitchMix  = new KnobWidget("Mix", kPitchMixMin, kPitchMixMax, kPitchMixDefault, "%");
-        mKnobPitchMix->setScrollStep(1.0);
+        mKnobOctUp   = new KnobWidget("Oct Up",   kOctaveUpMin,   kOctaveUpMax,   kOctaveUpDefault,   "%");
+        mKnobOctDown = new KnobWidget("Oct Down", kOctaveDownMin, kOctaveDownMax, kOctaveDownDefault, "%");
+        mKnobOctUp->setScrollStep(1.0);
+        mKnobOctDown->setScrollStep(1.0);
 
-        auto* col = makeEffectColumn("Pitch", mSwPitchEnable, {mKnobPitchSemi, mKnobPitchMix});
+        auto* col = makeEffectColumn("Octave", mSwOctaveEnable, {mKnobOctUp, mKnobOctDown});
 
-        connect(mSwPitchEnable, &ToggleSwitch::toggled,    this, &MainWindow::onPitchEnabledToggled);
-        connect(mKnobPitchSemi, &KnobWidget::valueChanged, this, &MainWindow::onPitchSemitonesChanged);
-        connect(mKnobPitchMix,  &KnobWidget::valueChanged, this, &MainWindow::onPitchMixChanged);
+        connect(mSwOctaveEnable, &ToggleSwitch::toggled,    this, &MainWindow::onOctaveEnabledToggled);
+        connect(mKnobOctUp,      &KnobWidget::valueChanged, this, &MainWindow::onOctaveUpChanged);
+        connect(mKnobOctDown,    &KnobWidget::valueChanged, this, &MainWindow::onOctaveDownChanged);
         stripLay->addWidget(col);
     }
 
@@ -416,6 +415,46 @@ void MainWindow::setupUI()
         connect(mKnobPhDepth,    &KnobWidget::valueChanged, this, &MainWindow::onPhaserDepthChanged);
         connect(mKnobPhFeedback, &KnobWidget::valueChanged, this, &MainWindow::onPhaserFeedbackChanged);
         connect(mKnobPhMix,      &KnobWidget::valueChanged, this, &MainWindow::onPhaserMixChanged);
+        stripLay->addWidget(col);
+    }
+
+    // ---- Volume Sweep column ----
+    {
+        using namespace NAMConstants;
+        mKnobSweepAtk  = new KnobWidget("Attack", kSweepAttackMin, kSweepAttackMax, kSweepAttackDefault, "ms");
+        mKnobSweepSens = new KnobWidget("Sens",   kSweepSensMin,   kSweepSensMax,   kSweepSensDefault,   "%");
+        mKnobSweepMix  = new KnobWidget("Mix",    kSweepMixMin,    kSweepMixMax,    kSweepMixDefault,    "%");
+        mKnobSweepAtk->setScrollStep(10.0);
+        mKnobSweepSens->setScrollStep(1.0);
+        mKnobSweepMix->setScrollStep(1.0);
+
+        auto* col = makeEffectColumn("V.Sweep", mSwSweepEnable,
+            {mKnobSweepAtk, mKnobSweepSens, mKnobSweepMix});
+
+        connect(mSwSweepEnable,  &ToggleSwitch::toggled,    this, &MainWindow::onVolumeSweepEnabledToggled);
+        connect(mKnobSweepAtk,   &KnobWidget::valueChanged, this, &MainWindow::onVolumeSweepAttackChanged);
+        connect(mKnobSweepSens,  &KnobWidget::valueChanged, this, &MainWindow::onVolumeSweepSensChanged);
+        connect(mKnobSweepMix,   &KnobWidget::valueChanged, this, &MainWindow::onVolumeSweepMixChanged);
+        stripLay->addWidget(col);
+    }
+
+    // ---- Dynamic Wah column ----
+    {
+        using namespace NAMConstants;
+        mKnobWahSens = new KnobWidget("Sens", kWahSensMin, kWahSensMax, kWahSensDefault, "%");
+        mKnobWahRes  = new KnobWidget("Res",  kWahResMin,  kWahResMax,  kWahResDefault,  "%");
+        mKnobWahMix  = new KnobWidget("Mix",  kWahMixMin,  kWahMixMax,  kWahMixDefault,  "%");
+        mKnobWahSens->setScrollStep(1.0);
+        mKnobWahRes->setScrollStep(1.0);
+        mKnobWahMix->setScrollStep(1.0);
+
+        auto* col = makeEffectColumn("Dyn.Wah", mSwWahEnable,
+            {mKnobWahSens, mKnobWahRes, mKnobWahMix});
+
+        connect(mSwWahEnable,  &ToggleSwitch::toggled,    this, &MainWindow::onDynamicWahEnabledToggled);
+        connect(mKnobWahSens,  &KnobWidget::valueChanged, this, &MainWindow::onDynamicWahSensChanged);
+        connect(mKnobWahRes,   &KnobWidget::valueChanged, this, &MainWindow::onDynamicWahResChanged);
+        connect(mKnobWahMix,   &KnobWidget::valueChanged, this, &MainWindow::onDynamicWahMixChanged);
         stripLay->addWidget(col);
     }
 
@@ -534,6 +573,23 @@ void MainWindow::setupUI()
         stripLay->addWidget(col);
     }
 
+    // ---- Reverse column ----
+    {
+        using namespace NAMConstants;
+        mKnobRevLen  = new KnobWidget("Length", kReverseLenMin, kReverseLenMax, kReverseLenDefault, "ms");
+        mKnobRevMixR = new KnobWidget("Mix",    kReverseMixMin, kReverseMixMax, kReverseMixDefault, "%");
+        mKnobRevLen->setScrollStep(10.0);
+        mKnobRevMixR->setScrollStep(1.0);
+
+        auto* col = makeEffectColumn("Reverse", mSwReverseEnable,
+            {mKnobRevLen, mKnobRevMixR});
+
+        connect(mSwReverseEnable, &ToggleSwitch::toggled,    this, &MainWindow::onReverseEnabledToggled);
+        connect(mKnobRevLen,      &KnobWidget::valueChanged, this, &MainWindow::onReverseLengthChanged);
+        connect(mKnobRevMixR,     &KnobWidget::valueChanged, this, &MainWindow::onReverseMixChanged);
+        stripLay->addWidget(col);
+    }
+
     // ---- Reverb column ----
     {
         using namespace NAMConstants;
@@ -554,6 +610,23 @@ void MainWindow::setupUI()
         connect(mKnobRevDamping,  &KnobWidget::valueChanged, this, &MainWindow::onReverbDampingChanged);
         connect(mKnobRevWidth,    &KnobWidget::valueChanged, this, &MainWindow::onReverbWidthChanged);
         connect(mKnobRevMix,      &KnobWidget::valueChanged, this, &MainWindow::onReverbMixChanged);
+        stripLay->addWidget(col);
+    }
+
+    // ---- Bit Crusher column ----
+    {
+        using namespace NAMConstants;
+        mKnobBitBits = new KnobWidget("Bits", kBitCrushBitsMin, kBitCrushBitsMax, kBitCrushBitsDefault, "");
+        mKnobBitMix  = new KnobWidget("Mix",  kBitCrushMixMin,  kBitCrushMixMax,  kBitCrushMixDefault,  "%");
+        mKnobBitBits->setScrollStep(1.0);
+        mKnobBitMix->setScrollStep(1.0);
+
+        auto* col = makeEffectColumn("Bit Crush", mSwBitEnable,
+            {mKnobBitBits, mKnobBitMix});
+
+        connect(mSwBitEnable,  &ToggleSwitch::toggled,    this, &MainWindow::onBitCrusherEnabledToggled);
+        connect(mKnobBitBits,  &KnobWidget::valueChanged, this, &MainWindow::onBitCrusherBitsChanged);
+        connect(mKnobBitMix,   &KnobWidget::valueChanged, this, &MainWindow::onBitCrusherMixChanged);
         stripLay->addWidget(col);
     }
 
@@ -704,12 +777,46 @@ void MainWindow::onCompReleaseChanged(double v)   { mEngine->comp().setRelease  
 void MainWindow::onCompMakeupChanged(double v)    { mEngine->comp().setMakeup   (static_cast<float>(v)); }
 
 // ---------------------------------------------------------------------------
-// Pitch Shift slots
+// Reverse slots
 // ---------------------------------------------------------------------------
 
-void MainWindow::onPitchEnabledToggled(bool en)    { mEngine->setPitchEnabled(en); }
-void MainWindow::onPitchSemitonesChanged(double v) { mEngine->pitch().setSemitones(static_cast<float>(v)); }
-void MainWindow::onPitchMixChanged(double v)       { mEngine->pitch().setMix      (static_cast<float>(v)); }
+void MainWindow::onReverseEnabledToggled(bool en) { mEngine->setReverseEnabled(en); }
+void MainWindow::onReverseLengthChanged(double v) { mEngine->reverse().setLength(static_cast<float>(v)); }
+void MainWindow::onReverseMixChanged(double v)    { mEngine->reverse().setMix   (static_cast<float>(v)); }
+
+// ---------------------------------------------------------------------------
+// Volume Sweep slots
+// ---------------------------------------------------------------------------
+
+void MainWindow::onVolumeSweepEnabledToggled(bool en) { mEngine->setVolumeSweepEnabled(en); }
+void MainWindow::onVolumeSweepAttackChanged(double v) { mEngine->volumeSweep().setAttack     (static_cast<float>(v)); }
+void MainWindow::onVolumeSweepSensChanged(double v)   { mEngine->volumeSweep().setSensitivity(static_cast<float>(v)); }
+void MainWindow::onVolumeSweepMixChanged(double v)    { mEngine->volumeSweep().setMix        (static_cast<float>(v)); }
+
+// ---------------------------------------------------------------------------
+// Dynamic Wah slots
+// ---------------------------------------------------------------------------
+
+void MainWindow::onDynamicWahEnabledToggled(bool en) { mEngine->setDynamicWahEnabled(en); }
+void MainWindow::onDynamicWahSensChanged(double v)   { mEngine->dynamicWah().setSensitivity(static_cast<float>(v)); }
+void MainWindow::onDynamicWahResChanged(double v)    { mEngine->dynamicWah().setResonance  (static_cast<float>(v)); }
+void MainWindow::onDynamicWahMixChanged(double v)    { mEngine->dynamicWah().setMix        (static_cast<float>(v)); }
+
+// ---------------------------------------------------------------------------
+// Bit Crusher slots
+// ---------------------------------------------------------------------------
+
+void MainWindow::onBitCrusherEnabledToggled(bool en) { mEngine->setBitCrusherEnabled(en); }
+void MainWindow::onBitCrusherBitsChanged(double v)   { mEngine->bitCrusher().setBits(static_cast<float>(v)); }
+void MainWindow::onBitCrusherMixChanged(double v)    { mEngine->bitCrusher().setMix (static_cast<float>(v)); }
+
+// ---------------------------------------------------------------------------
+// Octave Pedal slots
+// ---------------------------------------------------------------------------
+
+void MainWindow::onOctaveEnabledToggled(bool en) { mEngine->setOctaveEnabled(en); }
+void MainWindow::onOctaveUpChanged(double v)     { mEngine->octave().setUpLevel  (static_cast<float>(v)); }
+void MainWindow::onOctaveDownChanged(double v)   { mEngine->octave().setDownLevel(static_cast<float>(v)); }
 
 // ---------------------------------------------------------------------------
 // Chorus 1 slots
@@ -779,6 +886,7 @@ void MainWindow::onReverbRoomChanged(double v)    { mEngine->reverb().setRoomSiz
 void MainWindow::onReverbDampingChanged(double v) { mEngine->reverb().setDamping (static_cast<float>(v)); }
 void MainWindow::onReverbWidthChanged(double v)   { mEngine->reverb().setWidth   (static_cast<float>(v)); }
 void MainWindow::onReverbMixChanged(double v)     { mEngine->reverb().setMix     (static_cast<float>(v)); }
+
 
 // ---------------------------------------------------------------------------
 // Meters & tuner
@@ -900,11 +1008,11 @@ void MainWindow::onSavePreset()
     comp["makeup"]    = static_cast<double>(mEngine->comp().makeup());
     obj["compressor"] = comp;
 
-    QJsonObject pitch;
-    pitch["enabled"]   = mEngine->pitchEnabled();
-    pitch["semitones"] = static_cast<double>(mEngine->pitch().semitones());
-    pitch["mix"]       = static_cast<double>(mEngine->pitch().mix());
-    obj["pitchShift"] = pitch;
+    QJsonObject octave;
+    octave["enabled"]  = mEngine->octaveEnabled();
+    octave["upLevel"]  = static_cast<double>(mEngine->octave().upLevel());
+    octave["downLevel"]= static_cast<double>(mEngine->octave().downLevel());
+    obj["octave"] = octave;
 
     QJsonObject ch1;
     ch1["enabled"] = mEngine->chorus1Enabled();
@@ -960,6 +1068,32 @@ void MainWindow::onSavePreset()
     rev["width"]    = static_cast<double>(mEngine->reverb().width());
     rev["mix"]      = static_cast<double>(mEngine->reverb().mix());
     obj["reverb"] = rev;
+
+    QJsonObject rvs;
+    rvs["enabled"] = mEngine->reverseEnabled();
+    rvs["length"]  = static_cast<double>(mEngine->reverse().length());
+    rvs["mix"]     = static_cast<double>(mEngine->reverse().mix());
+    obj["reverse"] = rvs;
+
+    QJsonObject sweep;
+    sweep["enabled"]     = mEngine->volumeSweepEnabled();
+    sweep["attack"]      = static_cast<double>(mEngine->volumeSweep().attack());
+    sweep["sensitivity"] = static_cast<double>(mEngine->volumeSweep().sensitivity());
+    sweep["mix"]         = static_cast<double>(mEngine->volumeSweep().mix());
+    obj["volumeSweep"] = sweep;
+
+    QJsonObject wah;
+    wah["enabled"]     = mEngine->dynamicWahEnabled();
+    wah["sensitivity"] = static_cast<double>(mEngine->dynamicWah().sensitivity());
+    wah["resonance"]   = static_cast<double>(mEngine->dynamicWah().resonance());
+    wah["mix"]         = static_cast<double>(mEngine->dynamicWah().mix());
+    obj["dynamicWah"] = wah;
+
+    QJsonObject bit;
+    bit["enabled"] = mEngine->bitCrusherEnabled();
+    bit["bits"]    = static_cast<double>(mEngine->bitCrusher().bits());
+    bit["mix"]     = static_cast<double>(mEngine->bitCrusher().mix());
+    obj["bitCrusher"] = bit;
 
     obj["irEnabled"] = mEngine->irEnabled();
 
@@ -1058,11 +1192,11 @@ void MainWindow::onLoadPreset()
         mKnobCompRelease->setValue(getD(c, "release",   NAMConstants::kCompReleaseDefault));
         mKnobCompMakeup ->setValue(getD(c, "makeup",    NAMConstants::kCompMakeupDefault));
     }
-    if (obj.contains("pitchShift")) {
-        auto p = obj["pitchShift"].toObject();
-        mSwPitchEnable ->setChecked(getB(p, "enabled", false));
-        mKnobPitchSemi ->setValue(getD(p, "semitones", NAMConstants::kPitchSemiDefault));
-        mKnobPitchMix  ->setValue(getD(p, "mix",       NAMConstants::kPitchMixDefault));
+    if (obj.contains("octave")) {
+        auto o = obj["octave"].toObject();
+        mSwOctaveEnable->setChecked(getB(o, "enabled",   false));
+        mKnobOctUp     ->setValue(getD(o, "upLevel",   NAMConstants::kOctaveUpDefault));
+        mKnobOctDown   ->setValue(getD(o, "downLevel", NAMConstants::kOctaveDownDefault));
     }
     if (obj.contains("chorus1")) {
         auto c = obj["chorus1"].toObject();
@@ -1118,6 +1252,32 @@ void MainWindow::onLoadPreset()
         mKnobRevDamping ->setValue(getD(rv, "damping",  NAMConstants::kReverbDampingDefault));
         mKnobRevWidth   ->setValue(getD(rv, "width",    NAMConstants::kReverbWidthDefault));
         mKnobRevMix     ->setValue(getD(rv, "mix",      NAMConstants::kReverbMixDefault));
+    }
+    if (obj.contains("reverse")) {
+        auto r = obj["reverse"].toObject();
+        mSwReverseEnable->setChecked(getB(r, "enabled", false));
+        mKnobRevLen ->setValue(getD(r, "length", NAMConstants::kReverseLenDefault));
+        mKnobRevMixR->setValue(getD(r, "mix",    NAMConstants::kReverseMixDefault));
+    }
+    if (obj.contains("volumeSweep")) {
+        auto s = obj["volumeSweep"].toObject();
+        mSwSweepEnable ->setChecked(getB(s, "enabled",     false));
+        mKnobSweepAtk  ->setValue(getD(s, "attack",      NAMConstants::kSweepAttackDefault));
+        mKnobSweepSens ->setValue(getD(s, "sensitivity", NAMConstants::kSweepSensDefault));
+        mKnobSweepMix  ->setValue(getD(s, "mix",         NAMConstants::kSweepMixDefault));
+    }
+    if (obj.contains("dynamicWah")) {
+        auto w = obj["dynamicWah"].toObject();
+        mSwWahEnable ->setChecked(getB(w, "enabled",     false));
+        mKnobWahSens ->setValue(getD(w, "sensitivity", NAMConstants::kWahSensDefault));
+        mKnobWahRes  ->setValue(getD(w, "resonance",   NAMConstants::kWahResDefault));
+        mKnobWahMix  ->setValue(getD(w, "mix",         NAMConstants::kWahMixDefault));
+    }
+    if (obj.contains("bitCrusher")) {
+        auto b = obj["bitCrusher"].toObject();
+        mSwBitEnable ->setChecked(getB(b, "enabled", false));
+        mKnobBitBits ->setValue(getD(b, "bits", NAMConstants::kBitCrushBitsDefault));
+        mKnobBitMix  ->setValue(getD(b, "mix",  NAMConstants::kBitCrushMixDefault));
     }
     if (obj.contains("irEnabled"))
         mSwIREnable->setChecked(obj["irEnabled"].toBool(true));

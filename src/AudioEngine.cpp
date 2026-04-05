@@ -43,14 +43,18 @@ bool AudioEngine::start(const std::string& clientName)
     mTuner  .setSampleRate(mSampleRate);
     mGate   .setSampleRate(mSampleRate);
     mComp   .setSampleRate(mSampleRate);
-    mPitch  .setSampleRate(mSampleRate);
+    mOctave .setSampleRate(mSampleRate);
     mChorus1.setSampleRate(mSampleRate);
     mFlanger.setSampleRate(mSampleRate);
     mPhaser .setSampleRate(mSampleRate);
     mChorus2.setSampleRate(mSampleRate);
     mTremolo.setSampleRate(mSampleRate);
-    mDelay  .setSampleRate(mSampleRate);
-    mReverb .setSampleRate(mSampleRate);
+    mDelay      .setSampleRate(mSampleRate);
+    mReverse    .setSampleRate(mSampleRate);
+    mBitCrusher .setSampleRate(mSampleRate);
+    mReverb     .setSampleRate(mSampleRate);
+    mVolumeSweep.setSampleRate(mSampleRate);
+    mDynamicWah .setSampleRate(mSampleRate);
 
     jack_set_process_callback(mClient, jackProcessCallback, this);
     jack_on_shutdown(mClient, jackShutdownCallback, this);
@@ -204,9 +208,9 @@ void AudioEngine::processPreNam(int id, float* buf, int n)
             if (mCompEnabled.load())
                 mComp.processBlock(buf, n);
             break;
-        case EffectId::PitchShift:
-            if (mPitchEnabled.load())
-                mPitch.processBlock(buf, n);
+        case EffectId::Octave:
+            if (mOctaveEnabled.load())
+                mOctave.processBlock(buf, n);
             break;
         case EffectId::Chorus1:
             if (mChorus1Enabled.load() && !mChorus1Stereo.load())
@@ -219,6 +223,14 @@ void AudioEngine::processPreNam(int id, float* buf, int n)
         case EffectId::Phaser:
             if (mPhaserEnabled.load() && !mPhaserStereo.load())
                 mPhaser.processBlock(buf, n);
+            break;
+        case EffectId::VolumeSweep:
+            if (mVolumeSweepEnabled.load())
+                mVolumeSweep.processBlock(buf, n);
+            break;
+        case EffectId::DynamicWah:
+            if (mDynamicWahEnabled.load())
+                mDynamicWah.processBlock(buf, n);
             break;
         default: break;
     }
@@ -249,6 +261,14 @@ void AudioEngine::processPostNam(int id, float* L, float* R, int n)
                     std::copy(L, L + n, R);
                 }
             }
+            break;
+        case EffectId::Reverse:
+            if (mReverseEnabled.load())
+                mReverse.processBlockStereo(L, R, n);
+            break;
+        case EffectId::BitCrusher:
+            if (mBitCrusherEnabled.load())
+                mBitCrusher.processBlockStereo(L, R, n);
             break;
         case EffectId::Reverb:
             if (mReverbEnabled.load())

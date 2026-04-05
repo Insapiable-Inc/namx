@@ -65,10 +65,10 @@ private slots:
     void onCompReleaseChanged(double v);
     void onCompMakeupChanged(double v);
 
-    // Pitch Shift
-    void onPitchEnabledToggled(bool en);
-    void onPitchSemitonesChanged(double v);
-    void onPitchMixChanged(double v);
+    // Octave Pedal
+    void onOctaveEnabledToggled(bool en);
+    void onOctaveUpChanged(double v);
+    void onOctaveDownChanged(double v);
 
     // Chorus 1
     void onChorus1EnabledToggled(bool en);
@@ -117,6 +117,28 @@ private slots:
     void onReverbDampingChanged(double v);
     void onReverbWidthChanged(double v);
     void onReverbMixChanged(double v);
+
+    // Reverse
+    void onReverseEnabledToggled(bool en);
+    void onReverseLengthChanged(double v);
+    void onReverseMixChanged(double v);
+
+    // Volume Sweep
+    void onVolumeSweepEnabledToggled(bool en);
+    void onVolumeSweepAttackChanged(double v);
+    void onVolumeSweepSensChanged(double v);
+    void onVolumeSweepMixChanged(double v);
+
+    // Dynamic Wah
+    void onDynamicWahEnabledToggled(bool en);
+    void onDynamicWahSensChanged(double v);
+    void onDynamicWahResChanged(double v);
+    void onDynamicWahMixChanged(double v);
+
+    // Bit Crusher
+    void onBitCrusherEnabledToggled(bool en);
+    void onBitCrusherBitsChanged(double v);
+    void onBitCrusherMixChanged(double v);
 
     // Preset
     void onSavePreset();
@@ -186,10 +208,10 @@ private:
     KnobWidget*   mKnobCompRelease = nullptr;
     KnobWidget*   mKnobCompMakeup  = nullptr;
 
-    // Pitch Shift
-    ToggleSwitch* mSwPitchEnable = nullptr;
-    KnobWidget*   mKnobPitchSemi = nullptr;
-    KnobWidget*   mKnobPitchMix  = nullptr;
+    // Octave Pedal
+    ToggleSwitch* mSwOctaveEnable = nullptr;
+    KnobWidget*   mKnobOctUp      = nullptr;
+    KnobWidget*   mKnobOctDown    = nullptr;
 
     // Chorus 1
     ToggleSwitch* mSwChorus1Enable = nullptr;
@@ -238,6 +260,28 @@ private:
     KnobWidget*   mKnobRevDamping = nullptr;
     KnobWidget*   mKnobRevWidth   = nullptr;
     KnobWidget*   mKnobRevMix     = nullptr;
+
+    // Reverse
+    ToggleSwitch* mSwReverseEnable = nullptr;
+    KnobWidget*   mKnobRevLen      = nullptr;
+    KnobWidget*   mKnobRevMixR     = nullptr;
+
+    // Volume Sweep
+    ToggleSwitch* mSwSweepEnable = nullptr;
+    KnobWidget*   mKnobSweepAtk  = nullptr;
+    KnobWidget*   mKnobSweepSens = nullptr;
+    KnobWidget*   mKnobSweepMix  = nullptr;
+
+    // Dynamic Wah
+    ToggleSwitch* mSwWahEnable  = nullptr;
+    KnobWidget*   mKnobWahSens  = nullptr;
+    KnobWidget*   mKnobWahRes   = nullptr;
+    KnobWidget*   mKnobWahMix   = nullptr;
+
+    // Bit Crusher
+    ToggleSwitch* mSwBitEnable  = nullptr;
+    KnobWidget*   mKnobBitBits  = nullptr;
+    KnobWidget*   mKnobBitMix   = nullptr;
 
     // NAM
     ToggleSwitch* mSwNAMEnable = nullptr;

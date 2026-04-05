@@ -17,29 +17,34 @@
 #include "TunerProcessor.h"
 #include "NoiseGateProcessor.h"
 #include "CompressorProcessor.h"
-#include "PitchShiftProcessor.h"
 #include "ChorusProcessor.h"
 #include "FlangerProcessor.h"
 #include "PhaserProcessor.h"
 #include "TremoloProcessor.h"
 #include "DelayProcessor.h"
 #include "ReverbProcessor.h"
+#include "OctaveProcessor.h"
+#include "ReverseProcessor.h"
+#include "VolumeSweepProcessor.h"
+#include "DynamicWahProcessor.h"
+#include "BitCrusherProcessor.h"
 
 /// Effect indices for the pre-NAM and post-NAM chains.
 /// The processing order of both lists is dynamic (see setEffectOrder).
 namespace EffectId
 {
     // Pre-NAM (mono)
-    enum PreNam : int { Tuner=0, Gate, Comp, PitchShift, Chorus1, Flanger, Phaser, PreNamCount };
+    enum PreNam : int { Tuner=0, Gate, Comp, Octave, Chorus1, Flanger, Phaser,
+                        VolumeSweep, DynamicWah, PreNamCount };
     // Post-NAM (stereo)
-    enum PostNam : int { Chorus2=0, Tremolo, Delay, Reverb, IR, PostNamCount };
+    enum PostNam : int { Chorus2=0, Tremolo, Delay, Reverse, BitCrusher, Reverb, IR, PostNamCount };
 }
 
 /// Holds the processing order for both chains (double-buffered, lock-free).
 struct EffectOrder
 {
-    std::array<int, EffectId::PreNamCount>  pre  = {0, 1, 2, 3, 4, 5, 6};
-    std::array<int, EffectId::PostNamCount> post = {0, 1, 2, 3, 4};
+    std::array<int, EffectId::PreNamCount>  pre  = {0, 1, 2, 3, 4, 5, 6, 7, 8};
+    std::array<int, EffectId::PostNamCount> post = {0, 1, 2, 3, 4, 5, 6};
 };
 
 class AudioEngine
@@ -90,7 +95,7 @@ public:
     void setTunerMute(bool en)       { mTunerMute.store(en);       }
     void setGateEnabled(bool en)     { mGateEnabled.store(en);     }
     void setCompEnabled(bool en)     { mCompEnabled.store(en);     }
-    void setPitchEnabled(bool en)    { mPitchEnabled.store(en);    }
+    void setOctaveEnabled(bool en)   { mOctaveEnabled.store(en);   }
     void setChorus1Enabled(bool en)  { mChorus1Enabled.store(en);  }
     void setChorus1Stereo(bool en)   { mChorus1Stereo.store(en);   }
     bool chorus1Stereo()   const { return mChorus1Stereo.load();   }
@@ -105,34 +110,46 @@ public:
     void setDelayEnabled(bool en)    { mDelayEnabled.store(en);    }
     void setDelayStereo(bool en)     { mDelayStereo.store(en);     }
     bool delayStereo()     const { return mDelayStereo.load();     }
-    void setReverbEnabled(bool en)   { mReverbEnabled.store(en);   }
+    void setReverbEnabled(bool en)      { mReverbEnabled.store(en);      }
+    void setReverseEnabled(bool en)     { mReverseEnabled.store(en);     }
+    void setVolumeSweepEnabled(bool en) { mVolumeSweepEnabled.store(en); }
+    void setDynamicWahEnabled(bool en)  { mDynamicWahEnabled.store(en);  }
+    void setBitCrusherEnabled(bool en)  { mBitCrusherEnabled.store(en);  }
 
     bool irEnabled()      const { return mIREnabled.load();      }
     bool tunerEnabled()   const { return mTunerEnabled.load();   }
     bool tunerMute()      const { return mTunerMute.load();      }
     bool gateEnabled()    const { return mGateEnabled.load();    }
     bool compEnabled()    const { return mCompEnabled.load();    }
-    bool pitchEnabled()   const { return mPitchEnabled.load();   }
+    bool octaveEnabled()  const { return mOctaveEnabled.load();  }
     bool chorus1Enabled() const { return mChorus1Enabled.load(); }
     bool flangerEnabled() const { return mFlangerEnabled.load(); }
     bool phaserEnabled()  const { return mPhaserEnabled.load();  }
     bool chorus2Enabled() const { return mChorus2Enabled.load(); }
     bool tremoloEnabled() const { return mTremoloEnabled.load(); }
     bool delayEnabled()   const { return mDelayEnabled.load();   }
-    bool reverbEnabled()  const { return mReverbEnabled.load();  }
+    bool reverbEnabled()      const { return mReverbEnabled.load();      }
+    bool reverseEnabled()     const { return mReverseEnabled.load();     }
+    bool volumeSweepEnabled() const { return mVolumeSweepEnabled.load(); }
+    bool dynamicWahEnabled()  const { return mDynamicWahEnabled.load();  }
+    bool bitCrusherEnabled()  const { return mBitCrusherEnabled.load();  }
 
     // ---- Effect parameter access (by reference for direct setter calls) ----
     TunerProcessor&      tuner()   { return mTuner;   }
     NoiseGateProcessor&  gate()    { return mGate;    }
     CompressorProcessor& comp()    { return mComp;    }
-    PitchShiftProcessor& pitch()   { return mPitch;   }
+    OctaveProcessor&     octave()  { return mOctave;  }
     ChorusProcessor&     chorus1() { return mChorus1; }
     FlangerProcessor&    flanger() { return mFlanger; }
     PhaserProcessor&     phaser()  { return mPhaser;  }
     ChorusProcessor&     chorus2() { return mChorus2; }
     TremoloProcessor&    tremolo() { return mTremolo; }
-    DelayProcessor&      delay()   { return mDelay;   }
-    ReverbProcessor&     reverb()  { return mReverb;  }
+    DelayProcessor&        delay()        { return mDelay;        }
+    ReverbProcessor&       reverb()       { return mReverb;       }
+    ReverseProcessor&      reverse()      { return mReverse;      }
+    VolumeSweepProcessor&  volumeSweep()  { return mVolumeSweep;  }
+    DynamicWahProcessor&   dynamicWah()   { return mDynamicWah;   }
+    BitCrusherProcessor&   bitCrusher()   { return mBitCrusher;   }
 
     // ---- Dynamic effect ordering (lock-free double-buffer) ----
     /// Set both pre-NAM and post-NAM processing order atomically.
@@ -175,17 +192,21 @@ private:
     TunerProcessor      mTuner;
     NoiseGateProcessor  mGate;
     CompressorProcessor mComp;
-    PitchShiftProcessor mPitch;
+    OctaveProcessor     mOctave;
     ChorusProcessor     mChorus1;
     FlangerProcessor    mFlanger;
     PhaserProcessor     mPhaser;
     EQProcessor         mEQ;
     std::mutex          mEQMutex;
     ChorusProcessor     mChorus2;
-    TremoloProcessor    mTremolo;
-    DelayProcessor      mDelay;
-    ReverbProcessor     mReverb;
-    IRLoader            mIRLoader;
+    TremoloProcessor      mTremolo;
+    DelayProcessor        mDelay;
+    ReverseProcessor      mReverse;
+    BitCrusherProcessor   mBitCrusher;
+    ReverbProcessor       mReverb;
+    VolumeSweepProcessor  mVolumeSweep;
+    DynamicWahProcessor   mDynamicWah;
+    IRLoader              mIRLoader;
 
     // Effect enable atomics
     std::atomic<bool> mNAMEnabled    {true};
@@ -195,7 +216,7 @@ private:
     std::atomic<bool> mTunerMute     {false};
     std::atomic<bool> mGateEnabled   {false};
     std::atomic<bool> mCompEnabled   {false};
-    std::atomic<bool> mPitchEnabled  {false};
+    std::atomic<bool> mOctaveEnabled {false};
     std::atomic<bool> mChorus1Enabled{false};
     std::atomic<bool> mChorus1Stereo {false};
     std::atomic<bool> mFlangerEnabled{false};
@@ -206,7 +227,11 @@ private:
     std::atomic<bool> mTremoloEnabled{false};
     std::atomic<bool> mDelayEnabled  {false};
     std::atomic<bool> mDelayStereo   {true};
-    std::atomic<bool> mReverbEnabled {false};
+    std::atomic<bool> mReverbEnabled      {false};
+    std::atomic<bool> mReverseEnabled     {false};
+    std::atomic<bool> mVolumeSweepEnabled {false};
+    std::atomic<bool> mDynamicWahEnabled  {false};
+    std::atomic<bool> mBitCrusherEnabled  {false};
 
     // Gain
     std::atomic<float> mInputGainDB {0.0f};
