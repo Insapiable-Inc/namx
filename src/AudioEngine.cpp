@@ -238,9 +238,13 @@ void AudioEngine::processPostNam(int id, float* L, float* R, int n)
             break;
         case EffectId::Delay:
             if (mDelayEnabled.load()) {
-                if (mDelayStereo.load())
-                    mDelay.processBlockStereo(L, R, n);
-                else {
+                if (mDelayStereo.load()) {
+                    bool trueStereo = mChorus2Enabled.load() || mTremoloEnabled.load();
+                    if (trueStereo)
+                        mDelay.processBlockStereoIndependent(L, R, n);
+                    else
+                        mDelay.processBlockStereo(L, R, n);
+                } else {
                     mDelay.processBlock(L, n);
                     std::copy(L, L + n, R);
                 }

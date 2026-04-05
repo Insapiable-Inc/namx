@@ -15,6 +15,7 @@ public:
 
     void processBlock(float* buf, int nframes) override;
     void processBlockStereo(float* L, float* R, int nframes) override;
+    void processBlockStereoIndependent(float* L, float* R, int nframes);
 
     void setTime(float ms)        { mTimeMS.store(ms);     }  // 0–2000
     void setFeedback(float pct)   { mFeedback.store(pct);  }  // 0–99

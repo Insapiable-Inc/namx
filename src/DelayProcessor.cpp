@@ -36,6 +36,33 @@ void DelayProcessor::processBlock(float* buf, int nframes)
     }
 }
 
+void DelayProcessor::processBlockStereoIndependent(float* L, float* R, int nframes)
+{
+    const float timeMS = mTimeMS.load();
+    const float fb     = std::min(mFeedback.load() / 100.0f, 0.99f);
+    const float mix    = mMix.load() / 100.0f;
+    const int   sz     = static_cast<int>(mBufL.size());
+    const int   delay  = std::min(static_cast<int>(timeMS * mSampleRate / 1000.0), sz - 1);
+
+    for (int i = 0; i < nframes; ++i)
+    {
+        int readPosL = (mWriteL - delay + sz) % sz;
+        int readPosR = (mWriteR - delay + sz) % sz;
+
+        float delayedL = mBufL[readPosL];
+        float delayedR = mBufR[readPosR];
+
+        mBufL[mWriteL] = L[i] + fb * delayedL;
+        mBufR[mWriteR] = R[i] + fb * delayedR;
+
+        L[i] = L[i] * (1.0f - mix) + delayedL * mix;
+        R[i] = R[i] * (1.0f - mix) + delayedR * mix;
+
+        mWriteL = (mWriteL + 1) % sz;
+        mWriteR = (mWriteR + 1) % sz;
+    }
+}
+
 void DelayProcessor::processBlockStereo(float* L, float* R, int nframes)
 {
     const float timeMS = mTimeMS.load();
@@ -52,9 +79,9 @@ void DelayProcessor::processBlockStereo(float* L, float* R, int nframes)
         float delayedL = mBufL[readPosL];
         float delayedR = mBufR[readPosR];
 
-        // Ping-pong: L feeds into R buffer, R feeds into L buffer
+        // True ping-pong: input only enters L buffer; echoes alternate L→R→L→…
         mBufL[mWriteL] = L[i] + fb * delayedR;
-        mBufR[mWriteR] = R[i] + fb * delayedL;
+        mBufR[mWriteR] = fb * delayedL;
 
         L[i] = L[i] * (1.0f - mix) + delayedL * mix;
         R[i] = R[i] * (1.0f - mix) + delayedR * mix;
