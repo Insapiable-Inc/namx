@@ -83,6 +83,6 @@ protected:
     }
 
     double            mSampleRate{44100.0};
-    std::atomic<bool> mEnabled   {true};
+    std::atomic<bool> mEnabled   {false};
     std::atomic<bool> mStereoMode{false};
 };
