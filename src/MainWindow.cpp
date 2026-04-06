@@ -71,8 +71,6 @@ MainWindow::~MainWindow()
 }
 
 // ---------------------------------------------------------------------------
-// Build a vertical effect column: title in group box, toggle, knobs as rows
-// ---------------------------------------------------------------------------
 
 QWidget* MainWindow::makeEffectColumn(const QString& title,
                                       ToggleSwitch*& toggleOut,
@@ -125,16 +123,13 @@ void MainWindow::setupUI()
     {
         auto* mb         = menuBar();
         auto* presetMenu = mb->addMenu("Preset");
-        auto* saveAction = presetMenu->addAction("Save Preset…");
-        auto* loadAction = presetMenu->addAction("Load Preset…");
-        connect(saveAction, &QAction::triggered, this, &MainWindow::onSavePreset);
-        connect(loadAction, &QAction::triggered, this, &MainWindow::onLoadPreset);
+        connect(presetMenu->addAction("Save Preset…"), &QAction::triggered, this, &MainWindow::onSavePreset);
+        connect(presetMenu->addAction("Load Preset…"), &QAction::triggered, this, &MainWindow::onLoadPreset);
     }
 
     // ---- Top status row ----
     {
         auto* row = new QHBoxLayout;
-
         auto* title = new QLabel("NAM Player");
         QFont tf = title->font();
         tf.setPointSize(tf.pointSize() + 4);
@@ -143,24 +138,23 @@ void MainWindow::setupUI()
 
         mLblJACKStatus = new QLabel("JACK: connecting…");
 
-        auto* btnSavePreset = new QPushButton("Save Preset…");
-        auto* btnLoadPreset = new QPushButton("Load Preset…");
-        connect(btnSavePreset, &QPushButton::clicked, this, &MainWindow::onSavePreset);
-        connect(btnLoadPreset, &QPushButton::clicked, this, &MainWindow::onLoadPreset);
+        auto* btnSave = new QPushButton("Save Preset…");
+        auto* btnLoad = new QPushButton("Load Preset…");
+        connect(btnSave, &QPushButton::clicked, this, &MainWindow::onSavePreset);
+        connect(btnLoad, &QPushButton::clicked, this, &MainWindow::onLoadPreset);
 
         row->addWidget(title);
         row->addWidget(mLblJACKStatus);
         row->addStretch();
-        row->addWidget(btnSavePreset);
-        row->addWidget(btnLoadPreset);
+        row->addWidget(btnSave);
+        row->addWidget(btnLoad);
         rootLayout->addLayout(row);
     }
 
-    // ---- NAM + IR file row (above the strip) ----
+    // ---- NAM + IR file row ----
     {
         auto* row = new QHBoxLayout;
 
-        // NAM sub-box
         auto* namBox = new QGroupBox("NAM");
         auto* namLay = new QHBoxLayout(namBox);
         namLay->setContentsMargins(4, 4, 4, 4);
@@ -174,7 +168,6 @@ void MainWindow::setupUI()
         namLay->addWidget(mBtnUnloadNAM);
         namLay->addWidget(mLblNAMStatus, 1);
 
-        // IR sub-box
         auto* irBox = new QGroupBox("IR (Cab)");
         auto* irLay = new QHBoxLayout(irBox);
         irLay->setContentsMargins(4, 4, 4, 4);
@@ -193,7 +186,7 @@ void MainWindow::setupUI()
         rootLayout->addLayout(row);
     }
 
-    // ---- Horizontally scrollable effect strip ----
+    // ---- Scrollable effect strip ----
     auto* scroll = new QScrollArea;
     scroll->setWidgetResizable(true);
     scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
@@ -213,7 +206,7 @@ void MainWindow::setupUI()
         stripLay->addWidget(f);
     };
 
-    // ---- Input gain column ----
+    // ---- Input gain ----
     {
         using namespace NAMConstants;
         auto* col = new QGroupBox("Input");
@@ -233,7 +226,7 @@ void MainWindow::setupUI()
 
     addDivider();
 
-    // ---- Tuner column ----
+    // ---- Tuner ----
     {
         auto* col = new QGroupBox("Tuner");
         col->setAlignment(Qt::AlignHCenter);
@@ -283,11 +276,10 @@ void MainWindow::setupUI()
 
         connect(mSwTunerEnable, &ToggleSwitch::toggled, this, &MainWindow::onTunerEnabledToggled);
         connect(mSwTunerMute,   &ToggleSwitch::toggled, this, &MainWindow::onTunerMuteToggled);
-
         stripLay->addWidget(col);
     }
 
-    // ---- Noise Gate column ----
+    // ---- Noise Gate ----
     {
         using namespace NAMConstants;
         mKnobGateThresh  = new KnobWidget("Thresh",  kGateThreshMin,  kGateThreshMax,  kGateThreshDefault,  "dB");
@@ -307,7 +299,7 @@ void MainWindow::setupUI()
         stripLay->addWidget(col);
     }
 
-    // ---- Compressor column ----
+    // ---- Compressor ----
     {
         using namespace NAMConstants;
         mKnobCompThresh  = new KnobWidget("Thresh",  kCompThreshMin,  kCompThreshMax,  kCompThreshDefault,  "dB");
@@ -333,112 +325,7 @@ void MainWindow::setupUI()
         stripLay->addWidget(col);
     }
 
-    // ---- Octave Pedal column ----
-    {
-        using namespace NAMConstants;
-        mKnobOctUp   = new KnobWidget("Oct Up",   kOctaveUpMin,   kOctaveUpMax,   kOctaveUpDefault,   "%");
-        mKnobOctDown = new KnobWidget("Oct Down", kOctaveDownMin, kOctaveDownMax, kOctaveDownDefault, "%");
-        mKnobOctUp->setScrollStep(1.0);
-        mKnobOctDown->setScrollStep(1.0);
-
-        auto* col = makeEffectColumn("Octave", mSwOctaveEnable, {mKnobOctUp, mKnobOctDown});
-
-        connect(mSwOctaveEnable, &ToggleSwitch::toggled,    this, &MainWindow::onOctaveEnabledToggled);
-        connect(mKnobOctUp,      &KnobWidget::valueChanged, this, &MainWindow::onOctaveUpChanged);
-        connect(mKnobOctDown,    &KnobWidget::valueChanged, this, &MainWindow::onOctaveDownChanged);
-        stripLay->addWidget(col);
-    }
-
-    // ---- Chorus 1 column ----
-    {
-        using namespace NAMConstants;
-        mKnobCh1Rate  = new KnobWidget("Rate",  kChorusRateMin,  kChorusRateMax,  kChorusRateDefault,  "Hz");
-        mKnobCh1Depth = new KnobWidget("Depth", kChorusDepthMin, kChorusDepthMax, kChorusDepthDefault, "%");
-        mKnobCh1Mix   = new KnobWidget("Mix",   kChorusMixMin,   kChorusMixMax,   kChorusMixDefault,   "%");
-        mKnobCh1Rate->setScrollStep(0.1);
-        mKnobCh1Depth->setScrollStep(1.0);
-        mKnobCh1Mix->setScrollStep(1.0);
-
-        auto* col = makeEffectColumn("Chorus 1", mSwChorus1Enable,
-            {mKnobCh1Rate, mKnobCh1Depth, mKnobCh1Mix}, &mSwChorus1Stereo);
-
-        connect(mSwChorus1Enable, &ToggleSwitch::toggled,    this, &MainWindow::onChorus1EnabledToggled);
-        connect(mSwChorus1Stereo, &ToggleSwitch::toggled,    this, &MainWindow::onChorus1StereoToggled);
-        connect(mKnobCh1Rate,     &KnobWidget::valueChanged, this, &MainWindow::onChorus1RateChanged);
-        connect(mKnobCh1Depth,    &KnobWidget::valueChanged, this, &MainWindow::onChorus1DepthChanged);
-        connect(mKnobCh1Mix,      &KnobWidget::valueChanged, this, &MainWindow::onChorus1MixChanged);
-        stripLay->addWidget(col);
-    }
-
-    // ---- Flanger column ----
-    {
-        using namespace NAMConstants;
-        mKnobFlRate     = new KnobWidget("Rate",     kFlangerRateMin,     kFlangerRateMax,     kFlangerRateDefault,     "Hz");
-        mKnobFlDepth    = new KnobWidget("Depth",    kFlangerDepthMin,    kFlangerDepthMax,    kFlangerDepthDefault,    "%");
-        mKnobFlFeedback = new KnobWidget("Feedback", kFlangerFeedbackMin, kFlangerFeedbackMax, kFlangerFeedbackDefault, "%");
-        mKnobFlMix      = new KnobWidget("Mix",      kFlangerMixMin,      kFlangerMixMax,      kFlangerMixDefault,      "%");
-        mKnobFlRate->setScrollStep(0.1);
-        mKnobFlDepth->setScrollStep(1.0);
-        mKnobFlFeedback->setScrollStep(1.0);
-        mKnobFlMix->setScrollStep(1.0);
-
-        auto* col = makeEffectColumn("Flanger", mSwFlangerEnable,
-            {mKnobFlRate, mKnobFlDepth, mKnobFlFeedback, mKnobFlMix}, &mSwFlangerStereo);
-
-        connect(mSwFlangerEnable, &ToggleSwitch::toggled,    this, &MainWindow::onFlangerEnabledToggled);
-        connect(mSwFlangerStereo, &ToggleSwitch::toggled,    this, &MainWindow::onFlangerStereoToggled);
-        connect(mKnobFlRate,      &KnobWidget::valueChanged, this, &MainWindow::onFlangerRateChanged);
-        connect(mKnobFlDepth,     &KnobWidget::valueChanged, this, &MainWindow::onFlangerDepthChanged);
-        connect(mKnobFlFeedback,  &KnobWidget::valueChanged, this, &MainWindow::onFlangerFeedbackChanged);
-        connect(mKnobFlMix,       &KnobWidget::valueChanged, this, &MainWindow::onFlangerMixChanged);
-        stripLay->addWidget(col);
-    }
-
-    // ---- Phaser column ----
-    {
-        using namespace NAMConstants;
-        mKnobPhRate     = new KnobWidget("Rate",     kPhaserRateMin,     kPhaserRateMax,     kPhaserRateDefault,     "Hz");
-        mKnobPhDepth    = new KnobWidget("Depth",    kPhaserDepthMin,    kPhaserDepthMax,    kPhaserDepthDefault,    "%");
-        mKnobPhFeedback = new KnobWidget("Feedback", kPhaserFeedbackMin, kPhaserFeedbackMax, kPhaserFeedbackDefault, "%");
-        mKnobPhMix      = new KnobWidget("Mix",      kPhaserMixMin,      kPhaserMixMax,      kPhaserMixDefault,      "%");
-        mKnobPhRate->setScrollStep(0.1);
-        mKnobPhDepth->setScrollStep(1.0);
-        mKnobPhFeedback->setScrollStep(1.0);
-        mKnobPhMix->setScrollStep(1.0);
-
-        auto* col = makeEffectColumn("Phaser", mSwPhaserEnable,
-            {mKnobPhRate, mKnobPhDepth, mKnobPhFeedback, mKnobPhMix}, &mSwPhaserStereo);
-
-        connect(mSwPhaserEnable, &ToggleSwitch::toggled,    this, &MainWindow::onPhaserEnabledToggled);
-        connect(mSwPhaserStereo, &ToggleSwitch::toggled,    this, &MainWindow::onPhaserStereoToggled);
-        connect(mKnobPhRate,     &KnobWidget::valueChanged, this, &MainWindow::onPhaserRateChanged);
-        connect(mKnobPhDepth,    &KnobWidget::valueChanged, this, &MainWindow::onPhaserDepthChanged);
-        connect(mKnobPhFeedback, &KnobWidget::valueChanged, this, &MainWindow::onPhaserFeedbackChanged);
-        connect(mKnobPhMix,      &KnobWidget::valueChanged, this, &MainWindow::onPhaserMixChanged);
-        stripLay->addWidget(col);
-    }
-
-    // ---- Volume Sweep column ----
-    {
-        using namespace NAMConstants;
-        mKnobSweepAtk  = new KnobWidget("Attack", kSweepAttackMin, kSweepAttackMax, kSweepAttackDefault, "ms");
-        mKnobSweepSens = new KnobWidget("Sens",   kSweepSensMin,   kSweepSensMax,   kSweepSensDefault,   "%");
-        mKnobSweepMix  = new KnobWidget("Mix",    kSweepMixMin,    kSweepMixMax,    kSweepMixDefault,    "%");
-        mKnobSweepAtk->setScrollStep(10.0);
-        mKnobSweepSens->setScrollStep(1.0);
-        mKnobSweepMix->setScrollStep(1.0);
-
-        auto* col = makeEffectColumn("V.Sweep", mSwSweepEnable,
-            {mKnobSweepAtk, mKnobSweepSens, mKnobSweepMix});
-
-        connect(mSwSweepEnable,  &ToggleSwitch::toggled,    this, &MainWindow::onVolumeSweepEnabledToggled);
-        connect(mKnobSweepAtk,   &KnobWidget::valueChanged, this, &MainWindow::onVolumeSweepAttackChanged);
-        connect(mKnobSweepSens,  &KnobWidget::valueChanged, this, &MainWindow::onVolumeSweepSensChanged);
-        connect(mKnobSweepMix,   &KnobWidget::valueChanged, this, &MainWindow::onVolumeSweepMixChanged);
-        stripLay->addWidget(col);
-    }
-
-    // ---- Dynamic Wah column ----
+    // ---- Dynamic Wah ----
     {
         using namespace NAMConstants;
         mKnobWahSens = new KnobWidget("Sens", kWahSensMin, kWahSensMax, kWahSensDefault, "%");
@@ -460,14 +347,13 @@ void MainWindow::setupUI()
 
     addDivider();
 
-    // ---- Amp toggle column ----
+    // ---- Amp toggle ----
     {
         auto* col = new QGroupBox("Amp");
         col->setAlignment(Qt::AlignHCenter);
         col->setMinimumWidth(90);
         auto* lay = new QVBoxLayout(col);
         lay->setContentsMargins(4, 6, 4, 4);
-        lay->setSpacing(4);
 
         mSwNAMEnable = new ToggleSwitch;
         mSwNAMEnable->setCheckable(true);
@@ -479,7 +365,7 @@ void MainWindow::setupUI()
         stripLay->addWidget(col);
     }
 
-    // ---- EQ column ----
+    // ---- EQ ----
     {
         using namespace NAMConstants;
         auto* col = new QGroupBox("EQ");
@@ -515,7 +401,76 @@ void MainWindow::setupUI()
 
     addDivider();
 
-    // ---- Chorus 2 column ----
+    // ---- Chorus 1 ----
+    {
+        using namespace NAMConstants;
+        mKnobCh1Rate  = new KnobWidget("Rate",  kChorusRateMin,  kChorusRateMax,  kChorusRateDefault,  "Hz");
+        mKnobCh1Depth = new KnobWidget("Depth", kChorusDepthMin, kChorusDepthMax, kChorusDepthDefault, "%");
+        mKnobCh1Mix   = new KnobWidget("Mix",   kChorusMixMin,   kChorusMixMax,   kChorusMixDefault,   "%");
+        mKnobCh1Rate->setScrollStep(0.1);
+        mKnobCh1Depth->setScrollStep(1.0);
+        mKnobCh1Mix->setScrollStep(1.0);
+
+        auto* col = makeEffectColumn("Chorus 1", mSwChorus1Enable,
+            {mKnobCh1Rate, mKnobCh1Depth, mKnobCh1Mix}, &mSwChorus1Stereo);
+
+        connect(mSwChorus1Enable, &ToggleSwitch::toggled,    this, &MainWindow::onChorus1EnabledToggled);
+        connect(mSwChorus1Stereo, &ToggleSwitch::toggled,    this, &MainWindow::onChorus1StereoToggled);
+        connect(mKnobCh1Rate,     &KnobWidget::valueChanged, this, &MainWindow::onChorus1RateChanged);
+        connect(mKnobCh1Depth,    &KnobWidget::valueChanged, this, &MainWindow::onChorus1DepthChanged);
+        connect(mKnobCh1Mix,      &KnobWidget::valueChanged, this, &MainWindow::onChorus1MixChanged);
+        stripLay->addWidget(col);
+    }
+
+    // ---- Flanger ----
+    {
+        using namespace NAMConstants;
+        mKnobFlRate     = new KnobWidget("Rate",     kFlangerRateMin,     kFlangerRateMax,     kFlangerRateDefault,     "Hz");
+        mKnobFlDepth    = new KnobWidget("Depth",    kFlangerDepthMin,    kFlangerDepthMax,    kFlangerDepthDefault,    "%");
+        mKnobFlFeedback = new KnobWidget("Feedback", kFlangerFeedbackMin, kFlangerFeedbackMax, kFlangerFeedbackDefault, "%");
+        mKnobFlMix      = new KnobWidget("Mix",      kFlangerMixMin,      kFlangerMixMax,      kFlangerMixDefault,      "%");
+        mKnobFlRate->setScrollStep(0.1);
+        mKnobFlDepth->setScrollStep(1.0);
+        mKnobFlFeedback->setScrollStep(1.0);
+        mKnobFlMix->setScrollStep(1.0);
+
+        auto* col = makeEffectColumn("Flanger", mSwFlangerEnable,
+            {mKnobFlRate, mKnobFlDepth, mKnobFlFeedback, mKnobFlMix}, &mSwFlangerStereo);
+
+        connect(mSwFlangerEnable, &ToggleSwitch::toggled,    this, &MainWindow::onFlangerEnabledToggled);
+        connect(mSwFlangerStereo, &ToggleSwitch::toggled,    this, &MainWindow::onFlangerStereoToggled);
+        connect(mKnobFlRate,      &KnobWidget::valueChanged, this, &MainWindow::onFlangerRateChanged);
+        connect(mKnobFlDepth,     &KnobWidget::valueChanged, this, &MainWindow::onFlangerDepthChanged);
+        connect(mKnobFlFeedback,  &KnobWidget::valueChanged, this, &MainWindow::onFlangerFeedbackChanged);
+        connect(mKnobFlMix,       &KnobWidget::valueChanged, this, &MainWindow::onFlangerMixChanged);
+        stripLay->addWidget(col);
+    }
+
+    // ---- Phaser ----
+    {
+        using namespace NAMConstants;
+        mKnobPhRate     = new KnobWidget("Rate",     kPhaserRateMin,     kPhaserRateMax,     kPhaserRateDefault,     "Hz");
+        mKnobPhDepth    = new KnobWidget("Depth",    kPhaserDepthMin,    kPhaserDepthMax,    kPhaserDepthDefault,    "%");
+        mKnobPhFeedback = new KnobWidget("Feedback", kPhaserFeedbackMin, kPhaserFeedbackMax, kPhaserFeedbackDefault, "%");
+        mKnobPhMix      = new KnobWidget("Mix",      kPhaserMixMin,      kPhaserMixMax,      kPhaserMixDefault,      "%");
+        mKnobPhRate->setScrollStep(0.1);
+        mKnobPhDepth->setScrollStep(1.0);
+        mKnobPhFeedback->setScrollStep(1.0);
+        mKnobPhMix->setScrollStep(1.0);
+
+        auto* col = makeEffectColumn("Phaser", mSwPhaserEnable,
+            {mKnobPhRate, mKnobPhDepth, mKnobPhFeedback, mKnobPhMix}, &mSwPhaserStereo);
+
+        connect(mSwPhaserEnable, &ToggleSwitch::toggled,    this, &MainWindow::onPhaserEnabledToggled);
+        connect(mSwPhaserStereo, &ToggleSwitch::toggled,    this, &MainWindow::onPhaserStereoToggled);
+        connect(mKnobPhRate,     &KnobWidget::valueChanged, this, &MainWindow::onPhaserRateChanged);
+        connect(mKnobPhDepth,    &KnobWidget::valueChanged, this, &MainWindow::onPhaserDepthChanged);
+        connect(mKnobPhFeedback, &KnobWidget::valueChanged, this, &MainWindow::onPhaserFeedbackChanged);
+        connect(mKnobPhMix,      &KnobWidget::valueChanged, this, &MainWindow::onPhaserMixChanged);
+        stripLay->addWidget(col);
+    }
+
+    // ---- Chorus 2 ----
     {
         using namespace NAMConstants;
         mKnobCh2Rate  = new KnobWidget("Rate",  kChorusRateMin,  kChorusRateMax,  kChorusRateDefault,  "Hz");
@@ -535,7 +490,7 @@ void MainWindow::setupUI()
         stripLay->addWidget(col);
     }
 
-    // ---- Tremolo column ----
+    // ---- Tremolo ----
     {
         using namespace NAMConstants;
         mKnobTrRate  = new KnobWidget("Rate",  kTremoloRateMin,  kTremoloRateMax,  kTremoloRateDefault,  "Hz");
@@ -551,7 +506,7 @@ void MainWindow::setupUI()
         stripLay->addWidget(col);
     }
 
-    // ---- Delay column ----
+    // ---- Delay ----
     {
         using namespace NAMConstants;
         mKnobDelTime     = new KnobWidget("Time",     kDelayTimeMin,     kDelayTimeMax,     kDelayTimeDefault,     "ms");
@@ -563,7 +518,7 @@ void MainWindow::setupUI()
 
         auto* col = makeEffectColumn("Delay", mSwDelayEnable,
             {mKnobDelTime, mKnobDelFeedback, mKnobDelMix}, &mSwDelayStereo);
-        mSwDelayStereo->setChecked(true);  // ping-pong on by default
+        mSwDelayStereo->setChecked(true);
 
         connect(mSwDelayEnable,   &ToggleSwitch::toggled,    this, &MainWindow::onDelayEnabledToggled);
         connect(mSwDelayStereo,   &ToggleSwitch::toggled,    this, &MainWindow::onDelayStereoToggled);
@@ -573,24 +528,7 @@ void MainWindow::setupUI()
         stripLay->addWidget(col);
     }
 
-    // ---- Reverse column ----
-    {
-        using namespace NAMConstants;
-        mKnobRevLen  = new KnobWidget("Length", kReverseLenMin, kReverseLenMax, kReverseLenDefault, "ms");
-        mKnobRevMixR = new KnobWidget("Mix",    kReverseMixMin, kReverseMixMax, kReverseMixDefault, "%");
-        mKnobRevLen->setScrollStep(10.0);
-        mKnobRevMixR->setScrollStep(1.0);
-
-        auto* col = makeEffectColumn("Reverse", mSwReverseEnable,
-            {mKnobRevLen, mKnobRevMixR});
-
-        connect(mSwReverseEnable, &ToggleSwitch::toggled,    this, &MainWindow::onReverseEnabledToggled);
-        connect(mKnobRevLen,      &KnobWidget::valueChanged, this, &MainWindow::onReverseLengthChanged);
-        connect(mKnobRevMixR,     &KnobWidget::valueChanged, this, &MainWindow::onReverseMixChanged);
-        stripLay->addWidget(col);
-    }
-
-    // ---- Reverb column ----
+    // ---- Reverb ----
     {
         using namespace NAMConstants;
         mKnobRevRoom    = new KnobWidget("Room",    kReverbRoomMin,    kReverbRoomMax,    kReverbRoomDefault,    "%");
@@ -613,31 +551,13 @@ void MainWindow::setupUI()
         stripLay->addWidget(col);
     }
 
-    // ---- Bit Crusher column ----
-    {
-        using namespace NAMConstants;
-        mKnobBitBits = new KnobWidget("Bits", kBitCrushBitsMin, kBitCrushBitsMax, kBitCrushBitsDefault, "");
-        mKnobBitMix  = new KnobWidget("Mix",  kBitCrushMixMin,  kBitCrushMixMax,  kBitCrushMixDefault,  "%");
-        mKnobBitBits->setScrollStep(1.0);
-        mKnobBitMix->setScrollStep(1.0);
-
-        auto* col = makeEffectColumn("Bit Crush", mSwBitEnable,
-            {mKnobBitBits, mKnobBitMix});
-
-        connect(mSwBitEnable,  &ToggleSwitch::toggled,    this, &MainWindow::onBitCrusherEnabledToggled);
-        connect(mKnobBitBits,  &KnobWidget::valueChanged, this, &MainWindow::onBitCrusherBitsChanged);
-        connect(mKnobBitMix,   &KnobWidget::valueChanged, this, &MainWindow::onBitCrusherMixChanged);
-        stripLay->addWidget(col);
-    }
-
-    // ---- IR toggle column (in strip; load/unload is in the top file row) ----
+    // ---- IR toggle ----
     {
         auto* col = new QGroupBox("IR");
         col->setAlignment(Qt::AlignHCenter);
         col->setMinimumWidth(90);
         auto* lay = new QVBoxLayout(col);
         lay->setContentsMargins(4, 6, 4, 4);
-        lay->setSpacing(4);
 
         mSwIREnable = new ToggleSwitch;
         mSwIREnable->setCheckable(true);
@@ -651,7 +571,7 @@ void MainWindow::setupUI()
 
     addDivider();
 
-    // ---- Output gain column ----
+    // ---- Output gain ----
     {
         using namespace NAMConstants;
         auto* col = new QGroupBox("Output");
@@ -737,39 +657,39 @@ void MainWindow::onUnloadIR()
 }
 
 // ---------------------------------------------------------------------------
-// Gain / EQ / IR slots
+// Gain / EQ
 // ---------------------------------------------------------------------------
 
 void MainWindow::onInputGainChanged(double dB)  { mEngine->setInputGain (static_cast<float>(dB)); }
 void MainWindow::onOutputGainChanged(double dB) { mEngine->setOutputGain(static_cast<float>(dB)); }
-void MainWindow::onLowChanged(double dB)        { mEngine->setLowGain   (static_cast<float>(dB)); }
-void MainWindow::onMidChanged(double dB)        { mEngine->setMidGain   (static_cast<float>(dB)); }
-void MainWindow::onTrebleChanged(double dB)     { mEngine->setTrebleGain(static_cast<float>(dB)); }
-void MainWindow::onNAMEnabledToggled(bool en)   { mEngine->setNAMEnabled(en); }
-void MainWindow::onEQEnabledToggled(bool en)    { mEngine->setEQEnabled(en);  }
-void MainWindow::onIREnabledToggled(bool en)    { mEngine->setIREnabled(en);  }
+void MainWindow::onLowChanged(double dB)        { mEngine->eq().setLowGain   (dB); }
+void MainWindow::onMidChanged(double dB)        { mEngine->eq().setMidGain   (dB); }
+void MainWindow::onTrebleChanged(double dB)     { mEngine->eq().setTrebleGain(dB); }
+void MainWindow::onNAMEnabledToggled(bool en)   { mEngine->nam().setEnabled(en); }
+void MainWindow::onEQEnabledToggled(bool en)    { mEngine->eq().setEnabled(en);  }
+void MainWindow::onIREnabledToggled(bool en)    { mEngine->ir().setEnabled(en);  }
 
 // ---------------------------------------------------------------------------
-// Tuner slots
+// Tuner
 // ---------------------------------------------------------------------------
 
-void MainWindow::onTunerEnabledToggled(bool en) { mEngine->setTunerEnabled(en); }
-void MainWindow::onTunerMuteToggled(bool en)    { mEngine->setTunerMute(en);    }
+void MainWindow::onTunerEnabledToggled(bool en) { mEngine->tuner().setEnabled(en); }
+void MainWindow::onTunerMuteToggled(bool en)    { mEngine->tuner().setMute(en);    }
 
 // ---------------------------------------------------------------------------
-// Noise gate slots
+// Noise gate
 // ---------------------------------------------------------------------------
 
-void MainWindow::onGateEnabledToggled(bool en)    { mEngine->setGateEnabled(en); }
+void MainWindow::onGateEnabledToggled(bool en)    { mEngine->gate().setEnabled(en); }
 void MainWindow::onGateThresholdChanged(double v) { mEngine->gate().setThreshold(static_cast<float>(v)); }
 void MainWindow::onGateAttackChanged(double v)    { mEngine->gate().setAttack   (static_cast<float>(v)); }
 void MainWindow::onGateReleaseChanged(double v)   { mEngine->gate().setRelease  (static_cast<float>(v)); }
 
 // ---------------------------------------------------------------------------
-// Compressor slots
+// Compressor
 // ---------------------------------------------------------------------------
 
-void MainWindow::onCompEnabledToggled(bool en)    { mEngine->setCompEnabled(en); }
+void MainWindow::onCompEnabledToggled(bool en)    { mEngine->comp().setEnabled(en); }
 void MainWindow::onCompThresholdChanged(double v) { mEngine->comp().setThreshold(static_cast<float>(v)); }
 void MainWindow::onCompRatioChanged(double v)     { mEngine->comp().setRatio    (static_cast<float>(v)); }
 void MainWindow::onCompAttackChanged(double v)    { mEngine->comp().setAttack   (static_cast<float>(v)); }
@@ -777,116 +697,82 @@ void MainWindow::onCompReleaseChanged(double v)   { mEngine->comp().setRelease  
 void MainWindow::onCompMakeupChanged(double v)    { mEngine->comp().setMakeup   (static_cast<float>(v)); }
 
 // ---------------------------------------------------------------------------
-// Reverse slots
+// Dynamic Wah
 // ---------------------------------------------------------------------------
 
-void MainWindow::onReverseEnabledToggled(bool en) { mEngine->setReverseEnabled(en); }
-void MainWindow::onReverseLengthChanged(double v) { mEngine->reverse().setLength(static_cast<float>(v)); }
-void MainWindow::onReverseMixChanged(double v)    { mEngine->reverse().setMix   (static_cast<float>(v)); }
+void MainWindow::onDynamicWahEnabledToggled(bool en) { mEngine->wah().setEnabled(en); }
+void MainWindow::onDynamicWahSensChanged(double v)   { mEngine->wah().setSensitivity(static_cast<float>(v)); }
+void MainWindow::onDynamicWahResChanged(double v)    { mEngine->wah().setResonance  (static_cast<float>(v)); }
+void MainWindow::onDynamicWahMixChanged(double v)    { mEngine->wah().setMix        (static_cast<float>(v)); }
 
 // ---------------------------------------------------------------------------
-// Volume Sweep slots
+// Chorus 1
 // ---------------------------------------------------------------------------
 
-void MainWindow::onVolumeSweepEnabledToggled(bool en) { mEngine->setVolumeSweepEnabled(en); }
-void MainWindow::onVolumeSweepAttackChanged(double v) { mEngine->volumeSweep().setAttack     (static_cast<float>(v)); }
-void MainWindow::onVolumeSweepSensChanged(double v)   { mEngine->volumeSweep().setSensitivity(static_cast<float>(v)); }
-void MainWindow::onVolumeSweepMixChanged(double v)    { mEngine->volumeSweep().setMix        (static_cast<float>(v)); }
-
-// ---------------------------------------------------------------------------
-// Dynamic Wah slots
-// ---------------------------------------------------------------------------
-
-void MainWindow::onDynamicWahEnabledToggled(bool en) { mEngine->setDynamicWahEnabled(en); }
-void MainWindow::onDynamicWahSensChanged(double v)   { mEngine->dynamicWah().setSensitivity(static_cast<float>(v)); }
-void MainWindow::onDynamicWahResChanged(double v)    { mEngine->dynamicWah().setResonance  (static_cast<float>(v)); }
-void MainWindow::onDynamicWahMixChanged(double v)    { mEngine->dynamicWah().setMix        (static_cast<float>(v)); }
-
-// ---------------------------------------------------------------------------
-// Bit Crusher slots
-// ---------------------------------------------------------------------------
-
-void MainWindow::onBitCrusherEnabledToggled(bool en) { mEngine->setBitCrusherEnabled(en); }
-void MainWindow::onBitCrusherBitsChanged(double v)   { mEngine->bitCrusher().setBits(static_cast<float>(v)); }
-void MainWindow::onBitCrusherMixChanged(double v)    { mEngine->bitCrusher().setMix (static_cast<float>(v)); }
-
-// ---------------------------------------------------------------------------
-// Octave Pedal slots
-// ---------------------------------------------------------------------------
-
-void MainWindow::onOctaveEnabledToggled(bool en) { mEngine->setOctaveEnabled(en); }
-void MainWindow::onOctaveUpChanged(double v)     { mEngine->octave().setUpLevel  (static_cast<float>(v)); }
-void MainWindow::onOctaveDownChanged(double v)   { mEngine->octave().setDownLevel(static_cast<float>(v)); }
-
-// ---------------------------------------------------------------------------
-// Chorus 1 slots
-// ---------------------------------------------------------------------------
-
-void MainWindow::onChorus1EnabledToggled(bool en) { mEngine->setChorus1Enabled(en); }
-void MainWindow::onChorus1StereoToggled(bool en)  { mEngine->setChorus1Stereo(en);  }
+void MainWindow::onChorus1EnabledToggled(bool en) { mEngine->chorus1().setEnabled   (en); }
+void MainWindow::onChorus1StereoToggled(bool en)  { mEngine->chorus1().setStereoMode(en); }
 void MainWindow::onChorus1RateChanged(double v)   { mEngine->chorus1().setRate (static_cast<float>(v)); }
 void MainWindow::onChorus1DepthChanged(double v)  { mEngine->chorus1().setDepth(static_cast<float>(v)); }
 void MainWindow::onChorus1MixChanged(double v)    { mEngine->chorus1().setMix  (static_cast<float>(v)); }
 
 // ---------------------------------------------------------------------------
-// Flanger slots
+// Flanger
 // ---------------------------------------------------------------------------
 
-void MainWindow::onFlangerEnabledToggled(bool en)   { mEngine->setFlangerEnabled(en); }
-void MainWindow::onFlangerStereoToggled(bool en)    { mEngine->setFlangerStereo(en);  }
+void MainWindow::onFlangerEnabledToggled(bool en)   { mEngine->flanger().setEnabled   (en); }
+void MainWindow::onFlangerStereoToggled(bool en)    { mEngine->flanger().setStereoMode(en); }
 void MainWindow::onFlangerRateChanged(double v)     { mEngine->flanger().setRate    (static_cast<float>(v)); }
 void MainWindow::onFlangerDepthChanged(double v)    { mEngine->flanger().setDepth   (static_cast<float>(v)); }
 void MainWindow::onFlangerFeedbackChanged(double v) { mEngine->flanger().setFeedback(static_cast<float>(v)); }
 void MainWindow::onFlangerMixChanged(double v)      { mEngine->flanger().setMix     (static_cast<float>(v)); }
 
 // ---------------------------------------------------------------------------
-// Phaser slots
+// Phaser
 // ---------------------------------------------------------------------------
 
-void MainWindow::onPhaserEnabledToggled(bool en)   { mEngine->setPhaserEnabled(en); }
-void MainWindow::onPhaserStereoToggled(bool en)    { mEngine->setPhaserStereo(en);  }
+void MainWindow::onPhaserEnabledToggled(bool en)   { mEngine->phaser().setEnabled   (en); }
+void MainWindow::onPhaserStereoToggled(bool en)    { mEngine->phaser().setStereoMode(en); }
 void MainWindow::onPhaserRateChanged(double v)     { mEngine->phaser().setRate    (static_cast<float>(v)); }
 void MainWindow::onPhaserDepthChanged(double v)    { mEngine->phaser().setDepth   (static_cast<float>(v)); }
 void MainWindow::onPhaserFeedbackChanged(double v) { mEngine->phaser().setFeedback(static_cast<float>(v)); }
 void MainWindow::onPhaserMixChanged(double v)      { mEngine->phaser().setMix     (static_cast<float>(v)); }
 
 // ---------------------------------------------------------------------------
-// Chorus 2 slots
+// Chorus 2
 // ---------------------------------------------------------------------------
 
-void MainWindow::onChorus2EnabledToggled(bool en) { mEngine->setChorus2Enabled(en); }
+void MainWindow::onChorus2EnabledToggled(bool en) { mEngine->chorus2().setEnabled(en); }
 void MainWindow::onChorus2RateChanged(double v)   { mEngine->chorus2().setRate (static_cast<float>(v)); }
 void MainWindow::onChorus2DepthChanged(double v)  { mEngine->chorus2().setDepth(static_cast<float>(v)); }
 void MainWindow::onChorus2MixChanged(double v)    { mEngine->chorus2().setMix  (static_cast<float>(v)); }
 
 // ---------------------------------------------------------------------------
-// Tremolo slots
+// Tremolo
 // ---------------------------------------------------------------------------
 
-void MainWindow::onTremoloEnabledToggled(bool en) { mEngine->setTremoloEnabled(en); }
+void MainWindow::onTremoloEnabledToggled(bool en) { mEngine->tremolo().setEnabled(en); }
 void MainWindow::onTremoloRateChanged(double v)   { mEngine->tremolo().setRate (static_cast<float>(v)); }
 void MainWindow::onTremoloDepthChanged(double v)  { mEngine->tremolo().setDepth(static_cast<float>(v)); }
 
 // ---------------------------------------------------------------------------
-// Delay slots
+// Delay
 // ---------------------------------------------------------------------------
 
-void MainWindow::onDelayEnabledToggled(bool en)   { mEngine->setDelayEnabled(en); }
-void MainWindow::onDelayStereoToggled(bool en)    { mEngine->setDelayStereo(en);  }
+void MainWindow::onDelayEnabledToggled(bool en)   { mEngine->delay().setEnabled   (en); }
+void MainWindow::onDelayStereoToggled(bool en)    { mEngine->delay().setStereoMode(en); }
 void MainWindow::onDelayTimeChanged(double v)     { mEngine->delay().setTime    (static_cast<float>(v)); }
 void MainWindow::onDelayFeedbackChanged(double v) { mEngine->delay().setFeedback(static_cast<float>(v)); }
 void MainWindow::onDelayMixChanged(double v)      { mEngine->delay().setMix     (static_cast<float>(v)); }
 
 // ---------------------------------------------------------------------------
-// Reverb slots
+// Reverb
 // ---------------------------------------------------------------------------
 
-void MainWindow::onReverbEnabledToggled(bool en)  { mEngine->setReverbEnabled(en); }
+void MainWindow::onReverbEnabledToggled(bool en)  { mEngine->reverb().setEnabled(en); }
 void MainWindow::onReverbRoomChanged(double v)    { mEngine->reverb().setRoomSize(static_cast<float>(v)); }
 void MainWindow::onReverbDampingChanged(double v) { mEngine->reverb().setDamping (static_cast<float>(v)); }
 void MainWindow::onReverbWidthChanged(double v)   { mEngine->reverb().setWidth   (static_cast<float>(v)); }
 void MainWindow::onReverbMixChanged(double v)     { mEngine->reverb().setMix     (static_cast<float>(v)); }
-
 
 // ---------------------------------------------------------------------------
 // Meters & tuner
@@ -911,7 +797,7 @@ void MainWindow::updateMeters()
 
 void MainWindow::updateTuner()
 {
-    if (!mEngine->tunerEnabled()) return;
+    if (!mEngine->tuner().isEnabled()) return;
 
     float freq = mEngine->tuner().detectPitch();
     if (freq <= 0.0f)
@@ -927,9 +813,7 @@ void MainWindow::updateTuner()
 
     mLblNote ->setText(QString::fromStdString(TunerProcessor::midiToName(midi)));
     mLblCents->setText(QString("%1¢").arg(static_cast<int>(cents)));
-
-    int barVal = static_cast<int>(50.0f + cents);
-    mTunerBar->setValue(std::max(0, std::min(100, barVal)));
+    mTunerBar->setValue(std::max(0, std::min(100, static_cast<int>(50.0f + cents))));
 }
 
 // ---------------------------------------------------------------------------
@@ -975,32 +859,30 @@ void MainWindow::onSavePreset()
     if (path.isEmpty()) return;
 
     QJsonObject obj;
-    obj["namModelPath"] = QString::fromStdString(mEngine->modelPath());
-    obj["irPath"]       = QString::fromStdString(mEngine->irPath());
-    obj["inputGain"]    = mEngine->inputGain();
-    obj["outputGain"]   = mEngine->outputGain();
+    obj["inputGain"]  = mEngine->inputGain();
+    obj["outputGain"] = mEngine->outputGain();
 
     QJsonObject eq;
-    eq["enabled"] = mEngine->eqEnabled();
-    eq["low"]     = mEngine->lowGain();
-    eq["mid"]     = mEngine->midGain();
-    eq["treble"]  = mEngine->trebleGain();
+    eq["enabled"] = mEngine->eq().isEnabled();
+    eq["low"]     = mEngine->eq().lowGainDB();
+    eq["mid"]     = mEngine->eq().midGainDB();
+    eq["treble"]  = mEngine->eq().trebleGainDB();
     obj["eq"] = eq;
 
     QJsonObject tuner;
-    tuner["enabled"] = mEngine->tunerEnabled();
-    tuner["mute"]    = mEngine->tunerMute();
+    tuner["enabled"] = mEngine->tuner().isEnabled();
+    tuner["mute"]    = mEngine->tuner().mute();
     obj["tuner"] = tuner;
 
     QJsonObject gate;
-    gate["enabled"]   = mEngine->gateEnabled();
+    gate["enabled"]   = mEngine->gate().isEnabled();
     gate["threshold"] = static_cast<double>(mEngine->gate().threshold());
     gate["attack"]    = static_cast<double>(mEngine->gate().attack());
     gate["release"]   = static_cast<double>(mEngine->gate().release());
     obj["noiseGate"] = gate;
 
     QJsonObject comp;
-    comp["enabled"]   = mEngine->compEnabled();
+    comp["enabled"]   = mEngine->comp().isEnabled();
     comp["threshold"] = static_cast<double>(mEngine->comp().threshold());
     comp["ratio"]     = static_cast<double>(mEngine->comp().ratio());
     comp["attack"]    = static_cast<double>(mEngine->comp().attack());
@@ -1008,23 +890,24 @@ void MainWindow::onSavePreset()
     comp["makeup"]    = static_cast<double>(mEngine->comp().makeup());
     obj["compressor"] = comp;
 
-    QJsonObject octave;
-    octave["enabled"]  = mEngine->octaveEnabled();
-    octave["upLevel"]  = static_cast<double>(mEngine->octave().upLevel());
-    octave["downLevel"]= static_cast<double>(mEngine->octave().downLevel());
-    obj["octave"] = octave;
+    QJsonObject wah;
+    wah["enabled"]     = mEngine->wah().isEnabled();
+    wah["sensitivity"] = static_cast<double>(mEngine->wah().sensitivity());
+    wah["resonance"]   = static_cast<double>(mEngine->wah().resonance());
+    wah["mix"]         = static_cast<double>(mEngine->wah().mix());
+    obj["dynamicWah"] = wah;
 
     QJsonObject ch1;
-    ch1["enabled"] = mEngine->chorus1Enabled();
-    ch1["stereo"]  = mEngine->chorus1Stereo();
+    ch1["enabled"] = mEngine->chorus1().isEnabled();
+    ch1["stereo"]  = mEngine->chorus1().isStereoMode();
     ch1["rate"]    = static_cast<double>(mEngine->chorus1().rate());
     ch1["depth"]   = static_cast<double>(mEngine->chorus1().depth());
     ch1["mix"]     = static_cast<double>(mEngine->chorus1().mix());
     obj["chorus1"] = ch1;
 
     QJsonObject fl;
-    fl["enabled"]  = mEngine->flangerEnabled();
-    fl["stereo"]   = mEngine->flangerStereo();
+    fl["enabled"]  = mEngine->flanger().isEnabled();
+    fl["stereo"]   = mEngine->flanger().isStereoMode();
     fl["rate"]     = static_cast<double>(mEngine->flanger().rate());
     fl["depth"]    = static_cast<double>(mEngine->flanger().depth());
     fl["feedback"] = static_cast<double>(mEngine->flanger().feedback());
@@ -1032,8 +915,8 @@ void MainWindow::onSavePreset()
     obj["flanger"] = fl;
 
     QJsonObject ph;
-    ph["enabled"]  = mEngine->phaserEnabled();
-    ph["stereo"]   = mEngine->phaserStereo();
+    ph["enabled"]  = mEngine->phaser().isEnabled();
+    ph["stereo"]   = mEngine->phaser().isStereoMode();
     ph["rate"]     = static_cast<double>(mEngine->phaser().rate());
     ph["depth"]    = static_cast<double>(mEngine->phaser().depth());
     ph["feedback"] = static_cast<double>(mEngine->phaser().feedback());
@@ -1041,61 +924,35 @@ void MainWindow::onSavePreset()
     obj["phaser"] = ph;
 
     QJsonObject ch2;
-    ch2["enabled"] = mEngine->chorus2Enabled();
+    ch2["enabled"] = mEngine->chorus2().isEnabled();
     ch2["rate"]    = static_cast<double>(mEngine->chorus2().rate());
     ch2["depth"]   = static_cast<double>(mEngine->chorus2().depth());
     ch2["mix"]     = static_cast<double>(mEngine->chorus2().mix());
     obj["chorus2"] = ch2;
 
     QJsonObject tr;
-    tr["enabled"] = mEngine->tremoloEnabled();
+    tr["enabled"] = mEngine->tremolo().isEnabled();
     tr["rate"]    = static_cast<double>(mEngine->tremolo().rate());
     tr["depth"]   = static_cast<double>(mEngine->tremolo().depth());
     obj["tremolo"] = tr;
 
     QJsonObject del;
-    del["enabled"]  = mEngine->delayEnabled();
-    del["stereo"]   = mEngine->delayStereo();
+    del["enabled"]  = mEngine->delay().isEnabled();
+    del["stereo"]   = mEngine->delay().isStereoMode();
     del["time"]     = static_cast<double>(mEngine->delay().time());
     del["feedback"] = static_cast<double>(mEngine->delay().feedback());
     del["mix"]      = static_cast<double>(mEngine->delay().mix());
     obj["delay"] = del;
 
     QJsonObject rev;
-    rev["enabled"]  = mEngine->reverbEnabled();
+    rev["enabled"]  = mEngine->reverb().isEnabled();
     rev["roomSize"] = static_cast<double>(mEngine->reverb().roomSize());
     rev["damping"]  = static_cast<double>(mEngine->reverb().damping());
     rev["width"]    = static_cast<double>(mEngine->reverb().width());
     rev["mix"]      = static_cast<double>(mEngine->reverb().mix());
     obj["reverb"] = rev;
 
-    QJsonObject rvs;
-    rvs["enabled"] = mEngine->reverseEnabled();
-    rvs["length"]  = static_cast<double>(mEngine->reverse().length());
-    rvs["mix"]     = static_cast<double>(mEngine->reverse().mix());
-    obj["reverse"] = rvs;
-
-    QJsonObject sweep;
-    sweep["enabled"]     = mEngine->volumeSweepEnabled();
-    sweep["attack"]      = static_cast<double>(mEngine->volumeSweep().attack());
-    sweep["sensitivity"] = static_cast<double>(mEngine->volumeSweep().sensitivity());
-    sweep["mix"]         = static_cast<double>(mEngine->volumeSweep().mix());
-    obj["volumeSweep"] = sweep;
-
-    QJsonObject wah;
-    wah["enabled"]     = mEngine->dynamicWahEnabled();
-    wah["sensitivity"] = static_cast<double>(mEngine->dynamicWah().sensitivity());
-    wah["resonance"]   = static_cast<double>(mEngine->dynamicWah().resonance());
-    wah["mix"]         = static_cast<double>(mEngine->dynamicWah().mix());
-    obj["dynamicWah"] = wah;
-
-    QJsonObject bit;
-    bit["enabled"] = mEngine->bitCrusherEnabled();
-    bit["bits"]    = static_cast<double>(mEngine->bitCrusher().bits());
-    bit["mix"]     = static_cast<double>(mEngine->bitCrusher().mix());
-    obj["bitCrusher"] = bit;
-
-    obj["irEnabled"] = mEngine->irEnabled();
+    obj["irEnabled"] = mEngine->ir().isEnabled();
 
     QFile f(path);
     if (!f.open(QIODevice::WriteOnly))
@@ -1136,31 +993,6 @@ void MainWindow::onLoadPreset()
         return o.contains(k) ? o[k].toBool(def) : def;
     };
 
-    if (obj.contains("namModelPath"))
-    {
-        QString p = obj["namModelPath"].toString();
-        if (!p.isEmpty() && QFile::exists(p))
-        {
-            if (mEngine->loadModel(p.toStdString()))
-            {
-                updateStatusLabels();
-                mBtnUnloadNAM->setEnabled(true);
-            }
-        }
-    }
-    if (obj.contains("irPath"))
-    {
-        QString p = obj["irPath"].toString();
-        if (!p.isEmpty() && QFile::exists(p))
-        {
-            if (mEngine->loadIR(p.toStdString()))
-            {
-                updateStatusLabels();
-                mBtnUnloadIR->setEnabled(true);
-            }
-        }
-    }
-
     mKnobInputGain ->setValue(getD(obj, "inputGain",  0.0));
     mKnobOutputGain->setValue(getD(obj, "outputGain", 0.0));
 
@@ -1192,11 +1024,12 @@ void MainWindow::onLoadPreset()
         mKnobCompRelease->setValue(getD(c, "release",   NAMConstants::kCompReleaseDefault));
         mKnobCompMakeup ->setValue(getD(c, "makeup",    NAMConstants::kCompMakeupDefault));
     }
-    if (obj.contains("octave")) {
-        auto o = obj["octave"].toObject();
-        mSwOctaveEnable->setChecked(getB(o, "enabled",   false));
-        mKnobOctUp     ->setValue(getD(o, "upLevel",   NAMConstants::kOctaveUpDefault));
-        mKnobOctDown   ->setValue(getD(o, "downLevel", NAMConstants::kOctaveDownDefault));
+    if (obj.contains("dynamicWah")) {
+        auto w = obj["dynamicWah"].toObject();
+        mSwWahEnable ->setChecked(getB(w, "enabled",     false));
+        mKnobWahSens ->setValue(getD(w, "sensitivity", NAMConstants::kWahSensDefault));
+        mKnobWahRes  ->setValue(getD(w, "resonance",   NAMConstants::kWahResDefault));
+        mKnobWahMix  ->setValue(getD(w, "mix",         NAMConstants::kWahMixDefault));
     }
     if (obj.contains("chorus1")) {
         auto c = obj["chorus1"].toObject();
@@ -1252,32 +1085,6 @@ void MainWindow::onLoadPreset()
         mKnobRevDamping ->setValue(getD(rv, "damping",  NAMConstants::kReverbDampingDefault));
         mKnobRevWidth   ->setValue(getD(rv, "width",    NAMConstants::kReverbWidthDefault));
         mKnobRevMix     ->setValue(getD(rv, "mix",      NAMConstants::kReverbMixDefault));
-    }
-    if (obj.contains("reverse")) {
-        auto r = obj["reverse"].toObject();
-        mSwReverseEnable->setChecked(getB(r, "enabled", false));
-        mKnobRevLen ->setValue(getD(r, "length", NAMConstants::kReverseLenDefault));
-        mKnobRevMixR->setValue(getD(r, "mix",    NAMConstants::kReverseMixDefault));
-    }
-    if (obj.contains("volumeSweep")) {
-        auto s = obj["volumeSweep"].toObject();
-        mSwSweepEnable ->setChecked(getB(s, "enabled",     false));
-        mKnobSweepAtk  ->setValue(getD(s, "attack",      NAMConstants::kSweepAttackDefault));
-        mKnobSweepSens ->setValue(getD(s, "sensitivity", NAMConstants::kSweepSensDefault));
-        mKnobSweepMix  ->setValue(getD(s, "mix",         NAMConstants::kSweepMixDefault));
-    }
-    if (obj.contains("dynamicWah")) {
-        auto w = obj["dynamicWah"].toObject();
-        mSwWahEnable ->setChecked(getB(w, "enabled",     false));
-        mKnobWahSens ->setValue(getD(w, "sensitivity", NAMConstants::kWahSensDefault));
-        mKnobWahRes  ->setValue(getD(w, "resonance",   NAMConstants::kWahResDefault));
-        mKnobWahMix  ->setValue(getD(w, "mix",         NAMConstants::kWahMixDefault));
-    }
-    if (obj.contains("bitCrusher")) {
-        auto b = obj["bitCrusher"].toObject();
-        mSwBitEnable ->setChecked(getB(b, "enabled", false));
-        mKnobBitBits ->setValue(getD(b, "bits", NAMConstants::kBitCrushBitsDefault));
-        mKnobBitMix  ->setValue(getD(b, "mix",  NAMConstants::kBitCrushMixDefault));
     }
     if (obj.contains("irEnabled"))
         mSwIREnable->setChecked(obj["irEnabled"].toBool(true));

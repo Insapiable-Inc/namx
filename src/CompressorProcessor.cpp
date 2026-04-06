@@ -2,19 +2,13 @@
 #include <cmath>
 #include <algorithm>
 
-void CompressorProcessor::setSampleRate(double sr)
-{
-    mSampleRate = sr;
-    reset();
-}
-
 void CompressorProcessor::reset()
 {
     mEnvDB  = -120.0f;
     mGainDB =    0.0f;
 }
 
-void CompressorProcessor::processBlock(float* buf, int nframes)
+void CompressorProcessor::processBlockMono(float* buf, int nframes)
 {
     const float threshold = mThresholdDB.load();
     const float ratio     = mRatio.load();
@@ -26,29 +20,23 @@ void CompressorProcessor::processBlock(float* buf, int nframes)
 
     for (int i = 0; i < nframes; ++i)
     {
-        // Level detection (peak, in dB)
         float level   = std::abs(buf[i]);
         float levelDB = (level > 1e-9f) ? 20.0f * std::log10(level) : -120.0f;
 
-        // Envelope follower in log domain
         if (levelDB > mEnvDB)
             mEnvDB = atCoeff  * mEnvDB + (1.0f - atCoeff)  * levelDB;
         else
             mEnvDB = relCoeff * mEnvDB + (1.0f - relCoeff) * levelDB;
 
-        // Gain computer: compute desired gain reduction
         float targetGR = 0.0f;
         if (mEnvDB > threshold)
             targetGR = (threshold - mEnvDB) * (1.0f - 1.0f / ratio);
-        // targetGR <= 0
 
-        // Smooth gain reduction
         if (targetGR < mGainDB)
             mGainDB = atCoeff  * mGainDB + (1.0f - atCoeff)  * targetGR;
         else
             mGainDB = relCoeff * mGainDB + (1.0f - relCoeff) * targetGR;
 
-        float gain = std::pow(10.0f, (mGainDB + makeup) / 20.0f);
-        buf[i] *= gain;
+        buf[i] *= std::pow(10.0f, (mGainDB + makeup) / 20.0f);
     }
 }

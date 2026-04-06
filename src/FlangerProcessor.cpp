@@ -3,9 +3,8 @@
 
 static constexpr float kPi = 3.14159265358979323846f;
 
-void FlangerProcessor::setSampleRate(double sr)
+void FlangerProcessor::onSampleRateChanged(double sr)
 {
-    mSampleRate = sr;
     int bufSamples = static_cast<int>((kBaseMs + kDepthMs + 5.0f) * sr / 1000.0f) + 4;
     mBufL.assign(bufSamples, 0.0f);
     mBufR.assign(bufSamples, 0.0f);
@@ -23,7 +22,7 @@ void FlangerProcessor::reset()
 
 float FlangerProcessor::readInterp(const std::vector<float>& buf, int writePos, float delaySamples) const
 {
-    int sz = static_cast<int>(buf.size());
+    int   sz    = static_cast<int>(buf.size());
     float readF = static_cast<float>(writePos) - delaySamples;
     while (readF < 0.0f) readF += sz;
 
@@ -38,20 +37,18 @@ void FlangerProcessor::processSample(float in, float phase,
     float depth, float fbAmt, float mix, float& out) const
 {
     float lfo      = std::sin(2.0f * kPi * phase);
-    float delayMs  = kBaseMs + depth * kDepthMs * lfo;
-    float delaySam = delayMs * static_cast<float>(mSampleRate) / 1000.0f;
-    if (delaySam < 1.0f) delaySam = 1.0f;
+    float delaySam = std::max(1.0f, (kBaseMs + depth * kDepthMs * lfo) * static_cast<float>(mSampleRate) / 1000.0f);
 
-    int sz       = static_cast<int>(buf.size());
+    int sz        = static_cast<int>(buf.size());
     buf[writePos] = in + fbAmt * fb;
-    float wet    = readInterp(buf, writePos, delaySam);
-    fb           = wet;
-    writePos     = (writePos + 1) % sz;
+    float wet     = readInterp(buf, writePos, delaySam);
+    fb            = wet;
+    writePos      = (writePos + 1) % sz;
 
     out = in * (1.0f - mix) + wet * mix;
 }
 
-void FlangerProcessor::processBlock(float* buf, int nframes)
+void FlangerProcessor::processBlockMono(float* buf, int nframes)
 {
     const float depth = mDepth.load()    / 100.0f;
     const float fbAmt = mFeedback.load() / 100.0f;
@@ -69,7 +66,7 @@ void FlangerProcessor::processBlock(float* buf, int nframes)
     }
 }
 
-void FlangerProcessor::processBlockStereo(float* L, float* R, int nframes)
+void FlangerProcessor::processBlockStereoOut(float* L, float* R, int nframes)
 {
     const float depth = mDepth.load()    / 100.0f;
     const float fbAmt = mFeedback.load() / 100.0f;

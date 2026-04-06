@@ -3,27 +3,27 @@
 #include <atomic>
 #include "EffectBase.h"
 
-/// Tremolo: amplitude modulation by a sine LFO.
-/// Stereo: L/R LFOs are 90° apart for an autopanning effect.
+/// Tremolo: amplitude modulation. Stereo uses 90° LFO offset for auto-pan.
 class TremoloProcessor : public EffectBase
 {
 public:
-    void setSampleRate(double sr) override { mSampleRate = sr; reset(); }
+    bool supportsStereoOut() const override { return true; }
     void reset() override { mPhase = 0.0f; }
 
-    void processBlock(float* buf, int nframes) override;
-    void processBlockStereo(float* L, float* R, int nframes) override;
-
-    void setRate(float hz)    { mRate.store(hz);    }
-    void setDepth(float pct)  { mDepth.store(pct);  }  // 0–100
+    void setRate(float hz)   { mRate.store(hz);   }
+    void setDepth(float pct) { mDepth.store(pct); }
 
     float rate()  const { return mRate.load();  }
     float depth() const { return mDepth.load(); }
+
+protected:
+    void onSampleRateChanged(double /*sr*/) override { reset(); }
+    void processBlockMono(float* buf, int nframes) override;
+    void processBlockStereoOut(float* L, float* R, int nframes) override;
 
 private:
     std::atomic<float> mRate { 5.0f};
     std::atomic<float> mDepth{50.0f};
 
-    double mSampleRate{44100.0};
-    float  mPhase{0.0f};
+    float mPhase{0.0f};
 };

@@ -1,7 +1,7 @@
 #include "TunerProcessor.h"
 
-#include <cmath>
 #include <algorithm>
+#include <cmath>
 
 TunerProcessor::TunerProcessor()
 {
@@ -17,10 +17,10 @@ void TunerProcessor::reset()
     mBufferReady = false;
 }
 
-void TunerProcessor::processBlock(float* buf, int nframes, bool mute)
+void TunerProcessor::processBlockMono(float* buf, int nframes)
 {
     // try_lock: if the GUI thread is currently snapshotting, skip the write for this
-    // block. A ~5ms gap in ring-buffer data is completely unnoticeable in a tuner display.
+    // block. A ~5 ms gap in ring-buffer data is completely unnoticeable in a tuner display.
     if (mBufMutex.try_lock())
     {
         for (int i = 0; i < nframes; ++i)
@@ -32,41 +32,31 @@ void TunerProcessor::processBlock(float* buf, int nframes, bool mute)
         mBufMutex.unlock();
     }
 
-    // Mute is audio-path logic — apply regardless of lock success
-    if (mute)
+    if (mMute.load())
         std::fill(buf, buf + nframes, 0.0f);
 }
 
 float TunerProcessor::detectPitch()
 {
-    // Take snapshot under the mutex, then release before heavy computation
     {
         std::lock_guard<std::mutex> lock(mBufMutex);
         if (!mBufferReady)
             return 0.0f;
 
-        // Copy ring buffer into contiguous snapshot (oldest → newest)
         for (int i = 0; i < kBufSize; ++i)
             mSnapBuf[i] = mRingBuf[(mWritePos + i) % kBufSize];
     }
 
-    // RMS check — silence guard
     double rmsSum = 0.0;
     for (int i = 0; i < kBufSize; ++i)
         rmsSum += mSnapBuf[i] * mSnapBuf[i];
-    const double rms = std::sqrt(rmsSum / kBufSize);
-    if (rms < 5e-4)
+    if (std::sqrt(rmsSum / kBufSize) < 5e-4)
         return 0.0f;
 
-    // Guitar range: E2 (82 Hz) to E6 (1319 Hz)
-    const int fs      = static_cast<int>(mSampleRate);
-    const int minLag  = fs / 1400;       // ~31 samples at 44100
-    const int maxLag  = fs / 50;         // ~882 samples at 44100
-    const int N       = kBufSize;
-
-    // --- Normalized Square Difference Function (NSDF / YIN-style) ---
-    // nsdf[k] = 2*r[k] / (m0 + mk)
-    // where r[k] = correlation, m0 = energy of first half, mk = energy of second half.
+    const int fs     = static_cast<int>(mSampleRate);
+    const int minLag = fs / 1400;
+    const int maxLag = fs / 50;
+    const int N      = kBufSize;
 
     float bestNSDF = -1.0f;
     int   bestLag  = 0;
@@ -79,29 +69,20 @@ float TunerProcessor::detectPitch()
 
     for (int lag = minLag; lag <= std::min(maxLag, N - winLen - 1); ++lag)
     {
-        double r  = 0.0;
-        double mk = 0.0;
+        double r = 0.0, mk = 0.0;
         for (int i = 0; i < winLen; ++i)
         {
             r  += mSnapBuf[i] * mSnapBuf[i + lag];
             mk += mSnapBuf[i + lag] * mSnapBuf[i + lag];
         }
-
         double denom = r0 + mk;
         float  nsdf  = (denom > 1e-12) ? static_cast<float>(2.0 * r / denom) : 0.0f;
-
-        if (nsdf > bestNSDF)
-        {
-            bestNSDF = nsdf;
-            bestLag  = lag;
-        }
+        if (nsdf > bestNSDF) { bestNSDF = nsdf; bestLag = lag; }
     }
 
-    // Require at least 40% periodicity
     if (bestNSDF < 0.40f || bestLag == 0)
         return 0.0f;
 
-    // Parabolic interpolation around bestLag for sub-sample accuracy
     if (bestLag > minLag && bestLag < std::min(maxLag, N - winLen - 2))
     {
         auto nsdfAt = [&](int lag) -> float {
@@ -118,12 +99,10 @@ float TunerProcessor::detectPitch()
         float y0 = nsdfAt(bestLag - 1);
         float y1 = bestNSDF;
         float y2 = nsdfAt(bestLag + 1);
-
         float denom = 2.0f * (2.0f * y1 - y0 - y2);
         if (std::abs(denom) > 1e-6f)
         {
-            float delta = (y0 - y2) / denom;
-            delta = std::max(-1.0f, std::min(1.0f, delta));
+            float delta = std::max(-1.0f, std::min(1.0f, (y0 - y2) / denom));
             return static_cast<float>(mSampleRate) / (bestLag + delta);
         }
     }
@@ -150,6 +129,5 @@ float TunerProcessor::centsOffset(float freq)
     if (freq <= 0.0f) return 0.0f;
     int   midi     = freqToMidi(freq);
     float noteFreq = 440.0f * std::pow(2.0f, (midi - 69) / 12.0f);
-    float cents    = 1200.0f * std::log2(freq / noteFreq);
-    return std::max(-50.0f, std::min(50.0f, cents));
+    return std::max(-50.0f, std::min(50.0f, 1200.0f * std::log2(freq / noteFreq)));
 }

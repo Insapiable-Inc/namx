@@ -3,12 +3,6 @@
 
 static constexpr float kPi = 3.14159265358979323846f;
 
-void PhaserProcessor::setSampleRate(double sr)
-{
-    mSampleRate = sr;
-    reset();
-}
-
 void PhaserProcessor::reset()
 {
     mX1L.fill(0.f); mY1L.fill(0.f);
@@ -23,32 +17,27 @@ float PhaserProcessor::processChannel(float in, float phase,
     float& fbState,
     float depth, float fbAmt, float mix) const
 {
-    // LFO drives center frequency on a log scale
     float lfo = 0.5f * (1.0f + std::sin(2.0f * kPi * phase));
     float fc  = kMinFreq * std::pow(kMaxFreq / kMinFreq, depth * lfo);
 
-    // First-order all-pass coefficient
-    float w  = std::tan(kPi * fc / static_cast<float>(mSampleRate));
-    float d  = (w - 1.0f) / (w + 1.0f);
+    float w = std::tan(kPi * fc / static_cast<float>(mSampleRate));
+    float d = (w - 1.0f) / (w + 1.0f);
 
-    // Mix feedback into input
     float sig = in + fbAmt * fbState;
 
-    // Cascade all-pass stages
     for (int s = 0; s < kStages; ++s)
     {
-        // y[n] = d*(x[n] - y[n-1]) + x[n-1]
         float y = d * (sig - y1[s]) + x1[s];
-        x1[s]  = sig;
-        y1[s]  = y;
-        sig    = y;
+        x1[s] = sig;
+        y1[s] = y;
+        sig   = y;
     }
 
     fbState = sig;
     return in * (1.0f - mix) + sig * mix;
 }
 
-void PhaserProcessor::processBlock(float* buf, int nframes)
+void PhaserProcessor::processBlockMono(float* buf, int nframes)
 {
     const float depth = mDepth.load()    / 100.0f;
     const float fbAmt = mFeedback.load() / 100.0f;
@@ -63,7 +52,7 @@ void PhaserProcessor::processBlock(float* buf, int nframes)
     }
 }
 
-void PhaserProcessor::processBlockStereo(float* L, float* R, int nframes)
+void PhaserProcessor::processBlockStereoOut(float* L, float* R, int nframes)
 {
     const float depth = mDepth.load()    / 100.0f;
     const float fbAmt = mFeedback.load() / 100.0f;

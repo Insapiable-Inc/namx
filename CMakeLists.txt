@@ -64,16 +64,11 @@ set(GUI_SOURCES
     src/ReverbProcessor.h
     src/ToggleSwitch.cpp
     src/ToggleSwitch.h
-    src/OctaveProcessor.cpp
-    src/OctaveProcessor.h
-    src/ReverseProcessor.cpp
-    src/ReverseProcessor.h
-    src/VolumeSweepProcessor.cpp
-    src/VolumeSweepProcessor.h
     src/DynamicWahProcessor.cpp
     src/DynamicWahProcessor.h
-    src/BitCrusherProcessor.cpp
-    src/BitCrusherProcessor.h
+    src/NamProcessor.cpp
+    src/NamProcessor.h
+    src/IRProcessor.h
 )
 
 add_executable(NAMPlayer ${GUI_SOURCES} ${NAM_SOURCES} ${WAV_SOURCES})

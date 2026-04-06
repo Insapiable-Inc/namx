@@ -1,63 +1,77 @@
 #pragma once
 
 #include <array>
+#include <atomic>
 #include <cmath>
+#include <mutex>
 
-/// Simple 3-band parametric EQ implemented as biquad filters.
-/// Bands: Low shelf, Mid peak, High shelf
-class EQProcessor
+#include "EffectBase.h"
+
+/// 3-band parametric EQ (low shelf 250 Hz, mid peak 1 kHz, high shelf 4 kHz).
+/// Uses a try_lock in the audio thread so GUI coefficient updates never stall the callback.
+/// Maintains independent L/R biquad state for stereo processing.
+class EQProcessor : public EffectBase
 {
 public:
     EQProcessor();
 
-    void setSampleRate(double sampleRate);
+    /// Override: try_lock the internal mutex before processing; skip block if unavailable.
+    bool process(float* L, float* R, int n, bool inputIsStereo) override;
 
-    /// Gain in dB, range typically -12 to +12
+    void reset() override;
+
     void setLowGain(double dB);
     void setMidGain(double dB);
     void setTrebleGain(double dB);
 
-    /// Process a single mono sample in-place
-    float processSample(float in);
+    double lowGainDB()    const { return mLowGainDB;    }
+    double midGainDB()    const { return mMidGainDB;    }
+    double trebleGainDB() const { return mTrebleGainDB; }
 
-    /// Reset filter state
-    void reset();
+protected:
+    void onSampleRateChanged(double sr) override;
 
 private:
     struct Biquad
     {
-        // Coefficients
         double b0 = 1, b1 = 0, b2 = 0, a1 = 0, a2 = 0;
-        // State
         double x1 = 0, x2 = 0, y1 = 0, y2 = 0;
 
         float process(float in)
         {
             double x0 = in;
-            double y0 = b0 * x0 + b1 * x1 + b2 * x2 - a1 * y1 - a2 * y2;
+            double y0 = b0*x0 + b1*x1 + b2*x2 - a1*y1 - a2*y2;
             x2 = x1; x1 = x0;
             y2 = y1; y1 = y0;
             return static_cast<float>(y0);
         }
 
         void reset() { x1 = x2 = y1 = y2 = 0.0; }
+
+        void setCoeffs(const Biquad& src)
+        {
+            b0 = src.b0; b1 = src.b1; b2 = src.b2;
+            a1 = src.a1; a2 = src.a2;
+            // state left intact
+        }
     };
 
-    /// Design a low-shelf biquad at the given frequency
     static Biquad makeLowShelf(double sampleRate, double freq, double gainDB);
-    /// Design a peaking EQ biquad at the given frequency
     static Biquad makePeaking(double sampleRate, double freq, double gainDB, double Q);
-    /// Design a high-shelf biquad at the given frequency
     static Biquad makeHighShelf(double sampleRate, double freq, double gainDB);
 
-    double mSampleRate = 44100.0;
-    double mLowGainDB  = 0.0;
-    double mMidGainDB  = 0.0;
+    double mLowGainDB    = 0.0;
+    double mMidGainDB    = 0.0;
     double mTrebleGainDB = 0.0;
 
-    Biquad mLowShelf;
-    Biquad mMidPeak;
-    Biquad mHighShelf;
+    // Independent L/R biquad state (same coefficients, separate delay lines)
+    Biquad mLowShelfL, mMidPeakL, mHighShelfL;
+    Biquad mLowShelfR, mMidPeakR, mHighShelfR;
+
+    std::mutex mMutex; // GUI writes coefficients; audio thread uses try_lock
 
     void rebuildFilters();
+
+    float processSampleL(float in) { return mHighShelfL.process(mMidPeakL.process(mLowShelfL.process(in))); }
+    float processSampleR(float in) { return mHighShelfR.process(mMidPeakR.process(mLowShelfR.process(in))); }
 };

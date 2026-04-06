@@ -3,13 +3,11 @@
 #include <atomic>
 #include "EffectBase.h"
 
-/// Feedforward peak compressor with adjustable threshold, ratio, attack/release and makeup gain.
+/// Feedforward peak compressor.
 class CompressorProcessor : public EffectBase
 {
 public:
-    void setSampleRate(double sr) override;
     void reset() override;
-    void processBlock(float* buf, int nframes) override;
 
     void setThreshold(float dB)  { mThresholdDB.store(dB);  }
     void setRatio(float ratio)   { mRatio.store(ratio);      }
@@ -23,6 +21,10 @@ public:
     float release()   const { return mReleaseMS.load();   }
     float makeup()    const { return mMakeupDB.load();    }
 
+protected:
+    void onSampleRateChanged(double /*sr*/) override { reset(); }
+    void processBlockMono(float* buf, int nframes) override;
+
 private:
     std::atomic<float> mThresholdDB{-20.0f};
     std::atomic<float> mRatio       { 4.0f};
@@ -30,7 +32,6 @@ private:
     std::atomic<float> mReleaseMS   {100.0f};
     std::atomic<float> mMakeupDB    { 0.0f};
 
-    double mSampleRate{44100.0};
-    float  mEnvDB{-120.0f}; // smoothed level in dB
-    float  mGainDB{0.0f};   // smoothed gain reduction in dB
+    float mEnvDB{-120.0f};
+    float mGainDB{0.0f};
 };

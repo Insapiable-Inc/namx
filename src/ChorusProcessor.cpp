@@ -3,10 +3,8 @@
 
 static constexpr float kPi = 3.14159265358979323846f;
 
-void ChorusProcessor::setSampleRate(double sr)
+void ChorusProcessor::onSampleRateChanged(double sr)
 {
-    mSampleRate = sr;
-    // Buffer large enough for base delay + max depth + margin
     int bufSamples = static_cast<int>((kBaseMs + kMaxDepthMs + 5.0f) * sr / 1000.0f) + 4;
     mBufL.assign(bufSamples, 0.0f);
     mBufR.assign(bufSamples, 0.0f);
@@ -23,7 +21,7 @@ void ChorusProcessor::reset()
 
 float ChorusProcessor::readInterp(const std::vector<float>& buf, int writePos, float delaySamples) const
 {
-    int sz = static_cast<int>(buf.size());
+    int   sz    = static_cast<int>(buf.size());
     float readF = static_cast<float>(writePos) - delaySamples;
     while (readF < 0.0f) readF += sz;
 
@@ -33,7 +31,7 @@ float ChorusProcessor::readInterp(const std::vector<float>& buf, int writePos, f
     return buf[r0] * (1.0f - frac) + buf[r1] * frac;
 }
 
-void ChorusProcessor::processBlock(float* buf, int nframes)
+void ChorusProcessor::processBlockMono(float* buf, int nframes)
 {
     const float rate  = mRate.load();
     const float depth = mDepth.load() / 100.0f;
@@ -46,8 +44,7 @@ void ChorusProcessor::processBlock(float* buf, int nframes)
     {
         float lfo     = std::sin(2.0f * kPi * mPhase);
         float delayMs = kBaseMs + depth * kMaxDepthMs * lfo;
-        float delaySamples = delayMs * fs / 1000.0f;
-        if (delaySamples < 1.0f) delaySamples = 1.0f;
+        float delaySamples = std::max(1.0f, delayMs * fs / 1000.0f);
 
         mBufL[mWriteL] = buf[i];
         float wet = readInterp(mBufL, mWriteL, delaySamples);
@@ -59,7 +56,7 @@ void ChorusProcessor::processBlock(float* buf, int nframes)
     }
 }
 
-void ChorusProcessor::processBlockStereo(float* L, float* R, int nframes)
+void ChorusProcessor::processBlockStereoOut(float* L, float* R, int nframes)
 {
     const float rate  = mRate.load();
     const float depth = mDepth.load() / 100.0f;
@@ -74,10 +71,8 @@ void ChorusProcessor::processBlockStereo(float* L, float* R, int nframes)
         float lfoL = std::sin(2.0f * kPi * mPhase);
         float lfoR = std::sin(2.0f * kPi * (mPhase + 0.5f)); // 180° apart
 
-        float delL = (kBaseMs + depth * kMaxDepthMs * lfoL) * fs / 1000.0f;
-        float delR = (kBaseMs + depth * kMaxDepthMs * lfoR) * fs / 1000.0f;
-        if (delL < 1.0f) delL = 1.0f;
-        if (delR < 1.0f) delR = 1.0f;
+        float delL = std::max(1.0f, (kBaseMs + depth * kMaxDepthMs * lfoL) * fs / 1000.0f);
+        float delR = std::max(1.0f, (kBaseMs + depth * kMaxDepthMs * lfoR) * fs / 1000.0f);
 
         mBufL[mWriteL] = L[i];
         float wetL = readInterp(mBufL, mWriteL, delL);

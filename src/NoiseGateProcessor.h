@@ -4,13 +4,10 @@
 #include "EffectBase.h"
 
 /// Simple envelope-following noise gate.
-/// Closes when the input level drops below the threshold.
 class NoiseGateProcessor : public EffectBase
 {
 public:
-    void setSampleRate(double sr) override;
     void reset() override;
-    void processBlock(float* buf, int nframes) override;
 
     void setThreshold(float dB) { mThresholdDB.store(dB); }
     void setAttack(float ms)    { mAttackMS.store(ms);    }
@@ -20,12 +17,15 @@ public:
     float attack()    const { return mAttackMS.load();    }
     float release()   const { return mReleaseMS.load();   }
 
+protected:
+    void onSampleRateChanged(double /*sr*/) override { reset(); }
+    void processBlockMono(float* buf, int nframes) override;
+
 private:
     std::atomic<float> mThresholdDB{-40.0f};
     std::atomic<float> mAttackMS   { 10.0f};
     std::atomic<float> mReleaseMS  {100.0f};
 
-    double mSampleRate{44100.0};
-    float  mEnvelope{0.0f};
-    float  mGain{0.0f};
+    float mEnvelope{0.0f};
+    float mGain{0.0f};
 };

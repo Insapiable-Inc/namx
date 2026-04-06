@@ -1,19 +1,13 @@
 #include "NoiseGateProcessor.h"
 #include <cmath>
 
-void NoiseGateProcessor::setSampleRate(double sr)
-{
-    mSampleRate = sr;
-    reset();
-}
-
 void NoiseGateProcessor::reset()
 {
     mEnvelope = 0.0f;
     mGain     = 0.0f;
 }
 
-void NoiseGateProcessor::processBlock(float* buf, int nframes)
+void NoiseGateProcessor::processBlockMono(float* buf, int nframes)
 {
     const float threshLin = std::pow(10.0f, mThresholdDB.load() / 20.0f);
     const float fs        = static_cast<float>(mSampleRate);
@@ -25,17 +19,14 @@ void NoiseGateProcessor::processBlock(float* buf, int nframes)
 
     for (int i = 0; i < nframes; ++i)
     {
-        // Peak envelope follower
         float level = std::abs(buf[i]);
         if (level > mEnvelope)
             mEnvelope = atCoeff  * mEnvelope + (1.0f - atCoeff)  * level;
         else
             mEnvelope = relCoeff * mEnvelope + (1.0f - relCoeff) * level;
 
-        // Gate: open when above threshold, close below
         float target = (mEnvelope >= threshLin) ? 1.0f : 0.0f;
 
-        // Smooth gate transitions
         if (target > mGain)
             mGain = atCoeff  * mGain + (1.0f - atCoeff)  * target;
         else
