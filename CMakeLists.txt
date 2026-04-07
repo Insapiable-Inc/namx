@@ -32,43 +32,46 @@ set(WAV_SOURCES "${AUDIO_DSP_TOOLS_DIR}/dsp/wav.cpp")
 # GUI sources
 set(GUI_SOURCES
     src/main.cpp
-    src/MainWindow.cpp
-    src/MainWindow.h
-    src/Constants.h
-    src/AudioEngine.cpp
-    src/AudioEngine.h
-    src/KnobWidget.cpp
-    src/KnobWidget.h
-    src/IRLoader.cpp
-    src/IRLoader.h
-    src/EQProcessor.cpp
-    src/EQProcessor.h
-    src/EffectBase.h
-    src/TunerProcessor.cpp
-    src/TunerProcessor.h
-    src/NoiseGateProcessor.cpp
-    src/NoiseGateProcessor.h
-    src/CompressorProcessor.cpp
-    src/CompressorProcessor.h
-    src/ChorusProcessor.cpp
-    src/ChorusProcessor.h
-    src/FlangerProcessor.cpp
-    src/FlangerProcessor.h
-    src/PhaserProcessor.cpp
-    src/PhaserProcessor.h
-    src/TremoloProcessor.cpp
-    src/TremoloProcessor.h
-    src/DelayProcessor.cpp
-    src/DelayProcessor.h
-    src/ReverbProcessor.cpp
-    src/ReverbProcessor.h
-    src/ToggleSwitch.cpp
-    src/ToggleSwitch.h
-    src/DynamicWahProcessor.cpp
-    src/DynamicWahProcessor.h
-    src/NamProcessor.cpp
-    src/NamProcessor.h
-    src/IRProcessor.h
+    src/ui/MainWindow.cpp
+    src/ui/MainWindow.h
+    src/ui/KnobWidget.cpp
+    src/ui/KnobWidget.h
+    src/ui/ToggleSwitch.cpp
+    src/ui/ToggleSwitch.h
+    src/ui/GUIConstants.h
+    src/dsp/AudioEngine.cpp
+    src/dsp/AudioEngine.h
+    src/dsp/Constants.h
+    src/dsp/KnobRanges.h
+    src/dsp/EffectBase.h
+    src/dsp/Effects.h
+    src/dsp/IRLoader.cpp
+    src/dsp/IRLoader.h
+    src/dsp/IRProcessor.h
+    src/dsp/NamProcessor.cpp
+    src/dsp/NamProcessor.h
+    src/dsp/EQProcessor.cpp
+    src/dsp/EQProcessor.h
+    src/dsp/TunerProcessor.cpp
+    src/dsp/TunerProcessor.h
+    src/dsp/NoiseGateProcessor.cpp
+    src/dsp/NoiseGateProcessor.h
+    src/dsp/CompressorProcessor.cpp
+    src/dsp/CompressorProcessor.h
+    src/dsp/ChorusProcessor.cpp
+    src/dsp/ChorusProcessor.h
+    src/dsp/FlangerProcessor.cpp
+    src/dsp/FlangerProcessor.h
+    src/dsp/PhaserProcessor.cpp
+    src/dsp/PhaserProcessor.h
+    src/dsp/TremoloProcessor.cpp
+    src/dsp/TremoloProcessor.h
+    src/dsp/DelayProcessor.cpp
+    src/dsp/DelayProcessor.h
+    src/dsp/ReverbProcessor.cpp
+    src/dsp/ReverbProcessor.h
+    src/dsp/DynamicWahProcessor.cpp
+    src/dsp/DynamicWahProcessor.h
 )
 
 add_executable(NAMPlayer ${GUI_SOURCES} ${NAM_SOURCES} ${WAV_SOURCES})
@@ -79,7 +82,8 @@ target_include_directories(NAMPlayer PRIVATE
     ${NAM_DEPS_PATH}/nlohmann
     ${AUDIO_DSP_TOOLS_DIR}/dsp
     ${JACK_INCLUDE_DIRS}
-    src
+    src/dsp
+    src/ui
 )
 
 target_compile_definitions(NAMPlayer PRIVATE
