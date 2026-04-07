@@ -22,6 +22,7 @@
 #include <QVBoxLayout>
 
 #include <cmath>
+#include <unordered_map>
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -49,7 +50,7 @@ MainWindow::MainWindow(QWidget* parent)
     , mEngine(std::make_unique<AudioEngine>())
 {
     setWindowTitle("NAM Player");
-    setMinimumSize(1400, 500);
+    setMinimumSize(1610, 1000);
 
     setupUI();
     setupAudio();
@@ -79,7 +80,7 @@ QWidget* MainWindow::makeEffectColumn(const QString& title,
 {
     auto* col = new QGroupBox(title);
     col->setAlignment(Qt::AlignHCenter);
-    col->setMinimumWidth(90);
+    col->setMinimumWidth(100);
     auto* lay = new QVBoxLayout(col);
     lay->setContentsMargins(4, 6, 4, 4);
     lay->setSpacing(2);
@@ -206,31 +207,18 @@ void MainWindow::setupUI()
         stripLay->addWidget(f);
     };
 
-    // ---- Input gain ----
-    {
-        using namespace NAMConstants;
-        auto* col = new QGroupBox("Input");
-        col->setAlignment(Qt::AlignHCenter);
-        col->setMinimumWidth(90);
-        auto* lay = new QVBoxLayout(col);
-        lay->setContentsMargins(4, 6, 4, 4);
-        mKnobInputGain = new KnobWidget("Gain", kGainMin, kGainMax, kGainDefault, "dB");
-        mKnobInputGain->setScrollStep(0.1);
-        connect(mKnobInputGain, &KnobWidget::valueChanged, this, &MainWindow::onInputGainChanged);
-        mMeterIn = makeVUBarVertical();
-        lay->addWidget(mKnobInputGain);
-        lay->addWidget(mMeterIn, 0, Qt::AlignHCenter);
-        lay->addStretch();
-        stripLay->addWidget(col);
-    }
-
-    addDivider();
+    // =========================================================================
+    // Phase 1: Create all effect columns and store them keyed by EffectBase*.
+    //          Do NOT add to the layout here — layout order is driven by the
+    //          audio chain in Phase 2 so the two stay in sync automatically.
+    // =========================================================================
+    std::unordered_map<EffectBase*, QWidget*> fxCols;
 
     // ---- Tuner ----
     {
         auto* col = new QGroupBox("Tuner");
         col->setAlignment(Qt::AlignHCenter);
-        col->setMinimumWidth(90);
+        col->setMinimumWidth(100);
         auto* lay = new QVBoxLayout(col);
         lay->setContentsMargins(4, 6, 4, 4);
         lay->setSpacing(3);
@@ -276,7 +264,7 @@ void MainWindow::setupUI()
 
         connect(mSwTunerEnable, &ToggleSwitch::toggled, this, &MainWindow::onTunerEnabledToggled);
         connect(mSwTunerMute,   &ToggleSwitch::toggled, this, &MainWindow::onTunerMuteToggled);
-        stripLay->addWidget(col);
+        fxCols[&mEngine->tuner()] = col;
     }
 
     // ---- Noise Gate ----
@@ -296,7 +284,7 @@ void MainWindow::setupUI()
         connect(mKnobGateThresh,  &KnobWidget::valueChanged, this, &MainWindow::onGateThresholdChanged);
         connect(mKnobGateAttack,  &KnobWidget::valueChanged, this, &MainWindow::onGateAttackChanged);
         connect(mKnobGateRelease, &KnobWidget::valueChanged, this, &MainWindow::onGateReleaseChanged);
-        stripLay->addWidget(col);
+        fxCols[&mEngine->gate()] = col;
     }
 
     // ---- Compressor ----
@@ -322,7 +310,7 @@ void MainWindow::setupUI()
         connect(mKnobCompAttack,  &KnobWidget::valueChanged, this, &MainWindow::onCompAttackChanged);
         connect(mKnobCompRelease, &KnobWidget::valueChanged, this, &MainWindow::onCompReleaseChanged);
         connect(mKnobCompMakeup,  &KnobWidget::valueChanged, this, &MainWindow::onCompMakeupChanged);
-        stripLay->addWidget(col);
+        fxCols[&mEngine->comp()] = col;
     }
 
     // ---- Dynamic Wah ----
@@ -342,16 +330,14 @@ void MainWindow::setupUI()
         connect(mKnobWahSens,  &KnobWidget::valueChanged, this, &MainWindow::onDynamicWahSensChanged);
         connect(mKnobWahRes,   &KnobWidget::valueChanged, this, &MainWindow::onDynamicWahResChanged);
         connect(mKnobWahMix,   &KnobWidget::valueChanged, this, &MainWindow::onDynamicWahMixChanged);
-        stripLay->addWidget(col);
+        fxCols[&mEngine->wah()] = col;
     }
 
-    addDivider();
-
-    // ---- Amp toggle ----
+    // ---- Amp (NAM) ----
     {
         auto* col = new QGroupBox("Amp");
         col->setAlignment(Qt::AlignHCenter);
-        col->setMinimumWidth(90);
+        col->setMinimumWidth(100);
         auto* lay = new QVBoxLayout(col);
         lay->setContentsMargins(4, 6, 4, 4);
 
@@ -362,7 +348,7 @@ void MainWindow::setupUI()
         lay->addStretch();
 
         connect(mSwNAMEnable, &ToggleSwitch::toggled, this, &MainWindow::onNAMEnabledToggled);
-        stripLay->addWidget(col);
+        fxCols[&mEngine->nam()] = col;
     }
 
     // ---- EQ ----
@@ -370,7 +356,7 @@ void MainWindow::setupUI()
         using namespace NAMConstants;
         auto* col = new QGroupBox("EQ");
         col->setAlignment(Qt::AlignHCenter);
-        col->setMinimumWidth(90);
+        col->setMinimumWidth(100);
         auto* lay = new QVBoxLayout(col);
         lay->setContentsMargins(4, 6, 4, 4);
         lay->setSpacing(2);
@@ -396,10 +382,8 @@ void MainWindow::setupUI()
         lay->addWidget(mKnobMid);
         lay->addWidget(mKnobTreble);
         lay->addStretch();
-        stripLay->addWidget(col);
+        fxCols[&mEngine->eq()] = col;
     }
-
-    addDivider();
 
     // ---- Chorus 1 ----
     {
@@ -419,7 +403,7 @@ void MainWindow::setupUI()
         connect(mKnobCh1Rate,     &KnobWidget::valueChanged, this, &MainWindow::onChorus1RateChanged);
         connect(mKnobCh1Depth,    &KnobWidget::valueChanged, this, &MainWindow::onChorus1DepthChanged);
         connect(mKnobCh1Mix,      &KnobWidget::valueChanged, this, &MainWindow::onChorus1MixChanged);
-        stripLay->addWidget(col);
+        fxCols[&mEngine->chorus1()] = col;
     }
 
     // ---- Flanger ----
@@ -443,7 +427,7 @@ void MainWindow::setupUI()
         connect(mKnobFlDepth,     &KnobWidget::valueChanged, this, &MainWindow::onFlangerDepthChanged);
         connect(mKnobFlFeedback,  &KnobWidget::valueChanged, this, &MainWindow::onFlangerFeedbackChanged);
         connect(mKnobFlMix,       &KnobWidget::valueChanged, this, &MainWindow::onFlangerMixChanged);
-        stripLay->addWidget(col);
+        fxCols[&mEngine->flanger()] = col;
     }
 
     // ---- Phaser ----
@@ -467,7 +451,7 @@ void MainWindow::setupUI()
         connect(mKnobPhDepth,    &KnobWidget::valueChanged, this, &MainWindow::onPhaserDepthChanged);
         connect(mKnobPhFeedback, &KnobWidget::valueChanged, this, &MainWindow::onPhaserFeedbackChanged);
         connect(mKnobPhMix,      &KnobWidget::valueChanged, this, &MainWindow::onPhaserMixChanged);
-        stripLay->addWidget(col);
+        fxCols[&mEngine->phaser()] = col;
     }
 
     // ---- Chorus 2 ----
@@ -487,7 +471,7 @@ void MainWindow::setupUI()
         connect(mKnobCh2Rate,     &KnobWidget::valueChanged, this, &MainWindow::onChorus2RateChanged);
         connect(mKnobCh2Depth,    &KnobWidget::valueChanged, this, &MainWindow::onChorus2DepthChanged);
         connect(mKnobCh2Mix,      &KnobWidget::valueChanged, this, &MainWindow::onChorus2MixChanged);
-        stripLay->addWidget(col);
+        fxCols[&mEngine->chorus2()] = col;
     }
 
     // ---- Tremolo ----
@@ -503,7 +487,7 @@ void MainWindow::setupUI()
         connect(mSwTremoloEnable, &ToggleSwitch::toggled,    this, &MainWindow::onTremoloEnabledToggled);
         connect(mKnobTrRate,      &KnobWidget::valueChanged, this, &MainWindow::onTremoloRateChanged);
         connect(mKnobTrDepth,     &KnobWidget::valueChanged, this, &MainWindow::onTremoloDepthChanged);
-        stripLay->addWidget(col);
+        fxCols[&mEngine->tremolo()] = col;
     }
 
     // ---- Delay ----
@@ -525,7 +509,7 @@ void MainWindow::setupUI()
         connect(mKnobDelTime,     &KnobWidget::valueChanged, this, &MainWindow::onDelayTimeChanged);
         connect(mKnobDelFeedback, &KnobWidget::valueChanged, this, &MainWindow::onDelayFeedbackChanged);
         connect(mKnobDelMix,      &KnobWidget::valueChanged, this, &MainWindow::onDelayMixChanged);
-        stripLay->addWidget(col);
+        fxCols[&mEngine->delay()] = col;
     }
 
     // ---- Reverb ----
@@ -548,14 +532,14 @@ void MainWindow::setupUI()
         connect(mKnobRevDamping,  &KnobWidget::valueChanged, this, &MainWindow::onReverbDampingChanged);
         connect(mKnobRevWidth,    &KnobWidget::valueChanged, this, &MainWindow::onReverbWidthChanged);
         connect(mKnobRevMix,      &KnobWidget::valueChanged, this, &MainWindow::onReverbMixChanged);
-        stripLay->addWidget(col);
+        fxCols[&mEngine->reverb()] = col;
     }
 
     // ---- IR toggle ----
     {
         auto* col = new QGroupBox("IR");
         col->setAlignment(Qt::AlignHCenter);
-        col->setMinimumWidth(90);
+        col->setMinimumWidth(100);
         auto* lay = new QVBoxLayout(col);
         lay->setContentsMargins(4, 6, 4, 4);
 
@@ -566,17 +550,59 @@ void MainWindow::setupUI()
         lay->addStretch();
 
         connect(mSwIREnable, &ToggleSwitch::toggled, this, &MainWindow::onIREnabledToggled);
+        fxCols[&mEngine->ir()] = col;
+    }
+
+    // =========================================================================
+    // Phase 2: Lay out the strip in audio chain order.
+    //          Dividers are inserted at semantic boundaries:
+    //            - after Input (fixed)
+    //            - before NAM (mono pre-amp → amp)
+    //            - after EQ   (amp → stereo post-amp)
+    //            - before Output (fixed)
+    // =========================================================================
+
+    // Input gain (not in the chain — always first)
+    {
+        using namespace NAMConstants;
+        auto* col = new QGroupBox("Input");
+        col->setAlignment(Qt::AlignHCenter);
+        col->setMinimumWidth(100);
+        auto* lay = new QVBoxLayout(col);
+        lay->setContentsMargins(4, 6, 4, 4);
+        mKnobInputGain = new KnobWidget("Gain", kGainMin, kGainMax, kGainDefault, "dB");
+        mKnobInputGain->setScrollStep(0.1);
+        connect(mKnobInputGain, &KnobWidget::valueChanged, this, &MainWindow::onInputGainChanged);
+        mMeterIn = makeVUBarVertical();
+        lay->addWidget(mKnobInputGain);
+        lay->addWidget(mMeterIn, 0, Qt::AlignHCenter);
+        lay->addStretch();
         stripLay->addWidget(col);
+    }
+    addDivider();
+
+    // Chain-ordered effects — reordering mChain in AudioEngine reorders the UI here
+    for (auto* fx : mEngine->chain())
+    {
+        if (fx == &mEngine->nam())
+            addDivider();
+
+        auto it = fxCols.find(fx);
+        if (it != fxCols.end())
+            stripLay->addWidget(it->second);
+
+        if (fx == &mEngine->eq())
+            addDivider();
     }
 
     addDivider();
 
-    // ---- Output gain ----
+    // Output gain (not in the chain — always last)
     {
         using namespace NAMConstants;
         auto* col = new QGroupBox("Output");
         col->setAlignment(Qt::AlignHCenter);
-        col->setMinimumWidth(90);
+        col->setMinimumWidth(100);
         auto* lay = new QVBoxLayout(col);
         lay->setContentsMargins(4, 6, 4, 4);
         mKnobOutputGain = new KnobWidget("Gain", kGainMin, kGainMax, kGainDefault, "dB");

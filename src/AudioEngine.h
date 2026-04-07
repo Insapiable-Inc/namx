@@ -66,6 +66,9 @@ public:
     ReverbProcessor&     reverb()  { return mReverb;  }
     IRProcessor&         ir()      { return mIR;      }
 
+    // ---- Signal chain (processing order = UI order) ----
+    const std::vector<EffectBase*>& chain() const { return mChain; }
+
     // ---- VU meters ----
     float inputPeak()  const { return mInputPeak.load();  }
     float outputPeak() const { return mOutputPeak.load(); }
