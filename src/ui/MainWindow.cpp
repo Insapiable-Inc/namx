@@ -1,5 +1,6 @@
 #include "MainWindow.h"
 #include "Constants.h"
+#include "Theme.h"
 #include "TunerProcessor.h"
 
 #include <QAction>
@@ -19,6 +20,7 @@
 #include <QPushButton>
 #include <QScrollArea>
 #include <QSettings>
+#include <QStyle>
 #include <QTimer>
 #include <QVBoxLayout>
 
@@ -28,6 +30,38 @@
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+// Fixed height of the "stereo slot" row that sits between the enable toggle
+// and the first knob. Reserved on every card with knobs (visible toggle on
+// stereo-capable effects, otherwise an empty placeholder) so that knob row 1
+// starts at the same Y across all columns.
+static constexpr int kStereoSlotHeight = 38;
+
+static QWidget* makeStereoSlot(ToggleSwitch** outToggle)
+{
+    auto* w = new QWidget;
+    w->setFixedHeight(kStereoSlotHeight);
+    auto* lay = new QVBoxLayout(w);
+    lay->setContentsMargins(0, 0, 0, 0);
+    lay->setSpacing(1);
+
+    if (outToggle) {
+        auto* sw = new ToggleSwitch;
+        sw->setCheckable(true);
+        sw->setChecked(false);
+        auto* lbl = new QLabel("Stereo");
+        lbl->setAlignment(Qt::AlignHCenter);
+        QPalette p = lbl->palette();
+        p.setColor(QPalette::WindowText, QColor("#aab0bc"));
+        lbl->setPalette(p);
+        lay->addWidget(sw, 0, Qt::AlignHCenter);
+        lay->addWidget(lbl);
+        lay->addStretch();
+        *outToggle = sw;
+    }
+
+    return w;
+}
 
 static QProgressBar* makeVUBarVertical()
 {
@@ -40,7 +74,7 @@ static QProgressBar* makeVUBarVertical()
     b->setMinimumHeight(70);
     b->setStyleSheet(
         "QProgressBar::chunk { background: qlineargradient(x1:0,y1:1,x2:0,y2:0,"
-        "stop:0 #2a9d2a, stop:0.7 #d4a017, stop:1 #cc2222); }");
+        "stop:0 #5cc8a8, stop:0.65 #f0c850, stop:0.9 #e85a4f, stop:1 #ff5252); }");
     return b;
 }
 
@@ -51,7 +85,10 @@ MainWindow::MainWindow(QWidget* parent)
     , mEngine(std::make_unique<AudioEngine>())
 {
     setWindowTitle("NAM Player");
-    setMinimumSize(1610, 1000);
+    // 15 cards (Input + 13 effects + Output) at min width 110, plus 4 dividers,
+    // strip spacing and root margins. 1800 gives a small breathing margin.
+    setMinimumSize(1800, 1000);
+    resize(1800, 1000);
 
     setupUI();
     setupAudio();
@@ -83,26 +120,19 @@ QWidget* MainWindow::makeEffectColumn(const QString& title,
 {
     auto* col = new QGroupBox(title);
     col->setAlignment(Qt::AlignHCenter);
-    col->setMinimumWidth(100);
+    col->setMinimumWidth(110);
     auto* lay = new QVBoxLayout(col);
     lay->setContentsMargins(4, 6, 4, 4);
-    lay->setSpacing(2);
+    lay->setSpacing(4);
 
     toggleOut = new ToggleSwitch;
     toggleOut->setCheckable(true);
     toggleOut->setChecked(false);
     lay->addWidget(toggleOut, 0, Qt::AlignHCenter);
 
-    if (stereoToggleOut) {
-        auto* stereoSwitch = new ToggleSwitch;
-        stereoSwitch->setCheckable(true);
-        stereoSwitch->setChecked(false);
-        auto* stereoLabel = new QLabel("Stereo");
-        stereoLabel->setAlignment(Qt::AlignHCenter);
-        lay->addWidget(stereoSwitch, 0, Qt::AlignHCenter);
-        lay->addWidget(stereoLabel);
-        *stereoToggleOut = stereoSwitch;
-    }
+    // Reserve the stereo-slot row even when this effect has no stereo toggle —
+    // keeps knob row 1 at the same Y across every card with knobs.
+    lay->addWidget(makeStereoSlot(stereoToggleOut));
 
     for (auto* k : knobs)
         lay->addWidget(k);
@@ -134,13 +164,14 @@ void MainWindow::setupUI()
     // ---- Top status row ----
     {
         auto* row = new QHBoxLayout;
+        row->setContentsMargins(4, 4, 4, 4);
+        row->setSpacing(10);
+
         auto* title = new QLabel("NAM Player");
-        QFont tf = title->font();
-        tf.setPointSize(tf.pointSize() + 4);
-        tf.setBold(true);
-        title->setFont(tf);
+        title->setObjectName("appTitle");
 
         mLblJACKStatus = new QLabel("JACK: connecting…");
+        mLblJACKStatus->setObjectName("jackStatusErr");
 
         auto* btnSave = new QPushButton("Save Preset…");
         auto* btnLoad = new QPushButton("Load Preset…");
@@ -158,27 +189,34 @@ void MainWindow::setupUI()
     // ---- NAM + IR file row ----
     {
         auto* row = new QHBoxLayout;
+        row->setSpacing(8);
 
-        auto* namBox = new QGroupBox("NAM");
+        auto* namBox = new QGroupBox("NAM Model");
+        Theme::tagCard(namBox, Theme::Category::Amp);
         auto* namLay = new QHBoxLayout(namBox);
-        namLay->setContentsMargins(4, 4, 4, 4);
+        namLay->setContentsMargins(8, 16, 8, 8);
+        namLay->setSpacing(6);
         mBtnLoadNAM   = new QPushButton("Load…");
         mBtnUnloadNAM = new QPushButton("Unload");
         mBtnUnloadNAM->setEnabled(false);
         mLblNAMStatus = new QLabel("No model loaded");
+        mLblNAMStatus->setObjectName("fileStatus");
         connect(mBtnLoadNAM,   &QPushButton::clicked, this, &MainWindow::onLoadNAM);
         connect(mBtnUnloadNAM, &QPushButton::clicked, this, &MainWindow::onUnloadNAM);
         namLay->addWidget(mBtnLoadNAM);
         namLay->addWidget(mBtnUnloadNAM);
         namLay->addWidget(mLblNAMStatus, 1);
 
-        auto* irBox = new QGroupBox("IR (Cab)");
+        auto* irBox = new QGroupBox("Impulse Response (Cab)");
+        Theme::tagCard(irBox, Theme::Category::Cab);
         auto* irLay = new QHBoxLayout(irBox);
-        irLay->setContentsMargins(4, 4, 4, 4);
+        irLay->setContentsMargins(8, 16, 8, 8);
+        irLay->setSpacing(6);
         mBtnLoadIR   = new QPushButton("Load…");
         mBtnUnloadIR = new QPushButton("Unload");
         mBtnUnloadIR->setEnabled(false);
         mLblIRStatus = new QLabel("No IR loaded");
+        mLblIRStatus->setObjectName("fileStatus");
         connect(mBtnLoadIR,   &QPushButton::clicked, this, &MainWindow::onLoadIR);
         connect(mBtnUnloadIR, &QPushButton::clicked, this, &MainWindow::onUnloadIR);
         irLay->addWidget(mBtnLoadIR);
@@ -221,7 +259,8 @@ void MainWindow::setupUI()
     {
         auto* col = new QGroupBox("Tuner");
         col->setAlignment(Qt::AlignHCenter);
-        col->setMinimumWidth(100);
+        col->setMinimumWidth(110);
+        Theme::tagCard(col, Theme::Category::Neutral);
         auto* lay = new QVBoxLayout(col);
         lay->setContentsMargins(4, 6, 4, 4);
         lay->setSpacing(3);
@@ -231,6 +270,7 @@ void MainWindow::setupUI()
         lay->addWidget(mSwTunerEnable, 0, Qt::AlignHCenter);
 
         mLblNote = new QLabel("--");
+        mLblNote->setObjectName("tunerNote");
         {
             QFont f = mLblNote->font();
             f.setPointSize(f.pointSize() + 7);
@@ -241,6 +281,7 @@ void MainWindow::setupUI()
         mLblNote->setAlignment(Qt::AlignCenter);
 
         mLblCents = new QLabel("±0¢");
+        mLblCents->setObjectName("tunerCents");
         mLblCents->setMinimumWidth(36);
         mLblCents->setAlignment(Qt::AlignCenter);
 
@@ -251,7 +292,7 @@ void MainWindow::setupUI()
         mTunerBar->setTextVisible(false);
         mTunerBar->setFixedWidth(14);
         mTunerBar->setMinimumHeight(60);
-        mTunerBar->setStyleSheet("QProgressBar::chunk { background: #4caf50; }");
+        mTunerBar->setStyleSheet("QProgressBar::chunk { background: #5cc8a8; border-radius: 2px; margin: 1px; }");
 
         mSwTunerMute = new ToggleSwitch;
         mSwTunerMute->setCheckable(true);
@@ -282,6 +323,7 @@ void MainWindow::setupUI()
 
         auto* col = makeEffectColumn("Gate", mSwGateEnable,
             {mKnobGateThresh, mKnobGateAttack, mKnobGateRelease});
+        Theme::tagCard(col, Theme::Category::Dynamics);
 
         connect(mSwGateEnable,    &ToggleSwitch::toggled,    this, &MainWindow::onGateEnabledToggled);
         connect(mKnobGateThresh,  &KnobWidget::valueChanged, this, &MainWindow::onGateThresholdChanged);
@@ -306,6 +348,7 @@ void MainWindow::setupUI()
 
         auto* col = makeEffectColumn("Compressor", mSwCompEnable,
             {mKnobCompThresh, mKnobCompRatio, mKnobCompAttack, mKnobCompRelease, mKnobCompMakeup});
+        Theme::tagCard(col, Theme::Category::Dynamics);
 
         connect(mSwCompEnable,    &ToggleSwitch::toggled,    this, &MainWindow::onCompEnabledToggled);
         connect(mKnobCompThresh,  &KnobWidget::valueChanged, this, &MainWindow::onCompThresholdChanged);
@@ -328,6 +371,7 @@ void MainWindow::setupUI()
 
         auto* col = makeEffectColumn("Dyn.Wah", mSwWahEnable,
             {mKnobWahSens, mKnobWahRes, mKnobWahMix});
+        Theme::tagCard(col, Theme::Category::Filter);
 
         connect(mSwWahEnable,  &ToggleSwitch::toggled,    this, &MainWindow::onDynamicWahEnabledToggled);
         connect(mKnobWahSens,  &KnobWidget::valueChanged, this, &MainWindow::onDynamicWahSensChanged);
@@ -340,7 +384,8 @@ void MainWindow::setupUI()
     {
         auto* col = new QGroupBox("Amp");
         col->setAlignment(Qt::AlignHCenter);
-        col->setMinimumWidth(100);
+        col->setMinimumWidth(110);
+        Theme::tagCard(col, Theme::Category::Amp);
         auto* lay = new QVBoxLayout(col);
         lay->setContentsMargins(4, 6, 4, 4);
 
@@ -359,16 +404,20 @@ void MainWindow::setupUI()
         using namespace NAMConstants;
         auto* col = new QGroupBox("EQ");
         col->setAlignment(Qt::AlignHCenter);
-        col->setMinimumWidth(100);
+        col->setMinimumWidth(110);
+        Theme::tagCard(col, Theme::Category::EQ);
         auto* lay = new QVBoxLayout(col);
         lay->setContentsMargins(4, 6, 4, 4);
-        lay->setSpacing(2);
+        lay->setSpacing(4);
 
         mSwEQEnable = new ToggleSwitch;
         mSwEQEnable->setCheckable(true);
         mSwEQEnable->setChecked(true);
         lay->addWidget(mSwEQEnable, 0, Qt::AlignHCenter);
         connect(mSwEQEnable, &ToggleSwitch::toggled, this, &MainWindow::onEQEnabledToggled);
+
+        // Reserve stereo slot so EQ's knob 1 aligns with neighbour cards.
+        lay->addWidget(makeStereoSlot(nullptr));
 
         mKnobLow    = new KnobWidget("Low",    kEQBandMin, kEQBandMax, kEQBandDefault, "dB");
         mKnobMid    = new KnobWidget("Mid",    kEQBandMin, kEQBandMax, kEQBandDefault, "dB");
@@ -400,6 +449,7 @@ void MainWindow::setupUI()
 
         auto* col = makeEffectColumn("Chorus 1", mSwChorus1Enable,
             {mKnobCh1Rate, mKnobCh1Depth, mKnobCh1Mix}, &mSwChorus1Stereo);
+        Theme::tagCard(col, Theme::Category::ModPre);
 
         connect(mSwChorus1Enable, &ToggleSwitch::toggled,    this, &MainWindow::onChorus1EnabledToggled);
         connect(mSwChorus1Stereo, &ToggleSwitch::toggled,    this, &MainWindow::onChorus1StereoToggled);
@@ -423,6 +473,7 @@ void MainWindow::setupUI()
 
         auto* col = makeEffectColumn("Flanger", mSwFlangerEnable,
             {mKnobFlRate, mKnobFlDepth, mKnobFlFeedback, mKnobFlMix}, &mSwFlangerStereo);
+        Theme::tagCard(col, Theme::Category::ModPre);
 
         connect(mSwFlangerEnable, &ToggleSwitch::toggled,    this, &MainWindow::onFlangerEnabledToggled);
         connect(mSwFlangerStereo, &ToggleSwitch::toggled,    this, &MainWindow::onFlangerStereoToggled);
@@ -447,6 +498,7 @@ void MainWindow::setupUI()
 
         auto* col = makeEffectColumn("Phaser", mSwPhaserEnable,
             {mKnobPhRate, mKnobPhDepth, mKnobPhFeedback, mKnobPhMix}, &mSwPhaserStereo);
+        Theme::tagCard(col, Theme::Category::ModPre);
 
         connect(mSwPhaserEnable, &ToggleSwitch::toggled,    this, &MainWindow::onPhaserEnabledToggled);
         connect(mSwPhaserStereo, &ToggleSwitch::toggled,    this, &MainWindow::onPhaserStereoToggled);
@@ -469,6 +521,7 @@ void MainWindow::setupUI()
 
         auto* col = makeEffectColumn("Chorus 2", mSwChorus2Enable,
             {mKnobCh2Rate, mKnobCh2Depth, mKnobCh2Mix});
+        Theme::tagCard(col, Theme::Category::ModPost);
 
         connect(mSwChorus2Enable, &ToggleSwitch::toggled,    this, &MainWindow::onChorus2EnabledToggled);
         connect(mKnobCh2Rate,     &KnobWidget::valueChanged, this, &MainWindow::onChorus2RateChanged);
@@ -486,6 +539,7 @@ void MainWindow::setupUI()
         mKnobTrDepth->setScrollStep(1.0);
 
         auto* col = makeEffectColumn("Tremolo", mSwTremoloEnable, {mKnobTrRate, mKnobTrDepth});
+        Theme::tagCard(col, Theme::Category::ModPost);
 
         connect(mSwTremoloEnable, &ToggleSwitch::toggled,    this, &MainWindow::onTremoloEnabledToggled);
         connect(mKnobTrRate,      &KnobWidget::valueChanged, this, &MainWindow::onTremoloRateChanged);
@@ -506,6 +560,7 @@ void MainWindow::setupUI()
         auto* col = makeEffectColumn("Delay", mSwDelayEnable,
             {mKnobDelTime, mKnobDelFeedback, mKnobDelMix}, &mSwDelayStereo);
         mSwDelayStereo->setChecked(true);
+        Theme::tagCard(col, Theme::Category::Time);
 
         connect(mSwDelayEnable,   &ToggleSwitch::toggled,    this, &MainWindow::onDelayEnabledToggled);
         connect(mSwDelayStereo,   &ToggleSwitch::toggled,    this, &MainWindow::onDelayStereoToggled);
@@ -529,6 +584,7 @@ void MainWindow::setupUI()
 
         auto* col = makeEffectColumn("Reverb", mSwReverbEnable,
             {mKnobRevRoom, mKnobRevDamping, mKnobRevWidth, mKnobRevMix});
+        Theme::tagCard(col, Theme::Category::Time);
 
         connect(mSwReverbEnable,  &ToggleSwitch::toggled,    this, &MainWindow::onReverbEnabledToggled);
         connect(mKnobRevRoom,     &KnobWidget::valueChanged, this, &MainWindow::onReverbRoomChanged);
@@ -542,7 +598,8 @@ void MainWindow::setupUI()
     {
         auto* col = new QGroupBox("IR");
         col->setAlignment(Qt::AlignHCenter);
-        col->setMinimumWidth(100);
+        col->setMinimumWidth(110);
+        Theme::tagCard(col, Theme::Category::Cab);
         auto* lay = new QVBoxLayout(col);
         lay->setContentsMargins(4, 6, 4, 4);
 
@@ -570,7 +627,8 @@ void MainWindow::setupUI()
         using namespace NAMConstants;
         auto* col = new QGroupBox("Input");
         col->setAlignment(Qt::AlignHCenter);
-        col->setMinimumWidth(100);
+        col->setMinimumWidth(110);
+        Theme::tagCard(col, Theme::Category::Neutral);
         auto* lay = new QVBoxLayout(col);
         lay->setContentsMargins(4, 6, 4, 4);
         mKnobInputGain = new KnobWidget("Gain", kGainMin, kGainMax, kGainDefault, "dB");
@@ -605,7 +663,8 @@ void MainWindow::setupUI()
         using namespace NAMConstants;
         auto* col = new QGroupBox("Output");
         col->setAlignment(Qt::AlignHCenter);
-        col->setMinimumWidth(100);
+        col->setMinimumWidth(110);
+        Theme::tagCard(col, Theme::Category::Neutral);
         auto* lay = new QVBoxLayout(col);
         lay->setContentsMargins(4, 6, 4, 4);
         mKnobOutputGain = new KnobWidget("Gain", kGainMin, kGainMax, kGainDefault, "dB");
@@ -625,18 +684,24 @@ void MainWindow::setupUI()
 
 void MainWindow::setupAudio()
 {
+    auto setJackStatus = [this](const QString& text, bool ok) {
+        mLblJACKStatus->setText(text);
+        mLblJACKStatus->setObjectName(ok ? "jackStatusOk" : "jackStatusErr");
+        mLblJACKStatus->style()->unpolish(mLblJACKStatus);
+        mLblJACKStatus->style()->polish(mLblJACKStatus);
+    };
+
     if (mEngine->start("NAMPlayer"))
     {
-        mLblJACKStatus->setText(
-            QString("JACK: connected  |  %1 Hz  |  stereo out")
-                .arg(static_cast<int>(mEngine->sampleRate())));
-        mLblJACKStatus->setStyleSheet("color: green;");
+        setJackStatus(
+            QString("JACK  ●  %1 Hz  ●  stereo out")
+                .arg(static_cast<int>(mEngine->sampleRate())),
+            true);
         restoreConnections();
     }
     else
     {
-        mLblJACKStatus->setText("JACK: not connected (check jackd)");
-        mLblJACKStatus->setStyleSheet("color: red;");
+        setJackStatus("JACK  ●  not connected (check jackd / pipewire-jack)", false);
     }
 }
 
@@ -826,10 +891,12 @@ void MainWindow::updateMeters()
     mMeterIn ->setValue(toMeter(mEngine->inputPeak()));
     mMeterOut->setValue(toMeter(mEngine->outputPeak()));
 
-    if (!mEngine->isRunning() && mLblJACKStatus->text().startsWith("JACK: connected"))
+    if (!mEngine->isRunning() && mLblJACKStatus->objectName() == "jackStatusOk")
     {
-        mLblJACKStatus->setText("JACK: disconnected");
-        mLblJACKStatus->setStyleSheet("color: red;");
+        mLblJACKStatus->setText("JACK  ●  disconnected");
+        mLblJACKStatus->setObjectName("jackStatusErr");
+        mLblJACKStatus->style()->unpolish(mLblJACKStatus);
+        mLblJACKStatus->style()->polish(mLblJACKStatus);
     }
 }
 
@@ -917,29 +984,22 @@ void MainWindow::saveConnections()
 
 void MainWindow::updateStatusLabels()
 {
+    auto setStatus = [](QLabel* lbl, const QString& text, bool loaded) {
+        lbl->setText(text);
+        lbl->setObjectName(loaded ? "fileStatusOk" : "fileStatus");
+        lbl->style()->unpolish(lbl);
+        lbl->style()->polish(lbl);
+    };
+
     if (mEngine->isModelLoaded())
-    {
-        QString p = QString::fromStdString(mEngine->modelPath());
-        mLblNAMStatus->setText(p.section('/', -1));
-        mLblNAMStatus->setStyleSheet("color: green;");
-    }
+        setStatus(mLblNAMStatus, QString::fromStdString(mEngine->modelPath()).section('/', -1), true);
     else
-    {
-        mLblNAMStatus->setText("No model loaded");
-        mLblNAMStatus->setStyleSheet("");
-    }
+        setStatus(mLblNAMStatus, "No model loaded", false);
 
     if (mEngine->isIRLoaded())
-    {
-        QString p = QString::fromStdString(mEngine->irPath());
-        mLblIRStatus->setText(p.section('/', -1));
-        mLblIRStatus->setStyleSheet("color: green;");
-    }
+        setStatus(mLblIRStatus, QString::fromStdString(mEngine->irPath()).section('/', -1), true);
     else
-    {
-        mLblIRStatus->setText("No IR loaded");
-        mLblIRStatus->setStyleSheet("");
-    }
+        setStatus(mLblIRStatus, "No IR loaded", false);
 }
 
 // ---------------------------------------------------------------------------

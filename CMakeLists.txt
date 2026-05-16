@@ -38,6 +38,8 @@ set(GUI_SOURCES
     src/ui/KnobWidget.h
     src/ui/ToggleSwitch.cpp
     src/ui/ToggleSwitch.h
+    src/ui/Theme.cpp
+    src/ui/Theme.h
     src/ui/GUIConstants.h
     src/dsp/AudioEngine.cpp
     src/dsp/AudioEngine.h

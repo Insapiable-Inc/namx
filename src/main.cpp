@@ -1,6 +1,6 @@
 #include <QApplication>
-#include <QStyleFactory>
 #include "MainWindow.h"
+#include "Theme.h"
 
 int main(int argc, char* argv[])
 {
@@ -9,11 +9,7 @@ int main(int argc, char* argv[])
     app.setApplicationVersion("1.0");
     app.setOrganizationName("pichulero.cl");
 
-    // Prefer Breeze for native KDE/Plasma look; fall back to Fusion.
-    if (!QStyleFactory::keys().contains("Breeze", Qt::CaseInsensitive))
-        app.setStyle("Fusion");
-    else
-        app.setStyle("Breeze");
+    Theme::apply(app);
 
     MainWindow w;
     w.show();

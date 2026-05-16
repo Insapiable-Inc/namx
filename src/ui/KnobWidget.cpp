@@ -6,9 +6,16 @@
 #include <QLabel>
 #include <QMenu>
 #include <QMouseEvent>
+#include <QPaintEvent>
+#include <QPainter>
+#include <QPainterPath>
 #include <QPalette>
+#include <QRadialGradient>
 #include <QVBoxLayout>
 #include <QWheelEvent>
+#include <QtMath>
+
+#include <algorithm>
 
 // ---------------------------------------------------------------------------
 // VerticalDial — QDial that maps vertical mouse drag to value changes.
@@ -19,7 +26,7 @@ class VerticalDial : public QDial
 public:
     explicit VerticalDial(QWidget* parent = nullptr) : QDial(parent)
     {
-        setNotchesVisible(true);
+        setNotchesVisible(false);
         setWrapping(false);
     }
 
@@ -56,6 +63,80 @@ protected:
     // Let double-click fall through for the eventFilter in KnobWidget
     void mouseDoubleClickEvent(QMouseEvent* e) override { QDial::mouseDoubleClickEvent(e); }
 
+    void paintEvent(QPaintEvent*) override
+    {
+        QPainter p(this);
+        p.setRenderHint(QPainter::Antialiasing);
+
+        // Square area, centred.
+        const qreal side = std::min(width(), height());
+        const QPointF c(width() / 2.0, height() / 2.0);
+
+        // Outer arc geometry: a thin ring on the outside of the body.
+        const qreal arcInset  = 3.5;
+        const qreal arcWidth  = 2.5;
+        const QRectF arcRect(c.x() - side / 2.0 + arcInset,
+                             c.y() - side / 2.0 + arcInset,
+                             side - 2 * arcInset, side - 2 * arcInset);
+
+        // Sweep from 7 o'clock clockwise to 5 o'clock = 300° span, starting at 225°.
+        const int startAngle = 225 * 16;
+        const int sweepTotal = -270 * 16;
+
+        // Faded background track.
+        QPen trackPen(QColor("#2a2f38"), arcWidth);
+        trackPen.setCapStyle(Qt::FlatCap);
+        p.setPen(trackPen);
+        p.drawArc(arcRect, startAngle, sweepTotal);
+
+        // Value arc.
+        const QColor accent = palette().color(QPalette::Highlight);
+        const double range = std::max(1, maximum() - minimum());
+        const double t = (value() - minimum()) / range;
+        QPen valuePen(accent, arcWidth);
+        valuePen.setCapStyle(Qt::RoundCap);
+        p.setPen(valuePen);
+        p.drawArc(arcRect, startAngle, static_cast<int>(sweepTotal * t));
+
+        // Knob body — flat-ish disc with a subtle top→bottom gradient.
+        // Deliberately understated: no fake light source, no inset rim, just a
+        // hint of vertical shading so the disc reads as 3D without going skeuomorphic.
+        const qreal bodyInset = arcInset + 6.0;
+        const QRectF bodyRect(c.x() - side / 2.0 + bodyInset,
+                              c.y() - side / 2.0 + bodyInset,
+                              side - 2 * bodyInset, side - 2 * bodyInset);
+
+        QLinearGradient body(bodyRect.topLeft(), bodyRect.bottomLeft());
+        body.setColorAt(0.0, QColor("#2e3441"));
+        body.setColorAt(1.0, QColor("#1c2028"));
+        p.setBrush(body);
+        p.setPen(QPen(QColor("#0e1015"), 1.0));
+        p.drawEllipse(bodyRect);
+
+        // Single thin highlight arc along the top crown — no bottom rim,
+        // since duplicating shadow with the dark background fights itself.
+        const QRectF crownRect = bodyRect.adjusted(1.5, 1.5, -1.5, -1.5);
+        QPen crownPen(QColor(255, 255, 255, 26), 1.0);
+        p.setPen(crownPen);
+        p.setBrush(Qt::NoBrush);
+        // Arc from 30° to 150° (top half).
+        p.drawArc(crownRect, 30 * 16, 120 * 16);
+
+        // Indicator line — full accent, slightly thicker, no lighter shift.
+        const double angleDeg = 225.0 - 270.0 * t;  // 7 o'clock to 5 o'clock CW
+        const double angleRad = qDegreesToRadians(angleDeg);
+        const double r1 = bodyRect.width() / 2.0 - 2.5;
+        const double r2 = bodyRect.width() / 2.0 - 11.0;
+        const QPointF p1(bodyRect.center().x() + r1 * std::cos(angleRad),
+                         bodyRect.center().y() - r1 * std::sin(angleRad));
+        const QPointF p2(bodyRect.center().x() + r2 * std::cos(angleRad),
+                         bodyRect.center().y() - r2 * std::sin(angleRad));
+        QPen indicatorPen(accent, 2.6);
+        indicatorPen.setCapStyle(Qt::RoundCap);
+        p.setPen(indicatorPen);
+        p.drawLine(p1, p2);
+    }
+
 private:
     int mDragStartY{0};
     int mDragStartVal{0};
@@ -73,12 +154,20 @@ KnobWidget::KnobWidget(const QString& label, double minVal, double maxVal,
     , mDefault(defaultVal)
     , mUnit(unit)
 {
+    setAttribute(Qt::WA_StyledBackground, false);
+    setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+
     auto* layout = new QVBoxLayout(this);
-    layout->setContentsMargins(2, 2, 2, 2);
+    layout->setContentsMargins(4, 5, 4, 5);
     layout->setSpacing(1);
 
     auto* nameLabel = new QLabel(label);
     nameLabel->setAlignment(Qt::AlignHCenter);
+    {
+        QPalette p = nameLabel->palette();
+        p.setColor(QPalette::WindowText, QColor("#aab0bc"));
+        nameLabel->setPalette(p);
+    }
 
     mDial = new VerticalDial;
     mDial->setMinimum(0);
@@ -88,6 +177,11 @@ KnobWidget::KnobWidget(const QString& label, double minVal, double maxVal,
 
     mLabelValue = new QLabel;
     mLabelValue->setAlignment(Qt::AlignHCenter);
+    {
+        QFont f = mLabelValue->font();
+        f.setBold(true);
+        mLabelValue->setFont(f);
+    }
 
     layout->addWidget(nameLabel);
     layout->addWidget(mDial, 1);
@@ -96,6 +190,28 @@ KnobWidget::KnobWidget(const QString& label, double minVal, double maxVal,
     updateLabel();
     mDial->installEventFilter(this);
     connect(mDial, &QDial::valueChanged, this, &KnobWidget::onDialChanged);
+}
+
+void KnobWidget::paintEvent(QPaintEvent*)
+{
+    // Subtle recessed tile that visually groups name + dial + value into one
+    // unit. Without this the value label below knob A reads as belonging to
+    // knob B (the column layout is vertical and tight).
+    QPainter p(this);
+    p.setRenderHint(QPainter::Antialiasing);
+
+    const QRectF r = rect().adjusted(0.5, 0.5, -0.5, -0.5);
+
+    // Slightly-darker fill than the parent card.
+    p.setPen(Qt::NoPen);
+    p.setBrush(QColor("#181b22"));
+    p.drawRoundedRect(r, 5, 5);
+
+    // Top hairline highlight for a hint of depth.
+    QPen topRim(QColor(255, 255, 255, 12), 1.0);
+    p.setPen(topRim);
+    p.drawLine(QPointF(r.left() + 4, r.top() + 0.5),
+               QPointF(r.right() - 4, r.top() + 0.5));
 }
 
 double KnobWidget::value() const { return dialToValue(mDial->value()); }

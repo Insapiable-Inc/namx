@@ -1,9 +1,11 @@
 #include "ToggleSwitch.h"
 
-#include <QPainter>
-#include <QMouseEvent>
 #include <QApplication>
+#include <QLinearGradient>
+#include <QMouseEvent>
+#include <QPainter>
 #include <QPalette>
+#include <QRadialGradient>
 
 ToggleSwitch::ToggleSwitch(QWidget* parent)
     : QAbstractButton(parent)
@@ -18,36 +20,63 @@ void ToggleSwitch::paintEvent(QPaintEvent*)
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing);
 
-    const QRect  r  = rect();
-    const int    h  = r.height();
-    const int    w  = r.width();
-    const double rx = h / 2.0;
+    const QRectF r  = rect();
+    const qreal  h  = r.height();
+    const qreal  w  = r.width();
+    const qreal  rx = h / 2.0;
 
-    // Track color
-    QColor trackOn  = palette().color(QPalette::Highlight);
-    QColor trackOff = palette().color(QPalette::Mid);
-    if (mHovered && !isChecked())
-        trackOff = trackOff.lighter(130);
+    // ---- Track ----
+    const QColor accent   = palette().color(QPalette::Highlight);
+    const QColor trackOff = mHovered ? QColor("#353c4a") : QColor("#2a2f38");
 
-    QColor trackColor = isChecked() ? trackOn : trackOff;
-
-    // Track
+    if (isChecked()) {
+        QLinearGradient trk(0, 0, 0, h);
+        trk.setColorAt(0.0, accent.lighter(115));
+        trk.setColorAt(1.0, accent.darker(110));
+        p.setBrush(trk);
+    } else {
+        p.setBrush(trackOff);
+    }
     p.setPen(Qt::NoPen);
-    p.setBrush(trackColor);
     p.drawRoundedRect(r, rx, rx);
 
-    // Thumb
-    const int margin  = 2;
-    const int thumbD  = h - 2 * margin;
-    const int thumbX  = isChecked() ? w - margin - thumbD : margin;
+    // Subtle inset shadow line on the top edge.
+    QPen rim(QColor(0, 0, 0, isChecked() ? 60 : 100), 1.0);
+    p.setPen(rim);
+    p.setBrush(Qt::NoBrush);
+    p.drawRoundedRect(r.adjusted(0.5, 0.5, -0.5, -0.5), rx - 0.5, rx - 0.5);
 
-    QColor thumbColor = palette().color(QPalette::BrightText);
-    if (!thumbColor.isValid() || thumbColor == Qt::transparent)
-        thumbColor = Qt::white;
+    // LED glow when on: small bright dot inside the off-side of the track.
+    if (isChecked()) {
+        const qreal ledD  = h * 0.32;
+        const qreal ledX  = 5.0;
+        const qreal ledY  = (h - ledD) / 2.0;
+        QRadialGradient g(QPointF(ledX + ledD / 2.0, ledY + ledD / 2.0), ledD);
+        g.setColorAt(0.0, QColor(255, 255, 255, 230));
+        g.setColorAt(0.5, QColor(255, 255, 255, 80));
+        g.setColorAt(1.0, QColor(255, 255, 255, 0));
+        p.setBrush(g);
+        p.setPen(Qt::NoPen);
+        p.drawEllipse(QRectF(ledX, ledY, ledD, ledD));
+    }
 
-    p.setBrush(thumbColor);
+    // ---- Thumb ----
+    const qreal margin = 2.0;
+    const qreal thumbD = h - 2 * margin;
+    const qreal thumbX = isChecked() ? w - margin - thumbD : margin;
+    const QRectF thumbRect(thumbX, margin, thumbD, thumbD);
+
+    // Soft shadow under the thumb.
+    p.setBrush(QColor(0, 0, 0, 70));
     p.setPen(Qt::NoPen);
-    p.drawEllipse(thumbX, margin, thumbD, thumbD);
+    p.drawEllipse(thumbRect.translated(0, 1.0));
+
+    // Thumb body with a top highlight.
+    QLinearGradient thumbGrad(thumbRect.topLeft(), thumbRect.bottomLeft());
+    thumbGrad.setColorAt(0.0, QColor("#ffffff"));
+    thumbGrad.setColorAt(1.0, QColor("#d8dee9"));
+    p.setBrush(thumbGrad);
+    p.drawEllipse(thumbRect);
 }
 
 void ToggleSwitch::mouseReleaseEvent(QMouseEvent* e)

@@ -28,8 +28,8 @@ public:
     /// Pass 0 to use the default (1% of range).
     void setScrollStep(double step) { mScrollStep = step; }
 
-    QSize sizeHint()        const override { return {72, 88}; }
-    QSize minimumSizeHint() const override { return {60, 76}; }
+    QSize sizeHint()        const override { return {94, 116}; }
+    QSize minimumSizeHint() const override { return {80, 100}; }
 
 public slots:
     void setValue(double v);
@@ -44,6 +44,7 @@ private slots:
 protected:
     bool eventFilter(QObject* obj, QEvent* event) override;
     void contextMenuEvent(QContextMenuEvent* event) override;
+    void paintEvent(QPaintEvent* event) override;
 
 private:
     VerticalDial* mDial;
