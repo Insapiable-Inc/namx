@@ -69,6 +69,16 @@ public:
     // ---- Signal chain (processing order = UI order) ----
     const std::vector<EffectBase*>& chain() const { return mChain; }
 
+    // ---- JACK port connection persistence ----
+    struct PortConnections
+    {
+        std::vector<std::string> inputSources;   // ports → our input
+        std::vector<std::string> outputLDests;   // our output_L → ports
+        std::vector<std::string> outputRDests;   // our output_R → ports
+    };
+    PortConnections currentConnections() const;
+    void            applyConnections(const PortConnections& c);
+
     // ---- VU meters ----
     float inputPeak()  const { return mInputPeak.load();  }
     float outputPeak() const { return mOutputPeak.load(); }

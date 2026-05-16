@@ -107,6 +107,9 @@ private slots:
 private:
     void setupUI();
     void setupAudio();
+    void restoreLastFiles();
+    void restoreConnections();
+    void saveConnections();
     void updateStatusLabels();
 
     QWidget* makeEffectColumn(const QString& title,

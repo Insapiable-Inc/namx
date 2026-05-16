@@ -18,6 +18,7 @@
 #include <QProgressBar>
 #include <QPushButton>
 #include <QScrollArea>
+#include <QSettings>
 #include <QTimer>
 #include <QVBoxLayout>
 
@@ -54,6 +55,7 @@ MainWindow::MainWindow(QWidget* parent)
 
     setupUI();
     setupAudio();
+    restoreLastFiles();
 
     mMeterTimer = new QTimer(this);
     connect(mMeterTimer, &QTimer::timeout, this, &MainWindow::updateMeters);
@@ -68,6 +70,7 @@ MainWindow::~MainWindow()
 {
     mMeterTimer->stop();
     mTunerTimer->stop();
+    saveConnections();
     mEngine->stop();
 }
 
@@ -628,6 +631,7 @@ void MainWindow::setupAudio()
             QString("JACK: connected  |  %1 Hz  |  stereo out")
                 .arg(static_cast<int>(mEngine->sampleRate())));
         mLblJACKStatus->setStyleSheet("color: green;");
+        restoreConnections();
     }
     else
     {
@@ -642,14 +646,17 @@ void MainWindow::setupAudio()
 
 void MainWindow::onLoadNAM()
 {
+    QSettings s;
     QString path = QFileDialog::getOpenFileName(
-        this, "Load NAM Model", {}, "NAM Files (*.nam);;All Files (*)");
+        this, "Load NAM Model", s.value("files/lastNAM").toString(),
+        "NAM Files (*.nam);;All Files (*)");
     if (path.isEmpty()) return;
     if (!mEngine->loadModel(path.toStdString()))
     {
         QMessageBox::critical(this, "Error", "Failed to load NAM model:\n" + path);
         return;
     }
+    s.setValue("files/lastNAM", path);
     updateStatusLabels();
     mBtnUnloadNAM->setEnabled(true);
 }
@@ -657,20 +664,24 @@ void MainWindow::onLoadNAM()
 void MainWindow::onUnloadNAM()
 {
     mEngine->unloadModel();
+    QSettings().remove("files/lastNAM");
     updateStatusLabels();
     mBtnUnloadNAM->setEnabled(false);
 }
 
 void MainWindow::onLoadIR()
 {
+    QSettings s;
     QString path = QFileDialog::getOpenFileName(
-        this, "Load Impulse Response", {}, "WAV Files (*.wav);;All Files (*)");
+        this, "Load Impulse Response", s.value("files/lastIR").toString(),
+        "WAV Files (*.wav);;All Files (*)");
     if (path.isEmpty()) return;
     if (!mEngine->loadIR(path.toStdString()))
     {
         QMessageBox::critical(this, "Error", "Failed to load IR:\n" + path);
         return;
     }
+    s.setValue("files/lastIR", path);
     updateStatusLabels();
     mBtnUnloadIR->setEnabled(true);
 }
@@ -678,6 +689,7 @@ void MainWindow::onLoadIR()
 void MainWindow::onUnloadIR()
 {
     mEngine->unloadIR();
+    QSettings().remove("files/lastIR");
     updateStatusLabels();
     mBtnUnloadIR->setEnabled(false);
 }
@@ -843,6 +855,63 @@ void MainWindow::updateTuner()
 }
 
 // ---------------------------------------------------------------------------
+// Persisted file state
+// ---------------------------------------------------------------------------
+
+void MainWindow::restoreLastFiles()
+{
+    QSettings s;
+
+    QString nam = s.value("files/lastNAM").toString();
+    if (!nam.isEmpty() && QFile::exists(nam) && mEngine->loadModel(nam.toStdString()))
+        mBtnUnloadNAM->setEnabled(true);
+
+    QString ir = s.value("files/lastIR").toString();
+    if (!ir.isEmpty() && QFile::exists(ir) && mEngine->loadIR(ir.toStdString()))
+        mBtnUnloadIR->setEnabled(true);
+
+    updateStatusLabels();
+}
+
+void MainWindow::restoreConnections()
+{
+    QSettings s;
+    if (!s.contains("connections/saved")) return;
+
+    auto toVec = [](const QStringList& l) {
+        std::vector<std::string> v;
+        v.reserve(l.size());
+        for (const auto& x : l) v.push_back(x.toStdString());
+        return v;
+    };
+
+    AudioEngine::PortConnections c;
+    c.inputSources = toVec(s.value("connections/inputSources").toStringList());
+    c.outputLDests = toVec(s.value("connections/outputLDests").toStringList());
+    c.outputRDests = toVec(s.value("connections/outputRDests").toStringList());
+    mEngine->applyConnections(c);
+}
+
+void MainWindow::saveConnections()
+{
+    if (!mEngine->isRunning()) return;
+
+    auto toList = [](const std::vector<std::string>& v) {
+        QStringList l;
+        l.reserve(static_cast<int>(v.size()));
+        for (const auto& x : v) l << QString::fromStdString(x);
+        return l;
+    };
+
+    auto c = mEngine->currentConnections();
+    QSettings s;
+    s.setValue("connections/inputSources", toList(c.inputSources));
+    s.setValue("connections/outputLDests", toList(c.outputLDests));
+    s.setValue("connections/outputRDests", toList(c.outputRDests));
+    s.setValue("connections/saved", true);
+}
+
+// ---------------------------------------------------------------------------
 // Status labels
 // ---------------------------------------------------------------------------
 
@@ -879,10 +948,12 @@ void MainWindow::updateStatusLabels()
 
 void MainWindow::onSavePreset()
 {
+    QSettings settings;
     QString path = QFileDialog::getSaveFileName(
-        this, "Save Preset", {},
+        this, "Save Preset", settings.value("files/lastPreset").toString(),
         "NAM Preset (*.nampreset);;JSON (*.json);;All Files (*)");
     if (path.isEmpty()) return;
+    settings.setValue("files/lastPreset", path);
 
     QJsonObject obj;
     obj["inputGain"]  = mEngine->inputGain();
@@ -991,10 +1062,12 @@ void MainWindow::onSavePreset()
 
 void MainWindow::onLoadPreset()
 {
+    QSettings settings;
     QString path = QFileDialog::getOpenFileName(
-        this, "Load Preset", {},
+        this, "Load Preset", settings.value("files/lastPreset").toString(),
         "NAM Preset (*.nampreset);;JSON (*.json);;All Files (*)");
     if (path.isEmpty()) return;
+    settings.setValue("files/lastPreset", path);
 
     QFile f(path);
     if (!f.open(QIODevice::ReadOnly))

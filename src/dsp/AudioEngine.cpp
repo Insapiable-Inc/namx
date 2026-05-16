@@ -110,6 +110,62 @@ void AudioEngine::stop()
     }
 }
 
+// ---- Port connection persistence ------------------------------------
+
+AudioEngine::PortConnections AudioEngine::currentConnections() const
+{
+    PortConnections out;
+    if (!mClient) return out;
+
+    auto getConns = [](jack_port_t* p) {
+        std::vector<std::string> result;
+        if (!p) return result;
+        const char** conns = jack_port_get_connections(p);
+        if (!conns) return result;
+        for (int i = 0; conns[i]; ++i)
+            result.emplace_back(conns[i]);
+        jack_free(conns);
+        return result;
+    };
+
+    out.inputSources = getConns(mPortIn);
+    out.outputLDests = getConns(mPortOutL);
+    out.outputRDests = getConns(mPortOutR);
+    return out;
+}
+
+void AudioEngine::applyConnections(const PortConnections& c)
+{
+    if (!mClient) return;
+
+    // Disconnect everything currently bound to our ports, then re-apply the
+    // saved set. Prevents PipeWire-JACK auto-connects from layering on top.
+    auto disconnectAll = [this](jack_port_t* p) {
+        if (!p) return;
+        const char** conns = jack_port_get_connections(p);
+        if (!conns) return;
+        const char* myName  = jack_port_name(p);
+        const bool  isOut   = (jack_port_flags(p) & JackPortIsOutput) != 0;
+        for (int i = 0; conns[i]; ++i)
+        {
+            if (isOut) jack_disconnect(mClient, myName,   conns[i]);
+            else       jack_disconnect(mClient, conns[i], myName);
+        }
+        jack_free(conns);
+    };
+    disconnectAll(mPortIn);
+    disconnectAll(mPortOutL);
+    disconnectAll(mPortOutR);
+
+    const char* inName   = jack_port_name(mPortIn);
+    const char* outLName = jack_port_name(mPortOutL);
+    const char* outRName = jack_port_name(mPortOutR);
+
+    for (const auto& src : c.inputSources) jack_connect(mClient, src.c_str(), inName);
+    for (const auto& dst : c.outputLDests) jack_connect(mClient, outLName, dst.c_str());
+    for (const auto& dst : c.outputRDests) jack_connect(mClient, outRName, dst.c_str());
+}
+
 // ---- JACK callbacks --------------------------------------------------
 
 int AudioEngine::jackProcessCallback(jack_nframes_t nframes, void* arg)
