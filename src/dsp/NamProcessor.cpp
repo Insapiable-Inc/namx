@@ -12,32 +12,38 @@ NamProcessor::~NamProcessor()
 {
     // Audio thread must be stopped before this is called.
     std::lock_guard<std::mutex> lock(mModelMutex);
-    mModelA.reset();
-    mModelB.reset();
+    mModelAL.reset(); mModelAR.reset();
+    mModelBL.reset(); mModelBR.reset();
 }
 
 bool NamProcessor::loadModel(const std::string& path)
 {
-    std::unique_ptr<nam::DSP> newModel;
+    // Load two independent instances from the same file — one per channel.
+    // They apply identical weights but maintain separate recurrent states
+    // so L and R can diverge (e.g. after a pre-NAM stereo effect).
+    std::unique_ptr<nam::DSP> newL, newR;
     try {
-        newModel = nam::get_dsp(std::filesystem::path(path));
+        newL = nam::get_dsp(std::filesystem::path(path));
+        newR = nam::get_dsp(std::filesystem::path(path));
     } catch (const std::exception& e) {
         std::cerr << "[NamProcessor] Failed to load model: " << e.what() << "\n";
         return false;
     }
-    if (!newModel) return false;
+    if (!newL || !newR) return false;
 
-    newModel->Reset(mSampleRate, mMaxBuf);
-    newModel->prewarm();
+    newL->Reset(mSampleRate, mMaxBuf); newL->prewarm();
+    newR->Reset(mSampleRate, mMaxBuf); newR->prewarm();
 
     {
         std::lock_guard<std::mutex> lock(mModelMutex);
         int cur = mActiveModel.load();
         if (cur == 0) {
-            mModelB = std::move(newModel);
+            mModelBL = std::move(newL);
+            mModelBR = std::move(newR);
             mActiveModel.store(1, std::memory_order_release);
         } else {
-            mModelA = std::move(newModel);
+            mModelAL = std::move(newL);
+            mModelAR = std::move(newR);
             mActiveModel.store(0, std::memory_order_release);
         }
         mModelPath = path;
@@ -55,7 +61,8 @@ void NamProcessor::unloadModel()
 void NamProcessor::prepareBuffer(int maxBuf)
 {
     mMaxBuf = maxBuf;
-    mScratch.resize(maxBuf);
+    mScratchL.resize(maxBuf);
+    mScratchR.resize(maxBuf);
 }
 
 void NamProcessor::onSampleRateChanged(double /*sr*/)
@@ -64,18 +71,40 @@ void NamProcessor::onSampleRateChanged(double /*sr*/)
     // The next loadModel() call will Reset() with the new SR.
 }
 
-void NamProcessor::processBlockMono(float* buf, int n)
+static void runModel(nam::DSP* model, float* buf, int n, std::vector<float>& scratch)
 {
-    nam::DSP* model = activeModel();
-    if (!mModelLoaded.load() || !model) return;
+    if (static_cast<int>(scratch.size()) < n)
+        scratch.resize(n);
 
-    if (static_cast<int>(mScratch.size()) < n)
-        mScratch.resize(n);
-
-    NAM_SAMPLE* inPtr  = buf;
-    NAM_SAMPLE* outPtr = mScratch.data();
+    NAM_SAMPLE* inPtr    = buf;
+    NAM_SAMPLE* outPtr   = scratch.data();
     NAM_SAMPLE** inPtrs  = &inPtr;
     NAM_SAMPLE** outPtrs = &outPtr;
     model->process(inPtrs, outPtrs, n);
-    std::copy(mScratch.data(), mScratch.data() + n, buf);
+    std::copy(scratch.data(), scratch.data() + n, buf);
+}
+
+void NamProcessor::processBlockMono(float* buf, int n)
+{
+    nam::DSP* model = activeModelL();
+    if (!mModelLoaded.load() || !model) return;
+    runModel(model, buf, n, mScratchL);
+}
+
+void NamProcessor::processBlockMonoR(float* buf, int n)
+{
+    nam::DSP* model = activeModelR();
+    if (!mModelLoaded.load() || !model) return;
+    runModel(model, buf, n, mScratchR);
+}
+
+bool NamProcessor::process(float* L, float* R, int n, bool inputIsStereo)
+{
+    if (!mEnabled.load()) return inputIsStereo;
+    processBlockMono(L, n);
+    if (inputIsStereo)
+        processBlockMonoR(R, n);
+    else
+        std::copy(L, L + n, R);
+    return inputIsStereo;
 }

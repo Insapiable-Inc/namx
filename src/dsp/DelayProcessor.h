@@ -22,6 +22,12 @@ public:
     float feedback() const { return mFeedback.load();  }
     float mix()      const { return mMix.load();       }
 
+    /// Always routes through processBlockStereoOut when stereo mode is on so
+    /// both delay buffers are used correctly. The base-class fallback for
+    /// inputIsStereo=true calls processBlockMono twice, which double-advances
+    /// mWriteL and reads from the wrong positions.
+    bool process(float* L, float* R, int n, bool inputIsStereo) override;
+
 protected:
     void onSampleRateChanged(double sr) override;
     void processBlockMono(float* buf, int nframes) override;

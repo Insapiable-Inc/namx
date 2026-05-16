@@ -17,6 +17,20 @@ void DelayProcessor::reset()
     mWriteL = mWriteR = 0;
 }
 
+bool DelayProcessor::process(float* L, float* R, int n, bool inputIsStereo)
+{
+    if (!mEnabled.load()) return inputIsStereo;
+
+    if (mStereoMode.load()) {
+        processBlockStereoOut(L, R, n);
+        return true;
+    }
+
+    processBlockMono(L, n);
+    std::copy(L, L + n, R);
+    return false;
+}
+
 void DelayProcessor::processBlockMono(float* buf, int nframes)
 {
     const float fb    = std::min(mFeedback.load() / 100.0f, 0.99f);

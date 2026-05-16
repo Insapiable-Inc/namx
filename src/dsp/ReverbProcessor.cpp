@@ -38,6 +38,20 @@ void ReverbProcessor::reset()
     for (auto& a : mApR)   a.reset();
 }
 
+bool ReverbProcessor::process(float* L, float* R, int n, bool inputIsStereo)
+{
+    if (!mEnabled.load()) return inputIsStereo;
+
+    if (mStereoMode.load()) {
+        processBlockStereoOut(L, R, n);
+        return true;
+    }
+
+    processBlockMono(L, n);
+    std::copy(L, L + n, R);
+    return false;
+}
+
 void ReverbProcessor::processBlockStereoOut(float* L, float* R, int nframes)
 {
     const float roomSize = mRoomSize.load() / 100.0f;

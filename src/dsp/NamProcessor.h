@@ -28,21 +28,35 @@ public:
 
     void reset() override {}
 
+    /// Overrides the default EffectBase dispatch so that stereo input is
+    /// processed through independent L and R model instances rather than
+    /// calling the single-state processBlockMono twice per block.
+    bool process(float* L, float* R, int n, bool inputIsStereo) override;
+
 protected:
     void onSampleRateChanged(double sr) override;
-    void processBlockMono(float* buf, int n) override;
+    void processBlockMono(float* buf, int n) override;  // uses L-channel model
+    void processBlockMonoR(float* buf, int n);          // uses R-channel model
 
 private:
-    std::unique_ptr<nam::DSP> mModelA, mModelB;
+    // Double-buffered model pairs: AL/AR are slot 0, BL/BR are slot 1.
+    // Both channels in a slot are loaded from the same file so they apply
+    // identical non-linearity; their recurrent states evolve independently.
+    std::unique_ptr<nam::DSP> mModelAL, mModelAR;
+    std::unique_ptr<nam::DSP> mModelBL, mModelBR;
     std::atomic<int>          mActiveModel{0};
     std::mutex                mModelMutex;
     std::atomic<bool>         mModelLoaded{false};
     std::string               mModelPath;
     int                       mMaxBuf{0};
-    std::vector<float>        mScratch;
+    std::vector<float>        mScratchL, mScratchR;
 
-    nam::DSP* activeModel() const
+    nam::DSP* activeModelL() const
     {
-        return mActiveModel.load() == 0 ? mModelA.get() : mModelB.get();
+        return mActiveModel.load() == 0 ? mModelAL.get() : mModelBL.get();
+    }
+    nam::DSP* activeModelR() const
+    {
+        return mActiveModel.load() == 0 ? mModelAR.get() : mModelBR.get();
     }
 };
