@@ -9,12 +9,18 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-# Find Qt6
+# ---------------------------------------------------------------------------
+# Dependencies
+# ---------------------------------------------------------------------------
+
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets)
 
-# Find JACK
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(JACK REQUIRED jack)
+# JACK is the Linux audio backend. On Windows we use WASAPI directly via the
+# system DLLs (ole32, mmdevapi, audioclient) — no external package needed.
+if(NOT WIN32)
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(JACK REQUIRED jack)
+endif()
 
 # NAM core sources
 set(NAM_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/..")
@@ -29,7 +35,10 @@ file(GLOB_RECURSE NAM_SOURCES
 set(AUDIO_DSP_TOOLS_DIR "${NAM_DEPS_PATH}/AudioDSPTools")
 set(WAV_SOURCES "${AUDIO_DSP_TOOLS_DIR}/dsp/wav.cpp")
 
-# GUI sources
+# ---------------------------------------------------------------------------
+# GUI sources (platform-agnostic)
+# ---------------------------------------------------------------------------
+
 set(GUI_SOURCES
     src/main.cpp
     src/ui/MainWindow.cpp
@@ -43,6 +52,7 @@ set(GUI_SOURCES
     src/ui/GUIConstants.h
     src/dsp/AudioEngine.cpp
     src/dsp/AudioEngine.h
+    src/dsp/IAudioBackend.h
     src/dsp/Constants.h
     src/dsp/KnobRanges.h
     src/dsp/EffectBase.h
@@ -76,6 +86,24 @@ set(GUI_SOURCES
     src/dsp/DynamicWahProcessor.h
 )
 
+# Per-platform backend sources. Each .cpp defines IAudioBackend::create() —
+# exactly one of them is compiled per build, so the factory is unambiguous.
+if(WIN32)
+    list(APPEND GUI_SOURCES
+        src/dsp/WasapiBackend.cpp
+        src/dsp/WasapiBackend.h
+    )
+else()
+    list(APPEND GUI_SOURCES
+        src/dsp/JackBackend.cpp
+        src/dsp/JackBackend.h
+    )
+endif()
+
+# ---------------------------------------------------------------------------
+# Target
+# ---------------------------------------------------------------------------
+
 add_executable(NAMPlayer ${GUI_SOURCES} ${NAM_SOURCES} ${WAV_SOURCES})
 
 target_include_directories(NAMPlayer PRIVATE
@@ -83,10 +111,13 @@ target_include_directories(NAMPlayer PRIVATE
     ${NAM_DEPS_PATH}/eigen
     ${NAM_DEPS_PATH}/nlohmann
     ${AUDIO_DSP_TOOLS_DIR}/dsp
-    ${JACK_INCLUDE_DIRS}
     src/dsp
     src/ui
 )
+
+if(NOT WIN32)
+    target_include_directories(NAMPlayer PRIVATE ${JACK_INCLUDE_DIRS})
+endif()
 
 target_compile_definitions(NAMPlayer PRIVATE
     NAM_SAMPLE_FLOAT
@@ -95,18 +126,41 @@ target_compile_definitions(NAMPlayer PRIVATE
 target_link_libraries(NAMPlayer PRIVATE
     Qt6::Core
     Qt6::Widgets
-    ${JACK_LIBRARIES}
 )
 
-target_compile_options(NAMPlayer PRIVATE
-    -Wall -Wextra -Wno-unused-parameter
-    $<$<CONFIG:Release>:-O3>
-    $<$<CONFIG:Debug>:-Og -g>
-)
+if(WIN32)
+    # WASAPI lives in the system audio-stack DLLs.
+    target_link_libraries(NAMPlayer PRIVATE ole32 mmdevapi)
+    # MSVC needs NOMINMAX to keep <windows.h> from defining min/max macros.
+    target_compile_definitions(NAMPlayer PRIVATE NOMINMAX WIN32_LEAN_AND_MEAN)
+else()
+    target_link_libraries(NAMPlayer PRIVATE ${JACK_LIBRARIES})
+endif()
+
+# ---------------------------------------------------------------------------
+# Compile options
+# ---------------------------------------------------------------------------
+
+if(MSVC)
+    target_compile_options(NAMPlayer PRIVATE
+        /W3 /permissive-
+        $<$<CONFIG:Release>:/O2>
+        $<$<CONFIG:Debug>:/Od /Zi>
+    )
+else()
+    target_compile_options(NAMPlayer PRIVATE
+        -Wall -Wextra -Wno-unused-parameter
+        $<$<CONFIG:Release>:-O3>
+        $<$<CONFIG:Debug>:-Og -g>
+    )
+endif()
 
 # Suppress sign-compare warnings in third-party wav.cpp
-set_source_files_properties(${WAV_SOURCES} PROPERTIES COMPILE_FLAGS "-Wno-sign-compare -Wno-error")
+if(NOT MSVC)
+    set_source_files_properties(${WAV_SOURCES} PROPERTIES COMPILE_FLAGS "-Wno-sign-compare -Wno-error")
+endif()
 
+# stdc++fs is a Linux/libstdc++ thing — MSVC ships <filesystem> in the runtime.
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     target_link_libraries(NAMPlayer PRIVATE stdc++fs)
 endif()

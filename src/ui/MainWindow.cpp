@@ -693,15 +693,13 @@ void MainWindow::setupAudio()
 
     if (mEngine->start("NAMPlayer"))
     {
-        setJackStatus(
-            QString("JACK  ●  %1 Hz  ●  stereo out")
-                .arg(static_cast<int>(mEngine->sampleRate())),
-            true);
-        restoreConnections();
+        setJackStatus(QString::fromStdString(mEngine->backendStatus()), true);
+        if (mEngine->supportsPortRouting())
+            restoreConnections();
     }
     else
     {
-        setJackStatus("JACK  ●  not connected (check jackd / pipewire-jack)", false);
+        setJackStatus("Audio backend  ●  not connected", false);
     }
 }
 
@@ -893,7 +891,7 @@ void MainWindow::updateMeters()
 
     if (!mEngine->isRunning() && mLblJACKStatus->objectName() == "jackStatusOk")
     {
-        mLblJACKStatus->setText("JACK  ●  disconnected");
+        mLblJACKStatus->setText("Audio backend  ●  disconnected");
         mLblJACKStatus->setObjectName("jackStatusErr");
         mLblJACKStatus->style()->unpolish(mLblJACKStatus);
         mLblJACKStatus->style()->polish(mLblJACKStatus);
@@ -961,7 +959,7 @@ void MainWindow::restoreConnections()
 
 void MainWindow::saveConnections()
 {
-    if (!mEngine->isRunning()) return;
+    if (!mEngine->isRunning() || !mEngine->supportsPortRouting()) return;
 
     auto toList = [](const std::vector<std::string>& v) {
         QStringList l;

@@ -2,10 +2,11 @@
 
 #include <atomic>
 #include <cmath>
+#include <memory>
 #include <string>
 #include <vector>
 
-#include <jack/jack.h>
+#include "IAudioBackend.h"
 
 #include "NamProcessor.h"
 #include "IRProcessor.h"
@@ -21,17 +22,24 @@
 #include "ReverbProcessor.h"
 #include "DynamicWahProcessor.h"
 
-class AudioEngine
+/// Platform-agnostic audio engine. Owns all DSP processors and the signal
+/// chain. Delegates actual I/O to a backend (JACK on Linux, WASAPI on
+/// Windows) selected at construction time by IAudioBackend::create().
+class AudioEngine : public IAudioBackend::Callback
 {
 public:
     AudioEngine();
-    ~AudioEngine();
+    ~AudioEngine() override;
 
     bool start(const std::string& clientName = "NAMPlayer");
     void stop();
 
-    bool   isRunning()  const { return mRunning.load(); }
-    double sampleRate() const { return mSampleRate; }
+    bool   isRunning()  const { return mBackend && mBackend->isRunning(); }
+    double sampleRate() const { return mBackend ? mBackend->sampleRate() : 44100.0; }
+    int    bufferSize() const { return mBackend ? mBackend->bufferSize() : 0; }
+
+    std::string backendStatus()        const { return mBackend ? mBackend->statusString() : std::string{}; }
+    bool        supportsPortRouting()  const { return mBackend && mBackend->supportsPortRouting(); }
 
     // ---- Model / IR (thin wrappers for MainWindow convenience) ----
     bool        loadModel(const std::string& path) { return mNam.loadModel(path); }
@@ -69,34 +77,21 @@ public:
     // ---- Signal chain (processing order = UI order) ----
     const std::vector<EffectBase*>& chain() const { return mChain; }
 
-    // ---- JACK port connection persistence ----
-    struct PortConnections
-    {
-        std::vector<std::string> inputSources;   // ports → our input
-        std::vector<std::string> outputLDests;   // our output_L → ports
-        std::vector<std::string> outputRDests;   // our output_R → ports
-    };
-    PortConnections currentConnections() const;
-    void            applyConnections(const PortConnections& c);
+    // ---- Port-routing pass-through (no-ops on backends without it) ----
+    using PortConnections = IAudioBackend::PortConnections;
+    PortConnections currentConnections() const { return mBackend ? mBackend->currentConnections() : PortConnections{}; }
+    void            applyConnections(const PortConnections& c) { if (mBackend) mBackend->applyConnections(c); }
 
     // ---- VU meters ----
     float inputPeak()  const { return mInputPeak.load();  }
     float outputPeak() const { return mOutputPeak.load(); }
 
+    // ---- IAudioBackend::Callback ----
+    void onAudio(const float* in, float* outL, float* outR, int nframes) override;
+    void onBufferSizeChanged(int newSize) override;
+
 private:
-    static int  jackProcessCallback(jack_nframes_t nframes, void* arg);
-    int         processAudio(jack_nframes_t nframes);
-    static int  jackBufferSizeCallback(jack_nframes_t nframes, void* arg);
-    int         onBufferSizeChanged(jack_nframes_t nframes);
-    static void jackShutdownCallback(void* arg);
-
-    jack_client_t* mClient   = nullptr;
-    jack_port_t*   mPortIn   = nullptr;
-    jack_port_t*   mPortOutL = nullptr;
-    jack_port_t*   mPortOutR = nullptr;
-
-    std::atomic<bool> mRunning{false};
-    double            mSampleRate = 44100.0;
+    std::unique_ptr<IAudioBackend> mBackend;
 
     // Signal chain — ordered, iterated every audio callback
     std::vector<EffectBase*> mChain;

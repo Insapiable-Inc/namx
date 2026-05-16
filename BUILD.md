@@ -1,8 +1,13 @@
 # NAMPlayer — Build & Usage Guide
 
-NAMPlayer is a standalone Linux desktop application that loads `.nam` neural amp models
-and `.wav` impulse responses, processes live audio through JACK, and exposes a 3-band
-EQ plus input/output gain controls via a Qt6 GUI.
+NAMPlayer is a standalone Qt6 desktop application that loads `.nam` neural amp models
+and `.wav` impulse responses, processes live audio, and exposes a 3-band EQ plus
+input/output gain controls and a full pedal-style effects chain.
+
+| Platform | Audio backend | Status |
+|----------|---------------|--------|
+| Linux    | JACK (jackd2 or PipeWire-JACK) | Stable |
+| Windows  | WASAPI (native, MSVC) | **Stub** — scaffolding present, real implementation in progress |
 
 ---
 
@@ -53,14 +58,47 @@ sudo pacman -S git cmake ninja qt6-base jack2 qjackctl
 sudo dnf install git cmake ninja-build qt6-qtbase-devel jack-audio-connection-kit-devel qjackctl
 ```
 
+### Windows (MSVC)
+
+You need three things:
+
+1. **Visual Studio 2022 Build Tools** with the *"Desktop development with C++"* workload
+   (provides `cl.exe`, MSBuild, the Windows 10/11 SDK). Get them from
+   <https://visualstudio.microsoft.com/downloads/> — the free Community edition or
+   the standalone *Build Tools* installer is fine.
+
+2. **CMake** ≥ 3.16. Either install from <https://cmake.org/download/> or use the
+   one bundled with Visual Studio (`Developer PowerShell for VS 2022` already has it
+   on the path).
+
+3. **Qt 6.5+ for MSVC**. Two options:
+
+   - **Official online installer** (recommended for first build):
+     <https://www.qt.io/download-qt-installer> — pick *Qt 6.x → MSVC 2019 64-bit*
+     when the component tree shows up. Default install path is `C:\Qt\6.x.x\msvc2019_64`.
+   - **aqtinstall** (scriptable, no account needed):
+     ```powershell
+     pip install aqtinstall
+     aqt install-qt windows desktop 6.7.0 win64_msvc2019_64 -O C:\Qt
+     ```
+
+WASAPI links against system DLLs (`ole32`, `mmdevapi`) so there's no separate
+audio dep to install — the Windows SDK already ships them.
+
+> **Audio caveat:** the WASAPI backend is currently a stub (`WasapiBackend.cpp`).
+> The app will build and the GUI launches, but `start()` returns false and you'll
+> see "Audio backend ● not connected" in the status pill. The full implementation
+> is on the roadmap.
+
 ### Minimum versions
 
 | Dependency | Minimum |
 |------------|---------|
 | CMake      | 3.16    |
-| Qt         | 6.2     |
-| JACK       | 1.9.17 (jackd2) or PipeWire-JACK |
+| Qt         | 6.2 (Linux) / 6.5 (Windows MSVC) |
+| JACK       | 1.9.17 (jackd2) or PipeWire-JACK — Linux only |
 | GCC / Clang| GCC 11 / Clang 13 (C++20 required) |
+| MSVC       | Visual Studio 2022 (17.6+) |
 
 ---
 
@@ -81,7 +119,7 @@ If you already cloned without `--recursive`, the `build.sh` script calls
 
 ## 3. Build
 
-### Quick build (recommended)
+### Linux — quick build (recommended)
 
 ```bash
 cd gui
@@ -91,27 +129,72 @@ chmod +x build.sh
 ./build.sh Debug
 ```
 
-The binary is placed at:
+Binary lands at `gui/build-release/NAMPlayer` (or `build-debug/`).
 
-```
-gui/build-release/NAMPlayer   # Release
-gui/build-debug/NAMPlayer     # Debug
-```
-
-### Manual CMake build
+### Linux — manual CMake
 
 ```bash
 cd gui
-cmake -S . -B build-release \
-      -DCMAKE_BUILD_TYPE=Release
+cmake -S . -B build-release -DCMAKE_BUILD_TYPE=Release
 cmake --build build-release --parallel $(nproc)
 ```
 
-#### Optional CMake flags
+### Windows — quick build (PowerShell)
+
+From a "Developer PowerShell for VS 2022" prompt (so `cl.exe` and `cmake` are
+on `PATH`):
+
+```powershell
+cd gui
+.\build.ps1                                          # Release
+.\build.ps1 -BuildType Debug                         # Debug
+.\build.ps1 -QtDir 'C:\Qt\6.7.0\msvc2019_64'         # custom Qt location
+```
+
+Binary lands at `gui\build-release\Release\NAMPlayer.exe` (or
+`gui\build-debug\Debug\NAMPlayer.exe`).
+
+> If you get *"Could not find a package configuration file provided by Qt6"*,
+> pass `-QtDir` pointing at your Qt MSVC install, e.g.
+> `-QtDir 'C:\Qt\6.7.0\msvc2019_64'`. The script forwards it to CMake as
+> `-DCMAKE_PREFIX_PATH`.
+
+### Windows — manual CMake
+
+```powershell
+cd gui
+cmake -S . -B build-release `
+      -G "Visual Studio 17 2022" -A x64 `
+      -DCMAKE_BUILD_TYPE=Release `
+      -DCMAKE_PREFIX_PATH="C:\Qt\6.7.0\msvc2019_64"
+cmake --build build-release --config Release --parallel
+```
+
+Prefer Ninja? Install it (`winget install Ninja-build.Ninja`) and swap the
+generator:
+
+```powershell
+cmake -S . -B build-release -G Ninja `
+      -DCMAKE_BUILD_TYPE=Release `
+      -DCMAKE_PREFIX_PATH="C:\Qt\6.7.0\msvc2019_64"
+cmake --build build-release --parallel
+```
+
+After build, the Qt runtime DLLs need to be next to the executable. Run
+`windeployqt` once to populate them:
+
+```powershell
+& "$env:QtDir\bin\windeployqt.exe" .\build-release\Release\NAMPlayer.exe
+```
+
+(`windeployqt` ships with Qt; full path is `<Qt install>\bin\windeployqt.exe`.)
+
+### Optional CMake flags
 
 | Flag | Default | Description |
 |------|---------|-------------|
-| `-DCMAKE_BUILD_TYPE=Release` | Release | `Debug` for symbols, `Release` for `-O3` |
+| `-DCMAKE_BUILD_TYPE=Release` | Release | `Debug` for symbols, `Release` for optimization |
+| `-DCMAKE_PREFIX_PATH=...` | none | Qt install root on Windows |
 
 ---
 
