@@ -93,7 +93,7 @@ if ($Generator -eq 'Ninja') {
     $configureArgs += @('-G', 'Ninja', "-DCMAKE_BUILD_TYPE=$BuildType")
 } else {
     $configureArgs += @('-G', $Generator, '-A', 'x64')
-    # Visual Studio is a multi-config generator — BUILD_TYPE chosen at build time.
+    # Visual Studio is a multi-config generator — build type is chosen at build time.
 }
 
 Write-Host "==> Configuring CMake ($BuildType, $Generator)..."
@@ -136,6 +136,3 @@ if (-not $NoDeploy -and (Test-Path $ExePath)) {
 
 Write-Host ""
 Write-Host "Done. Binary: $ExePath"
-Write-Host ""
-Write-Host "Run with:"
-Write-Host "  $ExePath"

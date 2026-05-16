@@ -49,7 +49,7 @@ bool JackBackend::start(const std::string& clientName, Callback* cb)
         return false;
     }
 
-    // Initial buffer-size notification so the callback resizes its buffers
+    // Initial buffer-size notification so the callback resizes its work buffers
     // before any process callback fires.
     if (mCallback) mCallback->onBufferSizeChanged(mBufferSize);
 

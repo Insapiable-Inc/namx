@@ -6,7 +6,8 @@
 #include "IAudioBackend.h"
 
 /// JACK implementation of IAudioBackend.
-/// All JACK-specific state (client handle, ports, callbacks) lives here.
+/// All JACK-specific state (client handle, ports, callbacks) lives here so
+/// AudioEngine doesn't have to include <jack/jack.h>.
 class JackBackend : public IAudioBackend
 {
 public:

@@ -6,13 +6,12 @@
 
 /// Platform-agnostic audio backend interface.
 ///
-/// On Linux this is implemented by JackBackend (full JACK client with port
-/// graph routing). On Windows the implementation is WasapiBackend, which
-/// drives audio directly through WASAPI and has no concept of a graph.
+/// Linux  → JackBackend (full JACK client with graph routing).
+/// Windows → WasapiBackend (direct WASAPI client, no graph).
 ///
-/// AudioEngine owns one of these and implements Callback to receive RT audio.
-/// MainWindow checks supportsPortRouting() to know whether to expose the
-/// JACK-specific connection save/restore UI.
+/// AudioEngine owns one of these (chosen at runtime by IAudioBackend::create())
+/// and implements Callback to receive RT audio. MainWindow checks
+/// supportsPortRouting() to know whether to expose the connection save/restore UI.
 class IAudioBackend
 {
 public:
@@ -29,13 +28,11 @@ public:
 
         /// Notification that the audio buffer size has changed. Called on a
         /// non-RT thread, serialised with onAudio. Implementations should
-        /// resize their work buffers here. Optional override.
+        /// resize their work buffers here.
         virtual void onBufferSizeChanged(int /*newSize*/) {}
     };
 
-    /// JACK-only port routing data. Empty on backends that don't have a graph
-    /// (e.g. WASAPI). Kept on the interface so MainWindow can save/restore
-    /// generically; non-JACK backends just return empty / ignore.
+    /// JACK-only port routing data. Empty on backends without a graph.
     struct PortConnections
     {
         std::vector<std::string> inputSources;
@@ -45,8 +42,9 @@ public:
 
     virtual ~IAudioBackend() = default;
 
-    /// Start the audio stream. `clientName` is used as the JACK client name
-    /// where applicable; ignored otherwise. `cb` must outlive the backend.
+    /// Start the audio stream. `clientName` is the JACK client name where
+    /// applicable; ignored on backends that don't use it. `cb` must outlive
+    /// the backend (it's borrowed, not owned).
     virtual bool start(const std::string& clientName, Callback* cb) = 0;
     virtual void stop() = 0;
 
@@ -54,20 +52,20 @@ public:
     virtual double sampleRate() const = 0;
     virtual int    bufferSize() const = 0;
 
-    /// Short human-readable status string, e.g. "JACK ● 48000 Hz ● stereo out"
-    /// or "WASAPI ● Speakers (Realtek) ● 48000 Hz". Shown in the GUI pill.
+    /// Short human-readable status string for the GUI pill,
+    /// e.g. "JACK ● 48000 Hz ● stereo out" or "WASAPI ● Speakers ● 48000 Hz".
     virtual std::string statusString() const = 0;
 
-    /// True if this backend supports inter-app port routing (i.e. JACK).
-    /// False for device-based backends (WASAPI, ASIO, etc.).
+    /// True if the backend exposes inter-app port routing (JACK only).
     virtual bool supportsPortRouting() const { return false; }
 
     /// Query the current port wiring. Empty if !supportsPortRouting().
     virtual PortConnections currentConnections() const { return {}; }
 
-    /// Replace the port wiring with the saved set. No-op if !supportsPortRouting().
+    /// Apply a saved wiring. No-op if !supportsPortRouting().
     virtual void applyConnections(const PortConnections& /*c*/) {}
 
     /// Factory: returns the right backend for this build's target platform.
+    /// Defined in JackBackend.cpp (Linux) or WasapiBackend.cpp (Windows).
     static std::unique_ptr<IAudioBackend> create();
 };

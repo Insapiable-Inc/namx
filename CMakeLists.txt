@@ -15,8 +15,8 @@ set(CMAKE_AUTOUIC ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets)
 
-# JACK is the Linux audio backend. On Windows we use WASAPI directly via the
-# system DLLs (ole32, mmdevapi, audioclient) — no external package needed.
+# JACK is the Linux audio backend. On Windows we use WASAPI via the system
+# DLLs (ole32, mmdevapi) — no external package needed.
 if(NOT WIN32)
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(JACK REQUIRED jack)
@@ -86,8 +86,8 @@ set(GUI_SOURCES
     src/dsp/DynamicWahProcessor.h
 )
 
-# Per-platform backend sources. Each .cpp defines IAudioBackend::create() —
-# exactly one of them is compiled per build, so the factory is unambiguous.
+# Per-platform backend. Each .cpp defines IAudioBackend::create(), exactly one
+# of which is compiled per build, so the factory is unambiguous.
 if(WIN32)
     list(APPEND GUI_SOURCES
         src/dsp/WasapiBackend.cpp
@@ -105,6 +105,9 @@ endif()
 # ---------------------------------------------------------------------------
 
 add_executable(NAMPlayer ${GUI_SOURCES} ${NAM_SOURCES} ${WAV_SOURCES})
+
+# On Windows we want a GUI app (no console window). Linux ignores WIN32.
+set_target_properties(NAMPlayer PROPERTIES WIN32_EXECUTABLE TRUE)
 
 target_include_directories(NAMPlayer PRIVATE
     ${NAM_ROOT}
@@ -129,9 +132,8 @@ target_link_libraries(NAMPlayer PRIVATE
 )
 
 if(WIN32)
-    # WASAPI lives in the system audio-stack DLLs.
-    target_link_libraries(NAMPlayer PRIVATE ole32 mmdevapi)
-    # MSVC needs NOMINMAX to keep <windows.h> from defining min/max macros.
+    # WASAPI lives in these system DLLs.
+    target_link_libraries(NAMPlayer PRIVATE ole32 mmdevapi avrt)
     target_compile_definitions(NAMPlayer PRIVATE NOMINMAX WIN32_LEAN_AND_MEAN)
 else()
     target_link_libraries(NAMPlayer PRIVATE ${JACK_LIBRARIES})
@@ -143,7 +145,7 @@ endif()
 
 if(MSVC)
     target_compile_options(NAMPlayer PRIVATE
-        /W3 /permissive-
+        /W3 /permissive- /EHsc
         $<$<CONFIG:Release>:/O2>
         $<$<CONFIG:Debug>:/Od /Zi>
     )
@@ -160,7 +162,7 @@ if(NOT MSVC)
     set_source_files_properties(${WAV_SOURCES} PROPERTIES COMPILE_FLAGS "-Wno-sign-compare -Wno-error")
 endif()
 
-# stdc++fs is a Linux/libstdc++ thing — MSVC ships <filesystem> in the runtime.
+# stdc++fs is libstdc++-only — MSVC ships <filesystem> in the runtime.
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     target_link_libraries(NAMPlayer PRIVATE stdc++fs)
 endif()

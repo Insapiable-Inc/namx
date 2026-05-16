@@ -22,9 +22,9 @@
 #include "ReverbProcessor.h"
 #include "DynamicWahProcessor.h"
 
-/// Platform-agnostic audio engine. Owns all DSP processors and the signal
-/// chain. Delegates actual I/O to a backend (JACK on Linux, WASAPI on
-/// Windows) selected at construction time by IAudioBackend::create().
+/// Platform-agnostic audio engine. Owns the signal chain and all DSP
+/// processors. Delegates I/O to an IAudioBackend (JACK on Linux, WASAPI on
+/// Windows) created via IAudioBackend::create().
 class AudioEngine : public IAudioBackend::Callback
 {
 public:
@@ -38,8 +38,9 @@ public:
     double sampleRate() const { return mBackend ? mBackend->sampleRate() : 44100.0; }
     int    bufferSize() const { return mBackend ? mBackend->bufferSize() : 0; }
 
-    std::string backendStatus()        const { return mBackend ? mBackend->statusString() : std::string{}; }
-    bool        supportsPortRouting()  const { return mBackend && mBackend->supportsPortRouting(); }
+    /// Human-readable status, e.g. "JACK ● 48000 Hz ● stereo out".
+    std::string backendStatus()       const { return mBackend ? mBackend->statusString() : std::string{}; }
+    bool        supportsPortRouting() const { return mBackend && mBackend->supportsPortRouting(); }
 
     // ---- Model / IR (thin wrappers for MainWindow convenience) ----
     bool        loadModel(const std::string& path) { return mNam.loadModel(path); }
