@@ -1,0 +1,75 @@
+name: GUI — Linux build
+
+on:
+  push:
+    branches: [linux-gui, gui-beautification, windows-compatibility, main]
+    paths:
+      - 'gui/**'
+      - 'NAM/**'
+      - 'Dependencies/**'
+      - '.github/workflows/gui-linux.yml'
+  pull_request:
+    paths:
+      - 'gui/**'
+      - 'NAM/**'
+      - '.github/workflows/gui-linux.yml'
+  workflow_dispatch:
+
+jobs:
+  build-linux:
+    name: Build (Ubuntu 22.04)
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            cmake ninja-build \
+            qt6-base-dev qt6-base-dev-tools \
+            libjack-jackd2-dev pkg-config \
+            libgl1-mesa-dev \
+            xvfb
+
+      - name: Configure (Release)
+        working-directory: gui
+        run: |
+          cmake -S . -B build-release \
+                -G Ninja \
+                -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        working-directory: gui
+        run: cmake --build build-release --parallel
+
+      - name: Smoke launch (headless)
+        working-directory: gui
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: |
+          # Launch the binary briefly to verify it links and the GUI thread
+          # starts without crashing. JACK won't be available on the runner so
+          # the audio backend will fail to connect — that's expected. We just
+          # want to confirm the process doesn't segfault.
+          ./build-release/NAMPlayer &
+          PID=$!
+          sleep 2
+          if kill -0 $PID 2>/dev/null; then
+            echo "Process still alive after 2s — smoke test passed"
+            kill $PID
+            wait $PID 2>/dev/null || true
+          else
+            echo "Process exited early — smoke test failed"
+            exit 1
+          fi
+
+      - name: Upload binary
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: NAMPlayer-linux-x64
+          path: gui/build-release/NAMPlayer
+          retention-days: 14

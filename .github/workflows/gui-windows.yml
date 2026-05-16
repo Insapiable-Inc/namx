@@ -1,0 +1,78 @@
+name: GUI — Windows build
+
+on:
+  push:
+    branches: [linux-gui, gui-beautification, windows-compatibility, main]
+    paths:
+      - 'gui/**'
+      - 'NAM/**'
+      - 'Dependencies/**'
+      - '.github/workflows/gui-windows.yml'
+  pull_request:
+    paths:
+      - 'gui/**'
+      - 'NAM/**'
+      - '.github/workflows/gui-windows.yml'
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    name: Build (Windows, MSVC 2022)
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Qt 6.7 (MSVC 2019 64-bit)
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.7.0'
+          host: 'windows'
+          target: 'desktop'
+          arch: 'win64_msvc2019_64'
+          cache: true
+          # install-qt-action puts Qt at $RUNNER_WORKSPACE/Qt/6.7.0/msvc2019_64
+          # and exports $env:QtDir / $env:Qt6_DIR for downstream steps.
+
+      - name: Set up MSVC environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Configure (Release, Ninja)
+        working-directory: gui
+        shell: pwsh
+        run: |
+          cmake -S . -B build-release `
+                -G Ninja `
+                -DCMAKE_BUILD_TYPE=Release `
+                -DCMAKE_PREFIX_PATH="$env:QT_ROOT_DIR"
+
+      - name: Build
+        working-directory: gui
+        run: cmake --build build-release --parallel
+
+      - name: Run windeployqt
+        working-directory: gui
+        shell: pwsh
+        run: |
+          $exe = "build-release\NAMPlayer.exe"
+          if (-not (Test-Path $exe)) { throw "Missing $exe" }
+          $windeployqt = Join-Path "$env:QT_ROOT_DIR" "bin\windeployqt.exe"
+          & $windeployqt $exe --release --no-translations --no-system-d3d-compiler --no-opengl-sw
+          if ($LASTEXITCODE -ne 0) { throw "windeployqt failed" }
+
+      - name: Upload artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: NAMPlayer-windows-x64
+          path: |
+            gui/build-release/NAMPlayer.exe
+            gui/build-release/*.dll
+            gui/build-release/platforms/
+            gui/build-release/styles/
+            gui/build-release/imageformats/
+            gui/build-release/iconengines/
+          retention-days: 14
