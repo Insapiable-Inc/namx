@@ -25,6 +25,7 @@ public:
 
     /// Must be called after JACK reports its buffer size so Reset() gets the right value.
     void prepareBuffer(int maxBuf);
+    int  maxBuf() const { return mMaxBuf; }
 
     void reset() override {}
 

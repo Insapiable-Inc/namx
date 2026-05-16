@@ -71,6 +71,7 @@ bool AudioEngine::start(const std::string& clientName)
     mNam.prepareBuffer(maxBuf);
 
     jack_set_process_callback(mClient, jackProcessCallback, this);
+    jack_set_buffer_size_callback(mClient, jackBufferSizeCallback, this);
     jack_on_shutdown(mClient, jackShutdownCallback, this);
 
     mPortIn   = jack_port_register(mClient, "input",    JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput,  0);
@@ -173,6 +174,27 @@ int AudioEngine::jackProcessCallback(jack_nframes_t nframes, void* arg)
     return static_cast<AudioEngine*>(arg)->processAudio(nframes);
 }
 
+int AudioEngine::jackBufferSizeCallback(jack_nframes_t nframes, void* arg)
+{
+    return static_cast<AudioEngine*>(arg)->onBufferSizeChanged(nframes);
+}
+
+// Called by JACK on a non-RT thread, serialized with processAudio.
+// Grows the work buffers and NAM scratch so the next process callback never
+// overflows. Only grows — shrinking would just churn the heap for no benefit.
+int AudioEngine::onBufferSizeChanged(jack_nframes_t nframes)
+{
+    const int n = static_cast<int>(nframes);
+    if (n <= 0) return 0;
+    if (n > static_cast<int>(mWorkBufL.size()))
+    {
+        mWorkBufL.resize(n, 0.0f);
+        mWorkBufR.resize(n, 0.0f);
+    }
+    mNam.prepareBuffer(std::max(n, mNam.maxBuf()));
+    return 0;
+}
+
 void AudioEngine::jackShutdownCallback(void* arg)
 {
     static_cast<AudioEngine*>(arg)->mRunning.store(false);
@@ -186,6 +208,16 @@ int AudioEngine::processAudio(jack_nframes_t nframes)
     auto* outR  = static_cast<float*>(jack_port_get_buffer(mPortOutR, nframes));
 
     const int n = static_cast<int>(nframes);
+
+    // Defensive: if a process callback ever fires before onBufferSizeChanged
+    // has grown the work buffers (PipeWire-JACK quantum races), emit silence
+    // for this cycle rather than overrunning mWorkBufL/R.
+    if (static_cast<size_t>(n) > mWorkBufL.size())
+    {
+        std::fill_n(outL, n, 0.0f);
+        std::fill_n(outR, n, 0.0f);
+        return 0;
+    }
 
     // 1. Input gain (smoothed) → both work buffers (identical at this point)
     const float targetInGain = dbToLinear(mInputGainDB.load());

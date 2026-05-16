@@ -86,6 +86,8 @@ public:
 private:
     static int  jackProcessCallback(jack_nframes_t nframes, void* arg);
     int         processAudio(jack_nframes_t nframes);
+    static int  jackBufferSizeCallback(jack_nframes_t nframes, void* arg);
+    int         onBufferSizeChanged(jack_nframes_t nframes);
     static void jackShutdownCallback(void* arg);
 
     jack_client_t* mClient   = nullptr;
