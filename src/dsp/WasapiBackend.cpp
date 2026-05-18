@@ -65,6 +65,71 @@ std::string friendlyDeviceName(IMMDevice* dev)
     return name;
 }
 
+std::string wideToUtf8(LPCWSTR wstr)
+{
+    if (!wstr) return {};
+    int len = WideCharToMultiByte(CP_UTF8, 0, wstr, -1, nullptr, 0, nullptr, nullptr);
+    if (len <= 0) return {};
+    std::string result(len - 1, '\0');
+    WideCharToMultiByte(CP_UTF8, 0, wstr, -1, result.data(), len, nullptr, nullptr);
+    return result;
+}
+
+std::wstring utf8ToWide(const std::string& str)
+{
+    if (str.empty()) return {};
+    int len = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, nullptr, 0);
+    if (len <= 0) return {};
+    std::wstring result(len - 1, L'\0');
+    MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, result.data(), len);
+    return result;
+}
+
+std::vector<IAudioBackend::DeviceInfo> enumerateWASAPIDevices(EDataFlow direction)
+{
+    std::vector<IAudioBackend::DeviceInfo> result;
+    result.push_back({"default", "Default"});
+
+    HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+    bool comInit = (hr == S_OK || hr == S_FALSE);
+    // RPC_E_CHANGED_MODE means COM already initialized — fine.
+
+    IMMDeviceEnumerator* enumerator = nullptr;
+    hr = CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr, CLSCTX_ALL,
+                          __uuidof(IMMDeviceEnumerator),
+                          reinterpret_cast<void**>(&enumerator));
+    if (FAILED(hr) || !enumerator) {
+        if (comInit) CoUninitialize();
+        return result;
+    }
+
+    IMMDeviceCollection* collection = nullptr;
+    hr = enumerator->EnumAudioEndpoints(direction, DEVICE_STATE_ACTIVE, &collection);
+    if (SUCCEEDED(hr) && collection) {
+        UINT count = 0;
+        collection->GetCount(&count);
+        for (UINT i = 0; i < count; ++i) {
+            IMMDevice* dev = nullptr;
+            if (SUCCEEDED(collection->Item(i, &dev)) && dev) {
+                IAudioBackend::DeviceInfo info;
+                LPWSTR idStr = nullptr;
+                if (SUCCEEDED(dev->GetId(&idStr)) && idStr) {
+                    info.id = wideToUtf8(idStr);
+                    CoTaskMemFree(idStr);
+                }
+                info.name = friendlyDeviceName(dev);
+                if (!info.name.empty() && !info.id.empty())
+                    result.push_back(info);
+                dev->Release();
+            }
+        }
+        collection->Release();
+    }
+    enumerator->Release();
+    if (comInit) CoUninitialize();
+    return result;
+}
+
 } // namespace
 
 #endif // _WIN32
@@ -94,24 +159,72 @@ std::string WasapiBackend::statusString() const
 {
 #ifdef _WIN32
     if (!mRunning.load())
-        return "WASAPI  ●  not started";
+        return "WASAPI  \xe2\x97\x8f  not started";
     std::ostringstream o;
-    o << "WASAPI  ●  ";
-    if (!mDeviceName.empty()) o << mDeviceName << "  ●  ";
-    o << static_cast<int>(mSampleRate) << " Hz  ●  stereo out";
+    o << "WASAPI  \xe2\x97\x8f  ";
+    if (!mDeviceName.empty()) o << mDeviceName << "  \xe2\x97\x8f  ";
+    o << static_cast<int>(mSampleRate) << " Hz  \xe2\x97\x8f  stereo out";
     return o.str();
 #else
-    return "WASAPI  ●  not supported on this platform";
+    return "WASAPI  \xe2\x97\x8f  not supported on this platform";
+#endif
+}
+
+// ---------------------------------------------------------------------------
+// Device enumeration (works before start() is called)
+// ---------------------------------------------------------------------------
+
+std::vector<IAudioBackend::DeviceInfo> WasapiBackend::enumerateInputDevices() const
+{
+#ifdef _WIN32
+    return enumerateWASAPIDevices(eCapture);
+#else
+    return {};
+#endif
+}
+
+std::vector<IAudioBackend::DeviceInfo> WasapiBackend::enumerateOutputDevices() const
+{
+#ifdef _WIN32
+    return enumerateWASAPIDevices(eRender);
+#else
+    return {};
 #endif
 }
 
 #ifdef _WIN32
 
 // ---------------------------------------------------------------------------
-// start / stop
+// Device selection helper
 // ---------------------------------------------------------------------------
 
-bool WasapiBackend::start(const std::string& /*clientName*/, Callback* cb)
+IMMDevice* WasapiBackend::openDeviceById(const std::string& deviceId) const
+{
+    if (deviceId.empty() || deviceId == "default")
+        return nullptr;  // Caller falls back to GetDefaultAudioEndpoint
+
+    std::wstring wId = utf8ToWide(deviceId);
+    IMMDevice* dev = nullptr;
+    HRESULT hr = mEnumerator->GetDevice(wId.c_str(), &dev);
+    if (FAILED(hr) || !dev) {
+        std::cerr << "[WasapiBackend] GetDevice failed for id=" << deviceId << ": 0x" << std::hex << hr << "\n";
+        return nullptr;
+    }
+    return dev;
+}
+
+// ---------------------------------------------------------------------------
+// start / stop / startWithDevices
+// ---------------------------------------------------------------------------
+
+bool WasapiBackend::start(const std::string& clientName, Callback* cb)
+{
+    return startWithDevices(clientName, cb, "default", "default");
+}
+
+bool WasapiBackend::startWithDevices(const std::string& /*clientName*/, Callback* cb,
+                                     const std::string& inputDeviceId,
+                                     const std::string& outputDeviceId)
 {
     if (mRunning.load()) return true;
     mCallback = cb;
@@ -132,20 +245,31 @@ bool WasapiBackend::start(const std::string& /*clientName*/, Callback* cb)
         return false;
     }
 
-    // Default capture device for "communications" — biased toward mic/line-in.
-    hr = mEnumerator->GetDefaultAudioEndpoint(eCapture, eCommunications, &mCaptureDevice);
-    if (FAILED(hr) || !mCaptureDevice) {
-        std::cerr << "[WasapiBackend] No default capture device: 0x" << std::hex << hr << "\n";
-        teardown();
-        return false;
+    // --- Select capture device ---
+    mCaptureDevice = openDeviceById(inputDeviceId);
+    if (!mCaptureDevice) {
+        // Fall back to default multimedia capture device
+        hr = mEnumerator->GetDefaultAudioEndpoint(eCapture, eMultimedia, &mCaptureDevice);
+        if (FAILED(hr) || !mCaptureDevice) {
+            std::cerr << "[WasapiBackend] No default capture device: 0x" << std::hex << hr << "\n";
+            teardown();
+            return false;
+        }
     }
 
-    hr = mEnumerator->GetDefaultAudioEndpoint(eRender, eMultimedia, &mRenderDevice);
-    if (FAILED(hr) || !mRenderDevice) {
-        std::cerr << "[WasapiBackend] No default render device: 0x" << std::hex << hr << "\n";
-        teardown();
-        return false;
+    // --- Select render device ---
+    mRenderDevice = openDeviceById(outputDeviceId);
+    if (!mRenderDevice) {
+        hr = mEnumerator->GetDefaultAudioEndpoint(eRender, eMultimedia, &mRenderDevice);
+        if (FAILED(hr) || !mRenderDevice) {
+            std::cerr << "[WasapiBackend] No default render device: 0x" << std::hex << hr << "\n";
+            teardown();
+            return false;
+        }
     }
+
+    std::cerr << "[WasapiBackend] Capture device: " << friendlyDeviceName(mCaptureDevice) << "\n";
+    std::cerr << "[WasapiBackend] Render device: " << friendlyDeviceName(mRenderDevice) << "\n";
 
     if (!initCapture() || !initRender()) {
         teardown();
@@ -473,5 +597,9 @@ void WasapiBackend::teardown()
 
 bool WasapiBackend::start(const std::string&, Callback*) { return false; }
 void WasapiBackend::stop() {}
+std::vector<IAudioBackend::DeviceInfo> WasapiBackend::enumerateInputDevices()  const { return {}; }
+std::vector<IAudioBackend::DeviceInfo> WasapiBackend::enumerateOutputDevices() const { return {}; }
+bool WasapiBackend::startWithDevices(const std::string&, Callback*,
+                                     const std::string&, const std::string&) { return false; }
 
 #endif // _WIN32

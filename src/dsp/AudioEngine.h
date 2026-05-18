@@ -34,6 +34,10 @@ public:
     bool start(const std::string& clientName = "NAMPlayer");
     void stop();
 
+    bool startWithDevices(const std::string& inputDeviceId,
+                          const std::string& outputDeviceId,
+                          const std::string& clientName = "NAMPlayer");
+
     bool   isRunning()  const { return mBackend && mBackend->isRunning(); }
     double sampleRate() const { return mBackend ? mBackend->sampleRate() : 44100.0; }
     int    bufferSize() const { return mBackend ? mBackend->bufferSize() : 0; }
@@ -41,6 +45,10 @@ public:
     /// Human-readable status, e.g. "JACK ● 48000 Hz ● stereo out".
     std::string backendStatus()       const { return mBackend ? mBackend->statusString() : std::string{}; }
     bool        supportsPortRouting() const { return mBackend && mBackend->supportsPortRouting(); }
+
+    // ---- Device enumeration (creates temp backend, so works before start()) ----
+    std::vector<IAudioBackend::DeviceInfo> enumerateInputDevices()  const;
+    std::vector<IAudioBackend::DeviceInfo> enumerateOutputDevices() const;
 
     // ---- Model / IR (thin wrappers for MainWindow convenience) ----
     bool        loadModel(const std::string& path) { return mNam.loadModel(path); }

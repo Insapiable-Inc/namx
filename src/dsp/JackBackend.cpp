@@ -86,6 +86,16 @@ std::string JackBackend::statusString() const
     return o.str();
 }
 
+std::vector<IAudioBackend::DeviceInfo> JackBackend::enumerateInputDevices() const
+{
+    return {{"default", "JACK Server"}};
+}
+
+std::vector<IAudioBackend::DeviceInfo> JackBackend::enumerateOutputDevices() const
+{
+    return {{"default", "JACK Server"}};
+}
+
 // ---- Port connection persistence ------------------------------------
 
 IAudioBackend::PortConnections JackBackend::currentConnections() const

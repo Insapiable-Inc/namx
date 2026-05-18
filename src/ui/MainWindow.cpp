@@ -4,6 +4,7 @@
 #include "TunerProcessor.h"
 
 #include <QAction>
+#include <QComboBox>
 #include <QFile>
 #include <QFileDialog>
 #include <QFont>
@@ -184,6 +185,38 @@ void MainWindow::setupUI()
         row->addWidget(btnSave);
         row->addWidget(btnLoad);
         rootLayout->addLayout(row);
+    }
+
+    // ---- Device selection row ----
+    {
+        auto* row = new QHBoxLayout;
+        row->setContentsMargins(4, 0, 4, 4);
+        row->setSpacing(8);
+
+        auto* inputLabel = new QLabel("Input:");
+        inputLabel->setObjectName("deviceLabel");
+        mCbxInputDevice = new QComboBox;
+        mCbxInputDevice->setMinimumWidth(180);
+        mCbxInputDevice->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+
+        auto* outputLabel = new QLabel("Output:");
+        outputLabel->setObjectName("deviceLabel");
+        mCbxOutputDevice = new QComboBox;
+        mCbxOutputDevice->setMinimumWidth(180);
+        mCbxOutputDevice->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+
+        row->addWidget(inputLabel);
+        row->addWidget(mCbxInputDevice, 1);
+        row->addSpacing(16);
+        row->addWidget(outputLabel);
+        row->addWidget(mCbxOutputDevice, 1);
+
+        rootLayout->addLayout(row);
+
+        connect(mCbxInputDevice, QOverload<int>::of(&QComboBox::currentIndexChanged),
+                this, &MainWindow::onInputDeviceChanged);
+        connect(mCbxOutputDevice, QOverload<int>::of(&QComboBox::currentIndexChanged),
+                this, &MainWindow::onOutputDeviceChanged);
     }
 
     // ---- NAM + IR file row ----
@@ -691,15 +724,103 @@ void MainWindow::setupAudio()
         mLblJACKStatus->style()->polish(mLblJACKStatus);
     };
 
-    if (mEngine->start("NAMPlayer"))
-    {
+    populateDeviceDropdowns();
+
+    QSettings s;
+    const QString savedIn  = s.value("audio/inputDeviceId").toString();
+    const QString savedOut = s.value("audio/outputDeviceId").toString();
+
+    bool started = false;
+    if (!savedIn.isEmpty() || !savedOut.isEmpty())
+        started = mEngine->startWithDevices(savedIn.toStdString(), savedOut.toStdString());
+    if (!started)
+        started = mEngine->start("NAMPlayer");
+
+    if (started) {
         setJackStatus(QString::fromStdString(mEngine->backendStatus()), true);
         if (mEngine->supportsPortRouting())
             restoreConnections();
+    } else {
+        setJackStatus("Audio backend  \xe2\x97\x8f  not connected", false);
     }
-    else
-    {
-        setJackStatus("Audio backend  ●  not connected", false);
+}
+
+void MainWindow::populateDeviceDropdowns()
+{
+    mCbxInputDevice->blockSignals(true);
+    mCbxOutputDevice->blockSignals(true);
+
+    mCbxInputDevice->clear();
+    mCbxOutputDevice->clear();
+
+    const auto inputs  = mEngine->enumerateInputDevices();
+    const auto outputs = mEngine->enumerateOutputDevices();
+
+    // If only "Default" is available (JACK or single entry), disable combos.
+    const bool onlyDefault = (inputs.size() <= 1 && outputs.size() <= 1);
+
+    for (const auto& d : inputs)
+        mCbxInputDevice->addItem(QString::fromStdString(d.name),
+                                  QString::fromStdString(d.id));
+    for (const auto& d : outputs)
+        mCbxOutputDevice->addItem(QString::fromStdString(d.name),
+                                   QString::fromStdString(d.id));
+
+    mCbxInputDevice->setEnabled(!onlyDefault);
+    mCbxOutputDevice->setEnabled(!onlyDefault);
+
+    // Restore saved selections
+    QSettings s;
+    const int idxIn = mCbxInputDevice->findData(s.value("audio/inputDeviceId").toString());
+    if (idxIn >= 0) mCbxInputDevice->setCurrentIndex(idxIn);
+
+    const int idxOut = mCbxOutputDevice->findData(s.value("audio/outputDeviceId").toString());
+    if (idxOut >= 0) mCbxOutputDevice->setCurrentIndex(idxOut);
+
+    mCbxInputDevice->blockSignals(false);
+    mCbxOutputDevice->blockSignals(false);
+}
+
+void MainWindow::onInputDeviceChanged(int)
+{
+    if (mDeviceChanging) return;
+    mDeviceChanging = true;
+    QSettings s;
+    s.setValue("audio/inputDeviceId", mCbxInputDevice->currentData().toString());
+    restartAudioWithCurrentDevices();
+    mDeviceChanging = false;
+}
+
+void MainWindow::onOutputDeviceChanged(int)
+{
+    if (mDeviceChanging) return;
+    mDeviceChanging = true;
+    QSettings s;
+    s.setValue("audio/outputDeviceId", mCbxOutputDevice->currentData().toString());
+    restartAudioWithCurrentDevices();
+    mDeviceChanging = false;
+}
+
+void MainWindow::restartAudioWithCurrentDevices()
+{
+    auto setJackStatus = [this](const QString& text, bool ok) {
+        mLblJACKStatus->setText(text);
+        mLblJACKStatus->setObjectName(ok ? "jackStatusOk" : "jackStatusErr");
+        mLblJACKStatus->style()->unpolish(mLblJACKStatus);
+        mLblJACKStatus->style()->polish(mLblJACKStatus);
+    };
+
+    setJackStatus("Audio backend  \xe2\x97\x8f  switching devices…", false);
+
+    const QString inId  = mCbxInputDevice->currentData().toString();
+    const QString outId = mCbxOutputDevice->currentData().toString();
+
+    if (mEngine->startWithDevices(inId.toStdString(), outId.toStdString())) {
+        setJackStatus(QString::fromStdString(mEngine->backendStatus()), true);
+        if (mEngine->supportsPortRouting())
+            restoreConnections();
+    } else {
+        setJackStatus("Audio backend  \xe2\x97\x8f  not connected", false);
     }
 }
 

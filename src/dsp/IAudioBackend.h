@@ -32,6 +32,13 @@ public:
         virtual void onBufferSizeChanged(int /*newSize*/) {}
     };
 
+    /// Device info for device enumeration/selection.
+    struct DeviceInfo
+    {
+        std::string id;    // Stable device identifier (WASAPI endpoint ID, or "default")
+        std::string name;  // Human-readable name for the dropdown
+    };
+
     /// JACK-only port routing data. Empty on backends without a graph.
     struct PortConnections
     {
@@ -55,6 +62,23 @@ public:
     /// Short human-readable status string for the GUI pill,
     /// e.g. "JACK ● 48000 Hz ● stereo out" or "WASAPI ● Speakers ● 48000 Hz".
     virtual std::string statusString() const = 0;
+
+    /// Return available capture (input) devices. Empty on JACK.
+    virtual std::vector<DeviceInfo> enumerateInputDevices() const { return {}; }
+
+    /// Return available render (output) devices. Empty on JACK.
+    virtual std::vector<DeviceInfo> enumerateOutputDevices() const { return {}; }
+
+    /// Start audio using explicitly selected devices.
+    /// Empty or "default" ids fall back to system defaults.
+    virtual bool startWithDevices(const std::string& clientName, Callback* cb,
+                                  const std::string& inputDeviceId,
+                                  const std::string& outputDeviceId)
+    {
+        // Default implementation ignores device ids.
+        (void)inputDeviceId; (void)outputDeviceId;
+        return start(clientName, cb);
+    }
 
     /// True if the backend exposes inter-app port routing (JACK only).
     virtual bool supportsPortRouting() const { return false; }
