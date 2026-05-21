@@ -1,0 +1,7 @@
+{
+  "name": "namplayer-gui",
+  "version-string": "1.0.0",
+  "dependencies": [
+    "qtbase"
+  ]
+}

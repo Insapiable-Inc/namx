@@ -26,6 +26,9 @@ public:
     PortConnections  currentConnections() const override;
     void             applyConnections(const PortConnections& c) override;
 
+    std::vector<DeviceInfo> enumerateInputDevices()  const override;
+    std::vector<DeviceInfo> enumerateOutputDevices() const override;
+
 private:
     static int  jackProcessCallback(jack_nframes_t nframes, void* arg);
     static int  jackBufferSizeCallback(jack_nframes_t nframes, void* arg);

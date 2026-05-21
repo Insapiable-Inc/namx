@@ -273,6 +273,58 @@ QToolTip {
     padding: 4px 6px;
     border-radius: 4px;
 }
+
+/* === Combo boxes (device selectors) === */
+QComboBox {
+    background-color: #2a2f38;
+    color: #d8dee9;
+    border: 1px solid #353c4a;
+    border-radius: 5px;
+    padding: 4px 8px;
+    min-height: 20px;
+    font-weight: 500;
+}
+QComboBox:hover {
+    border-color: #424b5c;
+}
+QComboBox:disabled {
+    background-color: #1d2027;
+    color: #555c6b;
+    border-color: #25292f;
+}
+QComboBox::drop-down {
+    border: none;
+    width: 20px;
+}
+QComboBox::down-arrow {
+    image: none;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid #9aa1ad;
+    margin-right: 5px;
+}
+QComboBox QAbstractItemView {
+    background-color: #1a1d24;
+    color: #d8dee9;
+    border: 1px solid #353c4a;
+    selection-background-color: #2f3744;
+    selection-color: #d8dee9;
+    outline: none;
+}
+QComboBox QAbstractItemView::item {
+    padding: 4px 8px;
+    min-height: 24px;
+}
+QComboBox QAbstractItemView::item:hover {
+    background-color: #2f3744;
+}
+
+/* Device selector labels */
+QLabel#deviceLabel {
+    color: #9aa1ad;
+    font-weight: 600;
+    padding-right: 4px;
+}
 )";
 
 void apply(QApplication& app)

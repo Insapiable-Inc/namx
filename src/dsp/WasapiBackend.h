@@ -3,6 +3,7 @@
 #include <atomic>
 #include <string>
 #include <thread>
+#include <vector>
 
 #include "IAudioBackend.h"
 
@@ -18,10 +19,11 @@ struct IAudioRenderClient;
 
 /// WASAPI implementation of IAudioBackend (Windows-only).
 ///
-/// Shared-mode, event-driven. Captures from the default communications/console
-/// input device and renders to the default render device. Internal sample
-/// format is float32 (the WASAPI mix format on modern Windows is almost always
-/// already 32-bit float, so no resampling is needed in the common path).
+/// Shared-mode, event-driven. Captures from a user-selectable or default
+/// input device and renders to a user-selectable or default output device.
+/// Internal sample format is float32 (the WASAPI mix format on modern
+/// Windows is almost always 32-bit float, so no resampling is needed in
+/// the common path).
 ///
 /// Threading: an internal `mAudioThread` runs the capture+render loop. The
 /// thread blocks on the capture-ready event, pulls a block, hands it to the
@@ -40,6 +42,12 @@ public:
     int    bufferSize() const override { return mBufferSize; }
     std::string statusString() const override;
 
+    std::vector<DeviceInfo> enumerateInputDevices()  const override;
+    std::vector<DeviceInfo> enumerateOutputDevices() const override;
+    bool startWithDevices(const std::string& clientName, Callback* cb,
+                          const std::string& inputDeviceId,
+                          const std::string& outputDeviceId) override;
+
     // WASAPI has no port graph — defaults from base (supportsPortRouting=false)
     // and empty currentConnections/applyConnections apply.
 
@@ -49,6 +57,8 @@ private:
     bool initCapture();
     bool initRender();
     void teardown();
+
+    IMMDevice* openDeviceById(const std::string& deviceId) const;
 
     IMMDeviceEnumerator* mEnumerator     = nullptr;
     IMMDevice*           mCaptureDevice  = nullptr;
