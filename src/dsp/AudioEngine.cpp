@@ -67,12 +67,48 @@ bool AudioEngine::start(const std::string& clientName)
     return true;
 }
 
+bool AudioEngine::startWithDevices(const std::string& inputDeviceId,
+                                   const std::string& outputDeviceId,
+                                   const std::string& clientName)
+{
+    stop();
+
+    mBackend = IAudioBackend::create();
+    if (!mBackend) {
+        std::cerr << "[AudioEngine] No audio backend available for this platform\n";
+        return false;
+    }
+
+    if (!mBackend->startWithDevices(clientName, this, inputDeviceId, outputDeviceId)) {
+        mBackend.reset();
+        return false;
+    }
+
+    const double sr = mBackend->sampleRate();
+    for (auto* fx : mChain)
+        fx->setSampleRate(sr);
+
+    return true;
+}
+
 void AudioEngine::stop()
 {
     if (mBackend) {
         mBackend->stop();
         mBackend.reset();
     }
+}
+
+std::vector<IAudioBackend::DeviceInfo> AudioEngine::enumerateInputDevices() const
+{
+    auto temp = IAudioBackend::create();
+    return temp ? temp->enumerateInputDevices() : std::vector<IAudioBackend::DeviceInfo>{};
+}
+
+std::vector<IAudioBackend::DeviceInfo> AudioEngine::enumerateOutputDevices() const
+{
+    auto temp = IAudioBackend::create();
+    return temp ? temp->enumerateOutputDevices() : std::vector<IAudioBackend::DeviceInfo>{};
 }
 
 // ---- IAudioBackend::Callback ----------------------------------------

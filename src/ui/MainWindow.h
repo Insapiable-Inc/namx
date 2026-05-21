@@ -11,6 +11,7 @@
 class QLabel;
 class QPushButton;
 class QProgressBar;
+class QComboBox;
 
 class MainWindow : public QMainWindow
 {
@@ -101,6 +102,11 @@ private slots:
     void onSavePreset();
     void onLoadPreset();
 
+    void onInputDeviceChanged(int index);
+    void onOutputDeviceChanged(int index);
+    void populateDeviceDropdowns();
+    void restartAudioWithCurrentDevices();
+
     void updateMeters();
     void updateTuner();
 
@@ -126,6 +132,10 @@ private:
     QLabel*      mLblNAMStatus  = nullptr;
     QLabel*      mLblIRStatus   = nullptr;
     QLabel*      mLblJACKStatus = nullptr;
+
+    QComboBox* mCbxInputDevice  = nullptr;
+    QComboBox* mCbxOutputDevice = nullptr;
+    bool       mDeviceChanging  = false;
 
     QProgressBar* mMeterIn  = nullptr;
     QProgressBar* mMeterOut = nullptr;
