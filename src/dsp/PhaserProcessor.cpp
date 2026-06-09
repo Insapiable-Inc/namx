@@ -52,6 +52,23 @@ void PhaserProcessor::processBlockMono(float* buf, int nframes)
     }
 }
 
+void PhaserProcessor::processBlockDual(float* L, float* R, int nframes)
+{
+    const float depth = mDepth.load()    / 100.0f;
+    const float fbAmt = mFeedback.load() / 100.0f;
+    const float mix   = mMix.load()      / 100.0f;
+    const float phInc = mRate.load()     / static_cast<float>(mSampleRate);
+
+    for (int i = 0; i < nframes; ++i)
+    {
+        // Same LFO phase for both channels: identical mono effect per channel.
+        L[i] = processChannel(L[i], mPhase, mX1L, mY1L, mFbStateL, depth, fbAmt, mix);
+        R[i] = processChannel(R[i], mPhase, mX1R, mY1R, mFbStateR, depth, fbAmt, mix);
+        mPhase += phInc;
+        if (mPhase >= 1.0f) mPhase -= 1.0f;
+    }
+}
+
 void PhaserProcessor::processBlockStereoOut(float* L, float* R, int nframes)
 {
     const float depth = mDepth.load()    / 100.0f;

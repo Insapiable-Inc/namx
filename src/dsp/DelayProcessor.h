@@ -5,9 +5,9 @@
 #include "EffectBase.h"
 
 /// Stereo ping-pong delay.
-/// Mono mode: simple single-buffer delay.
-/// Stereo mode (supportsStereoOut): ping-pong cross-feedback.
-/// Stereo in + mono mode: each channel delayed independently (base class dispatch).
+/// Mono in + mono mode: simple single-buffer delay.
+/// Mono in + stereo mode (supportsStereoOut): ping-pong cross-feedback.
+/// Stereo in (any mode): each channel delayed independently (processBlockDual).
 class DelayProcessor : public EffectBase
 {
 public:
@@ -22,15 +22,10 @@ public:
     float feedback() const { return mFeedback.load();  }
     float mix()      const { return mMix.load();       }
 
-    /// Always routes through processBlockStereoOut when stereo mode is on so
-    /// both delay buffers are used correctly. The base-class fallback for
-    /// inputIsStereo=true calls processBlockMono twice, which double-advances
-    /// mWriteL and reads from the wrong positions.
-    bool process(float* L, float* R, int n, bool inputIsStereo) override;
-
 protected:
     void onSampleRateChanged(double sr) override;
     void processBlockMono(float* buf, int nframes) override;
+    void processBlockDual(float* L, float* R, int nframes) override;
     void processBlockStereoOut(float* L, float* R, int nframes) override;
 
 private:

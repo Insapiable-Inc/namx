@@ -38,20 +38,6 @@ void ReverbProcessor::reset()
     for (auto& a : mApR)   a.reset();
 }
 
-bool ReverbProcessor::process(float* L, float* R, int n, bool inputIsStereo)
-{
-    if (!mEnabled.load()) return inputIsStereo;
-
-    if (mStereoMode.load()) {
-        processBlockStereoOut(L, R, n);
-        return true;
-    }
-
-    processBlockMono(L, n);
-    std::copy(L, L + n, R);
-    return false;
-}
-
 void ReverbProcessor::processBlockStereoOut(float* L, float* R, int nframes)
 {
     const float roomSize = mRoomSize.load() / 100.0f;
@@ -84,7 +70,9 @@ void ReverbProcessor::processBlockStereoOut(float* L, float* R, int nframes)
     }
 }
 
-void ReverbProcessor::processBlockMono(float* buf, int nframes)
+void ReverbProcessor::processMonoBank(float* buf, int nframes,
+                                      std::array<CombFilter, kNumCombs>& combs,
+                                      std::array<AllPassFilter, kNumAllPasses>& aps)
 {
     const float roomSize = mRoomSize.load() / 100.0f;
     const float damping  = mDamping.load()  / 100.0f;
@@ -97,9 +85,22 @@ void ReverbProcessor::processBlockMono(float* buf, int nframes)
         float inSig = buf[i] * 0.015f;
         float out   = 0.0f;
         for (int c = 0; c < kNumCombs; ++c)
-            out += mCombL[c].process(inSig, feedback, damp);
+            out += combs[c].process(inSig, feedback, damp);
         for (int a = 0; a < kNumAllPasses; ++a)
-            out = mApL[a].process(out);
+            out = aps[a].process(out);
         buf[i] = buf[i] * (1.0f - mix) + out * mix;
     }
+}
+
+void ReverbProcessor::processBlockMono(float* buf, int nframes)
+{
+    processMonoBank(buf, nframes, mCombL, mApL);
+}
+
+void ReverbProcessor::processBlockDual(float* L, float* R, int nframes)
+{
+    // Stereo input: independent mono reverb per channel, each on its own
+    // comb/all-pass bank so the tails don't share state.
+    processMonoBank(L, nframes, mCombL, mApL);
+    processMonoBank(R, nframes, mCombR, mApR);
 }

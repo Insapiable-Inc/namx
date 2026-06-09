@@ -56,6 +56,37 @@ void ChorusProcessor::processBlockMono(float* buf, int nframes)
     }
 }
 
+void ChorusProcessor::processBlockDual(float* L, float* R, int nframes)
+{
+    const float rate  = mRate.load();
+    const float depth = mDepth.load() / 100.0f;
+    const float mix   = mMix.load()   / 100.0f;
+    const float phInc = rate / static_cast<float>(mSampleRate);
+    const float fs    = static_cast<float>(mSampleRate);
+    const int   szL   = static_cast<int>(mBufL.size());
+    const int   szR   = static_cast<int>(mBufR.size());
+
+    for (int i = 0; i < nframes; ++i)
+    {
+        // Same LFO for both channels: identical mono effect applied per channel.
+        float lfo = std::sin(2.0f * kPi * mPhase);
+        float del = std::max(1.0f, (kBaseMs + depth * kMaxDepthMs * lfo) * fs / 1000.0f);
+
+        mBufL[mWriteL] = L[i];
+        float wetL = readInterp(mBufL, mWriteL, del);
+        L[i] = L[i] * (1.0f - mix) + wetL * mix;
+        mWriteL = (mWriteL + 1) % szL;
+
+        mBufR[mWriteR] = R[i];
+        float wetR = readInterp(mBufR, mWriteR, del);
+        R[i] = R[i] * (1.0f - mix) + wetR * mix;
+        mWriteR = (mWriteR + 1) % szR;
+
+        mPhase += phInc;
+        if (mPhase >= 1.0f) mPhase -= 1.0f;
+    }
+}
+
 void ChorusProcessor::processBlockStereoOut(float* L, float* R, int nframes)
 {
     const float rate  = mRate.load();

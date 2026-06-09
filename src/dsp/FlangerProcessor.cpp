@@ -66,6 +66,27 @@ void FlangerProcessor::processBlockMono(float* buf, int nframes)
     }
 }
 
+void FlangerProcessor::processBlockDual(float* L, float* R, int nframes)
+{
+    const float depth = mDepth.load()    / 100.0f;
+    const float fbAmt = mFeedback.load() / 100.0f;
+    const float mix   = mMix.load()      / 100.0f;
+    const float phInc = mRate.load()     / static_cast<float>(mSampleRate);
+
+    for (int i = 0; i < nframes; ++i)
+    {
+        // Same LFO phase for both channels: identical mono effect per channel.
+        float outL, outR;
+        processSample(L[i], mPhase, mBufL, mWriteL, mFbL, depth, fbAmt, mix, outL);
+        processSample(R[i], mPhase, mBufR, mWriteR, mFbR, depth, fbAmt, mix, outR);
+        L[i] = outL;
+        R[i] = outR;
+
+        mPhase += phInc;
+        if (mPhase >= 1.0f) mPhase -= 1.0f;
+    }
+}
+
 void FlangerProcessor::processBlockStereoOut(float* L, float* R, int nframes)
 {
     const float depth = mDepth.load()    / 100.0f;

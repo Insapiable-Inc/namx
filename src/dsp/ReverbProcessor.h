@@ -24,15 +24,10 @@ public:
     float width()    const { return mWidth.load();    }
     float mix()      const { return mMix.load();      }
 
-    /// Always routes through processBlockStereoOut when stereo mode is on.
-    /// Same reason as DelayProcessor: processBlockMono uses only the L-side
-    /// comb/allpass banks; calling it for both channels double-advances their
-    /// write pointers and corrupts the reverb tail.
-    bool process(float* L, float* R, int n, bool inputIsStereo) override;
-
 protected:
     void onSampleRateChanged(double sr) override;
     void processBlockMono(float* buf, int nframes) override;
+    void processBlockDual(float* L, float* R, int nframes) override;
     void processBlockStereoOut(float* L, float* R, int nframes) override;
 
 private:
@@ -92,4 +87,7 @@ private:
     static constexpr int kStereoOffset             = 23;
 
     void allocate();
+    void processMonoBank(float* buf, int nframes,
+                         std::array<CombFilter, kNumCombs>& combs,
+                         std::array<AllPassFilter, kNumAllPasses>& aps);
 };

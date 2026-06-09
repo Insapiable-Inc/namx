@@ -22,6 +22,7 @@ public:
 protected:
     void onSampleRateChanged(double sr) override;
     void processBlockMono(float* buf, int nframes) override;
+    void processBlockDual(float* L, float* R, int nframes) override;
     void processBlockStereoOut(float* L, float* R, int nframes) override;
 
 private:

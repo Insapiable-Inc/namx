@@ -17,20 +17,6 @@ void DelayProcessor::reset()
     mWriteL = mWriteR = 0;
 }
 
-bool DelayProcessor::process(float* L, float* R, int n, bool inputIsStereo)
-{
-    if (!mEnabled.load()) return inputIsStereo;
-
-    if (mStereoMode.load()) {
-        processBlockStereoOut(L, R, n);
-        return true;
-    }
-
-    processBlockMono(L, n);
-    std::copy(L, L + n, R);
-    return false;
-}
-
 void DelayProcessor::processBlockMono(float* buf, int nframes)
 {
     const float fb    = std::min(mFeedback.load() / 100.0f, 0.99f);
@@ -45,6 +31,30 @@ void DelayProcessor::processBlockMono(float* buf, int nframes)
         mBufL[mWriteL] = buf[i] + fb * delayed;
         buf[i] = buf[i] * (1.0f - mix) + delayed * mix;
         mWriteL = (mWriteL + 1) % sz;
+    }
+}
+
+void DelayProcessor::processBlockDual(float* L, float* R, int nframes)
+{
+    // Stereo input: independent mono delay per channel (no cross-feedback).
+    const float fb    = std::min(mFeedback.load() / 100.0f, 0.99f);
+    const float mix   = mMix.load() / 100.0f;
+    const int   sz    = static_cast<int>(mBufL.size());
+    const int   delay = std::min(static_cast<int>(mTimeMS.load() * mSampleRate / 1000.0), sz - 1);
+
+    for (int i = 0; i < nframes; ++i)
+    {
+        int   readPosL = (mWriteL - delay + sz) % sz;
+        float delayedL = mBufL[readPosL];
+        mBufL[mWriteL] = L[i] + fb * delayedL;
+        L[i] = L[i] * (1.0f - mix) + delayedL * mix;
+        mWriteL = (mWriteL + 1) % sz;
+
+        int   readPosR = (mWriteR - delay + sz) % sz;
+        float delayedR = mBufR[readPosR];
+        mBufR[mWriteR] = R[i] + fb * delayedR;
+        R[i] = R[i] * (1.0f - mix) + delayedR * mix;
+        mWriteR = (mWriteR + 1) % sz;
     }
 }
 

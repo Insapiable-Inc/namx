@@ -12,9 +12,12 @@
 ///   -------  ----------------------------  -------------  ------
 ///   false    -                             any            pass-through (no-op)
 ///   true     false                         false          processBlockMono(L), copy L→R
-///   true     false                         true           processBlockMono(L), processBlockMono(R)
+///   true     false                         true           processBlockDual(L, R)  ← per-channel mono
 ///   true     true                          false          processBlockStereoOut(L, R)  ← true stereo
-///   true     true                          true           processBlockMono(L), processBlockMono(R) (fallback)
+///   true     true                          true           processBlockDual(L, R)  ← toggle ignored
+///
+/// Stereo input always wins: the effect is applied as a mono effect to each
+/// channel independently (processBlockDual), regardless of the stereo toggle.
 ///
 /// Returns true if the output buffers now contain different content (stereo).
 class EffectBase
@@ -44,18 +47,16 @@ public:
         if (!mEnabled.load())
             return inputIsStereo;
 
-        const bool wantStereoOut = mStereoMode.load() && supportsStereoOut();
-
-        if (wantStereoOut && !inputIsStereo) {
-            // Mono in + stereo mode → true stereo output
-            processBlockStereoOut(L, R, n);
+        if (inputIsStereo) {
+            // Stereo in → apply the mono effect to each channel independently,
+            // ignoring the stereo toggle.
+            processBlockDual(L, R, n);
             return true;
         }
 
-        if (inputIsStereo) {
-            // Stereo in → process each channel independently (preserves existing stereo)
-            processBlockMono(L, n);
-            processBlockMono(R, n);
+        if (mStereoMode.load() && supportsStereoOut()) {
+            // Mono in + stereo mode → true stereo output
+            processBlockStereoOut(L, R, n);
             return true;
         }
 
@@ -69,9 +70,18 @@ protected:
     /// Hook called whenever setSampleRate() is invoked (instead of overriding setSampleRate).
     virtual void onSampleRateChanged(double /*sr*/) {}
 
-    /// Mono in-place processing. Must be stateless with respect to channel identity:
-    /// it may be called twice in a row for L then R on separate channel states.
+    /// Mono in-place processing. Called only with mono input (single channel).
     virtual void processBlockMono(float* /*buf*/, int /*n*/) {}
+
+    /// Stereo input → the mono effect applied to each channel independently.
+    /// Stateful effects (delay lines, filters, LFOs) MUST override this with
+    /// separate per-channel state; the default of calling processBlockMono
+    /// twice is only correct for effects that never see stereo input.
+    virtual void processBlockDual(float* L, float* R, int n)
+    {
+        processBlockMono(L, n);
+        processBlockMono(R, n);
+    }
 
     /// True stereo output from mono input.
     /// Called only when supportsStereoOut() == true && !inputIsStereo.
