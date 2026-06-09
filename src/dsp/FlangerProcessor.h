@@ -28,7 +28,7 @@ protected:
     void processBlockStereoOut(float* L, float* R, int nframes) override;
 
 private:
-    std::atomic<float> mRate    { 0.5f};
+    std::atomic<float> mRate    { 0.3f}; // matches kFlangerRateDefault
     std::atomic<float> mDepth   {50.0f};
     std::atomic<float> mFeedback{ 0.0f};
     std::atomic<float> mMix     {50.0f};

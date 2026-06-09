@@ -15,16 +15,19 @@ constexpr double kEQBandMax     =  12.0;
 constexpr double kEQBandDefault =   0.0;
 
 // ---- Noise Gate ---------------------------------------------------------
-constexpr double kGateThreshMin     = -80.0;
-constexpr double kGateThreshMax     = -10.0;
-constexpr double kGateThreshDefault = -40.0;
+// Threshold reaches down to -100 dB so the knob's minimum is effectively
+// "gate never closes"; -70 dB suits typical interface noise floors.
+constexpr double kGateThreshMin     = -100.0;
+constexpr double kGateThreshMax     =  -20.0;
+constexpr double kGateThreshDefault =  -70.0;
 
-constexpr double kGateAttackMin     =    0.1;
-constexpr double kGateAttackMax     =  100.0;
-constexpr double kGateAttackDefault =   10.0;
+// Fast attack so pick transients aren't clipped while the gate opens.
+constexpr double kGateAttackMin     =  0.1;
+constexpr double kGateAttackMax     = 50.0;
+constexpr double kGateAttackDefault =  1.0;
 
 constexpr double kGateReleaseMin     =   10.0;
-constexpr double kGateReleaseMax     = 2000.0;
+constexpr double kGateReleaseMax     = 1000.0;
 constexpr double kGateReleaseDefault =  100.0;
 
 // ---- Compressor ---------------------------------------------------------
@@ -41,11 +44,11 @@ constexpr double kCompAttackMax     =  100.0;
 constexpr double kCompAttackDefault =   10.0;
 
 constexpr double kCompReleaseMin     =   10.0;
-constexpr double kCompReleaseMax     = 2000.0;
+constexpr double kCompReleaseMax     = 1000.0;
 constexpr double kCompReleaseDefault =  100.0;
 
 constexpr double kCompMakeupMin     =  0.0;
-constexpr double kCompMakeupMax     = 30.0;
+constexpr double kCompMakeupMax     = 24.0;
 constexpr double kCompMakeupDefault =  0.0;
 
 // ---- Octave Pedal -------------------------------------------------------
@@ -71,9 +74,10 @@ constexpr double kChorusMixMax     = 100.0;
 constexpr double kChorusMixDefault =  50.0;
 
 // ---- Flanger ------------------------------------------------------------
-constexpr double kFlangerRateMin     = 0.1;
-constexpr double kFlangerRateMax     = 5.0;
-constexpr double kFlangerRateDefault = 0.5;
+// Flanging is a slow sweep; beyond ~2 Hz it turns into warbly vibrato.
+constexpr double kFlangerRateMin     = 0.05;
+constexpr double kFlangerRateMax     = 2.0;
+constexpr double kFlangerRateDefault = 0.3;
 
 constexpr double kFlangerDepthMin     =  0.0;
 constexpr double kFlangerDepthMax     = 100.0;
@@ -105,8 +109,8 @@ constexpr double kPhaserMixMax     = 100.0;
 constexpr double kPhaserMixDefault =  50.0;
 
 // ---- Tremolo ------------------------------------------------------------
-constexpr double kTremoloRateMin     =  0.1;
-constexpr double kTremoloRateMax     = 20.0;
+constexpr double kTremoloRateMin     =  0.5;
+constexpr double kTremoloRateMax     = 15.0;
 constexpr double kTremoloRateDefault =  5.0;
 
 constexpr double kTremoloDepthMin     =  0.0;
@@ -114,12 +118,14 @@ constexpr double kTremoloDepthMax     = 100.0;
 constexpr double kTremoloDepthDefault =  50.0;
 
 // ---- Delay --------------------------------------------------------------
-constexpr double kDelayTimeMin     =    0.0;
-constexpr double kDelayTimeMax     = 2000.0;
+// 20 ms floor keeps the delay line at least one sample long; 1 s covers
+// musical delay times without drifting into looper territory.
+constexpr double kDelayTimeMin     =   20.0;
+constexpr double kDelayTimeMax     = 1000.0;
 constexpr double kDelayTimeDefault =  250.0;
 
 constexpr double kDelayFeedbackMin     =  0.0;
-constexpr double kDelayFeedbackMax     = 99.0;
+constexpr double kDelayFeedbackMax     = 90.0;
 constexpr double kDelayFeedbackDefault = 40.0;
 
 constexpr double kDelayMixMin     =  0.0;

@@ -22,8 +22,10 @@ protected:
     void processBlockMono(float* buf, int nframes) override;
 
 private:
-    std::atomic<float> mThresholdDB{-40.0f};
-    std::atomic<float> mAttackMS   { 10.0f};
+    // Defaults must match the knob defaults in Constants.h — the UI does not
+    // push initial knob values to the engine at startup.
+    std::atomic<float> mThresholdDB{-70.0f};
+    std::atomic<float> mAttackMS   {  1.0f};
     std::atomic<float> mReleaseMS  {100.0f};
 
     float mEnvelope{0.0f};
