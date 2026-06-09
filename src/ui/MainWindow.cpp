@@ -1,5 +1,6 @@
 #include "MainWindow.h"
 #include "Constants.h"
+#include "EffectShortcuts.h"
 #include "Theme.h"
 #include "TunerProcessor.h"
 
@@ -675,6 +676,28 @@ void MainWindow::setupUI()
     }
     addDivider();
 
+    // Keyboard shortcuts follow the same left-to-right order as the strip:
+    // digits (1 2 3 … 0 - =) toggle each card's enable, Q W E … toggle the
+    // stereo switches of the cards that have one.
+    struct CardToggles { ToggleSwitch* enable; ToggleSwitch* stereo; };
+    const std::unordered_map<EffectBase*, CardToggles> fxToggles = {
+        {&mEngine->tuner(),   {mSwTunerEnable,   nullptr}},
+        {&mEngine->gate(),    {mSwGateEnable,    nullptr}},
+        {&mEngine->comp(),    {mSwCompEnable,    nullptr}},
+        {&mEngine->wah(),     {mSwWahEnable,     nullptr}},
+        {&mEngine->chorus1(), {mSwChorus1Enable, mSwChorus1Stereo}},
+        {&mEngine->flanger(), {mSwFlangerEnable, mSwFlangerStereo}},
+        {&mEngine->phaser(),  {mSwPhaserEnable,  mSwPhaserStereo}},
+        {&mEngine->nam(),     {mSwNAMEnable,     nullptr}},
+        {&mEngine->eq(),      {mSwEQEnable,      nullptr}},
+        {&mEngine->chorus2(), {mSwChorus2Enable, nullptr}},
+        {&mEngine->tremolo(), {mSwTremoloEnable, nullptr}},
+        {&mEngine->delay(),   {mSwDelayEnable,   mSwDelayStereo}},
+        {&mEngine->reverb(),  {mSwReverbEnable,  nullptr}},
+        {&mEngine->ir(),      {mSwIREnable,      nullptr}},
+    };
+    EffectShortcuts shortcuts(this);
+
     // Chain-ordered effects — reordering mChain in AudioEngine reorders the UI here
     for (auto* fx : mEngine->chain())
     {
@@ -684,6 +707,10 @@ void MainWindow::setupUI()
         auto it = fxCols.find(fx);
         if (it != fxCols.end())
             stripLay->addWidget(it->second);
+
+        auto tg = fxToggles.find(fx);
+        if (tg != fxToggles.end())
+            shortcuts.addEffect(tg->second.enable, tg->second.stereo);
 
         if (fx == &mEngine->eq())
             addDivider();
