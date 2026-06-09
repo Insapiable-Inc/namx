@@ -471,28 +471,6 @@ void MainWindow::setupUI()
         fxCols[&mEngine->eq()] = col;
     }
 
-    // ---- Chorus 1 ----
-    {
-        using namespace NAMConstants;
-        mKnobCh1Rate  = new KnobWidget("Rate",  kChorusRateMin,  kChorusRateMax,  kChorusRateDefault,  "Hz");
-        mKnobCh1Depth = new KnobWidget("Depth", kChorusDepthMin, kChorusDepthMax, kChorusDepthDefault, "%");
-        mKnobCh1Mix   = new KnobWidget("Mix",   kChorusMixMin,   kChorusMixMax,   kChorusMixDefault,   "%");
-        mKnobCh1Rate->setScrollStep(0.1);
-        mKnobCh1Depth->setScrollStep(1.0);
-        mKnobCh1Mix->setScrollStep(1.0);
-
-        auto* col = makeEffectColumn("Chorus 1", mSwChorus1Enable,
-            {mKnobCh1Rate, mKnobCh1Depth, mKnobCh1Mix}, &mSwChorus1Stereo);
-        Theme::tagCard(col, Theme::Category::ModPre);
-
-        connect(mSwChorus1Enable, &ToggleSwitch::toggled,    this, &MainWindow::onChorus1EnabledToggled);
-        connect(mSwChorus1Stereo, &ToggleSwitch::toggled,    this, &MainWindow::onChorus1StereoToggled);
-        connect(mKnobCh1Rate,     &KnobWidget::valueChanged, this, &MainWindow::onChorus1RateChanged);
-        connect(mKnobCh1Depth,    &KnobWidget::valueChanged, this, &MainWindow::onChorus1DepthChanged);
-        connect(mKnobCh1Mix,      &KnobWidget::valueChanged, this, &MainWindow::onChorus1MixChanged);
-        fxCols[&mEngine->chorus1()] = col;
-    }
-
     // ---- Flanger ----
     {
         using namespace NAMConstants;
@@ -543,25 +521,25 @@ void MainWindow::setupUI()
         fxCols[&mEngine->phaser()] = col;
     }
 
-    // ---- Chorus 2 ----
+    // ---- Chorus ----
     {
         using namespace NAMConstants;
-        mKnobCh2Rate  = new KnobWidget("Rate",  kChorusRateMin,  kChorusRateMax,  kChorusRateDefault,  "Hz");
-        mKnobCh2Depth = new KnobWidget("Depth", kChorusDepthMin, kChorusDepthMax, kChorusDepthDefault, "%");
-        mKnobCh2Mix   = new KnobWidget("Mix",   kChorusMixMin,   kChorusMixMax,   kChorusMixDefault,   "%");
-        mKnobCh2Rate->setScrollStep(0.1);
-        mKnobCh2Depth->setScrollStep(1.0);
-        mKnobCh2Mix->setScrollStep(1.0);
+        mKnobChRate  = new KnobWidget("Rate",  kChorusRateMin,  kChorusRateMax,  kChorusRateDefault,  "Hz");
+        mKnobChDepth = new KnobWidget("Depth", kChorusDepthMin, kChorusDepthMax, kChorusDepthDefault, "%");
+        mKnobChMix   = new KnobWidget("Mix",   kChorusMixMin,   kChorusMixMax,   kChorusMixDefault,   "%");
+        mKnobChRate->setScrollStep(0.1);
+        mKnobChDepth->setScrollStep(1.0);
+        mKnobChMix->setScrollStep(1.0);
 
-        auto* col = makeEffectColumn("Chorus 2", mSwChorus2Enable,
-            {mKnobCh2Rate, mKnobCh2Depth, mKnobCh2Mix});
+        auto* col = makeEffectColumn("Chorus", mSwChorusEnable,
+            {mKnobChRate, mKnobChDepth, mKnobChMix});
         Theme::tagCard(col, Theme::Category::ModPost);
 
-        connect(mSwChorus2Enable, &ToggleSwitch::toggled,    this, &MainWindow::onChorus2EnabledToggled);
-        connect(mKnobCh2Rate,     &KnobWidget::valueChanged, this, &MainWindow::onChorus2RateChanged);
-        connect(mKnobCh2Depth,    &KnobWidget::valueChanged, this, &MainWindow::onChorus2DepthChanged);
-        connect(mKnobCh2Mix,      &KnobWidget::valueChanged, this, &MainWindow::onChorus2MixChanged);
-        fxCols[&mEngine->chorus2()] = col;
+        connect(mSwChorusEnable, &ToggleSwitch::toggled,    this, &MainWindow::onChorusEnabledToggled);
+        connect(mKnobChRate,     &KnobWidget::valueChanged, this, &MainWindow::onChorusRateChanged);
+        connect(mKnobChDepth,    &KnobWidget::valueChanged, this, &MainWindow::onChorusDepthChanged);
+        connect(mKnobChMix,      &KnobWidget::valueChanged, this, &MainWindow::onChorusMixChanged);
+        fxCols[&mEngine->chorus()] = col;
     }
 
     // ---- Tremolo ----
@@ -685,12 +663,11 @@ void MainWindow::setupUI()
         {&mEngine->gate(),    {mSwGateEnable,    nullptr}},
         {&mEngine->comp(),    {mSwCompEnable,    nullptr}},
         {&mEngine->wah(),     {mSwWahEnable,     nullptr}},
-        {&mEngine->chorus1(), {mSwChorus1Enable, mSwChorus1Stereo}},
         {&mEngine->flanger(), {mSwFlangerEnable, mSwFlangerStereo}},
         {&mEngine->phaser(),  {mSwPhaserEnable,  mSwPhaserStereo}},
         {&mEngine->nam(),     {mSwNAMEnable,     nullptr}},
         {&mEngine->eq(),      {mSwEQEnable,      nullptr}},
-        {&mEngine->chorus2(), {mSwChorus2Enable, nullptr}},
+        {&mEngine->chorus(), {mSwChorusEnable, nullptr}},
         {&mEngine->tremolo(), {mSwTremoloEnable, nullptr}},
         {&mEngine->delay(),   {mSwDelayEnable,   mSwDelayStereo}},
         {&mEngine->reverb(),  {mSwReverbEnable,  nullptr}},
@@ -955,16 +932,6 @@ void MainWindow::onDynamicWahResChanged(double v)    { mEngine->wah().setResonan
 void MainWindow::onDynamicWahMixChanged(double v)    { mEngine->wah().setMix        (static_cast<float>(v)); }
 
 // ---------------------------------------------------------------------------
-// Chorus 1
-// ---------------------------------------------------------------------------
-
-void MainWindow::onChorus1EnabledToggled(bool en) { mEngine->chorus1().setEnabled   (en); }
-void MainWindow::onChorus1StereoToggled(bool en)  { mEngine->chorus1().setStereoMode(en); }
-void MainWindow::onChorus1RateChanged(double v)   { mEngine->chorus1().setRate (static_cast<float>(v)); }
-void MainWindow::onChorus1DepthChanged(double v)  { mEngine->chorus1().setDepth(static_cast<float>(v)); }
-void MainWindow::onChorus1MixChanged(double v)    { mEngine->chorus1().setMix  (static_cast<float>(v)); }
-
-// ---------------------------------------------------------------------------
 // Flanger
 // ---------------------------------------------------------------------------
 
@@ -987,13 +954,13 @@ void MainWindow::onPhaserFeedbackChanged(double v) { mEngine->phaser().setFeedba
 void MainWindow::onPhaserMixChanged(double v)      { mEngine->phaser().setMix     (static_cast<float>(v)); }
 
 // ---------------------------------------------------------------------------
-// Chorus 2
+// Chorus
 // ---------------------------------------------------------------------------
 
-void MainWindow::onChorus2EnabledToggled(bool en) { mEngine->chorus2().setEnabled(en); }
-void MainWindow::onChorus2RateChanged(double v)   { mEngine->chorus2().setRate (static_cast<float>(v)); }
-void MainWindow::onChorus2DepthChanged(double v)  { mEngine->chorus2().setDepth(static_cast<float>(v)); }
-void MainWindow::onChorus2MixChanged(double v)    { mEngine->chorus2().setMix  (static_cast<float>(v)); }
+void MainWindow::onChorusEnabledToggled(bool en) { mEngine->chorus().setEnabled(en); }
+void MainWindow::onChorusRateChanged(double v)   { mEngine->chorus().setRate (static_cast<float>(v)); }
+void MainWindow::onChorusDepthChanged(double v)  { mEngine->chorus().setDepth(static_cast<float>(v)); }
+void MainWindow::onChorusMixChanged(double v)    { mEngine->chorus().setMix  (static_cast<float>(v)); }
 
 // ---------------------------------------------------------------------------
 // Tremolo
@@ -1200,14 +1167,6 @@ void MainWindow::onSavePreset()
     wah["mix"]         = static_cast<double>(mEngine->wah().mix());
     obj["dynamicWah"] = wah;
 
-    QJsonObject ch1;
-    ch1["enabled"] = mEngine->chorus1().isEnabled();
-    ch1["stereo"]  = mEngine->chorus1().isStereoMode();
-    ch1["rate"]    = static_cast<double>(mEngine->chorus1().rate());
-    ch1["depth"]   = static_cast<double>(mEngine->chorus1().depth());
-    ch1["mix"]     = static_cast<double>(mEngine->chorus1().mix());
-    obj["chorus1"] = ch1;
-
     QJsonObject fl;
     fl["enabled"]  = mEngine->flanger().isEnabled();
     fl["stereo"]   = mEngine->flanger().isStereoMode();
@@ -1226,12 +1185,12 @@ void MainWindow::onSavePreset()
     ph["mix"]      = static_cast<double>(mEngine->phaser().mix());
     obj["phaser"] = ph;
 
-    QJsonObject ch2;
-    ch2["enabled"] = mEngine->chorus2().isEnabled();
-    ch2["rate"]    = static_cast<double>(mEngine->chorus2().rate());
-    ch2["depth"]   = static_cast<double>(mEngine->chorus2().depth());
-    ch2["mix"]     = static_cast<double>(mEngine->chorus2().mix());
-    obj["chorus2"] = ch2;
+    QJsonObject ch;
+    ch["enabled"] = mEngine->chorus().isEnabled();
+    ch["rate"]    = static_cast<double>(mEngine->chorus().rate());
+    ch["depth"]   = static_cast<double>(mEngine->chorus().depth());
+    ch["mix"]     = static_cast<double>(mEngine->chorus().mix());
+    obj["chorus"] = ch;
 
     QJsonObject tr;
     tr["enabled"] = mEngine->tremolo().isEnabled();
@@ -1336,14 +1295,6 @@ void MainWindow::onLoadPreset()
         mKnobWahRes  ->setValue(getD(w, "resonance",   NAMConstants::kWahResDefault));
         mKnobWahMix  ->setValue(getD(w, "mix",         NAMConstants::kWahMixDefault));
     }
-    if (obj.contains("chorus1")) {
-        auto c = obj["chorus1"].toObject();
-        mSwChorus1Enable->setChecked(getB(c, "enabled", false));
-        mSwChorus1Stereo->setChecked(getB(c, "stereo",  false));
-        mKnobCh1Rate ->setValue(getD(c, "rate",  NAMConstants::kChorusRateDefault));
-        mKnobCh1Depth->setValue(getD(c, "depth", NAMConstants::kChorusDepthDefault));
-        mKnobCh1Mix  ->setValue(getD(c, "mix",   NAMConstants::kChorusMixDefault));
-    }
     if (obj.contains("flanger")) {
         auto fl = obj["flanger"].toObject();
         mSwFlangerEnable->setChecked(getB(fl, "enabled", false));
@@ -1362,12 +1313,12 @@ void MainWindow::onLoadPreset()
         mKnobPhFeedback ->setValue(getD(p, "feedback", NAMConstants::kPhaserFeedbackDefault));
         mKnobPhMix      ->setValue(getD(p, "mix",      NAMConstants::kPhaserMixDefault));
     }
-    if (obj.contains("chorus2")) {
-        auto c = obj["chorus2"].toObject();
-        mSwChorus2Enable->setChecked(getB(c, "enabled", false));
-        mKnobCh2Rate ->setValue(getD(c, "rate",  NAMConstants::kChorusRateDefault));
-        mKnobCh2Depth->setValue(getD(c, "depth", NAMConstants::kChorusDepthDefault));
-        mKnobCh2Mix  ->setValue(getD(c, "mix",   NAMConstants::kChorusMixDefault));
+    if (obj.contains("chorus")) {
+        auto c = obj["chorus"].toObject();
+        mSwChorusEnable->setChecked(getB(c, "enabled", false));
+        mKnobChRate ->setValue(getD(c, "rate",  NAMConstants::kChorusRateDefault));
+        mKnobChDepth->setValue(getD(c, "depth", NAMConstants::kChorusDepthDefault));
+        mKnobChMix  ->setValue(getD(c, "mix",   NAMConstants::kChorusMixDefault));
     }
     if (obj.contains("tremolo")) {
         auto t = obj["tremolo"].toObject();

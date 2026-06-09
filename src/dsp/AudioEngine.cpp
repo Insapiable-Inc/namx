@@ -7,8 +7,8 @@
 AudioEngine::AudioEngine()
 {
     // Effects that are naturally stereo default to stereo mode on.
-    // Chorus1/Flanger/Phaser stereo mode is user-controlled (default off).
-    mChorus2.setStereoMode(true);
+    // Flanger/Phaser stereo mode is user-controlled (default off).
+    mChorus.setStereoMode(true);
     mTremolo.setStereoMode(true);
     mReverb .setStereoMode(true);
     // Delay stereo (ping-pong) is on by default to match original behaviour.
@@ -26,12 +26,11 @@ AudioEngine::AudioEngine()
         &mGate,
         &mComp,
         &mWah,
-        //&mChorus1,
         &mFlanger,
         &mPhaser,
         &mNam,
         &mEQ,
-        &mChorus2,
+        &mChorus,
         &mTremolo,
         &mDelay,
         &mReverb,

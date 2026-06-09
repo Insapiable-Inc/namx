@@ -15,10 +15,10 @@ enum class Category {
     Neutral,   // input, output, tuner
     Dynamics,  // gate, comp
     Filter,    // dynamic wah
-    ModPre,    // flanger, phaser, chorus1
+    ModPre,    // flanger, phaser
     Amp,       // NAM
     EQ,
-    ModPost,   // chorus2, tremolo
+    ModPost,   // chorus, tremolo
     Time,      // delay, reverb
     Cab,       // IR
 };

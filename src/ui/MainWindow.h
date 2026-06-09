@@ -58,12 +58,6 @@ private slots:
     void onDynamicWahResChanged(double v);
     void onDynamicWahMixChanged(double v);
 
-    void onChorus1EnabledToggled(bool en);
-    void onChorus1StereoToggled(bool en);
-    void onChorus1RateChanged(double v);
-    void onChorus1DepthChanged(double v);
-    void onChorus1MixChanged(double v);
-
     void onFlangerEnabledToggled(bool en);
     void onFlangerStereoToggled(bool en);
     void onFlangerRateChanged(double v);
@@ -78,10 +72,10 @@ private slots:
     void onPhaserFeedbackChanged(double v);
     void onPhaserMixChanged(double v);
 
-    void onChorus2EnabledToggled(bool en);
-    void onChorus2RateChanged(double v);
-    void onChorus2DepthChanged(double v);
-    void onChorus2MixChanged(double v);
+    void onChorusEnabledToggled(bool en);
+    void onChorusRateChanged(double v);
+    void onChorusDepthChanged(double v);
+    void onChorusMixChanged(double v);
 
     void onTremoloEnabledToggled(bool en);
     void onTremoloRateChanged(double v);
@@ -172,11 +166,6 @@ private:
     KnobWidget*   mKnobWahRes   = nullptr;
     KnobWidget*   mKnobWahMix   = nullptr;
 
-    ToggleSwitch* mSwChorus1Enable = nullptr;
-    ToggleSwitch* mSwChorus1Stereo = nullptr;
-    KnobWidget*   mKnobCh1Rate    = nullptr;
-    KnobWidget*   mKnobCh1Depth   = nullptr;
-    KnobWidget*   mKnobCh1Mix     = nullptr;
 
     ToggleSwitch* mSwFlangerEnable = nullptr;
     ToggleSwitch* mSwFlangerStereo = nullptr;
@@ -192,10 +181,10 @@ private:
     KnobWidget*   mKnobPhFeedback = nullptr;
     KnobWidget*   mKnobPhMix      = nullptr;
 
-    ToggleSwitch* mSwChorus2Enable = nullptr;
-    KnobWidget*   mKnobCh2Rate    = nullptr;
-    KnobWidget*   mKnobCh2Depth   = nullptr;
-    KnobWidget*   mKnobCh2Mix     = nullptr;
+    ToggleSwitch* mSwChorusEnable = nullptr;
+    KnobWidget*   mKnobChRate    = nullptr;
+    KnobWidget*   mKnobChDepth   = nullptr;
+    KnobWidget*   mKnobChMix     = nullptr;
 
     ToggleSwitch* mSwTremoloEnable = nullptr;
     KnobWidget*   mKnobTrRate     = nullptr;

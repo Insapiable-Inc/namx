@@ -72,12 +72,11 @@ public:
     NoiseGateProcessor&  gate()    { return mGate;    }
     CompressorProcessor& comp()    { return mComp;    }
     DynamicWahProcessor& wah()     { return mWah;     }
-    ChorusProcessor&     chorus1() { return mChorus1; }
     FlangerProcessor&    flanger() { return mFlanger; }
     PhaserProcessor&     phaser()  { return mPhaser;  }
     NamProcessor&        nam()     { return mNam;     }
     EQProcessor&         eq()      { return mEQ;      }
-    ChorusProcessor&     chorus2() { return mChorus2; }
+    ChorusProcessor&     chorus()  { return mChorus;  }
     TremoloProcessor&    tremolo() { return mTremolo; }
     DelayProcessor&      delay()   { return mDelay;   }
     ReverbProcessor&     reverb()  { return mReverb;  }
@@ -110,12 +109,11 @@ private:
     NoiseGateProcessor  mGate;
     CompressorProcessor mComp;
     DynamicWahProcessor mWah;
-    ChorusProcessor     mChorus1;
     FlangerProcessor    mFlanger;
     PhaserProcessor     mPhaser;
     NamProcessor        mNam;
     EQProcessor         mEQ;
-    ChorusProcessor     mChorus2;
+    ChorusProcessor     mChorus;
     TremoloProcessor    mTremolo;
     DelayProcessor      mDelay;
     ReverbProcessor     mReverb;
