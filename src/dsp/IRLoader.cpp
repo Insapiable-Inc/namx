@@ -90,19 +90,6 @@ void IRLoader::unload()
     return out;
 }
 
-void IRLoader::processBlock(float* samples, int numFrames)
-{
-    if (!mLoaded.load(std::memory_order_acquire))
-        return;
-
-    Kernel& k = activeKernel();
-    if (k.irLen <= 0)
-        return;
-
-    for (int i = 0; i < numFrames; ++i)
-        samples[i] = processChannel(k, 0, samples[i]);
-}
-
 void IRLoader::processBlockStereo(float* L, float* R, int numFrames)
 {
     if (!mLoaded.load(std::memory_order_acquire))

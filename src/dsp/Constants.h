@@ -51,15 +51,6 @@ constexpr double kCompMakeupMin     =  0.0;
 constexpr double kCompMakeupMax     = 24.0;
 constexpr double kCompMakeupDefault =  0.0;
 
-// ---- Octave Pedal -------------------------------------------------------
-constexpr double kOctaveUpMin     =  0.0;
-constexpr double kOctaveUpMax     = 100.0;
-constexpr double kOctaveUpDefault =  50.0;
-
-constexpr double kOctaveDownMin     =  0.0;
-constexpr double kOctaveDownMax     = 100.0;
-constexpr double kOctaveDownDefault =  50.0;
-
 // ---- Chorus -------------------------------------------------------------
 constexpr double kChorusRateMin     = 0.1;
 constexpr double kChorusRateMax     = 5.0;
@@ -149,28 +140,6 @@ constexpr double kReverbMixMin     =  0.0;
 constexpr double kReverbMixMax     = 100.0;
 constexpr double kReverbMixDefault =  30.0;
 
-// ---- Reverse ------------------------------------------------------------
-constexpr double kReverseLenMin     =   50.0;
-constexpr double kReverseLenMax     = 2000.0;
-constexpr double kReverseLenDefault =  500.0;
-
-constexpr double kReverseMixMin     =  0.0;
-constexpr double kReverseMixMax     = 100.0;
-constexpr double kReverseMixDefault =  70.0;
-
-// ---- Volume Sweep -------------------------------------------------------
-constexpr double kSweepAttackMin     =   10.0;
-constexpr double kSweepAttackMax     = 2000.0;
-constexpr double kSweepAttackDefault =  300.0;
-
-constexpr double kSweepSensMin     =  0.0;
-constexpr double kSweepSensMax     = 100.0;
-constexpr double kSweepSensDefault =  50.0;
-
-constexpr double kSweepMixMin     =  0.0;
-constexpr double kSweepMixMax     = 100.0;
-constexpr double kSweepMixDefault = 100.0;
-
 // ---- Dynamic Wah --------------------------------------------------------
 constexpr double kWahSensMin     =  0.0;
 constexpr double kWahSensMax     = 100.0;
@@ -183,14 +152,5 @@ constexpr double kWahResDefault =  60.0;
 constexpr double kWahMixMin     =  0.0;
 constexpr double kWahMixMax     = 100.0;
 constexpr double kWahMixDefault = 100.0;
-
-// ---- Bit Crusher --------------------------------------------------------
-constexpr double kBitCrushBitsMin     =  1.0;
-constexpr double kBitCrushBitsMax     = 16.0;
-constexpr double kBitCrushBitsDefault =  8.0;
-
-constexpr double kBitCrushMixMin     =  0.0;
-constexpr double kBitCrushMixMax     = 100.0;
-constexpr double kBitCrushMixDefault = 100.0;
 
 } // namespace NAMConstants

@@ -25,9 +25,6 @@ public:
     bool isLoaded() const { return mLoaded.load(std::memory_order_acquire); }
     std::string getFilePath() const { return mFilePath; }
 
-    /// Process a block of samples in-place (mono). Uses channel 0 convolution state.
-    void processBlock(float* samples, int numFrames);
-
     /// Process a stereo block in-place. Uses independent convolution state per channel.
     void processBlockStereo(float* L, float* R, int numFrames);
 

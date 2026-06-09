@@ -54,9 +54,7 @@ set(GUI_SOURCES
     src/dsp/AudioEngine.h
     src/dsp/IAudioBackend.h
     src/dsp/Constants.h
-    src/dsp/KnobRanges.h
     src/dsp/EffectBase.h
-    src/dsp/Effects.h
     src/dsp/IRLoader.cpp
     src/dsp/IRLoader.h
     src/dsp/IRProcessor.h
