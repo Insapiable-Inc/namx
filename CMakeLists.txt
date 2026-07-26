@@ -150,9 +150,12 @@ if(MSVC)
         $<$<CONFIG:Debug>:/Od /Zi>
     )
 else()
+    # -march=native: Eigen (NAM inference + IR convolution) needs AVX2/FMA to
+    # vectorize fully; baseline x86-64 limits it to SSE2. Binary is tied to the
+    # build machine's CPU — drop to -mavx2 -mfma for distributable builds.
     target_compile_options(NAMPlayer PRIVATE
         -Wall -Wextra -Wno-unused-parameter
-        $<$<CONFIG:Release>:-O3>
+        $<$<CONFIG:Release>:-O3 -march=native>
         $<$<CONFIG:Debug>:-Og -g>
     )
 endif()

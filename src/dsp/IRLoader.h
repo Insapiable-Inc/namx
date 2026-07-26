@@ -38,8 +38,10 @@ private:
     // Double-buffered kernels: audio thread reads from active, GUI thread writes inactive
     struct Kernel
     {
-        std::vector<float> ir;
-        std::vector<float> buffers[2]; // independent delay line per stereo channel
+        std::vector<float> ir;         // stored REVERSED so the convolution is a forward dot product
+        std::vector<float> buffers[2]; // per-channel delay line, 2*kMaxIRLength: each sample is
+                                       // written twice (writePos and writePos+irLen) so the last
+                                       // irLen samples are always contiguous — no wrap in the loop
         int                writePos[2] = {0, 0};
         int                irLen       = 0;
     };

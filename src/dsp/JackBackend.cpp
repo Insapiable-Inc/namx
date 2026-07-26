@@ -3,6 +3,11 @@
 #include <iostream>
 #include <sstream>
 
+#if defined(__x86_64__) || defined(__i386__)
+#include <pmmintrin.h>
+#include <xmmintrin.h>
+#endif
+
 std::unique_ptr<IAudioBackend> IAudioBackend::create()
 {
     return std::make_unique<JackBackend>();
@@ -177,6 +182,15 @@ int JackBackend::onBufferSize(jack_nframes_t nframes)
 
 int JackBackend::processAudio(jack_nframes_t nframes)
 {
+    // Flush denormals to zero on the audio thread. Reverb/delay feedback tails
+    // and NAM recurrent state decay into the denormal range, where each float
+    // op costs 10-100x and causes periodic CPU spikes. MXCSR is per-thread, so
+    // set it here; the write costs a few dozen cycles per block.
+#if defined(__x86_64__) || defined(__i386__)
+    _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+    _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
+#endif
+
     auto* in   = static_cast<float*>(jack_port_get_buffer(mPortIn,   nframes));
     auto* outL = static_cast<float*>(jack_port_get_buffer(mPortOutL, nframes));
     auto* outR = static_cast<float*>(jack_port_get_buffer(mPortOutR, nframes));

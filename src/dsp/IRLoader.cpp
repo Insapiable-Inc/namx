@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <cstring>
 
+#include <Eigen/Dense>
+
 // AudioDSPTools wav loader
 #include "wav.h"
 
@@ -10,7 +12,7 @@ static void initKernelBuffers(std::vector<float> buffers[2], int writePos[2])
 {
     for (int ch = 0; ch < 2; ++ch)
     {
-        buffers[ch].assign(IRLoader::kMaxIRLength, 0.0f);
+        buffers[ch].assign(2 * IRLoader::kMaxIRLength, 0.0f);
         writePos[ch] = 0;
     }
 }
@@ -49,6 +51,10 @@ bool IRLoader::load(const std::string& path)
         for (float& s : k.ir)
             s /= peak;
 
+    // Store reversed: the delay line is read oldest→newest, so a reversed IR
+    // turns the convolution into a single forward dot product.
+    std::reverse(k.ir.begin(), k.ir.end());
+
     // Reset both per-channel delay lines in the new kernel
     initKernelBuffers(k.buffers, k.writePos);
 
@@ -73,16 +79,17 @@ void IRLoader::unload()
 
 /*static*/ float IRLoader::processChannel(Kernel& k, int ch, float in)
 {
-    k.buffers[ch][k.writePos[ch]] = in;
+    float*    buf = k.buffers[ch].data();
+    const int wp  = k.writePos[ch];
 
-    float out = 0.0f;
-    int   pos = k.writePos[ch];
-    for (int i = 0; i < k.irLen; ++i)
-    {
-        out += k.ir[i] * k.buffers[ch][pos];
-        if (--pos < 0)
-            pos = k.irLen - 1;
-    }
+    buf[wp]           = in;
+    buf[wp + k.irLen] = in; // mirror write keeps the window below contiguous
+
+    // buf[wp+1 .. wp+irLen] is the last irLen samples, oldest→newest;
+    // k.ir is reversed, so this dot product is the convolution sum.
+    Eigen::Map<const Eigen::VectorXf> ir (k.ir.data(),  k.irLen);
+    Eigen::Map<const Eigen::VectorXf> sig(buf + wp + 1, k.irLen);
+    const float out = ir.dot(sig);
 
     if (++k.writePos[ch] >= k.irLen)
         k.writePos[ch] = 0;
