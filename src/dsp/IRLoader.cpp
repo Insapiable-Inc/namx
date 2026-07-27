@@ -1,6 +1,7 @@
 #include "IRLoader.h"
 
 #include <algorithm>
+#include <cmath>
 #include <cstring>
 
 #include <Eigen/Dense>
@@ -43,13 +44,17 @@ bool IRLoader::load(const std::string& path)
     k.ir.assign(rawSamples.begin(), rawSamples.begin() + irLen);
     k.irLen = irLen;
 
-    // Normalize peak to 1.0
-    float peak = 0.0f;
+    // Normalize energy (L2) to 1.0 so the convolution is roughly unity-gain;
+    // peak-sample normalization would leave several dB of broadband boost.
+    float energy = 0.0f;
     for (float s : k.ir)
-        peak = std::max(peak, std::abs(s));
-    if (peak > 1e-6f)
+        energy += s * s;
+    if (energy > 1e-12f)
+    {
+        const float scale = 1.0f / std::sqrt(energy);
         for (float& s : k.ir)
-            s /= peak;
+            s *= scale;
+    }
 
     // Store reversed: the delay line is read oldest→newest, so a reversed IR
     // turns the convolution into a single forward dot product.
