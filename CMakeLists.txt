@@ -124,6 +124,7 @@ endif()
 
 target_compile_definitions(NAMPlayer PRIVATE
     NAM_SAMPLE_FLOAT
+    NAM_ENABLE_A2_FAST
 )
 
 target_link_libraries(NAMPlayer PRIVATE
