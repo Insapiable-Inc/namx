@@ -20,6 +20,7 @@ public:
                         QWidget* parent = nullptr);
 
     double value() const;
+    double defaultValue() const { return mDefault; }
 
     /// When true, the value label shows a rounded integer.
     void setIntegerDisplay(bool on) { mIntDisplay = on; updateLabel(); }

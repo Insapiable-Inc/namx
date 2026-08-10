@@ -2,7 +2,9 @@
 
 #include <QMainWindow>
 #include <QTimer>
+#include <functional>
 #include <memory>
+#include <vector>
 
 #include "AudioEngine.h"
 #include "KnobWidget.h"
@@ -26,72 +28,6 @@ private slots:
     void onUnloadNAM();
     void onLoadIR();
     void onUnloadIR();
-
-    void onInputGainChanged(double dB);
-    void onOutputGainChanged(double dB);
-
-    void onLowChanged(double dB);
-    void onMidChanged(double dB);
-    void onTrebleChanged(double dB);
-
-    void onNAMEnabledToggled(bool en);
-    void onEQEnabledToggled(bool en);
-    void onIREnabledToggled(bool en);
-
-    void onTunerEnabledToggled(bool en);
-    void onTunerMuteToggled(bool en);
-
-    void onGateEnabledToggled(bool en);
-    void onGateThresholdChanged(double v);
-    void onGateAttackChanged(double v);
-    void onGateReleaseChanged(double v);
-
-    void onCompEnabledToggled(bool en);
-    void onCompThresholdChanged(double v);
-    void onCompRatioChanged(double v);
-    void onCompAttackChanged(double v);
-    void onCompReleaseChanged(double v);
-    void onCompMakeupChanged(double v);
-
-    void onDynamicWahEnabledToggled(bool en);
-    void onDynamicWahSensChanged(double v);
-    void onDynamicWahResChanged(double v);
-    void onDynamicWahMixChanged(double v);
-
-    void onFlangerEnabledToggled(bool en);
-    void onFlangerStereoToggled(bool en);
-    void onFlangerRateChanged(double v);
-    void onFlangerDepthChanged(double v);
-    void onFlangerFeedbackChanged(double v);
-    void onFlangerMixChanged(double v);
-
-    void onPhaserEnabledToggled(bool en);
-    void onPhaserStereoToggled(bool en);
-    void onPhaserRateChanged(double v);
-    void onPhaserDepthChanged(double v);
-    void onPhaserFeedbackChanged(double v);
-    void onPhaserMixChanged(double v);
-
-    void onChorusEnabledToggled(bool en);
-    void onChorusRateChanged(double v);
-    void onChorusDepthChanged(double v);
-    void onChorusMixChanged(double v);
-
-    void onTremoloEnabledToggled(bool en);
-    void onTremoloRateChanged(double v);
-    void onTremoloDepthChanged(double v);
-
-    void onDelayEnabledToggled(bool en);
-    void onDelayStereoToggled(bool en);
-    void onDelayTimeChanged(double v);
-    void onDelayFeedbackChanged(double v);
-    void onDelayMixChanged(double v);
-
-    void onReverbEnabledToggled(bool en);
-    void onReverbRoomChanged(double v);
-    void onReverbDampingChanged(double v);
-    void onReverbWidthChanged(double v);
-    void onReverbMixChanged(double v);
 
     void onSavePreset();
     void onLoadPreset();
@@ -117,6 +53,28 @@ private:
                               ToggleSwitch*& toggleOut,
                               const std::initializer_list<KnobWidget*>& knobs,
                               ToggleSwitch** stereoToggleOut = nullptr);
+
+    // --- Parameter registry -------------------------------------------------
+    // One entry per user-facing parameter. Registration (registerParameters)
+    // wires the widget to the engine; the same table then drives preset
+    // save/load, and later session persistence and MIDI mapping — so the
+    // parameter list exists in exactly one place.
+    struct ParamDesc {
+        QString group;                    // JSON object holding the key; empty = top-level
+        QString key;
+        KnobWidget*   knob   = nullptr;   // exactly one of knob/toggle is set
+        ToggleSwitch* toggle = nullptr;
+        double knobDefault   = 0.0;       // applied when the key is absent from a present group
+        bool   toggleDefault = false;
+        bool   inPreset      = true;      // false: wired to the engine but not part of the v1 preset schema
+    };
+    void registerParameters();
+    void knobParam(const QString& group, const QString& key, KnobWidget* knob,
+                   const std::function<void(double)>& apply);
+    void toggleParam(const QString& group, const QString& key, ToggleSwitch* sw,
+                     const std::function<void(bool)>& apply, bool inPreset = true);
+
+    std::vector<ParamDesc> mParams;
 
     std::unique_ptr<AudioEngine> mEngine;
 

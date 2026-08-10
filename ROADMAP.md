@@ -104,25 +104,32 @@ ears/eyes on real hardware before the phase is truly closed:
 - Optional deep check: a ThreadSanitizer build for the BUG-03 startup race
   (`-DCMAKE_CXX_FLAGS=-fsanitize=thread` on a Debug config).
 
-## Phase 2 — Parameter descriptor table (keystone refactor)
+## Phase 2 — Parameter descriptor table (keystone refactor) ✅ (completed 2026-08-10)
 
-The same parameter list is currently hand-maintained in four places: ~50 one-line slot
-forwarders (`gui/src/ui/MainWindow.cpp:889-991`) + their declarations in `MainWindow.h`,
-the knob wiring in `setupUI`, the preset save block, and the preset load block (already
-drifted: `irEnabled` is saved, `namEnabled` isn't).
+The parameter list used to be hand-maintained in four places: ~50 one-line slot
+forwarders + their declarations in `MainWindow.h`, the knob wiring in `setupUI`, the
+preset save block, and the preset load block.
 
-- [ ] **One descriptor table per effect:**
-      `{ jsonKey, widget (KnobWidget*/ToggleSwitch*), applyToEngine }`. The table drives:
-  - [ ] signal wiring via lambda connects → delete all forwarder slots and their
-        header declarations,
-  - [ ] preset save and load as a single loop (drift becomes impossible),
-  - [ ] session persistence (Phase 3, same loop / different target),
-  - [ ] future MIDI mapping (planned feature — a named-parameter registry is the hook
-        a second control source needs).
-- [ ] **Deduplicate the twice-defined `setJackStatus` lambda**
-      (`MainWindow.cpp:724` and `:810`).
-- [ ] **Migrate the 6 hand-rolled effect cards** (Tuner, Amp, EQ, IR, Input, Output) onto
-      `makeEffectColumn` where feasible.
+- [x] **One descriptor table for all parameters.** `MainWindow::registerParameters()`
+      builds `mParams` (`ParamDesc { group, key, knob|toggle, defaults, inPreset }`),
+      one registration line per parameter, grouped per effect. The table drives:
+  - [x] signal wiring via lambda connects at registration — all ~50 forwarder slots
+        and their header declarations deleted (net −300 lines),
+  - [x] preset save and load as a single loop (drift now impossible). JSON schema
+        unchanged: v1 files verified key-for-key against real presets, incl. legacy
+        `chorus1`/`chorus2` groups being ignored exactly as before,
+  - [x] session persistence hook ready (Phase 3 loops over the same table),
+  - [x] future MIDI mapping hook ready (group+key = stable parameter name;
+        `namEnabled` is registered with `inPreset=false` so *every* control is in
+        the registry even though the v1 preset schema omits it).
+- [x] ~~Deduplicate the twice-defined `setJackStatus` lambda.~~ Already landed in
+      Phase 1 as `MainWindow::setAudioStatus`.
+- [x] **Hand-rolled cards migrated where feasible:** EQ, Amp, and IR now use
+      `makeEffectColumn`; Input/Output share a `makeGainCard` lambda. Tuner stays
+      custom (note/cents/bar layout doesn't fit the knob-column shape).
+
+Verified: clean Release build, 5 s offscreen smoke run. Manual check recommended:
+save → twist → load a preset and confirm knobs *and* audio follow.
 
 ## Phase 3 — Persistent state
 
