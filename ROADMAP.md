@@ -189,7 +189,9 @@ out from `chain()`.
       `jackStatusOk/Err` QSS selectors to match.
 - [ ] **Polish:** app icon + `setWindowIcon`; knob tooltips; About dialog showing the
       version (set in `main.cpp` but never displayed); click-free model swap (short
-      crossfade or mute).
+      crossfade or mute); preset menu shortcuts — **Ctrl+S** Save Preset, **Ctrl+O**
+      Load Preset (`QKeySequence` on the existing `Preset` menu actions; requested
+      2026-08-10).
 
 ## Phase 6 — Source tree & code cleanup
 
