@@ -25,6 +25,9 @@ public:
     bool isLoaded() const { return mLoaded.load(std::memory_order_acquire); }
     std::string getFilePath() const { return mFilePath; }
 
+    /// Human-readable reason the last load() returned false (GUI thread only).
+    std::string lastError() const { return mLastError; }
+
     /// Process a stereo block in-place. Uses independent convolution state per channel.
     void processBlockStereo(float* L, float* R, int numFrames);
 
@@ -34,6 +37,7 @@ public:
 private:
     std::atomic<bool> mLoaded{false};
     std::string       mFilePath;
+    std::string       mLastError;
 
     // Double-buffered kernels: audio thread reads from active, GUI thread writes inactive
     struct Kernel

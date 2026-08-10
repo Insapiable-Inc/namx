@@ -4,11 +4,11 @@
 
 void CompressorProcessor::reset()
 {
-    mEnvDB  = -120.0f;
-    mGainDB =    0.0f;
+    mEnvDB[0]  = mEnvDB[1]  = -120.0f;
+    mGainDB[0] = mGainDB[1] =    0.0f;
 }
 
-void CompressorProcessor::processBlockMono(float* buf, int nframes)
+void CompressorProcessor::processChannel(float* buf, int nframes, int ch)
 {
     const float threshold = mThresholdDB.load();
     const float ratio     = mRatio.load();
@@ -18,25 +18,39 @@ void CompressorProcessor::processBlockMono(float* buf, int nframes)
     const float atCoeff  = std::exp(-1.0f / (fs * mAttackMS.load()  * 0.001f));
     const float relCoeff = std::exp(-1.0f / (fs * mReleaseMS.load() * 0.001f));
 
+    float& envDB  = mEnvDB[ch];
+    float& gainDB = mGainDB[ch];
+
     for (int i = 0; i < nframes; ++i)
     {
         float level   = std::abs(buf[i]);
         float levelDB = (level > 1e-9f) ? 20.0f * std::log10(level) : -120.0f;
 
-        if (levelDB > mEnvDB)
-            mEnvDB = atCoeff  * mEnvDB + (1.0f - atCoeff)  * levelDB;
+        if (levelDB > envDB)
+            envDB = atCoeff  * envDB + (1.0f - atCoeff)  * levelDB;
         else
-            mEnvDB = relCoeff * mEnvDB + (1.0f - relCoeff) * levelDB;
+            envDB = relCoeff * envDB + (1.0f - relCoeff) * levelDB;
 
         float targetGR = 0.0f;
-        if (mEnvDB > threshold)
-            targetGR = (threshold - mEnvDB) * (1.0f - 1.0f / ratio);
+        if (envDB > threshold)
+            targetGR = (threshold - envDB) * (1.0f - 1.0f / ratio);
 
-        if (targetGR < mGainDB)
-            mGainDB = atCoeff  * mGainDB + (1.0f - atCoeff)  * targetGR;
+        if (targetGR < gainDB)
+            gainDB = atCoeff  * gainDB + (1.0f - atCoeff)  * targetGR;
         else
-            mGainDB = relCoeff * mGainDB + (1.0f - relCoeff) * targetGR;
+            gainDB = relCoeff * gainDB + (1.0f - relCoeff) * targetGR;
 
-        buf[i] *= std::pow(10.0f, (mGainDB + makeup) / 20.0f);
+        buf[i] *= std::pow(10.0f, (gainDB + makeup) / 20.0f);
     }
+}
+
+void CompressorProcessor::processBlockMono(float* buf, int nframes)
+{
+    processChannel(buf, nframes, 0);
+}
+
+void CompressorProcessor::processBlockDual(float* L, float* R, int nframes)
+{
+    processChannel(L, nframes, 0);
+    processChannel(R, nframes, 1);
 }

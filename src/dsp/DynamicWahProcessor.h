@@ -20,8 +20,11 @@ public:
 protected:
     void onSampleRateChanged(double sr) override;
     void processBlockMono(float* buf, int nframes) override;
+    void processBlockDual(float* L, float* R, int nframes) override;
 
 private:
+    void processChannel(float* buf, int nframes, int ch);
+
     static constexpr float kBaseFreq = 400.0f;
     static constexpr float kPeakFreq = 3000.0f;
 
@@ -29,10 +32,11 @@ private:
     std::atomic<float> mResonance  {60.0f};
     std::atomic<float> mMix        {100.0f};
 
-    float mEnv       {0.0f};
     float mEnvAttack {0.0f};
     float mEnvRelease{0.0f};
 
-    float mSVF_LP{0.0f};
-    float mSVF_BP{0.0f};
+    // Per-channel state: [0] = mono/L, [1] = R (stereo input).
+    float mEnv   [2]{0.0f, 0.0f};
+    float mSVF_LP[2]{0.0f, 0.0f};
+    float mSVF_BP[2]{0.0f, 0.0f};
 };

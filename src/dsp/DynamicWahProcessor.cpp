@@ -13,12 +13,12 @@ void DynamicWahProcessor::onSampleRateChanged(double sr)
 
 void DynamicWahProcessor::reset()
 {
-    mEnv    = 0.0f;
-    mSVF_LP = 0.0f;
-    mSVF_BP = 0.0f;
+    mEnv[0]    = mEnv[1]    = 0.0f;
+    mSVF_LP[0] = mSVF_LP[1] = 0.0f;
+    mSVF_BP[0] = mSVF_BP[1] = 0.0f;
 }
 
-void DynamicWahProcessor::processBlockMono(float* buf, int nframes)
+void DynamicWahProcessor::processChannel(float* buf, int nframes, int ch)
 {
     const float sens  = mSensitivity.load() / 100.0f;
     const float res   = mResonance.load()   / 100.0f;
@@ -26,20 +26,35 @@ void DynamicWahProcessor::processBlockMono(float* buf, int nframes)
     const float q_inv = 1.0f / (0.5f + res * 7.5f);
     const float sr    = static_cast<float>(mSampleRate);
 
+    float& env = mEnv[ch];
+    float& lp  = mSVF_LP[ch];
+    float& bp  = mSVF_BP[ch];
+
     for (int i = 0; i < nframes; ++i)
     {
         const float dry   = buf[i];
         float level = std::abs(dry);
-        float coeff = (level > mEnv) ? mEnvAttack : mEnvRelease;
-        mEnv += (level - mEnv) * (1.0f - coeff);
+        float coeff = (level > env) ? mEnvAttack : mEnvRelease;
+        env += (level - env) * (1.0f - coeff);
 
-        float cutoff = std::max(kBaseFreq, std::min(kBaseFreq + sens * mEnv * (kPeakFreq - kBaseFreq), kPeakFreq));
+        float cutoff = std::max(kBaseFreq, std::min(kBaseFreq + sens * env * (kPeakFreq - kBaseFreq), kPeakFreq));
         float f      = std::min(2.0f * kPi * cutoff / sr, 0.5f);
 
-        float hp = dry - q_inv * mSVF_BP - mSVF_LP;
-        mSVF_BP += f * hp;
-        mSVF_LP += f * mSVF_BP;
+        float hp = dry - q_inv * bp - lp;
+        bp += f * hp;
+        lp += f * bp;
 
-        buf[i] = mSVF_BP * mix + dry * (1.0f - mix);
+        buf[i] = bp * mix + dry * (1.0f - mix);
     }
+}
+
+void DynamicWahProcessor::processBlockMono(float* buf, int nframes)
+{
+    processChannel(buf, nframes, 0);
+}
+
+void DynamicWahProcessor::processBlockDual(float* L, float* R, int nframes)
+{
+    processChannel(L, nframes, 0);
+    processChannel(R, nframes, 1);
 }

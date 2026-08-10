@@ -3,11 +3,11 @@
 
 void NoiseGateProcessor::reset()
 {
-    mEnvelope = 0.0f;
-    mGain     = 0.0f;
+    mEnvelope[0] = mEnvelope[1] = 0.0f;
+    mGain[0]     = mGain[1]     = 0.0f;
 }
 
-void NoiseGateProcessor::processBlockMono(float* buf, int nframes)
+void NoiseGateProcessor::processChannel(float* buf, int nframes, int ch)
 {
     const float threshLin = std::pow(10.0f, mThresholdDB.load() / 20.0f);
     const float fs        = static_cast<float>(mSampleRate);
@@ -17,21 +17,35 @@ void NoiseGateProcessor::processBlockMono(float* buf, int nframes)
     const float atCoeff  = std::exp(-1.0f / (fs * atMS  * 0.001f));
     const float relCoeff = std::exp(-1.0f / (fs * relMS * 0.001f));
 
+    float& env  = mEnvelope[ch];
+    float& gain = mGain[ch];
+
     for (int i = 0; i < nframes; ++i)
     {
         float level = std::abs(buf[i]);
-        if (level > mEnvelope)
-            mEnvelope = atCoeff  * mEnvelope + (1.0f - atCoeff)  * level;
+        if (level > env)
+            env = atCoeff  * env + (1.0f - atCoeff)  * level;
         else
-            mEnvelope = relCoeff * mEnvelope + (1.0f - relCoeff) * level;
+            env = relCoeff * env + (1.0f - relCoeff) * level;
 
-        float target = (mEnvelope >= threshLin) ? 1.0f : 0.0f;
+        float target = (env >= threshLin) ? 1.0f : 0.0f;
 
-        if (target > mGain)
-            mGain = atCoeff  * mGain + (1.0f - atCoeff)  * target;
+        if (target > gain)
+            gain = atCoeff  * gain + (1.0f - atCoeff)  * target;
         else
-            mGain = relCoeff * mGain + (1.0f - relCoeff) * target;
+            gain = relCoeff * gain + (1.0f - relCoeff) * target;
 
-        buf[i] *= mGain;
+        buf[i] *= gain;
     }
+}
+
+void NoiseGateProcessor::processBlockMono(float* buf, int nframes)
+{
+    processChannel(buf, nframes, 0);
+}
+
+void NoiseGateProcessor::processBlockDual(float* L, float* R, int nframes)
+{
+    processChannel(L, nframes, 0);
+    processChannel(R, nframes, 1);
 }

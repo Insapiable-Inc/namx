@@ -1,12 +1,44 @@
 #include "TunerProcessor.h"
 
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 
 TunerProcessor::TunerProcessor()
 {
     mRingBuf.fill(0.f);
     mSnapBuf.fill(0.f);
+    mWorker = std::thread(&TunerProcessor::workerMain, this);
+}
+
+TunerProcessor::~TunerProcessor()
+{
+    {
+        std::lock_guard<std::mutex> lock(mWorkMutex);
+        mStop = true;
+    }
+    mWorkCv.notify_all();
+    if (mWorker.joinable())
+        mWorker.join();
+}
+
+void TunerProcessor::workerMain()
+{
+    std::unique_lock<std::mutex> lk(mWorkMutex);
+    while (!mStop)
+    {
+        mWorkCv.wait_for(lk, std::chrono::milliseconds(100));
+        if (mStop)
+            break;
+        if (!isEnabled())
+        {
+            mLastPitch.store(0.0f);
+            continue;
+        }
+        lk.unlock();
+        mLastPitch.store(detectPitch());
+        lk.lock();
+    }
 }
 
 void TunerProcessor::reset()
@@ -53,7 +85,7 @@ float TunerProcessor::detectPitch()
     if (std::sqrt(rmsSum / kBufSize) < 5e-4)
         return 0.0f;
 
-    const int fs     = static_cast<int>(mSampleRate);
+    const int fs     = static_cast<int>(mFs.load());
     const int minLag = fs / 1400;
     const int maxLag = fs / 50;
     const int N      = kBufSize;
@@ -103,11 +135,11 @@ float TunerProcessor::detectPitch()
         if (std::abs(denom) > 1e-6f)
         {
             float delta = std::max(-1.0f, std::min(1.0f, (y0 - y2) / denom));
-            return static_cast<float>(mSampleRate) / (bestLag + delta);
+            return mFs.load() / (bestLag + delta);
         }
     }
 
-    return static_cast<float>(mSampleRate) / bestLag;
+    return mFs.load() / bestLag;
 }
 
 int TunerProcessor::freqToMidi(float freq)

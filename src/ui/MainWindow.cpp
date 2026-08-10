@@ -172,8 +172,13 @@ void MainWindow::setupUI()
         auto* title = new QLabel("NAM Player");
         title->setObjectName("appTitle");
 
-        mLblJACKStatus = new QLabel("JACK: connecting…");
+        mLblJACKStatus = new QLabel("Audio: connecting…");
         mLblJACKStatus->setObjectName("jackStatusErr");
+
+        mBtnReconnect = new QPushButton("Reconnect");
+        mBtnReconnect->setVisible(false);
+        connect(mBtnReconnect, &QPushButton::clicked,
+                this, &MainWindow::restartAudioWithCurrentDevices);
 
         auto* btnSave = new QPushButton("Save Preset…");
         auto* btnLoad = new QPushButton("Load Preset…");
@@ -182,6 +187,7 @@ void MainWindow::setupUI()
 
         row->addWidget(title);
         row->addWidget(mLblJACKStatus);
+        row->addWidget(mBtnReconnect);
         row->addStretch();
         row->addWidget(btnSave);
         row->addWidget(btnLoad);
@@ -719,15 +725,17 @@ void MainWindow::setupUI()
     rootLayout->addWidget(scroll, 1);
 }
 
+void MainWindow::setAudioStatus(const QString& text, bool ok)
+{
+    mLblJACKStatus->setText(text);
+    mLblJACKStatus->setObjectName(ok ? "jackStatusOk" : "jackStatusErr");
+    mLblJACKStatus->style()->unpolish(mLblJACKStatus);
+    mLblJACKStatus->style()->polish(mLblJACKStatus);
+    mBtnReconnect->setVisible(!ok);
+}
+
 void MainWindow::setupAudio()
 {
-    auto setJackStatus = [this](const QString& text, bool ok) {
-        mLblJACKStatus->setText(text);
-        mLblJACKStatus->setObjectName(ok ? "jackStatusOk" : "jackStatusErr");
-        mLblJACKStatus->style()->unpolish(mLblJACKStatus);
-        mLblJACKStatus->style()->polish(mLblJACKStatus);
-    };
-
     populateDeviceDropdowns();
 
     QSettings s;
@@ -741,11 +749,11 @@ void MainWindow::setupAudio()
         started = mEngine->start("NAMPlayer");
 
     if (started) {
-        setJackStatus(QString::fromStdString(mEngine->backendStatus()), true);
+        setAudioStatus(QString::fromStdString(mEngine->backendStatus()), true);
         if (mEngine->supportsPortRouting())
             restoreConnections();
     } else {
-        setJackStatus("Audio backend  \xe2\x97\x8f  not connected", false);
+        setAudioStatus("Audio backend  \xe2\x97\x8f  not connected", false);
     }
 }
 
@@ -807,24 +815,17 @@ void MainWindow::onOutputDeviceChanged(int)
 
 void MainWindow::restartAudioWithCurrentDevices()
 {
-    auto setJackStatus = [this](const QString& text, bool ok) {
-        mLblJACKStatus->setText(text);
-        mLblJACKStatus->setObjectName(ok ? "jackStatusOk" : "jackStatusErr");
-        mLblJACKStatus->style()->unpolish(mLblJACKStatus);
-        mLblJACKStatus->style()->polish(mLblJACKStatus);
-    };
-
-    setJackStatus("Audio backend  \xe2\x97\x8f  switching devices…", false);
+    setAudioStatus("Audio backend  \xe2\x97\x8f  switching devices…", false);
 
     const QString inId  = mCbxInputDevice->currentData().toString();
     const QString outId = mCbxOutputDevice->currentData().toString();
 
     if (mEngine->startWithDevices(inId.toStdString(), outId.toStdString())) {
-        setJackStatus(QString::fromStdString(mEngine->backendStatus()), true);
+        setAudioStatus(QString::fromStdString(mEngine->backendStatus()), true);
         if (mEngine->supportsPortRouting())
             restoreConnections();
     } else {
-        setJackStatus("Audio backend  \xe2\x97\x8f  not connected", false);
+        setAudioStatus("Audio backend  \xe2\x97\x8f  not connected", false);
     }
 }
 
@@ -866,7 +867,9 @@ void MainWindow::onLoadIR()
     if (path.isEmpty()) return;
     if (!mEngine->loadIR(path.toStdString()))
     {
-        QMessageBox::critical(this, "Error", "Failed to load IR:\n" + path);
+        QMessageBox::critical(this, "Error",
+                              "Failed to load IR:\n" + path + "\n\n"
+                              + QString::fromStdString(mEngine->irLoadError()));
         return;
     }
     s.setValue("files/lastIR", path);
@@ -1001,23 +1004,18 @@ void MainWindow::updateMeters()
         float dB = 20.0f * std::log10(peak);
         return std::max(0, std::min(100, static_cast<int>((dB + 60.0f) / 60.0f * 100.0f)));
     };
-    mMeterIn ->setValue(toMeter(mEngine->inputPeak()));
-    mMeterOut->setValue(toMeter(mEngine->outputPeak()));
+    mMeterIn ->setValue(toMeter(mEngine->takeInputPeak()));
+    mMeterOut->setValue(toMeter(mEngine->takeOutputPeak()));
 
     if (!mEngine->isRunning() && mLblJACKStatus->objectName() == "jackStatusOk")
-    {
-        mLblJACKStatus->setText("Audio backend  ●  disconnected");
-        mLblJACKStatus->setObjectName("jackStatusErr");
-        mLblJACKStatus->style()->unpolish(mLblJACKStatus);
-        mLblJACKStatus->style()->polish(mLblJACKStatus);
-    }
+        setAudioStatus("Audio backend  ●  disconnected", false);
 }
 
 void MainWindow::updateTuner()
 {
     if (!mEngine->tuner().isEnabled()) return;
 
-    float freq = mEngine->tuner().detectPitch();
+    float freq = mEngine->tuner().lastPitch();
     if (freq <= 0.0f)
     {
         mLblNote ->setText("--");

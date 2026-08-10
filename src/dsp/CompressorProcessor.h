@@ -24,14 +24,18 @@ public:
 protected:
     void onSampleRateChanged(double /*sr*/) override { reset(); }
     void processBlockMono(float* buf, int nframes) override;
+    void processBlockDual(float* L, float* R, int nframes) override;
 
 private:
+    void processChannel(float* buf, int nframes, int ch);
+
     std::atomic<float> mThresholdDB{-20.0f};
     std::atomic<float> mRatio       { 4.0f};
     std::atomic<float> mAttackMS    {10.0f};
     std::atomic<float> mReleaseMS   {100.0f};
     std::atomic<float> mMakeupDB    { 0.0f};
 
-    float mEnvDB{-120.0f};
-    float mGainDB{0.0f};
+    // Per-channel state: [0] = mono/L, [1] = R (stereo input).
+    float mEnvDB[2]{-120.0f, -120.0f};
+    float mGainDB[2]{0.0f, 0.0f};
 };

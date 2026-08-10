@@ -15,6 +15,7 @@ public:
     void unload()                      { mLoader.unload(); }
     bool isLoaded() const              { return mLoader.isLoaded(); }
     std::string filePath() const       { return mLoader.getFilePath(); }
+    std::string lastError() const      { return mLoader.lastError(); }
 
     void reset() override { mLoader.reset(); }
 

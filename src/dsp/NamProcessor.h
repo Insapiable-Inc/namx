@@ -23,9 +23,10 @@ public:
     bool        isModelLoaded() const { return mModelLoaded.load(); }
     std::string modelPath()     const { return mModelPath; }
 
-    /// Must be called after JACK reports its buffer size so Reset() gets the right value.
+    /// Must be called whenever the backend reports a (new) buffer size, before
+    /// the next process callback. Re-Reset()s loaded models if the size grew.
     void prepareBuffer(int maxBuf);
-    int  maxBuf() const { return mMaxBuf; }
+    int  maxBuf() const { return mMaxBuf.load(); }
 
     void reset() override {}
 
@@ -49,7 +50,8 @@ private:
     std::mutex                mModelMutex;
     std::atomic<bool>         mModelLoaded{false};
     std::string               mModelPath;
-    int                       mMaxBuf{0};
+    std::atomic<int>          mMaxBuf{0};
+    int                       mModelResetBuf{0}; // maxBuf the live models were Reset() with (guarded by mModelMutex)
     std::vector<float>        mScratchL, mScratchR;
 
     nam::DSP* activeModelL() const

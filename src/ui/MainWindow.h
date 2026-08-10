@@ -107,6 +107,7 @@ private slots:
 private:
     void setupUI();
     void setupAudio();
+    void setAudioStatus(const QString& text, bool ok);
     void restoreLastFiles();
     void restoreConnections();
     void saveConnections();
@@ -126,6 +127,7 @@ private:
     QLabel*      mLblNAMStatus  = nullptr;
     QLabel*      mLblIRStatus   = nullptr;
     QLabel*      mLblJACKStatus = nullptr;
+    QPushButton* mBtnReconnect  = nullptr;
 
     QComboBox* mCbxInputDevice  = nullptr;
     QComboBox* mCbxOutputDevice = nullptr;

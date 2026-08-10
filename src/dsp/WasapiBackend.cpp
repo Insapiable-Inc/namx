@@ -16,6 +16,8 @@
 #include <ks.h>
 #include <ksmedia.h>  // KSDATAFORMAT_SUBTYPE_IEEE_FLOAT
 
+#include <immintrin.h>  // _MM_SET_FLUSH_ZERO_MODE / _MM_SET_DENORMALS_ZERO_MODE
+
 #pragma comment(lib, "ole32.lib")
 #pragma comment(lib, "mmdevapi.lib")
 #pragma comment(lib, "avrt.lib")
@@ -472,6 +474,15 @@ void WasapiBackend::audioThreadMain()
     DWORD taskIndex = 0;
     HANDLE avrtHandle = AvSetMmThreadCharacteristicsW(L"Pro Audio", &taskIndex);
 
+    // Flush denormals to zero on this thread. Reverb/delay feedback tails and
+    // NAM recurrent state decay into the denormal range, where each float op
+    // costs 10-100x and causes periodic CPU spikes. MXCSR is per-thread and
+    // this thread is ours alone, so once at startup suffices.
+#if defined(_M_X64) || defined(_M_IX86) || defined(__x86_64__) || defined(__i386__)
+    _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+    _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
+#endif
+
     // Scratch buffers — reused across cycles, sized to whatever the device gave us.
     std::vector<float> monoIn(mBufferSize, 0.0f);
     std::vector<float> outL  (mBufferSize, 0.0f);
@@ -496,6 +507,11 @@ void WasapiBackend::audioThreadMain()
                 break;
 
             if (frames > monoIn.size()) {
+                // Rare mid-stream growth (device period change). This runs on
+                // the audio thread itself, sequentially before onAudio — so
+                // there is no concurrent process callback, but the resize and
+                // model re-Reset it triggers are not RT-safe: one audible
+                // glitch beats a buffer overrun.
                 monoIn.assign(frames, 0.0f);
                 outL  .assign(frames, 0.0f);
                 outR  .assign(frames, 0.0f);

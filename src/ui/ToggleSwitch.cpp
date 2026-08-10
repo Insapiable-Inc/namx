@@ -81,12 +81,9 @@ void ToggleSwitch::paintEvent(QPaintEvent*)
 
 void ToggleSwitch::mouseReleaseEvent(QMouseEvent* e)
 {
+    // click() toggles a checkable button and emits toggled/clicked exactly once.
     if (e->button() == Qt::LeftButton && rect().contains(e->pos()))
-    {
-        setChecked(!isChecked());
-        emit toggled(isChecked());
-        emit clicked(isChecked());
-    }
+        click();
     e->accept();
 }
 

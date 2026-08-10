@@ -26,15 +26,27 @@ IRLoader::IRLoader()
 
 bool IRLoader::load(const std::string& path)
 {
+    // Double-buffer constraint: the audio thread binds the active kernel at
+    // block start, so at most one load may land per audio block. WAV I/O is
+    // orders of magnitude slower than a block, so the UI cannot violate this.
     std::vector<float> rawSamples;
     double sampleRate = 0.0;
 
     auto result = dsp::wav::Load(path.c_str(), rawSamples, sampleRate);
     if (result != dsp::wav::LoadReturnCode::SUCCESS)
+    {
+        mLastError = dsp::wav::GetMsgForLoadReturnCode(result);
+        if (result == dsp::wav::LoadReturnCode::ERROR_NOT_MONO)
+            mLastError += " Stereo IRs are not supported — convert the file to mono.";
         return false;
+    }
 
     if (rawSamples.empty())
+    {
+        mLastError = "IR file contains no samples.";
         return false;
+    }
+    mLastError.clear();
 
     // Limit to kMaxIRLength samples
     const int irLen = static_cast<int>(std::min<size_t>(rawSamples.size(), kMaxIRLength));

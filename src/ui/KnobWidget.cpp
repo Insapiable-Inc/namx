@@ -223,12 +223,14 @@ void KnobWidget::setValue(double v)
     mDial->setValue(valueToDial(v));
     mDial->blockSignals(blocked);
     updateLabel();
+    // Programmatic writes must reach the engine too; the dial's own signal is
+    // blocked above, so emit the (dial-quantized) value ourselves.
+    emit valueChanged(value());
 }
 
 void KnobWidget::resetToDefault()
 {
     setValue(mDefault);
-    emit valueChanged(mDefault);
 }
 
 void KnobWidget::onDialChanged(int dialVal)

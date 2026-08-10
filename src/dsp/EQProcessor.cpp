@@ -11,6 +11,9 @@ EQProcessor::EQProcessor()
 
 void EQProcessor::onSampleRateChanged(double /*sr*/)
 {
+    // Same lock discipline as the set*Gain setters: the audio thread try_locks
+    // this mutex, so coefficient/state rewrites must never happen bare.
+    std::lock_guard<std::mutex> lock(mMutex);
     rebuildFilters();
     reset();
 }

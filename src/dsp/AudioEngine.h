@@ -60,6 +60,7 @@ public:
     void        unloadIR()                      { mIR.unload(); }
     bool        isIRLoaded()    const           { return mIR.isLoaded(); }
     std::string irPath()        const           { return mIR.filePath(); }
+    std::string irLoadError()   const           { return mIR.lastError(); }
 
     // ---- Gain ----
     void  setInputGain(float dB)  { mInputGainDB.store(dB);  }
@@ -91,8 +92,10 @@ public:
     void            applyConnections(const PortConnections& c) { if (mBackend) mBackend->applyConnections(c); }
 
     // ---- VU meters ----
-    float inputPeak()  const { return mInputPeak.load();  }
-    float outputPeak() const { return mOutputPeak.load(); }
+    // The audio thread accumulates the peak (max) until the GUI takes it;
+    // take-and-reset so no transient between polls is ever missed.
+    float takeInputPeak()  { return mInputPeak.exchange(0.0f);  }
+    float takeOutputPeak() { return mOutputPeak.exchange(0.0f); }
 
     // ---- IAudioBackend::Callback ----
     void onAudio(const float* in, float* outL, float* outR, int nframes) override;
@@ -132,6 +135,9 @@ private:
     std::vector<float> mWorkBufL;
     std::vector<float> mWorkBufR;
 
-    static constexpr float kSmoothCoeff = 0.999f;
+    // Set from onBufferSizeChanged (never concurrent with the audio thread).
+    double mChainSampleRate{0.0};
+    float  mSmoothCoeff{0.999f}; // recomputed per sample rate for a ~20 ms time constant
+
     static inline float dbToLinear(float dB) { return std::pow(10.0f, dB / 20.0f); }
 };
