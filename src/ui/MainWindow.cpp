@@ -789,15 +789,14 @@ void MainWindow::knobParam(const QString& group, const QString& key,
                            KnobWidget* knob, const std::function<void(double)>& apply)
 {
     connect(knob, &KnobWidget::valueChanged, this, apply);
-    mParams.push_back({group, key, knob, nullptr, knob->defaultValue(), false, true});
+    mParams.push_back({group, key, knob, nullptr, knob->defaultValue(), false});
 }
 
 void MainWindow::toggleParam(const QString& group, const QString& key,
-                             ToggleSwitch* sw, const std::function<void(bool)>& apply,
-                             bool inPreset)
+                             ToggleSwitch* sw, const std::function<void(bool)>& apply)
 {
     connect(sw, &ToggleSwitch::toggled, this, apply);
-    mParams.push_back({group, key, nullptr, sw, 0.0, sw->isChecked(), inPreset});
+    mParams.push_back({group, key, nullptr, sw, 0.0, sw->isChecked()});
 }
 
 // Every user-facing parameter, registered exactly once. Runs after setupUI so
@@ -845,9 +844,7 @@ void MainWindow::registerParameters()
     knobParam("phaser", "feedback",  mKnobPhFeedback, [e](double v) { e->phaser().setFeedback(static_cast<float>(v)); });
     knobParam("phaser", "mix",       mKnobPhMix,      [e](double v) { e->phaser().setMix     (static_cast<float>(v)); });
 
-    // NAM enable is wired here but kept out of presets: the v1 schema never
-    // saved it. Preset schema v2 (ROADMAP Phase 3) adds it as "namEnabled".
-    toggleParam("", "namEnabled", mSwNAMEnable, [e](bool b) { e->nam().setEnabled(b); }, /*inPreset=*/false);
+    toggleParam("", "namEnabled", mSwNAMEnable, [e](bool b) { e->nam().setEnabled(b); });
 
     toggleParam("eq", "enabled", mSwEQEnable, [e](bool b)   { e->eq().setEnabled(b); });
     knobParam("eq", "low",       mKnobLow,    [e](double v) { e->eq().setLowGain   (v); });
@@ -1014,9 +1011,11 @@ void MainWindow::onSavePreset()
     // Widget values mirror the engine (every change flows through the
     // registry connections), so the widgets are the single source here.
     QJsonObject obj;
+    obj["version"] = 2;
+    obj["namPath"] = QString::fromStdString(mEngine->modelPath());
+    obj["irPath"]  = QString::fromStdString(mEngine->irPath());
     for (const auto& p : mParams)
     {
-        if (!p.inPreset) continue;
         const QJsonValue v = p.knob ? QJsonValue(p.knob->value())
                                     : QJsonValue(p.toggle->isChecked());
         if (p.group.isEmpty()) {
@@ -1068,7 +1067,6 @@ void MainWindow::onLoadPreset()
     // root — missing keys fall back to the registered defaults.
     for (const auto& p : mParams)
     {
-        if (!p.inPreset) continue;
         QJsonObject src = obj;
         if (!p.group.isEmpty())
         {
@@ -1082,4 +1080,34 @@ void MainWindow::onLoadPreset()
             p.toggle->setChecked(src.contains(p.key) ? src[p.key].toBool(p.toggleDefault)
                                                      : p.toggleDefault);
     }
+
+    // v2 presets embed the model/IR paths. Only a non-empty path acts — a
+    // preset saved without a model must not unload the current one — and when
+    // the referenced file is missing or fails to load, the current one stays.
+    QStringList failed;
+    const QString namPath = obj["namPath"].toString();
+    if (!namPath.isEmpty())
+    {
+        if (QFile::exists(namPath) && mEngine->loadModel(namPath.toStdString())) {
+            settings.setValue("files/lastNAM", namPath);
+            mBtnUnloadNAM->setEnabled(true);
+        } else {
+            failed << namPath;
+        }
+    }
+    const QString irPath = obj["irPath"].toString();
+    if (!irPath.isEmpty())
+    {
+        if (QFile::exists(irPath) && mEngine->loadIR(irPath.toStdString())) {
+            settings.setValue("files/lastIR", irPath);
+            mBtnUnloadIR->setEnabled(true);
+        } else {
+            failed << irPath;
+        }
+    }
+    updateStatusLabels();
+    if (!failed.isEmpty())
+        QMessageBox::warning(this, "Preset",
+                             "The preset references files that could not be loaded "
+                             "(the current model/IR was kept):\n" + failed.join('\n'));
 }

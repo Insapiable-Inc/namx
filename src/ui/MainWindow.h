@@ -66,13 +66,12 @@ private:
         ToggleSwitch* toggle = nullptr;
         double knobDefault   = 0.0;       // applied when the key is absent from a present group
         bool   toggleDefault = false;
-        bool   inPreset      = true;      // false: wired to the engine but not part of the v1 preset schema
     };
     void registerParameters();
     void knobParam(const QString& group, const QString& key, KnobWidget* knob,
                    const std::function<void(double)>& apply);
     void toggleParam(const QString& group, const QString& key, ToggleSwitch* sw,
-                     const std::function<void(bool)>& apply, bool inPreset = true);
+                     const std::function<void(bool)>& apply);
 
     std::vector<ParamDesc> mParams;
 

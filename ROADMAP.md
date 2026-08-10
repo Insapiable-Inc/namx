@@ -119,9 +119,9 @@ preset save block, and the preset load block.
         unchanged: v1 files verified key-for-key against real presets, incl. legacy
         `chorus1`/`chorus2` groups being ignored exactly as before,
   - [x] session persistence hook ready (Phase 3 loops over the same table),
-  - [x] future MIDI mapping hook ready (group+key = stable parameter name;
-        `namEnabled` is registered with `inPreset=false` so *every* control is in
-        the registry even though the v1 preset schema omits it).
+  - [x] future MIDI mapping hook ready (group+key = stable parameter name; every
+        control is in the registry — `namEnabled` sat behind an `inPreset=false`
+        flag until preset schema v2 started saving it and the flag was removed).
 - [x] ~~Deduplicate the twice-defined `setJackStatus` lambda.~~ Already landed in
       Phase 1 as `MainWindow::setAudioStatus`.
 - [x] **Hand-rolled cards migrated where feasible:** EQ, Amp, and IR now use
@@ -140,12 +140,15 @@ Everything restores on relaunch exactly as you left it. Nearly free once Phase 2
   - [ ] model path and IR path (already at QSettings `files/lastNAM`/`lastIR` — keep),
   - [ ] window geometry (`saveGeometry`/`restoreGeometry` — currently absent),
   - [ ] device & port-connection keys (already working — keep).
-- [ ] **Preset schema v2:**
-  - [ ] add a `version` field; v1 files still load,
-  - [ ] fix the asymmetry: save `namEnabled` alongside `irEnabled`,
+- [ ] **Preset schema v2** (started 2026-08-10):
+  - [x] add a `version` field (presets now write `version: 2`); v1 files still load,
+  - [x] fix the asymmetry: `namEnabled` saved alongside `irEnabled`,
   - [ ] add `effectOrder` (list of stable effect IDs; unknown/missing IDs fall back to
-        default position),
-  - [ ] optional embedded model/IR paths behind an "include file references" checkbox.
+        default position) — needs the Phase 4 effect IDs; the schema is versioned, so
+        it lands with Phase 4,
+  - [x] embedded model/IR paths. **Decision (2026-08-10): always embed, no
+        checkbox.** Load applies a non-empty path if the file exists and loads,
+        otherwise warns and keeps the current model/IR; an empty path never unloads.
 - [ ] **First-run auto-connect:** when `connections/saved` is absent, wire
       `system:capture_1 → input` and `output_{L,R} → system:playback_{1,2}`. A new user
       should hear sound without opening qpwgraph.

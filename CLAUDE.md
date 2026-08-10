@@ -130,13 +130,12 @@ parameter**: one `knobParam`/`toggleParam` line per control builds `mParams`
 engine via a lambda connect. Preset save/load are single loops over this table; Phase 3
 session persistence and future MIDI mapping consume it too. **When adding an effect
 parameter, register it here — never add hand-written connects, slots, or preset keys.**
-`group`+`key` mirror the preset JSON schema (empty group = top-level key); `inPreset=false`
-wires a control without saving it (currently only `namEnabled`, until schema v2).
+`group`+`key` mirror the preset JSON schema (empty group = top-level key).
 
 ### Persistence
 
 - **QSettings** (org `pichulero.cl`, app name set in `main.cpp` — drives the config path): last model/IR/preset paths, audio device IDs, JACK port connections.
-- **Presets** are `.nampreset` JSON files via `QJsonDocument`: knob values + enable flags only (no model/IR paths — schema v2 planned in ROADMAP Phase 3). Loading applies values through the widgets, so the UI and engine can't drift.
+- **Presets** are `.nampreset` JSON files via `QJsonDocument`, schema v2: all registry parameters plus `version`, `namEnabled`, and embedded `namPath`/`irPath` (applied on load when the file exists; otherwise a warning, current model/IR kept). v1 files (no `version`) still load. Loading applies values through the widgets, so the UI and engine can't drift.
 
 ## NAM core library
 
