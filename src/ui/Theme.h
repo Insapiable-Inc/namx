@@ -10,17 +10,18 @@ class QWidget;
 /// (or in the stylesheet in Theme.cpp); widgets never hardcode hex values.
 ///
 /// Each effect card is tagged with its effect ID (same IDs as
-/// AudioEngine::mEffectTable, plus "neutral" for non-effect cards). The accent
-/// drives the card's top-edge stripe (raw), its title color, and
-/// QPalette::Highlight for descendant knobs/switches — the latter two through
-/// readableAccent(), which lightens dark accents so they stay visible on the
-/// dark background.
+/// AudioEngine::mEffectTable, plus "neutral" for non-effect cards). The
+/// accent is rendered VERBATIM — stripe, title, knob ring/tick/value label,
+/// toggle "on" state all use the exact palette hex; contrast is managed by
+/// choosing the palette values, not by code. tagCard pushes the accent to
+/// the card's knobs/toggles explicitly because the app stylesheet disables
+/// parent→child palette propagation.
 namespace Theme {
 
 /// Accent for an effect ID ("gate", "nam", … or "neutral").
 QColor accent(const QString& fxId);
-/// Accent clamped to stay readable on the dark background (titles, knob arcs).
-QColor readableAccent(QColor c);
+/// Default accent before a card is tagged (also the VU-meter green).
+QColor genericAccent();
 
 // Neutral chrome tones for custom-painted widgets (knobs, switches).
 QColor track();        // recessed track / switch off state

@@ -1,4 +1,6 @@
 #include "Theme.h"
+#include "KnobWidget.h"
+#include "ToggleSwitch.h"
 
 #include <QApplication>
 #include <QPalette>
@@ -39,14 +41,7 @@ QColor accent(const QString& fxId)
     return QColor("#7d8590");
 }
 
-QColor readableAccent(QColor c)
-{
-    // Dark accents (reverb, compressor…) vanish as text or knob arcs on the
-    // dark card background — lift them while keeping hue and saturation.
-    if (c.lightness() < 120)
-        c.setHsl(c.hslHue(), c.hslSaturation(), 160);
-    return c;
-}
+QColor genericAccent() { return QColor("#5cc8a8"); }
 
 // Neutral chrome tones (keep in sync with the stylesheet below).
 QColor track()       { return QColor("#2a2f38"); }
@@ -64,9 +59,14 @@ void tagCard(QWidget* card, const QString& fxId)
     if (!card) return;
     card->setProperty("fx", fxId);
 
-    QPalette pal = card->palette();
-    pal.setColor(QPalette::Highlight, readableAccent(accent(fxId)));
-    card->setPalette(pal);
+    // The app stylesheet disables parent→child palette propagation, so the
+    // accents are pushed to the interactive descendants explicitly. Call
+    // tagCard AFTER the card's knobs/toggles have been created.
+    const QColor a = accent(fxId);
+    for (auto* k : card->findChildren<KnobWidget*>())
+        k->setAccent(a);
+    for (auto* t : card->findChildren<ToggleSwitch*>())
+        t->setAccent(a);
 
     if (card->style()) {
         card->style()->unpolish(card);
@@ -386,17 +386,14 @@ void apply(QApplication& app)
 
     app.setPalette(p);
 
-    // Per-effect accent rules: raw accent for the top stripe, readable
-    // (lightness-clamped) accent for the title text.
+    // Per-effect accent rules — the palette hex verbatim for stripe and title.
     QString qss = QString::fromUtf8(kStyleSheet);
     for (const auto& fc : kFxColors)
     {
-        const QColor a(fc.accent);
-        const QColor t = readableAccent(a);
         qss += QString::fromUtf8(
                    "QGroupBox[fx=\"%1\"] { border-top: 3px solid %2; }\n"
-                   "QGroupBox[fx=\"%1\"]::title { color: %3; }\n")
-                   .arg(QLatin1String(fc.id), a.name(), t.name());
+                   "QGroupBox[fx=\"%1\"]::title { color: %2; }\n")
+                   .arg(QLatin1String(fc.id), QLatin1String(fc.accent));
     }
     app.setStyleSheet(qss);
 }

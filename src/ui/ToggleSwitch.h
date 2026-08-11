@@ -1,15 +1,20 @@
 #pragma once
 
 #include <QAbstractButton>
+#include <QColor>
 
 /// iOS-style toggle switch.
 /// Drop-in replacement for QCheckBox: same isChecked(), setChecked(), toggled() API.
-/// Uses QPalette::Highlight for the "on" track color.
+/// The "on" track color is set explicitly via setAccent (Theme::tagCard) —
+/// the app stylesheet disables palette propagation, so QPalette::Highlight
+/// can't carry it.
 class ToggleSwitch : public QAbstractButton
 {
     Q_OBJECT
 public:
     explicit ToggleSwitch(QWidget* parent = nullptr);
+
+    void setAccent(const QColor& c);
 
     QSize sizeHint()        const override { return {42, 22}; }
     QSize minimumSizeHint() const override { return {42, 22}; }
@@ -21,5 +26,6 @@ protected:
     void leaveEvent(QEvent*) override;
 
 private:
-    bool mHovered{false};
+    QColor mAccent;
+    bool   mHovered{false};
 };

@@ -31,6 +31,12 @@ public:
         setWrapping(false);
     }
 
+    void setAccent(const QColor& accent)
+    {
+        mAccent = accent;
+        update();
+    }
+
 protected:
     void mousePressEvent(QMouseEvent* e) override
     {
@@ -91,7 +97,7 @@ protected:
         p.drawArc(arcRect, startAngle, sweepTotal);
 
         // Value arc.
-        const QColor accent = palette().color(QPalette::Highlight);
+        const QColor accent = mAccent;
         const double range = std::max(1, maximum() - minimum());
         const double t = (value() - minimum()) / range;
         QPen valuePen(accent, arcWidth);
@@ -99,9 +105,8 @@ protected:
         p.setPen(valuePen);
         p.drawArc(arcRect, startAngle, static_cast<int>(sweepTotal * t));
 
-        // Knob body — flat-ish disc with a subtle top→bottom gradient.
-        // Deliberately understated: no fake light source, no inset rim, just a
-        // hint of vertical shading so the disc reads as 3D without going skeuomorphic.
+        // Knob body — neutral flat-ish disc with a subtle top→bottom gradient.
+        // The effect accent lives only on the outer value ring and the tick.
         const qreal bodyInset = arcInset + 6.0;
         const QRectF bodyRect(c.x() - side / 2.0 + bodyInset,
                               c.y() - side / 2.0 + bodyInset,
@@ -123,7 +128,7 @@ protected:
         // Arc from 30° to 150° (top half).
         p.drawArc(crownRect, 30 * 16, 120 * 16);
 
-        // Indicator line — full accent, slightly thicker, no lighter shift.
+        // Indicator tick — the effect accent, matching the value ring.
         const double angleDeg = 225.0 - 270.0 * t;  // 7 o'clock to 5 o'clock CW
         const double angleRad = qDegreesToRadians(angleDeg);
         const double r1 = bodyRect.width() / 2.0 - 2.5;
@@ -132,13 +137,14 @@ protected:
                          bodyRect.center().y() - r1 * std::sin(angleRad));
         const QPointF p2(bodyRect.center().x() + r2 * std::cos(angleRad),
                          bodyRect.center().y() - r2 * std::sin(angleRad));
-        QPen indicatorPen(accent, 2.6);
+        QPen indicatorPen(mAccent, 2.6);
         indicatorPen.setCapStyle(Qt::RoundCap);
         p.setPen(indicatorPen);
         p.drawLine(p1, p2);
     }
 
 private:
+    QColor mAccent{Theme::genericAccent()};
     int mDragStartY{0};
     int mDragStartVal{0};
 };
@@ -193,6 +199,13 @@ KnobWidget::KnobWidget(const QString& label, double minVal, double maxVal,
     updateLabel();
     mDial->installEventFilter(this);
     connect(mDial, &QDial::valueChanged, this, &KnobWidget::onDialChanged);
+}
+
+void KnobWidget::setAccent(const QColor& accent)
+{
+    mAccent = accent;
+    mDial->setAccent(accent);
+    updateLabel();
 }
 
 void KnobWidget::paintEvent(QPaintEvent*)
@@ -251,9 +264,8 @@ void KnobWidget::updateLabel()
     if (!mUnit.isEmpty())
         txt += " " + mUnit;
 
-    // Use theme highlight color for the value text via palette (Breeze-compatible)
     QPalette p = mLabelValue->palette();
-    p.setColor(QPalette::WindowText, palette().color(QPalette::Highlight));
+    p.setColor(QPalette::WindowText, mAccent);
     mLabelValue->setPalette(p);
     mLabelValue->setText(txt);
 }

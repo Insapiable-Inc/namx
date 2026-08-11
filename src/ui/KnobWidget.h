@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QColor>
 #include <QWidget>
 #include <QString>
 
@@ -21,6 +22,12 @@ public:
 
     double value() const;
     double defaultValue() const { return mDefault; }
+
+    /// Explicit accent color for the value arc, indicator tick, and value
+    /// label (the knob body stays neutral). Pushed by Theme::tagCard — the
+    /// app stylesheet disables parent→child palette propagation, so palette
+    /// Highlight can NOT be used for this.
+    void setAccent(const QColor& accent);
 
     /// When true, the value label shows a rounded integer.
     void setIntegerDisplay(bool on) { mIntDisplay = on; updateLabel(); }
@@ -50,6 +57,7 @@ protected:
 private:
     VerticalDial* mDial;
     QLabel*       mLabelValue;
+    QColor mAccent;
     double mMin, mMax, mDefault;
     QString mUnit;
     bool    mIntDisplay{false};

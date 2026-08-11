@@ -360,7 +360,6 @@ void MainWindow::setupUI()
         auto* col = new QGroupBox("≡  Tuner");
         col->setAlignment(Qt::AlignHCenter);
         col->setMinimumWidth(110);
-        Theme::tagCard(col, "tuner");
         auto* lay = new QVBoxLayout(col);
         lay->setContentsMargins(4, 6, 4, 4);
         lay->setSpacing(3);
@@ -406,6 +405,7 @@ void MainWindow::setupUI()
         lay->addWidget(muteLabel);
         lay->addStretch();
 
+        Theme::tagCard(col, "tuner"); // after children — pushes accents to them
         mFxCols[&mEngine->tuner()] = col;
     }
 
@@ -608,7 +608,6 @@ void MainWindow::setupUI()
         auto* col = new QGroupBox(title);
         col->setAlignment(Qt::AlignHCenter);
         col->setMinimumWidth(110);
-        Theme::tagCard(col, "neutral");
         auto* lay = new QVBoxLayout(col);
         lay->setContentsMargins(4, 6, 4, 4);
         knob = new KnobWidget("Gain", kGainMin, kGainMax, kGainDefault, "dB");
@@ -617,6 +616,7 @@ void MainWindow::setupUI()
         lay->addWidget(knob);
         lay->addWidget(meter, 0, Qt::AlignHCenter);
         lay->addStretch();
+        Theme::tagCard(col, "neutral"); // after children — pushes accents to them
         return col;
     };
 

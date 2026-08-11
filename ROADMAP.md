@@ -214,9 +214,15 @@ Requires BUG-06 fixed (Phase 1).
       Dark-only for v1.
 - [x] **Per-effect accent colors** (requested 2026-08-10). `Theme::Category` replaced
       by per-effect accents (`Theme::tagCard(card, fxId)`, QSS rules generated from
-      one table). Raw accent paints the top stripe; `readableAccent()` (HSL
-      lightness clamp) colors the title and `QPalette::Highlight` so the dark
-      accents stay visible:
+      one table). **Decision (2026-08-10): palette hex is rendered verbatim** —
+      stripe, title, knob value-ring/tick/value-label, toggle "on" state — with no
+      lightness clamping; the user tunes the palette values themselves (revised
+      values pending for the near-white tuner/eq/delay). Knob *bodies* stay neutral
+      (colored-body variant tried and rejected). Bugfix found on the way: the app
+      stylesheet disables parent→child palette propagation, so accents were never
+      reaching the dials via `QPalette::Highlight` (knobs were always default green)
+      — `tagCard` now pushes accents explicitly via `setAccent` on each
+      knob/toggle, and must run **after** the card's children exist:
       | effect | color | | effect | color |
       |---|---|---|---|---|
       | tuner | `#f0e9d7` | | amp (NAM) | `#e4b954` |
@@ -243,8 +249,9 @@ Requires BUG-06 fixed (Phase 1).
 ### Phase 5 — manual verification pending
 
 - [ ] Resize the window down to 1280×720: everything stays usable, the strip scrolls.
-- [ ] New accent colors: stripes match the chosen palette; compressor/reverb titles
-      and knob accents are readable (lightness-clamped variants).
+- [ ] New accent colors: stripes, titles, knob rings/ticks, and toggle "on" states
+      all show the palette hex verbatim (revised palette values to come from the
+      user for the near-white and very dark entries).
 - [ ] Ctrl+S / Ctrl+O open the save/load dialogs; About shows v1.0.
 - [ ] Load a model while playing: no click, a soft ~15 ms fade-in instead. Same on
       unload and when switching between two models.

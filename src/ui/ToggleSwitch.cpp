@@ -10,10 +10,17 @@
 
 ToggleSwitch::ToggleSwitch(QWidget* parent)
     : QAbstractButton(parent)
+    , mAccent(Theme::genericAccent())
 {
     setCheckable(true);
     setCursor(Qt::PointingHandCursor);
     setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+}
+
+void ToggleSwitch::setAccent(const QColor& c)
+{
+    mAccent = c;
+    update();
 }
 
 void ToggleSwitch::paintEvent(QPaintEvent*)
@@ -27,7 +34,7 @@ void ToggleSwitch::paintEvent(QPaintEvent*)
     const qreal  rx = h / 2.0;
 
     // ---- Track ----
-    const QColor accent   = palette().color(QPalette::Highlight);
+    const QColor accent   = mAccent;
     const QColor trackOff = mHovered ? Theme::trackHover() : Theme::track();
 
     if (isChecked()) {
