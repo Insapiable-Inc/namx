@@ -30,6 +30,7 @@
 #include <QScrollArea>
 #include <QSettings>
 #include <QStyle>
+#include <QStyleOption>
 #include <QTimer>
 #include <QVBoxLayout>
 
@@ -75,30 +76,23 @@ static QWidget* makeStereoSlot(ToggleSwitch** outToggle)
     return w;
 }
 
-// Grip row at the top of every strip card: a handle glyph on movable cards
-// (the drag affordance), an empty spacer of the same height on pinned ones so
-// toggles and knobs stay Y-aligned across the strip.
-static QWidget* makeGripRow(bool movable)
+// The title row (top margin band) of an effect card. Movable cards carry a
+// "≡" grip glyph in the title and dragging is reserved for this band, so
+// knob/toggle clicks can never start a reorder.
+static QRect titleBandRect(const QGroupBox* box)
 {
-    auto* w = new QWidget;
-    w->setFixedHeight(14);
-    auto* lay = new QVBoxLayout(w);
-    lay->setContentsMargins(0, 0, 0, 2);
-    lay->setSpacing(0);
-    if (movable) {
-        auto* grip = new QLabel("≡");
-        grip->setObjectName("dragGrip");
-        grip->setAlignment(Qt::AlignHCenter);
-        QPalette p = grip->palette();
-        p.setColor(QPalette::WindowText, QColor("#5c6370"));
-        grip->setPalette(p);
-        lay->addWidget(grip);
-        w->setCursor(Qt::OpenHandCursor);
-        w->setToolTip("Drag to reorder");
-    } else {
-        w->setToolTip("Position fixed");
-    }
-    return w;
+    QStyleOptionGroupBox opt;
+    opt.initFrom(box);
+    opt.text          = box->title();
+    opt.textAlignment = box->alignment();
+    opt.subControls   = QStyle::SC_GroupBoxLabel | QStyle::SC_GroupBoxFrame;
+    opt.lineWidth     = 1;
+    QRect r = box->style()->subControlRect(QStyle::CC_GroupBox, &opt,
+                                           QStyle::SC_GroupBoxLabel, box);
+    if (!r.isValid() || r.height() <= 0)
+        r = QRect(0, 0, box->width(), QFontMetrics(box->font()).height() + 8);
+    // Full card width at the title's vertical extent — the whole top band drags.
+    return QRect(0, 0, box->width(), r.bottom() + 4);
 }
 
 static QProgressBar* makeVUBarVertical()
@@ -176,14 +170,14 @@ QWidget* MainWindow::makeEffectColumn(const QString& title,
                                       ToggleSwitch** stereoToggleOut,
                                       bool movable)
 {
-    auto* col = new QGroupBox(title);
+    // The ≡ grip in the title marks a draggable card (drag starts from the
+    // title band only); pinned cards show a plain title.
+    auto* col = new QGroupBox(movable ? "≡  " + title : title);
     col->setAlignment(Qt::AlignHCenter);
     col->setMinimumWidth(110);
     auto* lay = new QVBoxLayout(col);
     lay->setContentsMargins(4, 6, 4, 4);
     lay->setSpacing(4);
-
-    lay->addWidget(makeGripRow(movable));
 
     toggleOut = new ToggleSwitch;
     toggleOut->setCheckable(true);
@@ -352,8 +346,6 @@ void MainWindow::setupUI()
         auto* lay = new QVBoxLayout(col);
         lay->setContentsMargins(4, 6, 4, 4);
         lay->setSpacing(3);
-
-        lay->addWidget(makeGripRow(false)); // pinned first — no grip
 
         mSwTunerEnable = new ToggleSwitch;
         mSwTunerEnable->setCheckable(true);
@@ -601,7 +593,6 @@ void MainWindow::setupUI()
         Theme::tagCard(col, Theme::Category::Neutral);
         auto* lay = new QVBoxLayout(col);
         lay->setContentsMargins(4, 6, 4, 4);
-        lay->addWidget(makeGripRow(false)); // outside the chain — never movable
         knob = new KnobWidget("Gain", kGainMin, kGainMax, kGainDefault, "dB");
         knob->setScrollStep(0.1);
         meter = makeVUBarVertical();
@@ -802,10 +793,12 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* ev)
     {
     case QEvent::MouseButtonPress:
     {
-        auto* me = static_cast<QMouseEvent*>(ev);
-        if (obj != mStrip && me->button() == Qt::LeftButton)
+        auto* me  = static_cast<QMouseEvent*>(ev);
+        auto* box = qobject_cast<QGroupBox*>(obj);
+        if (box && obj != mStrip && me->button() == Qt::LeftButton
+            && titleBandRect(box).contains(me->pos()))
         {
-            mDragCard     = static_cast<QWidget*>(obj);
+            mDragCard     = box;
             mDragStartPos = me->pos();
         }
         break;

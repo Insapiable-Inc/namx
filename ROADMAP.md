@@ -169,14 +169,14 @@ Requires BUG-06 fixed (Phase 1).
       counter to wait (bounded) before a retired buffer is ever rewritten. Moved
       effects get `requestReset()`, consumed by the audio thread at the top of their
       next block (all `reset()` impls are allocation-free fills).
-- [x] **UI:** cards drag-and-drop within the strip (`MainWindow::eventFilter` — drag
-      from the grip or any empty card area; knobs/toggles keep their events).
-      Movable cards show a `≡` grip row (open-hand cursor, "Drag to reorder"
-      tooltip); pinned cards have no grip and a "Position fixed" tooltip. While
-      dragging, the strip **re-lays out live to the prospective order** (the real
-      cards move, dividers follow NAM/EQ, the source card is dimmed at its landing
-      slot) — dropping commits exactly what is shown, Esc/leaving cancels back to
-      the engine order. Digit/QWE shortcuts re-assign left-to-right on every commit
+- [x] **UI:** cards drag-and-drop within the strip (`MainWindow::eventFilter`).
+      Movable cards carry a `≡` grip glyph in the title, and dragging starts
+      **from the title band only** — clicks on the card body/knobs can never
+      reorder. Pinned cards show a plain title. While dragging, the strip
+      **re-lays out live to the prospective order** (the real cards move, dividers
+      follow NAM/EQ, the source card is dimmed at its landing slot) — dropping
+      commits exactly what is shown, Esc/leaving cancels back to the engine order.
+      Digit/QWE shortcuts re-assign left-to-right on every commit
       (`EffectShortcuts::clear()`).
 - [x] **Constraints:** tuner pinned first, IR pinned last (engine-side sanitize + no
       drag on those cards); Input/Output are outside the chain, always at the ends.
@@ -190,8 +190,9 @@ Requires BUG-06 fixed (Phase 1).
       dragging, dropping keeps exactly what was shown, Esc/dropping outside cancels,
       and the *sound* changes accordingly. No crash/glitch while dragging during
       playback (at most a brief tail cut from the moved effect resetting).
-- [ ] Grips: movable cards show the `≡` handle + open-hand cursor; Tuner/IR/Input/
-      Output have none and read "Position fixed" on hover.
+- [ ] Grips: movable cards show `≡` in the title and drag only from the title band
+      (clicking knobs/toggles/body never reorders); Tuner/IR/Input/Output titles are
+      plain and don't drag.
 - [ ] Digit shortcuts now map to the new left-to-right order; Q/W/E stereo keys too.
 - [ ] Order survives relaunch, and a preset saved with a custom order restores it.
       Loading a v1 preset leaves the order untouched.
