@@ -43,10 +43,16 @@ void TunerProcessor::workerMain()
 
 void TunerProcessor::reset()
 {
-    std::lock_guard<std::mutex> lock(mBufMutex);
-    mRingBuf.fill(0.f);
-    mWritePos    = 0;
-    mBufferReady = false;
+    // May run on the audio thread (chain reorder) — never block. If the
+    // worker is mid-snapshot, the ring keeps its stale contents; it is
+    // overwritten within a few blocks anyway.
+    if (mBufMutex.try_lock())
+    {
+        mRingBuf.fill(0.f);
+        mWritePos    = 0;
+        mBufferReady = false;
+        mBufMutex.unlock();
+    }
 }
 
 void TunerProcessor::processBlockMono(float* buf, int nframes)
@@ -66,6 +72,26 @@ void TunerProcessor::processBlockMono(float* buf, int nframes)
 
     if (mMute.load())
         std::fill(buf, buf + nframes, 0.0f);
+}
+
+void TunerProcessor::processBlockDual(float* L, float* R, int nframes)
+{
+    if (mBufMutex.try_lock())
+    {
+        for (int i = 0; i < nframes; ++i)
+        {
+            mRingBuf[mWritePos] = 0.5f * (L[i] + R[i]);
+            mWritePos = (mWritePos + 1) % kBufSize;
+        }
+        mBufferReady = true;
+        mBufMutex.unlock();
+    }
+
+    if (mMute.load())
+    {
+        std::fill(L, L + nframes, 0.0f);
+        std::fill(R, R + nframes, 0.0f);
+    }
 }
 
 float TunerProcessor::detectPitch()

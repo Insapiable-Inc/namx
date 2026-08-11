@@ -40,6 +40,10 @@ protected:
     // Accumulates samples into ring buffer; applies mute if set.
     void processBlockMono(float* buf, int nframes) override;
 
+    // Stereo input (tuner placed after a stereo effect): detector reads the
+    // L/R average, mute silences both channels.
+    void processBlockDual(float* L, float* R, int nframes) override;
+
 private:
     // Worker loop: computes pitch ~10x/s while the tuner is enabled.
     void  workerMain();

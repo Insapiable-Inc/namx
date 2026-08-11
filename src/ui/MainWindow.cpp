@@ -167,12 +167,11 @@ MainWindow::~MainWindow()
 QWidget* MainWindow::makeEffectColumn(const QString& title,
                                       ToggleSwitch*& toggleOut,
                                       const std::initializer_list<KnobWidget*>& knobs,
-                                      ToggleSwitch** stereoToggleOut,
-                                      bool movable)
+                                      ToggleSwitch** stereoToggleOut)
 {
-    // The ≡ grip in the title marks a draggable card (drag starts from the
-    // title band only); pinned cards show a plain title.
-    auto* col = new QGroupBox(movable ? "≡  " + title : title);
+    // The ≡ grip in the title marks a draggable card; dragging starts from
+    // the title band only.
+    auto* col = new QGroupBox("≡  " + title);
     col->setAlignment(Qt::AlignHCenter);
     col->setMinimumWidth(110);
     auto* lay = new QVBoxLayout(col);
@@ -339,7 +338,7 @@ void MainWindow::setupUI()
 
     // ---- Tuner ----
     {
-        auto* col = new QGroupBox("Tuner");
+        auto* col = new QGroupBox("≡  Tuner");
         col->setAlignment(Qt::AlignHCenter);
         col->setMinimumWidth(110);
         Theme::tagCard(col, Theme::Category::Neutral);
@@ -576,9 +575,9 @@ void MainWindow::setupUI()
         mFxCols[&mEngine->reverb()] = col;
     }
 
-    // ---- IR toggle (pinned last — no grip) ----
+    // ---- IR toggle ----
     {
-        auto* col = makeEffectColumn("IR", mSwIREnable, {}, nullptr, /*movable=*/false);
+        auto* col = makeEffectColumn("IR", mSwIREnable, {});
         mSwIREnable->setChecked(true);
         Theme::tagCard(col, Theme::Category::Cab);
         mFxCols[&mEngine->ir()] = col;
@@ -623,10 +622,9 @@ void MainWindow::setupUI()
         {&mEngine->ir(),      {mSwIREnable,      nullptr}},
     };
 
-    // Drag sources: every movable card. Drop target: the strip itself.
+    // Drag sources: every effect card. Drop target: the strip itself.
     for (const auto& [fx, card] : mFxCols)
-        if (fx != &mEngine->tuner() && fx != &mEngine->ir())
-            card->installEventFilter(this);
+        card->installEventFilter(this);
     mStrip->setAcceptDrops(true);
     mStrip->installEventFilter(this);
 
@@ -747,8 +745,7 @@ void MainWindow::updateDragPreview(const QPoint& pos)
     ids.erase(std::remove(ids.begin(), ids.end(), mDragId), ids.end());
     if (ids.empty()) return;
 
-    // Insert after every card whose centre lies left of the cursor, clamped
-    // so tuner stays first and IR stays last.
+    // Insert after every card whose centre lies left of the cursor.
     int insert = 0;
     for (size_t i = 0; i < ids.size(); ++i)
     {
@@ -756,7 +753,6 @@ void MainWindow::updateDragPreview(const QPoint& pos)
         if (it != mFxCols.end() && pos.x() > it->second->geometry().center().x())
             insert = static_cast<int>(i) + 1;
     }
-    insert = std::clamp(insert, 1, static_cast<int>(ids.size()) - 1);
     ids.insert(ids.begin() + insert, mDragId);
 
     if (ids == mPreviewIds) return;

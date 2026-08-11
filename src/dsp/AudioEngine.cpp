@@ -85,33 +85,25 @@ std::string AudioEngine::idForEffect(const EffectBase* fx) const
 
 void AudioEngine::setChainOrder(const std::vector<std::string>& ids)
 {
-    // Sanitize: known IDs only, no duplicates, pinned effects excluded here.
-    std::vector<EffectBase*> order;
-    order.reserve(mEffectTable.size());
+    // Sanitize: known IDs only, no duplicates.
+    std::vector<EffectBase*> newChain;
+    newChain.reserve(mEffectTable.size());
     for (const auto& id : ids)
     {
         EffectBase* fx = effectById(id);
-        if (!fx || fx == &mTuner || fx == &mIR) continue;
-        if (std::find(order.begin(), order.end(), fx) != order.end()) continue;
-        order.push_back(fx);
+        if (!fx) continue;
+        if (std::find(newChain.begin(), newChain.end(), fx) != newChain.end()) continue;
+        newChain.push_back(fx);
     }
 
     // Effects missing from the list re-enter at their default position.
     int tableIdx = 0;
     for (const auto& [id, fx] : mEffectTable)
     {
-        const int movableIdx = tableIdx++ - 1; // tuner occupies table slot 0
-        if (fx == &mTuner || fx == &mIR) continue;
-        if (std::find(order.begin(), order.end(), fx) == order.end())
-            order.insert(order.begin() + std::min<size_t>(std::max(movableIdx, 0),
-                                                          order.size()), fx);
+        const size_t defaultIdx = tableIdx++;
+        if (std::find(newChain.begin(), newChain.end(), fx) == newChain.end())
+            newChain.insert(newChain.begin() + std::min(defaultIdx, newChain.size()), fx);
     }
-
-    std::vector<EffectBase*> newChain;
-    newChain.reserve(order.size() + 2);
-    newChain.push_back(&mTuner);
-    newChain.insert(newChain.end(), order.begin(), order.end());
-    newChain.push_back(&mIR);
 
     const int active   = mActiveChain.load(std::memory_order_relaxed);
     const int inactive = 1 - active;

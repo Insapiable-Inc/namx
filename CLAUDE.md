@@ -71,7 +71,7 @@ Qt6 application with a platform audio backend behind the `IAudioBackend` interfa
 
 ### Signal chain
 
-`AudioEngine` (implements `IAudioBackend::Callback`) owns all processors and a **double-buffered chain** (two `std::vector<EffectBase*>` + atomic index) iterated every callback. **Processing order = UI order** — `MainWindow::rebuildEffectStrip` lays the cards out by iterating `chain()`, and the user can reorder by dragging cards. Each effect has a stable string ID (`AudioEngine::mEffectTable` — never rename); `setChainOrder(ids)` sanitizes (unknown IDs dropped, missing effects at default slot, tuner/IR pinned first/last) and swaps RT-safely, flagging moved effects for an audio-thread `reset()` via `requestReset()`/`consumePendingReset()`. The default order:
+`AudioEngine` (implements `IAudioBackend::Callback`) owns all processors and a **double-buffered chain** (two `std::vector<EffectBase*>` + atomic index) iterated every callback. **Processing order = UI order** — `MainWindow::rebuildEffectStrip` lays the cards out by iterating `chain()`, and the user can reorder by dragging cards. Each effect has a stable string ID (`AudioEngine::mEffectTable` — never rename); `setChainOrder(ids)` sanitizes (unknown IDs dropped, missing effects at default slot) and swaps RT-safely, flagging moved effects for an audio-thread `reset()` via `requestReset()`/`consumePendingReset()`. All 13 effects reorder freely — nothing is pinned; only the Input/Output gain stages sit outside the chain. The default order:
 
 ```
 mono input → input gain (smoothed)

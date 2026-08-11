@@ -99,10 +99,10 @@ public:
     std::string idForEffect(const EffectBase* fx) const;
 
     /// Reorder the chain RT-safely (double buffer + atomic index, same pattern
-    /// as model swaps). Input is sanitized: unknown/duplicate IDs are dropped,
-    /// missing effects re-enter at their default position, and tuner/IR stay
-    /// pinned first/last. Effects whose position changed get a pending reset,
-    /// consumed by the audio thread at the top of their next block.
+    /// as model swaps). Input is sanitized: unknown/duplicate IDs are dropped
+    /// and missing effects re-enter at their default position. Effects whose
+    /// position changed get a pending reset, consumed by the audio thread at
+    /// the top of their next block.
     void setChainOrder(const std::vector<std::string>& ids);
 
     // ---- Port-routing pass-through (no-ops on backends without it) ----

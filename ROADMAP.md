@@ -170,16 +170,19 @@ Requires BUG-06 fixed (Phase 1).
       effects get `requestReset()`, consumed by the audio thread at the top of their
       next block (all `reset()` impls are allocation-free fills).
 - [x] **UI:** cards drag-and-drop within the strip (`MainWindow::eventFilter`).
-      Movable cards carry a `≡` grip glyph in the title, and dragging starts
+      Every effect card carries a `≡` grip glyph in the title, and dragging starts
       **from the title band only** — clicks on the card body/knobs can never
-      reorder. Pinned cards show a plain title. While dragging, the strip
-      **re-lays out live to the prospective order** (the real cards move, dividers
-      follow NAM/EQ, the source card is dimmed at its landing slot) — dropping
-      commits exactly what is shown, Esc/leaving cancels back to the engine order.
-      Digit/QWE shortcuts re-assign left-to-right on every commit
-      (`EffectShortcuts::clear()`).
-- [x] **Constraints:** tuner pinned first, IR pinned last (engine-side sanitize + no
-      drag on those cards); Input/Output are outside the chain, always at the ends.
+      reorder. While dragging, the strip **re-lays out live to the prospective
+      order** (the real cards move, dividers follow NAM/EQ, the source card is
+      dimmed at its landing slot) — dropping commits exactly what is shown,
+      Esc/leaving cancels back to the engine order. Digit/QWE shortcuts re-assign
+      left-to-right on every commit (`EffectShortcuts::clear()`).
+- [x] **Constraints — decision (2026-08-10): nothing is pinned.** All 13 effects,
+      including Tuner and IR, reorder freely (no special cases). To make that safe,
+      `TunerProcessor` gained a proper stereo path (`processBlockDual` feeds the
+      detector the L/R average, mute silences both channels) and an audio-thread-safe
+      `try_lock` reset. Only the Input/Output *gain* cards sit outside the chain,
+      fixed at the ends.
 - [x] **Persistence:** order saved as the ID list in `session/effectOrder` and preset
       v2 `effectOrder`; unknown IDs are dropped, missing effects re-enter at their
       default position.
@@ -190,9 +193,12 @@ Requires BUG-06 fixed (Phase 1).
       dragging, dropping keeps exactly what was shown, Esc/dropping outside cancels,
       and the *sound* changes accordingly. No crash/glitch while dragging during
       playback (at most a brief tail cut from the moved effect resetting).
-- [ ] Grips: movable cards show `≡` in the title and drag only from the title band
-      (clicking knobs/toggles/body never reorders); Tuner/IR/Input/Output titles are
-      plain and don't drag.
+- [ ] Grips: every effect card (incl. Tuner and IR) shows `≡` in the title and drags
+      only from the title band (clicking knobs/toggles/body never reorders);
+      Input/Output titles are plain and don't drag.
+- [ ] Tuner mid-chain: place the Tuner after a stereo effect (e.g. after Delay with
+      stereo on) — pitch readout still tracks (fed the L/R average) and Mute
+      silences both channels.
 - [ ] Digit shortcuts now map to the new left-to-right order; Q/W/E stereo keys too.
 - [ ] Order survives relaunch, and a preset saved with a custom order restores it.
       Loading a v1 preset leaves the order untouched.

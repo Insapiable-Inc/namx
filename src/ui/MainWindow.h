@@ -61,8 +61,7 @@ private:
     QWidget* makeEffectColumn(const QString& title,
                               ToggleSwitch*& toggleOut,
                               const std::initializer_list<KnobWidget*>& knobs,
-                              ToggleSwitch** stereoToggleOut = nullptr,
-                              bool movable = true);
+                              ToggleSwitch** stereoToggleOut = nullptr);
 
     // --- Effect strip / chain reordering ---
     // Lays the cards out in the given order: dividers follow NAM/EQ.
