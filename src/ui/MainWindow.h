@@ -11,13 +11,15 @@
 #include "AudioEngine.h"
 #include "EffectShortcuts.h"
 #include "KnobWidget.h"
+#include "ParamRegistry.h"
 #include "ToggleSwitch.h"
 
 class QHBoxLayout;
 class QLabel;
 class QPushButton;
 class QProgressBar;
-class QComboBox;
+class AudioDevicePanel;
+class VUMeter;
 
 class MainWindow : public QMainWindow
 {
@@ -42,9 +44,6 @@ private slots:
     void onLoadPreset();
     void onResetAll();
 
-    void onInputDeviceChanged(int index);
-    void onOutputDeviceChanged(int index);
-    void populateDeviceDropdowns();
     void restartAudioWithCurrentDevices();
 
     void updateMeters();
@@ -81,19 +80,9 @@ private:
     // to defaults; the enable toggle keeps its state.
     void resetCardToDefaults(QWidget* card);
 
-    // --- Parameter registry -------------------------------------------------
-    // One entry per user-facing parameter. Registration (registerParameters)
-    // wires the widget to the engine; the same table then drives preset
-    // save/load, and later session persistence and MIDI mapping — so the
-    // parameter list exists in exactly one place.
-    struct ParamDesc {
-        QString group;                    // JSON object holding the key; empty = top-level
-        QString key;
-        KnobWidget*   knob   = nullptr;   // exactly one of knob/toggle is set
-        ToggleSwitch* toggle = nullptr;
-        double knobDefault   = 0.0;       // applied when the key is absent from a present group
-        bool   toggleDefault = false;
-    };
+    // --- Parameter registry (ParamDesc lives in ParamRegistry.h) ------------
+    // Registration wires each widget to the engine; the same table then
+    // drives preset save/load (PresetSerializer) and session persistence.
     void registerParameters();
     void knobParam(const QString& group, const QString& key, KnobWidget* knob,
                    const std::function<void(double)>& apply);
@@ -105,7 +94,7 @@ private:
     void restoreSessionState();
     void scheduleSessionSave();
 
-    std::vector<ParamDesc> mParams;
+    ParamRegistry mParams;
 
     std::unique_ptr<AudioEngine> mEngine;
 
@@ -134,12 +123,10 @@ private:
     QLabel*      mLblAudioStatus = nullptr;
     QPushButton* mBtnReconnect  = nullptr;
 
-    QComboBox* mCbxInputDevice  = nullptr;
-    QComboBox* mCbxOutputDevice = nullptr;
-    bool       mDeviceChanging  = false;
+    AudioDevicePanel* mDevicePanel = nullptr;
 
-    QProgressBar* mMeterIn  = nullptr;
-    QProgressBar* mMeterOut = nullptr;
+    VUMeter* mMeterIn  = nullptr;
+    VUMeter* mMeterOut = nullptr;
 
     QLabel*       mLblNote  = nullptr;
     QLabel*       mLblCents = nullptr;

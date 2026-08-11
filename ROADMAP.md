@@ -256,21 +256,28 @@ Requires BUG-06 fixed (Phase 1).
 - [ ] Load a model while playing: no click, a soft ~15 ms fade-in instead. Same on
       unload and when switching between two models.
 
-## Phase 6 — Source tree & code cleanup
+## Phase 6 — Source tree & code cleanup ✅ (completed 2026-08-10)
 
-- [ ] **Split `MainWindow.cpp` (1347 lines):** extract `PresetSerializer` (Phase-2
-      schema), `AudioDevicePanel` (device dropdowns + connection save/restore), and a
-      `VUMeter` widget. `setupUI` (570 lines) shrinks to a card-assembly loop.
-- [ ] **Logging.** ~40 `std::cerr`/`cout` sites are invisible on Windows
-      (`WIN32_EXECUTABLE TRUE`). Replace with `QLoggingCategory`-based
-      `qInfo`/`qWarning` (OutputDebugString on Windows, `QT_LOGGING_RULES` control).
-- [ ] **Distributable builds.** `-march=native` ties Release binaries to the build
-      machine. Add a CMake option (`NAM_NATIVE_OPT`, default ON locally; CI/release
-      builds use OFF → `-mavx2 -mfma`). Mandatory before publishing binaries.
-- [ ] **New dirs:** `gui/packaging/` (.desktop, icon, AppStream metainfo, PKGBUILD,
-      Flatpak manifest) and `gui/resources/` + `.qrc` for the embedded icon.
-- [ ] **Magic numbers** in `MainWindow.cpp` (window size, timer intervals, meter dB math,
-      tuner geometry, repeated margins/widths) → `GUIConstants.h` once resurrected.
+- [x] **Split `MainWindow.cpp`:** extracted `PresetSerializer` (schema v2 JSON ↔
+      registry, in `PresetSerializer.h/cpp` + shared `ParamRegistry.h`),
+      `AudioDevicePanel` (device dropdowns + QSettings persistence, emits
+      `deviceSelectionChanged`), and `VUMeter` (dB mapping + styling). MainWindow
+      keeps window assembly, the registry, strip/DnD, and session state
+      (1369 lines, from ~1600). The card-creation blocks in `setupUI` stay — they
+      are already registry/chain-driven; a data-driven card table wasn't worth the
+      churn.
+- [x] **Logging.** All 32 `std::cerr`/`cout` sites → `qCWarning`/`qCInfo` on the
+      `nam.audio` category (`src/dsp/Log.h`; printf-style, MSVC-safe casts).
+      Visible via OutputDebugString on Windows; runtime control with
+      `QT_LOGGING_RULES`. DSP *headers* remain Qt-free.
+- [x] **Distributable builds.** `NAM_NATIVE_OPT` CMake option: ON (default) →
+      `-march=native`; OFF → portable `-mavx2 -mfma` (verified in generated flags).
+      MSVC always `/arch:AVX2`. **CI/release builds must pass `-DNAM_NATIVE_OPT=OFF`.**
+- [ ] **New dirs** `gui/packaging/` and `gui/resources/` + `.qrc` — created in
+      Phase 8 together with their content (icon, desktop file, metainfo).
+- [x] ~~Magic numbers → constants header.~~ **Decision:** the meter dB math moved
+      into `VUMeter`; the remaining literals are single-use and local to their
+      widgets. No shared constants header (GUIConstants was deleted in Phase 5).
 
 ## Phase 7 — Naming
 

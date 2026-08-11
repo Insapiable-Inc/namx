@@ -1,12 +1,14 @@
 #include "MainWindow.h"
+#include "AudioDevicePanel.h"
 #include "Constants.h"
 #include "EffectShortcuts.h"
+#include "PresetSerializer.h"
 #include "Theme.h"
 #include "TunerProcessor.h"
+#include "VUMeter.h"
 
 #include <QAction>
 #include <QApplication>
-#include <QComboBox>
 #include <QDrag>
 #include <QDragEnterEvent>
 #include <QDropEvent>
@@ -17,7 +19,6 @@
 #include <QGraphicsOpacityEffect>
 #include <QGroupBox>
 #include <QHBoxLayout>
-#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QLabel>
@@ -93,19 +94,6 @@ static QRect titleBandRect(const QGroupBox* box)
         r = QRect(0, 0, box->width(), QFontMetrics(box->font()).height() + 8);
     // Full card width at the title's vertical extent — the whole top band drags.
     return QRect(0, 0, box->width(), r.bottom() + 4);
-}
-
-static QProgressBar* makeVUBarVertical()
-{
-    auto* b = new QProgressBar;
-    b->setObjectName("vuMeter"); // chunk gradient lives in the Theme stylesheet
-    b->setOrientation(Qt::Vertical);
-    b->setRange(0, 100);
-    b->setValue(0);
-    b->setTextVisible(false);
-    b->setFixedWidth(14);
-    b->setMinimumHeight(70);
-    return b;
 }
 
 // ---------------------------------------------------------------------------
@@ -265,36 +253,10 @@ void MainWindow::setupUI()
     }
 
     // ---- Device selection row ----
-    {
-        auto* row = new QHBoxLayout;
-        row->setContentsMargins(4, 0, 4, 4);
-        row->setSpacing(8);
-
-        auto* inputLabel = new QLabel("Input:");
-        inputLabel->setObjectName("deviceLabel");
-        mCbxInputDevice = new QComboBox;
-        mCbxInputDevice->setMinimumWidth(180);
-        mCbxInputDevice->setSizeAdjustPolicy(QComboBox::AdjustToContents);
-
-        auto* outputLabel = new QLabel("Output:");
-        outputLabel->setObjectName("deviceLabel");
-        mCbxOutputDevice = new QComboBox;
-        mCbxOutputDevice->setMinimumWidth(180);
-        mCbxOutputDevice->setSizeAdjustPolicy(QComboBox::AdjustToContents);
-
-        row->addWidget(inputLabel);
-        row->addWidget(mCbxInputDevice, 1);
-        row->addSpacing(16);
-        row->addWidget(outputLabel);
-        row->addWidget(mCbxOutputDevice, 1);
-
-        rootLayout->addLayout(row);
-
-        connect(mCbxInputDevice, QOverload<int>::of(&QComboBox::currentIndexChanged),
-                this, &MainWindow::onInputDeviceChanged);
-        connect(mCbxOutputDevice, QOverload<int>::of(&QComboBox::currentIndexChanged),
-                this, &MainWindow::onOutputDeviceChanged);
-    }
+    mDevicePanel = new AudioDevicePanel(*mEngine);
+    rootLayout->addWidget(mDevicePanel);
+    connect(mDevicePanel, &AudioDevicePanel::deviceSelectionChanged,
+            this, &MainWindow::restartAudioWithCurrentDevices);
 
     // ---- NAM + IR file row ----
     {
@@ -603,7 +565,7 @@ void MainWindow::setupUI()
     }
 
     // Input/Output gain cards (not in the chain — pinned first and last)
-    auto makeGainCard = [&](const QString& title, KnobWidget*& knob, QProgressBar*& meter) -> QWidget* {
+    auto makeGainCard = [&](const QString& title, KnobWidget*& knob, VUMeter*& meter) -> QWidget* {
         using namespace NAMConstants;
         auto* col = new QGroupBox(title);
         col->setAlignment(Qt::AlignHCenter);
@@ -612,7 +574,7 @@ void MainWindow::setupUI()
         lay->setContentsMargins(4, 6, 4, 4);
         knob = new KnobWidget("Gain", kGainMin, kGainMax, kGainDefault, "dB");
         knob->setScrollStep(0.1);
-        meter = makeVUBarVertical();
+        meter = new VUMeter;
         lay->addWidget(knob);
         lay->addWidget(meter, 0, Qt::AlignHCenter);
         lay->addStretch();
@@ -941,7 +903,7 @@ void MainWindow::setAudioStatus(const QString& text, bool ok)
 
 void MainWindow::setupAudio()
 {
-    populateDeviceDropdowns();
+    mDevicePanel->refresh();
 
     QSettings s;
     const QString savedIn  = s.value("audio/inputDeviceId").toString();
@@ -962,68 +924,12 @@ void MainWindow::setupAudio()
     }
 }
 
-void MainWindow::populateDeviceDropdowns()
-{
-    mCbxInputDevice->blockSignals(true);
-    mCbxOutputDevice->blockSignals(true);
-
-    mCbxInputDevice->clear();
-    mCbxOutputDevice->clear();
-
-    const auto inputs  = mEngine->enumerateInputDevices();
-    const auto outputs = mEngine->enumerateOutputDevices();
-
-    // If only "Default" is available (JACK or single entry), disable combos.
-    const bool onlyDefault = (inputs.size() <= 1 && outputs.size() <= 1);
-
-    for (const auto& d : inputs)
-        mCbxInputDevice->addItem(QString::fromStdString(d.name),
-                                  QString::fromStdString(d.id));
-    for (const auto& d : outputs)
-        mCbxOutputDevice->addItem(QString::fromStdString(d.name),
-                                   QString::fromStdString(d.id));
-
-    mCbxInputDevice->setEnabled(!onlyDefault);
-    mCbxOutputDevice->setEnabled(!onlyDefault);
-
-    // Restore saved selections
-    QSettings s;
-    const int idxIn = mCbxInputDevice->findData(s.value("audio/inputDeviceId").toString());
-    if (idxIn >= 0) mCbxInputDevice->setCurrentIndex(idxIn);
-
-    const int idxOut = mCbxOutputDevice->findData(s.value("audio/outputDeviceId").toString());
-    if (idxOut >= 0) mCbxOutputDevice->setCurrentIndex(idxOut);
-
-    mCbxInputDevice->blockSignals(false);
-    mCbxOutputDevice->blockSignals(false);
-}
-
-void MainWindow::onInputDeviceChanged(int)
-{
-    if (mDeviceChanging) return;
-    mDeviceChanging = true;
-    QSettings s;
-    s.setValue("audio/inputDeviceId", mCbxInputDevice->currentData().toString());
-    restartAudioWithCurrentDevices();
-    mDeviceChanging = false;
-}
-
-void MainWindow::onOutputDeviceChanged(int)
-{
-    if (mDeviceChanging) return;
-    mDeviceChanging = true;
-    QSettings s;
-    s.setValue("audio/outputDeviceId", mCbxOutputDevice->currentData().toString());
-    restartAudioWithCurrentDevices();
-    mDeviceChanging = false;
-}
-
 void MainWindow::restartAudioWithCurrentDevices()
 {
     setAudioStatus("Audio backend  \xe2\x97\x8f  switching devices…", false);
 
-    const QString inId  = mCbxInputDevice->currentData().toString();
-    const QString outId = mCbxOutputDevice->currentData().toString();
+    const QString inId  = mDevicePanel->inputDeviceId();
+    const QString outId = mDevicePanel->outputDeviceId();
 
     if (mEngine->startWithDevices(inId.toStdString(), outId.toStdString())) {
         setAudioStatus(QString::fromStdString(mEngine->backendStatus()), true);
@@ -1237,13 +1143,8 @@ void MainWindow::registerParameters()
 
 void MainWindow::updateMeters()
 {
-    auto toMeter = [](float peak) -> int {
-        if (peak <= 0.0f) return 0;
-        float dB = 20.0f * std::log10(peak);
-        return std::max(0, std::min(100, static_cast<int>((dB + 60.0f) / 60.0f * 100.0f)));
-    };
-    mMeterIn ->setValue(toMeter(mEngine->takeInputPeak()));
-    mMeterOut->setValue(toMeter(mEngine->takeOutputPeak()));
+    mMeterIn ->setPeak(mEngine->takeInputPeak());
+    mMeterOut->setPeak(mEngine->takeOutputPeak());
 
     if (!mEngine->isRunning() && mLblAudioStatus->objectName() == "audioStatusOk")
         setAudioStatus("Audio backend  ●  disconnected", false);
@@ -1375,28 +1276,7 @@ void MainWindow::onSavePreset()
     if (path.isEmpty()) return;
     settings.setValue("files/lastPreset", path);
 
-    // Widget values mirror the engine (every change flows through the
-    // registry connections), so the widgets are the single source here.
-    QJsonObject obj;
-    obj["version"] = 2;
-    obj["namPath"] = QString::fromStdString(mEngine->modelPath());
-    obj["irPath"]  = QString::fromStdString(mEngine->irPath());
-    QJsonArray orderArr;
-    for (const auto& id : mEngine->chainIds())
-        orderArr.append(QString::fromStdString(id));
-    obj["effectOrder"] = orderArr;
-    for (const auto& p : mParams)
-    {
-        const QJsonValue v = p.knob ? QJsonValue(p.knob->value())
-                                    : QJsonValue(p.toggle->isChecked());
-        if (p.group.isEmpty()) {
-            obj[p.key] = v;
-        } else {
-            QJsonObject g = obj[p.group].toObject();
-            g[p.key] = v;
-            obj[p.group] = g;
-        }
-    }
+    const QJsonObject obj = PresetSerializer::toJson(mParams, *mEngine);
 
     QFile f(path);
     if (!f.open(QIODevice::WriteOnly))
@@ -1453,60 +1333,32 @@ void MainWindow::onLoadPreset()
         return;
     }
 
-    const QJsonObject obj = doc.object();
-
-    // Apply through the widgets so UI and engine stay in sync (widget signals
-    // reach the engine via the registry connections). A group absent from the
-    // file leaves its effect untouched; inside a present group — and at the
-    // root — missing keys fall back to the registered defaults.
-    for (const auto& p : mParams)
-    {
-        QJsonObject src = obj;
-        if (!p.group.isEmpty())
-        {
-            if (!obj.contains(p.group)) continue;
-            src = obj[p.group].toObject();
-        }
-        if (p.knob)
-            p.knob->setValue(src.contains(p.key) ? src[p.key].toDouble(p.knobDefault)
-                                                 : p.knobDefault);
-        else
-            p.toggle->setChecked(src.contains(p.key) ? src[p.key].toBool(p.toggleDefault)
-                                                     : p.toggleDefault);
-    }
-
-    // v2 presets carry the chain order; unknown/missing IDs are handled by
-    // the engine-side sanitizer (missing effects keep their default slot).
-    if (obj.contains("effectOrder"))
-    {
-        QStringList order;
-        for (const auto& v : obj["effectOrder"].toArray())
-            order << v.toString();
-        applyChainOrder(order);
-    }
+    // Widgets first (engine follows via the registry connections), then the
+    // chain order (engine-side sanitizer handles unknown/missing IDs).
+    const auto applied = PresetSerializer::apply(doc.object(), mParams);
+    if (!applied.effectOrder.isEmpty())
+        applyChainOrder(applied.effectOrder);
 
     // v2 presets embed the model/IR paths. Only a non-empty path acts — a
     // preset saved without a model must not unload the current one — and when
     // the referenced file is missing or fails to load, the current one stays.
     QStringList failed;
-    const QString namPath = obj["namPath"].toString();
-    if (!namPath.isEmpty())
+    if (!applied.namPath.isEmpty())
     {
-        if (QFile::exists(namPath) && mEngine->loadModel(namPath.toStdString())) {
-            settings.setValue("files/lastNAM", namPath);
+        if (QFile::exists(applied.namPath) && mEngine->loadModel(applied.namPath.toStdString())) {
+            settings.setValue("files/lastNAM", applied.namPath);
             mBtnUnloadNAM->setEnabled(true);
         } else {
-            failed << namPath;
+            failed << applied.namPath;
         }
     }
-    const QString irPath = obj["irPath"].toString();
-    if (!irPath.isEmpty())
+    if (!applied.irPath.isEmpty())
     {
-        if (QFile::exists(irPath) && mEngine->loadIR(irPath.toStdString())) {
-            settings.setValue("files/lastIR", irPath);
+        if (QFile::exists(applied.irPath) && mEngine->loadIR(applied.irPath.toStdString())) {
+            settings.setValue("files/lastIR", applied.irPath);
             mBtnUnloadIR->setEnabled(true);
         } else {
-            failed << irPath;
+            failed << applied.irPath;
         }
     }
     updateStatusLabels();

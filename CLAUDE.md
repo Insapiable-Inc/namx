@@ -50,7 +50,7 @@ cmake --build gui/build-release --parallel $(nproc)
 **Required packages (Arch):** `qt6-base jack2 cmake ninja`
 **Required packages (Ubuntu 22.04+):** `qt6-base-dev libjack-jackd2-dev cmake ninja-build`
 
-Release builds use `-march=native` (see the caveat in `gui/CMakeLists.txt` — must be dropped for distributable binaries).
+Release builds default to `-march=native` via the `NAM_NATIVE_OPT` CMake option (ON). **CI/release builds must configure with `-DNAM_NATIVE_OPT=OFF`** → portable `-mavx2 -mfma`.
 
 ## Running
 
@@ -115,7 +115,12 @@ All effects inherit `EffectBase` (`src/dsp/EffectBase.h` — the header comment 
 | `ChorusProcessor`, `FlangerProcessor`, `PhaserProcessor`, `TremoloProcessor` | `src/dsp/…` | Modulation effects; stereo variants use LFO phase offsets |
 | `DelayProcessor` | `src/dsp/DelayProcessor.h/cpp` | Ping-pong stereo delay |
 | `ReverbProcessor` | `src/dsp/ReverbProcessor.h/cpp` | Freeverb (8 comb + 4 all-pass, stereo) |
-| `MainWindow` | `src/ui/MainWindow.h/cpp` | All UI assembly, engine wiring, presets, QSettings persistence |
+| `MainWindow` | `src/ui/MainWindow.h/cpp` | Window assembly, parameter registry, effect strip + DnD reorder, session state |
+| `ParamRegistry.h` | `src/ui/` | `ParamDesc` — one entry per user-facing parameter (shared by MainWindow + PresetSerializer) |
+| `PresetSerializer` | `src/ui/PresetSerializer.h/cpp` | Preset schema v2 JSON ↔ registry/engine (v1 files load too) |
+| `AudioDevicePanel` | `src/ui/AudioDevicePanel.h/cpp` | Device dropdown row; persists IDs, emits `deviceSelectionChanged` |
+| `VUMeter` | `src/ui/VUMeter.h/cpp` | Vertical peak bar; `setPeak(linear)` on a 60 dB scale |
+| `Log.h` | `src/dsp/` | `nam.audio` logging category — use `qCWarning(lcAudio, …)`, never `std::cerr` (invisible on Windows) |
 | `KnobWidget` | `src/ui/KnobWidget.h/cpp` | `QDial` wrapper: float range, scroll step, label |
 | `ToggleSwitch` | `src/ui/ToggleSwitch.h/cpp` | Custom-painted on/off switch |
 | `Theme` | `src/ui/Theme.h/cpp` | Fusion + dark palette + app stylesheet; per-effect accents (`tagCard(card, fxId)`) + chrome color accessors — **all colors live here** |
