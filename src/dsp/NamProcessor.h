@@ -54,6 +54,12 @@ private:
     int                       mModelResetBuf{0}; // maxBuf the live models were Reset() with (guarded by mModelMutex)
     std::vector<float>        mScratchL, mScratchR;
 
+    // Click-free swap: load/unload flag a short output fade-in, applied by
+    // the audio thread, that masks the waveform discontinuity.
+    std::atomic<bool>         mFadePending{false};
+    int                       mFadeTotal{1};     // audio thread only
+    int                       mFadeRemaining{0}; // audio thread only
+
     nam::DSP* activeModelL() const
     {
         return mActiveModel.load() == 0 ? mModelAL.get() : mModelBL.get();

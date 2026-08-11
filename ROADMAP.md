@@ -206,14 +206,17 @@ Requires BUG-06 fixed (Phase 1).
       stereo-mode Delay or Chorus and play — both channels behave identically
       (per-channel envelopes, no mono collapse, no channel pumping).
 
-## Phase 5 — Aesthetics
+## Phase 5 — Aesthetics ✅ (completed 2026-08-10, code; icon moved to Phase 8)
 
-- [ ] **Theme consolidation.** Hex colors are painted directly in `KnobWidget.cpp`,
-      `ToggleSwitch.cpp`, the VU gradient (`MainWindow.cpp:76`), and the tuner bar
-      (`:329`). Move behind `Theme` accessors — palette in one file. Dark-only is fine
-      for v1.
-- [ ] **Per-effect accent colors** (requested 2026-08-10). Replace the per-category
-      accents (`Theme::Category`) with one accent per effect card:
+- [x] **Theme consolidation.** All widget hex colors moved behind `Theme` accessors
+      (knob chrome, toggle tracks) or into the Theme stylesheet via objectNames
+      (`vuMeter`, `tunerBar`, `stereoLabel`). Palette lives in `Theme.cpp` only.
+      Dark-only for v1.
+- [x] **Per-effect accent colors** (requested 2026-08-10). `Theme::Category` replaced
+      by per-effect accents (`Theme::tagCard(card, fxId)`, QSS rules generated from
+      one table). Raw accent paints the top stripe; `readableAccent()` (HSL
+      lightness clamp) colors the title and `QPalette::Highlight` so the dark
+      accents stay visible:
       | effect | color | | effect | color |
       |---|---|---|---|---|
       | tuner | `#f0e9d7` | | amp (NAM) | `#e4b954` |
@@ -223,23 +226,28 @@ Requires BUG-06 fixed (Phase 1).
       | flanger | `#93477b` | | delay | `#eae9e5` |
       | phaser | `#4bba5b` | | reverb | `#3d3c3d` |
       | IR | `#ef661a` | | | |
-      Some are near-white (delay, eq, tuner) or very dark (reverb, compressor) — pick
-      title-text colors per card for contrast when implementing (the current theme
-      derives title color from the accent).
-- [ ] **Resurrect or delete `GUIConstants.h`.** Currently 82 lines of dead code (zero
-      references) with values drifted from reality. Either make it the single source for
-      sizes/margins/scroll-steps and use it everywhere, or delete it.
-- [ ] **Window sizing.** `setMinimumSize(1800, 1000)` excludes most laptops. Make the
-      effect strip horizontally scrollable and drop the minimum to ~1280×720. Biggest
-      first-minute issue for public users.
-- [ ] **Backend-neutral status UI.** Startup label says "JACK: connecting…" — that's what
-      a Windows/WASAPI user sees. Rename label text to "Audio: …" and the
-      `jackStatusOk/Err` QSS selectors to match.
-- [ ] **Polish:** app icon + `setWindowIcon`; knob tooltips; About dialog showing the
-      version (set in `main.cpp` but never displayed); click-free model swap (short
-      crossfade or mute); preset menu shortcuts — **Ctrl+S** Save Preset, **Ctrl+O**
-      Load Preset (`QKeySequence` on the existing `Preset` menu actions; requested
-      2026-08-10).
+- [x] ~~Resurrect or delete `GUIConstants.h`.~~ **Deleted** (82 lines, zero references,
+      drifted values). Real UI constants arrive with the Phase 6 `MainWindow` split.
+- [x] **Window sizing.** Minimum dropped to 1280×720 (default still 1800×1000, and the
+      session restores the user's geometry); the effect strip scrolls horizontally
+      *and* vertically as needed.
+- [x] **Backend-neutral status UI.** `jackStatusOk/Err` QSS selectors and the label
+      member renamed to `audioStatus*` (label text was already "Audio: …").
+- [x] **Polish:** knob tooltips (name + usage hint); Help → About dialog showing the
+      version; click-free model swap (~15 ms audio-thread fade-in after load/unload
+      masks the discontinuity, incl. amp↔dry); **Ctrl+S** Save Preset / **Ctrl+O**
+      Load Preset on the menu actions.
+- [ ] **App icon + `setWindowIcon`** — needs an actual icon asset; moved to Phase 8
+      packaging (`gui/resources/` + `.qrc` land there anyway).
+
+### Phase 5 — manual verification pending
+
+- [ ] Resize the window down to 1280×720: everything stays usable, the strip scrolls.
+- [ ] New accent colors: stripes match the chosen palette; compressor/reverb titles
+      and knob accents are readable (lightness-clamped variants).
+- [ ] Ctrl+S / Ctrl+O open the save/load dialogs; About shows v1.0.
+- [ ] Load a model while playing: no click, a soft ~15 ms fade-in instead. Same on
+      unload and when switching between two models.
 
 ## Phase 6 — Source tree & code cleanup
 

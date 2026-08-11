@@ -118,9 +118,9 @@ All effects inherit `EffectBase` (`src/dsp/EffectBase.h` — the header comment 
 | `MainWindow` | `src/ui/MainWindow.h/cpp` | All UI assembly, engine wiring, presets, QSettings persistence |
 | `KnobWidget` | `src/ui/KnobWidget.h/cpp` | `QDial` wrapper: float range, scroll step, label |
 | `ToggleSwitch` | `src/ui/ToggleSwitch.h/cpp` | Custom-painted on/off switch |
-| `Theme` | `src/ui/Theme.h/cpp` | Fusion + dark palette + app stylesheet; per-card accent categories |
+| `Theme` | `src/ui/Theme.h/cpp` | Fusion + dark palette + app stylesheet; per-effect accents (`tagCard(card, fxId)`) + chrome color accessors — **all colors live here** |
 | `EffectShortcuts` | `src/ui/EffectShortcuts.h/cpp` | Keyboard toggles for effects (user has Latin American layout) |
-| `Constants.h` / `GUIConstants.h` | `src/dsp/` / `src/ui/` | DSP param ranges (used) / UI sizes (currently dead — ROADMAP Phase 5) |
+| `Constants.h` | `src/dsp/` | DSP parameter ranges and defaults for all effects |
 
 ### Parameter registry
 

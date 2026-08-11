@@ -63,6 +63,7 @@ bool NamProcessor::loadModel(const std::string& path)
         mModelPath = path;
         mModelLoaded.store(true);
     }
+    mFadePending.store(true, std::memory_order_release);
     return true;
 }
 
@@ -70,6 +71,7 @@ void NamProcessor::unloadModel()
 {
     mModelLoaded.store(false);
     mModelPath = "";
+    mFadePending.store(true, std::memory_order_release);
 }
 
 void NamProcessor::prepareBuffer(int maxBuf)
@@ -143,5 +145,21 @@ bool NamProcessor::process(float* L, float* R, int n, bool inputIsStereo)
         processBlockMonoR(R, n);
     else
         std::copy(L, L + n, R);
+
+    // ~15 ms fade-in after a model load/unload masks the discontinuity
+    // between the old and new amp (or between amp and dry passthrough).
+    if (mFadePending.exchange(false, std::memory_order_acq_rel))
+    {
+        mFadeTotal     = std::max(1, static_cast<int>(mSampleRate * 0.015));
+        mFadeRemaining = mFadeTotal;
+    }
+    for (int i = 0; i < n && mFadeRemaining > 0; ++i, --mFadeRemaining)
+    {
+        const float g = 1.0f - static_cast<float>(mFadeRemaining)
+                             / static_cast<float>(mFadeTotal);
+        L[i] *= g;
+        R[i] *= g;
+    }
+
     return inputIsStereo;
 }
