@@ -133,7 +133,7 @@ QGroupBox {
     margin-top: 16px;
     padding: 14px 4px 6px 4px;
     font-weight: 600;
-    font-size: 9pt;
+    font-size: 10pt; /* card title size (QSS fonts don't propagate to children) */
 }
 QGroupBox::title {
     subcontrol-origin: margin;

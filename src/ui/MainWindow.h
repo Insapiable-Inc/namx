@@ -40,6 +40,7 @@ private slots:
 
     void onSavePreset();
     void onLoadPreset();
+    void onResetAll();
 
     void onInputDeviceChanged(int index);
     void onOutputDeviceChanged(int index);

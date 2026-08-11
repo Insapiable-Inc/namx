@@ -212,6 +212,8 @@ void MainWindow::setupUI()
         auto* presetMenu = mb->addMenu("Preset");
         connect(presetMenu->addAction("Save Preset…"), &QAction::triggered, this, &MainWindow::onSavePreset);
         connect(presetMenu->addAction("Load Preset…"), &QAction::triggered, this, &MainWindow::onLoadPreset);
+        presetMenu->addSeparator();
+        connect(presetMenu->addAction("Reset All to Defaults…"), &QAction::triggered, this, &MainWindow::onResetAll);
     }
 
     // ---- Top status row ----
@@ -231,10 +233,12 @@ void MainWindow::setupUI()
         connect(mBtnReconnect, &QPushButton::clicked,
                 this, &MainWindow::restartAudioWithCurrentDevices);
 
-        auto* btnSave = new QPushButton("Save Preset…");
-        auto* btnLoad = new QPushButton("Load Preset…");
-        connect(btnSave, &QPushButton::clicked, this, &MainWindow::onSavePreset);
-        connect(btnLoad, &QPushButton::clicked, this, &MainWindow::onLoadPreset);
+        auto* btnSave  = new QPushButton("Save Preset…");
+        auto* btnLoad  = new QPushButton("Load Preset…");
+        auto* btnReset = new QPushButton("Reset All");
+        connect(btnSave,  &QPushButton::clicked, this, &MainWindow::onSavePreset);
+        connect(btnLoad,  &QPushButton::clicked, this, &MainWindow::onLoadPreset);
+        connect(btnReset, &QPushButton::clicked, this, &MainWindow::onResetAll);
 
         row->addWidget(title);
         row->addWidget(mLblJACKStatus);
@@ -242,6 +246,7 @@ void MainWindow::setupUI()
         row->addStretch();
         row->addWidget(btnSave);
         row->addWidget(btnLoad);
+        row->addWidget(btnReset);
         rootLayout->addLayout(row);
     }
 
@@ -1340,6 +1345,29 @@ void MainWindow::onSavePreset()
         return;
     }
     f.write(QJsonDocument(obj).toJson());
+}
+
+void MainWindow::onResetAll()
+{
+    if (QMessageBox::question(this, "Reset All",
+            "Reset all effects, gains, and the chain order to their defaults?\n"
+            "The loaded model and IR are kept.")
+        != QMessageBox::Yes)
+        return;
+
+    // Registry defaults through the widgets — the engine follows via the
+    // registry connections, exactly like a preset load.
+    for (const auto& p : mParams)
+    {
+        if (p.knob) p.knob->setValue(p.knobDefault);
+        else        p.toggle->setChecked(p.toggleDefault);
+    }
+
+    QStringList order;
+    for (const auto& id : mEngine->defaultChainIds())
+        order << QString::fromStdString(id);
+    applyChainOrder(order);
+    scheduleSessionSave();
 }
 
 void MainWindow::onLoadPreset()
