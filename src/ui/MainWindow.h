@@ -73,6 +73,11 @@ private:
     void toggleParam(const QString& group, const QString& key, ToggleSwitch* sw,
                      const std::function<void(bool)>& apply);
 
+    // Session persistence: same table, QSettings instead of a preset file.
+    void saveSessionState();
+    void restoreSessionState();
+    void scheduleSessionSave();
+
     std::vector<ParamDesc> mParams;
 
     std::unique_ptr<AudioEngine> mEngine;
@@ -166,4 +171,5 @@ private:
 
     QTimer* mMeterTimer = nullptr;
     QTimer* mTunerTimer = nullptr;
+    QTimer* mSessionSaveTimer = nullptr;
 };

@@ -94,6 +94,21 @@ MainWindow::MainWindow(QWidget* parent)
 
     setupUI();
     registerParameters();
+
+    // Debounced session save — every registry widget change restarts it, so
+    // the session survives a crash without a write per knob tick. Created
+    // before restoreSessionState so the restore's widget signals find it.
+    mSessionSaveTimer = new QTimer(this);
+    mSessionSaveTimer->setSingleShot(true);
+    mSessionSaveTimer->setInterval(1000);
+    connect(mSessionSaveTimer, &QTimer::timeout, this, &MainWindow::saveSessionState);
+
+    restoreSessionState();
+    {
+        const QByteArray geo = QSettings().value("window/geometry").toByteArray();
+        if (!geo.isEmpty()) restoreGeometry(geo);
+    }
+
     setupAudio();
     restoreLastFiles();
 
@@ -110,6 +125,9 @@ MainWindow::~MainWindow()
 {
     mMeterTimer->stop();
     mTunerTimer->stop();
+    mSessionSaveTimer->stop();
+    QSettings().setValue("window/geometry", saveGeometry());
+    saveSessionState();
     saveConnections();
     mEngine->stop();
 }
@@ -788,15 +806,55 @@ void MainWindow::onUnloadIR()
 void MainWindow::knobParam(const QString& group, const QString& key,
                            KnobWidget* knob, const std::function<void(double)>& apply)
 {
-    connect(knob, &KnobWidget::valueChanged, this, apply);
+    connect(knob, &KnobWidget::valueChanged, this,
+            [this, apply](double v) { apply(v); scheduleSessionSave(); });
     mParams.push_back({group, key, knob, nullptr, knob->defaultValue(), false});
 }
 
 void MainWindow::toggleParam(const QString& group, const QString& key,
                              ToggleSwitch* sw, const std::function<void(bool)>& apply)
 {
-    connect(sw, &ToggleSwitch::toggled, this, apply);
+    connect(sw, &ToggleSwitch::toggled, this,
+            [this, apply](bool b) { apply(b); scheduleSessionSave(); });
     mParams.push_back({group, key, nullptr, sw, 0.0, sw->isChecked()});
+}
+
+// ---------------------------------------------------------------------------
+// Session state — the registry serialized to QSettings under "session/"
+// ---------------------------------------------------------------------------
+
+void MainWindow::scheduleSessionSave()
+{
+    if (mSessionSaveTimer) mSessionSaveTimer->start();
+}
+
+void MainWindow::saveSessionState()
+{
+    QSettings s;
+    s.beginGroup("session");
+    for (const auto& p : mParams)
+    {
+        const QString path = p.group.isEmpty() ? p.key : p.group + "/" + p.key;
+        s.setValue(path, p.knob ? QVariant(p.knob->value())
+                                : QVariant(p.toggle->isChecked()));
+    }
+    s.endGroup();
+}
+
+void MainWindow::restoreSessionState()
+{
+    QSettings s;
+    s.beginGroup("session");
+    for (const auto& p : mParams)
+    {
+        const QString path = p.group.isEmpty() ? p.key : p.group + "/" + p.key;
+        if (!s.contains(path)) continue;  // first run: widgets keep their defaults
+        if (p.knob)
+            p.knob->setValue(s.value(path, p.knobDefault).toDouble());
+        else
+            p.toggle->setChecked(s.value(path, p.toggleDefault).toBool());
+    }
+    s.endGroup();
 }
 
 // Every user-facing parameter, registered exactly once. Runs after setupUI so
@@ -936,7 +994,18 @@ void MainWindow::restoreLastFiles()
 void MainWindow::restoreConnections()
 {
     QSettings s;
-    if (!s.contains("connections/saved")) return;
+    if (!s.contains("connections/saved"))
+    {
+        // First run: wire the default system ports so a new user hears sound
+        // without opening a patchbay. Failed connects (no such port) are
+        // harmless no-ops, and the user's own routing is saved on exit.
+        AudioEngine::PortConnections c;
+        c.inputSources = {"system:capture_1"};
+        c.outputLDests = {"system:playback_1"};
+        c.outputRDests = {"system:playback_2"};
+        mEngine->applyConnections(c);
+        return;
+    }
 
     auto toVec = [](const QStringList& l) {
         std::vector<std::string> v;

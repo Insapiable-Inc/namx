@@ -131,15 +131,17 @@ preset save block, and the preset load block.
 Verified: clean Release build, 5 s offscreen smoke run. Manual check recommended:
 save → twist → load a preset and confirm knobs *and* audio follow.
 
-## Phase 3 — Persistent state
+## Phase 3 — Persistent state ✅ (completed 2026-08-10; effect order lands with Phase 4)
 
 Everything restores on relaunch exactly as you left it. Nearly free once Phase 2 exists.
 
-- [ ] **Session state**, saved on exit + debounced on change (crash-safe):
-  - [ ] all knob values and toggles + effect order (via the Phase-2 table),
-  - [ ] model path and IR path (already at QSettings `files/lastNAM`/`lastIR` — keep),
-  - [ ] window geometry (`saveGeometry`/`restoreGeometry` — currently absent),
-  - [ ] device & port-connection keys (already working — keep).
+- [x] **Session state**, saved on exit + debounced on change (1 s single-shot timer
+      restarted by every registry widget signal — crash-safe):
+  - [x] all knob values and toggles via the Phase-2 table → QSettings `session/`
+        (`session/<group>/<key>`); effect order joins when Phase 4 defines the IDs,
+  - [x] model path and IR path (already at QSettings `files/lastNAM`/`lastIR` — kept),
+  - [x] window geometry (`saveGeometry` in the destructor, restored before show),
+  - [x] device & port-connection keys (already working — kept).
 - [ ] **Preset schema v2** (started 2026-08-10):
   - [x] add a `version` field (presets now write `version: 2`); v1 files still load,
   - [x] fix the asymmetry: `namEnabled` saved alongside `irEnabled`,
@@ -149,9 +151,10 @@ Everything restores on relaunch exactly as you left it. Nearly free once Phase 2
   - [x] embedded model/IR paths. **Decision (2026-08-10): always embed, no
         checkbox.** Load applies a non-empty path if the file exists and loads,
         otherwise warns and keeps the current model/IR; an empty path never unloads.
-- [ ] **First-run auto-connect:** when `connections/saved` is absent, wire
-      `system:capture_1 → input` and `output_{L,R} → system:playback_{1,2}`. A new user
-      should hear sound without opening qpwgraph.
+- [x] **First-run auto-connect:** when `connections/saved` is absent,
+      `restoreConnections` wires `system:capture_1 → input` and
+      `output_{L,R} → system:playback_{1,2}`. A new user hears sound without opening
+      qpwgraph; failed connects on exotic setups are harmless no-ops.
 
 ## Phase 4 — Effect reordering
 
