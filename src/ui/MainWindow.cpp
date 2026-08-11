@@ -21,6 +21,8 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QLabel>
+#include <QContextMenuEvent>
+#include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QMimeData>
@@ -627,9 +629,11 @@ void MainWindow::setupUI()
         {&mEngine->ir(),      {mSwIREnable,      nullptr}},
     };
 
-    // Drag sources: every effect card. Drop target: the strip itself.
+    // Drag sources + context menus: every card. Drop target: the strip itself.
     for (const auto& [fx, card] : mFxCols)
         card->installEventFilter(this);
+    mInputCard->installEventFilter(this);   // context menu only — not draggable
+    mOutputCard->installEventFilter(this);
     mStrip->setAcceptDrops(true);
     mStrip->installEventFilter(this);
 
@@ -788,6 +792,33 @@ void MainWindow::cancelDragPreview()
     rebuildEffectStrip();
 }
 
+void MainWindow::resetCardToDefaults(QWidget* card)
+{
+    // The enable toggle keeps its state — resetting restores the effect's
+    // sound, it doesn't kick it in or out of the chain.
+    ToggleSwitch* enable = nullptr;
+    for (const auto& [fx, w] : mFxCols)
+        if (w == card)
+        {
+            auto tg = mFxToggles.find(fx);
+            if (tg != mFxToggles.end()) enable = tg->second.enable;
+            break;
+        }
+
+    // A parameter belongs to this card iff its widget lives inside it — the
+    // registry needs no extra per-effect bookkeeping. Widget signals update
+    // the engine and schedule the session save.
+    for (const auto& p : mParams)
+    {
+        QWidget* w = p.knob ? static_cast<QWidget*>(p.knob)
+                            : static_cast<QWidget*>(p.toggle);
+        if (!card->isAncestorOf(w)) continue;
+        if (p.toggle && p.toggle == enable) continue;
+        if (p.knob) p.knob->setValue(p.knobDefault);
+        else        p.toggle->setChecked(p.toggleDefault);
+    }
+}
+
 bool MainWindow::eventFilter(QObject* obj, QEvent* ev)
 {
     switch (ev->type())
@@ -825,6 +856,23 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* ev)
         if (obj == mDragCard)
             mDragCard = nullptr;
         break;
+    case QEvent::ContextMenu:
+    {
+        // Right-click on a card (knobs keep their own menu): per-effect reset.
+        auto* box = qobject_cast<QGroupBox*>(obj);
+        if (box && obj != mStrip)
+        {
+            auto* ce = static_cast<QContextMenuEvent*>(ev);
+            QString name = box->title();
+            name.remove("≡  ");
+            QMenu menu(box);
+            QAction* act = menu.addAction("Reset " + name + " to defaults");
+            if (menu.exec(ce->globalPos()) == act)
+                resetCardToDefaults(box);
+            return true;
+        }
+        break;
+    }
     case QEvent::DragEnter:
         if (obj == mStrip)
         {

@@ -77,6 +77,9 @@ private:
     void updateDragPreview(const QPoint& pos);
     void commitDragPreview();
     void cancelDragPreview();
+    // Card context menu: reset one effect's sound parameters (knobs + stereo)
+    // to defaults; the enable toggle keeps its state.
+    void resetCardToDefaults(QWidget* card);
 
     // --- Parameter registry -------------------------------------------------
     // One entry per user-facing parameter. Registration (registerParameters)
