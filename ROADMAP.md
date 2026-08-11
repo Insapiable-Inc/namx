@@ -212,6 +212,20 @@ Requires BUG-06 fixed (Phase 1).
       `ToggleSwitch.cpp`, the VU gradient (`MainWindow.cpp:76`), and the tuner bar
       (`:329`). Move behind `Theme` accessors — palette in one file. Dark-only is fine
       for v1.
+- [ ] **Per-effect accent colors** (requested 2026-08-10). Replace the per-category
+      accents (`Theme::Category`) with one accent per effect card:
+      | effect | color | | effect | color |
+      |---|---|---|---|---|
+      | tuner | `#f0e9d7` | | amp (NAM) | `#e4b954` |
+      | noise gate | `#c2c5c8` | | eq | `#d5d3c5` |
+      | compressor | `#0f377a` | | chorus | `#8dccf3` |
+      | wah | `#d4c19a` | | tremolo | `#19848e` |
+      | flanger | `#93477b` | | delay | `#eae9e5` |
+      | phaser | `#4bba5b` | | reverb | `#3d3c3d` |
+      | IR | `#ef661a` | | | |
+      Some are near-white (delay, eq, tuner) or very dark (reverb, compressor) — pick
+      title-text colors per card for contrast when implementing (the current theme
+      derives title color from the accent).
 - [ ] **Resurrect or delete `GUIConstants.h`.** Currently 82 lines of dead code (zero
       references) with values drifted from reality. Either make it the single source for
       sizes/margins/scroll-steps and use it everywhere, or delete it.
