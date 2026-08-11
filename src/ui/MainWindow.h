@@ -61,16 +61,22 @@ private:
     QWidget* makeEffectColumn(const QString& title,
                               ToggleSwitch*& toggleOut,
                               const std::initializer_list<KnobWidget*>& knobs,
-                              ToggleSwitch** stereoToggleOut = nullptr);
+                              ToggleSwitch** stereoToggleOut = nullptr,
+                              bool movable = true);
 
     // --- Effect strip / chain reordering ---
-    // (Re)lays out the strip in engine chain order: dividers follow NAM/EQ,
-    // keyboard shortcuts are re-assigned left to right.
+    // Lays the cards out in the given order: dividers follow NAM/EQ.
+    void layoutStrip(const std::vector<EffectBase*>& order);
+    // layoutStrip(engine chain) + shortcuts re-assigned left to right.
     void rebuildEffectStrip();
     // setChainOrder + strip rebuild; used by session restore, preset load, DnD.
     void applyChainOrder(const QStringList& ids);
+    // Live drag preview: while a card is dragged the strip re-lays out to the
+    // prospective order (engine untouched); drop commits it, cancel restores.
     void startCardDrag(QWidget* card);
-    void handleCardDrop(const QString& id, const QPoint& dropPos);
+    void updateDragPreview(const QPoint& pos);
+    void commitDragPreview();
+    void cancelDragPreview();
 
     // --- Parameter registry -------------------------------------------------
     // One entry per user-facing parameter. Registration (registerParameters)
@@ -113,6 +119,8 @@ private:
     // Drag state for card reordering
     QWidget* mDragCard = nullptr;
     QPoint   mDragStartPos;
+    std::string              mDragId;      // effect ID being dragged; empty = no drag
+    std::vector<std::string> mPreviewIds;  // strip order currently shown while dragging
 
     QPushButton* mBtnLoadNAM    = nullptr;
     QPushButton* mBtnUnloadNAM  = nullptr;

@@ -14,6 +14,7 @@
 #include <QFileDialog>
 #include <QFont>
 #include <QFrame>
+#include <QGraphicsOpacityEffect>
 #include <QGroupBox>
 #include <QHBoxLayout>
 #include <QJsonArray>
@@ -71,6 +72,32 @@ static QWidget* makeStereoSlot(ToggleSwitch** outToggle)
         *outToggle = sw;
     }
 
+    return w;
+}
+
+// Grip row at the top of every strip card: a handle glyph on movable cards
+// (the drag affordance), an empty spacer of the same height on pinned ones so
+// toggles and knobs stay Y-aligned across the strip.
+static QWidget* makeGripRow(bool movable)
+{
+    auto* w = new QWidget;
+    w->setFixedHeight(14);
+    auto* lay = new QVBoxLayout(w);
+    lay->setContentsMargins(0, 0, 0, 2);
+    lay->setSpacing(0);
+    if (movable) {
+        auto* grip = new QLabel("≡");
+        grip->setObjectName("dragGrip");
+        grip->setAlignment(Qt::AlignHCenter);
+        QPalette p = grip->palette();
+        p.setColor(QPalette::WindowText, QColor("#5c6370"));
+        grip->setPalette(p);
+        lay->addWidget(grip);
+        w->setCursor(Qt::OpenHandCursor);
+        w->setToolTip("Drag to reorder");
+    } else {
+        w->setToolTip("Position fixed");
+    }
     return w;
 }
 
@@ -146,7 +173,8 @@ MainWindow::~MainWindow()
 QWidget* MainWindow::makeEffectColumn(const QString& title,
                                       ToggleSwitch*& toggleOut,
                                       const std::initializer_list<KnobWidget*>& knobs,
-                                      ToggleSwitch** stereoToggleOut)
+                                      ToggleSwitch** stereoToggleOut,
+                                      bool movable)
 {
     auto* col = new QGroupBox(title);
     col->setAlignment(Qt::AlignHCenter);
@@ -154,6 +182,8 @@ QWidget* MainWindow::makeEffectColumn(const QString& title,
     auto* lay = new QVBoxLayout(col);
     lay->setContentsMargins(4, 6, 4, 4);
     lay->setSpacing(4);
+
+    lay->addWidget(makeGripRow(movable));
 
     toggleOut = new ToggleSwitch;
     toggleOut->setCheckable(true);
@@ -322,6 +352,8 @@ void MainWindow::setupUI()
         auto* lay = new QVBoxLayout(col);
         lay->setContentsMargins(4, 6, 4, 4);
         lay->setSpacing(3);
+
+        lay->addWidget(makeGripRow(false)); // pinned first — no grip
 
         mSwTunerEnable = new ToggleSwitch;
         mSwTunerEnable->setCheckable(true);
@@ -552,9 +584,9 @@ void MainWindow::setupUI()
         mFxCols[&mEngine->reverb()] = col;
     }
 
-    // ---- IR toggle ----
+    // ---- IR toggle (pinned last — no grip) ----
     {
-        auto* col = makeEffectColumn("IR", mSwIREnable, {});
+        auto* col = makeEffectColumn("IR", mSwIREnable, {}, nullptr, /*movable=*/false);
         mSwIREnable->setChecked(true);
         Theme::tagCard(col, Theme::Category::Cab);
         mFxCols[&mEngine->ir()] = col;
@@ -569,6 +601,7 @@ void MainWindow::setupUI()
         Theme::tagCard(col, Theme::Category::Neutral);
         auto* lay = new QVBoxLayout(col);
         lay->setContentsMargins(4, 6, 4, 4);
+        lay->addWidget(makeGripRow(false)); // outside the chain — never movable
         knob = new KnobWidget("Gain", kGainMin, kGainMax, kGainDefault, "dB");
         knob->setScrollStep(0.1);
         meter = makeVUBarVertical();
@@ -612,7 +645,7 @@ void MainWindow::setupUI()
     rootLayout->addWidget(scroll, 1);
 }
 
-void MainWindow::rebuildEffectStrip()
+void MainWindow::layoutStrip(const std::vector<EffectBase*>& order)
 {
     // Empty the layout: dividers and the stretch are recreated below, cards
     // are reused (they stay children of the strip while out of the layout).
@@ -631,13 +664,11 @@ void MainWindow::rebuildEffectStrip()
         mStripLay->addWidget(f);
     };
 
-    mShortcuts.clear();
-
-    // Chain order drives everything: card order, shortcut order, and the
-    // section dividers, which follow NAM/EQ wherever they currently sit.
+    // Card order drives the section dividers too — they follow NAM/EQ
+    // wherever they currently sit (also during a drag preview).
     mStripLay->addWidget(mInputCard);
     addDivider();
-    for (auto* fx : mEngine->chain())
+    for (auto* fx : order)
     {
         if (fx == &mEngine->nam())
             addDivider();
@@ -646,16 +677,27 @@ void MainWindow::rebuildEffectStrip()
         if (it != mFxCols.end())
             mStripLay->addWidget(it->second);
 
-        auto tg = mFxToggles.find(fx);
-        if (tg != mFxToggles.end())
-            mShortcuts.addEffect(tg->second.enable, tg->second.stereo);
-
         if (fx == &mEngine->eq())
             addDivider();
     }
     addDivider();
     mStripLay->addWidget(mOutputCard);
     mStripLay->addStretch();
+    mStripLay->activate(); // fresh geometry now — the drag preview reads card centres
+}
+
+void MainWindow::rebuildEffectStrip()
+{
+    layoutStrip(mEngine->chain());
+
+    // Digit/QWE shortcuts always match the visual left-to-right order.
+    mShortcuts.clear();
+    for (auto* fx : mEngine->chain())
+    {
+        auto tg = mFxToggles.find(fx);
+        if (tg != mFxToggles.end())
+            mShortcuts.addEffect(tg->second.enable, tg->second.stereo);
+    }
 }
 
 void MainWindow::applyChainOrder(const QStringList& ids)
@@ -681,39 +723,77 @@ void MainWindow::startCardDrag(QWidget* card)
     const std::string id = mEngine->idForEffect(fx);
     if (id.empty()) return;
 
+    mDragId     = id;
+    mPreviewIds = mEngine->chainIds();
+
     auto* mime = new QMimeData;
     mime->setData(kEffectMime, QByteArray::fromStdString(id));
     auto* drag = new QDrag(card);
     drag->setMimeData(mime);
-    drag->setPixmap(card->grab());
+    drag->setPixmap(card->grab()); // grab before dimming
     drag->setHotSpot(mDragStartPos);
+
+    // Dim the in-strip card: it marks its landing slot in the live preview
+    // while the full-opacity pixmap follows the cursor.
+    auto* dim = new QGraphicsOpacityEffect(card);
+    dim->setOpacity(0.35);
+    card->setGraphicsEffect(dim);
+
     drag->exec(Qt::MoveAction);
+
+    // Drop committed inside the event filter; a cancelled drag just falls
+    // back to the engine order here.
+    card->setGraphicsEffect(nullptr);
+    mDragId.clear();
+    rebuildEffectStrip();
 }
 
-void MainWindow::handleCardDrop(const QString& id, const QPoint& dropPos)
+void MainWindow::updateDragPreview(const QPoint& pos)
 {
-    std::vector<std::string> ids = mEngine->chainIds();
-    const std::string dragged = id.toStdString();
-    ids.erase(std::remove(ids.begin(), ids.end(), dragged), ids.end());
+    if (mDragId.empty()) return;
+
+    std::vector<std::string> ids = mPreviewIds;
+    ids.erase(std::remove(ids.begin(), ids.end(), mDragId), ids.end());
     if (ids.empty()) return;
 
-    // Insert after every card whose centre lies left of the drop point,
-    // clamped so tuner stays first and IR stays last.
+    // Insert after every card whose centre lies left of the cursor, clamped
+    // so tuner stays first and IR stays last.
     int insert = 0;
     for (size_t i = 0; i < ids.size(); ++i)
     {
         auto it = mFxCols.find(mEngine->effectById(ids[i]));
-        if (it != mFxCols.end() && dropPos.x() > it->second->geometry().center().x())
+        if (it != mFxCols.end() && pos.x() > it->second->geometry().center().x())
             insert = static_cast<int>(i) + 1;
     }
     insert = std::clamp(insert, 1, static_cast<int>(ids.size()) - 1);
-    ids.insert(ids.begin() + insert, dragged);
+    ids.insert(ids.begin() + insert, mDragId);
 
-    QStringList qids;
+    if (ids == mPreviewIds) return;
+    mPreviewIds = ids;
+
+    std::vector<EffectBase*> order;
+    order.reserve(ids.size());
     for (const auto& s : ids)
+        if (EffectBase* e = mEngine->effectById(s))
+            order.push_back(e);
+    layoutStrip(order);
+}
+
+void MainWindow::commitDragPreview()
+{
+    if (mDragId.empty()) return;
+    QStringList qids;
+    for (const auto& s : mPreviewIds)
         qids << QString::fromStdString(s);
     applyChainOrder(qids);
     scheduleSessionSave();
+}
+
+void MainWindow::cancelDragPreview()
+{
+    if (mDragId.empty()) return;
+    mPreviewIds = mEngine->chainIds();
+    rebuildEffectStrip();
 }
 
 bool MainWindow::eventFilter(QObject* obj, QEvent* ev)
@@ -752,6 +832,16 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* ev)
             mDragCard = nullptr;
         break;
     case QEvent::DragEnter:
+        if (obj == mStrip)
+        {
+            auto* de = static_cast<QDragEnterEvent*>(ev);
+            if (de->mimeData()->hasFormat(kEffectMime))
+            {
+                de->acceptProposedAction();
+                return true;
+            }
+        }
+        break;
     case QEvent::DragMove:
         if (obj == mStrip)
         {
@@ -759,9 +849,14 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* ev)
             if (de->mimeData()->hasFormat(kEffectMime))
             {
                 de->acceptProposedAction();
+                updateDragPreview(de->position().toPoint());
                 return true;
             }
         }
+        break;
+    case QEvent::DragLeave:
+        if (obj == mStrip)
+            cancelDragPreview();
         break;
     case QEvent::Drop:
         if (obj == mStrip)
@@ -770,8 +865,7 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* ev)
             if (de->mimeData()->hasFormat(kEffectMime))
             {
                 de->acceptProposedAction();
-                handleCardDrop(QString::fromUtf8(de->mimeData()->data(kEffectMime)),
-                               de->position().toPoint());
+                commitDragPreview();
                 return true;
             }
         }
