@@ -5,7 +5,11 @@
 #include "TunerProcessor.h"
 
 #include <QAction>
+#include <QApplication>
 #include <QComboBox>
+#include <QDrag>
+#include <QDragEnterEvent>
+#include <QDropEvent>
 #include <QFile>
 #include <QFileDialog>
 #include <QFont>
@@ -18,6 +22,8 @@
 #include <QLabel>
 #include <QMenuBar>
 #include <QMessageBox>
+#include <QMimeData>
+#include <QMouseEvent>
 #include <QProgressBar>
 #include <QPushButton>
 #include <QScrollArea>
@@ -26,12 +32,15 @@
 #include <QTimer>
 #include <QVBoxLayout>
 
+#include <algorithm>
 #include <cmath>
-#include <unordered_map>
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+// Mime type carrying the effect ID of a dragged strip card.
+static const char kEffectMime[] = "application/x-nam-effect-id";
 
 // Fixed height of the "stereo slot" row that sits between the enable toggle
 // and the first knob. Reserved on every card with knobs (visible toggle on
@@ -294,25 +303,15 @@ void MainWindow::setupUI()
     scroll->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     scroll->setFrameShape(QFrame::NoFrame);
 
-    auto* strip    = new QWidget;
-    auto* stripLay = new QHBoxLayout(strip);
-    stripLay->setContentsMargins(2, 2, 2, 2);
-    stripLay->setSpacing(4);
-    stripLay->setAlignment(Qt::AlignTop);
+    mStrip    = new QWidget;
+    mStripLay = new QHBoxLayout(mStrip);
+    mStripLay->setContentsMargins(2, 2, 2, 2);
+    mStripLay->setSpacing(4);
+    mStripLay->setAlignment(Qt::AlignTop);
 
-    auto addDivider = [&] {
-        auto* f = new QFrame;
-        f->setFrameShape(QFrame::VLine);
-        f->setFrameShadow(QFrame::Sunken);
-        stripLay->addWidget(f);
-    };
-
-    // =========================================================================
-    // Phase 1: Create all effect columns and store them keyed by EffectBase*.
-    //          Do NOT add to the layout here — layout order is driven by the
-    //          audio chain in Phase 2 so the two stay in sync automatically.
-    // =========================================================================
-    std::unordered_map<EffectBase*, QWidget*> fxCols;
+    // Effect columns are created once here, keyed by EffectBase*. They are
+    // NOT added to the layout — rebuildEffectStrip lays them out in engine
+    // chain order, so audio order and UI order stay in sync automatically.
 
     // ---- Tuner ----
     {
@@ -365,7 +364,7 @@ void MainWindow::setupUI()
         lay->addWidget(muteLabel);
         lay->addStretch();
 
-        fxCols[&mEngine->tuner()] = col;
+        mFxCols[&mEngine->tuner()] = col;
     }
 
     // ---- Noise Gate ----
@@ -382,7 +381,7 @@ void MainWindow::setupUI()
             {mKnobGateThresh, mKnobGateAttack, mKnobGateRelease});
         Theme::tagCard(col, Theme::Category::Dynamics);
 
-        fxCols[&mEngine->gate()] = col;
+        mFxCols[&mEngine->gate()] = col;
     }
 
     // ---- Compressor ----
@@ -403,7 +402,7 @@ void MainWindow::setupUI()
             {mKnobCompThresh, mKnobCompRatio, mKnobCompAttack, mKnobCompRelease, mKnobCompMakeup});
         Theme::tagCard(col, Theme::Category::Dynamics);
 
-        fxCols[&mEngine->comp()] = col;
+        mFxCols[&mEngine->comp()] = col;
     }
 
     // ---- Dynamic Wah ----
@@ -420,7 +419,7 @@ void MainWindow::setupUI()
             {mKnobWahSens, mKnobWahRes, mKnobWahMix});
         Theme::tagCard(col, Theme::Category::Filter);
 
-        fxCols[&mEngine->wah()] = col;
+        mFxCols[&mEngine->wah()] = col;
     }
 
     // ---- Amp (NAM) ----
@@ -428,7 +427,7 @@ void MainWindow::setupUI()
         auto* col = makeEffectColumn("Amp", mSwNAMEnable, {});
         mSwNAMEnable->setChecked(true);
         Theme::tagCard(col, Theme::Category::Amp);
-        fxCols[&mEngine->nam()] = col;
+        mFxCols[&mEngine->nam()] = col;
     }
 
     // ---- EQ ----
@@ -444,7 +443,7 @@ void MainWindow::setupUI()
         auto* col = makeEffectColumn("EQ", mSwEQEnable, {mKnobLow, mKnobMid, mKnobTreble});
         mSwEQEnable->setChecked(true);
         Theme::tagCard(col, Theme::Category::EQ);
-        fxCols[&mEngine->eq()] = col;
+        mFxCols[&mEngine->eq()] = col;
     }
 
     // ---- Flanger ----
@@ -463,7 +462,7 @@ void MainWindow::setupUI()
             {mKnobFlRate, mKnobFlDepth, mKnobFlFeedback, mKnobFlMix}, &mSwFlangerStereo);
         Theme::tagCard(col, Theme::Category::ModPre);
 
-        fxCols[&mEngine->flanger()] = col;
+        mFxCols[&mEngine->flanger()] = col;
     }
 
     // ---- Phaser ----
@@ -482,7 +481,7 @@ void MainWindow::setupUI()
             {mKnobPhRate, mKnobPhDepth, mKnobPhFeedback, mKnobPhMix}, &mSwPhaserStereo);
         Theme::tagCard(col, Theme::Category::ModPre);
 
-        fxCols[&mEngine->phaser()] = col;
+        mFxCols[&mEngine->phaser()] = col;
     }
 
     // ---- Chorus ----
@@ -499,7 +498,7 @@ void MainWindow::setupUI()
             {mKnobChRate, mKnobChDepth, mKnobChMix});
         Theme::tagCard(col, Theme::Category::ModPost);
 
-        fxCols[&mEngine->chorus()] = col;
+        mFxCols[&mEngine->chorus()] = col;
     }
 
     // ---- Tremolo ----
@@ -513,7 +512,7 @@ void MainWindow::setupUI()
         auto* col = makeEffectColumn("Tremolo", mSwTremoloEnable, {mKnobTrRate, mKnobTrDepth});
         Theme::tagCard(col, Theme::Category::ModPost);
 
-        fxCols[&mEngine->tremolo()] = col;
+        mFxCols[&mEngine->tremolo()] = col;
     }
 
     // ---- Delay ----
@@ -531,7 +530,7 @@ void MainWindow::setupUI()
         mSwDelayStereo->setChecked(true);
         Theme::tagCard(col, Theme::Category::Time);
 
-        fxCols[&mEngine->delay()] = col;
+        mFxCols[&mEngine->delay()] = col;
     }
 
     // ---- Reverb ----
@@ -550,7 +549,7 @@ void MainWindow::setupUI()
             {mKnobRevRoom, mKnobRevDamping, mKnobRevWidth, mKnobRevMix});
         Theme::tagCard(col, Theme::Category::Time);
 
-        fxCols[&mEngine->reverb()] = col;
+        mFxCols[&mEngine->reverb()] = col;
     }
 
     // ---- IR toggle ----
@@ -558,20 +557,11 @@ void MainWindow::setupUI()
         auto* col = makeEffectColumn("IR", mSwIREnable, {});
         mSwIREnable->setChecked(true);
         Theme::tagCard(col, Theme::Category::Cab);
-        fxCols[&mEngine->ir()] = col;
+        mFxCols[&mEngine->ir()] = col;
     }
 
-    // =========================================================================
-    // Phase 2: Lay out the strip in audio chain order.
-    //          Dividers are inserted at semantic boundaries:
-    //            - after Input (fixed)
-    //            - before NAM (mono pre-amp → amp)
-    //            - after EQ   (amp → stereo post-amp)
-    //            - before Output (fixed)
-    // =========================================================================
-
     // Input/Output gain cards (not in the chain — pinned first and last)
-    auto makeGainCard = [&](const QString& title, KnobWidget*& knob, QProgressBar*& meter) {
+    auto makeGainCard = [&](const QString& title, KnobWidget*& knob, QProgressBar*& meter) -> QWidget* {
         using namespace NAMConstants;
         auto* col = new QGroupBox(title);
         col->setAlignment(Qt::AlignHCenter);
@@ -585,17 +575,15 @@ void MainWindow::setupUI()
         lay->addWidget(knob);
         lay->addWidget(meter, 0, Qt::AlignHCenter);
         lay->addStretch();
-        stripLay->addWidget(col);
+        return col;
     };
 
-    makeGainCard("Input", mKnobInputGain, mMeterIn);
-    addDivider();
+    mInputCard  = makeGainCard("Input",  mKnobInputGain,  mMeterIn);
+    mOutputCard = makeGainCard("Output", mKnobOutputGain, mMeterOut);
 
-    // Keyboard shortcuts follow the same left-to-right order as the strip:
-    // digits (1 2 3 … 0 - =) toggle each card's enable, Q W E … toggle the
-    // stereo switches of the cards that have one.
-    struct CardToggles { ToggleSwitch* enable; ToggleSwitch* stereo; };
-    const std::unordered_map<EffectBase*, CardToggles> fxToggles = {
+    // Keyboard shortcut targets per card; keys are (re)assigned left to right
+    // on every strip rebuild so they always match the visual order.
+    mFxToggles = {
         {&mEngine->tuner(),   {mSwTunerEnable,   nullptr}},
         {&mEngine->gate(),    {mSwGateEnable,    nullptr}},
         {&mEngine->comp(),    {mSwCompEnable,    nullptr}},
@@ -604,39 +592,194 @@ void MainWindow::setupUI()
         {&mEngine->phaser(),  {mSwPhaserEnable,  mSwPhaserStereo}},
         {&mEngine->nam(),     {mSwNAMEnable,     nullptr}},
         {&mEngine->eq(),      {mSwEQEnable,      nullptr}},
-        {&mEngine->chorus(), {mSwChorusEnable, nullptr}},
+        {&mEngine->chorus(),  {mSwChorusEnable,  nullptr}},
         {&mEngine->tremolo(), {mSwTremoloEnable, nullptr}},
         {&mEngine->delay(),   {mSwDelayEnable,   mSwDelayStereo}},
         {&mEngine->reverb(),  {mSwReverbEnable,  nullptr}},
         {&mEngine->ir(),      {mSwIREnable,      nullptr}},
     };
-    EffectShortcuts shortcuts(this);
 
-    // Chain-ordered effects — reordering mChain in AudioEngine reorders the UI here
+    // Drag sources: every movable card. Drop target: the strip itself.
+    for (const auto& [fx, card] : mFxCols)
+        if (fx != &mEngine->tuner() && fx != &mEngine->ir())
+            card->installEventFilter(this);
+    mStrip->setAcceptDrops(true);
+    mStrip->installEventFilter(this);
+
+    rebuildEffectStrip();
+
+    scroll->setWidget(mStrip);
+    rootLayout->addWidget(scroll, 1);
+}
+
+void MainWindow::rebuildEffectStrip()
+{
+    // Empty the layout: dividers and the stretch are recreated below, cards
+    // are reused (they stay children of the strip while out of the layout).
+    while (QLayoutItem* item = mStripLay->takeAt(0))
+    {
+        if (QWidget* w = item->widget(); w && w->objectName() == "stripDivider")
+            w->deleteLater();
+        delete item;
+    }
+
+    auto addDivider = [this] {
+        auto* f = new QFrame;
+        f->setObjectName("stripDivider");
+        f->setFrameShape(QFrame::VLine);
+        f->setFrameShadow(QFrame::Sunken);
+        mStripLay->addWidget(f);
+    };
+
+    mShortcuts.clear();
+
+    // Chain order drives everything: card order, shortcut order, and the
+    // section dividers, which follow NAM/EQ wherever they currently sit.
+    mStripLay->addWidget(mInputCard);
+    addDivider();
     for (auto* fx : mEngine->chain())
     {
         if (fx == &mEngine->nam())
             addDivider();
 
-        auto it = fxCols.find(fx);
-        if (it != fxCols.end())
-            stripLay->addWidget(it->second);
+        auto it = mFxCols.find(fx);
+        if (it != mFxCols.end())
+            mStripLay->addWidget(it->second);
 
-        auto tg = fxToggles.find(fx);
-        if (tg != fxToggles.end())
-            shortcuts.addEffect(tg->second.enable, tg->second.stereo);
+        auto tg = mFxToggles.find(fx);
+        if (tg != mFxToggles.end())
+            mShortcuts.addEffect(tg->second.enable, tg->second.stereo);
 
         if (fx == &mEngine->eq())
             addDivider();
     }
-
     addDivider();
+    mStripLay->addWidget(mOutputCard);
+    mStripLay->addStretch();
+}
 
-    makeGainCard("Output", mKnobOutputGain, mMeterOut);
+void MainWindow::applyChainOrder(const QStringList& ids)
+{
+    std::vector<std::string> v;
+    v.reserve(ids.size());
+    for (const auto& s : ids)
+        v.push_back(s.toStdString());
+    mEngine->setChainOrder(v);
+    rebuildEffectStrip();
+}
 
-    stripLay->addStretch();
-    scroll->setWidget(strip);
-    rootLayout->addWidget(scroll, 1);
+// ---------------------------------------------------------------------------
+// Card drag & drop
+// ---------------------------------------------------------------------------
+
+void MainWindow::startCardDrag(QWidget* card)
+{
+    EffectBase* fx = nullptr;
+    for (const auto& [e, w] : mFxCols)
+        if (w == card) { fx = e; break; }
+    if (!fx) return;
+    const std::string id = mEngine->idForEffect(fx);
+    if (id.empty()) return;
+
+    auto* mime = new QMimeData;
+    mime->setData(kEffectMime, QByteArray::fromStdString(id));
+    auto* drag = new QDrag(card);
+    drag->setMimeData(mime);
+    drag->setPixmap(card->grab());
+    drag->setHotSpot(mDragStartPos);
+    drag->exec(Qt::MoveAction);
+}
+
+void MainWindow::handleCardDrop(const QString& id, const QPoint& dropPos)
+{
+    std::vector<std::string> ids = mEngine->chainIds();
+    const std::string dragged = id.toStdString();
+    ids.erase(std::remove(ids.begin(), ids.end(), dragged), ids.end());
+    if (ids.empty()) return;
+
+    // Insert after every card whose centre lies left of the drop point,
+    // clamped so tuner stays first and IR stays last.
+    int insert = 0;
+    for (size_t i = 0; i < ids.size(); ++i)
+    {
+        auto it = mFxCols.find(mEngine->effectById(ids[i]));
+        if (it != mFxCols.end() && dropPos.x() > it->second->geometry().center().x())
+            insert = static_cast<int>(i) + 1;
+    }
+    insert = std::clamp(insert, 1, static_cast<int>(ids.size()) - 1);
+    ids.insert(ids.begin() + insert, dragged);
+
+    QStringList qids;
+    for (const auto& s : ids)
+        qids << QString::fromStdString(s);
+    applyChainOrder(qids);
+    scheduleSessionSave();
+}
+
+bool MainWindow::eventFilter(QObject* obj, QEvent* ev)
+{
+    switch (ev->type())
+    {
+    case QEvent::MouseButtonPress:
+    {
+        auto* me = static_cast<QMouseEvent*>(ev);
+        if (obj != mStrip && me->button() == Qt::LeftButton)
+        {
+            mDragCard     = static_cast<QWidget*>(obj);
+            mDragStartPos = me->pos();
+        }
+        break;
+    }
+    case QEvent::MouseMove:
+    {
+        if (!mDragCard || obj != mDragCard)
+            break;
+        auto* me = static_cast<QMouseEvent*>(ev);
+        if (!(me->buttons() & Qt::LeftButton))
+        {
+            mDragCard = nullptr;
+            break;
+        }
+        if ((me->pos() - mDragStartPos).manhattanLength() < QApplication::startDragDistance())
+            break;
+        QWidget* card = mDragCard;
+        mDragCard = nullptr;
+        startCardDrag(card);
+        return true;
+    }
+    case QEvent::MouseButtonRelease:
+        if (obj == mDragCard)
+            mDragCard = nullptr;
+        break;
+    case QEvent::DragEnter:
+    case QEvent::DragMove:
+        if (obj == mStrip)
+        {
+            auto* de = static_cast<QDragMoveEvent*>(ev);
+            if (de->mimeData()->hasFormat(kEffectMime))
+            {
+                de->acceptProposedAction();
+                return true;
+            }
+        }
+        break;
+    case QEvent::Drop:
+        if (obj == mStrip)
+        {
+            auto* de = static_cast<QDropEvent*>(ev);
+            if (de->mimeData()->hasFormat(kEffectMime))
+            {
+                de->acceptProposedAction();
+                handleCardDrop(QString::fromUtf8(de->mimeData()->data(kEffectMime)),
+                               de->position().toPoint());
+                return true;
+            }
+        }
+        break;
+    default:
+        break;
+    }
+    return QMainWindow::eventFilter(obj, ev);
 }
 
 void MainWindow::setAudioStatus(const QString& text, bool ok)
@@ -838,6 +981,10 @@ void MainWindow::saveSessionState()
         s.setValue(path, p.knob ? QVariant(p.knob->value())
                                 : QVariant(p.toggle->isChecked()));
     }
+    QStringList order;
+    for (const auto& id : mEngine->chainIds())
+        order << QString::fromStdString(id);
+    s.setValue("effectOrder", order);
     s.endGroup();
 }
 
@@ -854,6 +1001,9 @@ void MainWindow::restoreSessionState()
         else
             p.toggle->setChecked(s.value(path, p.toggleDefault).toBool());
     }
+    const QStringList order = s.value("effectOrder").toStringList();
+    if (!order.isEmpty())
+        applyChainOrder(order);
     s.endGroup();
 }
 
@@ -1083,6 +1233,10 @@ void MainWindow::onSavePreset()
     obj["version"] = 2;
     obj["namPath"] = QString::fromStdString(mEngine->modelPath());
     obj["irPath"]  = QString::fromStdString(mEngine->irPath());
+    QJsonArray orderArr;
+    for (const auto& id : mEngine->chainIds())
+        orderArr.append(QString::fromStdString(id));
+    obj["effectOrder"] = orderArr;
     for (const auto& p : mParams)
     {
         const QJsonValue v = p.knob ? QJsonValue(p.knob->value())
@@ -1148,6 +1302,16 @@ void MainWindow::onLoadPreset()
         else
             p.toggle->setChecked(src.contains(p.key) ? src[p.key].toBool(p.toggleDefault)
                                                      : p.toggleDefault);
+    }
+
+    // v2 presets carry the chain order; unknown/missing IDs are handled by
+    // the engine-side sanitizer (missing effects keep their default slot).
+    if (obj.contains("effectOrder"))
+    {
+        QStringList order;
+        for (const auto& v : obj["effectOrder"].toArray())
+            order << v.toString();
+        applyChainOrder(order);
     }
 
     // v2 presets embed the model/IR paths. Only a non-empty path acts — a

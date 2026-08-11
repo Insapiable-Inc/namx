@@ -131,7 +131,7 @@ preset save block, and the preset load block.
 Verified: clean Release build, 5 s offscreen smoke run. Manual check recommended:
 save → twist → load a preset and confirm knobs *and* audio follow.
 
-## Phase 3 — Persistent state ✅ (completed 2026-08-10; effect order lands with Phase 4)
+## Phase 3 — Persistent state ✅ (completed 2026-08-10; effect order landed with Phase 4)
 
 Everything restores on relaunch exactly as you left it. Nearly free once Phase 2 exists.
 
@@ -145,9 +145,8 @@ Everything restores on relaunch exactly as you left it. Nearly free once Phase 2
 - [ ] **Preset schema v2** (started 2026-08-10):
   - [x] add a `version` field (presets now write `version: 2`); v1 files still load,
   - [x] fix the asymmetry: `namEnabled` saved alongside `irEnabled`,
-  - [ ] add `effectOrder` (list of stable effect IDs; unknown/missing IDs fall back to
-        default position) — needs the Phase 4 effect IDs; the schema is versioned, so
-        it lands with Phase 4,
+  - [x] add `effectOrder` (list of stable effect IDs; unknown/missing IDs fall back to
+        default position) — landed with Phase 4 (2026-08-10),
   - [x] embedded model/IR paths. **Decision (2026-08-10): always embed, no
         checkbox.** Load applies a non-empty path if the file exists and loads,
         otherwise warns and keeps the current model/IR; an empty path never unloads.
@@ -156,24 +155,42 @@ Everything restores on relaunch exactly as you left it. Nearly free once Phase 2
       `output_{L,R} → system:playback_{1,2}`. A new user hears sound without opening
       qpwgraph; failed connects on exotic setups are harmless no-ops.
 
-## Phase 4 — Effect reordering
+## Phase 4 — Effect reordering ✅ (completed 2026-08-10, code; manual verification below)
 
-Requires BUG-06 fixed (Phase 1). The plumbing is 80% there: `mChain` is a
-`vector<EffectBase*>` (`gui/src/dsp/AudioEngine.cpp:24`) and the UI already lays cards
-out from `chain()`.
+Requires BUG-06 fixed (Phase 1).
 
-- [ ] **Data model:** stable string ID per effect; chain = permutation over the fixed
-      processor instances.
-- [ ] **RT-safe swap:** audio thread iterates the chain lock-free, so live mutation is
-      unsafe. Use the model-swap pattern: two fixed chain arrays + atomic pointer; GUI
-      writes the inactive one and swaps; `reset()` effects whose mono/stereo position
-      class changed.
-- [ ] **UI:** drag-and-drop the effect cards within the strip. Derive the section
-      dividers from the current position of NAM/EQ instead of the hardcoded identity
-      checks (`MainWindow.cpp:679,693`).
-- [ ] **Constraints:** pin Input/Tuner first and IR/Output last; everything else movable.
-- [ ] **Persistence:** order serialized as the ID list in both session state and preset
-      v2 (Phase 3 already defined the format).
+- [x] **Data model:** stable string IDs (`tuner gate comp wah flanger phaser nam eq
+      chorus tremolo delay reverb ir`) in `AudioEngine::mEffectTable`; the chain is a
+      permutation over the fixed instances. **Never rename an ID** — they are the
+      session/preset contract.
+- [x] **RT-safe swap:** two chain buffers + atomic index (model-swap pattern). The
+      audio thread reads the index once per callback; `setChainOrder` sanitizes the
+      ID list, writes the inactive buffer, swaps, and uses a completed-callback
+      counter to wait (bounded) before a retired buffer is ever rewritten. Moved
+      effects get `requestReset()`, consumed by the audio thread at the top of their
+      next block (all `reset()` impls are allocation-free fills).
+- [x] **UI:** cards drag-and-drop within the strip (`MainWindow::eventFilter` — drag
+      from any empty card area; knobs/toggles keep their events).
+      `rebuildEffectStrip()` relays cards in chain order; dividers follow NAM/EQ
+      wherever they sit; digit/QWE shortcuts are re-assigned left-to-right on every
+      rebuild (`EffectShortcuts::clear()`).
+- [x] **Constraints:** tuner pinned first, IR pinned last (engine-side sanitize + no
+      drag on those cards); Input/Output are outside the chain, always at the ends.
+- [x] **Persistence:** order saved as the ID list in `session/effectOrder` and preset
+      v2 `effectOrder`; unknown IDs are dropped, missing effects re-enter at their
+      default position.
+
+### Phase 4 — manual verification pending
+
+- [ ] Drag a card (e.g. Delay before the Amp): UI order changes, dividers follow, and
+      the *sound* changes accordingly. No crash/glitch while dragging during playback
+      (at most a brief tail cut from the moved effect resetting).
+- [ ] Digit shortcuts now map to the new left-to-right order; Q/W/E stereo keys too.
+- [ ] Order survives relaunch, and a preset saved with a custom order restores it.
+      Loading a v1 preset leaves the order untouched.
+- [ ] **BUG-06 exercise (finally reachable):** put Gate/Comp/Wah *after* a
+      stereo-mode Delay or Chorus and play — both channels behave identically
+      (per-channel envelopes, no mono collapse, no channel pumping).
 
 ## Phase 5 — Aesthetics
 

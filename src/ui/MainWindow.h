@@ -1,15 +1,19 @@
 #pragma once
 
 #include <QMainWindow>
+#include <QPoint>
 #include <QTimer>
 #include <functional>
 #include <memory>
+#include <unordered_map>
 #include <vector>
 
 #include "AudioEngine.h"
+#include "EffectShortcuts.h"
 #include "KnobWidget.h"
 #include "ToggleSwitch.h"
 
+class QHBoxLayout;
 class QLabel;
 class QPushButton;
 class QProgressBar;
@@ -22,6 +26,11 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget* parent = nullptr);
     ~MainWindow() override;
+
+protected:
+    // Drag-and-drop reordering of the effect strip (filter installed on the
+    // effect cards and on the strip container).
+    bool eventFilter(QObject* obj, QEvent* ev) override;
 
 private slots:
     void onLoadNAM();
@@ -54,6 +63,15 @@ private:
                               const std::initializer_list<KnobWidget*>& knobs,
                               ToggleSwitch** stereoToggleOut = nullptr);
 
+    // --- Effect strip / chain reordering ---
+    // (Re)lays out the strip in engine chain order: dividers follow NAM/EQ,
+    // keyboard shortcuts are re-assigned left to right.
+    void rebuildEffectStrip();
+    // setChainOrder + strip rebuild; used by session restore, preset load, DnD.
+    void applyChainOrder(const QStringList& ids);
+    void startCardDrag(QWidget* card);
+    void handleCardDrop(const QString& id, const QPoint& dropPos);
+
     // --- Parameter registry -------------------------------------------------
     // One entry per user-facing parameter. Registration (registerParameters)
     // wires the widget to the engine; the same table then drives preset
@@ -81,6 +99,20 @@ private:
     std::vector<ParamDesc> mParams;
 
     std::unique_ptr<AudioEngine> mEngine;
+
+    // Effect strip state
+    struct CardToggles { ToggleSwitch* enable; ToggleSwitch* stereo; };
+    std::unordered_map<EffectBase*, QWidget*>    mFxCols;
+    std::unordered_map<EffectBase*, CardToggles> mFxToggles;
+    QWidget*     mStrip      = nullptr;
+    QHBoxLayout* mStripLay   = nullptr;
+    QWidget*     mInputCard  = nullptr;
+    QWidget*     mOutputCard = nullptr;
+    EffectShortcuts mShortcuts{this};
+
+    // Drag state for card reordering
+    QWidget* mDragCard = nullptr;
+    QPoint   mDragStartPos;
 
     QPushButton* mBtnLoadNAM    = nullptr;
     QPushButton* mBtnUnloadNAM  = nullptr;

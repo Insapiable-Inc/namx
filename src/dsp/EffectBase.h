@@ -39,6 +39,18 @@ public:
 
     virtual void reset() = 0;
 
+    /// Ask the audio thread to reset() this effect at the top of its next
+    /// block (used on chain reorder to drop stale per-channel/tail state).
+    /// reset() implementations must stay allocation-free for this to be RT-safe.
+    void requestReset() { mResetPending.store(true, std::memory_order_release); }
+
+    /// Called by the engine on the audio thread before process().
+    void consumePendingReset()
+    {
+        if (mResetPending.exchange(false, std::memory_order_acq_rel))
+            reset();
+    }
+
     /// Unified dispatch entry point. L and R are always valid float buffers of length n.
     /// inputIsStereo: caller signals whether L and R already contain different content.
     /// Returns: true if L and R now contain different content.
@@ -95,4 +107,5 @@ protected:
     double            mSampleRate{44100.0};
     std::atomic<bool> mEnabled   {false};
     std::atomic<bool> mStereoMode{false};
+    std::atomic<bool> mResetPending{false};
 };

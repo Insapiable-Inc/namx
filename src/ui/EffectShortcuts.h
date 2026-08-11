@@ -1,5 +1,8 @@
 #pragma once
 
+#include <vector>
+
+class QShortcut;
 class QWidget;
 class ToggleSwitch;
 
@@ -11,8 +14,8 @@ class ToggleSwitch;
 ///
 /// Register cards with addEffect() in strip (chain) order; keys are handed
 /// out sequentially, and cards beyond the end of a key list get no shortcut.
-/// The created QShortcuts are parented to the window, so this object itself
-/// may be discarded once registration is done.
+/// When the strip is reordered, call clear() and re-register so the digit row
+/// keeps matching the visual left-to-right order.
 class EffectShortcuts
 {
 public:
@@ -21,10 +24,14 @@ public:
     /// Register one effect card. `stereo` is null for cards without a stereo toggle.
     void addEffect(ToggleSwitch* enable, ToggleSwitch* stereo = nullptr);
 
+    /// Delete all created shortcuts and restart key assignment (chain reorder).
+    void clear();
+
 private:
     void bind(ToggleSwitch* toggle, int key, const char* action);
 
     QWidget* mWindow;
     int mEnableIndex{0};
     int mStereoIndex{0};
+    std::vector<QShortcut*> mShortcuts;
 };

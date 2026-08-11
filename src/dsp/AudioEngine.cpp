@@ -1,8 +1,10 @@
 #include "AudioEngine.h"
 
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <iostream>
+#include <thread>
 
 AudioEngine::AudioEngine()
 {
@@ -20,22 +22,124 @@ AudioEngine::AudioEngine()
     mEQ   .setEnabled(true);
     mIR   .setEnabled(true);
 
-    // Build the signal chain in processing order.
-    mChain = {
-        &mTuner,
-        &mGate,
-        &mComp,
-        &mWah,
-        &mFlanger,
-        &mPhaser,
-        &mNam,
-        &mEQ,
-        &mChorus,
-        &mTremolo,
-        &mDelay,
-        &mReverb,
-        &mIR
+    // Stable effect IDs in default processing order — the contract for chain
+    // reordering and for session/preset persistence. Never rename an ID.
+    mEffectTable = {
+        {"tuner",   &mTuner},
+        {"gate",    &mGate},
+        {"comp",    &mComp},
+        {"wah",     &mWah},
+        {"flanger", &mFlanger},
+        {"phaser",  &mPhaser},
+        {"nam",     &mNam},
+        {"eq",      &mEQ},
+        {"chorus",  &mChorus},
+        {"tremolo", &mTremolo},
+        {"delay",   &mDelay},
+        {"reverb",  &mReverb},
+        {"ir",      &mIR},
     };
+    mChainBuf[0].reserve(mEffectTable.size());
+    for (const auto& [id, fx] : mEffectTable)
+        mChainBuf[0].push_back(fx);
+    mChainBuf[1] = mChainBuf[0];
+}
+
+// ---------------------------------------------------------------------------
+// Chain order
+// ---------------------------------------------------------------------------
+
+std::vector<std::string> AudioEngine::defaultChainIds() const
+{
+    std::vector<std::string> ids;
+    ids.reserve(mEffectTable.size());
+    for (const auto& [id, fx] : mEffectTable)
+        ids.push_back(id);
+    return ids;
+}
+
+std::vector<std::string> AudioEngine::chainIds() const
+{
+    std::vector<std::string> ids;
+    ids.reserve(mEffectTable.size());
+    for (const auto* fx : chain())
+        ids.push_back(idForEffect(fx));
+    return ids;
+}
+
+EffectBase* AudioEngine::effectById(const std::string& id) const
+{
+    for (const auto& [eid, fx] : mEffectTable)
+        if (eid == id)
+            return fx;
+    return nullptr;
+}
+
+std::string AudioEngine::idForEffect(const EffectBase* fx) const
+{
+    for (const auto& [eid, e] : mEffectTable)
+        if (e == fx)
+            return eid;
+    return {};
+}
+
+void AudioEngine::setChainOrder(const std::vector<std::string>& ids)
+{
+    // Sanitize: known IDs only, no duplicates, pinned effects excluded here.
+    std::vector<EffectBase*> order;
+    order.reserve(mEffectTable.size());
+    for (const auto& id : ids)
+    {
+        EffectBase* fx = effectById(id);
+        if (!fx || fx == &mTuner || fx == &mIR) continue;
+        if (std::find(order.begin(), order.end(), fx) != order.end()) continue;
+        order.push_back(fx);
+    }
+
+    // Effects missing from the list re-enter at their default position.
+    int tableIdx = 0;
+    for (const auto& [id, fx] : mEffectTable)
+    {
+        const int movableIdx = tableIdx++ - 1; // tuner occupies table slot 0
+        if (fx == &mTuner || fx == &mIR) continue;
+        if (std::find(order.begin(), order.end(), fx) == order.end())
+            order.insert(order.begin() + std::min<size_t>(std::max(movableIdx, 0),
+                                                          order.size()), fx);
+    }
+
+    std::vector<EffectBase*> newChain;
+    newChain.reserve(order.size() + 2);
+    newChain.push_back(&mTuner);
+    newChain.insert(newChain.end(), order.begin(), order.end());
+    newChain.push_back(&mIR);
+
+    const int active   = mActiveChain.load(std::memory_order_relaxed);
+    const int inactive = 1 - active;
+    const auto& cur    = mChainBuf[active];
+    if (newChain == cur)
+        return;
+
+    // The audio thread may still be iterating the buffer we are about to
+    // write if the previous swap happened less than one callback ago. Two
+    // callback completions after a swap guarantee it has left; bounded wait
+    // so a stalled server can't hang the GUI.
+    if (isRunning())
+    {
+        const uint64_t safe = mLastSwapCallbackCount + 2;
+        for (int i = 0; i < 100 && isRunning()
+                        && mCallbackCount.load(std::memory_order_acquire) < safe; ++i)
+            std::this_thread::sleep_for(std::chrono::milliseconds(2));
+    }
+
+    // Moved effects carry state from their old slot (delay tails, diverged
+    // per-channel filters) — have the audio thread clear them.
+    for (size_t i = 0; i < newChain.size(); ++i)
+        if (i >= cur.size() || cur[i] != newChain[i])
+            newChain[i]->requestReset();
+
+    mChainBuf[inactive] = std::move(newChain);
+    mActiveChain.store(inactive, std::memory_order_release);
+    mLastSwapCallbackCount = mCallbackCount.load(std::memory_order_acquire);
 }
 
 AudioEngine::~AudioEngine()
@@ -119,7 +223,7 @@ void AudioEngine::onBufferSizeChanged(int n)
     const double sr = mBackend ? mBackend->sampleRate() : 0.0;
     if (sr > 0.0 && sr != mChainSampleRate) {
         mChainSampleRate = sr;
-        for (auto* fx : mChain)
+        for (const auto& [id, fx] : mEffectTable)
             fx->setSampleRate(sr);
         // ~20 ms one-pole gain smoothing, independent of sample rate.
         mSmoothCoeff = std::exp(-1.0f / (0.020f * static_cast<float>(sr)));
@@ -157,10 +261,15 @@ void AudioEngine::onAudio(const float* in, float* outL, float* outR, int n)
     if (inPeak > mInputPeak.load(std::memory_order_relaxed))
         mInputPeak.store(inPeak, std::memory_order_relaxed);
 
-    // 2. Run the signal chain
+    // 2. Run the signal chain (chain pointer read once per callback; reorders
+    //    swap the buffer index and never touch the one being iterated)
     bool stereo = false;
-    for (auto* fx : mChain)
+    const auto& chain = mChainBuf[mActiveChain.load(std::memory_order_acquire)];
+    for (auto* fx : chain)
+    {
+        fx->consumePendingReset();
         stereo = fx->process(mWorkBufL.data(), mWorkBufR.data(), n, stereo);
+    }
 
     (void)stereo; // consumed by downstream effects; output always written to both channels
 
@@ -177,4 +286,8 @@ void AudioEngine::onAudio(const float* in, float* outL, float* outR, int n)
     }
     if (outPeak > mOutputPeak.load(std::memory_order_relaxed))
         mOutputPeak.store(outPeak, std::memory_order_relaxed);
+
+    // Reorder fence: setChainOrder counts completed callbacks to know when
+    // the retired chain buffer is safe to overwrite.
+    mCallbackCount.fetch_add(1, std::memory_order_release);
 }

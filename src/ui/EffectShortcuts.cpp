@@ -33,10 +33,20 @@ void EffectShortcuts::addEffect(ToggleSwitch* enable, ToggleSwitch* stereo)
         bind(stereo, kStereoKeys[mStereoIndex++], "Toggle stereo");
 }
 
+void EffectShortcuts::clear()
+{
+    for (auto* s : mShortcuts)
+        delete s;
+    mShortcuts.clear();
+    mEnableIndex = 0;
+    mStereoIndex = 0;
+}
+
 void EffectShortcuts::bind(ToggleSwitch* toggle, int key, const char* action)
 {
     auto* shortcut = new QShortcut(QKeySequence(key), mWindow);
     QObject::connect(shortcut, &QShortcut::activated, toggle, &QAbstractButton::toggle);
+    mShortcuts.push_back(shortcut);
 
     toggle->setToolTip(QString("%1  (%2)").arg(action, QKeySequence(key).toString()));
 }

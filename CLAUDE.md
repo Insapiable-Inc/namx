@@ -71,7 +71,7 @@ Qt6 application with a platform audio backend behind the `IAudioBackend` interfa
 
 ### Signal chain
 
-`AudioEngine` (implements `IAudioBackend::Callback`) owns all processors and one ordered `std::vector<EffectBase*> mChain`, iterated every callback. **Processing order = UI order** — the effect strip in `MainWindow` is built by iterating `chain()`.
+`AudioEngine` (implements `IAudioBackend::Callback`) owns all processors and a **double-buffered chain** (two `std::vector<EffectBase*>` + atomic index) iterated every callback. **Processing order = UI order** — `MainWindow::rebuildEffectStrip` lays the cards out by iterating `chain()`, and the user can reorder by dragging cards. Each effect has a stable string ID (`AudioEngine::mEffectTable` — never rename); `setChainOrder(ids)` sanitizes (unknown IDs dropped, missing effects at default slot, tuner/IR pinned first/last) and swaps RT-safely, flagging moved effects for an audio-thread `reset()` via `requestReset()`/`consumePendingReset()`. The default order:
 
 ```
 mono input → input gain (smoothed)
@@ -134,8 +134,8 @@ parameter, register it here — never add hand-written connects, slots, or prese
 
 ### Persistence
 
-- **QSettings** (org `pichulero.cl`, app name set in `main.cpp` — drives the config path): last model/IR/preset paths, audio device IDs, JACK port connections, window geometry, and the full registry state under `session/<group>/<key>` (saved on exit + debounced 1 s after any widget change; restored on launch through the widgets). First run auto-connects `system:capture_1`/`playback_{1,2}`.
-- **Presets** are `.nampreset` JSON files via `QJsonDocument`, schema v2: all registry parameters plus `version`, `namEnabled`, and embedded `namPath`/`irPath` (applied on load when the file exists; otherwise a warning, current model/IR kept). v1 files (no `version`) still load. Loading applies values through the widgets, so the UI and engine can't drift.
+- **QSettings** (org `pichulero.cl`, app name set in `main.cpp` — drives the config path): last model/IR/preset paths, audio device IDs, JACK port connections, window geometry, and the full registry state plus `session/effectOrder` under `session/` (saved on exit + debounced 1 s after any widget change; restored on launch through the widgets). First run auto-connects `system:capture_1`/`playback_{1,2}`.
+- **Presets** are `.nampreset` JSON files via `QJsonDocument`, schema v2: all registry parameters plus `version`, `namEnabled`, `effectOrder` (stable-ID list), and embedded `namPath`/`irPath` (applied on load when the file exists; otherwise a warning, current model/IR kept). v1 files (no `version`) still load. Loading applies values through the widgets, so the UI and engine can't drift.
 
 ## NAM core library
 

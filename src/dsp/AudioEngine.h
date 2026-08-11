@@ -2,8 +2,10 @@
 
 #include <atomic>
 #include <cmath>
+#include <cstdint>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "IAudioBackend.h"
@@ -84,7 +86,24 @@ public:
     IRProcessor&         ir()      { return mIR;      }
 
     // ---- Signal chain (processing order = UI order) ----
-    const std::vector<EffectBase*>& chain() const { return mChain; }
+    // GUI-thread view of the active chain. Reordering goes through
+    // setChainOrder(); never mutate the returned vector.
+    const std::vector<EffectBase*>& chain() const { return mChainBuf[mActiveChain.load()]; }
+
+    /// Stable effect IDs in default (construction) order — the persistence
+    /// contract for session state and preset schema v2.
+    std::vector<std::string> defaultChainIds() const;
+    /// Current chain order as IDs.
+    std::vector<std::string> chainIds() const;
+    EffectBase* effectById(const std::string& id) const;
+    std::string idForEffect(const EffectBase* fx) const;
+
+    /// Reorder the chain RT-safely (double buffer + atomic index, same pattern
+    /// as model swaps). Input is sanitized: unknown/duplicate IDs are dropped,
+    /// missing effects re-enter at their default position, and tuner/IR stay
+    /// pinned first/last. Effects whose position changed get a pending reset,
+    /// consumed by the audio thread at the top of their next block.
+    void setChainOrder(const std::vector<std::string>& ids);
 
     // ---- Port-routing pass-through (no-ops on backends without it) ----
     using PortConnections = IAudioBackend::PortConnections;
@@ -104,10 +123,19 @@ public:
 private:
     std::unique_ptr<IAudioBackend> mBackend;
 
-    // Signal chain — ordered, iterated every audio callback
-    std::vector<EffectBase*> mChain;
+    // Signal chain — double-buffered for RT-safe reordering. The audio thread
+    // iterates mChainBuf[mActiveChain] once per callback; the GUI writes the
+    // inactive buffer and swaps the index. mCallbackCount lets a subsequent
+    // reorder wait until the audio thread has provably left the old buffer.
+    std::vector<EffectBase*> mChainBuf[2];
+    std::atomic<int>         mActiveChain{0};
+    std::atomic<uint64_t>    mCallbackCount{0};
+    uint64_t                 mLastSwapCallbackCount{0};
 
-    // Effect instances (owned here, pointers in mChain)
+    // id → effect, in default chain order
+    std::vector<std::pair<std::string, EffectBase*>> mEffectTable;
+
+    // Effect instances (owned here, pointers in the chain buffers)
     TunerProcessor      mTuner;
     NoiseGateProcessor  mGate;
     CompressorProcessor mComp;
