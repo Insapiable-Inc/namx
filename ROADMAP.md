@@ -317,10 +317,43 @@ NAM Rig, NAM Stage.)
 - [ ] Headless smoke test in CI: `QT_QPA_PLATFORM=offscreen NAMPlayer --self-test-and-exit`.
 - [ ] About dialog / `--version` flag verified; tag **v1.0**.
 
+## Phase 9 — Knob range calibration (post-1.0 unless pulled forward; added 2026-08-10)
+
+Make every knob feel right across its whole travel, not just near the default.
+
+- [ ] **Audit all ranges/defaults in `Constants.h`** against musical usefulness —
+      e.g. does the comp ratio need 20:1, is the gate threshold floor right, do the
+      LFO rate extremes get used.
+- [ ] **Per-knob response curves (taper).** `KnobWidget` maps dial↔value linearly
+      today (`dialToValue`/`valueToDial`, 10000 steps); add an optional
+      logarithmic/exponential taper so e.g. rates (Hz) and delay time spend more
+      travel in the musically dense low region. dB-valued knobs are already
+      log-domain and stay linear-in-dB.
+- [ ] **No schema impact:** presets/session store real units; the taper only
+      changes the dial position mapping. Re-tune `setScrollStep` per taper
+      (steps should feel constant-size perceptually).
+
+## Phase 10 — Tempo sync (post-1.0 unless pulled forward; added 2026-08-10)
+
+Global tempo, so time-based parameters can be set in note values.
+
+- [ ] **Global tempo (BPM)** control in the top bar; persisted in session and
+      preset (schema bump). Tap tempo and MIDI clock become natural extensions
+      once MIDI lands (see parameter registry hook).
+- [ ] **Sync mode for time-based params:** delay time, and the tremolo / chorus /
+      flanger / phaser LFO rates. Each gets free (ms / Hz, as today) vs. synced
+      (note-fraction) mode — fractions like 1/1, 1/2, 1/3, 1/4, 1/8 plus dotted /
+      triplet variants.
+- [ ] **Engine stays dumb:** sync is a GUI-layer mapping — tempo × fraction is
+      converted to the existing ms/Hz atomics, and a tempo change re-pushes every
+      synced parameter. No DSP or RT changes needed.
+- [ ] **Persistence:** per-param mode + fraction and the BPM join the session and
+      preset schema (versioned, so old files keep loading).
+
 ## Deferred (post-1.0)
 
 - Sample-rate renegotiation while running (effect SR is cached at start).
 - Preset dropdown (list `*.nampreset` from a known dir instead of a file dialog).
 - Optional output limiter.
 - Light theme / system-theme detection.
-- MIDI control (see parameter registry, Phase 2).
+- MIDI control (see parameter registry, Phase 2; ties into Phase 10 tap/clock tempo).
