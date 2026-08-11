@@ -54,6 +54,8 @@ set(GUI_SOURCES
     src/dsp/AudioEngine.cpp
     src/dsp/AudioEngine.h
     src/dsp/IAudioBackend.h
+    src/dsp/Log.cpp
+    src/dsp/Log.h
     src/dsp/Constants.h
     src/dsp/EffectBase.h
     src/dsp/IRLoader.cpp
@@ -143,19 +145,30 @@ endif()
 # Compile options
 # ---------------------------------------------------------------------------
 
+# Eigen (NAM inference + IR convolution) needs AVX2/FMA to vectorize fully;
+# baseline x86-64 limits it to SSE2. NAM_NATIVE_OPT=ON (default) uses
+# -march=native — fastest, but the binary is tied to the build machine's CPU.
+# CI/release builds MUST use -DNAM_NATIVE_OPT=OFF, which targets portable
+# AVX2+FMA (any x86-64 CPU from ~2013 on).
+option(NAM_NATIVE_OPT "Optimize for the build machine's CPU (-march=native); OFF = portable -mavx2 -mfma" ON)
+
 if(MSVC)
+    # MSVC has no -march=native equivalent; /arch:AVX2 is both the fast and
+    # the portable choice, so NAM_NATIVE_OPT has no effect here.
     target_compile_options(NAMPlayer PRIVATE
         /W3 /permissive- /EHsc
-        $<$<CONFIG:Release>:/O2>
+        $<$<CONFIG:Release>:/O2 /arch:AVX2>
         $<$<CONFIG:Debug>:/Od /Zi>
     )
 else()
-    # -march=native: Eigen (NAM inference + IR convolution) needs AVX2/FMA to
-    # vectorize fully; baseline x86-64 limits it to SSE2. Binary is tied to the
-    # build machine's CPU — drop to -mavx2 -mfma for distributable builds.
+    if(NAM_NATIVE_OPT)
+        set(NAM_SIMD_FLAGS -march=native)
+    else()
+        set(NAM_SIMD_FLAGS -mavx2 -mfma)
+    endif()
     target_compile_options(NAMPlayer PRIVATE
         -Wall -Wextra -Wno-unused-parameter
-        $<$<CONFIG:Release>:-O3 -march=native>
+        $<$<CONFIG:Release>:-O3 ${NAM_SIMD_FLAGS}>
         $<$<CONFIG:Debug>:-Og -g>
     )
 endif()

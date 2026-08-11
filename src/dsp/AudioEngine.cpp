@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <chrono>
 #include <cmath>
-#include <iostream>
+#include "Log.h"
 #include <thread>
 
 AudioEngine::AudioEngine()
@@ -145,7 +145,7 @@ bool AudioEngine::start(const std::string& clientName)
 
     mBackend = IAudioBackend::create();
     if (!mBackend) {
-        std::cerr << "[AudioEngine] No audio backend available for this platform\n";
+        qCWarning(lcAudio, "[AudioEngine] No audio backend available for this platform");
         return false;
     }
 
@@ -168,7 +168,7 @@ bool AudioEngine::startWithDevices(const std::string& inputDeviceId,
 
     mBackend = IAudioBackend::create();
     if (!mBackend) {
-        std::cerr << "[AudioEngine] No audio backend available for this platform\n";
+        qCWarning(lcAudio, "[AudioEngine] No audio backend available for this platform");
         return false;
     }
 

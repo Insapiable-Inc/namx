@@ -2,7 +2,7 @@
 
 #include <algorithm>
 #include <cassert>
-#include <iostream>
+#include "Log.h"
 #include <stdexcept>
 
 #include "NAM/get_dsp.h"
@@ -32,7 +32,7 @@ bool NamProcessor::loadModel(const std::string& path)
         newL = nam::get_dsp(std::filesystem::path(path));
         newR = nam::get_dsp(std::filesystem::path(path));
     } catch (const std::exception& e) {
-        std::cerr << "[NamProcessor] Failed to load model: " << e.what() << "\n";
+        qCWarning(lcAudio, "[NamProcessor] Failed to load model: %s", e.what());
         return false;
     }
     if (!newL || !newR) return false;

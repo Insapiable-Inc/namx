@@ -1,6 +1,6 @@
 #include "JackBackend.h"
 
-#include <iostream>
+#include "Log.h"
 #include <sstream>
 
 #if defined(__x86_64__) || defined(__i386__)
@@ -30,8 +30,8 @@ bool JackBackend::start(const std::string& clientName, Callback* cb)
     mClient = jack_client_open(clientName.c_str(), JackNullOption, &status);
     if (!mClient)
     {
-        std::cerr << "[JackBackend] jack_client_open failed, status=0x"
-                  << std::hex << status << "\n";
+        qCWarning(lcAudio, "[JackBackend] jack_client_open failed, status=0x%x",
+                  static_cast<unsigned>(status));
         return false;
     }
 
@@ -48,7 +48,7 @@ bool JackBackend::start(const std::string& clientName, Callback* cb)
 
     if (!mPortIn || !mPortOutL || !mPortOutR)
     {
-        std::cerr << "[JackBackend] Failed to register JACK ports\n";
+        qCWarning(lcAudio, "[JackBackend] Failed to register JACK ports");
         jack_client_close(mClient);
         mClient = nullptr;
         return false;
@@ -60,14 +60,14 @@ bool JackBackend::start(const std::string& clientName, Callback* cb)
 
     if (jack_activate(mClient) != 0)
     {
-        std::cerr << "[JackBackend] jack_activate failed\n";
+        qCWarning(lcAudio, "[JackBackend] jack_activate failed");
         jack_client_close(mClient);
         mClient = nullptr;
         return false;
     }
 
     mRunning.store(true);
-    std::cout << "[JackBackend] JACK started at " << mSampleRate << " Hz (stereo out)\n";
+    qCInfo(lcAudio, "[JackBackend] JACK started at %.0f Hz (stereo out)", mSampleRate);
     return true;
 }
 
@@ -170,7 +170,7 @@ int JackBackend::jackBufferSizeCallback(jack_nframes_t nframes, void* arg)
 void JackBackend::jackShutdownCallback(void* arg)
 {
     static_cast<JackBackend*>(arg)->mRunning.store(false);
-    std::cerr << "[JackBackend] JACK server shut down\n";
+    qCWarning(lcAudio, "[JackBackend] JACK server shut down");
 }
 
 int JackBackend::onBufferSize(jack_nframes_t nframes)

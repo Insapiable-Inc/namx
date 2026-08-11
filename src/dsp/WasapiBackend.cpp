@@ -1,7 +1,7 @@
 #include "WasapiBackend.h"
 
 #include <algorithm>
-#include <iostream>
+#include "Log.h"
 #include <sstream>
 
 #ifdef _WIN32
@@ -209,7 +209,8 @@ IMMDevice* WasapiBackend::openDeviceById(const std::string& deviceId) const
     IMMDevice* dev = nullptr;
     HRESULT hr = mEnumerator->GetDevice(wId.c_str(), &dev);
     if (FAILED(hr) || !dev) {
-        std::cerr << "[WasapiBackend] GetDevice failed for id=" << deviceId << ": 0x" << std::hex << hr << "\n";
+        qCWarning(lcAudio, "[WasapiBackend] GetDevice failed for id=%s: 0x%08lx",
+                  deviceId.c_str(), static_cast<unsigned long>(hr));
         return nullptr;
     }
     return dev;
@@ -233,7 +234,8 @@ bool WasapiBackend::startWithDevices(const std::string& /*clientName*/, Callback
 
     HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
     if (hr != S_OK && hr != S_FALSE && hr != RPC_E_CHANGED_MODE) {
-        std::cerr << "[WasapiBackend] CoInitializeEx failed: 0x" << std::hex << hr << "\n";
+        qCWarning(lcAudio, "[WasapiBackend] CoInitializeEx failed: 0x%08lx",
+                  static_cast<unsigned long>(hr));
         return false;
     }
     mComInitialized = (hr == S_OK || hr == S_FALSE);
@@ -242,7 +244,8 @@ bool WasapiBackend::startWithDevices(const std::string& /*clientName*/, Callback
                           __uuidof(IMMDeviceEnumerator),
                           reinterpret_cast<void**>(&mEnumerator));
     if (FAILED(hr) || !mEnumerator) {
-        std::cerr << "[WasapiBackend] MMDeviceEnumerator failed: 0x" << std::hex << hr << "\n";
+        qCWarning(lcAudio, "[WasapiBackend] MMDeviceEnumerator failed: 0x%08lx",
+                  static_cast<unsigned long>(hr));
         teardown();
         return false;
     }
@@ -253,7 +256,8 @@ bool WasapiBackend::startWithDevices(const std::string& /*clientName*/, Callback
         // Fall back to default multimedia capture device
         hr = mEnumerator->GetDefaultAudioEndpoint(eCapture, eMultimedia, &mCaptureDevice);
         if (FAILED(hr) || !mCaptureDevice) {
-            std::cerr << "[WasapiBackend] No default capture device: 0x" << std::hex << hr << "\n";
+            qCWarning(lcAudio, "[WasapiBackend] No default capture device: 0x%08lx",
+                      static_cast<unsigned long>(hr));
             teardown();
             return false;
         }
@@ -264,14 +268,15 @@ bool WasapiBackend::startWithDevices(const std::string& /*clientName*/, Callback
     if (!mRenderDevice) {
         hr = mEnumerator->GetDefaultAudioEndpoint(eRender, eMultimedia, &mRenderDevice);
         if (FAILED(hr) || !mRenderDevice) {
-            std::cerr << "[WasapiBackend] No default render device: 0x" << std::hex << hr << "\n";
+            qCWarning(lcAudio, "[WasapiBackend] No default render device: 0x%08lx",
+                      static_cast<unsigned long>(hr));
             teardown();
             return false;
         }
     }
 
-    std::cerr << "[WasapiBackend] Capture device: " << friendlyDeviceName(mCaptureDevice) << "\n";
-    std::cerr << "[WasapiBackend] Render device: " << friendlyDeviceName(mRenderDevice) << "\n";
+    qCInfo(lcAudio, "[WasapiBackend] Capture device: %s", friendlyDeviceName(mCaptureDevice).c_str());
+    qCInfo(lcAudio, "[WasapiBackend] Render device: %s", friendlyDeviceName(mRenderDevice).c_str());
 
     if (!initCapture() || !initRender()) {
         teardown();
@@ -281,7 +286,7 @@ bool WasapiBackend::startWithDevices(const std::string& /*clientName*/, Callback
     // Capture and render must share a sample rate in shared mode (both use the
     // engine mix rate). If they ever diverge we bail rather than resample.
     if (static_cast<int>(mSampleRate) <= 0) {
-        std::cerr << "[WasapiBackend] Invalid sample rate after Initialize\n";
+        qCWarning(lcAudio, "[WasapiBackend] Invalid sample rate after Initialize");
         teardown();
         return false;
     }
@@ -292,7 +297,7 @@ bool WasapiBackend::startWithDevices(const std::string& /*clientName*/, Callback
     mCaptureEvent = CreateEventW(nullptr, FALSE, FALSE, nullptr);
     mRenderEvent  = CreateEventW(nullptr, FALSE, FALSE, nullptr);
     if (!mStopEvent || !mCaptureEvent || !mRenderEvent) {
-        std::cerr << "[WasapiBackend] CreateEventW failed\n";
+        qCWarning(lcAudio, "[WasapiBackend] CreateEventW failed");
         teardown();
         return false;
     }
@@ -300,7 +305,7 @@ bool WasapiBackend::startWithDevices(const std::string& /*clientName*/, Callback
     if (FAILED(mCaptureClient->SetEventHandle(mCaptureEvent)) ||
         FAILED(mRenderClient ->SetEventHandle(mRenderEvent)))
     {
-        std::cerr << "[WasapiBackend] SetEventHandle failed\n";
+        qCWarning(lcAudio, "[WasapiBackend] SetEventHandle failed");
         teardown();
         return false;
     }
@@ -322,15 +327,15 @@ bool WasapiBackend::startWithDevices(const std::string& /*clientName*/, Callback
     }
 
     if (FAILED(mCaptureClient->Start()) || FAILED(mRenderClient->Start())) {
-        std::cerr << "[WasapiBackend] IAudioClient::Start failed\n";
+        qCWarning(lcAudio, "[WasapiBackend] IAudioClient::Start failed");
         teardown();
         return false;
     }
 
     mRunning.store(true);
     mAudioThread = std::thread(&WasapiBackend::audioThreadMain, this);
-    std::cout << "[WasapiBackend] WASAPI started at " << mSampleRate
-              << " Hz, buffer " << mBufferSize << " frames\n";
+    qCInfo(lcAudio, "[WasapiBackend] WASAPI started at %.0f Hz, buffer %d frames",
+           mSampleRate, static_cast<int>(mBufferSize));
     return true;
 }
 
@@ -363,21 +368,23 @@ bool WasapiBackend::initCapture()
     HRESULT hr = mCaptureDevice->Activate(__uuidof(IAudioClient), CLSCTX_ALL, nullptr,
                                           reinterpret_cast<void**>(&mCaptureClient));
     if (FAILED(hr) || !mCaptureClient) {
-        std::cerr << "[WasapiBackend] Activate capture: 0x" << std::hex << hr << "\n";
+        qCWarning(lcAudio, "[WasapiBackend] Activate capture: 0x%08lx",
+                  static_cast<unsigned long>(hr));
         return false;
     }
 
     WAVEFORMATEX* wfxRaw = nullptr;
     if (FAILED(mCaptureClient->GetMixFormat(&wfxRaw)) || !wfxRaw) {
-        std::cerr << "[WasapiBackend] Capture GetMixFormat failed\n";
+        qCWarning(lcAudio, "[WasapiBackend] Capture GetMixFormat failed");
         return false;
     }
     std::unique_ptr<WAVEFORMATEX, CoMemFree> wfx{wfxRaw};
 
     if (!isFloat32(wfx.get())) {
-        std::cerr << "[WasapiBackend] Capture mix format not float32 (tag="
-                  << wfx->wFormatTag << ", bits=" << wfx->wBitsPerSample
-                  << "). PCM conversion not yet implemented.\n";
+        qCWarning(lcAudio,
+                  "[WasapiBackend] Capture mix format not float32 (tag=%u, bits=%u). "
+                  "PCM conversion not yet implemented.",
+                  static_cast<unsigned>(wfx->wFormatTag), static_cast<unsigned>(wfx->wBitsPerSample));
         return false;
     }
 
@@ -392,13 +399,14 @@ bool WasapiBackend::initCapture()
         wfx.get(),
         nullptr);
     if (FAILED(hr)) {
-        std::cerr << "[WasapiBackend] Capture Initialize: 0x" << std::hex << hr << "\n";
+        qCWarning(lcAudio, "[WasapiBackend] Capture Initialize: 0x%08lx",
+                  static_cast<unsigned long>(hr));
         return false;
     }
 
     UINT32 bufFrames = 0;
     if (FAILED(mCaptureClient->GetBufferSize(&bufFrames))) {
-        std::cerr << "[WasapiBackend] Capture GetBufferSize failed\n";
+        qCWarning(lcAudio, "[WasapiBackend] Capture GetBufferSize failed");
         return false;
     }
     mBufferSize = static_cast<int>(bufFrames);
@@ -406,7 +414,7 @@ bool WasapiBackend::initCapture()
     if (FAILED(mCaptureClient->GetService(__uuidof(IAudioCaptureClient),
                                           reinterpret_cast<void**>(&mCapture))))
     {
-        std::cerr << "[WasapiBackend] GetService IAudioCaptureClient failed\n";
+        qCWarning(lcAudio, "[WasapiBackend] GetService IAudioCaptureClient failed");
         return false;
     }
     return true;
@@ -417,28 +425,31 @@ bool WasapiBackend::initRender()
     HRESULT hr = mRenderDevice->Activate(__uuidof(IAudioClient), CLSCTX_ALL, nullptr,
                                          reinterpret_cast<void**>(&mRenderClient));
     if (FAILED(hr) || !mRenderClient) {
-        std::cerr << "[WasapiBackend] Activate render: 0x" << std::hex << hr << "\n";
+        qCWarning(lcAudio, "[WasapiBackend] Activate render: 0x%08lx",
+                  static_cast<unsigned long>(hr));
         return false;
     }
 
     WAVEFORMATEX* wfxRaw = nullptr;
     if (FAILED(mRenderClient->GetMixFormat(&wfxRaw)) || !wfxRaw) {
-        std::cerr << "[WasapiBackend] Render GetMixFormat failed\n";
+        qCWarning(lcAudio, "[WasapiBackend] Render GetMixFormat failed");
         return false;
     }
     std::unique_ptr<WAVEFORMATEX, CoMemFree> wfx{wfxRaw};
 
     if (!isFloat32(wfx.get())) {
-        std::cerr << "[WasapiBackend] Render mix format not float32 (tag="
-                  << wfx->wFormatTag << ", bits=" << wfx->wBitsPerSample
-                  << "). PCM conversion not yet implemented.\n";
+        qCWarning(lcAudio,
+                  "[WasapiBackend] Render mix format not float32 (tag=%u, bits=%u). "
+                  "PCM conversion not yet implemented.",
+                  static_cast<unsigned>(wfx->wFormatTag), static_cast<unsigned>(wfx->wBitsPerSample));
         return false;
     }
 
     if (static_cast<double>(wfx->nSamplesPerSec) != mSampleRate) {
-        std::cerr << "[WasapiBackend] Capture/render sample-rate mismatch ("
-                  << mSampleRate << " vs " << wfx->nSamplesPerSec
-                  << "). Resampling not yet implemented.\n";
+        qCWarning(lcAudio,
+                  "[WasapiBackend] Capture/render sample-rate mismatch (%.0f vs %lu). "
+                  "Resampling not yet implemented.",
+                  mSampleRate, static_cast<unsigned long>(wfx->nSamplesPerSec));
         return false;
     }
     mRenderChannels = wfx->nChannels;
@@ -450,14 +461,15 @@ bool WasapiBackend::initRender()
         wfx.get(),
         nullptr);
     if (FAILED(hr)) {
-        std::cerr << "[WasapiBackend] Render Initialize: 0x" << std::hex << hr << "\n";
+        qCWarning(lcAudio, "[WasapiBackend] Render Initialize: 0x%08lx",
+                  static_cast<unsigned long>(hr));
         return false;
     }
 
     if (FAILED(mRenderClient->GetService(__uuidof(IAudioRenderClient),
                                          reinterpret_cast<void**>(&mRender))))
     {
-        std::cerr << "[WasapiBackend] GetService IAudioRenderClient failed\n";
+        qCWarning(lcAudio, "[WasapiBackend] GetService IAudioRenderClient failed");
         return false;
     }
     return true;
