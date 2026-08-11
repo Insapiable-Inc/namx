@@ -1,4 +1,5 @@
 #include "ToggleSwitch.h"
+#include "Theme.h"
 
 #include <QApplication>
 #include <QLinearGradient>
@@ -27,7 +28,7 @@ void ToggleSwitch::paintEvent(QPaintEvent*)
 
     // ---- Track ----
     const QColor accent   = palette().color(QPalette::Highlight);
-    const QColor trackOff = mHovered ? QColor("#353c4a") : QColor("#2a2f38");
+    const QColor trackOff = mHovered ? Theme::trackHover() : Theme::track();
 
     if (isChecked()) {
         QLinearGradient trk(0, 0, 0, h);
@@ -73,8 +74,8 @@ void ToggleSwitch::paintEvent(QPaintEvent*)
 
     // Thumb body with a top highlight.
     QLinearGradient thumbGrad(thumbRect.topLeft(), thumbRect.bottomLeft());
-    thumbGrad.setColorAt(0.0, QColor("#ffffff"));
-    thumbGrad.setColorAt(1.0, QColor("#d8dee9"));
+    thumbGrad.setColorAt(0.0, Theme::thumbTop());
+    thumbGrad.setColorAt(1.0, Theme::thumbBot());
     p.setBrush(thumbGrad);
     p.drawEllipse(thumbRect);
 }

@@ -1,4 +1,5 @@
 #include "KnobWidget.h"
+#include "Theme.h"
 
 #include <QContextMenuEvent>
 #include <QDial>
@@ -84,7 +85,7 @@ protected:
         const int sweepTotal = -270 * 16;
 
         // Faded background track.
-        QPen trackPen(QColor("#2a2f38"), arcWidth);
+        QPen trackPen(Theme::track(), arcWidth);
         trackPen.setCapStyle(Qt::FlatCap);
         p.setPen(trackPen);
         p.drawArc(arcRect, startAngle, sweepTotal);
@@ -107,10 +108,10 @@ protected:
                               side - 2 * bodyInset, side - 2 * bodyInset);
 
         QLinearGradient body(bodyRect.topLeft(), bodyRect.bottomLeft());
-        body.setColorAt(0.0, QColor("#2e3441"));
-        body.setColorAt(1.0, QColor("#1c2028"));
+        body.setColorAt(0.0, Theme::knobBodyTop());
+        body.setColorAt(1.0, Theme::knobBodyBot());
         p.setBrush(body);
-        p.setPen(QPen(QColor("#0e1015"), 1.0));
+        p.setPen(QPen(Theme::bezel(), 1.0));
         p.drawEllipse(bodyRect);
 
         // Single thin highlight arc along the top crown — no bottom rim,
@@ -165,9 +166,11 @@ KnobWidget::KnobWidget(const QString& label, double minVal, double maxVal,
     nameLabel->setAlignment(Qt::AlignHCenter);
     {
         QPalette p = nameLabel->palette();
-        p.setColor(QPalette::WindowText, QColor("#aab0bc"));
+        p.setColor(QPalette::WindowText, Theme::dimText());
         nameLabel->setPalette(p);
     }
+
+    setToolTip(QString("%1 — drag or scroll to adjust, double-click to reset").arg(label));
 
     mDial = new VerticalDial;
     mDial->setMinimum(0);
@@ -204,7 +207,7 @@ void KnobWidget::paintEvent(QPaintEvent*)
 
     // Slightly-darker fill than the parent card.
     p.setPen(Qt::NoPen);
-    p.setBrush(QColor("#181b22"));
+    p.setBrush(Theme::well());
     p.drawRoundedRect(r, 5, 5);
 
     // Top hairline highlight for a hint of depth.

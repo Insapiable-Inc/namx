@@ -51,7 +51,6 @@ set(GUI_SOURCES
     src/ui/EffectShortcuts.h
     src/ui/Theme.cpp
     src/ui/Theme.h
-    src/ui/GUIConstants.h
     src/dsp/AudioEngine.cpp
     src/dsp/AudioEngine.h
     src/dsp/IAudioBackend.h

@@ -65,10 +65,8 @@ static QWidget* makeStereoSlot(ToggleSwitch** outToggle)
         sw->setCheckable(true);
         sw->setChecked(false);
         auto* lbl = new QLabel("Stereo");
+        lbl->setObjectName("stereoLabel");
         lbl->setAlignment(Qt::AlignHCenter);
-        QPalette p = lbl->palette();
-        p.setColor(QPalette::WindowText, QColor("#aab0bc"));
-        lbl->setPalette(p);
         lay->addWidget(sw, 0, Qt::AlignHCenter);
         lay->addWidget(lbl);
         lay->addStretch();
@@ -100,15 +98,13 @@ static QRect titleBandRect(const QGroupBox* box)
 static QProgressBar* makeVUBarVertical()
 {
     auto* b = new QProgressBar;
+    b->setObjectName("vuMeter"); // chunk gradient lives in the Theme stylesheet
     b->setOrientation(Qt::Vertical);
     b->setRange(0, 100);
     b->setValue(0);
     b->setTextVisible(false);
     b->setFixedWidth(14);
     b->setMinimumHeight(70);
-    b->setStyleSheet(
-        "QProgressBar::chunk { background: qlineargradient(x1:0,y1:1,x2:0,y2:0,"
-        "stop:0 #5cc8a8, stop:0.65 #f0c850, stop:0.9 #e85a4f, stop:1 #ff5252); }");
     return b;
 }
 
@@ -119,9 +115,10 @@ MainWindow::MainWindow(QWidget* parent)
     , mEngine(std::make_unique<AudioEngine>())
 {
     setWindowTitle("NAM Player");
-    // 15 cards (Input + 13 effects + Output) at min width 110, plus 4 dividers,
-    // strip spacing and root margins. 1800 gives a small breathing margin.
-    setMinimumSize(1800, 1000);
+    // Laptop-friendly minimum; the effect strip scrolls when it doesn't fit.
+    // The default size still shows the full strip — window managers clamp it
+    // on smaller screens, and the session restores the user's geometry.
+    setMinimumSize(1280, 720);
     resize(1800, 1000);
 
     setupUI();
@@ -212,10 +209,25 @@ void MainWindow::setupUI()
     {
         auto* mb         = menuBar();
         auto* presetMenu = mb->addMenu("Preset");
-        connect(presetMenu->addAction("Save Preset…"), &QAction::triggered, this, &MainWindow::onSavePreset);
-        connect(presetMenu->addAction("Load Preset…"), &QAction::triggered, this, &MainWindow::onLoadPreset);
+        auto* actSave = presetMenu->addAction("Save Preset…");
+        actSave->setShortcut(QKeySequence::Save); // Ctrl+S
+        connect(actSave, &QAction::triggered, this, &MainWindow::onSavePreset);
+        auto* actLoad = presetMenu->addAction("Load Preset…");
+        actLoad->setShortcut(QKeySequence::Open); // Ctrl+O
+        connect(actLoad, &QAction::triggered, this, &MainWindow::onLoadPreset);
         presetMenu->addSeparator();
         connect(presetMenu->addAction("Reset All to Defaults…"), &QAction::triggered, this, &MainWindow::onResetAll);
+
+        auto* helpMenu = mb->addMenu("Help");
+        connect(helpMenu->addAction("About NAM Player"), &QAction::triggered, this, [this] {
+            QMessageBox::about(this, "About NAM Player",
+                QString("<b>NAM Player</b> v%1<br><br>"
+                        "Standalone player for Neural Amp Modeler profiles.<br>"
+                        "Built on <a href=\"https://github.com/sdatkinson/NeuralAmpModelerCore\">"
+                        "NeuralAmpModelerCore</a> by Steven Atkinson.<br><br>"
+                        "Not affiliated with the official Neural Amp Modeler plugin.")
+                    .arg(QApplication::applicationVersion()));
+        });
     }
 
     // ---- Top status row ----
@@ -227,8 +239,8 @@ void MainWindow::setupUI()
         auto* title = new QLabel("NAM Player");
         title->setObjectName("appTitle");
 
-        mLblJACKStatus = new QLabel("Audio: connecting…");
-        mLblJACKStatus->setObjectName("jackStatusErr");
+        mLblAudioStatus = new QLabel("Audio: connecting…");
+        mLblAudioStatus->setObjectName("audioStatusErr");
 
         mBtnReconnect = new QPushButton("Reconnect");
         mBtnReconnect->setVisible(false);
@@ -243,7 +255,7 @@ void MainWindow::setupUI()
         connect(btnReset, &QPushButton::clicked, this, &MainWindow::onResetAll);
 
         row->addWidget(title);
-        row->addWidget(mLblJACKStatus);
+        row->addWidget(mLblAudioStatus);
         row->addWidget(mBtnReconnect);
         row->addStretch();
         row->addWidget(btnSave);
@@ -290,7 +302,7 @@ void MainWindow::setupUI()
         row->setSpacing(8);
 
         auto* namBox = new QGroupBox("NAM Model");
-        Theme::tagCard(namBox, Theme::Category::Amp);
+        Theme::tagCard(namBox, "nam");
         auto* namLay = new QHBoxLayout(namBox);
         namLay->setContentsMargins(8, 16, 8, 8);
         namLay->setSpacing(6);
@@ -306,7 +318,7 @@ void MainWindow::setupUI()
         namLay->addWidget(mLblNAMStatus, 1);
 
         auto* irBox = new QGroupBox("Impulse Response (Cab)");
-        Theme::tagCard(irBox, Theme::Category::Cab);
+        Theme::tagCard(irBox, "ir");
         auto* irLay = new QHBoxLayout(irBox);
         irLay->setContentsMargins(8, 16, 8, 8);
         irLay->setSpacing(6);
@@ -330,7 +342,7 @@ void MainWindow::setupUI()
     auto* scroll = new QScrollArea;
     scroll->setWidgetResizable(true);
     scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    scroll->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    scroll->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     scroll->setFrameShape(QFrame::NoFrame);
 
     mStrip    = new QWidget;
@@ -348,7 +360,7 @@ void MainWindow::setupUI()
         auto* col = new QGroupBox("≡  Tuner");
         col->setAlignment(Qt::AlignHCenter);
         col->setMinimumWidth(110);
-        Theme::tagCard(col, Theme::Category::Neutral);
+        Theme::tagCard(col, "tuner");
         auto* lay = new QVBoxLayout(col);
         lay->setContentsMargins(4, 6, 4, 4);
         lay->setSpacing(3);
@@ -374,13 +386,13 @@ void MainWindow::setupUI()
         mLblCents->setAlignment(Qt::AlignCenter);
 
         mTunerBar = new QProgressBar;
+        mTunerBar->setObjectName("tunerBar"); // chunk color lives in the Theme stylesheet
         mTunerBar->setOrientation(Qt::Vertical);
         mTunerBar->setRange(0, 100);
         mTunerBar->setValue(50);
         mTunerBar->setTextVisible(false);
         mTunerBar->setFixedWidth(14);
         mTunerBar->setMinimumHeight(60);
-        mTunerBar->setStyleSheet("QProgressBar::chunk { background: #5cc8a8; border-radius: 2px; margin: 1px; }");
 
         mSwTunerMute = new ToggleSwitch;
         mSwTunerMute->setCheckable(true);
@@ -409,7 +421,7 @@ void MainWindow::setupUI()
 
         auto* col = makeEffectColumn("Gate", mSwGateEnable,
             {mKnobGateThresh, mKnobGateAttack, mKnobGateRelease});
-        Theme::tagCard(col, Theme::Category::Dynamics);
+        Theme::tagCard(col, "gate");
 
         mFxCols[&mEngine->gate()] = col;
     }
@@ -430,7 +442,7 @@ void MainWindow::setupUI()
 
         auto* col = makeEffectColumn("Compressor", mSwCompEnable,
             {mKnobCompThresh, mKnobCompRatio, mKnobCompAttack, mKnobCompRelease, mKnobCompMakeup});
-        Theme::tagCard(col, Theme::Category::Dynamics);
+        Theme::tagCard(col, "comp");
 
         mFxCols[&mEngine->comp()] = col;
     }
@@ -447,7 +459,7 @@ void MainWindow::setupUI()
 
         auto* col = makeEffectColumn("Dyn.Wah", mSwWahEnable,
             {mKnobWahSens, mKnobWahRes, mKnobWahMix});
-        Theme::tagCard(col, Theme::Category::Filter);
+        Theme::tagCard(col, "wah");
 
         mFxCols[&mEngine->wah()] = col;
     }
@@ -456,7 +468,7 @@ void MainWindow::setupUI()
     {
         auto* col = makeEffectColumn("Amp", mSwNAMEnable, {});
         mSwNAMEnable->setChecked(true);
-        Theme::tagCard(col, Theme::Category::Amp);
+        Theme::tagCard(col, "nam");
         mFxCols[&mEngine->nam()] = col;
     }
 
@@ -472,7 +484,7 @@ void MainWindow::setupUI()
 
         auto* col = makeEffectColumn("EQ", mSwEQEnable, {mKnobLow, mKnobMid, mKnobTreble});
         mSwEQEnable->setChecked(true);
-        Theme::tagCard(col, Theme::Category::EQ);
+        Theme::tagCard(col, "eq");
         mFxCols[&mEngine->eq()] = col;
     }
 
@@ -490,7 +502,7 @@ void MainWindow::setupUI()
 
         auto* col = makeEffectColumn("Flanger", mSwFlangerEnable,
             {mKnobFlRate, mKnobFlDepth, mKnobFlFeedback, mKnobFlMix}, &mSwFlangerStereo);
-        Theme::tagCard(col, Theme::Category::ModPre);
+        Theme::tagCard(col, "flanger");
 
         mFxCols[&mEngine->flanger()] = col;
     }
@@ -509,7 +521,7 @@ void MainWindow::setupUI()
 
         auto* col = makeEffectColumn("Phaser", mSwPhaserEnable,
             {mKnobPhRate, mKnobPhDepth, mKnobPhFeedback, mKnobPhMix}, &mSwPhaserStereo);
-        Theme::tagCard(col, Theme::Category::ModPre);
+        Theme::tagCard(col, "phaser");
 
         mFxCols[&mEngine->phaser()] = col;
     }
@@ -526,7 +538,7 @@ void MainWindow::setupUI()
 
         auto* col = makeEffectColumn("Chorus", mSwChorusEnable,
             {mKnobChRate, mKnobChDepth, mKnobChMix});
-        Theme::tagCard(col, Theme::Category::ModPost);
+        Theme::tagCard(col, "chorus");
 
         mFxCols[&mEngine->chorus()] = col;
     }
@@ -540,7 +552,7 @@ void MainWindow::setupUI()
         mKnobTrDepth->setScrollStep(1.0);
 
         auto* col = makeEffectColumn("Tremolo", mSwTremoloEnable, {mKnobTrRate, mKnobTrDepth});
-        Theme::tagCard(col, Theme::Category::ModPost);
+        Theme::tagCard(col, "tremolo");
 
         mFxCols[&mEngine->tremolo()] = col;
     }
@@ -558,7 +570,7 @@ void MainWindow::setupUI()
         auto* col = makeEffectColumn("Delay", mSwDelayEnable,
             {mKnobDelTime, mKnobDelFeedback, mKnobDelMix}, &mSwDelayStereo);
         mSwDelayStereo->setChecked(true);
-        Theme::tagCard(col, Theme::Category::Time);
+        Theme::tagCard(col, "delay");
 
         mFxCols[&mEngine->delay()] = col;
     }
@@ -577,7 +589,7 @@ void MainWindow::setupUI()
 
         auto* col = makeEffectColumn("Reverb", mSwReverbEnable,
             {mKnobRevRoom, mKnobRevDamping, mKnobRevWidth, mKnobRevMix});
-        Theme::tagCard(col, Theme::Category::Time);
+        Theme::tagCard(col, "reverb");
 
         mFxCols[&mEngine->reverb()] = col;
     }
@@ -586,7 +598,7 @@ void MainWindow::setupUI()
     {
         auto* col = makeEffectColumn("IR", mSwIREnable, {});
         mSwIREnable->setChecked(true);
-        Theme::tagCard(col, Theme::Category::Cab);
+        Theme::tagCard(col, "ir");
         mFxCols[&mEngine->ir()] = col;
     }
 
@@ -596,7 +608,7 @@ void MainWindow::setupUI()
         auto* col = new QGroupBox(title);
         col->setAlignment(Qt::AlignHCenter);
         col->setMinimumWidth(110);
-        Theme::tagCard(col, Theme::Category::Neutral);
+        Theme::tagCard(col, "neutral");
         auto* lay = new QVBoxLayout(col);
         lay->setContentsMargins(4, 6, 4, 4);
         knob = new KnobWidget("Gain", kGainMin, kGainMax, kGainDefault, "dB");
@@ -920,10 +932,10 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* ev)
 
 void MainWindow::setAudioStatus(const QString& text, bool ok)
 {
-    mLblJACKStatus->setText(text);
-    mLblJACKStatus->setObjectName(ok ? "jackStatusOk" : "jackStatusErr");
-    mLblJACKStatus->style()->unpolish(mLblJACKStatus);
-    mLblJACKStatus->style()->polish(mLblJACKStatus);
+    mLblAudioStatus->setText(text);
+    mLblAudioStatus->setObjectName(ok ? "audioStatusOk" : "audioStatusErr");
+    mLblAudioStatus->style()->unpolish(mLblAudioStatus);
+    mLblAudioStatus->style()->polish(mLblAudioStatus);
     mBtnReconnect->setVisible(!ok);
 }
 
@@ -1233,7 +1245,7 @@ void MainWindow::updateMeters()
     mMeterIn ->setValue(toMeter(mEngine->takeInputPeak()));
     mMeterOut->setValue(toMeter(mEngine->takeOutputPeak()));
 
-    if (!mEngine->isRunning() && mLblJACKStatus->objectName() == "jackStatusOk")
+    if (!mEngine->isRunning() && mLblAudioStatus->objectName() == "audioStatusOk")
         setAudioStatus("Audio backend  ●  disconnected", false);
 }
 

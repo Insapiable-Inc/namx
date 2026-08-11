@@ -7,45 +7,65 @@
 
 namespace Theme {
 
-const char* categoryName(Category c)
-{
-    switch (c) {
-        case Category::Neutral:  return "neutral";
-        case Category::Dynamics: return "dynamics";
-        case Category::Filter:   return "filter";
-        case Category::ModPre:   return "modpre";
-        case Category::Amp:      return "amp";
-        case Category::EQ:       return "eq";
-        case Category::ModPost:  return "modpost";
-        case Category::Time:     return "time";
-        case Category::Cab:      return "cab";
-    }
-    return "neutral";
-}
+// ---------------------------------------------------------------------------
+// Palette
+// ---------------------------------------------------------------------------
 
-QColor categoryColor(Category c)
+// Per-effect accents (user-chosen, 2026-08-10). IDs match
+// AudioEngine::mEffectTable; "neutral" covers Input/Output and fallbacks.
+struct FxColor { const char* id; const char* accent; };
+static constexpr FxColor kFxColors[] = {
+    {"tuner",   "#f0e9d7"},
+    {"gate",    "#c2c5c8"},
+    {"comp",    "#0f377a"},
+    {"wah",     "#d4c19a"},
+    {"flanger", "#93477b"},
+    {"phaser",  "#4bba5b"},
+    {"nam",     "#e4b954"},
+    {"eq",      "#d5d3c5"},
+    {"chorus",  "#8dccf3"},
+    {"tremolo", "#19848e"},
+    {"delay",   "#eae9e5"},
+    {"reverb",  "#3d3c3d"},
+    {"ir",      "#ef661a"},
+    {"neutral", "#7d8590"},
+};
+
+QColor accent(const QString& fxId)
 {
-    switch (c) {
-        case Category::Neutral:  return QColor("#7d8590");
-        case Category::Dynamics: return QColor("#5cc8a8");
-        case Category::Filter:   return QColor("#b07be8");
-        case Category::ModPre:   return QColor("#f0a040");
-        case Category::Amp:      return QColor("#e85a4f");
-        case Category::EQ:       return QColor("#5e8eda");
-        case Category::ModPost:  return QColor("#f0c850");
-        case Category::Time:     return QColor("#4a90e2");
-        case Category::Cab:      return QColor("#d878a0");
-    }
+    for (const auto& fc : kFxColors)
+        if (fxId == QLatin1String(fc.id))
+            return QColor(fc.accent);
     return QColor("#7d8590");
 }
 
-void tagCard(QWidget* card, Category c)
+QColor readableAccent(QColor c)
+{
+    // Dark accents (reverb, compressor…) vanish as text or knob arcs on the
+    // dark card background — lift them while keeping hue and saturation.
+    if (c.lightness() < 120)
+        c.setHsl(c.hslHue(), c.hslSaturation(), 160);
+    return c;
+}
+
+// Neutral chrome tones (keep in sync with the stylesheet below).
+QColor track()       { return QColor("#2a2f38"); }
+QColor trackHover()  { return QColor("#353c4a"); }
+QColor knobBodyTop() { return QColor("#2e3441"); }
+QColor knobBodyBot() { return QColor("#1c2028"); }
+QColor bezel()       { return QColor("#0e1015"); }
+QColor well()        { return QColor("#181b22"); }
+QColor dimText()     { return QColor("#aab0bc"); }
+QColor thumbTop()    { return QColor("#ffffff"); }
+QColor thumbBot()    { return QColor("#d8dee9"); }
+
+void tagCard(QWidget* card, const QString& fxId)
 {
     if (!card) return;
-    card->setProperty("category", categoryName(c));
+    card->setProperty("fx", fxId);
 
     QPalette pal = card->palette();
-    pal.setColor(QPalette::Highlight, categoryColor(c));
+    pal.setColor(QPalette::Highlight, readableAccent(accent(fxId)));
     card->setPalette(pal);
 
     if (card->style()) {
@@ -143,27 +163,7 @@ QGroupBox::title {
     background: transparent;
     margin-top: -2px;
 }
-
-/* Category accents — top edge of each card */
-QGroupBox[category="neutral"]  { border-top: 3px solid #7d8590; }
-QGroupBox[category="dynamics"] { border-top: 3px solid #5cc8a8; }
-QGroupBox[category="filter"]   { border-top: 3px solid #b07be8; }
-QGroupBox[category="modpre"]   { border-top: 3px solid #f0a040; }
-QGroupBox[category="amp"]      { border-top: 3px solid #e85a4f; }
-QGroupBox[category="eq"]       { border-top: 3px solid #5e8eda; }
-QGroupBox[category="modpost"]  { border-top: 3px solid #f0c850; }
-QGroupBox[category="time"]     { border-top: 3px solid #4a90e2; }
-QGroupBox[category="cab"]      { border-top: 3px solid #d878a0; }
-
-/* Title color reflects the accent */
-QGroupBox[category="dynamics"]::title { color: #88dcc0; }
-QGroupBox[category="filter"]::title   { color: #c79bf0; }
-QGroupBox[category="modpre"]::title   { color: #f5bb6b; }
-QGroupBox[category="amp"]::title      { color: #f08272; }
-QGroupBox[category="eq"]::title       { color: #88aae6; }
-QGroupBox[category="modpost"]::title  { color: #f5d878; }
-QGroupBox[category="time"]::title     { color: #78a9eb; }
-QGroupBox[category="cab"]::title      { color: #e598b8; }
+/* Per-effect accent stripes and title colors are appended in apply(). */
 
 /* === Scroll area === */
 QScrollArea {
@@ -196,9 +196,31 @@ QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
 QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
     background: none;
 }
+QScrollBar:vertical {
+    background: #15171c;
+    width: 10px;
+    margin: 0;
+    border: none;
+}
+QScrollBar::handle:vertical {
+    background: #353c4a;
+    border-radius: 4px;
+    min-height: 24px;
+    margin: 1px;
+}
+QScrollBar::handle:vertical:hover {
+    background: #424b5c;
+}
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0;
+    background: none;
+    border: none;
+}
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+    background: none;
+}
 
-/* === Progress bars (VU meters, tuner bar) ===
-   Per-widget chunk gradients are set in code (see MainWindow). */
+/* === Progress bars (VU meters, tuner bar) === */
 QProgressBar {
     background-color: #0f1116;
     border: 1px solid #2a2f38;
@@ -208,6 +230,13 @@ QProgressBar {
 QProgressBar::chunk {
     border-radius: 2px;
     margin: 1px;
+}
+QProgressBar#vuMeter::chunk {
+    background: qlineargradient(x1:0,y1:1,x2:0,y2:0,
+        stop:0 #5cc8a8, stop:0.65 #f0c850, stop:0.9 #e85a4f, stop:1 #ff5252);
+}
+QProgressBar#tunerBar::chunk {
+    background: #5cc8a8;
 }
 
 /* === Frames (chain dividers) === */
@@ -219,6 +248,9 @@ QFrame[frameShape="5"] {  /* Qt::VLine */
 QLabel {
     background: transparent;
 }
+QLabel#stereoLabel {
+    color: #aab0bc;
+}
 
 /* === App title in the top status row === */
 QLabel#appTitle {
@@ -228,15 +260,15 @@ QLabel#appTitle {
     padding-right: 10px;
 }
 
-/* === JACK status pill === */
-QLabel#jackStatusOk {
+/* === Audio status pill === */
+QLabel#audioStatusOk {
     background-color: rgba(92, 200, 168, 0.15);
     color: #5cc8a8;
     padding: 4px 12px;
     border-radius: 11px;
     font-weight: 600;
 }
-QLabel#jackStatusErr {
+QLabel#audioStatusErr {
     background-color: rgba(232, 90, 79, 0.18);
     color: #e85a4f;
     padding: 4px 12px;
@@ -353,7 +385,20 @@ void apply(QApplication& app)
     p.setColor(QPalette::Disabled, QPalette::ButtonText, QColor("#555c6b"));
 
     app.setPalette(p);
-    app.setStyleSheet(QString::fromUtf8(kStyleSheet));
+
+    // Per-effect accent rules: raw accent for the top stripe, readable
+    // (lightness-clamped) accent for the title text.
+    QString qss = QString::fromUtf8(kStyleSheet);
+    for (const auto& fc : kFxColors)
+    {
+        const QColor a(fc.accent);
+        const QColor t = readableAccent(a);
+        qss += QString::fromUtf8(
+                   "QGroupBox[fx=\"%1\"] { border-top: 3px solid %2; }\n"
+                   "QGroupBox[fx=\"%1\"]::title { color: %3; }\n")
+                   .arg(QLatin1String(fc.id), a.name(), t.name());
+    }
+    app.setStyleSheet(qss);
 }
 
 } // namespace Theme

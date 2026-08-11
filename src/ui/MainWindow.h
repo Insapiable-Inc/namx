@@ -131,7 +131,7 @@ private:
     QPushButton* mBtnUnloadIR   = nullptr;
     QLabel*      mLblNAMStatus  = nullptr;
     QLabel*      mLblIRStatus   = nullptr;
-    QLabel*      mLblJACKStatus = nullptr;
+    QLabel*      mLblAudioStatus = nullptr;
     QPushButton* mBtnReconnect  = nullptr;
 
     QComboBox* mCbxInputDevice  = nullptr;
