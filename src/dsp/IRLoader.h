@@ -28,8 +28,12 @@ public:
     /// Human-readable reason the last load() returned false (GUI thread only).
     std::string lastError() const { return mLastError; }
 
-    /// Process a stereo block in-place. Uses independent convolution state per channel.
-    void processBlockStereo(float* L, float* R, int numFrames);
+    /// Process a block in-place. inputIsStereo=false means L and R hold the
+    /// same signal: the convolution then runs once (L) and is copied to R,
+    /// while both per-channel delay lines are still fed so the R state is
+    /// valid the moment a stereo block arrives. inputIsStereo=true convolves
+    /// each channel with its own state.
+    void processBlock(float* L, float* R, int numFrames, bool inputIsStereo);
 
     /// Reset convolution state
     void reset();
@@ -60,6 +64,9 @@ private:
     Kernel& activeKernel()   { return mActiveIndex.load() == 0 ? mKernelA : mKernelB; }
     Kernel& inactiveKernel() { return mActiveIndex.load() == 0 ? mKernelB : mKernelA; }
 
-    // Inner per-sample convolution for one channel
-    static float processChannel(Kernel& k, int ch, float in);
+    // Per-sample steps for one channel: push the input into the delay line,
+    // dot it with the (reversed) IR, advance the write position.
+    static void  pushSample(Kernel& k, int ch, float in);
+    static float convolveAt(const Kernel& k, int ch);
+    static void  advance(Kernel& k, int ch);
 };

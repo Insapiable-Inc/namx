@@ -19,11 +19,12 @@ public:
 
     void reset() override { mLoader.reset(); }
 
-    /// IR never changes whether the signal is stereo; it just filters both channels.
+    /// IR never changes whether the signal is stereo; it filters what it gets
+    /// (one convolution for mono input, one per channel for stereo).
     bool process(float* L, float* R, int n, bool inputIsStereo) override
     {
         if (mEnabled.load() && mLoader.isLoaded())
-            mLoader.processBlockStereo(L, R, n);
+            mLoader.processBlock(L, R, n, inputIsStereo);
         return inputIsStereo;
     }
 

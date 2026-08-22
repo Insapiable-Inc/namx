@@ -94,27 +94,33 @@ void IRLoader::unload()
     mKernelB.irLen = 0;
 }
 
-/*static*/ float IRLoader::processChannel(Kernel& k, int ch, float in)
+/*static*/ void IRLoader::pushSample(Kernel& k, int ch, float in)
 {
     float*    buf = k.buffers[ch].data();
     const int wp  = k.writePos[ch];
-
     buf[wp]           = in;
     buf[wp + k.irLen] = in; // mirror write keeps the window below contiguous
+}
+
+/*static*/ float IRLoader::convolveAt(const Kernel& k, int ch)
+{
+    const float* buf = k.buffers[ch].data();
+    const int    wp  = k.writePos[ch];
 
     // buf[wp+1 .. wp+irLen] is the last irLen samples, oldest→newest;
     // k.ir is reversed, so this dot product is the convolution sum.
     Eigen::Map<const Eigen::VectorXf> ir (k.ir.data(),  k.irLen);
     Eigen::Map<const Eigen::VectorXf> sig(buf + wp + 1, k.irLen);
-    const float out = ir.dot(sig);
-
-    if (++k.writePos[ch] >= k.irLen)
-        k.writePos[ch] = 0;
-
-    return out;
+    return ir.dot(sig);
 }
 
-void IRLoader::processBlockStereo(float* L, float* R, int numFrames)
+/*static*/ void IRLoader::advance(Kernel& k, int ch)
+{
+    if (++k.writePos[ch] >= k.irLen)
+        k.writePos[ch] = 0;
+}
+
+void IRLoader::processBlock(float* L, float* R, int numFrames, bool inputIsStereo)
 {
     if (!mLoaded.load(std::memory_order_acquire))
         return;
@@ -123,10 +129,33 @@ void IRLoader::processBlockStereo(float* L, float* R, int numFrames)
     if (k.irLen <= 0)
         return;
 
+    if (inputIsStereo)
+    {
+        for (int i = 0; i < numFrames; ++i)
+        {
+            pushSample(k, 0, L[i]);
+            pushSample(k, 1, R[i]);
+            L[i] = convolveAt(k, 0);
+            R[i] = convolveAt(k, 1);
+            advance(k, 0);
+            advance(k, 1);
+        }
+        return;
+    }
+
+    // Mono: L == R, so the two delay lines hold identical history. Feed both
+    // (a few stores) but run the 4096-tap dot product only once — the R line
+    // stays valid for the moment an upstream effect goes stereo.
     for (int i = 0; i < numFrames; ++i)
     {
-        L[i] = processChannel(k, 0, L[i]);
-        R[i] = processChannel(k, 1, R[i]);
+        const float in = L[i];
+        pushSample(k, 0, in);
+        pushSample(k, 1, in);
+        const float out = convolveAt(k, 0);
+        L[i] = out;
+        R[i] = out;
+        advance(k, 0);
+        advance(k, 1);
     }
 }
 
