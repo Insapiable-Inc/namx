@@ -1,6 +1,6 @@
-# NAMPlayer — Build & Usage Guide
+# NAM Player — Build & Usage Guide
 
-NAMPlayer is a standalone Qt6 desktop application that loads `.nam` neural amp models
+NAM Player (binary `NAMPlayer`) is a standalone Qt6 desktop application that loads `.nam` neural amp models
 and `.wav` impulse responses, processes live audio, and exposes a full pedal-style
 effects chain plus a 3-band EQ.
 
@@ -105,8 +105,8 @@ no separate audio dependency — the Windows SDK already ships them.
 ## 2. Get the source & submodules
 
 ```bash
-git clone https://github.com/YOUR_FORK/NeuralAmpModelerCore.git
-cd NeuralAmpModelerCore
+git clone --recursive https://github.com/silvercobraa/NeuralAmpModelerGUI.git nam-player
+cd nam-player
 
 # The GUI depends on two git submodules (Eigen and AudioDSPTools)
 git submodule update --init --recursive
@@ -228,20 +228,24 @@ Use **qpwgraph** or **Carla** to patch ports visually.
 
 ## 5. Connect audio ports
 
-NAMPlayer registers two JACK ports:
+NAMPlayer registers three JACK ports (mono in, stereo out):
 
 | Port | Direction |
 |------|-----------|
-| `NAMPlayer:input`  | Audio input  |
-| `NAMPlayer:output` | Audio output |
+| `NAMPlayer:input`    | Audio input (mono) |
+| `NAMPlayer:output_L` | Audio output, left |
+| `NAMPlayer:output_R` | Audio output, right |
+
+On first run the app connects `system:capture_1` → `input` and `output_L/R` →
+`system:playback_1/2` itself; connections you change afterwards are remembered.
 
 ### Command-line connection
 
 ```bash
 # Guitar interface → NAMPlayer → speakers
 jack_connect system:capture_1    NAMPlayer:input
-jack_connect NAMPlayer:output    system:playback_1
-jack_connect NAMPlayer:output    system:playback_2   # stereo out
+jack_connect NAMPlayer:output_L  system:playback_1
+jack_connect NAMPlayer:output_R  system:playback_2
 ```
 
 ### GUI connection tools

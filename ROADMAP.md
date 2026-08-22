@@ -309,19 +309,26 @@ Decision: **standardize on "NAM Player"** — already the user-facing title, acc
 platform-neutral. (Shortlisted alternatives if a more distinctive name is ever wanted:
 NAM Rig, NAM Stage.)
 
-- [ ] Repo rename → `nam-player` on GitHub (canonical home; currently
+- [ ] **Repo rename → `nam-player` on GitHub** (canonical home; currently
       `silvercobraa/NeuralAmpModelerGUI`; GitHub auto-redirects the old URL). Optionally
-      rename the Forgejo mirror (`nam-linux-gui`) to match. Update clone URLs in
-      README/BUILD.md.
-- [ ] `setApplicationName("NAM Player")` + one-time QSettings migration copying keys from
-      the old "NAM Linux" store if the new one is empty (otherwise users lose saved
-      connections on upgrade).
-- [ ] Binary, CMake target, and JACK client name **stay `NAMPlayer`** — no breakage for
-      existing `jack_connect` scripts.
-- [ ] Rename CI files `gui-linux.yml` → keep per-OS jobs but platform-neutral artifact
-      naming (`NAMPlayer-linux-x64`, `NAMPlayer-windows-x64` are fine).
-- [ ] Add a courtesy line to README: not affiliated with the official Neural Amp Modeler
-      plugin; built on sdatkinson's NeuralAmpModelerCore.
+      rename the Forgejo mirror (`nam-linux-gui`) to match. **User action** (no `gh` on
+      this machine): GitHub → repo Settings → General → Repository name. Then
+      `git remote set-url github https://github.com/silvercobraa/nam-player.git`.
+- [x] Clone URLs in README/BUILD.md now point at the *current* GitHub name with
+      `… nam-player` as the checkout dir (2026-08-22) — valid before and after the
+      rename thanks to the redirect; flip them to the new name once it lands.
+- [x] `setApplicationName("NAM Player")` (+ `setApplicationDisplayName`) and a one-time
+      QSettings migration (`migrateLegacySettings()` in `main.cpp`): if the new store is
+      empty and the legacy "NAM Linux" store has keys, copy them all; legacy store kept
+      (2026-08-22).
+- [x] Binary, CMake target, and JACK client name **stay `NAMPlayer`** — no breakage for
+      existing `jack_connect` scripts. (BUILD.md's port table fixed on the way: it
+      documented a single `output`; the real ports are `output_L`/`output_R`.)
+- [x] CI: per-OS jobs kept; artifact names were already platform-neutral
+      (`NAMPlayer-linux-x64`, `NAMPlayer-windows-x64`) — nothing to rename.
+- [x] README: "not affiliated with the official Neural Amp Modeler plugin; built on
+      NeuralAmpModelerCore" courtesy line; title → "NAM Player"; stale feature list
+      (double chorus, no wah, fixed pre/post split) corrected (2026-08-22).
 
 ## Phase 8 — Packaging & ship
 
