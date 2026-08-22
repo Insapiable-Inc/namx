@@ -7,6 +7,26 @@ tracking checklist.
 
 Plan drafted 2026-08-09. Line numbers reference the tree at that date and may drift.
 
+## North star (set 2026-08-22)
+
+**Feature baseline: Neural DSP Archetype: Petrucci X — do at least everything it does**
+(its feature inventory is mapped phase by phase below). But: **NAM-based** (models come
+from the community, not from us), **flat, no skeuomorphism** (no pedals, no wood, no
+screws), **pretty**, **native Qt standalone** on **Linux first, Windows supported**,
+**FOSS**, **efficient** (measured, not assumed — see Phase 14), and **community-driven**
+(browse TONE3000 tones in-app, share presets, swap themes).
+
+Decisions:
+- **No DAW plugin, ever** (2026-08-22). Plugin-host-embedded GUIs are the wrong trade;
+  everything that makes this app worth having is standalone-shaped. `src/dsp` stays
+  Qt-free and all parameters stay in the registry, but that's hygiene, not a plugin plan.
+- **Library + TONE3000 ship in v1.0** (2026-08-22). A NAM player whose first-run
+  experience is a file dialog is not done. The `v1.0` tag moves from Phase 8 to the end
+  of Phase 12.
+- **Execution order:** 7 → 8 (packaging, no tag) → 11 → 12 → **tag v1.0** → 13 → 14 →
+  15 (absorbs Phase 10 tempo) → 16 → 17 → 18 → 19; Phase 9 (knob tapers) slots in
+  wherever a knob-heavy phase touches the widgets (17 at the latest).
+
 ---
 
 ## Phase 0 — Repo hygiene
@@ -315,7 +335,8 @@ NAM Rig, NAM Stage.)
 - [ ] Flatpak manifest (`--socket=pipewire`).
 - [ ] CI release job on tag push: Ubuntu 22.04 + Arch + Windows, non-native SIMD flags.
 - [ ] Headless smoke test in CI: `QT_QPA_PLATFORM=offscreen NAMPlayer --self-test-and-exit`.
-- [ ] About dialog / `--version` flag verified; tag **v1.0**.
+- [ ] About dialog / `--version` flag verified. ~~tag **v1.0**~~ → **moved to the end
+      of Phase 12** (decision 2026-08-22: Library + TONE3000 are part of 1.0).
 
 ## Phase 9 — Knob range calibration (post-1.0 unless pulled forward; added 2026-08-10)
 
@@ -350,10 +371,199 @@ Global tempo, so time-based parameters can be set in note values.
 - [ ] **Persistence:** per-param mode + fraction and the BPM join the session and
       preset schema (versioned, so old files keep loading).
 
-## Deferred (post-1.0)
+## Phase 11 — Library (v1.0)
 
+Models, IRs and presets become browsable lists, not file dialogs. Everything in
+Phases 12, 13 and 16 stands on this.
+
+- [ ] **Library panel** (dockable, left of the rig; collapsible; remembers state):
+      three sections — Models, IRs, Presets — one list widget, one behaviour.
+- [ ] **Root folders** configurable (several per type; sane defaults, e.g. `~/NAM`,
+      `~/Music/IRs`, the presets dir); recursive scan on a worker thread with a cached
+      index; `QFileSystemWatcher` keeps it live. Never block the GUI on a scan.
+- [ ] **Search-as-you-type**, favorites (★), recents, sort by name/date; **prev/next**
+      on keyboard (arrows / PgUp-PgDn when the panel has focus) — MIDI later (Phase 16).
+- [ ] **Drag-and-drop** `.nam` / `.wav` / `.nampreset` files onto the window (and onto
+      the Amp / IR cards) — `setAcceptDrops` + `dropEvent`.
+- [ ] **Model metadata** read from the `.nam` JSON (architecture, sample rate,
+      training/loudness info when present) shown in the list and on the Amp card.
+- [ ] **Amp and IR become hero cards:** name, metadata, ‹ › arrows cycling the library
+      (Petrucci: IR combo box + navigation arrows), Unload demoted to a menu item. The
+      two big top bars go away; the two `Load…` buttons become "Browse" (focus the
+      library).
+- [ ] Keep Import/Export file dialogs for one-offs; they stop being the primary path.
+
+## Phase 12 — TONE3000 integration (v1.0) → tag **v1.0** at the end
+
+A second tab of the Library that looks and behaves exactly like the local one but is
+the community. API verified 2026-08-22 (tone3000.com/api): OAuth 2.0 + PKCE for
+user-facing apps, **free non-commercial tier** covers OAuth, search / trending / latest,
+favorites, the user's downloads and per-model download URLs; 100 req/min; branding,
+tone images, creator attribution and per-model licenses (T3K / CC) are requirements.
+
+- [ ] **Prerequisite (user action):** register the app on TONE3000 to obtain a
+      `client_id`. No secret ships in the binary (PKCE + loopback redirect).
+- [ ] **Login** (system browser → `http://127.0.0.1:<port>/callback`), token stored in
+      QSettings (or the platform keychain if cheap), logout.
+- [ ] **Browse:** trending, latest, search, filter by make/tag; tone cards with image,
+      creator, license; favorite/unfavorite; "open on TONE3000".
+- [ ] **Download** a tone's model(s) into the library (sidecar JSON: tone id, creator,
+      license, URL) → immediately loadable; already-downloaded marker; offline = the
+      local tab still works, the TONE3000 tab says so.
+- [ ] **Preset ↔ tone linkage:** presets record the TONE3000 tone/model id next to the
+      path; loading a preset whose model is missing offers to fetch it. This is what
+      makes *sharing presets* work (Phase 19).
+- [ ] Rate-limit handling, listing cache, their branding/attribution requirements met.
+- [ ] Networking via `Qt6::Network` (part of `qt6-base`; CMake `find_package` gains
+      `Network`). Linux packaging (Phase 8) re-verified with it.
+- [ ] **Tag v1.0.**
+
+## Phase 13 — Presets as the live unit
+
+Petrucci parity: preset combo box, ‹ ›, Save, Save As…, Delete, Import, Reset, Locate
+file, `*` on unsaved changes, folders/subfolders, and a defined set of things presets
+*don't* recall (audio device, tuner, metronome, MIDI map).
+
+- [ ] **Preset name in the top bar** (replaces the redundant "NAM Player" title),
+      with `*` when modified; ‹ › cycle the preset list; Save / Save As / Delete /
+      Import / Export / Locate folder.
+- [ ] **Quick slots 1–8** (`Ctrl+1…8`, MIDI PC later) and **A/B compare**.
+- [ ] Presets organised in folders (the library already shows the tree).
+- [ ] **Excluded from presets** (documented): audio devices/connections, tuner
+      settings, metronome, MIDI map, window state.
+- [ ] A handful of **starter presets** shipped with *no model baked in* (or linked to
+      permissively-licensed TONE3000 tones via Phase 12) so first run isn't empty.
+
+## Phase 14 — Cockpit: status bar, meters, tuner, efficiency
+
+The "at the speed of a cockpit" part. Also where *efficient* stops being a slogan.
+
+- [ ] **Status bar:** backend · sample rate · buffer · round-trip latency (ms) ·
+      **DSP load %** (audio-thread timing, max-hold) · **xrun counter** (JACK xrun
+      callback; click to reset) · model / IR / login state. This would have diagnosed
+      the 2026-08-22 xrun hunt in five seconds.
+- [ ] **Meters at display rate** (60 fps, `QTimer` tied to the window being visible and
+      audio running — zero CPU when hidden/idle): proper ballistics, peak-hold, **clip
+      indicators** held ~10 s, click to clear (Petrucci parity). Input and output.
+- [ ] **Gain-reduction meters** on Compressor and Gate (Petrucci has one on the comp).
+- [ ] **Tuner as a mode:** big readout when engaged (note, cents *or* Hz, reference
+      pitch 420–460 Hz — parity), mute, live mini-tuner in the top bar option.
+- [ ] **Efficiency budget written down and checked:** DSP ≤ 10 % of a 128-frame
+      budget on a 2018 laptop core for the default chain; idle UI ≈ 0 % (no periodic
+      repaint of static widgets, no polling timers when nothing changes); cold start
+      < 1 s; RSS modest. The perf micro-benches from 2026-08-22 (NAM model at 128,
+      IR, each effect) move into `tools/` so regressions are measurable.
+- [ ] Free perf wins already identified, now also documented here so they're not
+      lost: `nam::activations::Activation::enable_fast_tanh()` at startup (2.4× on
+      Tanh WaveNets — what the official plugin does), Phaser/Compressor per-block
+      coefficient math, `% sz` ring-buffer wraps → compare-and-reset.
+
+## Phase 15 — Practice tools: metronome + global tempo (absorbs Phase 10)
+
+Main use case is practising at home along a song; the metronome is the standalone
+feature people actually use. Petrucci parity for the metronome in full.
+
+- [ ] **Global tempo** in the top bar: BPM field (click to type, drag to nudge), **Tap**
+      (this *is* Phase 10's BPM; Phase 10's delay/LFO sync modes FREE / TAP(tempo)
+      then land here as planned — engine stays dumb, GUI maps note values to ms/Hz).
+- [ ] **Metronome:** play/stop (MIDI-assignable), volume, pan, 40–240 BPM, time
+      signatures incl. compound/complex, per-beat accents (click to cycle), sound
+      sets, subdivision ("rhythm"), beat LEDs; keeps running across preset changes.
+      RT-safe: preloaded click samples, a generator mixed into the output stage on
+      its own gain, outside the effect chain.
+- [ ] **Count-in** and a keyboard shortcut for play/stop.
+- [ ] *(Ideas, not committed)* in-app local file player with A/B loop, slow-down,
+      pitch; "song mode" cue list driven by an external player's position over
+      MPRIS (Firefox ≥ 131 / Chromium expose it for YouTube) or SMTC on Windows.
+      Parked — see Ideas.
+
+## Phase 16 — MIDI
+
+Petrucci parity: CC / PC / NOTE, MIDI Learn from a right-click, a Mappings window,
+absolute vs relative CC, mapping presets saved/loaded, device enable checkboxes.
+The parameter registry (Phase 2) was built for this: every `ParamDesc` is mappable.
+
+- [ ] **Backends:** Linux — ALSA sequencer (covers USB, DIN via interfaces, and
+      PipeWire/JACK bridges); Windows — WinMM (or WinRT MIDI). Device list with
+      enable checkboxes in Settings. Hot-plug.
+- [ ] **MIDI Learn** on every knob/toggle (context menu → "Learn", widget highlighted
+      while armed), plus quick slots / prev-next preset / tuner / metronome play-stop
+      as learnable actions.
+- [ ] **Mappings window:** bypass, type (CC/PC/NOTE), target, channel, number, value /
+      absolute-relative, delete; **save/load mapping presets**; default mapping.
+- [ ] **Delivery:** MIDI thread → lock-free queue → applied on the GUI thread through
+      the registry (widgets and engine can't drift; keyboard shortcuts already go this
+      way) — latency is one event-loop hop, fine for stomps and pedals.
+- [ ] **Expression pedal** targets: wah position (Phase 17 manual wah), volume pedal,
+      any knob.
+- [ ] MIDI clock → global tempo (Phase 15) as a follow-up.
+
+## Phase 17 — DSP parity with Petrucci X (the "at least everything it does" gap)
+
+Ranked by musical value ÷ effort. NAM models replace the four amps; "Piezo" (acoustic
+sim) is out of scope — users load acoustic models.
+
+- [ ] **Overdrive/boost pedal** pre-amp (Drive / Tone / Level, TS-style) — the one
+      thing every high-gain rig needs in front of the model. *easy*
+- [ ] **Doubler** (randomised 3–20 ms spread copy before the post section; off when
+      input is already stereo). *easy*
+- [ ] **Cab: dual IR slots** with level / pan / phase / blend + HPF/LPF, and **IR
+      resampling to the session rate** (today a 44.1 k IR plays ~9 % sharp at 48 k —
+      a correctness bug). *easy–medium*
+- [ ] **EQ → 4-band semi-parametric** (frequency per band, ±12 dB) + HPF/LPF. *easy*
+- [ ] **Delay:** sync FREE / TAP (Phase 15), dual L/R times + cross-feed, low/high cut,
+      tape saturation, modulation, tap tempo button. *medium* — "Crystals" (pitched-up
+      layers) needs the pitch shifter, see Transpose.
+- [ ] **Reverb:** pre-delay, decay, low/high cut. *medium* — Shimmer needs the pitch
+      shifter.
+- [ ] **Chorus modes** (Normal/Tri, Vintage/Spatial), **Phaser Vibe mode**, **Flanger
+      Range**. *easy*
+- [ ] **Wah: manual/expression position mode** beside the current envelope mode;
+      **Volume pedal** with mid-point. *easy*
+- [ ] **Output limiter** (was deferred). *easy*
+- [ ] **Stereo-amp toggle** (run NAM per channel only when asked; sum to mono
+      otherwise — halves the cost of a stereo pre-effect). *easy*
+- [ ] **Transpose ±12 st** (and with it Shimmer / Crystals) — a real pitch shifter,
+      latency vs quality trade-off; evaluate Rubber Band (GPL, fine for us) vs own
+      implementation. *hard* — last.
+- [ ] Phase 9 **knob tapers** land alongside whichever of the above touches the most
+      knobs.
+
+## Phase 18 — Settings, layout discipline, platform
+
+- [ ] **Settings dialog:** audio (device, requested buffer size / sample rate; on
+      Windows later WASAPI-exclusive), MIDI devices, library folders, theme, meter
+      options, a **shortcuts sheet** (discoverability of the digit/QWE toggles).
+- [ ] **Layout:** bypassed cards dim; cards with > 4 knobs use a 2-column knob grid so
+      all columns are one height; responsive wrap / compact mode for 1366×768;
+      device row hidden on JACK (one choice) and moved to Settings; window sizes S/M/L
+      + free resize (parity); right-click / double-click a card title to bypass it
+      (parity).
+- [ ] **Visual fixes:** Compressor / Reverb accents are invisible on the dark ground,
+      clipped tuner "±0¢", stereo toggle labelling, "Dyn.Wah" naming.
+- [ ] Windows: **WASAPI exclusive mode** (shared mode's 10–20 ms is not a guitar
+      latency); keep shared as fallback.
+
+## Phase 19 — Themes & community
+
+- [ ] **Theme files** (palette + per-effect accents as JSON in the config dir),
+      built-in Dark / Light / High-contrast stage; user themes shareable; `Theme` is
+      already the single owner of colour, so this is mostly plumbing.
+- [ ] **Preset sharing:** export bundles that carry TONE3000 tone references (Phase 12)
+      so a shared `.nampreset` can fetch its model; a community presets/themes repo
+      linked from the app ("Get more…"). Investigate whether TONE3000 will host
+      presets for third-party apps.
+- [ ] Courtesy/credits screen: NAM core, TONE3000, contributors.
+
+## Ideas parking lot (not committed)
+
+- Song mode: cue list of preset changes on a song timeline, clock from an external
+  player (MPRIS / SMTC) or an in-app file player with A/B loop, slow-down, pitch.
+- Headless CLAP was discussed and **rejected** with the no-plugin decision.
+- Partitioned FFT convolution for full-length IRs at flat cost.
 - Sample-rate renegotiation while running (effect SR is cached at start).
-- Preset dropdown (list `*.nampreset` from a known dir instead of a file dialog).
-- Optional output limiter.
-- Light theme / system-theme detection.
-- MIDI control (see parameter registry, Phase 2; ties into Phase 10 tap/clock tempo).
+
+## Deferred — superseded
+
+The old post-1.0 list is absorbed: preset dropdown → Phase 11/13; MIDI → Phase 16;
+limiter → Phase 17; light theme / system theme → Phase 19.
