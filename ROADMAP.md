@@ -213,9 +213,9 @@ Requires BUG-06 fixed (Phase 1).
       dragging, dropping keeps exactly what was shown, Esc/dropping outside cancels,
       and the *sound* changes accordingly. No crash/glitch while dragging during
       playback (at most a brief tail cut from the moved effect resetting).
-- [ ] Grips: every effect card (incl. Tuner and IR) shows `≡` in the title and drags
-      only from the title band (clicking knobs/toggles/body never reorders);
-      Input/Output titles are plain and don't drag.
+- [ ] Grips: every effect row (incl. Tuner and Cabinet) shows `≡` and drags only
+      from the grip (2026-08-23: the grip replaced the title band; clicking
+      knobs/toggles/body never reorders); the Input/Output columns don't drag.
 - [ ] Tuner mid-chain: place the Tuner after a stereo effect (e.g. after Delay with
       stereo on) — pitch readout still tracks (fed the L/R average) and Mute
       silences both channels.
@@ -237,7 +237,8 @@ Requires BUG-06 fixed (Phase 1).
       one table). **Decision (2026-08-10): palette hex is rendered verbatim** —
       stripe, title, knob value-ring/tick/value-label, toggle "on" state — with no
       lightness clamping; the user tunes the palette values themselves (revised
-      values pending for the near-white tuner/eq/delay). Knob *bodies* stay neutral
+      values landed 2026-08-23 with the rack redesign, which also removed the
+      accent *stripes* — accents now live in row names, knob rings, toggles). Knob *bodies* stay neutral
       (colored-body variant tried and rejected). Bugfix found on the way: the app
       stylesheet disables parent→child palette propagation, so accents were never
       reaching the dials via `QPalette::Highlight` (knobs were always default green)
@@ -330,6 +331,40 @@ NAM Rig, NAM Stage.)
       NeuralAmpModelerCore" courtesy line; title → "NAM Player"; stale feature list
       (double chorus, no wah, fixed pre/post split) corrected (2026-08-22).
 
+## Interlude — rack redesign (2026-08-23, unplanned)
+
+A full UX overhaul landed between Phases 7 and 8 (branch `ux/horizontal-cards`),
+driven by new requirements rather than this list:
+
+- Effects are uniform full-width **rows** (≡ grip · name · On/Off toggle ·
+  Stereo toggle · knobs, Mix first), all exactly 62 px tall; the whole rack
+  fits a 1080p screen with slack. Input/Output are full-height columns
+  flanking the strip; only the strip scrolls. Section dividers removed.
+- Knobs have a compact row form (40 px dial, name over value beside it) and a
+  stacked form for the gain knobs; the recessed knob tile and the per-effect
+  accent stripes are gone (accents live in names, rings, toggles).
+- **Status bar** (bottom right, VS Code style, `AudioStatusBar`): backend
+  state · sample rate · buffer · latency · clickable device pickers. Replaced
+  the device row (`AudioDevicePanel` deleted), the status pill, and the top
+  button row — preset actions live in the Preset menu.
+- Amplifier/Cabinet rows host Load/Unload + the loaded file name in the
+  effect's accent color; the two big top file bars are gone (a head start on
+  Phase 11's hero-card shape).
+- **REAPER-style meters** (absolute zones on a -60..+6 dB scale, red only for
+  the part above 0 dBFS, falling peak-hold line) and a **TU-3-style tuner
+  display** (`TunerDisplay`: LED ladder, glowing seven-segment note, signed
+  cents). **Tuner mute removed** (decision 2026-08-23).
+- Full labels everywhere (Noise Gate, Amplifier, Equalizer, Cabinet,
+  Threshold, Sensitivity, Resonance, Makeup Gain, Room Size,
+  Bass/Middle/Treble); no em dashes in UI strings; Chorus gained its missing
+  Stereo toggle (DSP always had it).
+- Theme scoped to the main window and file dialogs routed through the XDG
+  portal, so dialogs are the desktop's own (Breeze on Plasma).
+
+Phase-list fallout is annotated inline below: parts of Phase 14 are built,
+most Phase 18 layout/visual fixes landed or became obsolete, and Phase 5's
+pending palette revision shipped.
+
 ## Phase 8 — Packaging & ship
 
 - [ ] Desktop file `gui/packaging/NAMPlayer.desktop` (Name, Exec, Icon,
@@ -395,9 +430,10 @@ Phases 12, 13 and 16 stands on this.
 - [ ] **Model metadata** read from the `.nam` JSON (architecture, sample rate,
       training/loudness info when present) shown in the list and on the Amp card.
 - [ ] **Amp and IR become hero cards:** name, metadata, ‹ › arrows cycling the library
-      (Petrucci: IR combo box + navigation arrows), Unload demoted to a menu item. The
-      two big top bars go away; the two `Load…` buttons become "Browse" (focus the
-      library).
+      (Petrucci: IR combo box + navigation arrows), Unload demoted to a menu item.
+      *(The two big top bars are already gone — 2026-08-23 moved Load/Unload + file
+      name onto the Amplifier/Cabinet rows.)* The two `Load…` buttons become
+      "Browse" (focus the library).
 - [ ] Keep Import/Export file dialogs for one-offs; they stop being the primary path.
 
 ## Phase 12 — TONE3000 integration (v1.0) → tag **v1.0** at the end
@@ -445,16 +481,20 @@ file, `*` on unsaved changes, folders/subfolders, and a defined set of things pr
 
 The "at the speed of a cockpit" part. Also where *efficient* stops being a slogan.
 
-- [ ] **Status bar:** backend · sample rate · buffer · round-trip latency (ms) ·
+- [ ] **Status bar:** *(part-built 2026-08-23: backend state · sample rate · buffer ·
+      one-buffer latency · device pickers, in `AudioStatusBar`)* still missing:
       **DSP load %** (audio-thread timing, max-hold) · **xrun counter** (JACK xrun
-      callback; click to reset) · model / IR / login state. This would have diagnosed
-      the 2026-08-22 xrun hunt in five seconds.
-- [ ] **Meters at display rate** (60 fps, `QTimer` tied to the window being visible and
-      audio running — zero CPU when hidden/idle): proper ballistics, peak-hold, **clip
-      indicators** held ~10 s, click to clear (Petrucci parity). Input and output.
+      callback; click to reset) · round-trip latency · model / IR / login state. This
+      would have diagnosed the 2026-08-22 xrun hunt in five seconds.
+- [ ] **Meters at display rate** *(part-built 2026-08-23: absolute zones with red only
+      above 0 dBFS + falling peak-hold, at the 20 fps timer. Decision: zone coloring
+      instead of a latched click-to-clear clip lamp — the red peak-hold line carries
+      the "recently clipped" signal)* still missing: 60 fps tied to visibility,
+      proper ballistics.
 - [ ] **Gain-reduction meters** on Compressor and Gate (Petrucci has one on the comp).
-- [ ] **Tuner as a mode:** big readout when engaged (note, cents *or* Hz, reference
-      pitch 420–460 Hz — parity), mute, live mini-tuner in the top bar option.
+- [ ] **Tuner as a mode:** *(part-built 2026-08-23: TU-3-style `TunerDisplay` in the
+      row — LED ladder, seven-segment note, signed cents; mute removed by decision)*
+      still missing: Hz readout option, reference pitch 420–460 Hz (parity).
 - [ ] **Efficiency budget written down and checked:** DSP ≤ 10 % of a 128-frame
       budget on a 2018 laptop core for the default chain; idle UI ≈ 0 % (no periodic
       repaint of static widgets, no polling timers when nothing changes); cold start
@@ -541,13 +581,14 @@ sim) is out of scope — users load acoustic models.
 - [ ] **Settings dialog:** audio (device, requested buffer size / sample rate; on
       Windows later WASAPI-exclusive), MIDI devices, library folders, theme, meter
       options, a **shortcuts sheet** (discoverability of the digit/QWE toggles).
-- [ ] **Layout:** bypassed cards dim; cards with > 4 knobs use a 2-column knob grid so
-      all columns are one height; responsive wrap / compact mode for 1366×768;
-      device row hidden on JACK (one choice) and moved to Settings; window sizes S/M/L
-      + free resize (parity); right-click / double-click a card title to bypass it
-      (parity).
-- [ ] **Visual fixes:** Compressor / Reverb accents are invisible on the dark ground,
-      clipped tuner "±0¢", stereo toggle labelling, "Dyn.Wah" naming.
+- [ ] **Layout:** ~~bypassed cards dim~~ (done 2026-08-23); ~~2-column knob grid for
+      one-height columns~~ and ~~device row moved to Settings~~ (both superseded
+      2026-08-23 — uniform 62 px rows and the status bar device pickers); remaining:
+      compact mode for 1366×768 (today the strip scrolls), window sizes S/M/L + free
+      resize (parity), right-click / double-click a row name to bypass it (parity).
+- [x] **Visual fixes** — all resolved by the 2026-08-23 redesign: Compressor/Reverb
+      accents revised (`#4f78bd`/`#8f7d99`), tuner readout rebuilt, stereo toggles
+      labelled "Stereo", "Dynamic Wah" named in full.
 - [ ] Windows: **WASAPI exclusive mode** (shared mode's 10–20 ms is not a guitar
       latency); keep shared as fallback.
 
