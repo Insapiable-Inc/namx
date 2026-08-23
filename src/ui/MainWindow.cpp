@@ -51,7 +51,7 @@ static const char kEffectMime[] = "application/x-nam-effect-id";
 static constexpr int kGripColumnWidth = 22;  // "≡" drag handle
 static constexpr int kNameColumnWidth = 200; // fits "Cabinet (Impulse Response)"
 static constexpr int kEnableSlotWidth = 74;  // toggle + "On"/"Off" caption
-static constexpr int kStereoSlotWidth = 126; // toggle + "Stereo mode" caption
+static constexpr int kStereoSlotWidth = 96; // toggle + "Stereo" caption
 
 // Enable toggle with a live "On"/"Off" caption beside it — one line, so the
 // switch stays on the row's vertical centerline.
@@ -89,7 +89,7 @@ static QWidget* makeStereoSlot(ToggleSwitch** outToggle)
         auto* sw = new ToggleSwitch;
         sw->setCheckable(true);
         sw->setChecked(false);
-        auto* lbl = new QLabel("Stereo mode");
+        auto* lbl = new QLabel("Stereo");
         lbl->setObjectName("toggleCaption");
         lay->addWidget(sw, 0, Qt::AlignVCenter);
         lay->addWidget(lbl, 0, Qt::AlignVCenter);
