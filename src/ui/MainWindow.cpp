@@ -4,6 +4,7 @@
 #include "EffectShortcuts.h"
 #include "PresetSerializer.h"
 #include "Theme.h"
+#include "TunerDisplay.h"
 #include "TunerProcessor.h"
 #include "VUMeter.h"
 
@@ -27,7 +28,6 @@
 #include <QMessageBox>
 #include <QMimeData>
 #include <QMouseEvent>
-#include <QProgressBar>
 #include <QPushButton>
 #include <QScrollArea>
 #include <QSettings>
@@ -280,39 +280,9 @@ void MainWindow::setupUI()
         lay->addWidget(makeEnableSlot(mSwTunerEnable), 0, Qt::AlignVCenter);
         lay->addWidget(makeStereoSlot(nullptr), 0, Qt::AlignVCenter);
 
-        mLblNote = new QLabel("--");
-        mLblNote->setObjectName("tunerNote");
-        {
-            QFont f = mLblNote->font();
-            f.setPointSize(f.pointSize() + 7);
-            f.setBold(true);
-            mLblNote->setFont(f);
-        }
-        mLblNote->setMinimumWidth(52);
-        mLblNote->setAlignment(Qt::AlignCenter);
-
-        mLblCents = new QLabel("±0¢");
-        mLblCents->setObjectName("tunerCents");
-        mLblCents->setMinimumWidth(52);
-        mLblCents->setAlignment(Qt::AlignCenter);
-
-        mTunerBar = new QProgressBar;
-        mTunerBar->setObjectName("tunerBar"); // chunk color lives in the Theme stylesheet
-        mTunerBar->setOrientation(Qt::Horizontal);
-        mTunerBar->setRange(0, 100);
-        mTunerBar->setValue(50);
-        mTunerBar->setTextVisible(false);
-        mTunerBar->setFixedHeight(14);
-        mTunerBar->setMinimumWidth(180);
-
-        auto* reading = new QWidget;
-        auto* readingLay = new QVBoxLayout(reading);
-        readingLay->setContentsMargins(0, 0, 0, 0);
-        readingLay->setSpacing(2);
-        readingLay->addWidget(mLblNote);
-        readingLay->addWidget(mLblCents);
-        lay->addWidget(reading, 0, Qt::AlignVCenter);
-        lay->addWidget(mTunerBar, 1, Qt::AlignVCenter); // bar fills the row
+        mTunerDisplay = new TunerDisplay;
+        mTunerDisplay->setMaximumWidth(560); // one compact instrument, not a strip
+        lay->addWidget(mTunerDisplay, 1, Qt::AlignLeft | Qt::AlignVCenter);
 
         Theme::tagCard(col, "tuner"); // after children — pushes accents to them
         mFxCols[&mEngine->tuner()] = col;
@@ -1139,23 +1109,18 @@ void MainWindow::updateMeters()
 
 void MainWindow::updateTuner()
 {
-    if (!mEngine->tuner().isEnabled()) return;
-
-    float freq = mEngine->tuner().lastPitch();
+    const float freq = mEngine->tuner().isEnabled() ? mEngine->tuner().lastPitch()
+                                                    : 0.0f;
     if (freq <= 0.0f)
     {
-        mLblNote ->setText("--");
-        mLblCents->setText("±0¢");
-        mTunerBar->setValue(50);
+        mTunerDisplay->setReading("-", 0.0f, false);
         return;
     }
 
-    int   midi  = TunerProcessor::freqToMidi(freq);
-    float cents = TunerProcessor::centsOffset(freq);
-
-    mLblNote ->setText(QString::fromStdString(TunerProcessor::midiToName(midi)));
-    mLblCents->setText(QString("%1¢").arg(static_cast<int>(cents)));
-    mTunerBar->setValue(std::max(0, std::min(100, static_cast<int>(50.0f + cents))));
+    const int   midi  = TunerProcessor::freqToMidi(freq);
+    const float cents = TunerProcessor::centsOffset(freq);
+    mTunerDisplay->setReading(QString::fromStdString(TunerProcessor::midiToName(midi)),
+                              cents, true);
 }
 
 // ---------------------------------------------------------------------------

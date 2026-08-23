@@ -57,6 +57,8 @@ set(GUI_SOURCES
     src/ui/VUMeter.cpp
     src/ui/VUMeter.h
     src/ui/Theme.cpp
+    src/ui/TunerDisplay.cpp
+    src/ui/TunerDisplay.h
     src/ui/Theme.h
     src/dsp/AudioEngine.cpp
     src/dsp/AudioEngine.h

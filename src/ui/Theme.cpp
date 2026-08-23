@@ -59,6 +59,10 @@ QColor meterMid()    { return QColor("#f0c850"); }
 QColor meterHigh()   { return QColor("#e85a4f"); }
 QColor meterClip()   { return QColor("#ff5252"); }
 
+QColor ledGreen()    { return QColor("#42e86c"); }
+QColor ledRed()      { return QColor("#ff453a"); }
+QColor displayBg()   { return QColor("#07080c"); }
+
 void tagCard(QWidget* card, const QString& fxId)
 {
     if (!card) return;
@@ -220,21 +224,6 @@ QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
     background: none;
 }
 
-/* === Progress bars (VU meters, tuner bar) === */
-QProgressBar {
-    background-color: #0f1116;
-    border: 1px solid #2a2f38;
-    border-radius: 3px;
-    text-align: center;
-}
-QProgressBar::chunk {
-    border-radius: 2px;
-    margin: 1px;
-}
-QProgressBar#tunerBar::chunk {
-    background: #5cc8a8;
-}
-
 /* === Labels === */
 QLabel {
     background: transparent;
@@ -272,15 +261,6 @@ QLabel#fileStatusOk {
     color: #5cc8a8;
     font-weight: 600;
     padding-left: 6px;
-}
-
-/* === Tuner === */
-QLabel#tunerNote {
-    color: #d8dee9;
-    font-weight: 700;
-}
-QLabel#tunerCents {
-    color: #9aa1ad;
 }
 
 /* === Combo boxes (device selectors) === */

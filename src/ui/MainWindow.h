@@ -19,8 +19,8 @@ class QHBoxLayout;
 class QVBoxLayout;
 class QLabel;
 class QPushButton;
-class QProgressBar;
 class AudioStatusBar;
+class TunerDisplay;
 class VUMeter;
 
 class MainWindow : public QMainWindow
@@ -136,9 +136,7 @@ private:
     VUMeter* mMeterIn  = nullptr;
     VUMeter* mMeterOut = nullptr;
 
-    QLabel*       mLblNote  = nullptr;
-    QLabel*       mLblCents = nullptr;
-    QProgressBar* mTunerBar = nullptr;
+    TunerDisplay* mTunerDisplay = nullptr;
 
     KnobWidget* mKnobInputGain  = nullptr;
     KnobWidget* mKnobOutputGain = nullptr;

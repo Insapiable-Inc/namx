@@ -41,6 +41,11 @@ QColor meterMid();
 QColor meterHigh();
 QColor meterClip();
 
+// Tuner display (LED ladder + seven-segment note).
+QColor ledGreen();  // in tune
+QColor ledRed();    // off pitch
+QColor displayBg(); // near-black LED panel
+
 /// Tags a card with its effect ID: sets the `fx` dynamic property (drives the
 /// per-effect QSS rules) and overrides QPalette::Highlight so descendant
 /// knobs/switches pick up the accent without individual tagging.
