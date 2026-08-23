@@ -41,6 +41,7 @@ int main(int argc, char* argv[])
     Theme::apply(app);
 
     MainWindow w;
+    Theme::applyTo(w); // window-scoped so OS dialogs keep the system look
     w.show();
     return app.exec();
 }

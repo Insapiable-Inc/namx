@@ -14,11 +14,13 @@
 #include "ParamRegistry.h"
 #include "ToggleSwitch.h"
 
+class QFrame;
 class QHBoxLayout;
+class QVBoxLayout;
 class QLabel;
 class QPushButton;
 class QProgressBar;
-class AudioDevicePanel;
+class AudioStatusBar;
 class VUMeter;
 
 class MainWindow : public QMainWindow
@@ -52,22 +54,27 @@ private slots:
 private:
     void setupUI();
     void setupAudio();
-    void setAudioStatus(const QString& text, bool ok);
     void restoreLastFiles();
     void restoreConnections();
     void saveConnections();
     void updateStatusLabels();
 
-    QWidget* makeEffectColumn(const QString& title,
-                              ToggleSwitch*& toggleOut,
-                              const std::initializer_list<KnobWidget*>& knobs,
-                              ToggleSwitch** stereoToggleOut = nullptr);
+    // Row-card scaffold: [≡ grip | name label]. The caller appends its
+    // controls to the card's QHBoxLayout.
+    QFrame* makeRowCard(const QString& title);
+    // Full effect row: scaffold + enable toggle + stereo slot + knobs.
+    QWidget* makeEffectRow(const QString& title,
+                           ToggleSwitch*& toggleOut,
+                           const std::initializer_list<KnobWidget*>& knobs,
+                           ToggleSwitch** stereoToggleOut = nullptr);
 
     // --- Effect strip / chain reordering ---
     // Lays the cards out in the given order: dividers follow NAM/EQ.
     void layoutStrip(const std::vector<EffectBase*>& order);
     // layoutStrip(engine chain) + shortcuts re-assigned left to right.
     void rebuildEffectStrip();
+    // Keep bypassed cards visually subordinate without disabling their controls.
+    void updateCardBypassState(EffectBase* effect, bool enabled);
     // setChainOrder + strip rebuild; used by session restore, preset load, DnD.
     void applyChainOrder(const QStringList& ids);
     // Live drag preview: while a card is dragged the strip re-lays out to the
@@ -102,8 +109,9 @@ private:
     struct CardToggles { ToggleSwitch* enable; ToggleSwitch* stereo; };
     std::unordered_map<EffectBase*, QWidget*>    mFxCols;
     std::unordered_map<EffectBase*, CardToggles> mFxToggles;
+    std::unordered_map<QWidget*, QWidget*>       mCardGrips; // card → ≡ drag handle
     QWidget*     mStrip      = nullptr;
-    QHBoxLayout* mStripLay   = nullptr;
+    QVBoxLayout* mStripLay   = nullptr;
     QWidget*     mInputCard  = nullptr;
     QWidget*     mOutputCard = nullptr;
     EffectShortcuts mShortcuts{this};
@@ -120,10 +128,10 @@ private:
     QPushButton* mBtnUnloadIR   = nullptr;
     QLabel*      mLblNAMStatus  = nullptr;
     QLabel*      mLblIRStatus   = nullptr;
-    QLabel*      mLblAudioStatus = nullptr;
-    QPushButton* mBtnReconnect  = nullptr;
 
-    AudioDevicePanel* mDevicePanel = nullptr;
+    AudioStatusBar* mAudioBar = nullptr;
+    bool            mAudioOk  = false; // last known backend state (drives the
+                                       // disconnect watchdog in updateMeters)
 
     VUMeter* mMeterIn  = nullptr;
     VUMeter* mMeterOut = nullptr;
@@ -141,7 +149,6 @@ private:
     KnobWidget*   mKnobTreble = nullptr;
 
     ToggleSwitch* mSwTunerEnable = nullptr;
-    ToggleSwitch* mSwTunerMute   = nullptr;
 
     ToggleSwitch* mSwGateEnable   = nullptr;
     KnobWidget*   mKnobGateThresh  = nullptr;

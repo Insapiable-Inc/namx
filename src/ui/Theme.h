@@ -46,8 +46,14 @@ QColor meterClip();
 /// knobs/switches pick up the accent without individual tagging.
 void tagCard(QWidget* card, const QString& fxId);
 
-/// Install Fusion + the global dark palette + the application stylesheet.
-/// Call once after QApplication is constructed.
+/// Install Fusion + a tooltip-only application stylesheet. Call once after
+/// QApplication is constructed.
 void apply(QApplication& app);
+
+/// Apply the dark palette + the full stylesheet to the main window's subtree.
+/// Deliberately NOT application-wide: parentless dialogs (file dialogs,
+/// which are in-process Qt widgets even when "native" on KDE) stay outside
+/// this tree and keep the OS default look.
+void applyTo(QWidget& root);
 
 } // namespace Theme

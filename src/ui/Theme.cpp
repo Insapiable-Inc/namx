@@ -17,18 +17,18 @@ namespace Theme {
 // AudioEngine::mEffectTable; "neutral" covers Input/Output and fallbacks.
 struct FxColor { const char* id; const char* accent; };
 static constexpr FxColor kFxColors[] = {
-    {"tuner",   "#f0e9d7"},
-    {"gate",    "#c2c5c8"},
-    {"comp",    "#0f377a"},
+    {"tuner",   "#b6aa8d"},
+    {"gate",    "#8f969e"},
+    {"comp",    "#4f78bd"},
     {"wah",     "#d4c19a"},
     {"flanger", "#93477b"},
     {"phaser",  "#4bba5b"},
     {"nam",     "#e4b954"},
-    {"eq",      "#d5d3c5"},
+    {"eq",      "#a5a38f"},
     {"chorus",  "#8dccf3"},
     {"tremolo", "#19848e"},
-    {"delay",   "#eae9e5"},
-    {"reverb",  "#3d3c3d"},
+    {"delay",   "#aaa6a0"},
+    {"reverb",  "#8f7d99"},
     {"ir",      "#ef661a"},
     {"neutral", "#7d8590"},
 };
@@ -149,26 +149,21 @@ QPushButton:disabled {
     border-color: #25292f;
 }
 
-/* === Group boxes (effect cards) === */
-QGroupBox {
+/* === Effect row cards === */
+QFrame[fxCard="true"] {
     background-color: #1f242c;
     border: 1px solid #2a2f38;
-    border-top: 3px solid #7d8590;
     border-radius: 6px;
-    margin-top: 16px;
-    padding: 14px 4px 6px 4px;
-    font-weight: 600;
-    font-size: 10pt; /* card title size (QSS fonts don't propagate to children) */
 }
-QGroupBox::title {
-    subcontrol-origin: margin;
-    subcontrol-position: top center;
-    padding: 0 8px;
-    color: #d8dee9;
-    background: transparent;
-    margin-top: -2px;
+QLabel#fxGrip {
+    color: #7d8590;
+    font-size: 12pt;
 }
-/* Per-effect accent stripes and title colors are appended in apply(). */
+QLabel#fxName {
+    font-weight: 700;
+    font-size: 10pt;
+}
+/* Per-effect accent stripes and name colors are appended in apply(). */
 
 /* === Scroll area === */
 QScrollArea {
@@ -236,49 +231,35 @@ QProgressBar::chunk {
     border-radius: 2px;
     margin: 1px;
 }
-QProgressBar#vuMeter::chunk {
-    background: qlineargradient(x1:0,y1:1,x2:0,y2:0,
-        stop:0 #5cc8a8, stop:0.65 #f0c850, stop:0.9 #e85a4f, stop:1 #ff5252);
-}
 QProgressBar#tunerBar::chunk {
     background: #5cc8a8;
-}
-
-/* === Frames (chain dividers) === */
-QFrame[frameShape="5"] {  /* Qt::VLine */
-    color: #2a2f38;
 }
 
 /* === Labels === */
 QLabel {
     background: transparent;
 }
-QLabel#stereoLabel {
+QLabel#toggleCaption {
     color: #aab0bc;
 }
 
-/* === App title in the top status row === */
-QLabel#appTitle {
-    color: #e85a4f;
-    font-size: 18pt;
-    font-weight: 700;
-    padding-right: 10px;
+/* === Status bar (bottom, VS Code style) === */
+QStatusBar {
+    background-color: #1a1d24;
+    border-top: 1px solid #2a2f38;
+    min-height: 24px;
 }
-
-/* === Audio status pill === */
-QLabel#audioStatusOk {
-    background-color: rgba(92, 200, 168, 0.15);
-    color: #5cc8a8;
-    padding: 4px 12px;
-    border-radius: 11px;
-    font-weight: 600;
+QStatusBar::item {
+    border: none;
 }
-QLabel#audioStatusErr {
-    background-color: rgba(232, 90, 79, 0.18);
-    color: #e85a4f;
-    padding: 4px 12px;
-    border-radius: 11px;
-    font-weight: 600;
+QLabel#statusItem, QLabel#statusAction {
+    color: #9aa1ad;
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+QLabel#statusAction:hover {
+    background-color: #2f3744;
+    color: #d8dee9;
 }
 
 /* === NAM/IR status labels (file row) === */
@@ -300,15 +281,6 @@ QLabel#tunerNote {
 }
 QLabel#tunerCents {
     color: #9aa1ad;
-}
-
-/* === Tooltips === */
-QToolTip {
-    background-color: #232830;
-    color: #d8dee9;
-    border: 1px solid #353c4a;
-    padding: 4px 6px;
-    border-radius: 4px;
 }
 
 /* === Combo boxes (device selectors) === */
@@ -356,18 +328,31 @@ QComboBox QAbstractItemView::item:hover {
     background-color: #2f3744;
 }
 
-/* Device selector labels */
-QLabel#deviceLabel {
-    color: #9aa1ad;
-    font-weight: 600;
-    padding-right: 4px;
+)";
+
+// The only application-wide styling: tooltips are parentless top-levels, so
+// they can't inherit the window stylesheet. Everything else lives in
+// applyTo() — file dialogs are in-process Qt widgets even when "native" on
+// KDE, and an app-wide stylesheet/palette would drag them into the dark
+// theme; scoping to the window keeps them looking like the OS.
+static const char* kAppStyleSheet = R"(
+QToolTip {
+    background-color: #232830;
+    color: #d8dee9;
+    border: 1px solid #353c4a;
+    padding: 4px 6px;
+    border-radius: 4px;
 }
 )";
 
 void apply(QApplication& app)
 {
     app.setStyle("Fusion");
+    app.setStyleSheet(QString::fromUtf8(kAppStyleSheet));
+}
 
+void applyTo(QWidget& root)
+{
     QPalette p;
     p.setColor(QPalette::Window,          QColor("#15171c"));
     p.setColor(QPalette::WindowText,      QColor("#d8dee9"));
@@ -389,18 +374,20 @@ void apply(QApplication& app)
     p.setColor(QPalette::Disabled, QPalette::WindowText, QColor("#555c6b"));
     p.setColor(QPalette::Disabled, QPalette::ButtonText, QColor("#555c6b"));
 
-    app.setPalette(p);
+    root.setPalette(p);
 
-    // Per-effect accent rules — the palette hex verbatim for stripe and title.
+    // Per-effect accent rules — the palette hex verbatim for the name label
+    // and the loaded-file label on the Amplifier/Cabinet rows (knob rings and
+    // toggles get theirs pushed by tagCard).
     QString qss = QString::fromUtf8(kStyleSheet);
     for (const auto& fc : kFxColors)
     {
         qss += QString::fromUtf8(
-                   "QGroupBox[fx=\"%1\"] { border-top: 3px solid %2; }\n"
-                   "QGroupBox[fx=\"%1\"]::title { color: %2; }\n")
+                   "QFrame[fx=\"%1\"] QLabel#fxName { color: %2; }\n"
+                   "QFrame[fx=\"%1\"] QLabel#fileStatusOk { color: %2; }\n")
                    .arg(QLatin1String(fc.id), QLatin1String(fc.accent));
     }
-    app.setStyleSheet(qss);
+    root.setStyleSheet(qss);
 }
 
 } // namespace Theme
