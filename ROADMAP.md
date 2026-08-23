@@ -1,9 +1,9 @@
 # NAM Player — Public Release Plan
 
 Goal: take the app from "works on my machine" to a public v1.0 anyone can install on
-Linux or Windows. Historical phase numbers are kept stable, but execution follows the
-explicit order under "North star"; work one stage at a time. Detailed bug analysis
-lives in `gui/BUGS.md` (BUG-01…08); this file is the tracking checklist.
+Linux or Windows. Phases are ordered for execution — work top to bottom, one phase at a
+time. Detailed bug analysis lives in `gui/BUGS.md` (BUG-01…08); this file is the
+tracking checklist.
 
 Plan drafted 2026-08-09. Line numbers reference the tree at that date and may drift.
 
@@ -21,18 +21,11 @@ Decisions:
   everything that makes this app worth having is standalone-shaped. `src/dsp` stays
   Qt-free and all parameters stay in the registry, but that's hygiene, not a plugin plan.
 - **Library + TONE3000 ship in v1.0** (2026-08-22). A NAM player whose first-run
-  experience is a file dialog is not done.
-- **UX before final packaging** (2026-08-23). Make the existing workflow coherent,
-  calibrate its controls, and establish the library/preset experience before calling
-  the app finished. Packaging is split: Phase 8A produces an installable public beta;
-  Phase 8B produces the final distribution formats and `v1.0` release.
-- **Naming stays last** (2026-08-23). Keep **NAM Player** / `NAMPlayer` as the working
-  name while the product takes shape. Revisit the public brand and repository name only
-  after the feature and UX work; freeze it immediately before Phase 8B so final package
-  metadata changes once.
-- **Execution order:** 18A → 9 → 11 → 13 → 14 → 8A (**public beta**) → 12 →
-  15 (absorbs Phase 10 tempo) → 16 → 17 → 18B → 19 → 7 (**name freeze**) →
-  8B (**tag v1.0**).
+  experience is a file dialog is not done. The `v1.0` tag moves from Phase 8 to the end
+  of Phase 12.
+- **Execution order:** 7 → 8 (packaging, no tag) → 11 → 12 → **tag v1.0** → 13 → 14 →
+  15 (absorbs Phase 10 tempo) → 16 → 17 → 18 → 19; Phase 9 (knob tapers) slots in
+  wherever a knob-heavy phase touches the widgets (17 at the latest).
 
 ---
 
@@ -252,12 +245,12 @@ Requires BUG-06 fixed (Phase 1).
       knob/toggle, and must run **after** the card's children exist:
       | effect | color | | effect | color |
       |---|---|---|---|---|
-      | tuner | `#b6aa8d` | | amp (NAM) | `#e4b954` |
-      | noise gate | `#8f969e` | | eq | `#a5a38f` |
-      | compressor | `#4f78bd` | | chorus | `#8dccf3` |
+      | tuner | `#f0e9d7` | | amp (NAM) | `#e4b954` |
+      | noise gate | `#c2c5c8` | | eq | `#d5d3c5` |
+      | compressor | `#0f377a` | | chorus | `#8dccf3` |
       | wah | `#d4c19a` | | tremolo | `#19848e` |
-      | flanger | `#93477b` | | delay | `#aaa6a0` |
-      | phaser | `#4bba5b` | | reverb | `#8f7d99` |
+      | flanger | `#93477b` | | delay | `#eae9e5` |
+      | phaser | `#4bba5b` | | reverb | `#3d3c3d` |
       | IR | `#ef661a` | | | |
 - [x] ~~Resurrect or delete `GUIConstants.h`.~~ **Deleted** (82 lines, zero references,
       drifted values). Real UI constants arrive with the Phase 6 `MainWindow` split.
@@ -270,7 +263,7 @@ Requires BUG-06 fixed (Phase 1).
       version; click-free model swap (~15 ms audio-thread fade-in after load/unload
       masks the discontinuity, incl. amp↔dry); **Ctrl+S** Save Preset / **Ctrl+O**
       Load Preset on the menu actions.
-- [ ] **App icon + `setWindowIcon`** — needs an actual icon asset; moved to Phase 8A
+- [ ] **App icon + `setWindowIcon`** — needs an actual icon asset; moved to Phase 8
       packaging (`gui/resources/` + `.qrc` land there anyway).
 
 ### Phase 5 — manual verification pending
@@ -301,33 +294,26 @@ Requires BUG-06 fixed (Phase 1).
       `-march=native`; OFF → portable `-mavx2 -mfma` (verified in generated flags).
       MSVC always `/arch:AVX2`. **CI/release builds must pass `-DNAM_NATIVE_OPT=OFF`.**
 - [ ] **New dirs** `gui/packaging/` and `gui/resources/` + `.qrc` — created in
-      Phase 8A together with their content (icon, desktop file, metainfo).
+      Phase 8 together with their content (icon, desktop file, metainfo).
 - [x] ~~Magic numbers → constants header.~~ **Decision:** the meter dB math moved
       into `VUMeter`; the remaining literals are single-use and local to their
       widgets. No shared constants header (GUIConstants was deleted in Phase 5).
 
 ## Phase 7 — Naming
 
-Historically three names coexisted: window title "NAM Player",
-`setApplicationName("NAM Linux")`, and binary/JACK client `NAMPlayer`, while the repo
-was `nam-linux-gui`. The application-facing names have since been standardized on the
-working name; the repository and final public brand remain deliberately unresolved.
+Three names coexist: window title "NAM Player", `setApplicationName("NAM Linux")`
+(bakes "Linux" into the *Windows* config path), binary/JACK client `NAMPlayer`, repo
+`nam-linux-gui`.
 
-Current working convention: **standardize on "NAM Player"** internally — already the
-user-facing title, accurate, and platform-neutral. This avoids churn until the final
-public brand is chosen.
+Decision: **standardize on "NAM Player"** — already the user-facing title, accurate,
+platform-neutral. (Shortlisted alternatives if a more distinctive name is ever wanted:
+NAM Rig, NAM Stage.)
 
-**Deferred until immediately before Phase 8B.** `NAM Player` is the working name, not
-the final branding decision. Reassess the name after the feature set and UX have landed;
-then update the application, repository, URLs, resources, and package metadata together.
-
-- [ ] **Choose and freeze the final public name**, then rename the GitHub repository
-      accordingly (canonical home; currently
+- [ ] **Repo rename → `nam-player` on GitHub** (canonical home; currently
       `silvercobraa/NeuralAmpModelerGUI`; GitHub auto-redirects the old URL). Optionally
-      rename the Forgejo mirror (`nam-linux-gui`) to match. Update the application name,
-      display name, repository URLs, resources, package IDs where appropriate, and the
-      remote URL as one coordinated change. Preserve settings and JACK compatibility
-      through migration/aliases where needed.
+      rename the Forgejo mirror (`nam-linux-gui`) to match. **User action** (no `gh` on
+      this machine): GitHub → repo Settings → General → Repository name. Then
+      `git remote set-url github https://github.com/silvercobraa/nam-player.git`.
 - [x] Clone URLs in README/BUILD.md now point at the *current* GitHub name with
       `… nam-player` as the checkout dir (2026-08-22) — valid before and after the
       rename thanks to the redirect; flip them to the new name once it lands.
@@ -344,24 +330,22 @@ then update the application, repository, URLs, resources, and package metadata t
       NeuralAmpModelerCore" courtesy line; title → "NAM Player"; stale feature list
       (double chorus, no wah, fixed pre/post split) corrected (2026-08-22).
 
-## Phase 8A — Installable public beta
-
-Do the minimum packaging needed to put real builds in testers' hands. Final Linux
-distribution formats wait until the local and online library workflows are stable.
+## Phase 8 — Packaging & ship
 
 - [ ] Desktop file `gui/packaging/NAMPlayer.desktop` (Name, Exec, Icon,
       `MimeType=application/x-nam;application/x-nampreset;`).
 - [ ] AppStream metainfo `gui/packaging/cl.pichulero.NAMPlayer.metainfo.xml`.
 - [ ] `install(TARGETS …)` + `install(FILES …)` in `gui/CMakeLists.txt` so
       `cmake --install` deploys binary, desktop file, icon, metainfo.
-- [ ] CI beta/release job: Ubuntu 22.04 + Arch + Windows, non-native SIMD flags;
-      publish downloadable Linux and Windows artifacts.
+- [ ] AUR PKGBUILD (`qt6-base jack pipewire-jack-client`).
+- [ ] AppImage via linuxdeploy-qt.
+- [ ] Flatpak manifest (`--socket=pipewire`).
+- [ ] CI release job on tag push: Ubuntu 22.04 + Arch + Windows, non-native SIMD flags.
 - [ ] Headless smoke test in CI: `QT_QPA_PLATFORM=offscreen NAMPlayer --self-test-and-exit`.
-- [ ] About dialog / `--version` flag verified.
-- [ ] Publish a beta release for hands-on workflow and hardware testing. Do not tag
-      `v1.0` here.
+- [ ] About dialog / `--version` flag verified. ~~tag **v1.0**~~ → **moved to the end
+      of Phase 12** (decision 2026-08-22: Library + TONE3000 are part of 1.0).
 
-## Phase 9 — Knob range calibration (pre-beta UX; added 2026-08-10)
+## Phase 9 — Knob range calibration (post-1.0 unless pulled forward; added 2026-08-10)
 
 Make every knob feel right across its whole travel, not just near the default.
 
@@ -416,7 +400,7 @@ Phases 12, 13 and 16 stands on this.
       library).
 - [ ] Keep Import/Export file dialogs for one-offs; they stop being the primary path.
 
-## Phase 12 — TONE3000 integration (v1.0)
+## Phase 12 — TONE3000 integration (v1.0) → tag **v1.0** at the end
 
 A second tab of the Library that looks and behaves exactly like the local one but is
 the community. API verified 2026-08-22 (tone3000.com/api): OAuth 2.0 + PKCE for
@@ -438,15 +422,8 @@ tone images, creator attribution and per-model licenses (T3K / CC) are requireme
       makes *sharing presets* work (Phase 19).
 - [ ] Rate-limit handling, listing cache, their branding/attribution requirements met.
 - [ ] Networking via `Qt6::Network` (part of `qt6-base`; CMake `find_package` gains
-      `Network`). Phase 8A builds re-verified with it.
-
-## Phase 8B — Final distribution & v1.0
-
-- [ ] AUR PKGBUILD (`qt6-base jack pipewire-jack-client`).
-- [ ] AppImage via linuxdeploy-qt.
-- [ ] Flatpak manifest (`--socket=pipewire`).
-- [ ] Re-run install, headless smoke, and artifact tests with `Qt6::Network` enabled.
-- [ ] Publish final release notes and **tag v1.0**.
+      `Network`). Linux packaging (Phase 8) re-verified with it.
+- [ ] **Tag v1.0.**
 
 ## Phase 13 — Presets as the live unit
 
@@ -559,25 +536,18 @@ sim) is out of scope — users load acoustic models.
 - [ ] Phase 9 **knob tapers** land alongside whichever of the above touches the most
       knobs.
 
-## Phase 18A — UX foundation (before Phase 9)
+## Phase 18 — Settings, layout discipline, platform
 
-- [ ] **Basic Settings dialog:** audio device and requested buffer size / sample rate,
-      plus a **shortcuts sheet** for discoverability of the digit/QWE toggles. Library,
-      MIDI, theme, and meter pages join as those features land.
-- [x] **Bypass state:** bypassed cards dim while their controls remain interactive;
-      mouse, keyboard, preset, and session changes all update the visual state.
-- [ ] **Layout:** cards with > 4 knobs use a 2-column knob grid so
+- [ ] **Settings dialog:** audio (device, requested buffer size / sample rate; on
+      Windows later WASAPI-exclusive), MIDI devices, library folders, theme, meter
+      options, a **shortcuts sheet** (discoverability of the digit/QWE toggles).
+- [ ] **Layout:** bypassed cards dim; cards with > 4 knobs use a 2-column knob grid so
       all columns are one height; responsive wrap / compact mode for 1366×768;
       device row hidden on JACK (one choice) and moved to Settings; window sizes S/M/L
       + free resize (parity); right-click / double-click a card title to bypass it
       (parity).
-- [x] **Visual fixes:** Compressor / Reverb accents are visible on the dark ground,
+- [ ] **Visual fixes:** Compressor / Reverb accents are invisible on the dark ground,
       clipped tuner "±0¢", stereo toggle labelling, "Dyn.Wah" naming.
-
-## Phase 18B — Settings completion & platform polish
-
-- [ ] Extend Settings with MIDI devices, library folders, themes, and meter options as
-      their owning phases land; keep feature configuration out of `MainWindow`.
 - [ ] Windows: **WASAPI exclusive mode** (shared mode's 10–20 ms is not a guitar
       latency); keep shared as fallback.
 
