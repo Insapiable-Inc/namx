@@ -460,7 +460,7 @@ void MainWindow::setupUI()
         mKnobChMix->setScrollStep(1.0);
 
         auto* col = makeEffectRow("Chorus", mSwChorusEnable,
-            {mKnobChMix, mKnobChRate, mKnobChDepth});
+            {mKnobChMix, mKnobChRate, mKnobChDepth}, &mSwChorusStereo);
         Theme::tagCard(col, "chorus");
 
         mFxCols[&mEngine->chorus()] = col;
@@ -579,7 +579,7 @@ void MainWindow::setupUI()
         {&mEngine->phaser(),  {mSwPhaserEnable,  mSwPhaserStereo}},
         {&mEngine->nam(),     {mSwNAMEnable,     nullptr}},
         {&mEngine->eq(),      {mSwEQEnable,      nullptr}},
-        {&mEngine->chorus(),  {mSwChorusEnable,  nullptr}},
+        {&mEngine->chorus(),  {mSwChorusEnable,  mSwChorusStereo}},
         {&mEngine->tremolo(), {mSwTremoloEnable, nullptr}},
         {&mEngine->delay(),   {mSwDelayEnable,   mSwDelayStereo}},
         {&mEngine->reverb(),  {mSwReverbEnable,  nullptr}},
@@ -1096,6 +1096,7 @@ void MainWindow::registerParameters()
     knobParam("eq", "treble",    mKnobTreble, [e](double v) { e->eq().setTrebleGain(v); });
 
     toggleParam("chorus", "enabled", mSwChorusEnable, [e](bool b)   { e->chorus().setEnabled(b); });
+    toggleParam("chorus", "stereo",  mSwChorusStereo, [e](bool b)   { e->chorus().setStereoMode(b); });
     knobParam("chorus", "rate",      mKnobChRate,     [e](double v) { e->chorus().setRate (static_cast<float>(v)); });
     knobParam("chorus", "depth",     mKnobChDepth,    [e](double v) { e->chorus().setDepth(static_cast<float>(v)); });
     knobParam("chorus", "mix",       mKnobChMix,      [e](double v) { e->chorus().setMix  (static_cast<float>(v)); });

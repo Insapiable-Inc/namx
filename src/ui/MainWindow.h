@@ -183,6 +183,7 @@ private:
     KnobWidget*   mKnobPhMix      = nullptr;
 
     ToggleSwitch* mSwChorusEnable = nullptr;
+    ToggleSwitch* mSwChorusStereo = nullptr;
     KnobWidget*   mKnobChRate    = nullptr;
     KnobWidget*   mKnobChDepth   = nullptr;
     KnobWidget*   mKnobChMix     = nullptr;
