@@ -49,7 +49,7 @@ static const char kEffectMime[] = "application/x-nam-effect-id";
 // Fixed columns at the left edge of every row card, so the enable toggles,
 // stereo slots, and first knobs line up vertically across the strip.
 static constexpr int kGripColumnWidth = 22;  // "≡" drag handle
-static constexpr int kNameColumnWidth = 200; // fits "Cabinet (Impulse Response)"
+static constexpr int kNameColumnWidth = 120; // fits "Dynamic Wah"
 static constexpr int kEnableSlotWidth = 74;  // toggle + "On"/"Off" caption
 static constexpr int kStereoSlotWidth = 96; // toggle + "Stereo" caption
 
@@ -489,7 +489,7 @@ void MainWindow::setupUI()
 
     // ---- IR toggle ----
     {
-        auto* col = makeEffectRow("Cabinet (Impulse Response)", mSwIREnable, {});
+        auto* col = makeEffectRow("Cabinet", mSwIREnable, {});
         mSwIREnable->setChecked(true);
 
         auto* lay = static_cast<QHBoxLayout*>(col->layout());
