@@ -80,9 +80,9 @@ void TunerDisplay::paintEvent(QPaintEvent*)
 
     // ---- LED ladder across the top ----
     {
-        const qreal margin = 16.0;
-        const qreal ledD   = 7.0;
-        const qreal y      = panel.top() + 8.0;
+        const qreal margin = 14.0;
+        const qreal ledD   = 6.0;
+        const qreal y      = panel.top() + 5.0;
         const qreal step   = (panel.width() - 2 * margin - ledD) / (kLedCount - 1);
         const int   center = kLedCount / 2;
 
@@ -127,10 +127,10 @@ void TunerDisplay::paintEvent(QPaintEvent*)
     const QColor digitColor = !mValid ? Theme::track().lighter(150)
                             : inTune  ? green
                                       : red;
-    const qreal W = 22.0, H = 34.0, t = 4.4;
+    const qreal W = 18.0, H = 26.0, t = 3.5;
     const qreal half   = (H - 3 * t) / 2.0;
     const qreal digitX = panel.center().x() - W / 2.0 - 12.0;
-    const qreal digitY = panel.top() + 21.0;
+    const qreal digitY = panel.top() + 15.0;
 
     const struct { Seg seg; QRectF r; } segs[] = {
         {SA, {digitX + t, digitY, W - 2 * t, t}},
@@ -163,10 +163,10 @@ void TunerDisplay::paintEvent(QPaintEvent*)
     if (mValid && mNote.contains('#'))
     {
         QFont f = font();
-        f.setPixelSize(14);
+        f.setPixelSize(12);
         f.setBold(true);
         p.setFont(f);
-        const QRectF sharpRect(digitX + W + 3.0, digitY - 4.0, 16.0, 16.0);
+        const QRectF sharpRect(digitX + W + 3.0, digitY - 3.0, 14.0, 14.0);
         QColor halo = digitColor;
         halo.setAlpha(60);
         p.setPen(halo);
@@ -179,7 +179,7 @@ void TunerDisplay::paintEvent(QPaintEvent*)
     // ---- Signed cents readout, right of the digit ----
     {
         QFont f = font();
-        f.setPointSizeF(10.5);
+        f.setPointSizeF(10.0);
         f.setBold(true);
         p.setFont(f);
         p.setPen(digitColor);
@@ -187,7 +187,7 @@ void TunerDisplay::paintEvent(QPaintEvent*)
         const QString text = !mValid
             ? QStringLiteral("--")
             : QString("%1%2¢").arg(c > 0 ? "+" : "").arg(c);
-        const QRectF textRect(panel.center().x() + 26.0, digitY, 90.0, H);
+        const QRectF textRect(panel.center().x() + 24.0, digitY, 90.0, H);
         p.drawText(textRect, Qt::AlignLeft | Qt::AlignVCenter, text);
     }
 }

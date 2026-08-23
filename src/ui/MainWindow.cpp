@@ -51,7 +51,10 @@ static const char kEffectMime[] = "application/x-nam-effect-id";
 static constexpr int kGripColumnWidth = 22;  // "≡" drag handle
 static constexpr int kNameColumnWidth = 120; // fits "Dynamic Wah"
 static constexpr int kEnableSlotWidth = 74;  // toggle + "On"/"Off" caption
-static constexpr int kStereoSlotWidth = 96; // toggle + "Stereo" caption
+static constexpr int kStereoSlotWidth = 96;  // toggle + "Stereo" caption
+// Every row is exactly as tall as a knob row (40 px dial + knob margins +
+// card margins + border), so knob-less rows and the tuner match the rest.
+static constexpr int kRowCardHeight   = 62;
 
 // Enable toggle with a live "On"/"Off" caption beside it — one line, so the
 // switch stays on the row's vertical centerline.
@@ -160,6 +163,7 @@ QFrame* MainWindow::makeRowCard(const QString& title)
     auto* card = new QFrame;
     card->setProperty("fxCard", true);        // card chrome lives in the Theme QSS
     card->setProperty("displayName", title);  // context menu + drag bookkeeping
+    card->setFixedHeight(kRowCardHeight);
     auto* lay = new QHBoxLayout(card);
     lay->setContentsMargins(10, 6, 10, 6);
     lay->setSpacing(10);

@@ -17,8 +17,8 @@ public:
     /// sharp are shown); cents is -50..+50; valid=false blanks the display.
     void setReading(const QString& note, float cents, bool valid);
 
-    QSize sizeHint()        const override { return {380, 64}; }
-    QSize minimumSizeHint() const override { return {260, 64}; }
+    QSize sizeHint()        const override { return {380, 48}; }
+    QSize minimumSizeHint() const override { return {260, 48}; }
 
 protected:
     void paintEvent(QPaintEvent* event) override;
