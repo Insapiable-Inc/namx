@@ -30,6 +30,18 @@ static void migrateLegacySettings()
 
 int main(int argc, char* argv[])
 {
+#ifdef Q_OS_LINUX
+    // Route the QFileDialog static getters through the XDG Desktop Portal, so
+    // file dialogs are the desktop's own (Breeze on Plasma) instead of an
+    // in-process Fusion-styled widget. The portal platform theme wraps the
+    // session's native theme for everything else, and Qt falls back to the
+    // widget dialog where no portal service is running. A user-chosen theme
+    // (qt6ct etc.) is left alone; "kde" is what the wrapper resolves anyway.
+    const QByteArray theme = qgetenv("QT_QPA_PLATFORMTHEME");
+    if (theme.isEmpty() || theme == "kde")
+        qputenv("QT_QPA_PLATFORMTHEME", "xdgdesktopportal");
+#endif
+
     QApplication app(argc, argv);
     // Application name drives the QSettings path — keep in sync with migrateLegacySettings().
     app.setApplicationName("NAM Player");
