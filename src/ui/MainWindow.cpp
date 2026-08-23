@@ -32,6 +32,7 @@
 #include <QPushButton>
 #include <QScrollArea>
 #include <QSettings>
+#include <QStackedWidget>
 #include <QStyle>
 #include <QStyleOption>
 #include <QTimer>
@@ -47,16 +48,9 @@
 // Mime type carrying the effect ID of a dragged strip card.
 static const char kEffectMime[] = "application/x-nam-effect-id";
 
-// Fixed height of the "stereo slot" row that sits between the enable toggle
-// and the first knob. Reserved on every card with knobs (visible toggle on
-// stereo-capable effects, otherwise an empty placeholder) so that knob row 1
-// starts at the same Y across all columns.
-static constexpr int kStereoSlotHeight = 38;
-
-static QWidget* makeStereoSlot(ToggleSwitch** outToggle)
+static QWidget* makeStereoControl(ToggleSwitch** outToggle)
 {
     auto* w = new QWidget;
-    w->setFixedHeight(kStereoSlotHeight);
     auto* lay = new QVBoxLayout(w);
     lay->setContentsMargins(0, 0, 0, 0);
     lay->setSpacing(1);
@@ -65,7 +59,7 @@ static QWidget* makeStereoSlot(ToggleSwitch** outToggle)
         auto* sw = new ToggleSwitch;
         sw->setCheckable(true);
         sw->setChecked(false);
-        auto* lbl = new QLabel("Stereo");
+        auto* lbl = new QLabel("Stereo mode");
         lbl->setObjectName("stereoLabel");
         lbl->setAlignment(Qt::AlignHCenter);
         lay->addWidget(sw, 0, Qt::AlignHCenter);
@@ -154,13 +148,15 @@ MainWindow::~MainWindow()
 QWidget* MainWindow::makeEffectColumn(const QString& title,
                                       ToggleSwitch*& toggleOut,
                                       const std::initializer_list<KnobWidget*>& knobs,
+                                      QWidget*& editorOut,
                                       ToggleSwitch** stereoToggleOut)
 {
     // The ≡ grip in the title marks a draggable card; dragging starts from
     // the title band only.
     auto* col = new QGroupBox("≡  " + title);
     col->setAlignment(Qt::AlignHCenter);
-    col->setMinimumWidth(110);
+    col->setMinimumWidth(std::max(110,
+        QFontMetrics(col->font()).horizontalAdvance(col->title()) + 24));
     auto* lay = new QVBoxLayout(col);
     lay->setContentsMargins(4, 6, 4, 4);
     lay->setSpacing(4);
@@ -169,15 +165,24 @@ QWidget* MainWindow::makeEffectColumn(const QString& title,
     toggleOut->setCheckable(true);
     toggleOut->setChecked(false);
     lay->addWidget(toggleOut, 0, Qt::AlignHCenter);
-
-    // Reserve the stereo-slot row even when this effect has no stereo toggle —
-    // keeps knob row 1 at the same Y across every card with knobs.
-    lay->addWidget(makeStereoSlot(stereoToggleOut));
-
-    for (auto* k : knobs)
-        lay->addWidget(k);
-
     lay->addStretch();
+
+    editorOut = new QGroupBox(title);
+    editorOut->setObjectName("effectEditorPage");
+    auto* editorLay = new QHBoxLayout(editorOut);
+    editorLay->setContentsMargins(16, 18, 16, 10);
+    editorLay->setSpacing(14);
+    if (stereoToggleOut)
+        editorLay->addWidget(makeStereoControl(stereoToggleOut), 0, Qt::AlignVCenter);
+    for (auto* k : knobs)
+        editorLay->addWidget(k, 0, Qt::AlignVCenter);
+    if (knobs.size() == 0 && !stereoToggleOut)
+    {
+        auto* empty = new QLabel("No adjustable parameters");
+        empty->setObjectName("editorEmptyState");
+        editorLay->addWidget(empty);
+    }
+    editorLay->addStretch();
     return col;
 }
 
@@ -330,6 +335,12 @@ void MainWindow::setupUI()
         mSwTunerEnable->setCheckable(true);
         lay->addWidget(mSwTunerEnable, 0, Qt::AlignHCenter);
 
+        auto* editor = new QGroupBox("Tuner");
+        editor->setObjectName("effectEditorPage");
+        auto* editorLay = new QHBoxLayout(editor);
+        editorLay->setContentsMargins(16, 18, 16, 10);
+        editorLay->setSpacing(14);
+
         mLblNote = new QLabel("--");
         mLblNote->setObjectName("tunerNote");
         {
@@ -343,7 +354,9 @@ void MainWindow::setupUI()
 
         mLblCents = new QLabel("±0¢");
         mLblCents->setObjectName("tunerCents");
-        mLblCents->setMinimumWidth(36);
+        // Wide enough for the longest live value ("-50¢") and the idle
+        // placeholder on fonts where the ± glyph has generous bearings.
+        mLblCents->setMinimumWidth(52);
         mLblCents->setAlignment(Qt::AlignCenter);
 
         mTunerBar = new QProgressBar;
@@ -360,15 +373,26 @@ void MainWindow::setupUI()
         auto* muteLabel = new QLabel("Mute");
         muteLabel->setAlignment(Qt::AlignHCenter);
 
-        lay->addWidget(mLblNote);
-        lay->addWidget(mLblCents);
-        lay->addWidget(mTunerBar, 0, Qt::AlignHCenter);
-        lay->addWidget(mSwTunerMute, 0, Qt::AlignHCenter);
-        lay->addWidget(muteLabel);
+        auto* reading = new QWidget;
+        auto* readingLay = new QVBoxLayout(reading);
+        readingLay->setContentsMargins(0, 0, 0, 0);
+        readingLay->addWidget(mLblNote);
+        readingLay->addWidget(mLblCents);
+        auto* mute = new QWidget;
+        auto* muteLay = new QVBoxLayout(mute);
+        muteLay->setContentsMargins(0, 0, 0, 0);
+        muteLay->addWidget(mSwTunerMute, 0, Qt::AlignHCenter);
+        muteLay->addWidget(muteLabel);
+        editorLay->addWidget(reading, 0, Qt::AlignVCenter);
+        editorLay->addWidget(mTunerBar, 0, Qt::AlignVCenter);
+        editorLay->addWidget(mute, 0, Qt::AlignVCenter);
+        editorLay->addStretch();
         lay->addStretch();
 
-        Theme::tagCard(col, "tuner"); // after children — pushes accents to them
+        Theme::tagCard(col, "tuner");
+        Theme::tagCard(editor, "tuner");
         mFxCols[&mEngine->tuner()] = col;
+        mFxEditors[&mEngine->tuner()] = editor;
     }
 
     // ---- Noise Gate ----
@@ -381,11 +405,14 @@ void MainWindow::setupUI()
         mKnobGateAttack->setScrollStep(1.0);
         mKnobGateRelease->setScrollStep(10.0);
 
+        QWidget* editor = nullptr;
         auto* col = makeEffectColumn("Gate", mSwGateEnable,
-            {mKnobGateThresh, mKnobGateAttack, mKnobGateRelease});
+            {mKnobGateThresh, mKnobGateAttack, mKnobGateRelease}, editor);
         Theme::tagCard(col, "gate");
+        Theme::tagCard(editor, "gate");
 
         mFxCols[&mEngine->gate()] = col;
+        mFxEditors[&mEngine->gate()] = editor;
     }
 
     // ---- Compressor ----
@@ -402,11 +429,14 @@ void MainWindow::setupUI()
         mKnobCompRelease->setScrollStep(10.0);
         mKnobCompMakeup->setScrollStep(0.5);
 
+        QWidget* editor = nullptr;
         auto* col = makeEffectColumn("Compressor", mSwCompEnable,
-            {mKnobCompThresh, mKnobCompRatio, mKnobCompAttack, mKnobCompRelease, mKnobCompMakeup});
+            {mKnobCompThresh, mKnobCompRatio, mKnobCompAttack, mKnobCompRelease, mKnobCompMakeup}, editor);
         Theme::tagCard(col, "comp");
+        Theme::tagCard(editor, "comp");
 
         mFxCols[&mEngine->comp()] = col;
+        mFxEditors[&mEngine->comp()] = editor;
     }
 
     // ---- Dynamic Wah ----
@@ -419,19 +449,25 @@ void MainWindow::setupUI()
         mKnobWahRes->setScrollStep(1.0);
         mKnobWahMix->setScrollStep(1.0);
 
-        auto* col = makeEffectColumn("Dyn.Wah", mSwWahEnable,
-            {mKnobWahSens, mKnobWahRes, mKnobWahMix});
+        QWidget* editor = nullptr;
+        auto* col = makeEffectColumn("Dynamic Wah", mSwWahEnable,
+            {mKnobWahSens, mKnobWahRes, mKnobWahMix}, editor);
         Theme::tagCard(col, "wah");
+        Theme::tagCard(editor, "wah");
 
         mFxCols[&mEngine->wah()] = col;
+        mFxEditors[&mEngine->wah()] = editor;
     }
 
     // ---- Amp (NAM) ----
     {
-        auto* col = makeEffectColumn("Amp", mSwNAMEnable, {});
+        QWidget* editor = nullptr;
+        auto* col = makeEffectColumn("Amp", mSwNAMEnable, {}, editor);
         mSwNAMEnable->setChecked(true);
         Theme::tagCard(col, "nam");
+        Theme::tagCard(editor, "nam");
         mFxCols[&mEngine->nam()] = col;
+        mFxEditors[&mEngine->nam()] = editor;
     }
 
     // ---- EQ ----
@@ -444,10 +480,13 @@ void MainWindow::setupUI()
         mKnobMid->setScrollStep(0.1);
         mKnobTreble->setScrollStep(0.1);
 
-        auto* col = makeEffectColumn("EQ", mSwEQEnable, {mKnobLow, mKnobMid, mKnobTreble});
+        QWidget* editor = nullptr;
+        auto* col = makeEffectColumn("EQ", mSwEQEnable, {mKnobLow, mKnobMid, mKnobTreble}, editor);
         mSwEQEnable->setChecked(true);
         Theme::tagCard(col, "eq");
+        Theme::tagCard(editor, "eq");
         mFxCols[&mEngine->eq()] = col;
+        mFxEditors[&mEngine->eq()] = editor;
     }
 
     // ---- Flanger ----
@@ -462,11 +501,14 @@ void MainWindow::setupUI()
         mKnobFlFeedback->setScrollStep(1.0);
         mKnobFlMix->setScrollStep(1.0);
 
+        QWidget* editor = nullptr;
         auto* col = makeEffectColumn("Flanger", mSwFlangerEnable,
-            {mKnobFlRate, mKnobFlDepth, mKnobFlFeedback, mKnobFlMix}, &mSwFlangerStereo);
+            {mKnobFlRate, mKnobFlDepth, mKnobFlFeedback, mKnobFlMix}, editor, &mSwFlangerStereo);
         Theme::tagCard(col, "flanger");
+        Theme::tagCard(editor, "flanger");
 
         mFxCols[&mEngine->flanger()] = col;
+        mFxEditors[&mEngine->flanger()] = editor;
     }
 
     // ---- Phaser ----
@@ -481,11 +523,14 @@ void MainWindow::setupUI()
         mKnobPhFeedback->setScrollStep(1.0);
         mKnobPhMix->setScrollStep(1.0);
 
+        QWidget* editor = nullptr;
         auto* col = makeEffectColumn("Phaser", mSwPhaserEnable,
-            {mKnobPhRate, mKnobPhDepth, mKnobPhFeedback, mKnobPhMix}, &mSwPhaserStereo);
+            {mKnobPhRate, mKnobPhDepth, mKnobPhFeedback, mKnobPhMix}, editor, &mSwPhaserStereo);
         Theme::tagCard(col, "phaser");
+        Theme::tagCard(editor, "phaser");
 
         mFxCols[&mEngine->phaser()] = col;
+        mFxEditors[&mEngine->phaser()] = editor;
     }
 
     // ---- Chorus ----
@@ -498,11 +543,14 @@ void MainWindow::setupUI()
         mKnobChDepth->setScrollStep(1.0);
         mKnobChMix->setScrollStep(1.0);
 
+        QWidget* editor = nullptr;
         auto* col = makeEffectColumn("Chorus", mSwChorusEnable,
-            {mKnobChRate, mKnobChDepth, mKnobChMix});
+            {mKnobChRate, mKnobChDepth, mKnobChMix}, editor);
         Theme::tagCard(col, "chorus");
+        Theme::tagCard(editor, "chorus");
 
         mFxCols[&mEngine->chorus()] = col;
+        mFxEditors[&mEngine->chorus()] = editor;
     }
 
     // ---- Tremolo ----
@@ -513,10 +561,13 @@ void MainWindow::setupUI()
         mKnobTrRate->setScrollStep(0.1);
         mKnobTrDepth->setScrollStep(1.0);
 
-        auto* col = makeEffectColumn("Tremolo", mSwTremoloEnable, {mKnobTrRate, mKnobTrDepth});
+        QWidget* editor = nullptr;
+        auto* col = makeEffectColumn("Tremolo", mSwTremoloEnable, {mKnobTrRate, mKnobTrDepth}, editor);
         Theme::tagCard(col, "tremolo");
+        Theme::tagCard(editor, "tremolo");
 
         mFxCols[&mEngine->tremolo()] = col;
+        mFxEditors[&mEngine->tremolo()] = editor;
     }
 
     // ---- Delay ----
@@ -529,12 +580,15 @@ void MainWindow::setupUI()
         mKnobDelFeedback->setScrollStep(1.0);
         mKnobDelMix->setScrollStep(1.0);
 
+        QWidget* editor = nullptr;
         auto* col = makeEffectColumn("Delay", mSwDelayEnable,
-            {mKnobDelTime, mKnobDelFeedback, mKnobDelMix}, &mSwDelayStereo);
+            {mKnobDelTime, mKnobDelFeedback, mKnobDelMix}, editor, &mSwDelayStereo);
         mSwDelayStereo->setChecked(true);
         Theme::tagCard(col, "delay");
+        Theme::tagCard(editor, "delay");
 
         mFxCols[&mEngine->delay()] = col;
+        mFxEditors[&mEngine->delay()] = editor;
     }
 
     // ---- Reverb ----
@@ -549,19 +603,25 @@ void MainWindow::setupUI()
         mKnobRevWidth->setScrollStep(1.0);
         mKnobRevMix->setScrollStep(1.0);
 
+        QWidget* editor = nullptr;
         auto* col = makeEffectColumn("Reverb", mSwReverbEnable,
-            {mKnobRevRoom, mKnobRevDamping, mKnobRevWidth, mKnobRevMix});
+            {mKnobRevRoom, mKnobRevDamping, mKnobRevWidth, mKnobRevMix}, editor);
         Theme::tagCard(col, "reverb");
+        Theme::tagCard(editor, "reverb");
 
         mFxCols[&mEngine->reverb()] = col;
+        mFxEditors[&mEngine->reverb()] = editor;
     }
 
     // ---- IR toggle ----
     {
-        auto* col = makeEffectColumn("IR", mSwIREnable, {});
+        QWidget* editor = nullptr;
+        auto* col = makeEffectColumn("IR", mSwIREnable, {}, editor);
         mSwIREnable->setChecked(true);
         Theme::tagCard(col, "ir");
+        Theme::tagCard(editor, "ir");
         mFxCols[&mEngine->ir()] = col;
+        mFxEditors[&mEngine->ir()] = editor;
     }
 
     // Input/Output gain cards (not in the chain — pinned first and last)
@@ -603,6 +663,16 @@ void MainWindow::setupUI()
         {&mEngine->ir(),      {mSwIREnable,      nullptr}},
     };
 
+    // Bypass is a card-level visual state. Keep the controls live so users can
+    // prepare settings before engaging an effect; every toggle path (mouse,
+    // shortcut, preset, session restore) emits toggled and arrives here.
+    for (const auto& [fx, toggles] : mFxToggles)
+    {
+        connect(toggles.enable, &ToggleSwitch::toggled, this,
+                [this, fx](bool enabled) { updateCardBypassState(fx, enabled); });
+        updateCardBypassState(fx, toggles.enable->isChecked());
+    }
+
     // Drag sources + context menus: every card. Drop target: the strip itself.
     for (const auto& [fx, card] : mFxCols)
         card->installEventFilter(this);
@@ -615,6 +685,19 @@ void MainWindow::setupUI()
 
     scroll->setWidget(mStrip);
     rootLayout->addWidget(scroll, 1);
+
+    // One stable editor area for the selected chain module. Compact cards
+    // remain easy to scan/reorder while controls get the full window width.
+    mEffectEditor = new QStackedWidget;
+    mEffectEditor->setObjectName("effectEditor");
+    for (auto* fx : mEngine->chain())
+    {
+        const auto it = mFxEditors.find(fx);
+        if (it != mFxEditors.end())
+            mEffectEditor->addWidget(it->second);
+    }
+    rootLayout->addWidget(mEffectEditor);
+    selectEffectCard(&mEngine->nam());
 }
 
 void MainWindow::layoutStrip(const std::vector<EffectBase*>& order)
@@ -672,6 +755,36 @@ void MainWindow::rebuildEffectStrip()
     }
 }
 
+void MainWindow::selectEffectCard(EffectBase* effect)
+{
+    if (!effect || !mEffectEditor) return;
+    const auto editor = mFxEditors.find(effect);
+    if (editor == mFxEditors.end()) return;
+
+    mSelectedEffect = effect;
+    mEffectEditor->setCurrentWidget(editor->second);
+    for (const auto& [fx, card] : mFxCols)
+    {
+        card->setProperty("selected", fx == effect);
+        if (card->style())
+        {
+            card->style()->unpolish(card);
+            card->style()->polish(card);
+        }
+    }
+}
+
+void MainWindow::updateCardBypassState(EffectBase* effect, bool enabled)
+{
+    const auto it = mFxCols.find(effect);
+    if (it == mFxCols.end()) return;
+
+    QWidget* card = it->second;
+    auto* opacity = new QGraphicsOpacityEffect(card);
+    opacity->setOpacity(enabled ? 1.0 : 0.48);
+    card->setGraphicsEffect(opacity);
+}
+
 void MainWindow::applyChainOrder(const QStringList& ids)
 {
     std::vector<std::string> v;
@@ -715,7 +828,9 @@ void MainWindow::startCardDrag(QWidget* card)
 
     // Drop committed inside the event filter; a cancelled drag just falls
     // back to the engine order here.
-    card->setGraphicsEffect(nullptr);
+    auto toggles = mFxToggles.find(fx);
+    updateCardBypassState(fx, toggles != mFxToggles.end()
+                                 && toggles->second.enable->isChecked());
     mDragId.clear();
     rebuildEffectStrip();
 }
@@ -801,11 +916,19 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* ev)
     {
         auto* me  = static_cast<QMouseEvent*>(ev);
         auto* box = qobject_cast<QGroupBox*>(obj);
-        if (box && obj != mStrip && me->button() == Qt::LeftButton
-            && titleBandRect(box).contains(me->pos()))
+        if (box && obj != mStrip && me->button() == Qt::LeftButton)
         {
-            mDragCard     = box;
-            mDragStartPos = me->pos();
+            for (const auto& [fx, card] : mFxCols)
+                if (card == box)
+                {
+                    selectEffectCard(fx);
+                    break;
+                }
+            if (titleBandRect(box).contains(me->pos()))
+            {
+                mDragCard     = box;
+                mDragStartPos = me->pos();
+            }
         }
         break;
     }

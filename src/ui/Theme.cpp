@@ -17,18 +17,18 @@ namespace Theme {
 // AudioEngine::mEffectTable; "neutral" covers Input/Output and fallbacks.
 struct FxColor { const char* id; const char* accent; };
 static constexpr FxColor kFxColors[] = {
-    {"tuner",   "#f0e9d7"},
-    {"gate",    "#c2c5c8"},
-    {"comp",    "#0f377a"},
+    {"tuner",   "#b6aa8d"},
+    {"gate",    "#8f969e"},
+    {"comp",    "#4f78bd"},
     {"wah",     "#d4c19a"},
     {"flanger", "#93477b"},
     {"phaser",  "#4bba5b"},
     {"nam",     "#e4b954"},
-    {"eq",      "#d5d3c5"},
+    {"eq",      "#a5a38f"},
     {"chorus",  "#8dccf3"},
     {"tremolo", "#19848e"},
-    {"delay",   "#eae9e5"},
-    {"reverb",  "#3d3c3d"},
+    {"delay",   "#aaa6a0"},
+    {"reverb",  "#8f7d99"},
     {"ir",      "#ef661a"},
     {"neutral", "#7d8590"},
 };
@@ -162,6 +162,22 @@ QGroupBox::title {
     color: #d8dee9;
     background: transparent;
     margin-top: -2px;
+}
+QGroupBox[selected="true"] {
+    background-color: #29313c;
+    border-left: 2px solid #657184;
+    border-right: 2px solid #657184;
+    border-bottom: 2px solid #657184;
+}
+QStackedWidget#effectEditor {
+    background: transparent;
+}
+QGroupBox#effectEditorPage {
+    min-height: 150px;
+}
+QLabel#editorEmptyState {
+    color: #7d8590;
+    font-style: italic;
 }
 /* Per-effect accent stripes and title colors are appended in apply(). */
 

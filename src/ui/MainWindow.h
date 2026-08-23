@@ -18,6 +18,7 @@ class QHBoxLayout;
 class QLabel;
 class QPushButton;
 class QProgressBar;
+class QStackedWidget;
 class AudioDevicePanel;
 class VUMeter;
 
@@ -61,6 +62,7 @@ private:
     QWidget* makeEffectColumn(const QString& title,
                               ToggleSwitch*& toggleOut,
                               const std::initializer_list<KnobWidget*>& knobs,
+                              QWidget*& editorOut,
                               ToggleSwitch** stereoToggleOut = nullptr);
 
     // --- Effect strip / chain reordering ---
@@ -68,6 +70,9 @@ private:
     void layoutStrip(const std::vector<EffectBase*>& order);
     // layoutStrip(engine chain) + shortcuts re-assigned left to right.
     void rebuildEffectStrip();
+    void selectEffectCard(EffectBase* effect);
+    // Keep bypassed cards visually subordinate without disabling their controls.
+    void updateCardBypassState(EffectBase* effect, bool enabled);
     // setChainOrder + strip rebuild; used by session restore, preset load, DnD.
     void applyChainOrder(const QStringList& ids);
     // Live drag preview: while a card is dragged the strip re-lays out to the
@@ -101,11 +106,14 @@ private:
     // Effect strip state
     struct CardToggles { ToggleSwitch* enable; ToggleSwitch* stereo; };
     std::unordered_map<EffectBase*, QWidget*>    mFxCols;
+    std::unordered_map<EffectBase*, QWidget*>    mFxEditors;
     std::unordered_map<EffectBase*, CardToggles> mFxToggles;
     QWidget*     mStrip      = nullptr;
     QHBoxLayout* mStripLay   = nullptr;
     QWidget*     mInputCard  = nullptr;
     QWidget*     mOutputCard = nullptr;
+    QStackedWidget* mEffectEditor = nullptr;
+    EffectBase*  mSelectedEffect = nullptr;
     EffectShortcuts mShortcuts{this};
 
     // Drag state for card reordering
