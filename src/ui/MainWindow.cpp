@@ -48,20 +48,42 @@ static const char kEffectMime[] = "application/x-nam-effect-id";
 
 // Fixed columns at the left edge of every row card, so the enable toggles,
 // stereo slots, and first knobs line up vertically across the strip.
-static constexpr int kGripColumnWidth  = 22;  // "≡" drag handle
-static constexpr int kNameColumnWidth  = 200; // fits "Cabinet (Impulse Response)"
-static constexpr int kStereoSlotWidth  = 78; // "Stereo mode" toggle+label slot
-static constexpr int kStereoSlotHeight = 38;
+static constexpr int kGripColumnWidth = 22;  // "≡" drag handle
+static constexpr int kNameColumnWidth = 200; // fits "Cabinet (Impulse Response)"
+static constexpr int kEnableSlotWidth = 74;  // toggle + "On"/"Off" caption
+static constexpr int kStereoSlotWidth = 126; // toggle + "Stereo mode" caption
+
+// Enable toggle with a live "On"/"Off" caption beside it — one line, so the
+// switch stays on the row's vertical centerline.
+static QWidget* makeEnableSlot(ToggleSwitch* sw)
+{
+    auto* w = new QWidget;
+    w->setFixedWidth(kEnableSlotWidth);
+    auto* lay = new QHBoxLayout(w);
+    lay->setContentsMargins(0, 0, 0, 0);
+    lay->setSpacing(6);
+
+    auto* lbl = new QLabel(sw->isChecked() ? "On" : "Off");
+    lbl->setObjectName("toggleCaption");
+    QObject::connect(sw, &ToggleSwitch::toggled, lbl,
+                     [lbl](bool on) { lbl->setText(on ? "On" : "Off"); });
+
+    lay->addWidget(sw, 0, Qt::AlignVCenter);
+    lay->addWidget(lbl, 0, Qt::AlignVCenter);
+    lay->addStretch();
+    return w;
+}
 
 // The stereo slot is reserved on every effect row (blank when the effect has
 // no stereo mode) so the knob column starts at the same X on all rows.
+// Toggle and caption sit on one line for the same centering reason.
 static QWidget* makeStereoSlot(ToggleSwitch** outToggle)
 {
     auto* w = new QWidget;
-    w->setFixedSize(kStereoSlotWidth, kStereoSlotHeight);
-    auto* lay = new QVBoxLayout(w);
+    w->setFixedWidth(kStereoSlotWidth);
+    auto* lay = new QHBoxLayout(w);
     lay->setContentsMargins(0, 0, 0, 0);
-    lay->setSpacing(1);
+    lay->setSpacing(6);
 
     if (outToggle) {
         auto* sw = new ToggleSwitch;
@@ -69,35 +91,12 @@ static QWidget* makeStereoSlot(ToggleSwitch** outToggle)
         sw->setChecked(false);
         auto* lbl = new QLabel("Stereo mode");
         lbl->setObjectName("toggleCaption");
-        lbl->setAlignment(Qt::AlignHCenter);
-        lay->addWidget(sw, 0, Qt::AlignHCenter);
-        lay->addWidget(lbl);
+        lay->addWidget(sw, 0, Qt::AlignVCenter);
+        lay->addWidget(lbl, 0, Qt::AlignVCenter);
         lay->addStretch();
         *outToggle = sw;
     }
 
-    return w;
-}
-
-// Enable toggle with a live "On"/"Off" caption beneath it, so the switch
-// state reads unambiguously at a glance.
-static QWidget* makeEnableSlot(ToggleSwitch* sw)
-{
-    auto* w = new QWidget;
-    w->setFixedHeight(kStereoSlotHeight); // same vertical rhythm as the stereo slot
-    auto* lay = new QVBoxLayout(w);
-    lay->setContentsMargins(0, 0, 0, 0);
-    lay->setSpacing(1);
-
-    auto* lbl = new QLabel(sw->isChecked() ? "On" : "Off");
-    lbl->setObjectName("toggleCaption");
-    lbl->setAlignment(Qt::AlignHCenter);
-    QObject::connect(sw, &ToggleSwitch::toggled, lbl,
-                     [lbl](bool on) { lbl->setText(on ? "On" : "Off"); });
-
-    lay->addWidget(sw, 0, Qt::AlignHCenter);
-    lay->addWidget(lbl);
-    lay->addStretch();
     return w;
 }
 
