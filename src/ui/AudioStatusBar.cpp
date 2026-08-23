@@ -155,9 +155,9 @@ void AudioStatusBar::setDeviceLabels()
     const QString inName  = deviceName(ins,  mInputId);
     const QString outName = deviceName(outs, mOutputId);
     mLblInput->setText("In: " + elide(inName).toHtmlEscaped());
-    mLblInput->setToolTip("Input device — click to change\n" + inName);
+    mLblInput->setToolTip("Input device (click to change)\n" + inName);
     mLblOutput->setText("Out: " + elide(outName).toHtmlEscaped());
-    mLblOutput->setToolTip("Output device — click to change\n" + outName);
+    mLblOutput->setToolTip("Output device (click to change)\n" + outName);
 }
 
 void AudioStatusBar::pickDevice(bool input)

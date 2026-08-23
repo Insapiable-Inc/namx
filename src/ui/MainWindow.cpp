@@ -904,7 +904,7 @@ void MainWindow::setupAudio()
         if (mEngine->supportsPortRouting())
             restoreConnections();
     } else {
-        mAudioBar->setError("Not connected — click to retry");
+        mAudioBar->setError("Not connected");
     }
 }
 
@@ -919,7 +919,7 @@ void MainWindow::restartAudioWithCurrentDevices()
         if (mEngine->supportsPortRouting())
             restoreConnections();
     } else {
-        mAudioBar->setError("Not connected — click to retry");
+        mAudioBar->setError("Not connected");
     }
 }
 
@@ -1132,7 +1132,7 @@ void MainWindow::updateMeters()
     if (mAudioOk && !mEngine->isRunning())
     {
         mAudioOk = false;
-        mAudioBar->setError("Disconnected — click to retry");
+        mAudioBar->setError("Disconnected");
     }
 }
 

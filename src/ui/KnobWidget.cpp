@@ -173,7 +173,7 @@ KnobWidget::KnobWidget(const QString& label, double minVal, double maxVal,
         nameLabel->setPalette(p);
     }
 
-    setToolTip(QString("%1 — drag or scroll to adjust, double-click to reset").arg(label));
+    setToolTip(QString("%1: drag or scroll to adjust, double-click to reset").arg(label));
 
     mDial = new VerticalDial;
     mDial->setMinimum(0);
