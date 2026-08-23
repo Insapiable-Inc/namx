@@ -54,6 +54,11 @@ QColor dimText()     { return QColor("#aab0bc"); }
 QColor thumbTop()    { return QColor("#ffffff"); }
 QColor thumbBot()    { return QColor("#d8dee9"); }
 
+QColor meterLow()    { return QColor("#5cc8a8"); }
+QColor meterMid()    { return QColor("#f0c850"); }
+QColor meterHigh()   { return QColor("#e85a4f"); }
+QColor meterClip()   { return QColor("#ff5252"); }
+
 void tagCard(QWidget* card, const QString& fxId)
 {
     if (!card) return;

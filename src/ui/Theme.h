@@ -34,6 +34,13 @@ QColor dimText();      // secondary labels (knob names, "Stereo", cents)
 QColor thumbTop();     // switch thumb gradient, light end
 QColor thumbBot();     // switch thumb gradient, dark end
 
+// VU meter level gradient, low → clip. The gradient is anchored to the full
+// bar (not the filled chunk), so a color means an absolute level.
+QColor meterLow();
+QColor meterMid();
+QColor meterHigh();
+QColor meterClip();
+
 /// Tags a card with its effect ID: sets the `fx` dynamic property (drives the
 /// per-effect QSS rules) and overrides QPalette::Highlight so descendant
 /// knobs/switches pick up the accent without individual tagging.
