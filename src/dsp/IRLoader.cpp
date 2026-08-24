@@ -37,7 +37,7 @@ bool IRLoader::load(const std::string& path)
     {
         mLastError = dsp::wav::GetMsgForLoadReturnCode(result);
         if (result == dsp::wav::LoadReturnCode::ERROR_NOT_MONO)
-            mLastError += " Stereo IRs are not supported — convert the file to mono.";
+            mLastError += " Stereo IRs are not supported; convert the file to mono.";
         return false;
     }
 

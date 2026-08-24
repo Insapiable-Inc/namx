@@ -49,14 +49,16 @@ set(GUI_SOURCES
     src/ui/ToggleSwitch.h
     src/ui/EffectShortcuts.cpp
     src/ui/EffectShortcuts.h
-    src/ui/AudioDevicePanel.cpp
-    src/ui/AudioDevicePanel.h
+    src/ui/AudioStatusBar.cpp
+    src/ui/AudioStatusBar.h
     src/ui/ParamRegistry.h
     src/ui/PresetSerializer.cpp
     src/ui/PresetSerializer.h
     src/ui/VUMeter.cpp
     src/ui/VUMeter.h
     src/ui/Theme.cpp
+    src/ui/TunerDisplay.cpp
+    src/ui/TunerDisplay.h
     src/ui/Theme.h
     src/dsp/AudioEngine.cpp
     src/dsp/AudioEngine.h

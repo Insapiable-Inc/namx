@@ -16,8 +16,14 @@ class KnobWidget : public QWidget
     Q_PROPERTY(double value READ value WRITE setValue NOTIFY valueChanged)
 
 public:
+    /// Compact: dial left, name over value right (effect rows, ~46px tall).
+    /// Stacked: name over a large dial over the value, all centred — the
+    /// prominent form for the Input/Output gain columns.
+    enum class Form { Compact, Stacked };
+
     explicit KnobWidget(const QString& label, double minVal, double maxVal,
                         double defaultVal, const QString& unit = "",
+                        Form form = Form::Compact,
                         QWidget* parent = nullptr);
 
     double value() const;
@@ -36,9 +42,6 @@ public:
     /// Pass 0 to use the default (1% of range).
     void setScrollStep(double step) { mScrollStep = step; }
 
-    QSize sizeHint()        const override { return {94, 116}; }
-    QSize minimumSizeHint() const override { return {80, 100}; }
-
 public slots:
     void setValue(double v);
     void resetToDefault();
@@ -52,7 +55,6 @@ private slots:
 protected:
     bool eventFilter(QObject* obj, QEvent* event) override;
     void contextMenuEvent(QContextMenuEvent* event) override;
-    void paintEvent(QPaintEvent* event) override;
 
 private:
     VerticalDial* mDial;

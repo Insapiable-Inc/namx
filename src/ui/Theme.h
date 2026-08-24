@@ -34,13 +34,31 @@ QColor dimText();      // secondary labels (knob names, "Stereo", cents)
 QColor thumbTop();     // switch thumb gradient, light end
 QColor thumbBot();     // switch thumb gradient, dark end
 
+// VU meter level gradient, low → clip. The gradient is anchored to the full
+// bar (not the filled chunk), so a color means an absolute level.
+QColor meterLow();
+QColor meterMid();
+QColor meterHigh();
+QColor meterClip();
+
+// Tuner display (LED ladder + seven-segment note).
+QColor ledGreen();  // in tune
+QColor ledRed();    // off pitch
+QColor displayBg(); // near-black LED panel
+
 /// Tags a card with its effect ID: sets the `fx` dynamic property (drives the
 /// per-effect QSS rules) and overrides QPalette::Highlight so descendant
 /// knobs/switches pick up the accent without individual tagging.
 void tagCard(QWidget* card, const QString& fxId);
 
-/// Install Fusion + the global dark palette + the application stylesheet.
-/// Call once after QApplication is constructed.
+/// Install Fusion + a tooltip-only application stylesheet. Call once after
+/// QApplication is constructed.
 void apply(QApplication& app);
+
+/// Apply the dark palette + the full stylesheet to the main window's subtree.
+/// Deliberately NOT application-wide: parentless dialogs (file dialogs,
+/// which are in-process Qt widgets even when "native" on KDE) stay outside
+/// this tree and keep the OS default look.
+void applyTo(QWidget& root);
 
 } // namespace Theme

@@ -1,9 +1,10 @@
 #include "MainWindow.h"
-#include "AudioDevicePanel.h"
+#include "AudioStatusBar.h"
 #include "Constants.h"
 #include "EffectShortcuts.h"
 #include "PresetSerializer.h"
 #include "Theme.h"
+#include "TunerDisplay.h"
 #include "TunerProcessor.h"
 #include "VUMeter.h"
 
@@ -17,7 +18,6 @@
 #include <QFont>
 #include <QFrame>
 #include <QGraphicsOpacityEffect>
-#include <QGroupBox>
 #include <QHBoxLayout>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -28,12 +28,11 @@
 #include <QMessageBox>
 #include <QMimeData>
 #include <QMouseEvent>
-#include <QProgressBar>
 #include <QPushButton>
 #include <QScrollArea>
 #include <QSettings>
+#include <QStatusBar>
 #include <QStyle>
-#include <QStyleOption>
 #include <QTimer>
 #include <QVBoxLayout>
 
@@ -47,53 +46,61 @@
 // Mime type carrying the effect ID of a dragged strip card.
 static const char kEffectMime[] = "application/x-nam-effect-id";
 
-// Fixed height of the "stereo slot" row that sits between the enable toggle
-// and the first knob. Reserved on every card with knobs (visible toggle on
-// stereo-capable effects, otherwise an empty placeholder) so that knob row 1
-// starts at the same Y across all columns.
-static constexpr int kStereoSlotHeight = 38;
+// Fixed columns at the left edge of every row card, so the enable toggles,
+// stereo slots, and first knobs line up vertically across the strip.
+static constexpr int kGripColumnWidth = 22;  // "≡" drag handle
+static constexpr int kNameColumnWidth = 120; // fits "Dynamic Wah"
+static constexpr int kEnableSlotWidth = 74;  // toggle + "On"/"Off" caption
+static constexpr int kStereoSlotWidth = 96;  // toggle + "Stereo" caption
+// Every row is exactly as tall as a knob row (40 px dial + knob margins +
+// card margins + border), so knob-less rows and the tuner match the rest.
+static constexpr int kRowCardHeight   = 62;
 
+// Enable toggle with a live "On"/"Off" caption beside it — one line, so the
+// switch stays on the row's vertical centerline.
+static QWidget* makeEnableSlot(ToggleSwitch* sw)
+{
+    auto* w = new QWidget;
+    w->setFixedWidth(kEnableSlotWidth);
+    auto* lay = new QHBoxLayout(w);
+    lay->setContentsMargins(0, 0, 0, 0);
+    lay->setSpacing(6);
+
+    auto* lbl = new QLabel(sw->isChecked() ? "On" : "Off");
+    lbl->setObjectName("toggleCaption");
+    QObject::connect(sw, &ToggleSwitch::toggled, lbl,
+                     [lbl](bool on) { lbl->setText(on ? "On" : "Off"); });
+
+    lay->addWidget(sw, 0, Qt::AlignVCenter);
+    lay->addWidget(lbl, 0, Qt::AlignVCenter);
+    lay->addStretch();
+    return w;
+}
+
+// The stereo slot is reserved on every effect row (blank when the effect has
+// no stereo mode) so the knob column starts at the same X on all rows.
+// Toggle and caption sit on one line for the same centering reason.
 static QWidget* makeStereoSlot(ToggleSwitch** outToggle)
 {
     auto* w = new QWidget;
-    w->setFixedHeight(kStereoSlotHeight);
-    auto* lay = new QVBoxLayout(w);
+    w->setFixedWidth(kStereoSlotWidth);
+    auto* lay = new QHBoxLayout(w);
     lay->setContentsMargins(0, 0, 0, 0);
-    lay->setSpacing(1);
+    lay->setSpacing(6);
 
     if (outToggle) {
         auto* sw = new ToggleSwitch;
         sw->setCheckable(true);
         sw->setChecked(false);
         auto* lbl = new QLabel("Stereo");
-        lbl->setObjectName("stereoLabel");
-        lbl->setAlignment(Qt::AlignHCenter);
-        lay->addWidget(sw, 0, Qt::AlignHCenter);
-        lay->addWidget(lbl);
+        lbl->setObjectName("toggleCaption");
+        lay->addWidget(sw, 0, Qt::AlignVCenter);
+        lay->addWidget(lbl, 0, Qt::AlignVCenter);
         lay->addStretch();
         *outToggle = sw;
     }
 
     return w;
-}
-
-// The title row (top margin band) of an effect card. Movable cards carry a
-// "≡" grip glyph in the title and dragging is reserved for this band, so
-// knob/toggle clicks can never start a reorder.
-static QRect titleBandRect(const QGroupBox* box)
-{
-    QStyleOptionGroupBox opt;
-    opt.initFrom(box);
-    opt.text          = box->title();
-    opt.textAlignment = box->alignment();
-    opt.subControls   = QStyle::SC_GroupBoxLabel | QStyle::SC_GroupBoxFrame;
-    opt.lineWidth     = 1;
-    QRect r = box->style()->subControlRect(QStyle::CC_GroupBox, &opt,
-                                           QStyle::SC_GroupBoxLabel, box);
-    if (!r.isValid() || r.height() <= 0)
-        r = QRect(0, 0, box->width(), QFontMetrics(box->font()).height() + 8);
-    // Full card width at the title's vertical extent — the whole top band drags.
-    return QRect(0, 0, box->width(), r.bottom() + 4);
 }
 
 // ---------------------------------------------------------------------------
@@ -151,34 +158,55 @@ MainWindow::~MainWindow()
 
 // ---------------------------------------------------------------------------
 
-QWidget* MainWindow::makeEffectColumn(const QString& title,
-                                      ToggleSwitch*& toggleOut,
-                                      const std::initializer_list<KnobWidget*>& knobs,
-                                      ToggleSwitch** stereoToggleOut)
+QFrame* MainWindow::makeRowCard(const QString& title)
 {
-    // The ≡ grip in the title marks a draggable card; dragging starts from
-    // the title band only.
-    auto* col = new QGroupBox("≡  " + title);
-    col->setAlignment(Qt::AlignHCenter);
-    col->setMinimumWidth(110);
-    auto* lay = new QVBoxLayout(col);
-    lay->setContentsMargins(4, 6, 4, 4);
-    lay->setSpacing(4);
+    auto* card = new QFrame;
+    card->setProperty("fxCard", true);        // card chrome lives in the Theme QSS
+    card->setProperty("displayName", title);  // context menu + drag bookkeeping
+    card->setFixedHeight(kRowCardHeight);
+    auto* lay = new QHBoxLayout(card);
+    lay->setContentsMargins(10, 6, 10, 6);
+    lay->setSpacing(10);
+
+    // Grip column: the ≡ handle is the only place a reorder drag can start,
+    // so toggle/knob clicks can never move a card.
+    auto* grip = new QLabel("≡");
+    grip->setObjectName("fxGrip");
+    grip->setFixedWidth(kGripColumnWidth);
+    grip->setAlignment(Qt::AlignCenter);
+    grip->setCursor(Qt::OpenHandCursor);
+    grip->setToolTip("Drag to reorder");
+    lay->addWidget(grip, 0, Qt::AlignVCenter);
+    mCardGrips[card] = grip;
+
+    auto* name = new QLabel(title);
+    name->setObjectName("fxName");
+    name->setFixedWidth(kNameColumnWidth);
+    lay->addWidget(name, 0, Qt::AlignVCenter);
+
+    return card;
+}
+
+QWidget* MainWindow::makeEffectRow(const QString& title,
+                                   ToggleSwitch*& toggleOut,
+                                   const std::initializer_list<KnobWidget*>& knobs,
+                                   ToggleSwitch** stereoToggleOut)
+{
+    QFrame* card = makeRowCard(title);
+    auto* lay = static_cast<QHBoxLayout*>(card->layout());
 
     toggleOut = new ToggleSwitch;
     toggleOut->setCheckable(true);
     toggleOut->setChecked(false);
-    lay->addWidget(toggleOut, 0, Qt::AlignHCenter);
+    lay->addWidget(makeEnableSlot(toggleOut), 0, Qt::AlignVCenter);
 
-    // Reserve the stereo-slot row even when this effect has no stereo toggle —
-    // keeps knob row 1 at the same Y across every card with knobs.
-    lay->addWidget(makeStereoSlot(stereoToggleOut));
+    lay->addWidget(makeStereoSlot(stereoToggleOut), 0, Qt::AlignVCenter);
 
     for (auto* k : knobs)
-        lay->addWidget(k);
+        lay->addWidget(k, 0, Qt::AlignVCenter);
 
     lay->addStretch();
-    return col;
+    return card;
 }
 
 // ---------------------------------------------------------------------------
@@ -218,89 +246,18 @@ void MainWindow::setupUI()
         });
     }
 
-    // ---- Top status row ----
-    {
-        auto* row = new QHBoxLayout;
-        row->setContentsMargins(4, 4, 4, 4);
-        row->setSpacing(10);
-
-        auto* title = new QLabel("NAM Player");
-        title->setObjectName("appTitle");
-
-        mLblAudioStatus = new QLabel("Audio: connecting…");
-        mLblAudioStatus->setObjectName("audioStatusErr");
-
-        mBtnReconnect = new QPushButton("Reconnect");
-        mBtnReconnect->setVisible(false);
-        connect(mBtnReconnect, &QPushButton::clicked,
-                this, &MainWindow::restartAudioWithCurrentDevices);
-
-        auto* btnSave  = new QPushButton("Save Preset…");
-        auto* btnLoad  = new QPushButton("Load Preset…");
-        auto* btnReset = new QPushButton("Reset All");
-        connect(btnSave,  &QPushButton::clicked, this, &MainWindow::onSavePreset);
-        connect(btnLoad,  &QPushButton::clicked, this, &MainWindow::onLoadPreset);
-        connect(btnReset, &QPushButton::clicked, this, &MainWindow::onResetAll);
-
-        row->addWidget(title);
-        row->addWidget(mLblAudioStatus);
-        row->addWidget(mBtnReconnect);
-        row->addStretch();
-        row->addWidget(btnSave);
-        row->addWidget(btnLoad);
-        row->addWidget(btnReset);
-        rootLayout->addLayout(row);
-    }
-
-    // ---- Device selection row ----
-    mDevicePanel = new AudioDevicePanel(*mEngine);
-    rootLayout->addWidget(mDevicePanel);
-    connect(mDevicePanel, &AudioDevicePanel::deviceSelectionChanged,
+    // ---- Status bar (bottom right): backend, rate, buffer, latency, devices.
+    // Preset save/load/reset live in the Preset menu — no top button row.
+    mAudioBar = new AudioStatusBar(*mEngine);
+    statusBar()->setSizeGripEnabled(false);
+    statusBar()->addPermanentWidget(mAudioBar);
+    connect(mAudioBar, &AudioStatusBar::deviceSelectionChanged,
+            this, &MainWindow::restartAudioWithCurrentDevices);
+    connect(mAudioBar, &AudioStatusBar::reconnectRequested,
             this, &MainWindow::restartAudioWithCurrentDevices);
 
-    // ---- NAM + IR file row ----
-    {
-        auto* row = new QHBoxLayout;
-        row->setSpacing(8);
-
-        auto* namBox = new QGroupBox("NAM Model");
-        Theme::tagCard(namBox, "nam");
-        auto* namLay = new QHBoxLayout(namBox);
-        namLay->setContentsMargins(8, 16, 8, 8);
-        namLay->setSpacing(6);
-        mBtnLoadNAM   = new QPushButton("Load…");
-        mBtnUnloadNAM = new QPushButton("Unload");
-        mBtnUnloadNAM->setEnabled(false);
-        mLblNAMStatus = new QLabel("No model loaded");
-        mLblNAMStatus->setObjectName("fileStatus");
-        connect(mBtnLoadNAM,   &QPushButton::clicked, this, &MainWindow::onLoadNAM);
-        connect(mBtnUnloadNAM, &QPushButton::clicked, this, &MainWindow::onUnloadNAM);
-        namLay->addWidget(mBtnLoadNAM);
-        namLay->addWidget(mBtnUnloadNAM);
-        namLay->addWidget(mLblNAMStatus, 1);
-
-        auto* irBox = new QGroupBox("Impulse Response (Cab)");
-        Theme::tagCard(irBox, "ir");
-        auto* irLay = new QHBoxLayout(irBox);
-        irLay->setContentsMargins(8, 16, 8, 8);
-        irLay->setSpacing(6);
-        mBtnLoadIR   = new QPushButton("Load…");
-        mBtnUnloadIR = new QPushButton("Unload");
-        mBtnUnloadIR->setEnabled(false);
-        mLblIRStatus = new QLabel("No IR loaded");
-        mLblIRStatus->setObjectName("fileStatus");
-        connect(mBtnLoadIR,   &QPushButton::clicked, this, &MainWindow::onLoadIR);
-        connect(mBtnUnloadIR, &QPushButton::clicked, this, &MainWindow::onUnloadIR);
-        irLay->addWidget(mBtnLoadIR);
-        irLay->addWidget(mBtnUnloadIR);
-        irLay->addWidget(mLblIRStatus, 1);
-
-        row->addWidget(namBox, 1);
-        row->addWidget(irBox, 1);
-        rootLayout->addLayout(row);
-    }
-
     // ---- Scrollable effect strip ----
+    // (NAM model / IR file pickers live inside the Amp and IR rows below.)
     auto* scroll = new QScrollArea;
     scroll->setWidgetResizable(true);
     scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
@@ -308,7 +265,7 @@ void MainWindow::setupUI()
     scroll->setFrameShape(QFrame::NoFrame);
 
     mStrip    = new QWidget;
-    mStripLay = new QHBoxLayout(mStrip);
+    mStripLay = new QVBoxLayout(mStrip);
     mStripLay->setContentsMargins(2, 2, 2, 2);
     mStripLay->setSpacing(4);
     mStripLay->setAlignment(Qt::AlignTop);
@@ -319,53 +276,17 @@ void MainWindow::setupUI()
 
     // ---- Tuner ----
     {
-        auto* col = new QGroupBox("≡  Tuner");
-        col->setAlignment(Qt::AlignHCenter);
-        col->setMinimumWidth(110);
-        auto* lay = new QVBoxLayout(col);
-        lay->setContentsMargins(4, 6, 4, 4);
-        lay->setSpacing(3);
+        QFrame* col = makeRowCard("Tuner");
+        auto* lay = static_cast<QHBoxLayout*>(col->layout());
 
         mSwTunerEnable = new ToggleSwitch;
         mSwTunerEnable->setCheckable(true);
-        lay->addWidget(mSwTunerEnable, 0, Qt::AlignHCenter);
+        lay->addWidget(makeEnableSlot(mSwTunerEnable), 0, Qt::AlignVCenter);
+        lay->addWidget(makeStereoSlot(nullptr), 0, Qt::AlignVCenter);
 
-        mLblNote = new QLabel("--");
-        mLblNote->setObjectName("tunerNote");
-        {
-            QFont f = mLblNote->font();
-            f.setPointSize(f.pointSize() + 7);
-            f.setBold(true);
-            mLblNote->setFont(f);
-        }
-        mLblNote->setMinimumWidth(52);
-        mLblNote->setAlignment(Qt::AlignCenter);
-
-        mLblCents = new QLabel("±0¢");
-        mLblCents->setObjectName("tunerCents");
-        mLblCents->setMinimumWidth(36);
-        mLblCents->setAlignment(Qt::AlignCenter);
-
-        mTunerBar = new QProgressBar;
-        mTunerBar->setObjectName("tunerBar"); // chunk color lives in the Theme stylesheet
-        mTunerBar->setOrientation(Qt::Vertical);
-        mTunerBar->setRange(0, 100);
-        mTunerBar->setValue(50);
-        mTunerBar->setTextVisible(false);
-        mTunerBar->setFixedWidth(14);
-        mTunerBar->setMinimumHeight(60);
-
-        mSwTunerMute = new ToggleSwitch;
-        mSwTunerMute->setCheckable(true);
-        auto* muteLabel = new QLabel("Mute");
-        muteLabel->setAlignment(Qt::AlignHCenter);
-
-        lay->addWidget(mLblNote);
-        lay->addWidget(mLblCents);
-        lay->addWidget(mTunerBar, 0, Qt::AlignHCenter);
-        lay->addWidget(mSwTunerMute, 0, Qt::AlignHCenter);
-        lay->addWidget(muteLabel);
-        lay->addStretch();
+        mTunerDisplay = new TunerDisplay;
+        mTunerDisplay->setMaximumWidth(560); // one compact instrument, not a strip
+        lay->addWidget(mTunerDisplay, 1, Qt::AlignLeft | Qt::AlignVCenter);
 
         Theme::tagCard(col, "tuner"); // after children — pushes accents to them
         mFxCols[&mEngine->tuner()] = col;
@@ -374,14 +295,14 @@ void MainWindow::setupUI()
     // ---- Noise Gate ----
     {
         using namespace NAMConstants;
-        mKnobGateThresh  = new KnobWidget("Thresh",  kGateThreshMin,  kGateThreshMax,  kGateThreshDefault,  "dB");
+        mKnobGateThresh  = new KnobWidget("Threshold", kGateThreshMin,  kGateThreshMax,  kGateThreshDefault,  "dB");
         mKnobGateAttack  = new KnobWidget("Attack",  kGateAttackMin,  kGateAttackMax,  kGateAttackDefault,  "ms");
         mKnobGateRelease = new KnobWidget("Release", kGateReleaseMin, kGateReleaseMax, kGateReleaseDefault, "ms");
         mKnobGateThresh->setScrollStep(1.0);
         mKnobGateAttack->setScrollStep(1.0);
         mKnobGateRelease->setScrollStep(10.0);
 
-        auto* col = makeEffectColumn("Gate", mSwGateEnable,
+        auto* col = makeEffectRow("Noise Gate", mSwGateEnable,
             {mKnobGateThresh, mKnobGateAttack, mKnobGateRelease});
         Theme::tagCard(col, "gate");
 
@@ -391,18 +312,18 @@ void MainWindow::setupUI()
     // ---- Compressor ----
     {
         using namespace NAMConstants;
-        mKnobCompThresh  = new KnobWidget("Thresh",  kCompThreshMin,  kCompThreshMax,  kCompThreshDefault,  "dB");
+        mKnobCompThresh  = new KnobWidget("Threshold", kCompThreshMin,  kCompThreshMax,  kCompThreshDefault,  "dB");
         mKnobCompRatio   = new KnobWidget("Ratio",   kCompRatioMin,   kCompRatioMax,   kCompRatioDefault,   ":1");
         mKnobCompAttack  = new KnobWidget("Attack",  kCompAttackMin,  kCompAttackMax,  kCompAttackDefault,  "ms");
         mKnobCompRelease = new KnobWidget("Release", kCompReleaseMin, kCompReleaseMax, kCompReleaseDefault, "ms");
-        mKnobCompMakeup  = new KnobWidget("Makeup",  kCompMakeupMin,  kCompMakeupMax,  kCompMakeupDefault,  "dB");
+        mKnobCompMakeup  = new KnobWidget("Makeup Gain", kCompMakeupMin,  kCompMakeupMax,  kCompMakeupDefault,  "dB");
         mKnobCompThresh->setScrollStep(1.0);
         mKnobCompRatio->setScrollStep(0.5);
         mKnobCompAttack->setScrollStep(1.0);
         mKnobCompRelease->setScrollStep(10.0);
         mKnobCompMakeup->setScrollStep(0.5);
 
-        auto* col = makeEffectColumn("Compressor", mSwCompEnable,
+        auto* col = makeEffectRow("Compressor", mSwCompEnable,
             {mKnobCompThresh, mKnobCompRatio, mKnobCompAttack, mKnobCompRelease, mKnobCompMakeup});
         Theme::tagCard(col, "comp");
 
@@ -412,15 +333,15 @@ void MainWindow::setupUI()
     // ---- Dynamic Wah ----
     {
         using namespace NAMConstants;
-        mKnobWahSens = new KnobWidget("Sens", kWahSensMin, kWahSensMax, kWahSensDefault, "%");
-        mKnobWahRes  = new KnobWidget("Res",  kWahResMin,  kWahResMax,  kWahResDefault,  "%");
+        mKnobWahSens = new KnobWidget("Sensitivity", kWahSensMin, kWahSensMax, kWahSensDefault, "%");
+        mKnobWahRes  = new KnobWidget("Resonance", kWahResMin,  kWahResMax,  kWahResDefault,  "%");
         mKnobWahMix  = new KnobWidget("Mix",  kWahMixMin,  kWahMixMax,  kWahMixDefault,  "%");
         mKnobWahSens->setScrollStep(1.0);
         mKnobWahRes->setScrollStep(1.0);
         mKnobWahMix->setScrollStep(1.0);
 
-        auto* col = makeEffectColumn("Dyn.Wah", mSwWahEnable,
-            {mKnobWahSens, mKnobWahRes, mKnobWahMix});
+        auto* col = makeEffectRow("Dynamic Wah", mSwWahEnable,
+            {mKnobWahMix, mKnobWahSens, mKnobWahRes});
         Theme::tagCard(col, "wah");
 
         mFxCols[&mEngine->wah()] = col;
@@ -428,8 +349,22 @@ void MainWindow::setupUI()
 
     // ---- Amp (NAM) ----
     {
-        auto* col = makeEffectColumn("Amp", mSwNAMEnable, {});
+        auto* col = makeEffectRow("Amplifier", mSwNAMEnable, {});
         mSwNAMEnable->setChecked(true);
+
+        auto* lay = static_cast<QHBoxLayout*>(col->layout());
+        mBtnLoadNAM   = new QPushButton("Load…");
+        mBtnUnloadNAM = new QPushButton("Unload");
+        mBtnUnloadNAM->setEnabled(false);
+        mLblNAMStatus = new QLabel("No model loaded");
+        mLblNAMStatus->setObjectName("fileStatus");
+        connect(mBtnLoadNAM,   &QPushButton::clicked, this, &MainWindow::onLoadNAM);
+        connect(mBtnUnloadNAM, &QPushButton::clicked, this, &MainWindow::onUnloadNAM);
+        // Before the trailing stretch: grip, name, toggle, stereo slot = 4 items.
+        lay->insertWidget(4, mBtnLoadNAM,   0, Qt::AlignVCenter);
+        lay->insertWidget(5, mBtnUnloadNAM, 0, Qt::AlignVCenter);
+        lay->insertWidget(6, mLblNAMStatus, 1, Qt::AlignVCenter);
+
         Theme::tagCard(col, "nam");
         mFxCols[&mEngine->nam()] = col;
     }
@@ -437,14 +372,14 @@ void MainWindow::setupUI()
     // ---- EQ ----
     {
         using namespace NAMConstants;
-        mKnobLow    = new KnobWidget("Low",    kEQBandMin, kEQBandMax, kEQBandDefault, "dB");
-        mKnobMid    = new KnobWidget("Mid",    kEQBandMin, kEQBandMax, kEQBandDefault, "dB");
+        mKnobLow    = new KnobWidget("Bass",   kEQBandMin, kEQBandMax, kEQBandDefault, "dB");
+        mKnobMid    = new KnobWidget("Middle", kEQBandMin, kEQBandMax, kEQBandDefault, "dB");
         mKnobTreble = new KnobWidget("Treble", kEQBandMin, kEQBandMax, kEQBandDefault, "dB");
         mKnobLow->setScrollStep(0.1);
         mKnobMid->setScrollStep(0.1);
         mKnobTreble->setScrollStep(0.1);
 
-        auto* col = makeEffectColumn("EQ", mSwEQEnable, {mKnobLow, mKnobMid, mKnobTreble});
+        auto* col = makeEffectRow("Equalizer", mSwEQEnable, {mKnobLow, mKnobMid, mKnobTreble});
         mSwEQEnable->setChecked(true);
         Theme::tagCard(col, "eq");
         mFxCols[&mEngine->eq()] = col;
@@ -462,8 +397,8 @@ void MainWindow::setupUI()
         mKnobFlFeedback->setScrollStep(1.0);
         mKnobFlMix->setScrollStep(1.0);
 
-        auto* col = makeEffectColumn("Flanger", mSwFlangerEnable,
-            {mKnobFlRate, mKnobFlDepth, mKnobFlFeedback, mKnobFlMix}, &mSwFlangerStereo);
+        auto* col = makeEffectRow("Flanger", mSwFlangerEnable,
+            {mKnobFlMix, mKnobFlRate, mKnobFlDepth, mKnobFlFeedback}, &mSwFlangerStereo);
         Theme::tagCard(col, "flanger");
 
         mFxCols[&mEngine->flanger()] = col;
@@ -481,8 +416,8 @@ void MainWindow::setupUI()
         mKnobPhFeedback->setScrollStep(1.0);
         mKnobPhMix->setScrollStep(1.0);
 
-        auto* col = makeEffectColumn("Phaser", mSwPhaserEnable,
-            {mKnobPhRate, mKnobPhDepth, mKnobPhFeedback, mKnobPhMix}, &mSwPhaserStereo);
+        auto* col = makeEffectRow("Phaser", mSwPhaserEnable,
+            {mKnobPhMix, mKnobPhRate, mKnobPhDepth, mKnobPhFeedback}, &mSwPhaserStereo);
         Theme::tagCard(col, "phaser");
 
         mFxCols[&mEngine->phaser()] = col;
@@ -498,8 +433,8 @@ void MainWindow::setupUI()
         mKnobChDepth->setScrollStep(1.0);
         mKnobChMix->setScrollStep(1.0);
 
-        auto* col = makeEffectColumn("Chorus", mSwChorusEnable,
-            {mKnobChRate, mKnobChDepth, mKnobChMix});
+        auto* col = makeEffectRow("Chorus", mSwChorusEnable,
+            {mKnobChMix, mKnobChRate, mKnobChDepth}, &mSwChorusStereo);
         Theme::tagCard(col, "chorus");
 
         mFxCols[&mEngine->chorus()] = col;
@@ -513,7 +448,7 @@ void MainWindow::setupUI()
         mKnobTrRate->setScrollStep(0.1);
         mKnobTrDepth->setScrollStep(1.0);
 
-        auto* col = makeEffectColumn("Tremolo", mSwTremoloEnable, {mKnobTrRate, mKnobTrDepth});
+        auto* col = makeEffectRow("Tremolo", mSwTremoloEnable, {mKnobTrRate, mKnobTrDepth});
         Theme::tagCard(col, "tremolo");
 
         mFxCols[&mEngine->tremolo()] = col;
@@ -529,8 +464,8 @@ void MainWindow::setupUI()
         mKnobDelFeedback->setScrollStep(1.0);
         mKnobDelMix->setScrollStep(1.0);
 
-        auto* col = makeEffectColumn("Delay", mSwDelayEnable,
-            {mKnobDelTime, mKnobDelFeedback, mKnobDelMix}, &mSwDelayStereo);
+        auto* col = makeEffectRow("Delay", mSwDelayEnable,
+            {mKnobDelMix, mKnobDelTime, mKnobDelFeedback}, &mSwDelayStereo);
         mSwDelayStereo->setChecked(true);
         Theme::tagCard(col, "delay");
 
@@ -540,7 +475,7 @@ void MainWindow::setupUI()
     // ---- Reverb ----
     {
         using namespace NAMConstants;
-        mKnobRevRoom    = new KnobWidget("Room",    kReverbRoomMin,    kReverbRoomMax,    kReverbRoomDefault,    "%");
+        mKnobRevRoom    = new KnobWidget("Room Size", kReverbRoomMin,    kReverbRoomMax,    kReverbRoomDefault,    "%");
         mKnobRevDamping = new KnobWidget("Damping", kReverbDampingMin, kReverbDampingMax, kReverbDampingDefault, "%");
         mKnobRevWidth   = new KnobWidget("Width",   kReverbWidthMin,   kReverbWidthMax,   kReverbWidthDefault,   "%");
         mKnobRevMix     = new KnobWidget("Mix",     kReverbMixMin,     kReverbMixMax,     kReverbMixDefault,     "%");
@@ -549,8 +484,8 @@ void MainWindow::setupUI()
         mKnobRevWidth->setScrollStep(1.0);
         mKnobRevMix->setScrollStep(1.0);
 
-        auto* col = makeEffectColumn("Reverb", mSwReverbEnable,
-            {mKnobRevRoom, mKnobRevDamping, mKnobRevWidth, mKnobRevMix});
+        auto* col = makeEffectRow("Reverb", mSwReverbEnable,
+            {mKnobRevMix, mKnobRevRoom, mKnobRevDamping, mKnobRevWidth});
         Theme::tagCard(col, "reverb");
 
         mFxCols[&mEngine->reverb()] = col;
@@ -558,32 +493,54 @@ void MainWindow::setupUI()
 
     // ---- IR toggle ----
     {
-        auto* col = makeEffectColumn("IR", mSwIREnable, {});
+        auto* col = makeEffectRow("Cabinet", mSwIREnable, {});
         mSwIREnable->setChecked(true);
+
+        auto* lay = static_cast<QHBoxLayout*>(col->layout());
+        mBtnLoadIR   = new QPushButton("Load…");
+        mBtnUnloadIR = new QPushButton("Unload");
+        mBtnUnloadIR->setEnabled(false);
+        mLblIRStatus = new QLabel("No impulse response loaded");
+        mLblIRStatus->setObjectName("fileStatus");
+        connect(mBtnLoadIR,   &QPushButton::clicked, this, &MainWindow::onLoadIR);
+        connect(mBtnUnloadIR, &QPushButton::clicked, this, &MainWindow::onUnloadIR);
+        lay->insertWidget(4, mBtnLoadIR,   0, Qt::AlignVCenter);
+        lay->insertWidget(5, mBtnUnloadIR, 0, Qt::AlignVCenter);
+        lay->insertWidget(6, mLblIRStatus, 1, Qt::AlignVCenter);
+
         Theme::tagCard(col, "ir");
         mFxCols[&mEngine->ir()] = col;
     }
 
-    // Input/Output gain cards (not in the chain — pinned first and last)
-    auto makeGainCard = [&](const QString& title, KnobWidget*& knob, VUMeter*& meter) -> QWidget* {
+    // Input/Output gain columns. Not draggable and not part of the chain, so
+    // they flank the strip: input on the left, output on the right — signal
+    // flows in → chain → out. The full-height meter reads bottom→top.
+    auto makeGainColumn = [&](const QString& title, KnobWidget*& knob, VUMeter*& meter) -> QWidget* {
         using namespace NAMConstants;
-        auto* col = new QGroupBox(title);
-        col->setAlignment(Qt::AlignHCenter);
-        col->setMinimumWidth(110);
+        auto* col = new QFrame;
+        col->setProperty("fxCard", true);
+        col->setProperty("displayName", title);
         auto* lay = new QVBoxLayout(col);
-        lay->setContentsMargins(4, 6, 4, 4);
-        knob = new KnobWidget("Gain", kGainMin, kGainMax, kGainDefault, "dB");
+        lay->setContentsMargins(8, 8, 8, 8);
+        lay->setSpacing(8);
+
+        auto* name = new QLabel(title);
+        name->setObjectName("fxName");
+        name->setAlignment(Qt::AlignHCenter);
+        knob = new KnobWidget("Gain", kGainMin, kGainMax, kGainDefault, "dB",
+                              KnobWidget::Form::Stacked);
         knob->setScrollStep(0.1);
-        meter = new VUMeter;
-        lay->addWidget(knob);
-        lay->addWidget(meter, 0, Qt::AlignHCenter);
-        lay->addStretch();
+        meter = new VUMeter(Qt::Vertical);
+
+        lay->addWidget(name);
+        lay->addWidget(knob, 0, Qt::AlignHCenter);
+        lay->addWidget(meter, 1, Qt::AlignHCenter);
         Theme::tagCard(col, "neutral"); // after children — pushes accents to them
         return col;
     };
 
-    mInputCard  = makeGainCard("Input",  mKnobInputGain,  mMeterIn);
-    mOutputCard = makeGainCard("Output", mKnobOutputGain, mMeterOut);
+    mInputCard  = makeGainColumn("Input",  mKnobInputGain,  mMeterIn);
+    mOutputCard = makeGainColumn("Output", mKnobOutputGain, mMeterOut);
 
     // Keyboard shortcut targets per card; keys are (re)assigned left to right
     // on every strip rebuild so they always match the visual order.
@@ -596,12 +553,19 @@ void MainWindow::setupUI()
         {&mEngine->phaser(),  {mSwPhaserEnable,  mSwPhaserStereo}},
         {&mEngine->nam(),     {mSwNAMEnable,     nullptr}},
         {&mEngine->eq(),      {mSwEQEnable,      nullptr}},
-        {&mEngine->chorus(),  {mSwChorusEnable,  nullptr}},
+        {&mEngine->chorus(),  {mSwChorusEnable,  mSwChorusStereo}},
         {&mEngine->tremolo(), {mSwTremoloEnable, nullptr}},
         {&mEngine->delay(),   {mSwDelayEnable,   mSwDelayStereo}},
         {&mEngine->reverb(),  {mSwReverbEnable,  nullptr}},
         {&mEngine->ir(),      {mSwIREnable,      nullptr}},
     };
+
+    for (const auto& [fx, toggles] : mFxToggles)
+    {
+        connect(toggles.enable, &ToggleSwitch::toggled, this,
+                [this, fx](bool enabled) { updateCardBypassState(fx, enabled); });
+        updateCardBypassState(fx, toggles.enable->isChecked());
+    }
 
     // Drag sources + context menus: every card. Drop target: the strip itself.
     for (const auto& [fx, card] : mFxCols)
@@ -614,46 +578,29 @@ void MainWindow::setupUI()
     rebuildEffectStrip();
 
     scroll->setWidget(mStrip);
-    rootLayout->addWidget(scroll, 1);
+
+    // Rack row: input column | effect strip | output column.
+    auto* rackRow = new QHBoxLayout;
+    rackRow->setSpacing(6);
+    rackRow->addWidget(mInputCard);
+    rackRow->addWidget(scroll, 1);
+    rackRow->addWidget(mOutputCard);
+    rootLayout->addLayout(rackRow, 1);
 }
 
 void MainWindow::layoutStrip(const std::vector<EffectBase*>& order)
 {
-    // Empty the layout: dividers and the stretch are recreated below, cards
-    // are reused (they stay children of the strip while out of the layout).
+    // Empty the layout: the stretch is recreated below, cards are reused
+    // (they stay children of the strip while out of the layout).
     while (QLayoutItem* item = mStripLay->takeAt(0))
-    {
-        if (QWidget* w = item->widget(); w && w->objectName() == "stripDivider")
-            w->deleteLater();
         delete item;
-    }
 
-    auto addDivider = [this] {
-        auto* f = new QFrame;
-        f->setObjectName("stripDivider");
-        f->setFrameShape(QFrame::VLine);
-        f->setFrameShadow(QFrame::Sunken);
-        mStripLay->addWidget(f);
-    };
-
-    // Card order drives the section dividers too — they follow NAM/EQ
-    // wherever they currently sit (also during a drag preview).
-    mStripLay->addWidget(mInputCard);
-    addDivider();
     for (auto* fx : order)
     {
-        if (fx == &mEngine->nam())
-            addDivider();
-
         auto it = mFxCols.find(fx);
         if (it != mFxCols.end())
             mStripLay->addWidget(it->second);
-
-        if (fx == &mEngine->eq())
-            addDivider();
     }
-    addDivider();
-    mStripLay->addWidget(mOutputCard);
     mStripLay->addStretch();
     mStripLay->activate(); // fresh geometry now — the drag preview reads card centres
 }
@@ -662,7 +609,7 @@ void MainWindow::rebuildEffectStrip()
 {
     layoutStrip(mEngine->chain());
 
-    // Digit/QWE shortcuts always match the visual left-to-right order.
+    // Digit/QWE shortcuts always match the visual top-to-bottom order.
     mShortcuts.clear();
     for (auto* fx : mEngine->chain())
     {
@@ -670,6 +617,22 @@ void MainWindow::rebuildEffectStrip()
         if (tg != mFxToggles.end())
             mShortcuts.addEffect(tg->second.enable, tg->second.stereo);
     }
+}
+
+void MainWindow::updateCardBypassState(EffectBase* effect, bool enabled)
+{
+    const auto it = mFxCols.find(effect);
+    if (it == mFxCols.end()) return;
+
+    QWidget* card = it->second;
+    if (enabled)
+    {
+        card->setGraphicsEffect(nullptr);
+        return;
+    }
+    auto* opacity = new QGraphicsOpacityEffect(card);
+    opacity->setOpacity(0.48);
+    card->setGraphicsEffect(opacity);
 }
 
 void MainWindow::applyChainOrder(const QStringList& ids)
@@ -715,7 +678,9 @@ void MainWindow::startCardDrag(QWidget* card)
 
     // Drop committed inside the event filter; a cancelled drag just falls
     // back to the engine order here.
-    card->setGraphicsEffect(nullptr);
+    auto toggles = mFxToggles.find(fx);
+    updateCardBypassState(fx, toggles != mFxToggles.end()
+                                 && toggles->second.enable->isChecked());
     mDragId.clear();
     rebuildEffectStrip();
 }
@@ -728,12 +693,12 @@ void MainWindow::updateDragPreview(const QPoint& pos)
     ids.erase(std::remove(ids.begin(), ids.end(), mDragId), ids.end());
     if (ids.empty()) return;
 
-    // Insert after every card whose centre lies left of the cursor.
+    // Insert after every card whose centre lies above the cursor.
     int insert = 0;
     for (size_t i = 0; i < ids.size(); ++i)
     {
         auto it = mFxCols.find(mEngine->effectById(ids[i]));
-        if (it != mFxCols.end() && pos.x() > it->second->geometry().center().x())
+        if (it != mFxCols.end() && pos.y() > it->second->geometry().center().y())
             insert = static_cast<int>(i) + 1;
     }
     ids.insert(ids.begin() + insert, mDragId);
@@ -799,12 +764,16 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* ev)
     {
     case QEvent::MouseButtonPress:
     {
-        auto* me  = static_cast<QMouseEvent*>(ev);
-        auto* box = qobject_cast<QGroupBox*>(obj);
-        if (box && obj != mStrip && me->button() == Qt::LeftButton
-            && titleBandRect(box).contains(me->pos()))
+        // Reorder drags start on the ≡ grip only. The grip label ignores
+        // mouse events, so the press propagates to the card — where this
+        // filter sees it with the position already in card coordinates.
+        auto* me   = static_cast<QMouseEvent*>(ev);
+        auto* card = qobject_cast<QWidget*>(obj);
+        auto  it   = card ? mCardGrips.find(card) : mCardGrips.end();
+        if (it != mCardGrips.end() && me->button() == Qt::LeftButton
+            && it->second->geometry().contains(me->pos()))
         {
-            mDragCard     = box;
+            mDragCard     = card;
             mDragStartPos = me->pos();
         }
         break;
@@ -833,16 +802,15 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* ev)
     case QEvent::ContextMenu:
     {
         // Right-click on a card (knobs keep their own menu): per-effect reset.
-        auto* box = qobject_cast<QGroupBox*>(obj);
-        if (box && obj != mStrip)
+        auto* card = qobject_cast<QWidget*>(obj);
+        if (card && obj != mStrip && card->property("fxCard").toBool())
         {
             auto* ce = static_cast<QContextMenuEvent*>(ev);
-            QString name = box->title();
-            name.remove("≡  ");
-            QMenu menu(box);
+            const QString name = card->property("displayName").toString();
+            QMenu menu(card);
             QAction* act = menu.addAction("Reset " + name + " to defaults");
             if (menu.exec(ce->globalPos()) == act)
-                resetCardToDefaults(box);
+                resetCardToDefaults(card);
             return true;
         }
         break;
@@ -892,19 +860,8 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* ev)
     return QMainWindow::eventFilter(obj, ev);
 }
 
-void MainWindow::setAudioStatus(const QString& text, bool ok)
-{
-    mLblAudioStatus->setText(text);
-    mLblAudioStatus->setObjectName(ok ? "audioStatusOk" : "audioStatusErr");
-    mLblAudioStatus->style()->unpolish(mLblAudioStatus);
-    mLblAudioStatus->style()->polish(mLblAudioStatus);
-    mBtnReconnect->setVisible(!ok);
-}
-
 void MainWindow::setupAudio()
 {
-    mDevicePanel->refresh();
-
     QSettings s;
     const QString savedIn  = s.value("audio/inputDeviceId").toString();
     const QString savedOut = s.value("audio/outputDeviceId").toString();
@@ -915,28 +872,28 @@ void MainWindow::setupAudio()
     if (!started)
         started = mEngine->start("NAMPlayer");
 
+    mAudioOk = started;
     if (started) {
-        setAudioStatus(QString::fromStdString(mEngine->backendStatus()), true);
+        mAudioBar->refresh();
         if (mEngine->supportsPortRouting())
             restoreConnections();
     } else {
-        setAudioStatus("Audio backend  \xe2\x97\x8f  not connected", false);
+        mAudioBar->setError("Not connected");
     }
 }
 
 void MainWindow::restartAudioWithCurrentDevices()
 {
-    setAudioStatus("Audio backend  \xe2\x97\x8f  switching devices…", false);
+    const QString inId  = mAudioBar->inputDeviceId();
+    const QString outId = mAudioBar->outputDeviceId();
 
-    const QString inId  = mDevicePanel->inputDeviceId();
-    const QString outId = mDevicePanel->outputDeviceId();
-
-    if (mEngine->startWithDevices(inId.toStdString(), outId.toStdString())) {
-        setAudioStatus(QString::fromStdString(mEngine->backendStatus()), true);
+    mAudioOk = mEngine->startWithDevices(inId.toStdString(), outId.toStdString());
+    if (mAudioOk) {
+        mAudioBar->refresh();
         if (mEngine->supportsPortRouting())
             restoreConnections();
     } else {
-        setAudioStatus("Audio backend  \xe2\x97\x8f  not connected", false);
+        mAudioBar->setError("Not connected");
     }
 }
 
@@ -948,7 +905,7 @@ void MainWindow::onLoadNAM()
 {
     QSettings s;
     QString path = QFileDialog::getOpenFileName(
-        this, "Load NAM Model", s.value("files/lastNAM").toString(),
+        nullptr, "Load NAM Model", s.value("files/lastNAM").toString(),
         "NAM Files (*.nam);;All Files (*)");
     if (path.isEmpty()) return;
     if (!mEngine->loadModel(path.toStdString()))
@@ -973,7 +930,7 @@ void MainWindow::onLoadIR()
 {
     QSettings s;
     QString path = QFileDialog::getOpenFileName(
-        this, "Load Impulse Response", s.value("files/lastIR").toString(),
+        nullptr, "Load Impulse Response", s.value("files/lastIR").toString(),
         "WAV Files (*.wav);;All Files (*)");
     if (path.isEmpty()) return;
     if (!mEngine->loadIR(path.toStdString()))
@@ -1073,7 +1030,6 @@ void MainWindow::registerParameters()
     knobParam("", "outputGain", mKnobOutputGain, [e](double v) { e->setOutputGain(static_cast<float>(v)); });
 
     toggleParam("tuner", "enabled", mSwTunerEnable, [e](bool b) { e->tuner().setEnabled(b); });
-    toggleParam("tuner", "mute",    mSwTunerMute,   [e](bool b) { e->tuner().setMute(b);    });
 
     toggleParam("noiseGate", "enabled", mSwGateEnable,    [e](bool b)   { e->gate().setEnabled(b); });
     knobParam("noiseGate", "threshold", mKnobGateThresh,  [e](double v) { e->gate().setThreshold(static_cast<float>(v)); });
@@ -1114,6 +1070,7 @@ void MainWindow::registerParameters()
     knobParam("eq", "treble",    mKnobTreble, [e](double v) { e->eq().setTrebleGain(v); });
 
     toggleParam("chorus", "enabled", mSwChorusEnable, [e](bool b)   { e->chorus().setEnabled(b); });
+    toggleParam("chorus", "stereo",  mSwChorusStereo, [e](bool b)   { e->chorus().setStereoMode(b); });
     knobParam("chorus", "rate",      mKnobChRate,     [e](double v) { e->chorus().setRate (static_cast<float>(v)); });
     knobParam("chorus", "depth",     mKnobChDepth,    [e](double v) { e->chorus().setDepth(static_cast<float>(v)); });
     knobParam("chorus", "mix",       mKnobChMix,      [e](double v) { e->chorus().setMix  (static_cast<float>(v)); });
@@ -1146,29 +1103,28 @@ void MainWindow::updateMeters()
     mMeterIn ->setPeak(mEngine->takeInputPeak());
     mMeterOut->setPeak(mEngine->takeOutputPeak());
 
-    if (!mEngine->isRunning() && mLblAudioStatus->objectName() == "audioStatusOk")
-        setAudioStatus("Audio backend  ●  disconnected", false);
+    mAudioBar->updateMetrics(); // PipeWire can change the quantum while running
+    if (mAudioOk && !mEngine->isRunning())
+    {
+        mAudioOk = false;
+        mAudioBar->setError("Disconnected");
+    }
 }
 
 void MainWindow::updateTuner()
 {
-    if (!mEngine->tuner().isEnabled()) return;
-
-    float freq = mEngine->tuner().lastPitch();
+    const float freq = mEngine->tuner().isEnabled() ? mEngine->tuner().lastPitch()
+                                                    : 0.0f;
     if (freq <= 0.0f)
     {
-        mLblNote ->setText("--");
-        mLblCents->setText("±0¢");
-        mTunerBar->setValue(50);
+        mTunerDisplay->setReading("-", 0.0f, false);
         return;
     }
 
-    int   midi  = TunerProcessor::freqToMidi(freq);
-    float cents = TunerProcessor::centsOffset(freq);
-
-    mLblNote ->setText(QString::fromStdString(TunerProcessor::midiToName(midi)));
-    mLblCents->setText(QString("%1¢").arg(static_cast<int>(cents)));
-    mTunerBar->setValue(std::max(0, std::min(100, static_cast<int>(50.0f + cents))));
+    const int   midi  = TunerProcessor::freqToMidi(freq);
+    const float cents = TunerProcessor::centsOffset(freq);
+    mTunerDisplay->setReading(QString::fromStdString(TunerProcessor::midiToName(midi)),
+                              cents, true);
 }
 
 // ---------------------------------------------------------------------------
@@ -1260,7 +1216,7 @@ void MainWindow::updateStatusLabels()
     if (mEngine->isIRLoaded())
         setStatus(mLblIRStatus, QString::fromStdString(mEngine->irPath()).section('/', -1), true);
     else
-        setStatus(mLblIRStatus, "No IR loaded", false);
+        setStatus(mLblIRStatus, "No impulse response loaded", false);
 }
 
 // ---------------------------------------------------------------------------
@@ -1271,7 +1227,7 @@ void MainWindow::onSavePreset()
 {
     QSettings settings;
     QString path = QFileDialog::getSaveFileName(
-        this, "Save Preset", settings.value("files/lastPreset").toString(),
+        nullptr, "Save Preset", settings.value("files/lastPreset").toString(),
         "NAM Preset (*.nampreset);;JSON (*.json);;All Files (*)");
     if (path.isEmpty()) return;
     settings.setValue("files/lastPreset", path);
@@ -1314,7 +1270,7 @@ void MainWindow::onLoadPreset()
 {
     QSettings settings;
     QString path = QFileDialog::getOpenFileName(
-        this, "Load Preset", settings.value("files/lastPreset").toString(),
+        nullptr, "Load Preset", settings.value("files/lastPreset").toString(),
         "NAM Preset (*.nampreset);;JSON (*.json);;All Files (*)");
     if (path.isEmpty()) return;
     settings.setValue("files/lastPreset", path);
