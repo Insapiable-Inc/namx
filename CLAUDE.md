@@ -63,7 +63,7 @@ jackd -d alsa -r 44100 -p 256 &
 gui/build-release/NAMPlayer
 ```
 
-JACK ports: `NAMPlayer:input`, `NAMPlayer:output_L`, `NAMPlayer:output_R`. Connect with `jack_connect`, qjackctl, or qpwgraph. Device/port routing is also selectable from dropdowns in the app, and connections persist via QSettings. On Windows the WASAPI backend picks devices directly — no server needed.
+JACK ports: `NAMPlayer:input`, `NAMPlayer:output_L`, `NAMPlayer:output_R`. Connect with `jack_connect`, qjackctl, or qpwgraph. Devices are also selectable from the status bar at the bottom of the window (click the In:/Out: items), and connections persist via QSettings. On Windows the WASAPI backend picks devices directly — no server needed.
 
 ## GUI architecture
 
@@ -111,6 +111,7 @@ All effects inherit `EffectBase` (`src/dsp/EffectBase.h` — the header comment 
 | `IRLoader` / `IRProcessor` | `src/dsp/IRLoader.h/cpp` | FIR cab sim, energy-normalized, double-buffered kernel swap |
 | `EQProcessor` | `src/dsp/EQProcessor.h/cpp` | 3-band biquad EQ (Audio EQ Cookbook) |
 | `TunerProcessor` | `src/dsp/TunerProcessor.h/cpp` | NSDF pitch detect; audio thread fills, GUI timer reads |
+| `TunerDisplay` | `src/ui/TunerDisplay.h/cpp` | TU-3-style readout: LED ladder, glowing seven-segment note, signed cents |
 | `NoiseGateProcessor`, `CompressorProcessor`, `DynamicWahProcessor` | `src/dsp/…` | Mono dynamics (envelope gate, feedforward comp, envelope wah) |
 | `ChorusProcessor`, `FlangerProcessor`, `PhaserProcessor`, `TremoloProcessor` | `src/dsp/…` | Modulation effects; stereo variants use LFO phase offsets |
 | `DelayProcessor` | `src/dsp/DelayProcessor.h/cpp` | Ping-pong stereo delay |
@@ -118,7 +119,7 @@ All effects inherit `EffectBase` (`src/dsp/EffectBase.h` — the header comment 
 | `MainWindow` | `src/ui/MainWindow.h/cpp` | Window assembly, parameter registry, effect strip + DnD reorder, session state |
 | `ParamRegistry.h` | `src/ui/` | `ParamDesc` — one entry per user-facing parameter (shared by MainWindow + PresetSerializer) |
 | `PresetSerializer` | `src/ui/PresetSerializer.h/cpp` | Preset schema v2 JSON ↔ registry/engine (v1 files load too) |
-| `AudioDevicePanel` | `src/ui/AudioDevicePanel.h/cpp` | Device dropdown row; persists IDs, emits `deviceSelectionChanged` |
+| `AudioStatusBar` | `src/ui/AudioStatusBar.h/cpp` | Bottom status bar: backend state, rate/buffer/latency, device pickers; persists IDs, emits `deviceSelectionChanged` |
 | `VUMeter` | `src/ui/VUMeter.h/cpp` | Vertical peak bar; `setPeak(linear)` on a 60 dB scale |
 | `Log.h` | `src/dsp/` | `nam.audio` logging category — use `qCWarning(lcAudio, …)`, never `std::cerr` (invisible on Windows) |
 | `KnobWidget` | `src/ui/KnobWidget.h/cpp` | `QDial` wrapper: float range, scroll step, label |
