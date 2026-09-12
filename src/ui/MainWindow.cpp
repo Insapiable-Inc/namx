@@ -910,7 +910,8 @@ void MainWindow::onLoadNAM()
     if (path.isEmpty()) return;
     if (!mEngine->loadModel(path.toStdString()))
     {
-        QMessageBox::critical(this, "Error", "Failed to load NAM model:\n" + path);
+        QMessageBox::critical(this, "Error", "Failed to load NAM model:\n" + path + "\n\n"
+                              + QString::fromStdString(mEngine->modelLoadError()));
         return;
     }
     s.setValue("files/lastNAM", path);

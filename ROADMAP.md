@@ -554,9 +554,9 @@ sim) is out of scope — users load acoustic models.
       thing every high-gain rig needs in front of the model. *easy*
 - [ ] **Doubler** (randomised 3–20 ms spread copy before the post section; off when
       input is already stereo). *easy*
-- [ ] **Cab: dual IR slots** with level / pan / phase / blend + HPF/LPF, and **IR
-      resampling to the session rate** (today a 44.1 k IR plays ~9 % sharp at 48 k —
-      a correctness bug). *easy–medium*
+- [ ] **Cab: dual IR slots** with level / pan / phase / blend + HPF/LPF. *easy–medium*
+      (IR resampling to the session rate landed 2026-09-12 — windowed-sinc in
+      `IRLoader`, kernel rebuilt on engine-rate change.)
 - [ ] **EQ → 4-band semi-parametric** (frequency per band, ±12 dB) + HPF/LPF. *easy*
 - [ ] **Delay:** sync FREE / TAP (Phase 15), dual L/R times + cross-feed, low/high cut,
       tape saturation, modulation, tap tempo button. *medium* — "Crystals" (pitched-up

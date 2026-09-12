@@ -16,17 +16,21 @@ public:
     bool isLoaded() const              { return mLoader.isLoaded(); }
     std::string filePath() const       { return mLoader.getFilePath(); }
     std::string lastError() const      { return mLoader.lastError(); }
+    void reclaimRetired(bool audioStopped) { mLoader.reclaimRetired(audioStopped); }
 
     void reset() override { mLoader.reset(); }
 
     /// IR never changes whether the signal is stereo; it filters what it gets
-    /// (one convolution for mono input, one per channel for stereo).
+    /// (one convolution for mono input, one per channel for stereo). The
+    /// loader is always called so it can count the block even when bypassed.
     bool process(float* L, float* R, int n, bool inputIsStereo) override
     {
-        if (mEnabled.load() && mLoader.isLoaded())
-            mLoader.processBlock(L, R, n, inputIsStereo);
+        mLoader.processBlock(L, R, n, inputIsStereo, mEnabled.load());
         return inputIsStereo;
     }
+
+protected:
+    void onSampleRateChanged(double sr) override { mLoader.setTargetSampleRate(sr); }
 
 private:
     IRLoader mLoader;

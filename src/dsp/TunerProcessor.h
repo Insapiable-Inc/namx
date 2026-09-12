@@ -6,6 +6,7 @@
 #include <mutex>
 #include <string>
 #include <thread>
+#include <vector>
 
 #include "EffectBase.h"
 
@@ -58,8 +59,9 @@ private:
     bool                         mBufferReady{false};
     std::mutex                   mBufMutex;
 
-    // Snapshot used exclusively by detectPitch() (worker thread only)
+    // Snapshot and NSDF scratch used exclusively by detectPitch() (worker thread only)
     std::array<float, kBufSize> mSnapBuf{};
+    std::vector<float>          mNsdf;
 
     std::thread             mWorker;
     std::mutex              mWorkMutex;

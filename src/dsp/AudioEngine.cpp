@@ -1,10 +1,8 @@
 #include "AudioEngine.h"
 
 #include <algorithm>
-#include <chrono>
 #include <cmath>
 #include "Log.h"
-#include <thread>
 
 AudioEngine::AudioEngine()
 {
@@ -39,10 +37,51 @@ AudioEngine::AudioEngine()
         {"reverb",  &mReverb},
         {"ir",      &mIR},
     };
-    mChainBuf[0].reserve(mEffectTable.size());
+    auto chain = std::make_unique<Chain>();
+    chain->reserve(mEffectTable.size());
     for (const auto& [id, fx] : mEffectTable)
-        mChainBuf[0].push_back(fx);
-    mChainBuf[1] = mChainBuf[0];
+        chain->push_back(fx);
+    mChain.publish(std::move(chain));
+}
+
+// ---------------------------------------------------------------------------
+// Model / IR wrappers
+// ---------------------------------------------------------------------------
+
+void AudioEngine::reclaimRetired()
+{
+    // Only valid with no audio callback possible: after stop(), or before
+    // the backend was ever started.
+    const bool stopped = !isRunning();
+    mChain.reclaim(stopped);
+    mNam.reclaimRetired(stopped);
+    mIR.reclaimRetired(stopped);
+}
+
+bool AudioEngine::loadModel(const std::string& path)
+{
+    const bool ok = mNam.loadModel(path);
+    reclaimRetired();
+    return ok;
+}
+
+void AudioEngine::unloadModel()
+{
+    mNam.unloadModel();
+    reclaimRetired();
+}
+
+bool AudioEngine::loadIR(const std::string& path)
+{
+    const bool ok = mIR.load(path);
+    reclaimRetired();
+    return ok;
+}
+
+void AudioEngine::unloadIR()
+{
+    mIR.unload();
+    reclaimRetired();
 }
 
 // ---------------------------------------------------------------------------
@@ -62,7 +101,7 @@ std::vector<std::string> AudioEngine::chainIds() const
 {
     std::vector<std::string> ids;
     ids.reserve(mEffectTable.size());
-    for (const auto* fx : chain())
+    for (const auto* fx : *mChain.current())
         ids.push_back(idForEffect(fx));
     return ids;
 }
@@ -105,23 +144,9 @@ void AudioEngine::setChainOrder(const std::vector<std::string>& ids)
             newChain.insert(newChain.begin() + std::min(defaultIdx, newChain.size()), fx);
     }
 
-    const int active   = mActiveChain.load(std::memory_order_relaxed);
-    const int inactive = 1 - active;
-    const auto& cur    = mChainBuf[active];
+    const Chain& cur = *mChain.current();
     if (newChain == cur)
         return;
-
-    // The audio thread may still be iterating the buffer we are about to
-    // write if the previous swap happened less than one callback ago. Two
-    // callback completions after a swap guarantee it has left; bounded wait
-    // so a stalled server can't hang the GUI.
-    if (isRunning())
-    {
-        const uint64_t safe = mLastSwapCallbackCount + 2;
-        for (int i = 0; i < 100 && isRunning()
-                        && mCallbackCount.load(std::memory_order_acquire) < safe; ++i)
-            std::this_thread::sleep_for(std::chrono::milliseconds(2));
-    }
 
     // Moved effects carry state from their old slot (delay tails, diverged
     // per-channel filters) — have the audio thread clear them.
@@ -129,9 +154,10 @@ void AudioEngine::setChainOrder(const std::vector<std::string>& ids)
         if (i >= cur.size() || cur[i] != newChain[i])
             newChain[i]->requestReset();
 
-    mChainBuf[inactive] = std::move(newChain);
-    mActiveChain.store(inactive, std::memory_order_release);
-    mLastSwapCallbackCount = mCallbackCount.load(std::memory_order_acquire);
+    // Publish a fresh vector; the one the audio thread may still be iterating
+    // is retired and freed only once it has provably moved on. No waiting.
+    mChain.publish(std::make_unique<Chain>(std::move(newChain)));
+    reclaimRetired();
 }
 
 AudioEngine::~AudioEngine()
@@ -186,6 +212,8 @@ void AudioEngine::stop()
         mBackend->stop();
         mBackend.reset();
     }
+    // No callback can run now — drop everything retired while it was live.
+    reclaimRetired();
 }
 
 std::vector<IAudioBackend::DeviceInfo> AudioEngine::enumerateInputDevices() const
@@ -227,6 +255,13 @@ void AudioEngine::onBufferSizeChanged(int n)
 
 void AudioEngine::onAudio(const float* in, float* outL, float* outR, int n)
 {
+    // Reorder fence: every exit counts the block so setChainOrder() knows
+    // when a retired chain vector is safe to free.
+    struct BlockGuard {
+        RtSlot<Chain>& s;
+        ~BlockGuard() { s.endBlock(); }
+    } guard{mChain};
+
     // Defensive: if a process callback ever fires before onBufferSizeChanged
     // has grown the work buffers, emit silence rather than overrunning.
     if (static_cast<size_t>(n) > mWorkBufL.size())
@@ -253,10 +288,10 @@ void AudioEngine::onAudio(const float* in, float* outL, float* outR, int n)
     if (inPeak > mInputPeak.load(std::memory_order_relaxed))
         mInputPeak.store(inPeak, std::memory_order_relaxed);
 
-    // 2. Run the signal chain (chain pointer read once per callback; reorders
-    //    swap the buffer index and never touch the one being iterated)
+    // 2. Run the signal chain (chain vector bound once per callback; a
+    //    reorder publishes a new vector and never touches this one)
     bool stereo = false;
-    const auto& chain = mChainBuf[mActiveChain.load(std::memory_order_acquire)];
+    const Chain& chain = *mChain.acquire();
     for (auto* fx : chain)
     {
         fx->consumePendingReset();
@@ -278,8 +313,4 @@ void AudioEngine::onAudio(const float* in, float* outL, float* outR, int n)
     }
     if (outPeak > mOutputPeak.load(std::memory_order_relaxed))
         mOutputPeak.store(outPeak, std::memory_order_relaxed);
-
-    // Reorder fence: setChainOrder counts completed callbacks to know when
-    // the retired chain buffer is safe to overwrite.
-    mCallbackCount.fetch_add(1, std::memory_order_release);
 }

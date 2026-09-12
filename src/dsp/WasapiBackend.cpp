@@ -26,6 +26,7 @@ namespace {
 
 constexpr int kStopEventIndex    = 0;
 constexpr int kCaptureEventIndex = 1;
+constexpr int kRenderEventIndex  = 2;
 
 constexpr REFERENCE_TIME kRefTimesPerSec = 10000000LL;  // 100-ns units
 
@@ -500,12 +501,86 @@ void WasapiBackend::audioThreadMain()
     std::vector<float> outL  (mBufferSize, 0.0f);
     std::vector<float> outR  (mBufferSize, 0.0f);
 
-    HANDLE waitHandles[2] = { mStopEvent, mCaptureEvent };
+    // Pending-output FIFO. Capture and render run on their own periods, so a
+    // processed block does not always fit the render endpoint right away.
+    // Anything that does not fit waits here and drains on the next cycle
+    // instead of being discarded (which was an audible gap). Ring buffer of
+    // frames, oldest at fifoHead. Capacity: the whole render buffer plus a
+    // few capture blocks; if render stalls beyond that the oldest frames are
+    // dropped — a discontinuity, but a bounded one.
+    UINT32 renderBufSize = 0;
+    if (FAILED(mRenderClient->GetBufferSize(&renderBufSize)))
+        renderBufSize = static_cast<UINT32>(mBufferSize);
+    std::vector<float> fifoL, fifoR;
+    size_t fifoCap = 0, fifoHead = 0, fifoCount = 0;
+    auto resizeFifo = [&](size_t blockFrames) {
+        fifoCap   = static_cast<size_t>(renderBufSize) + 4 * blockFrames;
+        fifoL.assign(fifoCap, 0.0f);
+        fifoR.assign(fifoCap, 0.0f);
+        fifoHead  = 0;
+        fifoCount = 0;
+    };
+    resizeFifo(static_cast<size_t>(mBufferSize));
+
+    auto fifoPush = [&](const float* l, const float* r, size_t n) {
+        if (n > fifoCap) { l += n - fifoCap; r += n - fifoCap; n = fifoCap; }
+        // Make room by dropping the oldest frames if the render side stalled.
+        const size_t overflow = (fifoCount + n > fifoCap) ? fifoCount + n - fifoCap : 0;
+        fifoHead   = (fifoHead + overflow) % fifoCap;
+        fifoCount -= overflow;
+        size_t tail = (fifoHead + fifoCount) % fifoCap;
+        for (size_t i = 0; i < n; ++i) {
+            fifoL[tail] = l[i];
+            fifoR[tail] = r[i];
+            if (++tail == fifoCap) tail = 0;
+        }
+        fifoCount += n;
+    };
+
+    // Write as many pending frames as the render endpoint has room for.
+    auto drainToRender = [&]() {
+        if (fifoCount == 0) return;
+        UINT32 padding = 0;
+        if (FAILED(mRenderClient->GetCurrentPadding(&padding))) return;
+        const UINT32 available = renderBufSize > padding ? renderBufSize - padding : 0;
+        const UINT32 toWrite   = static_cast<UINT32>(std::min<size_t>(available, fifoCount));
+        if (toWrite == 0) return;
+
+        BYTE* dst = nullptr;
+        if (FAILED(mRender->GetBuffer(toWrite, &dst)) || !dst) return;
+
+        float*    fdst = reinterpret_cast<float*>(dst);
+        const int rc   = mRenderChannels;
+        size_t    src  = fifoHead;
+        for (UINT32 i = 0; i < toWrite; ++i) {
+            const float l = fifoL[src], r = fifoR[src];
+            if (++src == fifoCap) src = 0;
+            if (rc == 2) {
+                fdst[i*2 + 0] = l;
+                fdst[i*2 + 1] = r;
+            } else if (rc == 1) {
+                fdst[i] = 0.5f * (l + r);
+            } else {
+                // 5.1/7.1: fill L,R, zero the rest. Lazy but valid.
+                for (int c = 0; c < rc; ++c)
+                    fdst[i*rc + c] = (c == 0) ? l : (c == 1) ? r : 0.0f;
+            }
+        }
+        mRender->ReleaseBuffer(toWrite, 0);
+        fifoHead   = src;
+        fifoCount -= toWrite;
+    };
+
+    HANDLE waitHandles[3] = { mStopEvent, mCaptureEvent, mRenderEvent };
 
     while (mRunning.load())
     {
-        DWORD wait = WaitForMultipleObjects(2, waitHandles, FALSE, 2000);
+        // Wake on capture data (the normal case) or on render space freeing
+        // up while output is still pending.
+        const DWORD nHandles = fifoCount > 0 ? 3 : 2;
+        DWORD wait = WaitForMultipleObjects(nHandles, waitHandles, FALSE, 2000);
         if (wait == WAIT_OBJECT_0 + kStopEventIndex) break;
+        if (wait == WAIT_OBJECT_0 + kRenderEventIndex) { drainToRender(); continue; }
         if (wait != WAIT_OBJECT_0 + kCaptureEventIndex) continue; // timeout or error → retry
 
         // Drain all available capture packets this cycle (usually one).
@@ -527,6 +602,7 @@ void WasapiBackend::audioThreadMain()
                 monoIn.assign(frames, 0.0f);
                 outL  .assign(frames, 0.0f);
                 outR  .assign(frames, 0.0f);
+                resizeFifo(frames);
                 if (mCallback) mCallback->onBufferSizeChanged(static_cast<int>(frames));
             }
 
@@ -552,45 +628,11 @@ void WasapiBackend::audioThreadMain()
             if (mCallback) mCallback->onAudio(monoIn.data(), outL.data(), outR.data(),
                                               static_cast<int>(frames));
 
-            // Push to render. Wait briefly for space if the buffer is full.
-            UINT32 renderBufSize = 0;
-            if (FAILED(mRenderClient->GetBufferSize(&renderBufSize))) continue;
-
-            UINT32 padding = 0;
-            mRenderClient->GetCurrentPadding(&padding);
-            UINT32 available = renderBufSize > padding ? renderBufSize - padding : 0;
-            UINT32 toWrite   = (available < frames) ? available : frames;
-            if (toWrite == 0) {
-                // Render side full — wait one event tick, then retry once.
-                WaitForSingleObject(mRenderEvent, 10);
-                mRenderClient->GetCurrentPadding(&padding);
-                available = renderBufSize > padding ? renderBufSize - padding : 0;
-                toWrite   = (available < frames) ? available : frames;
-                if (toWrite == 0) continue;
-            }
-
-            BYTE* dst = nullptr;
-            if (SUCCEEDED(mRender->GetBuffer(toWrite, &dst)) && dst)
-            {
-                float* fdst = reinterpret_cast<float*>(dst);
-                const int rc = mRenderChannels;
-                if (rc == 2) {
-                    for (UINT32 i = 0; i < toWrite; ++i) {
-                        fdst[i*2 + 0] = outL[i];
-                        fdst[i*2 + 1] = outR[i];
-                    }
-                } else if (rc == 1) {
-                    for (UINT32 i = 0; i < toWrite; ++i)
-                        fdst[i] = 0.5f * (outL[i] + outR[i]);
-                } else {
-                    // 5.1/7.1: fill L,R, zero the rest. Lazy but valid.
-                    for (UINT32 i = 0; i < toWrite; ++i) {
-                        for (int c = 0; c < rc; ++c)
-                            fdst[i*rc + c] = (c == 0) ? outL[i] : (c == 1) ? outR[i] : 0.0f;
-                    }
-                }
-                mRender->ReleaseBuffer(toWrite, 0);
-            }
+            // Queue the whole processed block, then push whatever fits. The
+            // remainder stays pending and drains on the next capture or
+            // render event — nothing is discarded.
+            fifoPush(outL.data(), outR.data(), frames);
+            drainToRender();
         }
     }
 

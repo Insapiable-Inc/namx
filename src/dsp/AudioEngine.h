@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "IAudioBackend.h"
+#include "RtSlot.h"
 
 #include "NamProcessor.h"
 #include "IRProcessor.h"
@@ -53,13 +54,16 @@ public:
     std::vector<IAudioBackend::DeviceInfo> enumerateOutputDevices() const;
 
     // ---- Model / IR (thin wrappers for MainWindow convenience) ----
-    bool        loadModel(const std::string& path) { return mNam.loadModel(path); }
-    void        unloadModel()                       { mNam.unloadModel(); }
+    // Loads publish through RtSlots; when audio is stopped nothing counts
+    // blocks, so the wrappers reclaim retired objects eagerly in that case.
+    bool        loadModel(const std::string& path);
+    void        unloadModel();
     bool        isModelLoaded() const               { return mNam.isModelLoaded(); }
     std::string modelPath()     const               { return mNam.modelPath(); }
+    std::string modelLoadError() const              { return mNam.lastError(); }
 
-    bool        loadIR(const std::string& path) { return mIR.load(path); }
-    void        unloadIR()                      { mIR.unload(); }
+    bool        loadIR(const std::string& path);
+    void        unloadIR();
     bool        isIRLoaded()    const           { return mIR.isLoaded(); }
     std::string irPath()        const           { return mIR.filePath(); }
     std::string irLoadError()   const           { return mIR.lastError(); }
@@ -86,9 +90,9 @@ public:
     IRProcessor&         ir()      { return mIR;      }
 
     // ---- Signal chain (processing order = UI order) ----
-    // GUI-thread view of the active chain. Reordering goes through
-    // setChainOrder(); never mutate the returned vector.
-    const std::vector<EffectBase*>& chain() const { return mChainBuf[mActiveChain.load()]; }
+    // GUI-thread snapshot of the active chain. Reordering goes through
+    // setChainOrder().
+    std::vector<EffectBase*> chain() const { return *mChain.current(); }
 
     /// Stable effect IDs in default (construction) order — the persistence
     /// contract for session state and preset schema v2.
@@ -98,11 +102,11 @@ public:
     EffectBase* effectById(const std::string& id) const;
     std::string idForEffect(const EffectBase* fx) const;
 
-    /// Reorder the chain RT-safely (double buffer + atomic index, same pattern
-    /// as model swaps). Input is sanitized: unknown/duplicate IDs are dropped
-    /// and missing effects re-enter at their default position. Effects whose
-    /// position changed get a pending reset, consumed by the audio thread at
-    /// the top of their next block.
+    /// Reorder the chain RT-safely (RtSlot publish, same pattern as model
+    /// swaps — never blocks the GUI). Input is sanitized: unknown/duplicate
+    /// IDs are dropped and missing effects re-enter at their default
+    /// position. Effects whose position changed get a pending reset,
+    /// consumed by the audio thread at the top of their next block.
     void setChainOrder(const std::vector<std::string>& ids);
 
     // ---- Port-routing pass-through (no-ops on backends without it) ----
@@ -123,14 +127,14 @@ public:
 private:
     std::unique_ptr<IAudioBackend> mBackend;
 
-    // Signal chain — double-buffered for RT-safe reordering. The audio thread
-    // iterates mChainBuf[mActiveChain] once per callback; the GUI writes the
-    // inactive buffer and swaps the index. mCallbackCount lets a subsequent
-    // reorder wait until the audio thread has provably left the old buffer.
-    std::vector<EffectBase*> mChainBuf[2];
-    std::atomic<int>         mActiveChain{0};
-    std::atomic<uint64_t>    mCallbackCount{0};
-    uint64_t                 mLastSwapCallbackCount{0};
+    // Signal chain — published through an RtSlot. The audio thread binds
+    // one vector per callback; setChainOrder() publishes a new one and the
+    // old vector is freed only after the audio thread has provably left it.
+    using Chain = std::vector<EffectBase*>;
+    RtSlot<Chain> mChain;
+
+    /// Free objects retired by loads/reorders while the audio thread is idle.
+    void reclaimRetired();
 
     // id → effect, in default chain order
     std::vector<std::pair<std::string, EffectBase*>> mEffectTable;

@@ -13,8 +13,8 @@ NamProcessor::~NamProcessor()
 {
     // Audio thread must be stopped before this is called.
     std::lock_guard<std::mutex> lock(mModelMutex);
-    mModelAL.reset(); mModelAR.reset();
-    mModelBL.reset(); mModelBR.reset();
+    mSlot.publish(nullptr);
+    mSlot.reclaim(true);
 }
 
 bool NamProcessor::loadModel(const std::string& path)
@@ -22,46 +22,59 @@ bool NamProcessor::loadModel(const std::string& path)
     // Load two independent instances from the same file — one per channel.
     // They apply identical weights but maintain separate recurrent states
     // so L and R can diverge (e.g. after a pre-NAM stereo effect).
-    //
-    // Double-buffer constraint: the audio thread binds the active pair at
-    // block start, so at most one load may land per audio block. File I/O +
-    // prewarm is orders of magnitude slower than a block, so the UI cannot
-    // violate this in practice.
-    std::unique_ptr<nam::DSP> newL, newR;
+    auto pair = std::make_unique<ModelPair>();
     try {
-        newL = nam::get_dsp(std::filesystem::path(path));
-        newR = nam::get_dsp(std::filesystem::path(path));
+        pair->L = nam::get_dsp(std::filesystem::path(path));
+        pair->R = nam::get_dsp(std::filesystem::path(path));
     } catch (const std::exception& e) {
+        mLastError = e.what();
         qCWarning(lcAudio, "[NamProcessor] Failed to load model: %s", e.what());
         return false;
     }
-    if (!newL || !newR) return false;
+    if (!pair->L || !pair->R) {
+        mLastError = "Model loader returned no DSP object.";
+        return false;
+    }
 
-    int resetBuf = mMaxBuf.load();
-    newL->Reset(mSampleRate, resetBuf); newL->prewarm();
-    newR->Reset(mSampleRate, resetBuf); newR->prewarm();
+    // The audio path is strictly mono-in/mono-out per channel instance: the
+    // callback hands the core exactly one input and one output pointer. A
+    // multichannel model would read/write past those — reject it up front.
+    const int inCh  = pair->L->NumInputChannels();
+    const int outCh = pair->L->NumOutputChannels();
+    if (inCh != 1 || outCh != 1) {
+        mLastError = "Model has " + std::to_string(inCh) + " input / "
+                   + std::to_string(outCh) + " output channels; only 1-in/1-out models are supported.";
+        qCWarning(lcAudio, "[NamProcessor] %s (%s)", mLastError.c_str(), path.c_str());
+        return false;
+    }
+    mLastError.clear();
+
+    // Prewarm outside the lock (slow), then re-check inside it: the buffer
+    // size or sample rate may have moved meanwhile.
+    int    resetBuf;
+    double resetRate;
+    {
+        std::lock_guard<std::mutex> lock(mModelMutex);
+        resetBuf  = mMaxBuf.load();
+        resetRate = mModelRate > 0.0 ? mModelRate : mSampleRate;
+    }
+    pair->L->Reset(resetRate, resetBuf); pair->L->prewarm();
+    pair->R->Reset(resetRate, resetBuf); pair->R->prewarm();
 
     {
         std::lock_guard<std::mutex> lock(mModelMutex);
-        // Buffer size may have grown while we were prewarming outside the lock.
-        const int cur = mMaxBuf.load();
-        if (cur > resetBuf) {
-            newL->Reset(mSampleRate, cur); newL->prewarm();
-            newR->Reset(mSampleRate, cur); newR->prewarm();
-            resetBuf = cur;
+        const int    curBuf  = mMaxBuf.load();
+        const double curRate = mModelRate > 0.0 ? mModelRate : mSampleRate;
+        if (curBuf > resetBuf || curRate != resetRate) {
+            resetBuf  = std::max(curBuf, resetBuf);
+            resetRate = curRate;
+            pair->L->Reset(resetRate, resetBuf); pair->L->prewarm();
+            pair->R->Reset(resetRate, resetBuf); pair->R->prewarm();
         }
-        if (mActiveModel.load() == 0) {
-            mModelBL = std::move(newL);
-            mModelBR = std::move(newR);
-            mActiveModel.store(1, std::memory_order_release);
-        } else {
-            mModelAL = std::move(newL);
-            mModelAR = std::move(newR);
-            mActiveModel.store(0, std::memory_order_release);
-        }
-        mModelResetBuf = resetBuf;
+        pair->resetBuf  = resetBuf;
+        pair->resetRate = resetRate;
+        mSlot.publish(std::move(pair));
         mModelPath = path;
-        mModelLoaded.store(true);
     }
     mFadePending.store(true, std::memory_order_release);
     return true;
@@ -69,40 +82,50 @@ bool NamProcessor::loadModel(const std::string& path)
 
 void NamProcessor::unloadModel()
 {
-    mModelLoaded.store(false);
-    mModelPath = "";
+    {
+        std::lock_guard<std::mutex> lock(mModelMutex);
+        mSlot.publish(nullptr);
+        mModelPath = "";
+    }
     mFadePending.store(true, std::memory_order_release);
 }
 
 void NamProcessor::prepareBuffer(int maxBuf)
 {
+    // Safe to block and mutate the live pair here: both backends invoke
+    // buffer-size changes on a non-RT thread with no process callback in
+    // flight, and the scratch buffers are only touched by that callback.
+    std::lock_guard<std::mutex> lock(mModelMutex);
     mMaxBuf.store(maxBuf);
     mScratchL.resize(maxBuf);
     mScratchR.resize(maxBuf);
 
     // A model Reset() with a smaller max buffer will overrun the NAM core's
     // preallocated storage on a larger block (the core only assert()s, and
-    // Release strips asserts) — re-Reset all live instances when we grow.
-    // Safe to block here: both backends invoke buffer-size changes on a
-    // non-RT thread with no process callback in flight.
-    std::lock_guard<std::mutex> lock(mModelMutex);
-    if (maxBuf > mModelResetBuf) {
-        for (nam::DSP* m : {mModelAL.get(), mModelAR.get(), mModelBL.get(), mModelBR.get()})
-            if (m) { m->Reset(mSampleRate, maxBuf); m->prewarm(); }
-        mModelResetBuf = maxBuf;
+    // Release strips asserts) — re-Reset the live pair when we grow, or when
+    // the sample rate changed since it was prepared.
+    ModelPair* p = mSlot.current();
+    if (!p) return;
+    const double rate = mModelRate > 0.0 ? mModelRate : mSampleRate;
+    if (maxBuf > p->resetBuf || rate != p->resetRate) {
+        const int buf = std::max(maxBuf, p->resetBuf);
+        p->L->Reset(rate, buf); p->L->prewarm();
+        p->R->Reset(rate, buf); p->R->prewarm();
+        p->resetBuf  = buf;
+        p->resetRate = rate;
     }
 }
 
-void NamProcessor::onSampleRateChanged(double /*sr*/)
+void NamProcessor::onSampleRateChanged(double sr)
 {
-    // Invalidate the models' Reset() state so the next prepareBuffer() call
-    // re-Resets them with the new rate (AudioEngine always calls
-    // prepareBuffer right after propagating a sample-rate change).
+    // Record the rate; the following prepareBuffer() (AudioEngine always
+    // calls it right after propagating a sample-rate change) re-Resets the
+    // live pair with it.
     std::lock_guard<std::mutex> lock(mModelMutex);
-    mModelResetBuf = 0;
+    mModelRate = sr;
 }
 
-static void runModel(nam::DSP* model, float* buf, int n, std::vector<float>& scratch)
+/*static*/ void NamProcessor::runModel(nam::DSP* model, float* buf, int n, std::vector<float>& scratch)
 {
     // Sized by prepareBuffer(); process() bypasses oversized blocks, so this
     // must never allocate on the audio thread.
@@ -116,34 +139,30 @@ static void runModel(nam::DSP* model, float* buf, int n, std::vector<float>& scr
     std::copy(scratch.data(), scratch.data() + n, buf);
 }
 
-void NamProcessor::processBlockMono(float* buf, int n)
-{
-    nam::DSP* model = activeModelL();
-    if (!mModelLoaded.load() || !model) return;
-    runModel(model, buf, n, mScratchL);
-}
-
-void NamProcessor::processBlockMonoR(float* buf, int n)
-{
-    nam::DSP* model = activeModelR();
-    if (!mModelLoaded.load() || !model) return;
-    runModel(model, buf, n, mScratchR);
-}
-
 bool NamProcessor::process(float* L, float* R, int n, bool inputIsStereo)
 {
+    // Every exit path must count the block so retired pairs get reclaimed.
+    struct BlockGuard {
+        RtSlot<ModelPair>& s;
+        ~BlockGuard() { s.endBlock(); }
+    } guard{mSlot};
+
     if (!mEnabled.load()) return inputIsStereo;
-    // RT-safety guard: a block larger than what the models were prepared for
+
+    // One snapshot per block: both channels run the same pair even if a load
+    // lands mid-block.
+    ModelPair* p = mSlot.acquire();
+
+    // RT-safety guard: a block larger than what the pair was prepared for
     // would overrun the core's buffers — bypass instead (see prepareBuffer).
-    if (n > mMaxBuf.load()) {
-        if (!inputIsStereo)
-            std::copy(L, L + n, R);
-        return inputIsStereo;
+    const bool canRun = p && n <= p->resetBuf && n <= static_cast<int>(mScratchL.size());
+    if (canRun)
+    {
+        runModel(p->L.get(), L, n, mScratchL);
+        if (inputIsStereo)
+            runModel(p->R.get(), R, n, mScratchR);
     }
-    processBlockMono(L, n);
-    if (inputIsStereo)
-        processBlockMonoR(R, n);
-    else
+    if (!inputIsStereo)
         std::copy(L, L + n, R);
 
     // ~15 ms fade-in after a model load/unload masks the discontinuity

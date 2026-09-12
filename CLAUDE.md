@@ -96,7 +96,7 @@ All effects inherit `EffectBase` (`src/dsp/EffectBase.h` — the header comment 
 
 - **Simple parameters** (gains, enable flags, rates…) are `std::atomic<float>`/`std::atomic<bool>` — set from GUI thread, read lock-free in audio thread.
 - **EQ coefficient updates** use a mutex + `try_lock` in the audio thread (skips one block if the GUI is writing).
-- **NAM model swaps** are double-buffered (two model slots + atomic active pointer); the mutex is held only for the pointer swap, never during processing. **IR kernel swaps** follow the same pattern in `IRLoader`.
+- **NAM model swaps, IR kernel swaps and chain reorders** all go through `RtSlot<T>` (`src/dsp/RtSlot.h`): the GUI publishes a freshly built object, the audio thread binds it once per block (`acquire()` … `endBlock()` on every exit path), and the previous object is parked on a retired list and freed only after the audio thread has provably completed a block that began after the swap. Publishing never blocks and back-to-back publishes are safe; `AudioEngine::reclaimRetired()` frees eagerly when the backend is stopped. Never `delete` or mutate a published object from the GUI thread.
 - **No allocations in the audio callback.**
 
 ### Key classes

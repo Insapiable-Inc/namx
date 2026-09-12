@@ -111,21 +111,24 @@ float TunerProcessor::detectPitch()
     if (std::sqrt(rmsSum / kBufSize) < 5e-4)
         return 0.0f;
 
-    const int fs     = static_cast<int>(mFs.load());
-    const int minLag = fs / 1400;
-    const int maxLag = fs / 50;
-    const int N      = kBufSize;
+    const float fs     = mFs.load();
+    const int   N      = kBufSize;
+    const int   winLen = std::min(N, 1024);
+    const int   minLag = std::max(2, static_cast<int>(fs / 1400.0f)); // ~1400 Hz ceiling
+    const int   maxLag = std::min(static_cast<int>(fs / 50.0f), N - winLen - 1); // ~50 Hz floor
+    if (maxLag <= minLag)
+        return 0.0f;
 
-    float bestNSDF = -1.0f;
-    int   bestLag  = 0;
-
-    const int winLen = std::min(N, 1024);
-
+    // NSDF (McLeod Pitch Method): n(τ) = 2·r(τ) / (m0 + m(τ)) over a fixed
+    // 1024-sample window, evaluated for every lag from 1 so the first
+    // positive lobe (around τ = 0) can be skipped explicitly below.
     double r0 = 0.0;
     for (int i = 0; i < winLen; ++i)
         r0 += mSnapBuf[i] * mSnapBuf[i];
 
-    for (int lag = minLag; lag <= std::min(maxLag, N - winLen - 1); ++lag)
+    mNsdf.assign(maxLag + 2, 0.0f);
+    mNsdf[0] = 1.0f;
+    for (int lag = 1; lag <= maxLag + 1; ++lag)
     {
         double r = 0.0, mk = 0.0;
         for (int i = 0; i < winLen; ++i)
@@ -133,39 +136,72 @@ float TunerProcessor::detectPitch()
             r  += mSnapBuf[i] * mSnapBuf[i + lag];
             mk += mSnapBuf[i + lag] * mSnapBuf[i + lag];
         }
-        double denom = r0 + mk;
-        float  nsdf  = (denom > 1e-12) ? static_cast<float>(2.0 * r / denom) : 0.0f;
-        if (nsdf > bestNSDF) { bestNSDF = nsdf; bestLag = lag; }
+        const double denom = r0 + mk;
+        mNsdf[lag] = (denom > 1e-12) ? static_cast<float>(2.0 * r / denom) : 0.0f;
     }
 
-    if (bestNSDF < 0.40f || bestLag == 0)
+    // Key-maxima picking. The global NSDF maximum is unreliable: for a
+    // periodic signal every multiple of the period scores ~1.0, so the
+    // global max regularly lands on 2T, 3T… (an octave or more too low).
+    // MPM instead takes the highest point of each positive lobe after the
+    // first negative crossing, then picks the FIRST such peak that is within
+    // a fraction k of the tallest — that is the fundamental period.
+    constexpr float kKeyMaxRatio = 0.8f;
+
+    int lag = 1;
+    while (lag <= maxLag && mNsdf[lag] > 0.0f) ++lag; // skip the τ≈0 lobe
+
+    float bestVal  = -1.0f;
+    int   pickLag  = 0;
+    float pickVal  = -1.0f;
+    struct Key { int lag; float val; };
+    Key keys[64];
+    int nKeys = 0;
+
+    while (lag <= maxLag && nKeys < 64)
+    {
+        while (lag <= maxLag && mNsdf[lag] <= 0.0f) ++lag;
+        if (lag > maxLag) break;
+        int   peakLag = lag;
+        float peakVal = mNsdf[lag];
+        while (lag <= maxLag && mNsdf[lag] > 0.0f)
+        {
+            if (mNsdf[lag] > peakVal) { peakVal = mNsdf[lag]; peakLag = lag; }
+            ++lag;
+        }
+        if (peakLag < minLag) continue;
+        keys[nKeys++] = {peakLag, peakVal};
+        bestVal = std::max(bestVal, peakVal);
+    }
+
+    if (nKeys == 0 || bestVal < 0.40f)
         return 0.0f;
 
-    if (bestLag > minLag && bestLag < std::min(maxLag, N - winLen - 2))
+    const float threshold = kKeyMaxRatio * bestVal;
+    for (int i = 0; i < nKeys; ++i)
     {
-        auto nsdfAt = [&](int lag) -> float {
-            double r = 0.0, mk = 0.0;
-            for (int i = 0; i < winLen; ++i)
-            {
-                r  += mSnapBuf[i] * mSnapBuf[i + lag];
-                mk += mSnapBuf[i + lag] * mSnapBuf[i + lag];
-            }
-            double d = r0 + mk;
-            return (d > 1e-12) ? static_cast<float>(2.0 * r / d) : 0.0f;
-        };
+        if (keys[i].val >= threshold) { pickLag = keys[i].lag; pickVal = keys[i].val; break; }
+    }
+    if (pickLag <= 0)
+        return 0.0f;
 
-        float y0 = nsdfAt(bestLag - 1);
-        float y1 = bestNSDF;
-        float y2 = nsdfAt(bestLag + 1);
-        float denom = 2.0f * (2.0f * y1 - y0 - y2);
+    // Parabolic interpolation through (lag-1, lag, lag+1). With
+    // y = a·x² + b·x + c fitted at x = -1, 0, +1 the vertex sits at
+    // x = (y2 - y0) / (2·(2·y1 - y0 - y2)).
+    if (pickLag >= 1 && pickLag + 1 <= maxLag + 1)
+    {
+        const float y0    = mNsdf[pickLag - 1];
+        const float y1    = pickVal;
+        const float y2    = mNsdf[pickLag + 1];
+        const float denom = 2.0f * (2.0f * y1 - y0 - y2);
         if (std::abs(denom) > 1e-6f)
         {
-            float delta = std::max(-1.0f, std::min(1.0f, (y0 - y2) / denom));
-            return mFs.load() / (bestLag + delta);
+            const float delta = std::max(-1.0f, std::min(1.0f, (y2 - y0) / denom));
+            return fs / (static_cast<float>(pickLag) + delta);
         }
     }
 
-    return mFs.load() / bestLag;
+    return fs / static_cast<float>(pickLag);
 }
 
 int TunerProcessor::freqToMidi(float freq)
