@@ -12,6 +12,7 @@
 #include "EffectShortcuts.h"
 #include "KnobWidget.h"
 #include "ParamRegistry.h"
+#include "RackNavigator.h"
 #include "ToggleSwitch.h"
 
 class QFrame;
@@ -19,6 +20,7 @@ class QHBoxLayout;
 class QVBoxLayout;
 class QLabel;
 class QPushButton;
+class QScrollArea;
 class AudioStatusBar;
 class TunerDisplay;
 class VUMeter;
@@ -73,6 +75,8 @@ private:
     void layoutStrip(const std::vector<EffectBase*>& order);
     // layoutStrip(engine chain) + shortcuts re-assigned left to right.
     void rebuildEffectStrip();
+    // Rows for the keyboard cursor: Input, the chain in strip order, Output.
+    std::vector<RackNavigator::Row> navigatorRows();
     // Keep bypassed cards visually subordinate without disabling their controls.
     void updateCardBypassState(EffectBase* effect, bool enabled);
     // setChainOrder + strip rebuild; used by session restore, preset load, DnD.
@@ -112,6 +116,8 @@ private:
     std::unordered_map<QWidget*, QWidget*>       mCardGrips; // card → ≡ drag handle
     QWidget*     mStrip      = nullptr;
     QVBoxLayout* mStripLay   = nullptr;
+    QScrollArea* mScroll     = nullptr;
+    RackNavigator* mNav      = nullptr; // keyboard cursor over the rack
     QWidget*     mInputCard  = nullptr;
     QWidget*     mOutputCard = nullptr;
     EffectShortcuts mShortcuts{this};

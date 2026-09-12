@@ -28,6 +28,10 @@ public:
 
     double value() const;
     double defaultValue() const { return mDefault; }
+    double minimum() const { return mMin; }
+    double maximum() const { return mMax; }
+    QString label() const { return mLabel; }
+    QString unit()  const { return mUnit; }
 
     /// Explicit accent color for the value arc, indicator tick, and value
     /// label (the knob body stays neutral). Pushed by Theme::tagCard — the
@@ -41,6 +45,15 @@ public:
     /// Set the scroll-wheel increment in value units (e.g. 0.1 for 0.1 dB).
     /// Pass 0 to use the default (1% of range).
     void setScrollStep(double step) { mScrollStep = step; }
+    /// The effective step in value units (scroll step, or 1% of the range).
+    double stepSize() const;
+
+    /// Move the value by `direction` (±1) steps, scaled (0.1 = fine, 10 = coarse).
+    void stepBy(int direction, double scale = 1.0);
+
+    /// Keyboard-cursor highlight: an accent ring around the dial and the name
+    /// in the accent color. Driven by RackNavigator, never by Qt focus.
+    void setNavHighlight(bool on);
 
 public slots:
     void setValue(double v);
@@ -58,7 +71,9 @@ protected:
 
 private:
     VerticalDial* mDial;
+    QLabel*       mLabelName;
     QLabel*       mLabelValue;
+    QString mLabel;
     QColor mAccent;
     double mMin, mMax, mDefault;
     QString mUnit;

@@ -159,6 +159,12 @@ QFrame[fxCard="true"] {
     border: 1px solid #2a2f38;
     border-radius: 6px;
 }
+/* Keyboard-cursor row (RackNavigator): a faint lift, the knob ring carries
+   the strong signal. */
+QFrame[fxCard="true"][navRow="true"] {
+    background-color: #262c36;
+    border-color: #4a5566;
+}
 QLabel#fxGrip {
     color: #7d8590;
     font-size: 12pt;

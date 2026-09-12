@@ -369,6 +369,47 @@ Phase-list fallout is annotated inline below: parts of Phase 14 are built,
 most Phase 18 layout/visual fixes landed or became obsolete, and Phase 5's
 pending palette revision shipped.
 
+## Phase 7.5 — Keyboard navigation (added 2026-09-12)
+
+The rack is a grid (effect rows × knobs) plus a value axis, so each axis gets its
+own key family and no key is modal. Designed 2026-09-12; the digit / Q–P toggles
+from Phase 4 stay as they are. A `RackNavigator` cursor lives beside Qt focus
+(dials are `NoFocus`, keys are filtered at the application level) so the scheme
+holds whatever widget is focused, while text fields, menus and dialogs are left
+alone. Also the second control source the future MIDI layer (Phase 16) plugs
+into.
+
+| Key | Action |
+|---|---|
+| ↑ / ↓ | previous / next row: Input, the chain in strip order, Output (keeps the knob column; wraps) |
+| ← / → | previous / next knob in the row |
+| `+` / `-` | nudge the knob by its scroll step; Shift = fine (×0.1), Ctrl = coarse (×10); keypad works, `*` / `_` (shifted on es-419) count as fine |
+| Home / End | knob to minimum / maximum |
+| Delete | knob back to its default (no confirmation — decision 2026-09-12) |
+| Space | toggle the row on/off |
+| S | toggle the row's stereo mode (rows that have one) |
+| Enter | Amplifier / Cabinet: Load… (Browse once Phase 11 lands); on a knob: typed value entry |
+| Esc | hide the cursor |
+
+Highlighting: a faint lift on the focused row (card background + border) and a
+strong accent ring around the focused knob with its name in the accent. The
+cursor is invisible until the first key press, so mouse users never see it;
+clicking a knob moves the cursor there silently.
+
+- [x] `RackNavigator` (`src/ui/RackNavigator.h/.cpp`): rows rebuilt on every
+      strip rebuild / reorder (cursor stays on its card), scroll-into-view,
+      first key press reveals without moving.
+- [x] `KnobWidget::stepBy` / `setNavHighlight` / min-max-label accessors; dial
+      `NoFocus`.
+- [x] Row lift via the `navRow` dynamic property in the Theme stylesheet.
+- [x] Typed value entry on Enter (`QInputDialog::getDouble`, parented to the
+      window so it keeps the theme).
+- [ ] Manual verification: every key in the table on a real keyboard incl. the
+      keypad; cursor survives a drag reorder; Esc / menus / file dialogs don't
+      fight it; `S` never reaches a text field once Phase 11 adds search.
+- [ ] Shortcut cheat sheet (Help menu) listing this table plus the digit / Q–P
+      rows — pulled forward from Phase 18.
+
 ## Phase 8 — Packaging & ship (runs after Phase 12 — decision 2026-09-12) → tag **v1.0** at the end
 
 - [ ] Desktop file `gui/packaging/NAMPlayer.desktop` (Name, Exec, Icon,

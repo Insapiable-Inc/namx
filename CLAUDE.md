@@ -126,6 +126,7 @@ All effects inherit `EffectBase` (`src/dsp/EffectBase.h` — the header comment 
 | `ToggleSwitch` | `src/ui/ToggleSwitch.h/cpp` | Custom-painted on/off switch |
 | `Theme` | `src/ui/Theme.h/cpp` | Fusion + dark palette + app stylesheet; per-effect accents (`tagCard(card, fxId)`) + chrome color accessors — **all colors live here** |
 | `EffectShortcuts` | `src/ui/EffectShortcuts.h/cpp` | Keyboard toggles for effects (user has Latin American layout) |
+| `RackNavigator` | `src/ui/RackNavigator.h/cpp` | Keyboard cursor over the rack (arrows move, `+`/`-` nudge, Space/S toggle, Enter acts); app-level key filter, independent of Qt focus |
 | `Constants.h` | `src/dsp/` | DSP parameter ranges and defaults for all effects |
 
 ### Parameter registry

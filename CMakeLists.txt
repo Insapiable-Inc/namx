@@ -49,6 +49,8 @@ set(GUI_SOURCES
     src/ui/ToggleSwitch.h
     src/ui/EffectShortcuts.cpp
     src/ui/EffectShortcuts.h
+    src/ui/RackNavigator.cpp
+    src/ui/RackNavigator.h
     src/ui/AudioStatusBar.cpp
     src/ui/AudioStatusBar.h
     src/ui/ParamRegistry.h

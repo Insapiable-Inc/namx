@@ -29,11 +29,21 @@ public:
     {
         setNotchesVisible(false);
         setWrapping(false);
+        // Keyboard control goes through RackNavigator's own cursor, so the
+        // dial must never take Qt focus (QDial would eat the arrow keys).
+        setFocusPolicy(Qt::NoFocus);
     }
 
     void setAccent(const QColor& accent)
     {
         mAccent = accent;
+        update();
+    }
+
+    void setHighlight(bool on)
+    {
+        if (mHighlight == on) return;
+        mHighlight = on;
         update();
     }
 
@@ -143,10 +153,25 @@ protected:
         indicatorPen.setCapStyle(Qt::RoundCap);
         p.setPen(indicatorPen);
         p.drawLine(p1, p2);
+
+        // Keyboard-cursor ring: a thin accent circle hugging the outer edge,
+        // outside the value arc so the arc stays readable.
+        if (mHighlight)
+        {
+            const qreal ringInset = 0.75;
+            const QRectF ringRect(c.x() - side / 2.0 + ringInset,
+                                  c.y() - side / 2.0 + ringInset,
+                                  side - 2 * ringInset, side - 2 * ringInset);
+            QPen ringPen(mAccent, 1.5);
+            p.setPen(ringPen);
+            p.setBrush(Qt::NoBrush);
+            p.drawEllipse(ringRect);
+        }
     }
 
 private:
     QColor mAccent{Theme::genericAccent()};
+    bool   mHighlight{false};
     int mDragStartY{0};
     int mDragStartVal{0};
 };
@@ -162,11 +187,13 @@ KnobWidget::KnobWidget(const QString& label, double minVal, double maxVal,
     , mMin(minVal)
     , mMax(maxVal)
     , mDefault(defaultVal)
+    , mLabel(label)
     , mUnit(unit)
 {
     setAttribute(Qt::WA_StyledBackground, false);
 
     auto* nameLabel = new QLabel(label);
+    mLabelName = nameLabel;
     {
         QPalette p = nameLabel->palette();
         p.setColor(QPalette::WindowText, Theme::dimText());
@@ -260,6 +287,25 @@ void KnobWidget::setValue(double v)
 void KnobWidget::resetToDefault()
 {
     setValue(mDefault);
+}
+
+double KnobWidget::stepSize() const
+{
+    return mScrollStep > 0.0 ? mScrollStep : (mMax - mMin) / 100.0;
+}
+
+void KnobWidget::stepBy(int direction, double scale)
+{
+    if (direction == 0) return;
+    setValue(value() + (direction > 0 ? 1.0 : -1.0) * stepSize() * scale);
+}
+
+void KnobWidget::setNavHighlight(bool on)
+{
+    mDial->setHighlight(on);
+    QPalette p = mLabelName->palette();
+    p.setColor(QPalette::WindowText, on ? mAccent : Theme::dimText());
+    mLabelName->setPalette(p);
 }
 
 void KnobWidget::onDialChanged(int dialVal)

@@ -259,6 +259,7 @@ void MainWindow::setupUI()
     // ---- Scrollable effect strip ----
     // (NAM model / IR file pickers live inside the Amp and IR rows below.)
     auto* scroll = new QScrollArea;
+    mScroll = scroll;
     scroll->setWidgetResizable(true);
     scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     scroll->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
@@ -576,6 +577,10 @@ void MainWindow::setupUI()
     mStrip->setAcceptDrops(true);
     mStrip->installEventFilter(this);
 
+    // Keyboard cursor (arrows / + - / Space / S / Enter); rows are handed to
+    // it on every strip rebuild so it always matches the visual order.
+    mNav = new RackNavigator(this, scroll, this);
+
     rebuildEffectStrip();
 
     scroll->setWidget(mStrip);
@@ -618,6 +623,48 @@ void MainWindow::rebuildEffectStrip()
         if (tg != mFxToggles.end())
             mShortcuts.addEffect(tg->second.enable, tg->second.stereo);
     }
+
+    if (mNav) mNav->setRows(navigatorRows());
+}
+
+std::vector<RackNavigator::Row> MainWindow::navigatorRows()
+{
+    std::vector<RackNavigator::Row> rows;
+
+    // Knobs in layout (visual) order — the card's children list is not
+    // guaranteed to follow the layout.
+    auto knobsOf = [](QWidget* card) {
+        std::vector<KnobWidget*> knobs;
+        auto* lay = card ? card->layout() : nullptr;
+        for (int i = 0; lay && i < lay->count(); ++i)
+            if (auto* k = qobject_cast<KnobWidget*>(lay->itemAt(i)->widget()))
+                knobs.push_back(k);
+        return knobs;
+    };
+
+    rows.push_back({mInputCard, nullptr, {mKnobInputGain}, nullptr, nullptr, {}});
+
+    for (auto* fx : mEngine->chain())
+    {
+        auto col = mFxCols.find(fx);
+        if (col == mFxCols.end()) continue;
+        RackNavigator::Row row;
+        row.card   = col->second;
+        row.effect = fx;
+        row.knobs  = knobsOf(col->second);
+        auto tg = mFxToggles.find(fx);
+        if (tg != mFxToggles.end())
+        {
+            row.enable = tg->second.enable;
+            row.stereo = tg->second.stereo;
+        }
+        if (fx == &mEngine->nam()) row.activate = [this] { onLoadNAM(); };
+        if (fx == &mEngine->ir())  row.activate = [this] { onLoadIR();  };
+        rows.push_back(std::move(row));
+    }
+
+    rows.push_back({mOutputCard, nullptr, {mKnobOutputGain}, nullptr, nullptr, {}});
+    return rows;
 }
 
 void MainWindow::updateCardBypassState(EffectBase* effect, bool enabled)
