@@ -187,6 +187,7 @@ private:
     KnobWidget*   mKnobChMix     = nullptr;
 
     ToggleSwitch* mSwTremoloEnable = nullptr;
+    ToggleSwitch* mSwTremoloStereo = nullptr;
     KnobWidget*   mKnobTrRate     = nullptr;
     KnobWidget*   mKnobTrDepth    = nullptr;
 

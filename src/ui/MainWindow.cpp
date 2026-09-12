@@ -448,7 +448,8 @@ void MainWindow::setupUI()
         mKnobTrRate->setScrollStep(0.1);
         mKnobTrDepth->setScrollStep(1.0);
 
-        auto* col = makeEffectRow("Tremolo", mSwTremoloEnable, {mKnobTrRate, mKnobTrDepth});
+        auto* col = makeEffectRow("Tremolo", mSwTremoloEnable,
+            {mKnobTrRate, mKnobTrDepth}, &mSwTremoloStereo);
         Theme::tagCard(col, "tremolo");
 
         mFxCols[&mEngine->tremolo()] = col;
@@ -554,7 +555,7 @@ void MainWindow::setupUI()
         {&mEngine->nam(),     {mSwNAMEnable,     nullptr}},
         {&mEngine->eq(),      {mSwEQEnable,      nullptr}},
         {&mEngine->chorus(),  {mSwChorusEnable,  mSwChorusStereo}},
-        {&mEngine->tremolo(), {mSwTremoloEnable, nullptr}},
+        {&mEngine->tremolo(), {mSwTremoloEnable, mSwTremoloStereo}},
         {&mEngine->delay(),   {mSwDelayEnable,   mSwDelayStereo}},
         {&mEngine->reverb(),  {mSwReverbEnable,  nullptr}},
         {&mEngine->ir(),      {mSwIREnable,      nullptr}},
@@ -1077,6 +1078,7 @@ void MainWindow::registerParameters()
     knobParam("chorus", "mix",       mKnobChMix,      [e](double v) { e->chorus().setMix  (static_cast<float>(v)); });
 
     toggleParam("tremolo", "enabled", mSwTremoloEnable, [e](bool b)   { e->tremolo().setEnabled(b); });
+    toggleParam("tremolo", "stereo",  mSwTremoloStereo, [e](bool b)   { e->tremolo().setStereoMode(b); });
     knobParam("tremolo", "rate",      mKnobTrRate,      [e](double v) { e->tremolo().setRate (static_cast<float>(v)); });
     knobParam("tremolo", "depth",     mKnobTrDepth,     [e](double v) { e->tremolo().setDepth(static_cast<float>(v)); });
 

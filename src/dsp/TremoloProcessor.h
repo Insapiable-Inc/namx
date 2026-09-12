@@ -3,7 +3,7 @@
 #include <atomic>
 #include "EffectBase.h"
 
-/// Tremolo: amplitude modulation. Stereo uses 90° LFO offset for auto-pan.
+/// Tremolo: amplitude modulation. Stereo uses a 180° LFO offset (auto-pan, like the other modulation effects).
 class TremoloProcessor : public EffectBase
 {
 public:

@@ -48,7 +48,7 @@ void TremoloProcessor::processBlockStereoOut(float* L, float* R, int nframes)
     for (int i = 0; i < nframes; ++i)
     {
         float lfoL  = std::sin(2.0f * kPi * mPhase);
-        float lfoR  = std::sin(2.0f * kPi * (mPhase + 0.25f)); // 90° apart
+        float lfoR  = std::sin(2.0f * kPi * (mPhase + 0.5f));  // 180° apart: true auto-pan
         L[i] *= 1.0f - depth * (1.0f - lfoL) * 0.5f;
         R[i] *= 1.0f - depth * (1.0f - lfoR) * 0.5f;
 
