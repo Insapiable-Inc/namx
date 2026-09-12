@@ -21,9 +21,13 @@ Decisions:
   everything that makes this app worth having is standalone-shaped. `src/dsp` stays
   Qt-free and all parameters stay in the registry, but that's hygiene, not a plugin plan.
 - **Library + TONE3000 ship in v1.0** (2026-08-22). A NAM player whose first-run
-  experience is a file dialog is not done. The `v1.0` tag moves from Phase 8 to the end
-  of Phase 12.
-- **Execution order:** 7 → 8 (packaging, no tag) → 11 → 12 → **tag v1.0** → 13 → 14 →
+  experience is a file dialog is not done. ~~The `v1.0` tag moves from Phase 8 to the end
+  of Phase 12.~~ Superseded 2026-09-12, see next.
+- **Packaging goes last** (2026-09-12). Phase 8 runs *after* Phase 12, right before
+  release, so the desktop file, AppImage, Flatpak and CI jobs are built once against
+  the final v1.0 feature set (Library + TONE3000 + `Qt6::Network`) instead of being
+  redone. The `v1.0` tag is back at the end of Phase 8.
+- **Execution order:** 7 → 11 → 12 → 8 (packaging) → **tag v1.0** → 13 → 14 →
   15 (absorbs Phase 10 tempo) → 16 → 17 → 18 → 19; Phase 9 (knob tapers) slots in
   wherever a knob-heavy phase touches the widgets (17 at the latest).
 
@@ -365,7 +369,7 @@ Phase-list fallout is annotated inline below: parts of Phase 14 are built,
 most Phase 18 layout/visual fixes landed or became obsolete, and Phase 5's
 pending palette revision shipped.
 
-## Phase 8 — Packaging & ship
+## Phase 8 — Packaging & ship (runs after Phase 12 — decision 2026-09-12) → tag **v1.0** at the end
 
 - [ ] Desktop file `gui/packaging/NAMPlayer.desktop` (Name, Exec, Icon,
       `MimeType=application/x-nam;application/x-nampreset;`).
@@ -377,8 +381,9 @@ pending palette revision shipped.
 - [ ] Flatpak manifest (`--socket=pipewire`).
 - [ ] CI release job on tag push: Ubuntu 22.04 + Arch + Windows, non-native SIMD flags.
 - [ ] Headless smoke test in CI: `QT_QPA_PLATFORM=offscreen NAMPlayer --self-test-and-exit`.
-- [ ] About dialog / `--version` flag verified. ~~tag **v1.0**~~ → **moved to the end
-      of Phase 12** (decision 2026-08-22: Library + TONE3000 are part of 1.0).
+- [ ] About dialog / `--version` flag verified.
+- [ ] **Tag v1.0.** (Was moved to Phase 12 on 2026-08-22; back here since 2026-09-12
+      because packaging itself now runs last.)
 
 ## Phase 9 — Knob range calibration (post-1.0 unless pulled forward; added 2026-08-10)
 
@@ -436,7 +441,7 @@ Phases 12, 13 and 16 stands on this.
       "Browse" (focus the library).
 - [ ] Keep Import/Export file dialogs for one-offs; they stop being the primary path.
 
-## Phase 12 — TONE3000 integration (v1.0) → tag **v1.0** at the end
+## Phase 12 — TONE3000 integration (v1.0) → then Phase 8 (packaging) → tag **v1.0**
 
 A second tab of the Library that looks and behaves exactly like the local one but is
 the community. API verified 2026-08-22 (tone3000.com/api): OAuth 2.0 + PKCE for
@@ -458,8 +463,8 @@ tone images, creator attribution and per-model licenses (T3K / CC) are requireme
       makes *sharing presets* work (Phase 19).
 - [ ] Rate-limit handling, listing cache, their branding/attribution requirements met.
 - [ ] Networking via `Qt6::Network` (part of `qt6-base`; CMake `find_package` gains
-      `Network`). Linux packaging (Phase 8) re-verified with it.
-- [ ] **Tag v1.0.**
+      `Network`). Phase 8 packaging (which follows) must bundle it.
+- [ ] ~~Tag v1.0.~~ → end of Phase 8 (2026-09-12).
 
 ## Phase 13 — Presets as the live unit
 
