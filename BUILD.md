@@ -138,6 +138,14 @@ cmake -S . -B build-release -DCMAKE_BUILD_TYPE=Release
 cmake --build build-release --parallel $(nproc)
 ```
 
+Optional CMake variables:
+
+| Variable | Purpose |
+|----------|---------|
+| `-DNAM_NATIVE_OPT=OFF` | Portable AVX2/FMA instead of `-march=native` (required for release builds) |
+| `-DNAM_TONE3000_CLIENT_ID=t3k_pub_…` | Bake your TONE3000 publishable key into the build (see §6, *TONE3000*) |
+| `-DNAM_BUILD_TESTS=ON` | Also build `Tone3000ClientTest` (needs `python3`; run it directly or via `ctest`) |
+
 ### Windows — quick build (PowerShell)
 
 From a "Developer PowerShell for VS 2022" prompt:
@@ -304,6 +312,37 @@ also be dropped onto the window, imported through **Library → Import…**, or 
 from the row's right-click menu. The **On/Off** toggle bypasses the stage without
 unloading it.
 
+### TONE3000
+
+The Library dock's second tab browses [TONE3000](https://www.tone3000.com), the
+community catalog of NAM captures and IRs. It uses your own TONE3000 account: sign-in
+happens in the browser (TONE3000 e-mails a code), and the app only ever holds the
+OAuth tokens it is issued (stored in the app's settings; **Sign out** clears them).
+
+| What | How |
+|------|-----|
+| First use | **Continue** on the splash opens TONE3000 in the browser. Sign in, pick a tone, and you are sent back to the app with that tone open. |
+| Browse | **Trending**, **Latest**, **Favorites**, **Downloads** and **Mine** are lists from your account. **Browse TONE3000…** opens the full catalog (search, filters) in the browser and brings the picked tone back. |
+| Tone page | Image, gear type, format, license, creator, description, the model list. Click a model to download it into the library; click again (**Load**) to put it in the rig. **Download all** fetches the rest. **★** favorites the tone on TONE3000. |
+| Where files go | `~/Documents/NAM Player/TONE3000/<creator>/<tone>/` (change it from the account menu). The folder is always part of the library, so downloads show up in the local tab too, tagged *TONE3000 · @creator*. Each file gets a `.t3k.json` sidecar with the tone/model ids, creator and license. |
+| Origin mark | The Amplifier / Cabinet row shows the T3K mark when the loaded file came from TONE3000; click it to open that tone. |
+| Presets | A preset saved with a TONE3000 model remembers its model id. Loading it on a machine where the file is missing finds the model elsewhere in the library, or offers to download it. |
+| Offline | The tab says so; the local library keeps working. |
+
+**App key.** TONE3000 identifies integrations by a *publishable key* (`t3k_pub_…`, not
+a secret). Packaged builds carry one via `-DNAM_TONE3000_CLIENT_ID=…`. Building from
+source without it, the tab shows a setup page: create a key on
+[tone3000.com → Settings → API Keys](https://www.tone3000.com/settings), register the
+redirect URI `http://localhost:51731/callback` (ports 51732–51734 are tried if that
+one is busy), and paste it in. The key can be changed later from the account menu.
+
+NAM Player uses TONE3000's free non-commercial API tier: the bounded lists above and
+the browser-based catalog picker. Catalog search is deliberately not done in-app.
+
+Development: `NAM_TONE3000_API_BASE=http://127.0.0.1:8765/api/v1` points the client at
+`tests/mock_tone3000.py`, and `NAM_TONE3000_NO_BROWSER=1` logs the sign-in URL instead
+of opening it.
+
 ---
 
 ## 7. Signal chain
@@ -331,6 +370,7 @@ If the IR is disabled or not loaded, that stage is skipped.
 |--------|---------|
 | `.nam`  | Neural Amp Modeler model file. Supported architectures: WaveNet, LSTM, ConvNet, Linear. Version 0.5–0.7 supported. |
 | `.wav`  | Impulse response / cab simulation. Mono or stereo (first channel used). Any sample rate. Truncated to 4096 taps (~93 ms at 44.1 kHz). |
+| `.t3k.json` | Sidecar written next to a TONE3000 download: tone/model ids, title, creator, license, URL. Read by the library; safe to delete (the file just loses its origin). |
 
 NAM models are available from the [NAM community model library](https://www.neuralampmodeler.com).
 IR files are compatible with any standard cab sim WAV (e.g., from OwnHammer, Celestion, Rosen Digital, etc.).

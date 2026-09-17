@@ -26,6 +26,11 @@ struct LibraryEntry
     qint64  mtimeMs{0};
     QString summary;  // metadata line: "WaveNet · 48 kHz · Mesa Boogie"
     QString details;  // multi-line, everything the file says about itself
+    // TONE3000 origin from the `.t3k.json` sidecar written on download.
+    int     t3kToneId  = 0;
+    int     t3kModelId = 0;
+    QString t3kTitle, t3kCreator;
+    bool    fromTone3000() const { return t3kModelId != 0; }
 };
 
 /// Configured root folders per kind. A folder may appear under several kinds.
@@ -37,6 +42,9 @@ struct LibraryRoots
     static LibraryRoots defaults();
     /// The folder presets are written to by default (first presets root).
     static QString defaultPresetDir();
+    /// Roots with the TONE3000 download folder added to models and IRs — the
+    /// scanner always covers it, the Folders dialog shows the configured ones.
+    LibraryRoots withTone3000Dir() const;
 };
 
 /// The library index: a recursive scan of the roots on a worker thread, a
@@ -58,6 +66,9 @@ public:
 
     const QList<LibraryEntry>& entries() const { return mEntries; }
     const LibraryEntry*        find(const QString& path) const;
+    /// Library file downloaded from TONE3000 with this model id, or null.
+    const LibraryEntry*        findTone3000Model(int modelId) const;
+    bool                       hasTone3000Tone(int toneId) const;
 
     static LibraryEntry::Kind kindForPath(const QString& path, bool* ok = nullptr);
     /// Synchronous one-file description (files outside the library: imports,

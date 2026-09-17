@@ -479,7 +479,7 @@ Manual verification (2026-09-17 — needs a human at the keyboard):
 - [ ] Close the dock, quit, relaunch: still closed; `Ctrl+L` brings it back at the
       same width.
 
-## Phase 12 — TONE3000 integration (v1.0) → then Phase 8 (packaging) → tag **v1.0**
+## Phase 12 — TONE3000 integration (v1.0) ✅ (code complete 2026-09-17; needs the key + a live run) → then Phase 8 (packaging) → tag **v1.0**
 
 A second tab of the Library that looks and behaves exactly like the local one but is
 the community. API verified 2026-08-22 (tone3000.com/api): OAuth 2.0 + PKCE for
@@ -487,22 +487,67 @@ user-facing apps, **free non-commercial tier** covers OAuth, search / trending /
 favorites, the user's downloads and per-model download URLs; 100 req/min; branding,
 tone images, creator attribution and per-model licenses (T3K / CC) are requirements.
 
+**Re-read 2026-09-17:** the free tier is narrower than noted above — it allows *only*
+the OAuth prompt flows (`select_tone`, `load_tone`) and the bounded lists (favorited,
+downloaded, created, trending, latest). `/tones/search` is commercial-tier. Decision:
+**no in-app catalog search**; "Browse TONE3000…" runs the `select_tone` flow (their
+catalog with search/filters, in the browser) and the picked tone comes back into the
+app. Downloads use each model's `model_url` (the archive endpoint is partners-only).
+No unauthenticated endpoint exists, so everything sits behind sign-in.
+
 - [ ] **Prerequisite (user action):** register the app on TONE3000 to obtain a
       `client_id`. No secret ships in the binary (PKCE + loopback redirect).
-- [ ] **Login** (system browser → `http://127.0.0.1:<port>/callback`), token stored in
-      QSettings (or the platform keychain if cheap), logout.
-- [ ] **Browse:** trending, latest, search, filter by make/tag; tone cards with image,
-      creator, license; favorite/unfavorite; "open on TONE3000".
-- [ ] **Download** a tone's model(s) into the library (sidecar JSON: tone id, creator,
+      *(tone3000.com → Settings → API Keys; redirect URI
+      `http://localhost:51731/callback`. Pass it as `-DNAM_TONE3000_CLIENT_ID=…` for
+      release builds or paste it in the tab's setup page. Until then the tab shows the
+      setup page.)*
+- [x] **Login** (system browser → `http://localhost:<port>/callback`), token stored in
+      QSettings (keychain judged not cheap: three platforms, no Qt API), logout.
+      *(`Tone3000Client`: PKCE S256, `state` check, loopback `QTcpServer` on
+      51731–51734 (v4+v6), 5-min timeout, pre-emptive refresh 60 s before expiry,
+      401 → refresh → one retry, dead refresh token → signed out.)*
+- [x] **Browse:** trending, latest, ~~search, filter by make/tag~~ (→ select flow, see
+      above); tone cards with image, creator, license; favorite/unfavorite; "open on
+      TONE3000". *(Lists: Trending, Latest, Favorites, Downloads, Mine; paged where the
+      API pages. Cards: thumb, title, gear · format, avatar + @creator, ★, ✓ when a
+      model is already in the library.)*
+- [x] **Download** a tone's model(s) into the library (sidecar JSON: tone id, creator,
       license, URL) → immediately loadable; already-downloaded marker; offline = the
-      local tab still works, the TONE3000 tab says so.
-- [ ] **Preset ↔ tone linkage:** presets record the TONE3000 tone/model id next to the
+      local tab still works, the TONE3000 tab says so. *(`~/Documents/NAM Player/TONE3000/
+      <creator>/<tone>/<model>.nam` + `.t3k.json`; the folder is an implicit library
+      root; "Load" on a downloaded row; Download all; Bearer never forwarded to the
+      storage redirect.)*
+- [x] **Preset ↔ tone linkage:** presets record the TONE3000 tone/model id next to the
       path; loading a preset whose model is missing offers to fetch it. This is what
-      makes *sharing presets* work (Phase 19).
-- [ ] Rate-limit handling, listing cache, their branding/attribution requirements met.
-- [ ] Networking via `Qt6::Network` (part of `qt6-base`; CMake `find_package` gains
+      makes *sharing presets* work (Phase 19). *(`tone3000.model/ir` in the preset;
+      resolution order: same model id elsewhere in the library → download offer.)*
+- [x] Rate-limit handling, listing cache, their branding/attribution requirements met.
+      *(429 + Retry-After ≤ 30 s → one automatic retry with a notice; 5-min in-memory
+      listing cache, invalidated on favorite/download; image disk cache. Branding:
+      official logo pack in `gui/resources/tone3000`, full logo on splash + list header,
+      T3K mark on the Browse button and as the hero-row origin marker, recommended
+      partnership copy, signed-in avatar + username, creator on every card.)*
+- [x] Networking via `Qt6::Network` (part of `qt6-base`; CMake `find_package` gains
       `Network`). Phase 8 packaging (which follows) must bundle it.
+- [x] **Automated test** (added): `-DNAM_BUILD_TESTS=ON` → `Tone3000ClientTest` runs
+      the client against `tests/mock_tone3000.py` (sign-in, refresh, 429, lists,
+      favorites, models, download + sidecar, images, sign-out). 40 checks, passing.
 - [ ] ~~Tag v1.0.~~ → end of Phase 8 (2026-09-12).
+
+Manual verification (2026-09-17 — needs the real key and a human):
+
+- [ ] With the key: Continue → browser sign-in → pick a tone → back in the app on that
+      tone's page. Does TONE3000 accept the unregistered `localhost` redirect URI
+      (their docs say localhost is allowed in development)? If not, register it.
+- [ ] Trending / Latest show real cards with images; Favorites reflects ★ toggles made
+      in the app and on the site; Downloads lists what was fetched.
+- [ ] Download a model: file + sidecar land in the TONE3000 folder, the local tab shows
+      it with "TONE3000 · @creator", Load puts it in the rig, the Amplifier row shows
+      the T3K mark and clicking it opens the tone.
+- [ ] Save a preset with that model, delete the file, load the preset → download offer
+      → model back and loaded.
+- [ ] Pull the network: lists say offline, the local library works; reconnect and ↻.
+- [ ] Sign out, sign in again; wait > 1 h and use a list (refresh path).
 
 ## Phase 13 — Presets as the live unit
 

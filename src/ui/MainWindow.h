@@ -26,7 +26,10 @@ class QLabel;
 class QPushButton;
 class QToolButton;
 class AudioStatusBar;
+class LibraryDock;
 class LibraryPanel;
+class Tone3000Client;
+class Tone3000Panel;
 class TunerDisplay;
 class VUMeter;
 
@@ -80,9 +83,14 @@ private:
     void loadLibraryEntry(LibraryEntry::Kind kind, const QString& path);
     // ‹ › on the hero rows: next/previous entry in the library's visible order.
     void stepLibrary(LibraryEntry::Kind kind, int step);
-    // Hero row scaffold: ‹ › Browse + name + metadata labels appended to a card.
+    // Hero row scaffold: ‹ › Browse + origin mark + name + metadata labels.
     void makeHeroControls(QWidget* card, LibraryEntry::Kind kind,
-                          QLabel*& nameOut, QLabel*& metaOut);
+                          QLabel*& nameOut, QLabel*& metaOut, QLabel*& originOut);
+    // Preset references a TONE3000 model that isn't on disk: find it in the
+    // library by model id, else offer to download it. Calls `then(path)`
+    // with an empty path when nothing could be resolved.
+    void resolveTone3000Model(int modelId, const QString& title,
+                              std::function<void(const QString&)> then);
 
     // Row-card scaffold: [≡ grip | name label]. The caller appends its
     // controls to the card's QHBoxLayout.
@@ -152,9 +160,14 @@ private:
     QLabel*      mLblIRStatus   = nullptr;
     QLabel*      mLblIRMeta     = nullptr;
 
-    LibraryIndex* mLibraryIndex = nullptr;
-    LibraryPanel* mLibrary      = nullptr;
-    QDockWidget*  mLibraryDock  = nullptr;
+    LibraryIndex*   mLibraryIndex = nullptr;
+    Tone3000Client* mTone3000     = nullptr;
+    LibraryDock*    mLibraryTabs  = nullptr;
+    LibraryPanel*   mLibrary      = nullptr; // local tab (owned by mLibraryTabs)
+    Tone3000Panel*  mT3kPanel     = nullptr; // community tab
+    QDockWidget*    mLibraryDock  = nullptr;
+    QLabel*         mLblNAMOrigin = nullptr; // T3K mark when the model came from TONE3000
+    QLabel*         mLblIROrigin  = nullptr;
 
     AudioStatusBar* mAudioBar = nullptr;
     bool            mAudioOk  = false; // last known backend state (drives the

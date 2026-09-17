@@ -1,4 +1,5 @@
 #include "LibraryIndex.h"
+#include "Tone3000Client.h"
 
 #include <QDateTime>
 #include <QDir>
@@ -41,6 +42,15 @@ QString LibraryRoots::defaultPresetDir()
            + "/NAM Player/Presets";
 }
 
+LibraryRoots LibraryRoots::withTone3000Dir() const
+{
+    LibraryRoots r = *this;
+    const QString t3k = Tone3000Client::downloadDir();
+    if (!r.models.contains(t3k)) r.models << t3k;
+    if (!r.irs.contains(t3k))    r.irs << t3k;
+    return r;
+}
+
 static LibraryRoots loadRoots()
 {
     QSettings s;
@@ -69,6 +79,29 @@ static QString khz(double sr)
 {
     if (sr <= 0) return {};
     return QString::number(sr / 1000.0, 'g', 4) + " kHz";
+}
+
+// TONE3000 sidecar next to a downloaded model/IR: origin for the list, the
+// hero row marker and preset linkage.
+static void readSidecar(const QString& path, LibraryEntry& e)
+{
+    QFile f(Tone3000Client::sidecarPath(path));
+    if (!f.open(QIODevice::ReadOnly)) return;
+    const QJsonObject o = QJsonDocument::fromJson(f.readAll()).object();
+    e.t3kToneId  = o.value("tone_id").toInt();
+    e.t3kModelId = o.value("model_id").toInt();
+    e.t3kTitle   = o.value("tone_title").toString();
+    e.t3kCreator = o.value("creator").toString();
+}
+
+static void appendSidecarInfo(LibraryEntry& e)
+{
+    if (!e.fromTone3000()) return;
+    QString who = e.t3kCreator.isEmpty() ? QStringLiteral("TONE3000") : "TONE3000 · @" + e.t3kCreator;
+    e.summary = e.summary.isEmpty() ? who : e.summary + " · " + who;
+    QString line = "From TONE3000: " + (e.t3kTitle.isEmpty() ? QStringLiteral("tone") : e.t3kTitle);
+    if (!e.t3kCreator.isEmpty()) line += " by @" + e.t3kCreator;
+    e.details = e.details.isEmpty() ? line : e.details + "\n" + line;
 }
 
 // Model metadata from the .nam JSON. Files carry the full weight array, so
@@ -272,8 +305,12 @@ public slots:
                 if (c != cache.constEnd() && c->size == e.size && c->mtimeMs == e.mtimeMs
                     && c->kind == kind)
                 {
-                    e.summary = c->summary;
-                    e.details = c->details;
+                    e.summary    = c->summary;
+                    e.details    = c->details;
+                    e.t3kToneId  = c->t3kToneId;
+                    e.t3kModelId = c->t3kModelId;
+                    e.t3kTitle   = c->t3kTitle;
+                    e.t3kCreator = c->t3kCreator;
                 }
                 else
                 {
@@ -283,6 +320,8 @@ public slots:
                     case LibraryEntry::Kind::IR:     describeIR    (p, e); break;
                     case LibraryEntry::Kind::Preset: describePreset(p, e); break;
                     }
+                    readSidecar(p, e);
+                    appendSidecarInfo(e);
                     cacheDirty = true;
                 }
                 out << e;
@@ -305,7 +344,7 @@ private:
         QFile f(path);
         if (!f.open(QIODevice::ReadOnly)) return h;
         const QJsonObject root = QJsonDocument::fromJson(f.readAll()).object();
-        if (root.value("version").toInt() != 1) return h;
+        if (root.value("version").toInt() != 2) return h;
         for (const QJsonValue v : root.value("entries").toArray())
         {
             const QJsonObject o = v.toObject();
@@ -314,8 +353,12 @@ private:
             e.path    = o.value("path").toString();
             e.size    = static_cast<qint64>(o.value("size").toDouble());
             e.mtimeMs = static_cast<qint64>(o.value("mtime").toDouble());
-            e.summary = o.value("summary").toString();
-            e.details = o.value("details").toString();
+            e.summary    = o.value("summary").toString();
+            e.details    = o.value("details").toString();
+            e.t3kToneId  = o.value("t3kTone").toInt();
+            e.t3kModelId = o.value("t3kModel").toInt();
+            e.t3kTitle   = o.value("t3kTitle").toString();
+            e.t3kCreator = o.value("t3kCreator").toString();
             if (!e.path.isEmpty()) h.insert(e.path, e);
         }
         return h;
@@ -333,10 +376,17 @@ private:
             o["mtime"]   = static_cast<double>(e.mtimeMs);
             o["summary"] = e.summary;
             o["details"] = e.details;
+            if (e.fromTone3000())
+            {
+                o["t3kTone"]    = e.t3kToneId;
+                o["t3kModel"]   = e.t3kModelId;
+                o["t3kTitle"]   = e.t3kTitle;
+                o["t3kCreator"] = e.t3kCreator;
+            }
             arr.append(o);
         }
         QJsonObject root;
-        root["version"] = 1;
+        root["version"] = 2;
         root["entries"] = arr;
         QDir().mkpath(QFileInfo(path).absolutePath());
         QFile f(path);
@@ -396,7 +446,7 @@ void LibraryIndex::requestScan()
     mScanning = true;
     emit scanStarted();
     QMetaObject::invokeMethod(mWorker,
-                              [w = mWorker, roots = mRoots, cache = mCachePath] { w->scan(roots, cache); },
+                              [w = mWorker, roots = mRoots.withTone3000Dir(), cache = mCachePath] { w->scan(roots, cache); },
                               Qt::QueuedConnection);
 }
 
@@ -441,7 +491,25 @@ LibraryEntry LibraryIndex::describe(const QString& path)
     case LibraryEntry::Kind::IR:     describeIR    (e.path, e); break;
     case LibraryEntry::Kind::Preset: describePreset(e.path, e); break;
     }
+    readSidecar(e.path, e);
+    appendSidecarInfo(e);
     return e;
+}
+
+const LibraryEntry* LibraryIndex::findTone3000Model(int modelId) const
+{
+    if (modelId == 0) return nullptr;
+    for (const auto& e : mEntries)
+        if (e.t3kModelId == modelId) return &e;
+    return nullptr;
+}
+
+bool LibraryIndex::hasTone3000Tone(int toneId) const
+{
+    if (toneId == 0) return false;
+    for (const auto& e : mEntries)
+        if (e.t3kToneId == toneId) return true;
+    return false;
 }
 
 LibraryEntry::Kind LibraryIndex::kindForPath(const QString& path, bool* ok)

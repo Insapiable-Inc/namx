@@ -1,0 +1,7 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+    <qresource prefix="/">
+        <file>tone3000/tone3000-logo.png</file>
+        <file>tone3000/t3k-mark.png</file>
+    </qresource>
+</RCC>
