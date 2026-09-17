@@ -24,9 +24,11 @@ Decisions:
   experience is a file dialog is not done. ~~The `v1.0` tag moves from Phase 8 to the end
   of Phase 12.~~ Superseded 2026-09-12, see next.
 - **Packaging goes last** (2026-09-12). Phase 8 runs *after* Phase 12, right before
-  release, so the desktop file, AppImage, Flatpak and CI jobs are built once against
-  the final v1.0 feature set (Library + TONE3000 + `Qt6::Network`) instead of being
-  redone. The `v1.0` tag is back at the end of Phase 8.
+  release, so the desktop file and CI jobs are built once against the final v1.0
+  feature set (Library + TONE3000 + `Qt6::Network`) instead of being redone. The
+  `v1.0` tag is back at the end of Phase 8.
+- **No AppImage, Flatpak or other bundle** (2026-09-17). Linux users are assumed to
+  have Qt 6 and JACK installed; distribution is source + distro packages (PKGBUILD).
 - **Execution order:** 7 → 11 → 12 → 8 (packaging) → **tag v1.0** → 13 → 14 →
   15 (absorbs Phase 10 tempo) → 16 → 17 → 18 → 19; Phase 9 (knob tapers) slots in
   wherever a knob-heavy phase touches the widgets (17 at the latest).
@@ -393,18 +395,13 @@ app id in hicolor, `setWindowIcon` from the qrc, Windows exe icon + version bloc
 - [x] AUR PKGBUILD (`qt6-base jack`; `pipewire-jack` as optdepend — both provide
       `jack`). Source: the release job's submodule-vendored tarball; `sha256sums`
       to be filled at publish time. *Not run through makepkg yet (needs the tarball).*
-- [x] AppImage via linuxdeploy-qt: `gui/packaging/appimage.sh`. Built and smoke-tested
-      locally (39 MB; `--version` and `--self-test-and-exit` pass from the AppImage).
-      Host `libjack` excluded on purpose; Qt plugin set curated through a qmake
-      wrapper (distro extras like KDE's kimageformats otherwise break the bundle);
-      `NO_STRIP` because linuxdeploy's strip predates `.relr.dyn`.
-- [x] Flatpak manifest (`gui/packaging/cl.pichulero.NAMPlayer.yml`: KDE 6.9 runtime,
-      PipeWire-JACK module, pipewire socket, Documents/Music/~/NAM access, network).
-      *Written, not built — no flatpak-builder on this machine; first Flathub
-      submission will shake it out.*
-- [x] CI release job on tag push: `.github/workflows/release.yml` — Ubuntu 22.04
-      (AppImage), Arch container (build + tests + install layout), Windows
-      (windeployqt zip), source tarball, GitHub release with all artifacts;
+- [x] ~~AppImage via linuxdeploy-qt.~~ **Dropped (decision 2026-09-17): no AppImage.**
+- [x] ~~Flatpak manifest (`--socket=pipewire`).~~ **Dropped (decision 2026-09-17): no
+      Flatpak.** Linux users are assumed to have Qt 6 and JACK installed; they build
+      from source or a distro package.
+- [x] CI release job on tag push: `.github/workflows/release.yml` — Ubuntu 22.04 and
+      Arch container (build + tests + install layout), Windows (windeployqt zip),
+      source tarball, GitHub release with the artifacts;
       `-DNAM_NATIVE_OPT=OFF` everywhere; TONE3000 key from the `TONE3000_CLIENT_ID`
       repository secret. `gui-linux.yml` / `gui-windows.yml` updated likewise.
 - [x] Headless smoke test in CI: `QT_QPA_PLATFORM=offscreen NAMPlayer --self-test-and-exit`

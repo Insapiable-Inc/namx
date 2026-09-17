@@ -160,11 +160,9 @@ and `.nampreset` file associations), the AppStream metadata and the icon theme f
 Run `update-desktop-database` / `update-mime-database` afterwards if your distro
 doesn't hook them.
 
-Other packaging routes live in [`packaging/`](packaging/README.md): an AUR
-`PKGBUILD`, a Flatpak manifest, and `appimage.sh`, which turns a portable
-(`-DNAM_NATIVE_OPT=OFF`) build into `NAMPlayer-x86_64.AppImage` with linuxdeploy.
-The AppImage uses the host's `libjack` on purpose, so it reaches whatever audio server
-you run (jackd or PipeWire).
+An AUR-style `PKGBUILD` lives in [`packaging/`](packaging/README.md). There is no
+AppImage or Flatpak on purpose: the app expects the system's Qt 6 and JACK
+(jackd2 or PipeWire-JACK).
 
 Command-line flags: `NAMPlayer [file…]` opens `.nam` / `.wav` / `.nampreset` files;
 `--version`; `--self-test-and-exit` (headless CI check: window up, library scanned,

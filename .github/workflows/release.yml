@@ -1,9 +1,10 @@
 name: Release
 
-# Tag push (v1.0.0, v1.1.0-rc1, …) → portable builds for Linux (AppImage,
-# Ubuntu 22.04 base), Arch (build + tests only), Windows (windeployqt zip),
-# a source tarball with the submodules vendored (for the AUR PKGBUILD), and a
-# GitHub release carrying all of them. Every build uses -DNAM_NATIVE_OPT=OFF
+# Tag push (v1.0.0, v1.1.0-rc1, …) → build + tests on Ubuntu 22.04 and Arch
+# (Linux users install from source or the PKGBUILD against their own Qt and
+# JACK — no bundled AppImage/Flatpak, decision 2026-09-17), a Windows
+# windeployqt zip, a source tarball with the submodules vendored (for the
+# AUR PKGBUILD), and a GitHub release. Every build uses -DNAM_NATIVE_OPT=OFF
 # (portable AVX2/FMA) and the TONE3000 key from the TONE3000_CLIENT_ID secret.
 
 on:
@@ -45,18 +46,17 @@ jobs:
           path: out/*
 
   linux:
-    name: Linux (Ubuntu 22.04, AppImage)
+    name: Linux (Ubuntu 22.04)
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
-          fetch-depth: 0
       - name: Install build dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y cmake ninja-build qt6-base-dev qt6-base-dev-tools \
-            libjack-jackd2-dev pkg-config libgl1-mesa-dev libfuse2 \
+            libjack-jackd2-dev pkg-config libgl1-mesa-dev \
             desktop-file-utils appstream python3
       - name: Configure (portable, tests on)
         working-directory: gui
@@ -77,27 +77,14 @@ jobs:
           ./build-release/NAMPlayer --version
           timeout 30 ./build-release/NAMPlayer --self-test-and-exit
           ./build-release/Tone3000ClientTest
-      - name: Validate packaging files
-        run: |
-          desktop-file-validate gui/packaging/cl.pichulero.NAMPlayer.desktop
-          appstreamcli validate --no-net gui/packaging/cl.pichulero.NAMPlayer.metainfo.xml || true
-          xmllint --noout gui/packaging/cl.pichulero.NAMPlayer.xml
-      - name: AppImage
+      - name: Validate packaging files + install layout
         working-directory: gui
-        env:
-          APPIMAGE_EXTRACT_AND_RUN: 1
-          VERSION: ${{ github.ref_name }}
         run: |
-          export VERSION="${VERSION#v}"
-          ./packaging/appimage.sh build-release
-          ls -la build-appimage/*.AppImage
-          (cd build-appimage && sha256sum *.AppImage > NAMPlayer-x86_64.AppImage.sha256)
-      - uses: actions/upload-artifact@v4
-        with:
-          name: linux-appimage
-          path: |
-            gui/build-appimage/*.AppImage
-            gui/build-appimage/*.sha256
+          desktop-file-validate packaging/cl.pichulero.NAMPlayer.desktop
+          appstreamcli validate --no-net packaging/cl.pichulero.NAMPlayer.metainfo.xml || true
+          xmllint --noout packaging/cl.pichulero.NAMPlayer.xml
+          DESTDIR="$PWD/stage" cmake --install build-release --prefix /usr
+          find stage -type f | sort
 
   arch:
     name: Arch Linux (build + tests)
@@ -204,5 +191,4 @@ jobs:
           prerelease: ${{ contains(github.ref_name, '-') }}
           files: |
             artifacts/source/*
-            artifacts/linux-appimage/*
             artifacts/windows/*

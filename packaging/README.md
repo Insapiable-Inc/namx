@@ -8,9 +8,10 @@ Everything a distribution or a release job needs, all fed by `cmake --install`:
 | `cl.pichulero.NAMPlayer.metainfo.xml` | AppStream metadata (software centers, Flathub) |
 | `cl.pichulero.NAMPlayer.xml` | shared-mime-info types `application/x-nam`, `application/x-nampreset` |
 | `PKGBUILD` | Arch / AUR package (`nam-player`) |
-| `cl.pichulero.NAMPlayer.yml` | Flatpak manifest (KDE 6.9 runtime, PipeWire-JACK) |
-| `appimage.sh` | Builds `NAMPlayer-x86_64.AppImage` with linuxdeploy (host libjack) |
 | `NAMPlayer.rc` | Windows icon + version resource (compiled into the exe on MSVC) |
+
+No AppImage, Flatpak or other bundle (decision 2026-09-17): Linux users install from
+source or a distro package against the Qt and JACK they already have.
 
 Icons live in `../resources/icons` (`NAMPlayer.svg` source, PNG sizes 16–512,
 `NAMPlayer.ico`) and install as `cl.pichulero.NAMPlayer` in the hicolor theme.
