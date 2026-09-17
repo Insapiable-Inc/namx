@@ -51,6 +51,10 @@ set(GUI_SOURCES
     src/ui/EffectShortcuts.h
     src/ui/AudioStatusBar.cpp
     src/ui/AudioStatusBar.h
+    src/ui/LibraryIndex.cpp
+    src/ui/LibraryIndex.h
+    src/ui/LibraryPanel.cpp
+    src/ui/LibraryPanel.h
     src/ui/ParamRegistry.h
     src/ui/PresetSerializer.cpp
     src/ui/PresetSerializer.h

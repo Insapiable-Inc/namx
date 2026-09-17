@@ -120,6 +120,8 @@ All effects inherit `EffectBase` (`src/dsp/EffectBase.h` — the header comment 
 | `ParamRegistry.h` | `src/ui/` | `ParamDesc` — one entry per user-facing parameter (shared by MainWindow + PresetSerializer) |
 | `PresetSerializer` | `src/ui/PresetSerializer.h/cpp` | Preset schema v2 JSON ↔ registry/engine (v1 files load too) |
 | `AudioStatusBar` | `src/ui/AudioStatusBar.h/cpp` | Bottom status bar: backend state, rate/buffer/latency, device pickers; persists IDs, emits `deviceSelectionChanged` |
+| `LibraryIndex` | `src/ui/LibraryIndex.h/cpp` | Library scan: worker thread over the root folders, metadata cache (`AppDataLocation/library-index.json`), `QFileSystemWatcher` rescans; `LibraryEntry` carries a pre-built `summary`/`details` per file |
+| `LibraryPanel` | `src/ui/LibraryPanel.h/cpp` | Library dock content: Models/IRs/Presets sections, search, favorites, recents, sort, two-line list; emits `activated(kind, path)`, owner reports back via `setLoadedPath` |
 | `VUMeter` | `src/ui/VUMeter.h/cpp` | Vertical peak bar; `setPeak(linear)` on a 60 dB scale |
 | `Log.h` | `src/dsp/` | `nam.audio` logging category — use `qCWarning(lcAudio, …)`, never `std::cerr` (invisible on Windows) |
 | `KnobWidget` | `src/ui/KnobWidget.h/cpp` | `QDial` wrapper: float range, scroll step, label |
@@ -138,9 +140,18 @@ session persistence and future MIDI mapping consume it too. **When adding an eff
 parameter, register it here — never add hand-written connects, slots, or preset keys.**
 `group`+`key` mirror the preset JSON schema (empty group = top-level key).
 
+### Loading files
+
+Every way a model/IR/preset gets loaded — library click, ‹ › arrows, `Library → Import…`
+dialogs, drag-and-drop onto the window, session restore, preset references — goes through
+`MainWindow::loadModelFile` / `loadIRFile` / `loadPresetFile`. They skip a reload of the
+already-loaded path, persist `files/last*`, bump the library recents and mark the loaded
+entry, and refresh the Amplifier/Cabinet hero rows (`updateHeroCards`). Don't call
+`AudioEngine::loadModel`/`loadIR` from the UI directly.
+
 ### Persistence
 
-- **QSettings** (org `pichulero.cl`, app name set in `main.cpp` — drives the config path): last model/IR/preset paths, audio device IDs, JACK port connections, window geometry, and the full registry state plus `session/effectOrder` under `session/` (saved on exit + debounced 1 s after any widget change; restored on launch through the widgets). First run auto-connects `system:capture_1`/`playback_{1,2}`.
+- **QSettings** (org `pichulero.cl`, app name set in `main.cpp` — drives the config path): last model/IR/preset paths, audio device IDs, JACK port connections, window geometry + dock state (`window/state`), the library (`library/{model,ir,preset}Roots`, `favorites`, `recents`, `section`, `mode`, `sort`), and the full registry state plus `session/effectOrder` under `session/` (saved on exit + debounced 1 s after any widget change; restored on launch through the widgets). First run auto-connects `system:capture_1`/`playback_{1,2}`.
 - **Presets** are `.nampreset` JSON files via `QJsonDocument`, schema v2: all registry parameters plus `version`, `namEnabled`, `effectOrder` (stable-ID list), and embedded `namPath`/`irPath` (applied on load when the file exists; otherwise a warning, current model/IR kept). v1 files (no `version`) still load. Loading applies values through the widgets, so the UI and engine can't drift.
 
 ## NAM core library

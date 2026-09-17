@@ -418,28 +418,66 @@ Global tempo, so time-based parameters can be set in note values.
 - [ ] **Persistence:** per-param mode + fraction and the BPM join the session and
       preset schema (versioned, so old files keep loading).
 
-## Phase 11 — Library (v1.0)
+## Phase 11 — Library (v1.0) ✅ (completed 2026-09-17, code; manual verification below)
 
 Models, IRs and presets become browsable lists, not file dialogs. Everything in
 Phases 12, 13 and 16 stands on this.
 
-- [ ] **Library panel** (dockable, left of the rig; collapsible; remembers state):
+- [x] **Library panel** (dockable, left of the rig; collapsible; remembers state):
       three sections — Models, IRs, Presets — one list widget, one behaviour.
-- [ ] **Root folders** configurable (several per type; sane defaults, e.g. `~/NAM`,
+      *(`QDockWidget` + `LibraryPanel`; `Ctrl+L` toggles; position/visibility in
+      `window/state`.)*
+- [x] **Root folders** configurable (several per type; sane defaults, e.g. `~/NAM`,
       `~/Music/IRs`, the presets dir); recursive scan on a worker thread with a cached
       index; `QFileSystemWatcher` keeps it live. Never block the GUI on a scan.
-- [ ] **Search-as-you-type**, favorites (★), recents, sort by name/date; **prev/next**
+      *(`LibraryIndex`: Library → Folders… dialog, per-kind roots, cache keyed by
+      path+size+mtime in `AppDataLocation/library-index.json`, 600 ms debounced
+      rescans on directory changes; presets default to
+      `~/Documents/NAM Player/Presets`, which Save Preset also defaults to.)*
+- [x] **Search-as-you-type**, favorites (★), recents, sort by name/date; **prev/next**
       on keyboard (arrows / PgUp-PgDn when the panel has focus) — MIDI later (Phase 16).
-- [ ] **Drag-and-drop** `.nam` / `.wav` / `.nampreset` files onto the window (and onto
-      the Amp / IR cards) — `setAcceptDrops` + `dropEvent`.
-- [ ] **Model metadata** read from the `.nam` JSON (architecture, sample rate,
+      *(Search covers name, folder and metadata; `Ctrl+F` focuses it. Arrow browsing
+      loads after a 180 ms rest so a held key doesn't queue model rebuilds. Typed
+      keys in the search field don't fire the effect shortcuts; list type-ahead is
+      off so digits in the list still toggle effects.)*
+- [x] **Drag-and-drop** `.nam` / `.wav` / `.nampreset` files onto the window (and onto
+      the Amp / IR cards) — `setAcceptDrops` + `dropEvent`. *(Anywhere on the window,
+      strip and cards included; several files at once load one per kind.)*
+- [x] **Model metadata** read from the `.nam` JSON (architecture, sample rate,
       training/loudness info when present) shown in the list and on the Amp card.
-- [ ] **Amp and IR become hero cards:** name, metadata, ‹ › arrows cycling the library
+      *(Also IR rate/channels/length from the WAV header and the model/IR a preset
+      references. Out-of-library files are described on load.)*
+- [x] **Amp and IR become hero cards:** name, metadata, ‹ › arrows cycling the library
       (Petrucci: IR combo box + navigation arrows), Unload demoted to a menu item.
       *(The two big top bars are already gone — 2026-08-23 moved Load/Unload + file
       name onto the Amplifier/Cabinet rows.)* The two `Load…` buttons become
-      "Browse" (focus the library).
-- [ ] Keep Import/Export file dialogs for one-offs; they stop being the primary path.
+      "Browse" (focus the library). *(Unload + Import… live in the row's context menu.)*
+- [x] Keep Import/Export file dialogs for one-offs; they stop being the primary path.
+      *(Library → Import Model… / Import Impulse Response…; Preset → Save/Load.)*
+- [x] On the way (AUDIT 1.6 / 1.8): a preset that references the already-loaded
+      model/IR no longer rebuilds it; Save Preset appends `.nampreset` when the
+      dialog didn't; a preset file that isn't a JSON object is rejected instead of
+      resetting the gains.
+
+Manual verification (2026-09-17 — needs a human at the keyboard):
+
+- [ ] Fresh config: the dock opens on the left with `~/NAM` scanned; the footer says
+      "Scanning…" briefly and the counts land without the UI stalling.
+- [ ] Click a model: it loads, the row gets the accent bar, the Amplifier row shows
+      its name + "WaveNet · 48 kHz · …". Hold ↓ in the list: one load when the key
+      rests, not one per row. ‹ › on the row follow the visible (filtered/sorted) order
+      and wrap around.
+- [ ] Type in the search field: digits/letters filter, effects don't toggle. Click
+      the list and press `1`: the first effect toggles.
+- [ ] ★ on a row toggles the favorite without loading it; **★** mode shows only those.
+      **Recent** lists the last loads, newest first, including drops and imports.
+- [ ] Drop a `.nam` from Dolphin onto the strip, onto a card and onto the dock: all
+      three load it. Drop a `.nampreset`: it applies.
+- [ ] Save a preset into the default folder: it appears in **Presets** within a
+      second without a rescan click. Delete a file on disk: it disappears.
+- [ ] Library → Folders…: add `gui/presets`, OK: presets appear; remove it: gone.
+- [ ] Close the dock, quit, relaunch: still closed; `Ctrl+L` brings it back at the
+      same width.
 
 ## Phase 12 — TONE3000 integration (v1.0) → then Phase 8 (packaging) → tag **v1.0**
 

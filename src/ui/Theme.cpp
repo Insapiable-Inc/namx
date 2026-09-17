@@ -263,7 +263,144 @@ QLabel#fileStatusOk {
     padding-left: 6px;
 }
 
-/* === Combo boxes (device selectors) === */
+/* === Hero rows (Amplifier / Cabinet): metadata + ‹ › arrows === */
+QLabel#fileMeta {
+    color: #aab0bc;
+    padding-left: 8px;
+}
+QToolButton#heroArrow {
+    color: #d8dee9;
+    font-size: 15pt;
+    font-weight: 600;
+    min-width: 22px;
+    max-width: 22px;
+    padding: 0 0 3px 0;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+}
+QToolButton#heroArrow:hover {
+    background-color: #2f3744;
+}
+QToolButton#heroArrow:pressed {
+    background-color: #1f242c;
+}
+
+/* === Library dock === */
+QDockWidget {
+    color: #9aa1ad;
+    font-weight: 600;
+    titlebar-close-icon: none;
+    titlebar-normal-icon: none;
+}
+QDockWidget::title {
+    background-color: #1a1d24;
+    border-bottom: 1px solid #2a2f38;
+    padding: 5px 8px;
+    text-align: left;
+}
+QDockWidget::close-button, QDockWidget::float-button {
+    border: none;
+    background: transparent;
+    padding: 0;
+    icon-size: 12px;
+}
+QDockWidget::close-button:hover, QDockWidget::float-button:hover {
+    background-color: #2f3744;
+    border-radius: 3px;
+}
+QWidget#libraryPanel {
+    background-color: #15171c;
+}
+QToolButton#librarySection {
+    color: #9aa1ad;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 5px 4px;
+    font-weight: 600;
+}
+QToolButton#librarySection:hover {
+    color: #d8dee9;
+}
+QToolButton#librarySection:checked {
+    color: #d8dee9;
+    border-bottom: 2px solid #5cc8a8;
+}
+QToolButton#libraryMode, QToolButton#libraryTool {
+    color: #9aa1ad;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    padding: 3px 8px;
+}
+QToolButton#libraryMode:hover, QToolButton#libraryTool:hover {
+    color: #d8dee9;
+    background-color: #2f3744;
+}
+QToolButton#libraryMode:checked {
+    color: #d8dee9;
+    background-color: #2a2f38;
+    border-color: #353c4a;
+}
+QLineEdit#librarySearch {
+    background-color: #1a1d24;
+    color: #d8dee9;
+    border: 1px solid #2a2f38;
+    border-radius: 5px;
+    padding: 5px 8px;
+    selection-background-color: #5cc8a8;
+    selection-color: #15171c;
+}
+QLineEdit#librarySearch:focus {
+    border-color: #5cc8a8;
+}
+QListView#libraryList {
+    background-color: #1a1d24;
+    border: 1px solid #2a2f38;
+    border-radius: 5px;
+    outline: none;
+}
+QLabel#libraryStatus {
+    color: #9aa1ad;
+    padding-left: 4px;
+}
+
+/* === Dialogs inside the window tree (Library Folders) === */
+QListWidget {
+    background-color: #1a1d24;
+    color: #d8dee9;
+    border: 1px solid #2a2f38;
+    border-radius: 5px;
+    outline: none;
+}
+QListWidget::item {
+    padding: 4px 6px;
+}
+QListWidget::item:selected {
+    background-color: #2f3744;
+    color: #d8dee9;
+}
+QTabWidget::pane {
+    border: 1px solid #2a2f38;
+    border-radius: 5px;
+    top: -1px;
+}
+QTabBar::tab {
+    background: transparent;
+    color: #9aa1ad;
+    padding: 6px 14px;
+    border-bottom: 2px solid transparent;
+}
+QTabBar::tab:selected {
+    color: #d8dee9;
+    border-bottom: 2px solid #5cc8a8;
+}
+QTabBar::tab:hover {
+    color: #d8dee9;
+}
+
+/* === Combo boxes (library sort) === */
 QComboBox {
     background-color: #2a2f38;
     color: #d8dee9;

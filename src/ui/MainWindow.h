@@ -11,15 +11,22 @@
 #include "AudioEngine.h"
 #include "EffectShortcuts.h"
 #include "KnobWidget.h"
+#include "LibraryIndex.h"
 #include "ParamRegistry.h"
 #include "ToggleSwitch.h"
 
+class QDockWidget;
+class QDragEnterEvent;
+class QDropEvent;
+class QMimeData;
 class QFrame;
 class QHBoxLayout;
 class QVBoxLayout;
 class QLabel;
 class QPushButton;
+class QToolButton;
 class AudioStatusBar;
+class LibraryPanel;
 class TunerDisplay;
 class VUMeter;
 
@@ -35,11 +42,16 @@ protected:
     // Drag-and-drop reordering of the effect strip (filter installed on the
     // effect cards and on the strip container).
     bool eventFilter(QObject* obj, QEvent* ev) override;
+    // .nam / .wav / .nampreset files dropped anywhere on the window load.
+    void dragEnterEvent(QDragEnterEvent* ev) override;
+    void dropEvent(QDropEvent* ev) override;
+    static bool hasLoadableUrls(const QMimeData* mime);
 
 private slots:
-    void onLoadNAM();
+    // File dialogs — the one-off path; the Library is the primary one.
+    void onImportNAM();
     void onUnloadNAM();
-    void onLoadIR();
+    void onImportIR();
     void onUnloadIR();
 
     void onSavePreset();
@@ -57,7 +69,20 @@ private:
     void restoreLastFiles();
     void restoreConnections();
     void saveConnections();
-    void updateStatusLabels();
+    // Amplifier / Cabinet hero rows: file name + metadata line.
+    void updateHeroCards();
+
+    // --- Loading (every path in: dialogs, library, drops, session, presets) ---
+    // Return false on failure; `quiet` suppresses the error dialog.
+    bool loadModelFile(const QString& path, bool quiet = false);
+    bool loadIRFile(const QString& path, bool quiet = false);
+    bool loadPresetFile(const QString& path);
+    void loadLibraryEntry(LibraryEntry::Kind kind, const QString& path);
+    // ‹ › on the hero rows: next/previous entry in the library's visible order.
+    void stepLibrary(LibraryEntry::Kind kind, int step);
+    // Hero row scaffold: ‹ › Browse + name + metadata labels appended to a card.
+    void makeHeroControls(QWidget* card, LibraryEntry::Kind kind,
+                          QLabel*& nameOut, QLabel*& metaOut);
 
     // Row-card scaffold: [≡ grip | name label]. The caller appends its
     // controls to the card's QHBoxLayout.
@@ -122,12 +147,14 @@ private:
     std::string              mDragId;      // effect ID being dragged; empty = no drag
     std::vector<std::string> mPreviewIds;  // strip order currently shown while dragging
 
-    QPushButton* mBtnLoadNAM    = nullptr;
-    QPushButton* mBtnUnloadNAM  = nullptr;
-    QPushButton* mBtnLoadIR     = nullptr;
-    QPushButton* mBtnUnloadIR   = nullptr;
-    QLabel*      mLblNAMStatus  = nullptr;
+    QLabel*      mLblNAMStatus  = nullptr; // file name (accent when loaded)
+    QLabel*      mLblNAMMeta    = nullptr; // architecture · rate · gear
     QLabel*      mLblIRStatus   = nullptr;
+    QLabel*      mLblIRMeta     = nullptr;
+
+    LibraryIndex* mLibraryIndex = nullptr;
+    LibraryPanel* mLibrary      = nullptr;
+    QDockWidget*  mLibraryDock  = nullptr;
 
     AudioStatusBar* mAudioBar = nullptr;
     bool            mAudioOk  = false; // last known backend state (drives the

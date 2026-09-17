@@ -2,6 +2,7 @@
 #include "AudioStatusBar.h"
 #include "Constants.h"
 #include "EffectShortcuts.h"
+#include "LibraryPanel.h"
 #include "PresetSerializer.h"
 #include "Theme.h"
 #include "TunerDisplay.h"
@@ -10,11 +11,14 @@
 
 #include <QAction>
 #include <QApplication>
+#include <QDir>
+#include <QDockWidget>
 #include <QDrag>
 #include <QDragEnterEvent>
 #include <QDropEvent>
 #include <QFile>
 #include <QFileDialog>
+#include <QFileInfo>
 #include <QFont>
 #include <QFrame>
 #include <QGraphicsOpacityEffect>
@@ -34,6 +38,8 @@
 #include <QStatusBar>
 #include <QStyle>
 #include <QTimer>
+#include <QToolButton>
+#include <QUrl>
 #include <QVBoxLayout>
 
 #include <algorithm>
@@ -55,6 +61,8 @@ static constexpr int kStereoSlotWidth = 96;  // toggle + "Stereo" caption
 // Every row is exactly as tall as a knob row (40 px dial + knob margins +
 // card margins + border), so knob-less rows and the tuner match the rest.
 static constexpr int kRowCardHeight   = 62;
+// Loaded file name on the Amplifier/Cabinet rows elides beyond this.
+static constexpr int kHeroNameMaxWidth = 420;
 
 // Enable toggle with a live "On"/"Off" caption beside it — one line, so the
 // switch stays on the row's vertical centerline.
@@ -115,6 +123,11 @@ MainWindow::MainWindow(QWidget* parent)
     // on smaller screens, and the session restores the user's geometry.
     setMinimumSize(1280, 720);
     resize(1800, 1000);
+    setAcceptDrops(true);
+
+    // The index starts its first scan immediately (worker thread); the panel
+    // created in setupUI picks the entries up when they land.
+    mLibraryIndex = new LibraryIndex(this);
 
     setupUI();
     registerParameters();
@@ -129,8 +142,11 @@ MainWindow::MainWindow(QWidget* parent)
 
     restoreSessionState();
     {
-        const QByteArray geo = QSettings().value("window/geometry").toByteArray();
+        QSettings s;
+        const QByteArray geo = s.value("window/geometry").toByteArray();
         if (!geo.isEmpty()) restoreGeometry(geo);
+        const QByteArray state = s.value("window/state").toByteArray();
+        if (!state.isEmpty()) restoreState(state); // dock position + visibility
     }
 
     setupAudio();
@@ -151,6 +167,7 @@ MainWindow::~MainWindow()
     mTunerTimer->stop();
     mSessionSaveTimer->stop();
     QSettings().setValue("window/geometry", saveGeometry());
+    QSettings().setValue("window/state", saveState());
     saveSessionState();
     saveConnections();
     mEngine->stop();
@@ -222,6 +239,7 @@ void MainWindow::setupUI()
     rootLayout->setSpacing(4);
 
     // ---- Menu bar ----
+    QMenu* libraryMenu = nullptr;
     {
         auto* mb         = menuBar();
         auto* presetMenu = mb->addMenu("Preset");
@@ -233,6 +251,8 @@ void MainWindow::setupUI()
         connect(actLoad, &QAction::triggered, this, &MainWindow::onLoadPreset);
         presetMenu->addSeparator();
         connect(presetMenu->addAction("Reset All to Defaults…"), &QAction::triggered, this, &MainWindow::onResetAll);
+
+        libraryMenu = mb->addMenu("Library"); // filled once the dock exists (below)
 
         auto* helpMenu = mb->addMenu("Help");
         connect(helpMenu->addAction("About NAM Player"), &QAction::triggered, this, [this] {
@@ -351,19 +371,7 @@ void MainWindow::setupUI()
     {
         auto* col = makeEffectRow("Amplifier", mSwNAMEnable, {});
         mSwNAMEnable->setChecked(true);
-
-        auto* lay = static_cast<QHBoxLayout*>(col->layout());
-        mBtnLoadNAM   = new QPushButton("Load…");
-        mBtnUnloadNAM = new QPushButton("Unload");
-        mBtnUnloadNAM->setEnabled(false);
-        mLblNAMStatus = new QLabel("No model loaded");
-        mLblNAMStatus->setObjectName("fileStatus");
-        connect(mBtnLoadNAM,   &QPushButton::clicked, this, &MainWindow::onLoadNAM);
-        connect(mBtnUnloadNAM, &QPushButton::clicked, this, &MainWindow::onUnloadNAM);
-        // Before the trailing stretch: grip, name, toggle, stereo slot = 4 items.
-        lay->insertWidget(4, mBtnLoadNAM,   0, Qt::AlignVCenter);
-        lay->insertWidget(5, mBtnUnloadNAM, 0, Qt::AlignVCenter);
-        lay->insertWidget(6, mLblNAMStatus, 1, Qt::AlignVCenter);
+        makeHeroControls(col, LibraryEntry::Kind::Model, mLblNAMStatus, mLblNAMMeta);
 
         Theme::tagCard(col, "nam");
         mFxCols[&mEngine->nam()] = col;
@@ -496,18 +504,7 @@ void MainWindow::setupUI()
     {
         auto* col = makeEffectRow("Cabinet", mSwIREnable, {});
         mSwIREnable->setChecked(true);
-
-        auto* lay = static_cast<QHBoxLayout*>(col->layout());
-        mBtnLoadIR   = new QPushButton("Load…");
-        mBtnUnloadIR = new QPushButton("Unload");
-        mBtnUnloadIR->setEnabled(false);
-        mLblIRStatus = new QLabel("No impulse response loaded");
-        mLblIRStatus->setObjectName("fileStatus");
-        connect(mBtnLoadIR,   &QPushButton::clicked, this, &MainWindow::onLoadIR);
-        connect(mBtnUnloadIR, &QPushButton::clicked, this, &MainWindow::onUnloadIR);
-        lay->insertWidget(4, mBtnLoadIR,   0, Qt::AlignVCenter);
-        lay->insertWidget(5, mBtnUnloadIR, 0, Qt::AlignVCenter);
-        lay->insertWidget(6, mLblIRStatus, 1, Qt::AlignVCenter);
+        makeHeroControls(col, LibraryEntry::Kind::IR, mLblIRStatus, mLblIRMeta);
 
         Theme::tagCard(col, "ir");
         mFxCols[&mEngine->ir()] = col;
@@ -587,6 +584,86 @@ void MainWindow::setupUI()
     rackRow->addWidget(scroll, 1);
     rackRow->addWidget(mOutputCard);
     rootLayout->addLayout(rackRow, 1);
+
+    // ---- Library dock (left of the rig; closable, movable, remembers state) ----
+    mLibrary = new LibraryPanel(*mLibraryIndex);
+    connect(mLibrary, &LibraryPanel::activated, this, &MainWindow::loadLibraryEntry);
+
+    mLibraryDock = new QDockWidget("Library", this);
+    mLibraryDock->setObjectName("libraryDock"); // saveState() needs a name
+    mLibraryDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    mLibraryDock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable
+                              | QDockWidget::DockWidgetFloatable);
+    mLibraryDock->setWidget(mLibrary);
+    addDockWidget(Qt::LeftDockWidgetArea, mLibraryDock);
+    resizeDocks({mLibraryDock}, {320}, Qt::Horizontal);
+
+    {
+        QAction* show = mLibraryDock->toggleViewAction();
+        show->setText("Show Library");
+        show->setShortcut(QKeySequence("Ctrl+L"));
+        libraryMenu->addAction(show);
+
+        auto* find = libraryMenu->addAction("Find in Library");
+        find->setShortcut(QKeySequence::Find); // Ctrl+F
+        connect(find, &QAction::triggered, this, [this] {
+            mLibraryDock->show();
+            mLibrary->focusSearch();
+        });
+        libraryMenu->addSeparator();
+        connect(libraryMenu->addAction("Folders…"), &QAction::triggered,
+                mLibrary, &LibraryPanel::editFolders);
+        connect(libraryMenu->addAction("Rescan"), &QAction::triggered,
+                mLibraryIndex, &LibraryIndex::rescan);
+        libraryMenu->addSeparator();
+        connect(libraryMenu->addAction("Import Model…"), &QAction::triggered,
+                this, &MainWindow::onImportNAM);
+        connect(libraryMenu->addAction("Import Impulse Response…"), &QAction::triggered,
+                this, &MainWindow::onImportIR);
+    }
+}
+
+void MainWindow::makeHeroControls(QWidget* card, LibraryEntry::Kind kind,
+                                  QLabel*& nameOut, QLabel*& metaOut)
+{
+    auto* lay = static_cast<QHBoxLayout*>(card->layout());
+    const bool model = kind == LibraryEntry::Kind::Model;
+
+    // ‹ › cycle the library section in its current visible order.
+    auto arrow = [&](const QString& glyph, int step, const QString& tip) {
+        auto* b = new QToolButton;
+        b->setObjectName("heroArrow");
+        b->setText(glyph);
+        b->setAutoRaise(true);
+        b->setFocusPolicy(Qt::NoFocus);
+        b->setToolTip(tip);
+        connect(b, &QToolButton::clicked, this, [this, kind, step] { stepLibrary(kind, step); });
+        return b;
+    };
+    auto* prev = arrow("‹", -1, model ? "Previous model in the library" : "Previous IR in the library");
+    auto* next = arrow("›", +1, model ? "Next model in the library"     : "Next IR in the library");
+
+    auto* browse = new QPushButton("Browse");
+    browse->setToolTip(model ? "Show the model list in the Library"
+                             : "Show the IR list in the Library");
+    browse->setFocusPolicy(Qt::NoFocus);
+    connect(browse, &QPushButton::clicked, this, [this, kind] {
+        mLibraryDock->show();
+        mLibrary->showSection(kind);
+    });
+
+    nameOut = new QLabel(model ? "No model loaded" : "No impulse response loaded");
+    nameOut->setObjectName("fileStatus");
+    metaOut = new QLabel;
+    metaOut->setObjectName("fileMeta");
+
+    // Before the trailing stretch: grip, name, toggle, stereo slot = 4 items.
+    int i = 4;
+    lay->insertWidget(i++, prev,    0, Qt::AlignVCenter);
+    lay->insertWidget(i++, next,    0, Qt::AlignVCenter);
+    lay->insertWidget(i++, browse,  0, Qt::AlignVCenter);
+    lay->insertWidget(i++, nameOut, 0, Qt::AlignVCenter);
+    lay->insertWidget(i++, metaOut, 1, Qt::AlignVCenter);
 }
 
 void MainWindow::layoutStrip(const std::vector<EffectBase*>& order)
@@ -809,6 +886,23 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* ev)
             auto* ce = static_cast<QContextMenuEvent*>(ev);
             const QString name = card->property("displayName").toString();
             QMenu menu(card);
+
+            // Hero rows: Import (file dialog) and Unload live here — the
+            // library is the primary path, so they left the row itself.
+            const bool isAmp = card == mFxCols[&mEngine->nam()];
+            const bool isCab = card == mFxCols[&mEngine->ir()];
+            if (isAmp || isCab)
+            {
+                connect(menu.addAction(isAmp ? "Import Model…" : "Import Impulse Response…"),
+                        &QAction::triggered, this,
+                        isAmp ? &MainWindow::onImportNAM : &MainWindow::onImportIR);
+                QAction* unload = menu.addAction(isAmp ? "Unload Model" : "Unload Impulse Response");
+                unload->setEnabled(isAmp ? mEngine->isModelLoaded() : mEngine->isIRLoaded());
+                connect(unload, &QAction::triggered, this,
+                        isAmp ? &MainWindow::onUnloadNAM : &MainWindow::onUnloadIR);
+                menu.addSeparator();
+            }
+
             QAction* act = menu.addAction("Reset " + name + " to defaults");
             if (menu.exec(ce->globalPos()) == act)
                 resetCardToDefaults(card);
@@ -820,10 +914,10 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* ev)
         if (obj == mStrip)
         {
             auto* de = static_cast<QDragEnterEvent*>(ev);
-            if (de->mimeData()->hasFormat(kEffectMime))
+            if (de->mimeData()->hasFormat(kEffectMime) || hasLoadableUrls(de->mimeData()))
             {
-                de->acceptProposedAction();
-                return true;
+                de->acceptProposedAction(); // files: the strip is the drop
+                return true;                // target Qt found, so accept here
             }
         }
         break;
@@ -835,6 +929,11 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* ev)
             {
                 de->acceptProposedAction();
                 updateDragPreview(de->position().toPoint());
+                return true;
+            }
+            if (hasLoadableUrls(de->mimeData()))
+            {
+                de->acceptProposedAction();
                 return true;
             }
         }
@@ -851,6 +950,11 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* ev)
             {
                 de->acceptProposedAction();
                 commitDragPreview();
+                return true;
+            }
+            if (de->mimeData()->hasUrls())
+            {
+                dropEvent(de);
                 return true;
             }
         }
@@ -902,57 +1006,145 @@ void MainWindow::restartAudioWithCurrentDevices()
 // File slots
 // ---------------------------------------------------------------------------
 
-void MainWindow::onLoadNAM()
+void MainWindow::onImportNAM()
 {
-    QSettings s;
-    QString path = QFileDialog::getOpenFileName(
-        nullptr, "Load NAM Model", s.value("files/lastNAM").toString(),
+    const QString path = QFileDialog::getOpenFileName(
+        nullptr, "Import NAM Model", QSettings().value("files/lastNAM").toString(),
         "NAM Files (*.nam);;All Files (*)");
-    if (path.isEmpty()) return;
-    if (!mEngine->loadModel(path.toStdString()))
-    {
-        QMessageBox::critical(this, "Error", "Failed to load NAM model:\n" + path + "\n\n"
-                              + QString::fromStdString(mEngine->modelLoadError()));
-        return;
-    }
-    s.setValue("files/lastNAM", path);
-    updateStatusLabels();
-    mBtnUnloadNAM->setEnabled(true);
+    if (!path.isEmpty()) loadModelFile(path);
 }
 
 void MainWindow::onUnloadNAM()
 {
     mEngine->unloadModel();
     QSettings().remove("files/lastNAM");
-    updateStatusLabels();
-    mBtnUnloadNAM->setEnabled(false);
+    mLibrary->setLoadedPath(LibraryEntry::Kind::Model, {});
+    updateHeroCards();
 }
 
-void MainWindow::onLoadIR()
+void MainWindow::onImportIR()
 {
-    QSettings s;
-    QString path = QFileDialog::getOpenFileName(
-        nullptr, "Load Impulse Response", s.value("files/lastIR").toString(),
+    const QString path = QFileDialog::getOpenFileName(
+        nullptr, "Import Impulse Response", QSettings().value("files/lastIR").toString(),
         "WAV Files (*.wav);;All Files (*)");
-    if (path.isEmpty()) return;
-    if (!mEngine->loadIR(path.toStdString()))
-    {
-        QMessageBox::critical(this, "Error",
-                              "Failed to load IR:\n" + path + "\n\n"
-                              + QString::fromStdString(mEngine->irLoadError()));
-        return;
-    }
-    s.setValue("files/lastIR", path);
-    updateStatusLabels();
-    mBtnUnloadIR->setEnabled(true);
+    if (!path.isEmpty()) loadIRFile(path);
 }
 
 void MainWindow::onUnloadIR()
 {
     mEngine->unloadIR();
     QSettings().remove("files/lastIR");
-    updateStatusLabels();
-    mBtnUnloadIR->setEnabled(false);
+    mLibrary->setLoadedPath(LibraryEntry::Kind::IR, {});
+    updateHeroCards();
+}
+
+// ---------------------------------------------------------------------------
+// Loading — shared by dialogs, the library, drops, session restore, presets
+// ---------------------------------------------------------------------------
+
+bool MainWindow::loadModelFile(const QString& path, bool quiet)
+{
+    const QString clean = QDir::cleanPath(path);
+    // Same file again (preset reload, arrow wrap-around on a one-item list):
+    // skip the synchronous rebuild + prewarm and the audible state swap.
+    if (!(mEngine->isModelLoaded() && QString::fromStdString(mEngine->modelPath()) == clean))
+    {
+        if (!mEngine->loadModel(clean.toStdString()))
+        {
+            if (!quiet)
+                QMessageBox::critical(this, "Model", "Failed to load NAM model:\n" + clean + "\n\n"
+                                      + QString::fromStdString(mEngine->modelLoadError()));
+            return false;
+        }
+    }
+    QSettings().setValue("files/lastNAM", clean);
+    mLibrary->noteUsed(clean);
+    mLibrary->setLoadedPath(LibraryEntry::Kind::Model, clean);
+    updateHeroCards();
+    return true;
+}
+
+bool MainWindow::loadIRFile(const QString& path, bool quiet)
+{
+    const QString clean = QDir::cleanPath(path);
+    if (!(mEngine->isIRLoaded() && QString::fromStdString(mEngine->irPath()) == clean))
+    {
+        if (!mEngine->loadIR(clean.toStdString()))
+        {
+            if (!quiet)
+                QMessageBox::critical(this, "Impulse Response", "Failed to load IR:\n" + clean + "\n\n"
+                                      + QString::fromStdString(mEngine->irLoadError()));
+            return false;
+        }
+    }
+    QSettings().setValue("files/lastIR", clean);
+    mLibrary->noteUsed(clean);
+    mLibrary->setLoadedPath(LibraryEntry::Kind::IR, clean);
+    updateHeroCards();
+    return true;
+}
+
+void MainWindow::loadLibraryEntry(LibraryEntry::Kind kind, const QString& path)
+{
+    switch (kind)
+    {
+    case LibraryEntry::Kind::Model:  loadModelFile(path);  break;
+    case LibraryEntry::Kind::IR:     loadIRFile(path);     break;
+    case LibraryEntry::Kind::Preset: loadPresetFile(path); break;
+    }
+}
+
+void MainWindow::stepLibrary(LibraryEntry::Kind kind, int step)
+{
+    const QString current = kind == LibraryEntry::Kind::Model
+                                ? QString::fromStdString(mEngine->modelPath())
+                                : QString::fromStdString(mEngine->irPath());
+    const QString next = mLibrary->neighbour(kind, current, step);
+    if (!next.isEmpty() && next != QDir::cleanPath(current))
+        loadLibraryEntry(kind, next);
+}
+
+bool MainWindow::hasLoadableUrls(const QMimeData* mime)
+{
+    if (!mime || !mime->hasUrls()) return false;
+    for (const QUrl& u : mime->urls())
+    {
+        bool ok = false;
+        LibraryIndex::kindForPath(u.toLocalFile(), &ok);
+        if (u.isLocalFile() && ok) return true;
+    }
+    return false;
+}
+
+void MainWindow::dragEnterEvent(QDragEnterEvent* ev)
+{
+    if (hasLoadableUrls(ev->mimeData()))
+        ev->acceptProposedAction();
+}
+
+void MainWindow::dropEvent(QDropEvent* ev)
+{
+    if (!ev->mimeData()->hasUrls()) return;
+    // One file per kind: the last model, the last IR, the last preset win.
+    // A preset goes first so a model/IR dropped alongside overrides its own.
+    QString model, ir, preset;
+    for (const QUrl& u : ev->mimeData()->urls())
+    {
+        if (!u.isLocalFile()) continue;
+        const QString p = u.toLocalFile();
+        bool ok = false;
+        switch (LibraryIndex::kindForPath(p, &ok))
+        {
+        case LibraryEntry::Kind::Model:  if (ok) model  = p; break;
+        case LibraryEntry::Kind::IR:     if (ok) ir     = p; break;
+        case LibraryEntry::Kind::Preset: if (ok) preset = p; break;
+        }
+    }
+    if (model.isEmpty() && ir.isEmpty() && preset.isEmpty()) return;
+    ev->acceptProposedAction();
+    if (!preset.isEmpty()) loadPresetFile(preset);
+    if (!model.isEmpty())  loadModelFile(model);
+    if (!ir.isEmpty())     loadIRFile(ir);
 }
 
 // ---------------------------------------------------------------------------
@@ -1138,15 +1330,15 @@ void MainWindow::restoreLastFiles()
 {
     QSettings s;
 
-    QString nam = s.value("files/lastNAM").toString();
-    if (!nam.isEmpty() && QFile::exists(nam) && mEngine->loadModel(nam.toStdString()))
-        mBtnUnloadNAM->setEnabled(true);
+    const QString nam = s.value("files/lastNAM").toString();
+    if (!nam.isEmpty() && QFile::exists(nam))
+        loadModelFile(nam, /*quiet=*/true);
 
-    QString ir = s.value("files/lastIR").toString();
-    if (!ir.isEmpty() && QFile::exists(ir) && mEngine->loadIR(ir.toStdString()))
-        mBtnUnloadIR->setEnabled(true);
+    const QString ir = s.value("files/lastIR").toString();
+    if (!ir.isEmpty() && QFile::exists(ir))
+        loadIRFile(ir, /*quiet=*/true);
 
-    updateStatusLabels();
+    updateHeroCards();
 }
 
 void MainWindow::restoreConnections()
@@ -1199,27 +1391,41 @@ void MainWindow::saveConnections()
 }
 
 // ---------------------------------------------------------------------------
-// Status labels
+// Hero rows (Amplifier / Cabinet)
 // ---------------------------------------------------------------------------
 
-void MainWindow::updateStatusLabels()
+void MainWindow::updateHeroCards()
 {
-    auto setStatus = [](QLabel* lbl, const QString& text, bool loaded) {
-        lbl->setText(text);
-        lbl->setObjectName(loaded ? "fileStatusOk" : "fileStatus");
-        lbl->style()->unpolish(lbl);
-        lbl->style()->polish(lbl);
+    auto setStatus = [this](QLabel* name, QLabel* meta, bool loaded, const QString& path,
+                            const QString& emptyText) {
+        if (!loaded)
+        {
+            name->setText(emptyText);
+            name->setObjectName("fileStatus");
+            name->setToolTip({});
+            meta->clear();
+            meta->setToolTip({});
+        }
+        else
+        {
+            // Metadata comes from the index when the file is in the library,
+            // otherwise it is read now (one-off imports, dropped files).
+            const LibraryEntry* e = mLibraryIndex->find(path);
+            const LibraryEntry  fresh = e ? *e : LibraryIndex::describe(path);
+            name->setText(name->fontMetrics().elidedText(fresh.name, Qt::ElideMiddle, kHeroNameMaxWidth));
+            name->setObjectName("fileStatusOk");
+            name->setToolTip(QDir::toNativeSeparators(fresh.path));
+            meta->setText(fresh.summary);
+            meta->setToolTip(fresh.details);
+        }
+        name->style()->unpolish(name);
+        name->style()->polish(name);
     };
 
-    if (mEngine->isModelLoaded())
-        setStatus(mLblNAMStatus, QString::fromStdString(mEngine->modelPath()).section('/', -1), true);
-    else
-        setStatus(mLblNAMStatus, "No model loaded", false);
-
-    if (mEngine->isIRLoaded())
-        setStatus(mLblIRStatus, QString::fromStdString(mEngine->irPath()).section('/', -1), true);
-    else
-        setStatus(mLblIRStatus, "No impulse response loaded", false);
+    setStatus(mLblNAMStatus, mLblNAMMeta, mEngine->isModelLoaded(),
+              QString::fromStdString(mEngine->modelPath()), "No model loaded");
+    setStatus(mLblIRStatus, mLblIRMeta, mEngine->isIRLoaded(),
+              QString::fromStdString(mEngine->irPath()), "No impulse response loaded");
 }
 
 // ---------------------------------------------------------------------------
@@ -1229,21 +1435,36 @@ void MainWindow::updateStatusLabels()
 void MainWindow::onSavePreset()
 {
     QSettings settings;
+    // Default to the library's presets folder so a saved preset shows up in
+    // the list right away (the folder watcher picks it up).
+    QString start = settings.value("files/lastPreset").toString();
+    if (start.isEmpty())
+    {
+        start = LibraryRoots::defaultPresetDir();
+        QDir().mkpath(start);
+    }
     QString path = QFileDialog::getSaveFileName(
-        nullptr, "Save Preset", settings.value("files/lastPreset").toString(),
+        nullptr, "Save Preset", start,
         "NAM Preset (*.nampreset);;JSON (*.json);;All Files (*)");
     if (path.isEmpty()) return;
-    settings.setValue("files/lastPreset", path);
+    if (QFileInfo(path).suffix().isEmpty())
+        path += ".nampreset"; // portal dialogs don't append the filter's suffix
 
     const QJsonObject obj = PresetSerializer::toJson(mParams, *mEngine);
 
     QFile f(path);
     if (!f.open(QIODevice::WriteOnly))
     {
-        QMessageBox::critical(this, "Error", "Cannot write preset:\n" + path);
+        QMessageBox::critical(this, "Preset", "Cannot write preset:\n" + path);
         return;
     }
     f.write(QJsonDocument(obj).toJson());
+    f.close();
+
+    path = QDir::cleanPath(path);
+    settings.setValue("files/lastPreset", path);
+    mLibrary->noteUsed(path);
+    mLibrary->setLoadedPath(LibraryEntry::Kind::Preset, path);
 }
 
 void MainWindow::onResetAll()
@@ -1271,26 +1492,35 @@ void MainWindow::onResetAll()
 
 void MainWindow::onLoadPreset()
 {
-    QSettings settings;
-    QString path = QFileDialog::getOpenFileName(
-        nullptr, "Load Preset", settings.value("files/lastPreset").toString(),
+    QString start = QSettings().value("files/lastPreset").toString();
+    if (start.isEmpty()) start = LibraryRoots::defaultPresetDir();
+    const QString path = QFileDialog::getOpenFileName(
+        nullptr, "Load Preset", start,
         "NAM Preset (*.nampreset);;JSON (*.json);;All Files (*)");
-    if (path.isEmpty()) return;
-    settings.setValue("files/lastPreset", path);
+    if (!path.isEmpty()) loadPresetFile(path);
+}
 
+bool MainWindow::loadPresetFile(const QString& pathIn)
+{
+    const QString path = QDir::cleanPath(pathIn);
     QFile f(path);
     if (!f.open(QIODevice::ReadOnly))
     {
-        QMessageBox::critical(this, "Error", "Cannot read preset:\n" + path);
-        return;
+        QMessageBox::critical(this, "Preset", "Cannot read preset:\n" + path);
+        return false;
     }
     QJsonParseError err;
     auto doc = QJsonDocument::fromJson(f.readAll(), &err);
-    if (doc.isNull())
+    if (!doc.isObject())
     {
-        QMessageBox::critical(this, "Error", "Invalid preset:\n" + err.errorString());
-        return;
+        QMessageBox::critical(this, "Preset", "Invalid preset:\n" + path + "\n\n"
+                              + (doc.isNull() ? err.errorString() : QStringLiteral("not a JSON object")));
+        return false;
     }
+    QSettings settings;
+    settings.setValue("files/lastPreset", path);
+    mLibrary->noteUsed(path);
+    mLibrary->setLoadedPath(LibraryEntry::Kind::Preset, path);
 
     // Widgets first (engine follows via the registry connections), then the
     // chain order (engine-side sanitizer handles unknown/missing IDs).
@@ -1302,27 +1532,16 @@ void MainWindow::onLoadPreset()
     // preset saved without a model must not unload the current one — and when
     // the referenced file is missing or fails to load, the current one stays.
     QStringList failed;
-    if (!applied.namPath.isEmpty())
-    {
-        if (QFile::exists(applied.namPath) && mEngine->loadModel(applied.namPath.toStdString())) {
-            settings.setValue("files/lastNAM", applied.namPath);
-            mBtnUnloadNAM->setEnabled(true);
-        } else {
-            failed << applied.namPath;
-        }
-    }
-    if (!applied.irPath.isEmpty())
-    {
-        if (QFile::exists(applied.irPath) && mEngine->loadIR(applied.irPath.toStdString())) {
-            settings.setValue("files/lastIR", applied.irPath);
-            mBtnUnloadIR->setEnabled(true);
-        } else {
-            failed << applied.irPath;
-        }
-    }
-    updateStatusLabels();
+    if (!applied.namPath.isEmpty()
+        && !(QFile::exists(applied.namPath) && loadModelFile(applied.namPath, /*quiet=*/true)))
+        failed << applied.namPath;
+    if (!applied.irPath.isEmpty()
+        && !(QFile::exists(applied.irPath) && loadIRFile(applied.irPath, /*quiet=*/true)))
+        failed << applied.irPath;
+    updateHeroCards();
     if (!failed.isEmpty())
         QMessageBox::warning(this, "Preset",
                              "The preset references files that could not be loaded "
                              "(the current model/IR was kept):\n" + failed.join('\n'));
+    return failed.isEmpty();
 }

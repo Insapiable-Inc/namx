@@ -279,15 +279,30 @@ jack_connect NAMPlayer:output_R  system:playback_2
 
 Gain changes are sample-accurate smoothed (no clicks or zipper noise).
 
-### File buttons
+### Library
 
-| Button | Action |
-|--------|--------|
-| **Load NAM…** | Open a `.nam` model file |
-| **Unload** (model) | Remove the model (audio passes through dry) |
-| **Load IR…** | Open a `.wav` impulse response / cab sim |
-| **Unload** (IR) | Remove the IR |
-| **Enable** checkbox | Bypass the IR without unloading it |
+The **Library** dock (left of the rack; `Ctrl+L` shows/hides it) lists every `.nam`
+model, `.wav` IR and `.nampreset` preset found under the configured folders
+(**Library → Folders…**; defaults: `~/NAM` for models and IRs, `~/Music/IRs`, and
+`~/Documents/NAM Player/Presets`). Folders are scanned recursively on a background
+thread, metadata is cached, and the list follows changes on disk.
+
+| Control | Action |
+|---------|--------|
+| **Models / IRs / Presets** | Switch section |
+| Search field (`Ctrl+F`) | Filter as you type (name, folder, metadata) |
+| **All / ★ / Recent** | Everything, favorites only, or recently used |
+| **Name / Newest** | Sort order |
+| Click, arrows, PgUp/PgDn, Return | Load the entry under the cursor |
+| ★ on a row | Toggle favorite |
+| **Folders…** / ↻ | Configure the scanned folders / rescan now |
+
+The **Amplifier** and **Cabinet** rows show the loaded file with its metadata
+(architecture, sample rate, gear; rate, channels, length). **‹ ›** step through the
+library in its current visible order; **Browse** focuses the matching section. Files can
+also be dropped onto the window, imported through **Library → Import…**, or unloaded
+from the row's right-click menu. The **On/Off** toggle bypasses the stage without
+unloading it.
 
 ---
 
