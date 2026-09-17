@@ -119,6 +119,7 @@ if(WIN32)
     list(APPEND GUI_SOURCES
         src/dsp/WasapiBackend.cpp
         src/dsp/WasapiBackend.h
+        packaging/NAMPlayer.rc   # exe icon + version block
     )
 else()
     list(APPEND GUI_SOURCES
@@ -154,6 +155,7 @@ target_compile_definitions(NAMPlayer PRIVATE
     NAM_SAMPLE_FLOAT
     NAM_ENABLE_A2_FAST
     NAM_TONE3000_CLIENT_ID="${NAM_TONE3000_CLIENT_ID}"
+    NAM_VERSION="${PROJECT_VERSION}"
 )
 
 target_link_libraries(NAMPlayer PRIVATE
@@ -210,6 +212,31 @@ endif()
 # stdc++fs is libstdc++-only — MSVC ships <filesystem> in the runtime.
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     target_link_libraries(NAMPlayer PRIVATE stdc++fs)
+endif()
+
+# ---------------------------------------------------------------------------
+# Install (cmake --install <build> --prefix /usr): binary + desktop integration.
+# Packaging files live in packaging/, icons in resources/icons (see
+# packaging/README.md). Windows deploys with windeployqt instead.
+# ---------------------------------------------------------------------------
+include(GNUInstallDirs)
+install(TARGETS NAMPlayer RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+if(UNIX AND NOT APPLE)
+    set(NAM_APP_ID "cl.pichulero.NAMPlayer")
+    install(FILES packaging/${NAM_APP_ID}.desktop
+            DESTINATION ${CMAKE_INSTALL_DATADIR}/applications)
+    install(FILES packaging/${NAM_APP_ID}.metainfo.xml
+            DESTINATION ${CMAKE_INSTALL_DATADIR}/metainfo)
+    install(FILES packaging/${NAM_APP_ID}.xml
+            DESTINATION ${CMAKE_INSTALL_DATADIR}/mime/packages)
+    foreach(size 16 32 48 64 128 256 512)
+        install(FILES resources/icons/NAMPlayer-${size}.png
+                DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/${size}x${size}/apps
+                RENAME ${NAM_APP_ID}.png)
+    endforeach()
+    install(FILES resources/icons/NAMPlayer.svg
+            DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps
+            RENAME ${NAM_APP_ID}.svg)
 endif()
 
 # ---------------------------------------------------------------------------

@@ -1,0 +1,58 @@
+# Flatpak manifest for NAM Player.
+#   flatpak-builder --user --install --force-clean build-flatpak gui/packaging/cl.pichulero.NAMPlayer.yml
+# Audio reaches the host through the PipeWire socket (JACK API via the KDE
+# runtime's pipewire-jack); the JACK compatibility library is loaded from the
+# runtime's lib dir.
+app-id: cl.pichulero.NAMPlayer
+runtime: org.kde.Platform
+runtime-version: '6.9'
+sdk: org.kde.Sdk
+command: NAMPlayer
+finish-args:
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --device=dri
+  - --socket=pulseaudio        # PipeWire's JACK shim also needs the pulse socket on some hosts
+  - --filesystem=xdg-run/pipewire-0
+  - --filesystem=xdg-documents # ~/Documents/NAM Player (presets, TONE3000 downloads)
+  - --filesystem=xdg-music     # ~/Music/IRs (default IR root)
+  - --filesystem=home/NAM:ro   # default model root
+  - --share=network            # TONE3000
+  - --share=ipc
+  - --env=QT_QPA_PLATFORMTHEME=xdgdesktopportal
+modules:
+  - name: jack
+    # PipeWire-JACK headers + libjack from the pipewire source; the runtime
+    # ships the client library, the SDK needs the headers to build against.
+    buildsystem: meson
+    config-opts:
+      - -Dsession-managers=[]
+      - -Dsystemd=disabled
+      - -Dudevrules=disabled
+      - -Dexamples=disabled
+      - -Dman=disabled
+      - -Dtests=disabled
+      - -Dgstreamer=disabled
+      - -Dspa-plugins=disabled
+      - -Dpipewire-alsa=disabled
+      - -Dpipewire-v4l2=disabled
+      - -Dpipewire-jack=enabled
+      - -Djack-devel=true
+      - -Dlibjack-path=/app/lib
+    sources:
+      - type: git
+        url: https://gitlab.freedesktop.org/pipewire/pipewire.git
+        tag: 1.4.7
+  - name: nam-player
+    buildsystem: cmake-ninja
+    subdir: gui
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DNAM_NATIVE_OPT=OFF
+    build-options:
+      env:
+        NAM_TONE3000_CLIENT_ID: ""
+    sources:
+      - type: git
+        url: https://github.com/silvercobraa/NeuralAmpModelerGUI.git
+        tag: v1.0.0

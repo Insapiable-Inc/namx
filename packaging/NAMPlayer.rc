@@ -1,0 +1,36 @@
+// Windows resources: executable icon + version block.
+#include <windows.h>
+
+IDI_ICON1 ICON "../resources/icons/NAMPlayer.ico"
+
+#ifndef NAM_VERSION
+#define NAM_VERSION "1.0.0"
+#endif
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION    1,0,0,0
+ PRODUCTVERSION 1,0,0,0
+ FILEFLAGSMASK  VS_FFI_FILEFLAGSMASK
+ FILEFLAGS      0
+ FILEOS         VOS_NT_WINDOWS32
+ FILETYPE       VFT_APP
+ FILESUBTYPE    VFT2_UNKNOWN
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904B0"
+        BEGIN
+            VALUE "CompanyName",      "pichulero.cl"
+            VALUE "FileDescription",  "NAM Player"
+            VALUE "FileVersion",      NAM_VERSION
+            VALUE "InternalName",     "NAMPlayer"
+            VALUE "OriginalFilename", "NAMPlayer.exe"
+            VALUE "ProductName",      "NAM Player"
+            VALUE "ProductVersion",   NAM_VERSION
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END

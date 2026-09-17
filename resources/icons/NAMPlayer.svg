@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- NAM Player app icon: flat rack tile, amp knob in the Amplifier accent,
+       signal trace in the meter green. No skeuomorphism. -->
+  <defs>
+    <clipPath id="tile"><rect x="24" y="24" width="464" height="464" rx="96"/></clipPath>
+  </defs>
+  <rect x="24" y="24" width="464" height="464" rx="96" fill="#1f242c"/>
+  <rect x="24" y="24" width="464" height="464" rx="96" fill="none" stroke="#2a2f38" stroke-width="12"/>
+  <!-- knob ring -->
+  <circle cx="256" cy="232" r="126" fill="#15171c" stroke="#e4b954" stroke-width="30"/>
+  <!-- value arc (about 3/4 turn) -->
+  <path d="M 167 321 A 126 126 0 1 1 345 321" fill="none" stroke="#e4b954" stroke-width="30" stroke-linecap="round" opacity="0.35"/>
+  <!-- indicator -->
+  <line x1="256" y1="232" x2="330" y2="150" stroke="#e4b954" stroke-width="30" stroke-linecap="round"/>
+  <circle cx="256" cy="232" r="22" fill="#e4b954"/>
+  <!-- signal trace -->
+  <polyline points="72,412 120,412 144,372 168,448 192,384 216,436 240,396 264,428 288,404 312,420 336,412 440,412"
+            fill="none" stroke="#5cc8a8" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

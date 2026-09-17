@@ -47,7 +47,8 @@ jobs:
           cmake -S . -B build-release `
                 -G Ninja `
                 -DCMAKE_BUILD_TYPE=Release `
-                -DCMAKE_PREFIX_PATH="$env:QT_ROOT_DIR"
+                -DCMAKE_PREFIX_PATH="$env:QT_ROOT_DIR" `
+                -DNAM_TONE3000_CLIENT_ID="${{ secrets.TONE3000_CLIENT_ID }}"
 
       - name: Build
         working-directory: gui
@@ -75,4 +76,6 @@ jobs:
             gui/build-release/styles/
             gui/build-release/imageformats/
             gui/build-release/iconengines/
+            gui/build-release/tls/
+            gui/build-release/networkinformation/
           retention-days: 14

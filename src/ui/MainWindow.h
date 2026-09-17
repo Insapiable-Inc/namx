@@ -41,6 +41,10 @@ public:
     explicit MainWindow(QWidget* parent = nullptr);
     ~MainWindow() override;
 
+    /// Command-line / file-manager arguments: .nam, .wav, .nampreset (a preset
+    /// first, then a model/IR given alongside overrides the preset's own).
+    void openPaths(const QStringList& paths);
+
 protected:
     // Drag-and-drop reordering of the effect strip (filter installed on the
     // effect cards and on the strip container).

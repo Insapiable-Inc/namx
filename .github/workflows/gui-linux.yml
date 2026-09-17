@@ -32,39 +32,41 @@ jobs:
             qt6-base-dev qt6-base-dev-tools \
             libjack-jackd2-dev pkg-config \
             libgl1-mesa-dev \
-            xvfb
+            desktop-file-utils appstream python3
 
       - name: Configure (Release)
         working-directory: gui
         run: |
           cmake -S . -B build-release \
                 -G Ninja \
-                -DCMAKE_BUILD_TYPE=Release
+                -DCMAKE_BUILD_TYPE=Release \
+                -DNAM_NATIVE_OPT=OFF \
+                -DNAM_BUILD_TESTS=ON
 
       - name: Build
         working-directory: gui
         run: cmake --build build-release --parallel
 
-      - name: Smoke launch (headless)
+      - name: Smoke test (headless) + client test
         working-directory: gui
         env:
           QT_QPA_PLATFORM: offscreen
         run: |
-          # Launch the binary briefly to verify it links and the GUI thread
-          # starts without crashing. JACK won't be available on the runner so
-          # the audio backend will fail to connect — that's expected. We just
-          # want to confirm the process doesn't segfault.
-          ./build-release/NAMPlayer &
-          PID=$!
-          sleep 2
-          if kill -0 $PID 2>/dev/null; then
-            echo "Process still alive after 2s — smoke test passed"
-            kill $PID
-            wait $PID 2>/dev/null || true
-          else
-            echo "Process exited early — smoke test failed"
-            exit 1
-          fi
+          # No JACK on the runner: the backend reports "Not connected" and the
+          # window still has to come up, scan the library and exit 0.
+          ./build-release/NAMPlayer --version
+          timeout 30 ./build-release/NAMPlayer --self-test-and-exit
+          ./build-release/Tone3000ClientTest
+
+      - name: Packaging files + install layout
+        working-directory: gui
+        run: |
+          desktop-file-validate packaging/cl.pichulero.NAMPlayer.desktop
+          appstreamcli validate --no-net packaging/cl.pichulero.NAMPlayer.metainfo.xml || true
+          xmllint --noout packaging/cl.pichulero.NAMPlayer.xml
+          DESTDIR="$PWD/stage" cmake --install build-release --prefix /usr
+          test -f stage/usr/bin/NAMPlayer
+          test -f stage/usr/share/applications/cl.pichulero.NAMPlayer.desktop
 
       - name: Upload binary
         if: success()

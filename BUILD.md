@@ -146,6 +146,30 @@ Optional CMake variables:
 | `-DNAM_TONE3000_CLIENT_ID=t3k_pub_…` | Bake your TONE3000 publishable key into the build (see §6, *TONE3000*) |
 | `-DNAM_BUILD_TESTS=ON` | Also build `Tone3000ClientTest` (needs `python3`; run it directly or via `ctest`) |
 
+### Linux — install / packages
+
+```bash
+cd gui
+cmake -S . -B build-release -DCMAKE_BUILD_TYPE=Release -DNAM_NATIVE_OPT=OFF
+cmake --build build-release --parallel
+sudo cmake --install build-release --prefix /usr/local
+```
+
+This installs the binary, the launcher (`cl.pichulero.NAMPlayer.desktop`, with `.nam`
+and `.nampreset` file associations), the AppStream metadata and the icon theme files.
+Run `update-desktop-database` / `update-mime-database` afterwards if your distro
+doesn't hook them.
+
+Other packaging routes live in [`packaging/`](packaging/README.md): an AUR
+`PKGBUILD`, a Flatpak manifest, and `appimage.sh`, which turns a portable
+(`-DNAM_NATIVE_OPT=OFF`) build into `NAMPlayer-x86_64.AppImage` with linuxdeploy.
+The AppImage uses the host's `libjack` on purpose, so it reaches whatever audio server
+you run (jackd or PipeWire).
+
+Command-line flags: `NAMPlayer [file…]` opens `.nam` / `.wav` / `.nampreset` files;
+`--version`; `--self-test-and-exit` (headless CI check: window up, library scanned,
+exit 0 after 1.5 s).
+
 ### Windows — quick build (PowerShell)
 
 From a "Developer PowerShell for VS 2022" prompt:

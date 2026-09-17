@@ -23,7 +23,8 @@ nam-linux-gui/
         ├── ui/            # Qt widgets
         ├── net/           # Tone3000Client (Qt Network; no widgets)
         └── dsp/           # AudioEngine, backends, effect processors (no Qt dependencies)
-    ├── resources/         # resources.qrc + TONE3000 brand assets (see its README)
+    ├── resources/         # resources.qrc, app icon (icons/), TONE3000 brand assets (see its README)
+    ├── packaging/         # desktop file, AppStream, mime, PKGBUILD, Flatpak manifest, appimage.sh, Windows .rc
     └── tests/             # Tone3000ClientTest + mock_tone3000.py (-DNAM_BUILD_TESTS=ON)
 ```
 
@@ -54,6 +55,8 @@ cmake --build gui/build-release --parallel $(nproc)
 **Required packages (Ubuntu 22.04+):** `qt6-base-dev libjack-jackd2-dev cmake ninja-build`
 
 Release builds default to `-march=native` via the `NAM_NATIVE_OPT` CMake option (ON). **CI/release builds must configure with `-DNAM_NATIVE_OPT=OFF`** → portable `-mavx2 -mfma`.
+
+`cmake --install <build> --prefix /usr` installs the binary plus the desktop/mime/AppStream/icon files (app id `cl.pichulero.NAMPlayer`); `gui/packaging/appimage.sh` builds the AppImage from a portable build; `.github/workflows/release.yml` runs on `v*` tags (AppImage, Arch build, Windows zip, source tarball, GitHub release). `NAMPlayer --version`, `--help`, `--self-test-and-exit` (headless CI check) and `NAMPlayer file…` (opens .nam/.wav/.nampreset) are handled in `main.cpp`; the version comes from `PROJECT_VERSION` via the `NAM_VERSION` define.
 
 `-DNAM_TONE3000_CLIENT_ID=t3k_pub_…` bakes the TONE3000 publishable key into the build (runtime override: QSettings `tone3000/clientId`, editable from the TONE3000 tab). `-DNAM_BUILD_TESTS=ON` adds `Tone3000ClientTest`, which spawns `tests/mock_tone3000.py` with `python3` and drives the whole client (PKCE sign-in over the loopback server, refresh, 429, lists, download + sidecar) headlessly:
 

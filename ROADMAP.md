@@ -268,7 +268,8 @@ Requires BUG-06 fixed (Phase 1).
       version; click-free model swap (~15 ms audio-thread fade-in after load/unload
       masks the discontinuity, incl. amp↔dry); **Ctrl+S** Save Preset / **Ctrl+O**
       Load Preset on the menu actions.
-- [ ] **App icon + `setWindowIcon`** — needs an actual icon asset; moved to Phase 8
+- [x] **App icon + `setWindowIcon`** — landed with Phase 8 (2026-09-17):
+      `gui/resources/icons/NAMPlayer.svg` + `setWindowIcon` in `main.cpp`. ~~moved to Phase 8~~
       packaging (`gui/resources/` + `.qrc` land there anyway).
 
 ### Phase 5 — manual verification pending
@@ -298,7 +299,8 @@ Requires BUG-06 fixed (Phase 1).
 - [x] **Distributable builds.** `NAM_NATIVE_OPT` CMake option: ON (default) →
       `-march=native`; OFF → portable `-mavx2 -mfma` (verified in generated flags).
       MSVC always `/arch:AVX2`. **CI/release builds must pass `-DNAM_NATIVE_OPT=OFF`.**
-- [ ] **New dirs** `gui/packaging/` and `gui/resources/` + `.qrc` — created in
+- [x] **New dirs** `gui/packaging/` and `gui/resources/` + `.qrc` — landed 2026-09-17 with
+      Phases 11–12 (resources) and 8 (packaging). ~~created in
       Phase 8 together with their content (icon, desktop file, metainfo).
 - [x] ~~Magic numbers → constants header.~~ **Decision:** the meter dB math moved
       into `VUMeter`; the remaining literals are single-use and local to their
@@ -371,19 +373,51 @@ pending palette revision shipped.
 
 ## Phase 8 — Packaging & ship (runs after Phase 12 — decision 2026-09-12) → tag **v1.0** at the end
 
-- [ ] Desktop file `gui/packaging/NAMPlayer.desktop` (Name, Exec, Icon,
-      `MimeType=application/x-nam;application/x-nampreset;`).
-- [ ] AppStream metainfo `gui/packaging/cl.pichulero.NAMPlayer.metainfo.xml`.
-- [ ] `install(TARGETS …)` + `install(FILES …)` in `gui/CMakeLists.txt` so
-      `cmake --install` deploys binary, desktop file, icon, metainfo.
-- [ ] AUR PKGBUILD (`qt6-base jack pipewire-jack-client`).
-- [ ] AppImage via linuxdeploy-qt.
-- [ ] Flatpak manifest (`--socket=pipewire`).
-- [ ] CI release job on tag push: Ubuntu 22.04 + Arch + Windows, non-native SIMD flags.
-- [ ] Headless smoke test in CI: `QT_QPA_PLATFORM=offscreen NAMPlayer --self-test-and-exit`.
-- [ ] About dialog / `--version` flag verified.
+Landed 2026-09-17 (everything but the tag). App id `cl.pichulero.NAMPlayer`; the
+desktop file is named after it (AppStream wants the launchable id to match) rather
+than `NAMPlayer.desktop`. Icon: `gui/resources/icons/NAMPlayer.svg` (flat rack tile,
+Amplifier-gold knob, meter-green trace), rasterized 16–512 + `.ico`, installed as the
+app id in hicolor, `setWindowIcon` from the qrc, Windows exe icon + version block via
+`packaging/NAMPlayer.rc`. Closes Phase 5's icon item and Phase 6's dirs item.
+
+- [x] Desktop file `gui/packaging/cl.pichulero.NAMPlayer.desktop` (Name, Exec `%F`,
+      Icon, `MimeType=application/x-nam;application/x-nampreset;`), plus the
+      shared-mime-info definition `cl.pichulero.NAMPlayer.xml` so those types exist.
+      `NAMPlayer file…` opens models/IRs/presets from the file manager.
+- [x] AppStream metainfo `gui/packaging/cl.pichulero.NAMPlayer.metainfo.xml`
+      (validates; the pedantic run only notes the uppercase id and the not-yet-public
+      GitHub URLs).
+- [x] `install(TARGETS …)` + `install(FILES …)` in `gui/CMakeLists.txt` so
+      `cmake --install` deploys binary, desktop file, mime, icons, metainfo
+      (layout verified with a DESTDIR install).
+- [x] AUR PKGBUILD (`qt6-base jack`; `pipewire-jack` as optdepend — both provide
+      `jack`). Source: the release job's submodule-vendored tarball; `sha256sums`
+      to be filled at publish time. *Not run through makepkg yet (needs the tarball).*
+- [x] AppImage via linuxdeploy-qt: `gui/packaging/appimage.sh`. Built and smoke-tested
+      locally (39 MB; `--version` and `--self-test-and-exit` pass from the AppImage).
+      Host `libjack` excluded on purpose; Qt plugin set curated through a qmake
+      wrapper (distro extras like KDE's kimageformats otherwise break the bundle);
+      `NO_STRIP` because linuxdeploy's strip predates `.relr.dyn`.
+- [x] Flatpak manifest (`gui/packaging/cl.pichulero.NAMPlayer.yml`: KDE 6.9 runtime,
+      PipeWire-JACK module, pipewire socket, Documents/Music/~/NAM access, network).
+      *Written, not built — no flatpak-builder on this machine; first Flathub
+      submission will shake it out.*
+- [x] CI release job on tag push: `.github/workflows/release.yml` — Ubuntu 22.04
+      (AppImage), Arch container (build + tests + install layout), Windows
+      (windeployqt zip), source tarball, GitHub release with all artifacts;
+      `-DNAM_NATIVE_OPT=OFF` everywhere; TONE3000 key from the `TONE3000_CLIENT_ID`
+      repository secret. `gui-linux.yml` / `gui-windows.yml` updated likewise.
+- [x] Headless smoke test in CI: `QT_QPA_PLATFORM=offscreen NAMPlayer --self-test-and-exit`
+      (plus `--version` and `Tone3000ClientTest`) in both the push and release jobs.
+- [x] About dialog / `--version` flag verified: both read `PROJECT_VERSION` (1.0.0)
+      through the `NAM_VERSION` define; `--help` lists the flags. On Windows the
+      console flags print nothing (GUI subsystem) — About is the way there.
 - [ ] **Tag v1.0.** (Was moved to Phase 12 on 2026-08-22; back here since 2026-09-12
-      because packaging itself now runs last.)
+      because packaging itself now runs last.) **User action**, in this order: add
+      the `TONE3000_CLIENT_ID` repository secret (Phase 12 prerequisite), make the
+      GitHub repo public / rename it (Phase 7), then `git tag v1.0.0 && git push
+      github v1.0.0` — the release workflow does the rest. Fill the PKGBUILD's
+      `sha256sums` from the published tarball and push it to the AUR.
 
 ## Phase 9 — Knob range calibration (post-1.0 unless pulled forward; added 2026-08-10)
 

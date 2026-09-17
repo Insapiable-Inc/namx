@@ -1167,13 +1167,21 @@ void MainWindow::dragEnterEvent(QDragEnterEvent* ev)
 void MainWindow::dropEvent(QDropEvent* ev)
 {
     if (!ev->mimeData()->hasUrls()) return;
-    // One file per kind: the last model, the last IR, the last preset win.
-    // A preset goes first so a model/IR dropped alongside overrides its own.
-    QString model, ir, preset;
+    QStringList paths;
     for (const QUrl& u : ev->mimeData()->urls())
+        if (u.isLocalFile()) paths << u.toLocalFile();
+    if (!hasLoadableUrls(ev->mimeData())) return;
+    ev->acceptProposedAction();
+    openPaths(paths);
+}
+
+void MainWindow::openPaths(const QStringList& paths)
+{
+    // One file per kind: the last model, the last IR, the last preset win.
+    // The preset goes first so a model/IR given alongside overrides its own.
+    QString model, ir, preset;
+    for (const QString& p : paths)
     {
-        if (!u.isLocalFile()) continue;
-        const QString p = u.toLocalFile();
         bool ok = false;
         switch (LibraryIndex::kindForPath(p, &ok))
         {
@@ -1182,8 +1190,6 @@ void MainWindow::dropEvent(QDropEvent* ev)
         case LibraryEntry::Kind::Preset: if (ok) preset = p; break;
         }
     }
-    if (model.isEmpty() && ir.isEmpty() && preset.isEmpty()) return;
-    ev->acceptProposedAction();
     if (!preset.isEmpty()) loadPresetFile(preset);
     if (!model.isEmpty())  loadModelFile(model);
     if (!ir.isEmpty())     loadIRFile(ir);

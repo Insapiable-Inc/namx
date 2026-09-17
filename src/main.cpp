@@ -1,9 +1,19 @@
 #include <QApplication>
+#include <QIcon>
 #include <QSettings>
+#include <QStringList>
+#include <QTimer>
 #include <QtGlobal>
+
+#include <cstdio>
+#include <cstring>
 
 #include "MainWindow.h"
 #include "Theme.h"
+
+#ifndef NAM_VERSION
+#define NAM_VERSION "0.0.0"
+#endif
 
 // The app was registered with QSettings as "NAM Linux" before v1.0 — a misnomer
 // that also baked "Linux" into the Windows registry path. Copy that store into
@@ -30,6 +40,30 @@ static void migrateLegacySettings()
 
 int main(int argc, char* argv[])
 {
+    // --version / --help answer before any GUI is created, so they work on a
+    // headless box (and in the CI smoke test) without a display.
+    bool selfTest = false;
+    QStringList files;
+    for (int i = 1; i < argc; ++i)
+    {
+        if (!std::strcmp(argv[i], "--version") || !std::strcmp(argv[i], "-v"))
+        {
+            std::printf("NAM Player %s\n", NAM_VERSION);
+            return 0;
+        }
+        if (!std::strcmp(argv[i], "--help") || !std::strcmp(argv[i], "-h"))
+        {
+            std::printf("Usage: NAMPlayer [options] [file...]\n"
+                        "  file                 .nam model, .wav impulse response or .nampreset to open\n"
+                        "  -v, --version        print the version and exit\n"
+                        "  --self-test-and-exit build the window, scan the library, exit 0 after 1.5 s\n"
+                        "  -h, --help           this text\n");
+            return 0;
+        }
+        if (!std::strcmp(argv[i], "--self-test-and-exit")) { selfTest = true; continue; }
+        files << QString::fromLocal8Bit(argv[i]);
+    }
+
 #ifdef Q_OS_LINUX
     // Route the QFileDialog static getters through the XDG Desktop Portal, so
     // file dialogs are the desktop's own (Breeze on Plasma) instead of an
@@ -46,8 +80,10 @@ int main(int argc, char* argv[])
     // Application name drives the QSettings path — keep in sync with migrateLegacySettings().
     app.setApplicationName("NAM Player");
     app.setApplicationDisplayName("NAM Player");
-    app.setApplicationVersion("1.0");
+    app.setApplicationVersion(NAM_VERSION);
     app.setOrganizationName("pichulero.cl");
+    app.setDesktopFileName("cl.pichulero.NAMPlayer");
+    app.setWindowIcon(QIcon(":/icons/NAMPlayer-256.png"));
 
     migrateLegacySettings();
     Theme::apply(app);
@@ -55,5 +91,9 @@ int main(int argc, char* argv[])
     MainWindow w;
     Theme::applyTo(w); // window-scoped so OS dialogs keep the system look
     w.show();
+    if (!files.isEmpty())
+        w.openPaths(files);
+    if (selfTest)
+        QTimer::singleShot(1500, &app, [] { QCoreApplication::exit(0); });
     return app.exec();
 }

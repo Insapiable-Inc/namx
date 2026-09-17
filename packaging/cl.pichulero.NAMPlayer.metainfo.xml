@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>cl.pichulero.NAMPlayer</id>
+  <name>NAM Player</name>
+  <summary>Play Neural Amp Modeler profiles and impulse responses live</summary>
+  <developer id="cl.pichulero">
+    <name>silvercobraa</name>
+  </developer>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <description>
+    <p>
+      NAM Player is a standalone guitar rig for Linux and Windows built on Neural Amp
+      Modeler. Load any .nam model and .wav impulse response from the community, play
+      through it live with a few milliseconds of latency, and shape the sound with a
+      freely reorderable effects chain: tuner, noise gate, compressor, dynamic wah,
+      flanger, phaser, three-band EQ, chorus, tremolo, ping-pong delay, reverb and cab
+      simulation.
+    </p>
+    <p>
+      A library panel keeps models, IRs and presets one click away, with search,
+      favorites and recents; the TONE3000 tab browses the community catalog with your
+      own account and downloads captures straight into the library. Presets carry the
+      whole rig and remember where their models came from.
+    </p>
+    <p>
+      Audio goes through JACK or PipeWire on Linux and WASAPI on Windows. NAM Player is
+      an independent project and is not affiliated with the official Neural Amp
+      Modeler plugin.
+    </p>
+  </description>
+  <launchable type="desktop-id">cl.pichulero.NAMPlayer.desktop</launchable>
+  <provides>
+    <binary>NAMPlayer</binary>
+    <mediatype>application/x-nam</mediatype>
+    <mediatype>application/x-nampreset</mediatype>
+  </provides>
+  <url type="homepage">https://github.com/silvercobraa/NeuralAmpModelerGUI</url>
+  <url type="bugtracker">https://github.com/silvercobraa/NeuralAmpModelerGUI/issues</url>
+  <url type="vcs-browser">https://github.com/silvercobraa/NeuralAmpModelerGUI</url>
+  <categories>
+    <category>AudioVideo</category>
+    <category>Audio</category>
+    <category>Music</category>
+  </categories>
+  <keywords>
+    <keyword>guitar</keyword>
+    <keyword>amp</keyword>
+    <keyword>NAM</keyword>
+    <keyword>neural</keyword>
+    <keyword>impulse response</keyword>
+    <keyword>JACK</keyword>
+    <keyword>PipeWire</keyword>
+  </keywords>
+  <content_rating type="oars-1.1"/>
+  <supports>
+    <control>pointing</control>
+    <control>keyboard</control>
+  </supports>
+  <requires>
+    <display_length compare="ge">1280</display_length>
+  </requires>
+  <releases>
+    <release version="1.0.0" date="2026-09-17">
+      <description>
+        <p>First public release: reorderable effects chain, library panel, TONE3000 tab, presets, JACK/PipeWire and WASAPI backends.</p>
+      </description>
+    </release>
+  </releases>
+</component>
