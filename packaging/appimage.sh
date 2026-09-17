@@ -52,7 +52,7 @@ curate() { # curate <subdir> <glob>…
         for f in "$QT_PLUGINS/$sub"/$pat; do [ -e "$f" ] && cp "$f" "$CURATED/$sub/"; done
     done
 }
-curate platforms            libqxcb.so libqwayland-generic.so libqwayland-egl.so libqoffscreen.so
+curate platforms            libqxcb.so libqwayland.so libqwayland-generic.so libqwayland-egl.so libqoffscreen.so  # Qt ≥ 6.10 ships one libqwayland.so
 curate platformthemes       libqgtk3.so libqxdgdesktopportal.so
 curate wayland-shell-integration libxdg-shell.so
 curate wayland-decoration-client libbradient.so
