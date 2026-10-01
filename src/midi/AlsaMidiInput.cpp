@@ -169,7 +169,8 @@ private:
         {
             std::lock_guard<std::mutex> lock(mutex);
             // ALSA returns the count as int (never negative) but takes it back as unsigned.
-            const auto n = static_cast<unsigned int>(snd_seq_poll_descriptors_count(seq, POLLIN));
+            const unsigned int n =
+                static_cast<unsigned int>(snd_seq_poll_descriptors_count(seq, POLLIN));
             fds.resize(n + 1);
             snd_seq_poll_descriptors(seq, fds.data(), n, POLLIN);
         }

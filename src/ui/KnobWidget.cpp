@@ -294,7 +294,7 @@ void KnobWidget::set_menu_hook(std::function<void(KnobWidget*, QMenu*)> hook) {
 
 void KnobWidget::contextMenuEvent(QContextMenuEvent* event) {
     QMenu menu(this);
-    auto* reset_action = menu.addAction("Reset to Default");
+    QAction* reset_action = menu.addAction("Reset to Default");
     if (menu_hook()) {
         menu_hook()(this, &menu);
     }

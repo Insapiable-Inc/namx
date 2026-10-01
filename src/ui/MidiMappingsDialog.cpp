@@ -185,7 +185,7 @@ void MidiMappingsDialog::rebuild_devices() {
 
 void MidiMappingsDialog::rebuild_table() {
     rebuilding = true;
-    const auto& list = mapper.get_mappings();
+    const QList<MidiMapping>& list = mapper.get_mappings();
     table->setRowCount(static_cast<int>(list.size())); // Qt widgets count rows in int
     for (int r = 0; r < list.size(); ++r) {
         const MidiMapping& m = list[r];
@@ -297,7 +297,7 @@ void MidiMappingsDialog::commit_row(int row) {
         return;
     }
     MidiMapping& m = list[row];
-    auto* on_cell = table->cellWidget(row, COL_ON);
+    QWidget* on_cell = table->cellWidget(row, COL_ON);
     m.enabled = on_cell->findChild<QCheckBox*>()->isChecked();
     m.source = MidiMapping::Source(
         static_cast<QComboBox*>(table->cellWidget(row, COL_SOURCE))->currentIndex());

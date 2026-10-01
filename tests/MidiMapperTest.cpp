@@ -90,7 +90,7 @@ int main(int argc, char** argv) {
 
     std::printf("range + relative\n");
     {
-        auto list = mapper.get_mappings();
+        QList<MidiMapping> list = mapper.get_mappings();
         list.last().min = 0.2;
         list.last().max = 0.6;
         mapper.set_mappings(list);
@@ -122,7 +122,7 @@ int main(int argc, char** argv) {
 
     std::printf("momentary + notes\n");
     {
-        auto list = mapper.get_mappings();
+        QList<MidiMapping> list = mapper.get_mappings();
         for (auto& m : list) {
             if (m.target == "param:delay/enabled") {
                 m.mode = MidiMapping::MOMENTARY;
@@ -139,7 +139,7 @@ int main(int argc, char** argv) {
 
     std::printf("disabled mapping + forget\n");
     {
-        auto list = mapper.get_mappings();
+        QList<MidiMapping> list = mapper.get_mappings();
         for (auto& m : list) {
             if (m.target == "action:slot1") {
                 m.enabled = false;

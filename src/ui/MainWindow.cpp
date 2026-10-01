@@ -303,7 +303,7 @@ KnobWidget* MainWindow::late_knob(const QString& group, const QString& key, Knob
 void MainWindow::add_detail_row(QWidget* card, const QList<QWidget*>& widgets) {
     // All detail rows of a card live in one container behind one ▾ toggle;
     // a second call adds a second row.
-    auto* container = card->findChild<QWidget*>("cardDetail", Qt::FindDirectChildrenOnly);
+    QWidget* container = card->findChild<QWidget*>("cardDetail", Qt::FindDirectChildrenOnly);
     const bool first = !container;
     if (first) {
         container = new QWidget;
@@ -371,7 +371,7 @@ QWidget* MainWindow::make_effect_row(const QString& title, ToggleSwitch*& toggle
                                      const std::initializer_list<KnobWidget*>& knobs,
                                      ToggleSwitch** stereo_toggle_out) {
     QFrame* card = make_row_card(title);
-    auto* lay = row_layout(card);
+    QHBoxLayout* lay = row_layout(card);
 
     toggle_out = new ToggleSwitch;
     toggle_out->setCheckable(true);
@@ -404,15 +404,15 @@ void MainWindow::setup_ui() {
     QMenu* preset_menu = nullptr;
     QMenu* midi_top_menu = nullptr;
     {
-        auto* mb = menuBar();
+        QMenuBar* mb = menuBar();
         preset_menu = mb->addMenu("Preset"); // also behind ⋯ on the preset bar
-        auto* act_save = preset_menu->addAction("Save");
+        QAction* act_save = preset_menu->addAction("Save");
         act_save->setShortcut(QKeySequence::Save); // Ctrl+S
         connect(act_save, &QAction::triggered, this, &MainWindow::on_save_preset);
-        auto* act_save_as = preset_menu->addAction("Save As…");
+        QAction* act_save_as = preset_menu->addAction("Save As…");
         act_save_as->setShortcut(QKeySequence("Ctrl+Shift+S"));
         connect(act_save_as, &QAction::triggered, this, &MainWindow::on_save_preset_as);
-        auto* act_load = preset_menu->addAction("Open…");
+        QAction* act_load = preset_menu->addAction("Open…");
         act_load->setShortcut(QKeySequence::Open); // Ctrl+O
         connect(act_load, &QAction::triggered, this, &MainWindow::on_load_preset);
         preset_menu->addSeparator();
@@ -432,7 +432,7 @@ void MainWindow::setup_ui() {
         library_menu = mb->addMenu("Library"); // filled once the dock exists (below)
         midi_top_menu = mb->addMenu("MIDI"); // filled by setupMidi
 
-        auto* help_menu = mb->addMenu("Help");
+        QMenu* help_menu = mb->addMenu("Help");
         connect(help_menu->addAction("About NAM Player"), &QAction::triggered, this, [this] {
             QMessageBox::about(
                 this, "About NAM Player",
@@ -499,7 +499,7 @@ void MainWindow::setup_ui() {
     // ---- Tuner ----
     {
         QFrame* col = make_row_card("Tuner");
-        auto* lay = row_layout(col);
+        QHBoxLayout* lay = row_layout(col);
 
         sw_tuner_enable = new ToggleSwitch;
         sw_tuner_enable->setCheckable(true);
@@ -554,10 +554,11 @@ void MainWindow::setup_ui() {
 
     // ---- Transpose ----
     {
-        auto* semis = late_knob("transpose", "semitones",
-                                new KnobWidget("Semitones", -12.0, 12.0, 0.0), [this](double v) {
-                                    engine->get_transpose().set_semitones(static_cast<float>(v));
-                                });
+        KnobWidget* semis =
+            late_knob("transpose", "semitones", new KnobWidget("Semitones", -12.0, 12.0, 0.0),
+                      [this](double v) {
+                          engine->get_transpose().set_semitones(static_cast<float>(v));
+                      });
         semis->set_snap(1.0);
         semis->set_value_formatter([](double v) {
             const int s = static_cast<int>(std::lround(v));
@@ -565,12 +566,12 @@ void MainWindow::setup_ui() {
         });
         semis->setToolTip("Pitch shift in semitones: −1 / −2 for drop tunings, ±12 for octaves "
                           "(adds ~25 ms latency when not 0)");
-        auto* mix = late_knob("transpose", "mix", new KnobWidget("Mix", 0.0, 100.0, 100.0, "%"),
-                              [this](double v) {
-                                  engine->get_transpose().set_mix_pct(static_cast<float>(v));
-                              });
+        KnobWidget* mix = late_knob(
+            "transpose", "mix", new KnobWidget("Mix", 0.0, 100.0, 100.0, "%"), [this](double v) {
+                engine->get_transpose().set_mix_pct(static_cast<float>(v));
+            });
         mix->set_scroll_step(1.0);
-        auto* col = make_effect_row("Transpose", sw_transpose_enable, {semis, mix});
+        QWidget* col = make_effect_row("Transpose", sw_transpose_enable, {semis, mix});
         Theme::tag_card(col, "transpose");
         fx_cols[&engine->get_transpose()] = col;
     }
@@ -588,8 +589,8 @@ void MainWindow::setup_ui() {
         knob_gate_attack->set_scroll_step(1.0);
         knob_gate_release->set_scroll_step(10.0);
 
-        auto* col = make_effect_row("Noise Gate", sw_gate_enable,
-                                    {knob_gate_thresh, knob_gate_attack, knob_gate_release});
+        QWidget* col = make_effect_row("Noise Gate", sw_gate_enable,
+                                       {knob_gate_thresh, knob_gate_attack, knob_gate_release});
         gr_gate = new GainReductionMeter(40.0f, Theme::accent("gate"));
         place_in_stereo_slot(col, gr_gate);
         Theme::tag_card(col, "gate");
@@ -616,9 +617,9 @@ void MainWindow::setup_ui() {
         knob_comp_release->set_scroll_step(10.0);
         knob_comp_makeup->set_scroll_step(0.5);
 
-        auto* col = make_effect_row("Compressor", sw_comp_enable,
-                                    {knob_comp_thresh, knob_comp_ratio, knob_comp_attack,
-                                     knob_comp_release, knob_comp_makeup});
+        QWidget* col = make_effect_row("Compressor", sw_comp_enable,
+                                       {knob_comp_thresh, knob_comp_ratio, knob_comp_attack,
+                                        knob_comp_release, knob_comp_makeup});
         gr_comp = new GainReductionMeter(20.0f, Theme::accent("comp"));
         place_in_stereo_slot(col, gr_comp);
         Theme::tag_card(col, "comp");
@@ -637,7 +638,7 @@ void MainWindow::setup_ui() {
         knob_wah_res->set_scroll_step(1.0);
         knob_wah_mix->set_scroll_step(1.0);
 
-        auto* mode =
+        KnobWidget* mode =
             late_knob("dynamicWah", "mode", new KnobWidget("Mode", 0, 1, 0), [this](double v) {
                 engine->get_wah().set_pedal_mode(v > 0.5);
             });
@@ -647,15 +648,15 @@ void MainWindow::setup_ui() {
         });
         mode->setToolTip("Auto: the envelope sweeps the wah · Pedal: Position sweeps it (map an "
                          "expression pedal)");
-        auto* pos = late_knob("dynamicWah", "position",
-                              new KnobWidget("Position", WAH_POSITION_MIN, WAH_POSITION_MAX,
-                                             WAH_POSITION_DEFAULT, "%"),
-                              [this](double v) {
-                                  engine->get_wah().set_position_pct(static_cast<float>(v));
-                              });
+        KnobWidget* pos = late_knob("dynamicWah", "position",
+                                    new KnobWidget("Position", WAH_POSITION_MIN, WAH_POSITION_MAX,
+                                                   WAH_POSITION_DEFAULT, "%"),
+                                    [this](double v) {
+                                        engine->get_wah().set_position_pct(static_cast<float>(v));
+                                    });
         pos->set_scroll_step(1.0);
-        auto* col = make_effect_row("Dynamic Wah", sw_wah_enable,
-                                    {knob_wah_mix, knob_wah_sens, knob_wah_res, mode, pos});
+        QWidget* col = make_effect_row("Dynamic Wah", sw_wah_enable,
+                                       {knob_wah_mix, knob_wah_sens, knob_wah_res, mode, pos});
         Theme::tag_card(col, "wah");
 
         fx_cols[&engine->get_wah()] = col;
@@ -672,15 +673,15 @@ void MainWindow::setup_ui() {
         knob_drive->set_scroll_step(1.0);
         knob_drive_tone->set_scroll_step(1.0);
         knob_drive_level->set_scroll_step(0.5);
-        auto* col = make_effect_row("Drive", sw_drive_enable,
-                                    {knob_drive, knob_drive_tone, knob_drive_level});
+        QWidget* col = make_effect_row("Drive", sw_drive_enable,
+                                       {knob_drive, knob_drive_tone, knob_drive_level});
         Theme::tag_card(col, "drive");
         fx_cols[&engine->get_drive()] = col;
     }
 
     // ---- Amp (NAM) ----
     {
-        auto* col = make_effect_row("Amplifier", sw_nam_enable, {}, &sw_nam_stereo);
+        QWidget* col = make_effect_row("Amplifier", sw_nam_enable, {}, &sw_nam_stereo);
         sw_nam_stereo->setToolTip("Stereo input: run the amp per channel (twice the CPU).\n"
                                   "Off: a stereo effect before the amp is summed to mono first.");
         sw_nam_enable->setChecked(true);
@@ -706,20 +707,20 @@ void MainWindow::setup_ui() {
                 gain ? engine->get_eq().set_gain(b, v) : engine->get_eq().set_freq(b, v);
             };
         };
-        auto* hi_mid =
+        KnobWidget* hi_mid =
             late_knob("eq", "highMid",
                       new KnobWidget("High-Mid", EQ_BAND_MIN, EQ_BAND_MAX, EQ_BAND_DEFAULT, "dB"),
                       eq_set(EQProcessor::HIGH_MID, true));
         hi_mid->set_scroll_step(0.1);
         auto freq_knob = [&](const QString& key, const QString& label, double lo, double hi,
                              double def, EQProcessor::Band b, double off_at) {
-            auto* k =
+            KnobWidget* k =
                 late_knob("eq", key, new KnobWidget(label, lo, hi, def, "Hz"), eq_set(b, false));
             k->set_log_taper(true);
             k->set_value_formatter(hz_label(off_at));
             return static_cast<QWidget*>(k);
         };
-        auto* col =
+        QWidget* col =
             make_effect_row("Equalizer", sw_eq_enable, {knob_low, knob_mid, hi_mid, knob_treble});
         add_detail_row(
             col,
@@ -751,7 +752,8 @@ void MainWindow::setup_ui() {
             new KnobWidget("Mix", DOUBLER_MIX_MIN, DOUBLER_MIX_MAX, DOUBLER_MIX_DEFAULT, "%");
         knob_dbl_spread->set_scroll_step(0.5);
         knob_dbl_mix->set_scroll_step(1.0);
-        auto* col = make_effect_row("Doubler", sw_doubler_enable, {knob_dbl_mix, knob_dbl_spread});
+        QWidget* col =
+            make_effect_row("Doubler", sw_doubler_enable, {knob_dbl_mix, knob_dbl_spread});
         col->setToolTip(
             "Double-tracking from a mono signal: left dry, right a drifting delayed copy.\n"
             "Passes a stereo input through untouched.");
@@ -769,7 +771,8 @@ void MainWindow::setup_ui() {
         knob_vol_pos->set_scroll_step(1.0);
         knob_vol_mid->set_scroll_step(1.0);
         knob_vol_mid->setToolTip("Level at half travel: lower = swells stay quiet longer");
-        auto* col = make_effect_row("Volume Pedal", sw_volume_enable, {knob_vol_pos, knob_vol_mid});
+        QWidget* col =
+            make_effect_row("Volume Pedal", sw_volume_enable, {knob_vol_pos, knob_vol_mid});
         Theme::tag_card(col, "volume");
         fx_cols[&engine->get_volume()] = col;
     }
@@ -790,19 +793,20 @@ void MainWindow::setup_ui() {
         knob_fl_feedback->set_scroll_step(1.0);
         knob_fl_mix->set_scroll_step(1.0);
 
-        auto* col = make_effect_row("Flanger", sw_flanger_enable,
-                                    {knob_fl_mix, knob_fl_rate, knob_fl_depth, knob_fl_feedback},
-                                    &sw_flanger_stereo);
+        QWidget* col = make_effect_row("Flanger", sw_flanger_enable,
+                                       {knob_fl_mix, knob_fl_rate, knob_fl_depth, knob_fl_feedback},
+                                       &sw_flanger_stereo);
         add_tempo_sync(col, knob_fl_rate, "Rate", false, 1 /* 2 bars */, FLANGER_RATE_MIN,
                        FLANGER_RATE_MAX, [this](double v) {
                            engine->get_flanger().set_rate_hz(static_cast<float>(v));
                        });
-        auto* range = late_knob("flanger", "range",
-                                new KnobWidget("Range", FLANGER_RANGE_MIN, FLANGER_RANGE_MAX,
-                                               FLANGER_RANGE_DEFAULT, "%"),
-                                [this](double v) {
-                                    engine->get_flanger().set_range_pct(static_cast<float>(v));
-                                });
+        KnobWidget* range =
+            late_knob("flanger", "range",
+                      new KnobWidget("Range", FLANGER_RANGE_MIN, FLANGER_RANGE_MAX,
+                                     FLANGER_RANGE_DEFAULT, "%"),
+                      [this](double v) {
+                          engine->get_flanger().set_range_pct(static_cast<float>(v));
+                      });
         range->set_scroll_step(1.0);
         range->setToolTip("Sweep length: low = short, metallic · high = long jet sweep");
         add_detail_row(col, {range});
@@ -827,16 +831,17 @@ void MainWindow::setup_ui() {
         knob_ph_feedback->set_scroll_step(1.0);
         knob_ph_mix->set_scroll_step(1.0);
 
-        auto* col = make_effect_row("Phaser", sw_phaser_enable,
-                                    {knob_ph_mix, knob_ph_rate, knob_ph_depth, knob_ph_feedback},
-                                    &sw_phaser_stereo);
+        QWidget* col = make_effect_row("Phaser", sw_phaser_enable,
+                                       {knob_ph_mix, knob_ph_rate, knob_ph_depth, knob_ph_feedback},
+                                       &sw_phaser_stereo);
         add_tempo_sync(col, knob_ph_rate, "Rate", false, 4 /* 1/2 */, PHASER_RATE_MIN,
                        PHASER_RATE_MAX, [this](double v) {
                            engine->get_phaser().set_rate_hz(static_cast<float>(v));
                        });
-        auto* mode = late_knob("phaser", "mode", new KnobWidget("Mode", 0, 1, 0), [this](double v) {
-            engine->get_phaser().set_vibe(v > 0.5);
-        });
+        KnobWidget* mode =
+            late_knob("phaser", "mode", new KnobWidget("Mode", 0, 1, 0), [this](double v) {
+                engine->get_phaser().set_vibe(v > 0.5);
+            });
         mode->set_snap(1.0);
         mode->set_value_formatter([](double v) {
             return v > 0.5 ? QString("Vibe") : QString("Classic");
@@ -862,15 +867,17 @@ void MainWindow::setup_ui() {
         knob_ch_depth->set_scroll_step(1.0);
         knob_ch_mix->set_scroll_step(1.0);
 
-        auto* col = make_effect_row("Chorus", sw_chorus_enable,
-                                    {knob_ch_mix, knob_ch_rate, knob_ch_depth}, &sw_chorus_stereo);
+        QWidget* col =
+            make_effect_row("Chorus", sw_chorus_enable, {knob_ch_mix, knob_ch_rate, knob_ch_depth},
+                            &sw_chorus_stereo);
         add_tempo_sync(col, knob_ch_rate, "Rate", false, 2 /* 1/1 */, CHORUS_RATE_MIN,
                        CHORUS_RATE_MAX, [this](double v) {
                            engine->get_chorus().set_rate_hz(static_cast<float>(v));
                        });
-        auto* mode = late_knob("chorus", "mode", new KnobWidget("Mode", 0, 3, 0), [this](double v) {
-            engine->get_chorus().set_mode(static_cast<int>(std::lround(v)));
-        });
+        KnobWidget* mode =
+            late_knob("chorus", "mode", new KnobWidget("Mode", 0, 3, 0), [this](double v) {
+                engine->get_chorus().set_mode(static_cast<int>(std::lround(v)));
+            });
         mode->set_snap(1.0);
         mode->set_value_formatter([](double v) {
             static const char* names[] = {"Normal", "Tri", "Vintage", "Spatial"};
@@ -894,8 +901,8 @@ void MainWindow::setup_ui() {
         knob_tr_rate->set_scroll_step(0.1);
         knob_tr_depth->set_scroll_step(1.0);
 
-        auto* col = make_effect_row("Tremolo", sw_tremolo_enable, {knob_tr_rate, knob_tr_depth},
-                                    &sw_tremolo_stereo);
+        QWidget* col = make_effect_row("Tremolo", sw_tremolo_enable, {knob_tr_rate, knob_tr_depth},
+                                       &sw_tremolo_stereo);
         add_tempo_sync(col, knob_tr_rate, "Rate", false, 10 /* 1/8 */, TREMOLO_RATE_MIN,
                        TREMOLO_RATE_MAX, [this](double v) {
                            engine->get_tremolo().set_rate_hz(static_cast<float>(v));
@@ -917,7 +924,7 @@ void MainWindow::setup_ui() {
         knob_del_feedback->set_scroll_step(1.0);
         knob_del_mix->set_scroll_step(1.0);
 
-        auto* col =
+        QWidget* col =
             make_effect_row("Delay", sw_delay_enable,
                             {knob_del_mix, knob_del_time, knob_del_feedback}, &sw_delay_stereo);
         add_tempo_sync(col, knob_del_time, "Time", true, 8 /* 1/8. */, DELAY_TIME_MIN,
@@ -926,13 +933,13 @@ void MainWindow::setup_ui() {
                        });
         auto pct = [&](const QString& key, const QString& label, double lo, double hi, double def,
                        std::function<void(double)> f, const QString& tip) {
-            auto* k =
+            KnobWidget* k =
                 late_knob("delay", key, new KnobWidget(label, lo, hi, def, "%"), std::move(f));
             k->set_scroll_step(1.0);
             k->setToolTip(tip);
             return static_cast<QWidget*>(k);
         };
-        auto* low_cut = late_knob(
+        KnobWidget* low_cut = late_knob(
             "delay", "lowCut",
             new KnobWidget("Low Cut", LOW_CUT_MIN, DELAY_LOW_CUT_MAX, LOW_CUT_DEFAULT, "Hz"),
             [this](double v) {
@@ -940,7 +947,7 @@ void MainWindow::setup_ui() {
             });
         low_cut->set_log_taper(true);
         low_cut->set_value_formatter(hz_label(LOW_CUT_MIN + 0.5));
-        auto* high_cut = late_knob(
+        KnobWidget* high_cut = late_knob(
             "delay", "highCut",
             new KnobWidget("High Cut", DELAY_HIGH_CUT_MIN, HIGH_CUT_MAX, HIGH_CUT_DEFAULT, "Hz"),
             [this](double v) {
@@ -1008,18 +1015,19 @@ void MainWindow::setup_ui() {
         knob_rev_width->set_scroll_step(1.0);
         knob_rev_mix->set_scroll_step(1.0);
 
-        auto* col =
+        QWidget* col =
             make_effect_row("Reverb", sw_reverb_enable,
                             {knob_rev_mix, knob_rev_room, knob_rev_damping, knob_rev_width});
-        auto* pre = late_knob("reverb", "preDelay",
-                              new KnobWidget("Pre-delay", REVERB_PRE_DELAY_MIN,
-                                             REVERB_PRE_DELAY_MAX, REVERB_PRE_DELAY_DEFAULT, "ms"),
-                              [this](double v) {
-                                  engine->get_reverb().set_pre_delay(static_cast<float>(v));
-                              });
+        KnobWidget* pre =
+            late_knob("reverb", "preDelay",
+                      new KnobWidget("Pre-delay", REVERB_PRE_DELAY_MIN, REVERB_PRE_DELAY_MAX,
+                                     REVERB_PRE_DELAY_DEFAULT, "ms"),
+                      [this](double v) {
+                          engine->get_reverb().set_pre_delay(static_cast<float>(v));
+                      });
         pre->set_scroll_step(5.0);
         pre->setToolTip("Gap before the tail starts: keeps the note clear of the room");
-        auto* low_cut = late_knob(
+        KnobWidget* low_cut = late_knob(
             "reverb", "lowCut",
             new KnobWidget("Low Cut", LOW_CUT_MIN, REVERB_LOW_CUT_MAX, LOW_CUT_DEFAULT, "Hz"),
             [this](double v) {
@@ -1027,7 +1035,7 @@ void MainWindow::setup_ui() {
             });
         low_cut->set_log_taper(true);
         low_cut->set_value_formatter(hz_label(LOW_CUT_MIN + 0.5));
-        auto* high_cut = late_knob(
+        KnobWidget* high_cut = late_knob(
             "reverb", "highCut",
             new KnobWidget("High Cut", REVERB_HIGH_CUT_MIN, HIGH_CUT_MAX, HIGH_CUT_DEFAULT, "Hz"),
             [this](double v) {
@@ -1035,7 +1043,7 @@ void MainWindow::setup_ui() {
             });
         high_cut->set_log_taper(true);
         high_cut->set_value_formatter(hz_label(-(HIGH_CUT_MAX - 1.0)));
-        auto* shimmer = late_knob(
+        KnobWidget* shimmer = late_knob(
             "reverb", "shimmer", new KnobWidget("Shimmer", 0.0, 100.0, 0.0, "%"), [this](double v) {
                 engine->get_reverb().set_shimmer_pct(static_cast<float>(v));
             });
@@ -1049,27 +1057,29 @@ void MainWindow::setup_ui() {
 
     // ---- IR toggle ----
     {
-        auto* col = make_effect_row("Cabinet", sw_ir_enable, {});
+        QWidget* col = make_effect_row("Cabinet", sw_ir_enable, {});
         sw_ir_enable->setChecked(true);
         make_hero_controls(col, LibraryEntry::Kind::IR, lbl_ir_status, lbl_ir_meta, lbl_ir_origin);
 
         // Dual cab (Phase 17): A/B mixer + cuts, then slot B's picker.
         using namespace NAMConstants;
         auto level = [&](int slot) {
-            auto* k = late_knob("ir", slot ? "levelB" : "levelA",
-                                new KnobWidget(slot ? "Level B" : "Level A", -24.0, 6.0, 0.0, "dB"),
-                                [this, slot](double v) {
-                                    engine->get_ir().set_level(slot, static_cast<float>(v));
-                                });
+            KnobWidget* k =
+                late_knob("ir", slot ? "levelB" : "levelA",
+                          new KnobWidget(slot ? "Level B" : "Level A", -24.0, 6.0, 0.0, "dB"),
+                          [this, slot](double v) {
+                              engine->get_ir().set_level(slot, static_cast<float>(v));
+                          });
             k->set_scroll_step(0.5);
             return static_cast<QWidget*>(k);
         };
         auto pan = [&](int slot) {
-            auto* k = late_knob("ir", slot ? "panB" : "panA",
-                                new KnobWidget(slot ? "Pan B" : "Pan A", -100.0, 100.0, 0.0, "%"),
-                                [this, slot](double v) {
-                                    engine->get_ir().set_pan(slot, static_cast<float>(v));
-                                });
+            KnobWidget* k =
+                late_knob("ir", slot ? "panB" : "panA",
+                          new KnobWidget(slot ? "Pan B" : "Pan A", -100.0, 100.0, 0.0, "%"),
+                          [this, slot](double v) {
+                              engine->get_ir().set_pan(slot, static_cast<float>(v));
+                          });
             k->set_scroll_step(10.0);
             k->set_value_formatter([](double v) {
                 const int p = static_cast<int>(std::lround(v));
@@ -1097,10 +1107,10 @@ void MainWindow::setup_ui() {
             l->addWidget(cap, 0, Qt::AlignVCenter);
             return w;
         };
-        auto* blend = late_knob("ir", "blend", new KnobWidget("Blend", 0.0, 100.0, 50.0, "%"),
-                                [this](double v) {
-                                    engine->get_ir().set_blend_pct(static_cast<float>(v));
-                                });
+        KnobWidget* blend = late_knob("ir", "blend", new KnobWidget("Blend", 0.0, 100.0, 50.0, "%"),
+                                      [this](double v) {
+                                          engine->get_ir().set_blend_pct(static_cast<float>(v));
+                                      });
         blend->set_scroll_step(1.0);
         blend->set_value_formatter([](double v) {
             const int b = static_cast<int>(std::lround(v));
@@ -1109,7 +1119,7 @@ void MainWindow::setup_ui() {
                             : QString("B %1").arg(b);
         });
         blend->setToolTip("Crossfade between the two IRs (only when both slots are loaded)");
-        auto* low_cut =
+        KnobWidget* low_cut =
             late_knob("ir", "lowCut",
                       new KnobWidget("Low Cut", LOW_CUT_MIN, LOW_CUT_MAX, LOW_CUT_DEFAULT, "Hz"),
                       [this](double v) {
@@ -1117,7 +1127,7 @@ void MainWindow::setup_ui() {
                       });
         low_cut->set_log_taper(true);
         low_cut->set_value_formatter(hz_label(LOW_CUT_MIN + 0.5));
-        auto* high_cut = late_knob(
+        KnobWidget* high_cut = late_knob(
             "ir", "highCut",
             new KnobWidget("High Cut", HIGH_CUT_MIN, HIGH_CUT_MAX, HIGH_CUT_DEFAULT, "Hz"),
             [this](double v) {
@@ -1310,14 +1320,14 @@ void MainWindow::setup_ui() {
         show->setShortcut(QKeySequence("Ctrl+L"));
         library_menu->addAction(show);
 
-        auto* find = library_menu->addAction("Find in Library");
+        QAction* find = library_menu->addAction("Find in Library");
         find->setShortcut(QKeySequence::Find); // Ctrl+F
         connect(find, &QAction::triggered, this, [this] {
             library_dock->show();
             library_tabs->set_tab(LibraryDock::LOCAL);
             library->focus_search();
         });
-        auto* t3k = library_menu->addAction("Browse TONE3000…");
+        QAction* t3k = library_menu->addAction("Browse TONE3000…");
         t3k->setIcon(
             QIcon(QPixmap(":/tone3000/t3k-mark.png").scaledToHeight(14, Qt::SmoothTransformation)));
         connect(t3k, &QAction::triggered, this, [this] {
@@ -1342,7 +1352,7 @@ void MainWindow::setup_ui() {
 
 void MainWindow::make_hero_controls(QWidget* card, LibraryEntry::Kind kind, QLabel*& name_out,
                                     QLabel*& meta_out, QLabel*& origin_out) {
-    auto* lay = row_layout(card);
+    QHBoxLayout* lay = row_layout(card);
     const bool model = kind == LibraryEntry::Kind::MODEL;
 
     // ‹ › cycle the library section in its current visible order.
@@ -1358,9 +1368,10 @@ void MainWindow::make_hero_controls(QWidget* card, LibraryEntry::Kind kind, QLab
         });
         return b;
     };
-    auto* prev =
+    QToolButton* prev =
         arrow("‹", -1, model ? "Previous model in the library" : "Previous IR in the library");
-    auto* next = arrow("›", +1, model ? "Next model in the library" : "Next IR in the library");
+    QToolButton* next =
+        arrow("›", +1, model ? "Next model in the library" : "Next IR in the library");
 
     auto* browse = new QPushButton("Browse");
     browse->setToolTip(model ? "Show the model list in the Library"
@@ -2184,7 +2195,7 @@ void MainWindow::on_learn_changed() {
 void MainWindow::add_tempo_sync(QWidget* card, KnobWidget* free_knob, const QString& label,
                                 bool is_time, int default_note, double min, double max,
                                 std::function<void(double)> push) {
-    auto* lay = row_layout(card);
+    QHBoxLayout* lay = row_layout(card);
 
     // Note knob in the free knob's place, shown while synced.
     auto* note =
@@ -2313,7 +2324,7 @@ void MainWindow::restore_session_state() {
 // Group/key names are the v1 preset schema; an empty group means the key sits
 // at the JSON root.
 void MainWindow::register_parameters() {
-    auto* e = engine.get();
+    AudioEngine* e = engine.get();
     // Time-based knobs: every change of free value, sync toggle or note value
     // re-pushes the effective value (see pushSynced).
     auto synced_handler = [this](KnobWidget* k) {
@@ -2676,7 +2687,7 @@ void MainWindow::save_connections() {
         return l;
     };
 
-    auto c = engine->current_connections();
+    IAudioBackend::PortConnections c = engine->current_connections();
     QSettings s;
     s.setValue("connections/inputSources", to_list(c.input_sources));
     s.setValue("connections/outputLDests", to_list(c.output_l_dests));
@@ -3070,7 +3081,7 @@ void MainWindow::switch_ab(int side) {
     if (ab[side].isEmpty()) {
         ab[side] = live;
     } else {
-        const auto applied = apply_preset_params(ab[side]);
+        const PresetSerializer::Applied applied = apply_preset_params(ab[side]);
         if (!applied.nam_path.isEmpty() && QFile::exists(applied.nam_path)) {
             load_model_file(applied.nam_path, true);
         }
@@ -3131,7 +3142,7 @@ bool MainWindow::load_preset_file(const QString& path_in) {
         return false;
     }
     QJsonParseError err;
-    auto doc = QJsonDocument::fromJson(f.readAll(), &err);
+    QJsonDocument doc = QJsonDocument::fromJson(f.readAll(), &err);
     if (!doc.isObject()) {
         QMessageBox::critical(
             this, "Preset",
@@ -3144,7 +3155,7 @@ bool MainWindow::load_preset_file(const QString& path_in) {
     library->note_used(path);
     library->set_loaded_path(LibraryEntry::Kind::PRESET, path);
 
-    const auto applied = apply_preset_params(doc.object());
+    const PresetSerializer::Applied applied = apply_preset_params(doc.object());
 
     // v2 presets embed the model/IR paths. Only a non-empty path acts — a
     // preset saved without a model must not unload the current one — and when
@@ -3223,7 +3234,7 @@ bool MainWindow::load_preset_file(const QString& path_in) {
 PresetSerializer::Applied MainWindow::apply_preset_params(const QJsonObject& obj) {
     // Widgets first (engine follows via the registry connections), then the
     // chain order (engine-side sanitizer handles unknown/missing IDs).
-    const auto applied = PresetSerializer::apply(obj, params);
+    const PresetSerializer::Applied applied = PresetSerializer::apply(obj, params);
     if (!applied.effect_order.isEmpty()) {
         apply_chain_order(applied.effect_order);
     }

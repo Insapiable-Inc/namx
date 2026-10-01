@@ -80,7 +80,7 @@ static QJsonDocument http_get(QNetworkAccessManager& nam, const QUrl& url) {
 static QString authorize_url;
 static void message_handler(QtMsgType, const QMessageLogContext&, const QString& msg) {
     static const QRegularExpression RE("TONE3000 authorize URL: \"?(\\S+?)\"?$");
-    const auto m = RE.match(msg);
+    const QRegularExpressionMatch m = RE.match(msg);
     if (m.hasMatch()) {
         authorize_url = m.captured(1);
     }

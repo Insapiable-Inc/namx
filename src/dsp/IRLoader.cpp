@@ -102,7 +102,7 @@ bool IRLoader::load(const std::string& path) {
     std::vector<float> raw_samples;
     double sample_rate = 0.0;
 
-    auto result = dsp::wav::Load(path.c_str(), raw_samples, sample_rate);
+    dsp::wav::LoadReturnCode result = dsp::wav::Load(path.c_str(), raw_samples, sample_rate);
     std::lock_guard<std::mutex> lock(load_mutex);
     if (result != dsp::wav::LoadReturnCode::SUCCESS) {
         last_error = dsp::wav::GetMsgForLoadReturnCode(result);

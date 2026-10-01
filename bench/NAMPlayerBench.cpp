@@ -231,7 +231,7 @@ int main(int argc, char** argv) {
         bool stereo = false;
         double block_us = 0.0;
         for (auto& s : chain) {
-            const auto t0 = Clock::now();
+            const Clock::time_point t0 = Clock::now();
             stereo = s.fx->process(l.data(), r.data(), frames, stereo);
             const double us = std::chrono::duration<double, std::micro>(Clock::now() - t0).count();
             block_us += us;
@@ -240,7 +240,7 @@ int main(int argc, char** argv) {
             }
         }
         {
-            const auto t0 = Clock::now();
+            const Clock::time_point t0 = Clock::now();
             limiter.process(l.data(), r.data(), frames);
             const double us = std::chrono::duration<double, std::micro>(Clock::now() - t0).count();
             block_us += us;

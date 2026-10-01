@@ -181,7 +181,7 @@ void BeatLeds::paintEvent(QPaintEvent*) {
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing);
     for (int b = 0; b < beats; ++b) {
-        const auto a = Metronome::accent_of(accents, b);
+        const Metronome::Accent a = Metronome::accent_of(accents, b);
         const qreal x = 1 + b * (W + GAP);
         const qreal h = a == Metronome::STRONG   ? H - 2
                         : a == Metronome::NORMAL ? (H - 2) * 0.66
@@ -208,8 +208,9 @@ void BeatLeds::mousePressEvent(QMouseEvent* ev) {
         return;
     }
     // strong → normal → soft → mute → strong
-    const auto a = Metronome::accent_of(accents, b);
-    const auto next = a == Metronome::MUTE ? Metronome::STRONG : Metronome::Accent(a - 1);
+    const Metronome::Accent a = Metronome::accent_of(accents, b);
+    const Metronome::Accent next =
+        a == Metronome::MUTE ? Metronome::STRONG : Metronome::Accent(a - 1);
     accents = Metronome::with_accent(accents, b, next);
     update();
     emit accents_changed(accents);

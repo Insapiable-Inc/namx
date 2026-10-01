@@ -45,8 +45,8 @@ PresetBar::PresetBar(const LibraryIndex& new_index, QMenu* preset_menu, QWidget*
     caption->setObjectName("presetCaption");
     lay->addWidget(caption);
 
-    auto* prev = tool("‹", "Previous preset in the library", "heroArrow");
-    auto* next = tool("›", "Next preset in the library", "heroArrow");
+    QToolButton* prev = tool("‹", "Previous preset in the library", "heroArrow");
+    QToolButton* next = tool("›", "Next preset in the library", "heroArrow");
     connect(prev, &QToolButton::clicked, this, [this] {
         emit step_requested(-1);
     });
@@ -75,8 +75,8 @@ PresetBar::PresetBar(const LibraryIndex& new_index, QMenu* preset_menu, QWidget*
     lay->addWidget(next);
     lay->addSpacing(8);
 
-    auto* save = tool("Save", "Save the preset (Ctrl+S)", "presetTool");
-    auto* save_as = tool("Save As…", "Save as a new preset (Ctrl+Shift+S)", "presetTool");
+    QToolButton* save = tool("Save", "Save the preset (Ctrl+S)", "presetTool");
+    QToolButton* save_as = tool("Save As…", "Save as a new preset (Ctrl+Shift+S)", "presetTool");
     connect(save, &QToolButton::clicked, this, &PresetBar::save_requested);
     connect(save_as, &QToolButton::clicked, this, &PresetBar::save_as_requested);
     lay->addWidget(save);
@@ -92,7 +92,7 @@ PresetBar::PresetBar(const LibraryIndex& new_index, QMenu* preset_menu, QWidget*
         slot_paths << QString();
     }
     for (int i = 0; i < SLOT_COUNT; ++i) {
-        auto* b = tool(QString::number(i + 1), {}, "presetSlot");
+        QToolButton* b = tool(QString::number(i + 1), {}, "presetSlot");
         b->setContextMenuPolicy(Qt::CustomContextMenu);
         connect(b, &QToolButton::clicked, this, [this, i] {
             activate_slot(i);
@@ -128,7 +128,7 @@ PresetBar::PresetBar(const LibraryIndex& new_index, QMenu* preset_menu, QWidget*
     lay->addWidget(ab_copy);
     lay->addSpacing(8);
 
-    auto* more = tool("⋯", "Preset menu", "presetTool");
+    QToolButton* more = tool("⋯", "Preset menu", "presetTool");
     more->setPopupMode(QToolButton::InstantPopup);
     more->setMenu(preset_menu);
     lay->addWidget(more);

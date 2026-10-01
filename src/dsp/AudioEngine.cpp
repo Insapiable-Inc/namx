@@ -162,7 +162,7 @@ void AudioEngine::set_chain_order(const std::vector<std::string>& ids) {
     size_t default_idx = 0;
     for (const auto& [id, fx] : effect_table) {
         if (std::find(new_chain.begin(), new_chain.end(), fx) == new_chain.end()) {
-            const auto slot =
+            const Chain::difference_type slot =
                 static_cast<Chain::difference_type>(std::min(default_idx, new_chain.size()));
             new_chain.insert(new_chain.begin() + slot, fx); // iterator offsets are signed
         }
@@ -243,12 +243,12 @@ void AudioEngine::stop() {
 }
 
 std::vector<IAudioBackend::DeviceInfo> AudioEngine::enumerate_input_devices() const {
-    auto temp = IAudioBackend::create();
+    std::unique_ptr<IAudioBackend> temp = IAudioBackend::create();
     return temp ? temp->enumerate_input_devices() : std::vector<IAudioBackend::DeviceInfo>{};
 }
 
 std::vector<IAudioBackend::DeviceInfo> AudioEngine::enumerate_output_devices() const {
-    auto temp = IAudioBackend::create();
+    std::unique_ptr<IAudioBackend> temp = IAudioBackend::create();
     return temp ? temp->enumerate_output_devices() : std::vector<IAudioBackend::DeviceInfo>{};
 }
 
@@ -285,7 +285,7 @@ void AudioEngine::on_buffer_size_changed(int new_size) {
 void AudioEngine::on_audio(const float* in, float* out_l, float* out_r, size_t n) {
     // DSP load: wall time of the block vs its real-time duration. steady_clock
     // is a vDSO read — no syscall, RT-safe.
-    const auto t0 = std::chrono::steady_clock::now();
+    const std::chrono::steady_clock::time_point t0 = std::chrono::steady_clock::now();
     process_block(in, out_l, out_r, n);
     const double secs =
         std::chrono::duration<double>(std::chrono::steady_clock::now() - t0).count();

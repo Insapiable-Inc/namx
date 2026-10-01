@@ -348,7 +348,7 @@ public slots:
                 }
 
                 bool ok = false;
-                const auto kind = LibraryIndex::kind_for_path(p, &ok);
+                const LibraryEntry::Kind kind = LibraryIndex::kind_for_path(p, &ok);
                 if (!ok || !kinds.contains(static_cast<int>(kind))) {
                     continue;
                 }

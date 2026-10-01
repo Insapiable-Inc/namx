@@ -192,7 +192,7 @@ void Metronome::process(float* l, float* r, size_t n) {
     const double samples_per_tick = sample_rate * 60.0 / current_bpm *
                                     (4.0 / unit.load(std::memory_order_relaxed)) / current_subdiv;
     const uint32_t acc = accents.load(std::memory_order_relaxed);
-    const auto& set = samples[sound.load(std::memory_order_relaxed)];
+    const std::array<std::vector<float>, 3>& set = samples[sound.load(std::memory_order_relaxed)];
     const bool current_silent_after = silent_after.load(std::memory_order_relaxed) &&
                                       count_in_bars.load(std::memory_order_relaxed) > 0;
 

@@ -1036,7 +1036,7 @@ void Tone3000Panel::show_list_status(const QString& text) {
 }
 
 void Tone3000Panel::load_list(bool use_cache) {
-    const auto kind = LIST_KINDS[list];
+    const Tone3000Client::ListKind kind = LIST_KINDS[list];
     const bool paged = kind == Tone3000Client::ListKind::FAVORITED ||
                        kind == Tone3000Client::ListKind::DOWNLOADED ||
                        kind == Tone3000Client::ListKind::CREATED;
@@ -1278,7 +1278,7 @@ void Tone3000Panel::on_model_row_clicked(const QModelIndex& idx) {
     if (state == ToneModelsModel::DONE) {
         const QString path = idx.data(ToneModelsModel::LOCAL_PATH_ROLE).toString();
         bool ok = false;
-        const auto kind = LibraryIndex::kind_for_path(path, &ok);
+        const LibraryEntry::Kind kind = LibraryIndex::kind_for_path(path, &ok);
         if (ok) {
             emit load_requested(kind, path);
         }

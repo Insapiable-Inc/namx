@@ -556,7 +556,7 @@ void Tone3000Client::refresh_access_token(std::function<void(bool)> then) {
             emit auth_changed();
             emit user_changed();
         }
-        const auto waiting = std::move(waiting_for_token);
+        const QList<std::function<void(bool)>> waiting = std::move(waiting_for_token);
         waiting_for_token.clear();
         for (const auto& w : waiting) {
             w(ok);

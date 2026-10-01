@@ -834,7 +834,7 @@ commit.
       `-Wshadow` clean. Windows-only files renamed by the same map, unverified until a
       Windows CI build. Accessors: `get_` where a getter collided with its member;
       other getters (`status_string()`, `value()`…) keep their names for now.
-- [ ] **`auto`:** spell out built-in types and function results; keep it for class
+- [x] **`auto`:** spell out built-in types and function results; keep it for class
       casts, iterators, lambdas, range-for.
 - [ ] **Lambdas:** one-statement bodies; the ~110 multi-line ones (32 over 10 lines,
       mostly `Tone3000Client` reply handlers, `Tone3000Panel`, `MainWindow` row

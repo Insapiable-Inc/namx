@@ -232,8 +232,8 @@ void AudioStatusBar::reset_counters() {
 }
 
 void AudioStatusBar::set_device_labels() {
-    const auto ins = engine.enumerate_input_devices();
-    const auto outs = engine.enumerate_output_devices();
+    const std::vector<IAudioBackend::DeviceInfo> ins = engine.enumerate_input_devices();
+    const std::vector<IAudioBackend::DeviceInfo> outs = engine.enumerate_output_devices();
 
     auto elide = [](QString s) {
         return s.size() > 28 ? s.left(27) + "…" : s;
@@ -247,7 +247,8 @@ void AudioStatusBar::set_device_labels() {
 }
 
 void AudioStatusBar::pick_device(bool input) {
-    const auto devs = input ? engine.enumerate_input_devices() : engine.enumerate_output_devices();
+    const std::vector<IAudioBackend::DeviceInfo> devs =
+        input ? engine.enumerate_input_devices() : engine.enumerate_output_devices();
     QString& current = input ? input_id : output_id;
     QLabel* anchor = input ? lbl_input : lbl_output;
 
