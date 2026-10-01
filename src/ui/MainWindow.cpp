@@ -3155,7 +3155,7 @@ bool MainWindow::loadPresetFile(const QString& pathIn) {
             const QString title = link.value("title").toString().isEmpty()
                                       ? QFileInfo(applied.namPath).completeBaseName()
                                       : link.value("title").toString();
-            resolveTone3000Model(modelId, title, [this, tryLoad, rebaseline](const QString& p) {
+            resolveTone3000Model(modelId, title, [tryLoad, rebaseline](const QString& p) {
                 if (!p.isEmpty() && tryLoad(p, LibraryEntry::Kind::Model)) {
                     rebaseline();
                 }
@@ -3171,7 +3171,7 @@ bool MainWindow::loadPresetFile(const QString& pathIn) {
             const QString title = link.value("title").toString().isEmpty()
                                       ? QFileInfo(applied.irPath).completeBaseName()
                                       : link.value("title").toString();
-            resolveTone3000Model(modelId, title, [this, tryLoad, rebaseline](const QString& p) {
+            resolveTone3000Model(modelId, title, [tryLoad, rebaseline](const QString& p) {
                 if (!p.isEmpty() && tryLoad(p, LibraryEntry::Kind::IR)) {
                     rebaseline();
                 }
