@@ -12,29 +12,29 @@ public:
     void reset() override;
 
     void set_sensitivity_pct(float pct) {
-        m_sensitivity_pct.store(pct);
+        sensitivity_pct.store(pct);
     }
     void set_resonance_pct(float pct) {
-        m_resonance_pct.store(pct);
+        resonance_pct.store(pct);
     }
     void set_mix_pct(float pct) {
-        m_mix_pct.store(pct);
+        mix_pct.store(pct);
     }
     void set_pedal_mode(bool on) {
-        m_pedal.store(on);
+        pedal.store(on);
     }
     void set_position_pct(float pct) {
-        m_position_pct.store(pct);
+        position_pct.store(pct);
     } // 0 heel … 100 toe
 
     float get_sensitivity_pct() const {
-        return m_sensitivity_pct.load();
+        return sensitivity_pct.load();
     }
     float get_resonance_pct() const {
-        return m_resonance_pct.load();
+        return resonance_pct.load();
     }
     float get_mix_pct() const {
-        return m_mix_pct.load();
+        return mix_pct.load();
     }
 
 protected:
@@ -45,21 +45,21 @@ protected:
 private:
     void process_channel(float* buf, size_t nframes, int ch);
 
-    static constexpr float K_BASE_FREQ = 400.0f;
-    static constexpr float K_PEAK_FREQ = 3000.0f;
+    static constexpr float BASE_FREQ = 400.0f;
+    static constexpr float PEAK_FREQ = 3000.0f;
 
-    std::atomic<float> m_sensitivity_pct{70.0f};
-    std::atomic<float> m_resonance_pct{60.0f};
-    std::atomic<float> m_mix_pct{100.0f};
-    std::atomic<bool> m_pedal{false};
-    std::atomic<float> m_position_pct{50.0f};
-    float m_pos_smooth[2]{0.5f, 0.5f}; // de-zippered pedal position per channel
+    std::atomic<float> sensitivity_pct{70.0f};
+    std::atomic<float> resonance_pct{60.0f};
+    std::atomic<float> mix_pct{100.0f};
+    std::atomic<bool> pedal{false};
+    std::atomic<float> position_pct{50.0f};
+    float pos_smooth[2]{0.5f, 0.5f}; // de-zippered pedal position per channel
 
-    float m_env_attack{0.0f};
-    float m_env_release{0.0f};
+    float env_attack{0.0f};
+    float env_release{0.0f};
 
     // Per-channel state: [0] = mono/L, [1] = R (stereo input).
-    float m_env_per_channel[2]{0.0f, 0.0f};
-    float m_svf_lp[2]{0.0f, 0.0f};
-    float m_svf_bp[2]{0.0f, 0.0f};
+    float env_per_channel[2]{0.0f, 0.0f};
+    float svf_lp[2]{0.0f, 0.0f};
+    float svf_bp[2]{0.0f, 0.0f};
 };

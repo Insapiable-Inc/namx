@@ -12,28 +12,28 @@ class OutputLimiter
 public:
     void set_sample_rate(double sr); // non-RT
     void set_enabled(bool on) {
-        m_enabled.store(on);
+        enabled.store(on);
     }
     bool is_enabled() const {
-        return m_enabled.load();
+        return enabled.load();
     }
 
     /// Deepest reduction since the last take (dB ≥ 0), for a meter.
     float take_reduction_db() {
-        return m_gr_peak_db.exchange(0.0f);
+        return gr_peak_db.exchange(0.0f);
     }
 
     void process(float* l, float* r, size_t n);
 
 private:
-    std::atomic<bool> m_enabled{false};
-    std::atomic<float> m_gr_peak_db{0.0f};
-    std::vector<float> m_delay_l, m_delay_r,
-        m_need_window; // look-ahead lines + required gain per slot
-    size_t m_pos = 0;
-    size_t m_look = 48; // look-ahead, samples
-    float m_gain = 1.0f;
-    float m_release = 0.9997f;
-    float m_attack = 0.2f;
-    bool m_was_enabled = false;
+    std::atomic<bool> enabled{false};
+    std::atomic<float> gr_peak_db{0.0f};
+    std::vector<float> delay_l, delay_r,
+        need_window; // look-ahead lines + required gain per slot
+    size_t pos = 0;
+    size_t look = 48; // look-ahead, samples
+    float gain = 1.0f;
+    float release = 0.9997f;
+    float attack = 0.2f;
+    bool was_enabled = false;
 };

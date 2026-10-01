@@ -34,7 +34,7 @@ public:
     virtual QStringList devices() const = 0;
 
     bool is_enabled(const QString& device) const {
-        return !m_disabled.contains(device);
+        return !disabled.contains(device);
     }
     void set_enabled(const QString& device, bool on);
 
@@ -48,5 +48,5 @@ protected:
     /// Re-apply connections after the enabled set or the device list changed.
     virtual void sync_connections() = 0;
 
-    QSet<QString> m_disabled;
+    QSet<QString> disabled;
 };

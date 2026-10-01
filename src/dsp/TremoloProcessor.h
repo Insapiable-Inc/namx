@@ -13,21 +13,21 @@ public:
         return true;
     }
     void reset() override {
-        m_phase = 0.0f;
+        phase = 0.0f;
     }
 
     void set_rate_hz(float hz) {
-        m_rate_hz.store(hz);
+        rate_hz.store(hz);
     }
     void set_depth_pct(float pct) {
-        m_depth_pct.store(pct);
+        depth_pct.store(pct);
     }
 
     float get_rate_hz() const {
-        return m_rate_hz.load();
+        return rate_hz.load();
     }
     float get_depth_pct() const {
-        return m_depth_pct.load();
+        return depth_pct.load();
     }
 
 protected:
@@ -39,8 +39,8 @@ protected:
     void process_block_stereo_out(float* l, float* r, size_t nframes) override;
 
 private:
-    std::atomic<float> m_rate_hz{5.0f};
-    std::atomic<float> m_depth_pct{50.0f};
+    std::atomic<float> rate_hz{5.0f};
+    std::atomic<float> depth_pct{50.0f};
 
-    float m_phase{0.0f};
+    float phase{0.0f};
 };

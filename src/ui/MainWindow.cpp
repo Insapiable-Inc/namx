@@ -67,7 +67,7 @@
 // ---------------------------------------------------------------------------
 
 // Mime type carrying the effect ID of a dragged strip card.
-static const char K_EFFECT_MIME[] = "application/x-nam-effect-id";
+static const char EFFECT_MIME[] = "application/x-nam-effect-id";
 
 // QStringList → the engine's std::string list (effect IDs, JACK port names).
 static std::vector<std::string> to_std_strings(const QStringList& list) {
@@ -80,22 +80,22 @@ static std::vector<std::string> to_std_strings(const QStringList& list) {
 
 // Fixed columns at the left edge of every row card, so the enable toggles,
 // stereo slots, and first knobs line up vertically across the strip.
-static constexpr int K_GRIP_COLUMN_WIDTH = 22; // "≡" drag handle
-static constexpr int K_NAME_COLUMN_WIDTH = 120; // fits "Dynamic Wah"
-static constexpr int K_ENABLE_SLOT_WIDTH = 74; // toggle + "On"/"Off" caption
-static constexpr int K_STEREO_SLOT_WIDTH = 96; // toggle + "Stereo" caption
+static constexpr int GRIP_COLUMN_WIDTH = 22; // "≡" drag handle
+static constexpr int NAME_COLUMN_WIDTH = 120; // fits "Dynamic Wah"
+static constexpr int ENABLE_SLOT_WIDTH = 74; // toggle + "On"/"Off" caption
+static constexpr int STEREO_SLOT_WIDTH = 96; // toggle + "Stereo" caption
 // Every row is exactly as tall as a knob row (40 px dial + knob margins +
 // card margins + border), so knob-less rows and the tuner match the rest.
-static constexpr int K_ROW_CARD_HEIGHT = 62;
-static constexpr int K_DETAIL_ROW_HEIGHT = 54; // the ▾ row of advanced knobs
+static constexpr int ROW_CARD_HEIGHT = 62;
+static constexpr int DETAIL_ROW_HEIGHT = 54; // the ▾ row of advanced knobs
 // Loaded file name on the Amplifier/Cabinet rows elides beyond this.
-static constexpr int K_HERO_NAME_MAX_WIDTH = 420;
+static constexpr int HERO_NAME_MAX_WIDTH = 420;
 
 // Enable toggle with a live "On"/"Off" caption beside it — one line, so the
 // switch stays on the row's vertical centerline.
 static QWidget* make_enable_slot(ToggleSwitch* sw) {
     auto* w = new QWidget;
-    w->setFixedWidth(K_ENABLE_SLOT_WIDTH);
+    w->setFixedWidth(ENABLE_SLOT_WIDTH);
     auto* lay = new QHBoxLayout(w);
     lay->setContentsMargins(0, 0, 0, 0);
     lay->setSpacing(6);
@@ -117,7 +117,7 @@ static QWidget* make_enable_slot(ToggleSwitch* sw) {
 // Toggle and caption sit on one line for the same centering reason.
 static QWidget* make_stereo_slot(ToggleSwitch** out_toggle) {
     auto* w = new QWidget;
-    w->setFixedWidth(K_STEREO_SLOT_WIDTH);
+    w->setFixedWidth(STEREO_SLOT_WIDTH);
     auto* lay = new QHBoxLayout(w);
     lay->setContentsMargins(0, 0, 0, 0);
     lay->setSpacing(6);
@@ -167,7 +167,7 @@ static std::function<QString(double)> hz_label(double off_at = 0.0) {
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
-    , m_engine(std::make_unique<AudioEngine>()) {
+    , engine(std::make_unique<AudioEngine>()) {
     setWindowTitle("NAM Player");
     // Laptop-friendly minimum; the effect strip scrolls when it doesn't fit.
     // The default size still shows the full strip — window managers clamp it
@@ -180,32 +180,31 @@ MainWindow::MainWindow(QWidget* parent)
 
     // The index starts its first scan immediately (worker thread); the panel
     // created in setupUI picks the entries up when they land.
-    m_library_index = new LibraryIndex(this);
-    m_tone3000 = new Tone3000Client(this);
-    m_midi_mapper = new MidiMapper(this); // targets fill in as parameters register
+    library_index = new LibraryIndex(this);
+    tone3000 = new Tone3000Client(this);
+    midi_mapper = new MidiMapper(this); // targets fill in as parameters register
 
     setup_ui();
     register_parameters();
-    setup_midi(m_midi_menu);
+    setup_midi(midi_menu);
 
     // Debounced session save — every registry widget change restarts it, so
     // the session survives a crash without a write per knob tick. Created
     // before restoreSessionState so the restore's widget signals find it.
-    m_session_save_timer = new QTimer(this);
-    m_session_save_timer->setSingleShot(true);
-    m_session_save_timer->setInterval(1000);
-    connect(m_session_save_timer, &QTimer::timeout, this, &MainWindow::save_session_state);
+    session_save_timer = new QTimer(this);
+    session_save_timer->setSingleShot(true);
+    session_save_timer->setInterval(1000);
+    connect(session_save_timer, &QTimer::timeout, this, &MainWindow::save_session_state);
     // The preset `*` follows the same changes, coalesced to one compare per
     // event-loop pass (a preset load moves dozens of widgets).
-    m_preset_state_timer = new QTimer(this);
-    m_preset_state_timer->setSingleShot(true);
-    m_preset_state_timer->setInterval(0);
-    connect(m_preset_state_timer, &QTimer::timeout, this, &MainWindow::update_preset_state);
+    preset_state_timer = new QTimer(this);
+    preset_state_timer->setSingleShot(true);
+    preset_state_timer->setInterval(0);
+    connect(preset_state_timer, &QTimer::timeout, this, &MainWindow::update_preset_state);
 
     // Knob tapers (Phase 9): times, rates and frequencies on log dials.
-    for (KnobWidget* k :
-         {m_knob_gate_attack, m_knob_gate_release, m_knob_comp_attack, m_knob_comp_release,
-          m_knob_fl_rate, m_knob_ph_rate, m_knob_ch_rate, m_knob_tr_rate, m_knob_del_time}) {
+    for (KnobWidget* k : {knob_gate_attack, knob_gate_release, knob_comp_attack, knob_comp_release,
+                          knob_fl_rate, knob_ph_rate, knob_ch_rate, knob_tr_rate, knob_del_time}) {
         k->set_log_taper(true);
     }
 
@@ -226,32 +225,32 @@ MainWindow::MainWindow(QWidget* parent)
     restore_last_files();
     restore_preset_state();
 
-    m_meter_timer = new QTimer(this);
-    m_meter_timer->setTimerType(Qt::PreciseTimer);
-    m_meter_timer->setInterval(16);
-    connect(m_meter_timer, &QTimer::timeout, this, &MainWindow::update_meters);
+    meter_timer = new QTimer(this);
+    meter_timer->setTimerType(Qt::PreciseTimer);
+    meter_timer->setInterval(16);
+    connect(meter_timer, &QTimer::timeout, this, &MainWindow::update_meters);
     update_meter_timer();
 
-    m_status_timer = new QTimer(this);
-    connect(m_status_timer, &QTimer::timeout, this, &MainWindow::update_status);
-    m_status_timer->start(50);
+    status_timer = new QTimer(this);
+    connect(status_timer, &QTimer::timeout, this, &MainWindow::update_status);
+    status_timer->start(50);
 
-    m_tuner_timer = new QTimer(this);
-    connect(m_tuner_timer, &QTimer::timeout, this, &MainWindow::update_tuner);
-    m_tuner_timer->start(100);
+    tuner_timer = new QTimer(this);
+    connect(tuner_timer, &QTimer::timeout, this, &MainWindow::update_tuner);
+    tuner_timer->start(100);
 }
 
 MainWindow::~MainWindow() {
-    m_meter_timer->stop();
-    m_status_timer->stop();
-    m_tuner_timer->stop();
-    m_session_save_timer->stop();
-    m_preset_state_timer->stop();
+    meter_timer->stop();
+    status_timer->stop();
+    tuner_timer->stop();
+    session_save_timer->stop();
+    preset_state_timer->stop();
     QSettings().setValue("window/geometry", saveGeometry());
     QSettings().setValue("window/state", saveState());
     save_session_state();
     save_connections();
-    m_engine->stop();
+    engine->stop();
 }
 
 // ---------------------------------------------------------------------------
@@ -260,14 +259,14 @@ QFrame* MainWindow::make_row_card(const QString& title) {
     auto* card = new QFrame;
     card->setProperty("fxCard", true); // card chrome lives in the Theme QSS
     card->setProperty("displayName", title); // context menu + drag bookkeeping
-    card->setFixedHeight(K_ROW_CARD_HEIGHT);
+    card->setFixedHeight(ROW_CARD_HEIGHT);
     // Card = main row (+ an optional detail row, see addDetailRow).
     auto* outer = new QVBoxLayout(card);
     outer->setContentsMargins(0, 0, 0, 0);
     outer->setSpacing(0);
     auto* row = new QWidget;
     row->setObjectName("cardRow");
-    row->setFixedHeight(K_ROW_CARD_HEIGHT - 2); // inside the 1 px border
+    row->setFixedHeight(ROW_CARD_HEIGHT - 2); // inside the 1 px border
     outer->addWidget(row);
     outer->addStretch();
     auto* lay = new QHBoxLayout(row);
@@ -278,16 +277,16 @@ QFrame* MainWindow::make_row_card(const QString& title) {
     // so toggle/knob clicks can never move a card.
     auto* grip = new QLabel("≡");
     grip->setObjectName("fxGrip");
-    grip->setFixedWidth(K_GRIP_COLUMN_WIDTH);
+    grip->setFixedWidth(GRIP_COLUMN_WIDTH);
     grip->setAlignment(Qt::AlignCenter);
     grip->setCursor(Qt::OpenHandCursor);
     grip->setToolTip("Drag to reorder");
     lay->addWidget(grip, 0, Qt::AlignVCenter);
-    m_card_grips[card] = grip;
+    card_grips[card] = grip;
 
     auto* name = new QLabel(title);
     name->setObjectName("fxName");
-    name->setFixedWidth(K_NAME_COLUMN_WIDTH);
+    name->setFixedWidth(NAME_COLUMN_WIDTH);
     lay->addWidget(name, 0, Qt::AlignVCenter);
 
     return card;
@@ -295,7 +294,7 @@ QFrame* MainWindow::make_row_card(const QString& title) {
 
 KnobWidget* MainWindow::late_knob(const QString& group, const QString& key, KnobWidget* k,
                                   std::function<void(double)> apply) {
-    m_late_params.push_back([this, group, key, k, apply] {
+    late_params.push_back([this, group, key, k, apply] {
         knob_param(group, key, k, apply);
     });
     return k;
@@ -316,11 +315,11 @@ void MainWindow::add_detail_row(QWidget* card, const QList<QWidget*>& widgets) {
         static_cast<QVBoxLayout*>(card->layout())->insertWidget(1, container);
     }
     auto* row = new QWidget;
-    row->setFixedHeight(K_DETAIL_ROW_HEIGHT);
+    row->setFixedHeight(DETAIL_ROW_HEIGHT);
     auto* lay = new QHBoxLayout(row);
     // Indent to the knob column: margin + grip + name + enable + stereo slots.
-    const int indent = 10 + K_GRIP_COLUMN_WIDTH + K_NAME_COLUMN_WIDTH + K_ENABLE_SLOT_WIDTH +
-                       K_STEREO_SLOT_WIDTH + 4 * 10;
+    const int indent =
+        10 + GRIP_COLUMN_WIDTH + NAME_COLUMN_WIDTH + ENABLE_SLOT_WIDTH + STEREO_SLOT_WIDTH + 4 * 10;
     lay->setContentsMargins(indent, 0, 10, 8);
     lay->setSpacing(10);
     for (QWidget* w : widgets) {
@@ -334,7 +333,7 @@ void MainWindow::add_detail_row(QWidget* card, const QList<QWidget*>& widgets) {
     if (!first) {
         // Re-apply the current state with the new height.
         if (more && more->isChecked()) {
-            card->setFixedHeight(K_ROW_CARD_HEIGHT + rows * K_DETAIL_ROW_HEIGHT);
+            card->setFixedHeight(ROW_CARD_HEIGHT + rows * DETAIL_ROW_HEIGHT);
         }
         return;
     }
@@ -348,8 +347,8 @@ void MainWindow::add_detail_row(QWidget* card, const QList<QWidget*>& widgets) {
     row_layout(card)->addWidget(more, 0, Qt::AlignVCenter); // after the stretch: right edge
     auto apply = [card, container, more](bool open) {
         container->setVisible(open);
-        card->setFixedHeight(K_ROW_CARD_HEIGHT +
-                             (open ? container->layout()->count() * K_DETAIL_ROW_HEIGHT : 0));
+        card->setFixedHeight(ROW_CARD_HEIGHT +
+                             (open ? container->layout()->count() * DETAIL_ROW_HEIGHT : 0));
         more->setText(open ? "▴" : "▾");
         more->setToolTip(open ? "Fewer controls" : "More controls");
     };
@@ -447,36 +446,36 @@ void MainWindow::setup_ui() {
     }
 
     // ---- Preset bar (top): name, ‹ ›, Save, quick slots, A/B, Preset menu.
-    m_preset_bar = new PresetBar(*m_library_index, preset_menu);
-    root_layout->addWidget(m_preset_bar);
-    connect(m_preset_bar, &PresetBar::preset_chosen, this, [this](const QString& p) {
+    preset_bar = new PresetBar(*library_index, preset_menu);
+    root_layout->addWidget(preset_bar);
+    connect(preset_bar, &PresetBar::preset_chosen, this, [this](const QString& p) {
         load_preset_file(p);
     });
-    connect(m_preset_bar, &PresetBar::step_requested, this, &MainWindow::step_preset);
-    connect(m_preset_bar, &PresetBar::save_requested, this, &MainWindow::on_save_preset);
-    connect(m_preset_bar, &PresetBar::save_as_requested, this, &MainWindow::on_save_preset_as);
-    connect(m_preset_bar, &PresetBar::ab_switch_requested, this, &MainWindow::switch_ab);
-    connect(m_preset_bar, &PresetBar::ab_copy_requested, this, &MainWindow::copy_ab);
+    connect(preset_bar, &PresetBar::step_requested, this, &MainWindow::step_preset);
+    connect(preset_bar, &PresetBar::save_requested, this, &MainWindow::on_save_preset);
+    connect(preset_bar, &PresetBar::save_as_requested, this, &MainWindow::on_save_preset_as);
+    connect(preset_bar, &PresetBar::ab_switch_requested, this, &MainWindow::switch_ab);
+    connect(preset_bar, &PresetBar::ab_copy_requested, this, &MainWindow::copy_ab);
 
     // ---- Tempo bar: global tempo (session setting) + metronome.
-    m_tempo_bar = new TempoBar(m_engine->get_metronome());
-    m_bpm = m_tempo_bar->get_bpm();
-    root_layout->addWidget(m_tempo_bar);
-    connect(m_tempo_bar, &TempoBar::bpm_changed, this, &MainWindow::set_tempo);
+    tempo_bar = new TempoBar(engine->get_metronome());
+    bpm = tempo_bar->get_bpm();
+    root_layout->addWidget(tempo_bar);
+    connect(tempo_bar, &TempoBar::bpm_changed, this, &MainWindow::set_tempo);
 
     // ---- Status bar (bottom right): backend, rate, buffer, latency, devices.
-    m_audio_bar = new AudioStatusBar(*m_engine);
+    audio_bar = new AudioStatusBar(*engine);
     statusBar()->setSizeGripEnabled(false);
-    statusBar()->addPermanentWidget(m_audio_bar);
-    m_lbl_rig_status = new QLabel;
-    m_lbl_rig_status->setObjectName("statusItem");
-    m_lbl_rig_status->setTextFormat(Qt::RichText);
-    statusBar()->addWidget(m_lbl_rig_status);
-    connect(m_tone3000, &Tone3000Client::auth_changed, this, &MainWindow::update_rig_status);
-    connect(m_tone3000, &Tone3000Client::user_changed, this, &MainWindow::update_rig_status);
-    connect(m_audio_bar, &AudioStatusBar::device_selection_changed, this,
+    statusBar()->addPermanentWidget(audio_bar);
+    lbl_rig_status = new QLabel;
+    lbl_rig_status->setObjectName("statusItem");
+    lbl_rig_status->setTextFormat(Qt::RichText);
+    statusBar()->addWidget(lbl_rig_status);
+    connect(tone3000, &Tone3000Client::auth_changed, this, &MainWindow::update_rig_status);
+    connect(tone3000, &Tone3000Client::user_changed, this, &MainWindow::update_rig_status);
+    connect(audio_bar, &AudioStatusBar::device_selection_changed, this,
             &MainWindow::restart_audio_with_current_devices);
-    connect(m_audio_bar, &AudioStatusBar::reconnect_requested, this,
+    connect(audio_bar, &AudioStatusBar::reconnect_requested, this,
             &MainWindow::restart_audio_with_current_devices);
 
     // ---- Scrollable effect strip ----
@@ -487,11 +486,11 @@ void MainWindow::setup_ui() {
     scroll->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     scroll->setFrameShape(QFrame::NoFrame);
 
-    m_strip = new QWidget;
-    m_strip_lay = new QVBoxLayout(m_strip);
-    m_strip_lay->setContentsMargins(2, 2, 2, 2);
-    m_strip_lay->setSpacing(4);
-    m_strip_lay->setAlignment(Qt::AlignTop);
+    strip = new QWidget;
+    strip_lay = new QVBoxLayout(strip);
+    strip_lay->setContentsMargins(2, 2, 2, 2);
+    strip_lay->setSpacing(4);
+    strip_lay->setAlignment(Qt::AlignTop);
 
     // Effect columns are created once here, keyed by EffectBase*. They are
     // NOT added to the layout — rebuildEffectStrip lays them out in engine
@@ -502,33 +501,33 @@ void MainWindow::setup_ui() {
         QFrame* col = make_row_card("Tuner");
         auto* lay = row_layout(col);
 
-        m_sw_tuner_enable = new ToggleSwitch;
-        m_sw_tuner_enable->setCheckable(true);
-        lay->addWidget(make_enable_slot(m_sw_tuner_enable), 0, Qt::AlignVCenter);
+        sw_tuner_enable = new ToggleSwitch;
+        sw_tuner_enable->setCheckable(true);
+        lay->addWidget(make_enable_slot(sw_tuner_enable), 0, Qt::AlignVCenter);
         lay->addWidget(make_stereo_slot(nullptr), 0, Qt::AlignVCenter);
 
-        m_tuner_display = new TunerDisplay;
-        m_tuner_display->setMaximumWidth(560); // one compact instrument, not a strip
-        lay->addWidget(m_tuner_display, 1, Qt::AlignVCenter);
+        tuner_display = new TunerDisplay;
+        tuner_display->setMaximumWidth(560); // one compact instrument, not a strip
+        lay->addWidget(tuner_display, 1, Qt::AlignVCenter);
 
         // Reference pitch + Hz readout: machine settings (QSettings tuner/*),
         // not part of presets or the registry.
         QSettings s;
-        m_tuner_ref_hz = std::clamp(s.value("tuner/reference", 440).toInt(), 420, 460);
+        tuner_ref_hz = std::clamp(s.value("tuner/reference", 440).toInt(), 420, 460);
         auto* ref = new QSpinBox;
         ref->setObjectName("tunerRef");
         ref->setRange(420, 460);
         ref->setPrefix("A4 = ");
         ref->setSuffix(" Hz");
-        ref->setValue(m_tuner_ref_hz);
+        ref->setValue(tuner_ref_hz);
         ref->setFocusPolicy(Qt::ClickFocus); // keep digit keys for effect shortcuts
         ref->setToolTip("Reference pitch (concert pitch is 440 Hz)");
         connect(ref, &QSpinBox::valueChanged, this, [this](int hz) {
-            m_tuner_ref_hz = hz;
-            m_tuner_display->set_reference(hz);
+            tuner_ref_hz = hz;
+            tuner_display->set_reference(hz);
             QSettings().setValue("tuner/reference", hz);
         });
-        m_tuner_display->set_reference(m_tuner_ref_hz);
+        tuner_display->set_reference(tuner_ref_hz);
 
         auto* hz = new QToolButton;
         hz->setObjectName("tunerOption");
@@ -537,9 +536,9 @@ void MainWindow::setup_ui() {
         hz->setFocusPolicy(Qt::NoFocus);
         hz->setToolTip("Show the detected frequency");
         hz->setChecked(s.value("tuner/showHz", false).toBool());
-        m_tuner_display->set_show_hz(hz->isChecked());
+        tuner_display->set_show_hz(hz->isChecked());
         connect(hz, &QToolButton::toggled, this, [this](bool on) {
-            m_tuner_display->set_show_hz(on);
+            tuner_display->set_show_hz(on);
             QSettings().setValue("tuner/showHz", on);
         });
 
@@ -550,14 +549,14 @@ void MainWindow::setup_ui() {
         lay->addStretch();
 
         Theme::tag_card(col, "tuner"); // after children — pushes accents to them
-        m_fx_cols[&m_engine->get_tuner()] = col;
+        fx_cols[&engine->get_tuner()] = col;
     }
 
     // ---- Transpose ----
     {
         auto* semis = late_knob("transpose", "semitones",
                                 new KnobWidget("Semitones", -12.0, 12.0, 0.0), [this](double v) {
-                                    m_engine->get_transpose().set_semitones(static_cast<float>(v));
+                                    engine->get_transpose().set_semitones(static_cast<float>(v));
                                 });
         semis->set_snap(1.0);
         semis->set_value_formatter([](double v) {
@@ -568,81 +567,79 @@ void MainWindow::setup_ui() {
                           "(adds ~25 ms latency when not 0)");
         auto* mix = late_knob("transpose", "mix", new KnobWidget("Mix", 0.0, 100.0, 100.0, "%"),
                               [this](double v) {
-                                  m_engine->get_transpose().set_mix_pct(static_cast<float>(v));
+                                  engine->get_transpose().set_mix_pct(static_cast<float>(v));
                               });
         mix->set_scroll_step(1.0);
-        auto* col = make_effect_row("Transpose", m_sw_transpose_enable, {semis, mix});
+        auto* col = make_effect_row("Transpose", sw_transpose_enable, {semis, mix});
         Theme::tag_card(col, "transpose");
-        m_fx_cols[&m_engine->get_transpose()] = col;
+        fx_cols[&engine->get_transpose()] = col;
     }
 
     // ---- Noise Gate ----
     {
         using namespace NAMConstants;
-        m_knob_gate_thresh = new KnobWidget("Threshold", K_GATE_THRESH_MIN, K_GATE_THRESH_MAX,
-                                            K_GATE_THRESH_DEFAULT, "dB");
-        m_knob_gate_attack = new KnobWidget("Attack", K_GATE_ATTACK_MIN, K_GATE_ATTACK_MAX,
-                                            K_GATE_ATTACK_DEFAULT, "ms");
-        m_knob_gate_release = new KnobWidget("Release", K_GATE_RELEASE_MIN, K_GATE_RELEASE_MAX,
-                                             K_GATE_RELEASE_DEFAULT, "ms");
-        m_knob_gate_thresh->set_scroll_step(1.0);
-        m_knob_gate_attack->set_scroll_step(1.0);
-        m_knob_gate_release->set_scroll_step(10.0);
+        knob_gate_thresh = new KnobWidget("Threshold", GATE_THRESH_MIN, GATE_THRESH_MAX,
+                                          GATE_THRESH_DEFAULT, "dB");
+        knob_gate_attack =
+            new KnobWidget("Attack", GATE_ATTACK_MIN, GATE_ATTACK_MAX, GATE_ATTACK_DEFAULT, "ms");
+        knob_gate_release = new KnobWidget("Release", GATE_RELEASE_MIN, GATE_RELEASE_MAX,
+                                           GATE_RELEASE_DEFAULT, "ms");
+        knob_gate_thresh->set_scroll_step(1.0);
+        knob_gate_attack->set_scroll_step(1.0);
+        knob_gate_release->set_scroll_step(10.0);
 
-        auto* col = make_effect_row("Noise Gate", m_sw_gate_enable,
-                                    {m_knob_gate_thresh, m_knob_gate_attack, m_knob_gate_release});
-        m_gr_gate = new GainReductionMeter(40.0f, Theme::accent("gate"));
-        place_in_stereo_slot(col, m_gr_gate);
+        auto* col = make_effect_row("Noise Gate", sw_gate_enable,
+                                    {knob_gate_thresh, knob_gate_attack, knob_gate_release});
+        gr_gate = new GainReductionMeter(40.0f, Theme::accent("gate"));
+        place_in_stereo_slot(col, gr_gate);
         Theme::tag_card(col, "gate");
 
-        m_fx_cols[&m_engine->get_gate()] = col;
+        fx_cols[&engine->get_gate()] = col;
     }
 
     // ---- Compressor ----
     {
         using namespace NAMConstants;
-        m_knob_comp_thresh = new KnobWidget("Threshold", K_COMP_THRESH_MIN, K_COMP_THRESH_MAX,
-                                            K_COMP_THRESH_DEFAULT, "dB");
-        m_knob_comp_ratio =
-            new KnobWidget("Ratio", K_COMP_RATIO_MIN, K_COMP_RATIO_MAX, K_COMP_RATIO_DEFAULT, ":1");
-        m_knob_comp_attack = new KnobWidget("Attack", K_COMP_ATTACK_MIN, K_COMP_ATTACK_MAX,
-                                            K_COMP_ATTACK_DEFAULT, "ms");
-        m_knob_comp_release = new KnobWidget("Release", K_COMP_RELEASE_MIN, K_COMP_RELEASE_MAX,
-                                             K_COMP_RELEASE_DEFAULT, "ms");
-        m_knob_comp_makeup = new KnobWidget("Makeup Gain", K_COMP_MAKEUP_MIN, K_COMP_MAKEUP_MAX,
-                                            K_COMP_MAKEUP_DEFAULT, "dB");
-        m_knob_comp_thresh->set_scroll_step(1.0);
-        m_knob_comp_ratio->set_scroll_step(0.5);
-        m_knob_comp_attack->set_scroll_step(1.0);
-        m_knob_comp_release->set_scroll_step(10.0);
-        m_knob_comp_makeup->set_scroll_step(0.5);
+        knob_comp_thresh = new KnobWidget("Threshold", COMP_THRESH_MIN, COMP_THRESH_MAX,
+                                          COMP_THRESH_DEFAULT, "dB");
+        knob_comp_ratio =
+            new KnobWidget("Ratio", COMP_RATIO_MIN, COMP_RATIO_MAX, COMP_RATIO_DEFAULT, ":1");
+        knob_comp_attack =
+            new KnobWidget("Attack", COMP_ATTACK_MIN, COMP_ATTACK_MAX, COMP_ATTACK_DEFAULT, "ms");
+        knob_comp_release = new KnobWidget("Release", COMP_RELEASE_MIN, COMP_RELEASE_MAX,
+                                           COMP_RELEASE_DEFAULT, "ms");
+        knob_comp_makeup = new KnobWidget("Makeup Gain", COMP_MAKEUP_MIN, COMP_MAKEUP_MAX,
+                                          COMP_MAKEUP_DEFAULT, "dB");
+        knob_comp_thresh->set_scroll_step(1.0);
+        knob_comp_ratio->set_scroll_step(0.5);
+        knob_comp_attack->set_scroll_step(1.0);
+        knob_comp_release->set_scroll_step(10.0);
+        knob_comp_makeup->set_scroll_step(0.5);
 
-        auto* col = make_effect_row("Compressor", m_sw_comp_enable,
-                                    {m_knob_comp_thresh, m_knob_comp_ratio, m_knob_comp_attack,
-                                     m_knob_comp_release, m_knob_comp_makeup});
-        m_gr_comp = new GainReductionMeter(20.0f, Theme::accent("comp"));
-        place_in_stereo_slot(col, m_gr_comp);
+        auto* col = make_effect_row("Compressor", sw_comp_enable,
+                                    {knob_comp_thresh, knob_comp_ratio, knob_comp_attack,
+                                     knob_comp_release, knob_comp_makeup});
+        gr_comp = new GainReductionMeter(20.0f, Theme::accent("comp"));
+        place_in_stereo_slot(col, gr_comp);
         Theme::tag_card(col, "comp");
 
-        m_fx_cols[&m_engine->get_comp()] = col;
+        fx_cols[&engine->get_comp()] = col;
     }
 
     // ---- Dynamic Wah ----
     {
         using namespace NAMConstants;
-        m_knob_wah_sens =
-            new KnobWidget("Sensitivity", K_WAH_SENS_MIN, K_WAH_SENS_MAX, K_WAH_SENS_DEFAULT, "%");
-        m_knob_wah_res =
-            new KnobWidget("Resonance", K_WAH_RES_MIN, K_WAH_RES_MAX, K_WAH_RES_DEFAULT, "%");
-        m_knob_wah_mix =
-            new KnobWidget("Mix", K_WAH_MIX_MIN, K_WAH_MIX_MAX, K_WAH_MIX_DEFAULT, "%");
-        m_knob_wah_sens->set_scroll_step(1.0);
-        m_knob_wah_res->set_scroll_step(1.0);
-        m_knob_wah_mix->set_scroll_step(1.0);
+        knob_wah_sens =
+            new KnobWidget("Sensitivity", WAH_SENS_MIN, WAH_SENS_MAX, WAH_SENS_DEFAULT, "%");
+        knob_wah_res = new KnobWidget("Resonance", WAH_RES_MIN, WAH_RES_MAX, WAH_RES_DEFAULT, "%");
+        knob_wah_mix = new KnobWidget("Mix", WAH_MIX_MIN, WAH_MIX_MAX, WAH_MIX_DEFAULT, "%");
+        knob_wah_sens->set_scroll_step(1.0);
+        knob_wah_res->set_scroll_step(1.0);
+        knob_wah_mix->set_scroll_step(1.0);
 
         auto* mode =
             late_knob("dynamicWah", "mode", new KnobWidget("Mode", 0, 1, 0), [this](double v) {
-                m_engine->get_wah().set_pedal_mode(v > 0.5);
+                engine->get_wah().set_pedal_mode(v > 0.5);
             });
         mode->set_snap(1.0);
         mode->set_value_formatter([](double v) {
@@ -651,70 +648,68 @@ void MainWindow::setup_ui() {
         mode->setToolTip("Auto: the envelope sweeps the wah · Pedal: Position sweeps it (map an "
                          "expression pedal)");
         auto* pos = late_knob("dynamicWah", "position",
-                              new KnobWidget("Position", K_WAH_POSITION_MIN, K_WAH_POSITION_MAX,
-                                             K_WAH_POSITION_DEFAULT, "%"),
+                              new KnobWidget("Position", WAH_POSITION_MIN, WAH_POSITION_MAX,
+                                             WAH_POSITION_DEFAULT, "%"),
                               [this](double v) {
-                                  m_engine->get_wah().set_position_pct(static_cast<float>(v));
+                                  engine->get_wah().set_position_pct(static_cast<float>(v));
                               });
         pos->set_scroll_step(1.0);
-        auto* col = make_effect_row("Dynamic Wah", m_sw_wah_enable,
-                                    {m_knob_wah_mix, m_knob_wah_sens, m_knob_wah_res, mode, pos});
+        auto* col = make_effect_row("Dynamic Wah", sw_wah_enable,
+                                    {knob_wah_mix, knob_wah_sens, knob_wah_res, mode, pos});
         Theme::tag_card(col, "wah");
 
-        m_fx_cols[&m_engine->get_wah()] = col;
+        fx_cols[&engine->get_wah()] = col;
     }
 
     // ---- Drive (TS-style boost in front of the amp) ----
     {
         using namespace NAMConstants;
-        m_knob_drive = new KnobWidget("Drive", K_DRIVE_MIN, K_DRIVE_MAX, K_DRIVE_DEFAULT, "%");
-        m_knob_drive_tone =
-            new KnobWidget("Tone", K_DRIVE_TONE_MIN, K_DRIVE_TONE_MAX, K_DRIVE_TONE_DEFAULT, "%");
-        m_knob_drive_level = new KnobWidget("Level", K_DRIVE_LEVEL_MIN, K_DRIVE_LEVEL_MAX,
-                                            K_DRIVE_LEVEL_DEFAULT, "dB");
-        m_knob_drive->set_scroll_step(1.0);
-        m_knob_drive_tone->set_scroll_step(1.0);
-        m_knob_drive_level->set_scroll_step(0.5);
-        auto* col = make_effect_row("Drive", m_sw_drive_enable,
-                                    {m_knob_drive, m_knob_drive_tone, m_knob_drive_level});
+        knob_drive = new KnobWidget("Drive", DRIVE_MIN, DRIVE_MAX, DRIVE_DEFAULT, "%");
+        knob_drive_tone =
+            new KnobWidget("Tone", DRIVE_TONE_MIN, DRIVE_TONE_MAX, DRIVE_TONE_DEFAULT, "%");
+        knob_drive_level =
+            new KnobWidget("Level", DRIVE_LEVEL_MIN, DRIVE_LEVEL_MAX, DRIVE_LEVEL_DEFAULT, "dB");
+        knob_drive->set_scroll_step(1.0);
+        knob_drive_tone->set_scroll_step(1.0);
+        knob_drive_level->set_scroll_step(0.5);
+        auto* col = make_effect_row("Drive", sw_drive_enable,
+                                    {knob_drive, knob_drive_tone, knob_drive_level});
         Theme::tag_card(col, "drive");
-        m_fx_cols[&m_engine->get_drive()] = col;
+        fx_cols[&engine->get_drive()] = col;
     }
 
     // ---- Amp (NAM) ----
     {
-        auto* col = make_effect_row("Amplifier", m_sw_nam_enable, {}, &m_sw_nam_stereo);
-        m_sw_nam_stereo->setToolTip("Stereo input: run the amp per channel (twice the CPU).\n"
-                                    "Off: a stereo effect before the amp is summed to mono first.");
-        m_sw_nam_enable->setChecked(true);
-        make_hero_controls(col, LibraryEntry::Kind::MODEL, m_lbl_nam_status, m_lbl_nam_meta,
-                           m_lbl_nam_origin);
+        auto* col = make_effect_row("Amplifier", sw_nam_enable, {}, &sw_nam_stereo);
+        sw_nam_stereo->setToolTip("Stereo input: run the amp per channel (twice the CPU).\n"
+                                  "Off: a stereo effect before the amp is summed to mono first.");
+        sw_nam_enable->setChecked(true);
+        make_hero_controls(col, LibraryEntry::Kind::MODEL, lbl_nam_status, lbl_nam_meta,
+                           lbl_nam_origin);
 
         Theme::tag_card(col, "nam");
-        m_fx_cols[&m_engine->get_nam()] = col;
+        fx_cols[&engine->get_nam()] = col;
     }
 
     // ---- EQ ----
     {
         using namespace NAMConstants;
-        m_knob_low = new KnobWidget("Bass", K_EQ_BAND_MIN, K_EQ_BAND_MAX, K_EQ_BAND_DEFAULT, "dB");
-        m_knob_mid =
-            new KnobWidget("Middle", K_EQ_BAND_MIN, K_EQ_BAND_MAX, K_EQ_BAND_DEFAULT, "dB");
-        m_knob_treble =
-            new KnobWidget("Treble", K_EQ_BAND_MIN, K_EQ_BAND_MAX, K_EQ_BAND_DEFAULT, "dB");
-        m_knob_low->set_scroll_step(0.1);
-        m_knob_mid->set_scroll_step(0.1);
-        m_knob_treble->set_scroll_step(0.1);
+        knob_low = new KnobWidget("Bass", EQ_BAND_MIN, EQ_BAND_MAX, EQ_BAND_DEFAULT, "dB");
+        knob_mid = new KnobWidget("Middle", EQ_BAND_MIN, EQ_BAND_MAX, EQ_BAND_DEFAULT, "dB");
+        knob_treble = new KnobWidget("Treble", EQ_BAND_MIN, EQ_BAND_MAX, EQ_BAND_DEFAULT, "dB");
+        knob_low->set_scroll_step(0.1);
+        knob_mid->set_scroll_step(0.1);
+        knob_treble->set_scroll_step(0.1);
 
         auto eq_set = [this](EQProcessor::Band b, bool gain) {
             return [this, b, gain](double v) {
-                gain ? m_engine->get_eq().set_gain(b, v) : m_engine->get_eq().set_freq(b, v);
+                gain ? engine->get_eq().set_gain(b, v) : engine->get_eq().set_freq(b, v);
             };
         };
-        auto* hi_mid = late_knob(
-            "eq", "highMid",
-            new KnobWidget("High-Mid", K_EQ_BAND_MIN, K_EQ_BAND_MAX, K_EQ_BAND_DEFAULT, "dB"),
-            eq_set(EQProcessor::HIGH_MID, true));
+        auto* hi_mid =
+            late_knob("eq", "highMid",
+                      new KnobWidget("High-Mid", EQ_BAND_MIN, EQ_BAND_MAX, EQ_BAND_DEFAULT, "dB"),
+                      eq_set(EQProcessor::HIGH_MID, true));
         hi_mid->set_scroll_step(0.1);
         auto freq_knob = [&](const QString& key, const QString& label, double lo, double hi,
                              double def, EQProcessor::Band b, double off_at) {
@@ -724,128 +719,123 @@ void MainWindow::setup_ui() {
             k->set_value_formatter(hz_label(off_at));
             return static_cast<QWidget*>(k);
         };
-        auto* col = make_effect_row("Equalizer", m_sw_eq_enable,
-                                    {m_knob_low, m_knob_mid, hi_mid, m_knob_treble});
+        auto* col =
+            make_effect_row("Equalizer", sw_eq_enable, {knob_low, knob_mid, hi_mid, knob_treble});
         add_detail_row(
             col,
             {
-                freq_knob("lowFreq", "Bass Freq", K_EQ_BASS_FREQ_MIN, K_EQ_BASS_FREQ_MAX,
-                          K_EQ_BASS_FREQ_DEFAULT, EQProcessor::BASS, 0),
-                freq_knob("midFreq", "Mid Freq", K_EQ_MID_FREQ_MIN, K_EQ_MID_FREQ_MAX,
-                          K_EQ_MID_FREQ_DEFAULT, EQProcessor::MIDDLE, 0),
-                freq_knob("highMidFreq", "High-Mid Freq", K_EQ_HI_MID_FREQ_MIN,
-                          K_EQ_HI_MID_FREQ_MAX, K_EQ_HI_MID_FREQ_DEFAULT, EQProcessor::HIGH_MID, 0),
-                freq_knob("trebleFreq", "Treble Freq", K_EQ_TREBLE_FREQ_MIN, K_EQ_TREBLE_FREQ_MAX,
-                          K_EQ_TREBLE_FREQ_DEFAULT, EQProcessor::TREBLE, 0),
-                freq_knob("lowCut", "Low Cut", K_LOW_CUT_MIN, K_LOW_CUT_MAX, K_LOW_CUT_DEFAULT,
-                          EQProcessor::LOW_CUT, K_LOW_CUT_MIN + 0.5),
-                freq_knob("highCut", "High Cut", K_HIGH_CUT_MIN, K_HIGH_CUT_MAX, K_HIGH_CUT_DEFAULT,
-                          EQProcessor::HIGH_CUT, -(K_HIGH_CUT_MAX - 1.0)),
+                freq_knob("lowFreq", "Bass Freq", EQ_BASS_FREQ_MIN, EQ_BASS_FREQ_MAX,
+                          EQ_BASS_FREQ_DEFAULT, EQProcessor::BASS, 0),
+                freq_knob("midFreq", "Mid Freq", EQ_MID_FREQ_MIN, EQ_MID_FREQ_MAX,
+                          EQ_MID_FREQ_DEFAULT, EQProcessor::MIDDLE, 0),
+                freq_knob("highMidFreq", "High-Mid Freq", EQ_HI_MID_FREQ_MIN, EQ_HI_MID_FREQ_MAX,
+                          EQ_HI_MID_FREQ_DEFAULT, EQProcessor::HIGH_MID, 0),
+                freq_knob("trebleFreq", "Treble Freq", EQ_TREBLE_FREQ_MIN, EQ_TREBLE_FREQ_MAX,
+                          EQ_TREBLE_FREQ_DEFAULT, EQProcessor::TREBLE, 0),
+                freq_knob("lowCut", "Low Cut", LOW_CUT_MIN, LOW_CUT_MAX, LOW_CUT_DEFAULT,
+                          EQProcessor::LOW_CUT, LOW_CUT_MIN + 0.5),
+                freq_knob("highCut", "High Cut", HIGH_CUT_MIN, HIGH_CUT_MAX, HIGH_CUT_DEFAULT,
+                          EQProcessor::HIGH_CUT, -(HIGH_CUT_MAX - 1.0)),
             });
-        m_sw_eq_enable->setChecked(true);
+        sw_eq_enable->setChecked(true);
         Theme::tag_card(col, "eq");
-        m_fx_cols[&m_engine->get_eq()] = col;
+        fx_cols[&engine->get_eq()] = col;
     }
 
     // ---- Doubler ----
     {
         using namespace NAMConstants;
-        m_knob_dbl_spread = new KnobWidget("Spread", K_DOUBLER_SPREAD_MIN, K_DOUBLER_SPREAD_MAX,
-                                           K_DOUBLER_SPREAD_DEFAULT, "ms");
-        m_knob_dbl_mix =
-            new KnobWidget("Mix", K_DOUBLER_MIX_MIN, K_DOUBLER_MIX_MAX, K_DOUBLER_MIX_DEFAULT, "%");
-        m_knob_dbl_spread->set_scroll_step(0.5);
-        m_knob_dbl_mix->set_scroll_step(1.0);
-        auto* col =
-            make_effect_row("Doubler", m_sw_doubler_enable, {m_knob_dbl_mix, m_knob_dbl_spread});
+        knob_dbl_spread = new KnobWidget("Spread", DOUBLER_SPREAD_MIN, DOUBLER_SPREAD_MAX,
+                                         DOUBLER_SPREAD_DEFAULT, "ms");
+        knob_dbl_mix =
+            new KnobWidget("Mix", DOUBLER_MIX_MIN, DOUBLER_MIX_MAX, DOUBLER_MIX_DEFAULT, "%");
+        knob_dbl_spread->set_scroll_step(0.5);
+        knob_dbl_mix->set_scroll_step(1.0);
+        auto* col = make_effect_row("Doubler", sw_doubler_enable, {knob_dbl_mix, knob_dbl_spread});
         col->setToolTip(
             "Double-tracking from a mono signal: left dry, right a drifting delayed copy.\n"
             "Passes a stereo input through untouched.");
         Theme::tag_card(col, "doubler");
-        m_fx_cols[&m_engine->get_doubler()] = col;
+        fx_cols[&engine->get_doubler()] = col;
     }
 
     // ---- Volume pedal ----
     {
         using namespace NAMConstants;
-        m_knob_vol_pos =
-            new KnobWidget("Volume", K_VOLUME_POS_MIN, K_VOLUME_POS_MAX, K_VOLUME_POS_DEFAULT, "%");
-        m_knob_vol_mid =
-            new KnobWidget("Mid", K_VOLUME_MID_MIN, K_VOLUME_MID_MAX, K_VOLUME_MID_DEFAULT, "dB");
-        m_knob_vol_pos->set_scroll_step(1.0);
-        m_knob_vol_mid->set_scroll_step(1.0);
-        m_knob_vol_mid->setToolTip("Level at half travel: lower = swells stay quiet longer");
-        auto* col =
-            make_effect_row("Volume Pedal", m_sw_volume_enable, {m_knob_vol_pos, m_knob_vol_mid});
+        knob_vol_pos =
+            new KnobWidget("Volume", VOLUME_POS_MIN, VOLUME_POS_MAX, VOLUME_POS_DEFAULT, "%");
+        knob_vol_mid =
+            new KnobWidget("Mid", VOLUME_MID_MIN, VOLUME_MID_MAX, VOLUME_MID_DEFAULT, "dB");
+        knob_vol_pos->set_scroll_step(1.0);
+        knob_vol_mid->set_scroll_step(1.0);
+        knob_vol_mid->setToolTip("Level at half travel: lower = swells stay quiet longer");
+        auto* col = make_effect_row("Volume Pedal", sw_volume_enable, {knob_vol_pos, knob_vol_mid});
         Theme::tag_card(col, "volume");
-        m_fx_cols[&m_engine->get_volume()] = col;
+        fx_cols[&engine->get_volume()] = col;
     }
 
     // ---- Flanger ----
     {
         using namespace NAMConstants;
-        m_knob_fl_rate = new KnobWidget("Rate", K_FLANGER_RATE_MIN, K_FLANGER_RATE_MAX,
-                                        K_FLANGER_RATE_DEFAULT, "Hz");
-        m_knob_fl_depth = new KnobWidget("Depth", K_FLANGER_DEPTH_MIN, K_FLANGER_DEPTH_MAX,
-                                         K_FLANGER_DEPTH_DEFAULT, "%");
-        m_knob_fl_feedback =
-            new KnobWidget("Feedback", K_FLANGER_FEEDBACK_MIN, K_FLANGER_FEEDBACK_MAX,
-                           K_FLANGER_FEEDBACK_DEFAULT, "%");
-        m_knob_fl_mix =
-            new KnobWidget("Mix", K_FLANGER_MIX_MIN, K_FLANGER_MIX_MAX, K_FLANGER_MIX_DEFAULT, "%");
-        m_knob_fl_rate->set_scroll_step(0.1);
-        m_knob_fl_depth->set_scroll_step(1.0);
-        m_knob_fl_feedback->set_scroll_step(1.0);
-        m_knob_fl_mix->set_scroll_step(1.0);
+        knob_fl_rate =
+            new KnobWidget("Rate", FLANGER_RATE_MIN, FLANGER_RATE_MAX, FLANGER_RATE_DEFAULT, "Hz");
+        knob_fl_depth = new KnobWidget("Depth", FLANGER_DEPTH_MIN, FLANGER_DEPTH_MAX,
+                                       FLANGER_DEPTH_DEFAULT, "%");
+        knob_fl_feedback = new KnobWidget("Feedback", FLANGER_FEEDBACK_MIN, FLANGER_FEEDBACK_MAX,
+                                          FLANGER_FEEDBACK_DEFAULT, "%");
+        knob_fl_mix =
+            new KnobWidget("Mix", FLANGER_MIX_MIN, FLANGER_MIX_MAX, FLANGER_MIX_DEFAULT, "%");
+        knob_fl_rate->set_scroll_step(0.1);
+        knob_fl_depth->set_scroll_step(1.0);
+        knob_fl_feedback->set_scroll_step(1.0);
+        knob_fl_mix->set_scroll_step(1.0);
 
-        auto* col =
-            make_effect_row("Flanger", m_sw_flanger_enable,
-                            {m_knob_fl_mix, m_knob_fl_rate, m_knob_fl_depth, m_knob_fl_feedback},
-                            &m_sw_flanger_stereo);
-        add_tempo_sync(col, m_knob_fl_rate, "Rate", false, 1 /* 2 bars */, K_FLANGER_RATE_MIN,
-                       K_FLANGER_RATE_MAX, [this](double v) {
-                           m_engine->get_flanger().set_rate_hz(static_cast<float>(v));
+        auto* col = make_effect_row("Flanger", sw_flanger_enable,
+                                    {knob_fl_mix, knob_fl_rate, knob_fl_depth, knob_fl_feedback},
+                                    &sw_flanger_stereo);
+        add_tempo_sync(col, knob_fl_rate, "Rate", false, 1 /* 2 bars */, FLANGER_RATE_MIN,
+                       FLANGER_RATE_MAX, [this](double v) {
+                           engine->get_flanger().set_rate_hz(static_cast<float>(v));
                        });
         auto* range = late_knob("flanger", "range",
-                                new KnobWidget("Range", K_FLANGER_RANGE_MIN, K_FLANGER_RANGE_MAX,
-                                               K_FLANGER_RANGE_DEFAULT, "%"),
+                                new KnobWidget("Range", FLANGER_RANGE_MIN, FLANGER_RANGE_MAX,
+                                               FLANGER_RANGE_DEFAULT, "%"),
                                 [this](double v) {
-                                    m_engine->get_flanger().set_range_pct(static_cast<float>(v));
+                                    engine->get_flanger().set_range_pct(static_cast<float>(v));
                                 });
         range->set_scroll_step(1.0);
         range->setToolTip("Sweep length: low = short, metallic · high = long jet sweep");
         add_detail_row(col, {range});
         Theme::tag_card(col, "flanger");
 
-        m_fx_cols[&m_engine->get_flanger()] = col;
+        fx_cols[&engine->get_flanger()] = col;
     }
 
     // ---- Phaser ----
     {
         using namespace NAMConstants;
-        m_knob_ph_rate = new KnobWidget("Rate", K_PHASER_RATE_MIN, K_PHASER_RATE_MAX,
-                                        K_PHASER_RATE_DEFAULT, "Hz");
-        m_knob_ph_depth = new KnobWidget("Depth", K_PHASER_DEPTH_MIN, K_PHASER_DEPTH_MAX,
-                                         K_PHASER_DEPTH_DEFAULT, "%");
-        m_knob_ph_feedback = new KnobWidget("Feedback", K_PHASER_FEEDBACK_MIN,
-                                            K_PHASER_FEEDBACK_MAX, K_PHASER_FEEDBACK_DEFAULT, "%");
-        m_knob_ph_mix =
-            new KnobWidget("Mix", K_PHASER_MIX_MIN, K_PHASER_MIX_MAX, K_PHASER_MIX_DEFAULT, "%");
-        m_knob_ph_rate->set_scroll_step(0.1);
-        m_knob_ph_depth->set_scroll_step(1.0);
-        m_knob_ph_feedback->set_scroll_step(1.0);
-        m_knob_ph_mix->set_scroll_step(1.0);
+        knob_ph_rate =
+            new KnobWidget("Rate", PHASER_RATE_MIN, PHASER_RATE_MAX, PHASER_RATE_DEFAULT, "Hz");
+        knob_ph_depth =
+            new KnobWidget("Depth", PHASER_DEPTH_MIN, PHASER_DEPTH_MAX, PHASER_DEPTH_DEFAULT, "%");
+        knob_ph_feedback = new KnobWidget("Feedback", PHASER_FEEDBACK_MIN, PHASER_FEEDBACK_MAX,
+                                          PHASER_FEEDBACK_DEFAULT, "%");
+        knob_ph_mix =
+            new KnobWidget("Mix", PHASER_MIX_MIN, PHASER_MIX_MAX, PHASER_MIX_DEFAULT, "%");
+        knob_ph_rate->set_scroll_step(0.1);
+        knob_ph_depth->set_scroll_step(1.0);
+        knob_ph_feedback->set_scroll_step(1.0);
+        knob_ph_mix->set_scroll_step(1.0);
 
-        auto* col =
-            make_effect_row("Phaser", m_sw_phaser_enable,
-                            {m_knob_ph_mix, m_knob_ph_rate, m_knob_ph_depth, m_knob_ph_feedback},
-                            &m_sw_phaser_stereo);
-        add_tempo_sync(col, m_knob_ph_rate, "Rate", false, 4 /* 1/2 */, K_PHASER_RATE_MIN,
-                       K_PHASER_RATE_MAX, [this](double v) {
-                           m_engine->get_phaser().set_rate_hz(static_cast<float>(v));
+        auto* col = make_effect_row("Phaser", sw_phaser_enable,
+                                    {knob_ph_mix, knob_ph_rate, knob_ph_depth, knob_ph_feedback},
+                                    &sw_phaser_stereo);
+        add_tempo_sync(col, knob_ph_rate, "Rate", false, 4 /* 1/2 */, PHASER_RATE_MIN,
+                       PHASER_RATE_MAX, [this](double v) {
+                           engine->get_phaser().set_rate_hz(static_cast<float>(v));
                        });
         auto* mode = late_knob("phaser", "mode", new KnobWidget("Mode", 0, 1, 0), [this](double v) {
-            m_engine->get_phaser().set_vibe(v > 0.5);
+            engine->get_phaser().set_vibe(v > 0.5);
         });
         mode->set_snap(1.0);
         mode->set_value_formatter([](double v) {
@@ -856,31 +846,30 @@ void MainWindow::setup_ui() {
         add_detail_row(col, {mode});
         Theme::tag_card(col, "phaser");
 
-        m_fx_cols[&m_engine->get_phaser()] = col;
+        fx_cols[&engine->get_phaser()] = col;
     }
 
     // ---- Chorus ----
     {
         using namespace NAMConstants;
-        m_knob_ch_rate = new KnobWidget("Rate", K_CHORUS_RATE_MIN, K_CHORUS_RATE_MAX,
-                                        K_CHORUS_RATE_DEFAULT, "Hz");
-        m_knob_ch_depth = new KnobWidget("Depth", K_CHORUS_DEPTH_MIN, K_CHORUS_DEPTH_MAX,
-                                         K_CHORUS_DEPTH_DEFAULT, "%");
-        m_knob_ch_mix =
-            new KnobWidget("Mix", K_CHORUS_MIX_MIN, K_CHORUS_MIX_MAX, K_CHORUS_MIX_DEFAULT, "%");
-        m_knob_ch_rate->set_scroll_step(0.1);
-        m_knob_ch_depth->set_scroll_step(1.0);
-        m_knob_ch_mix->set_scroll_step(1.0);
+        knob_ch_rate =
+            new KnobWidget("Rate", CHORUS_RATE_MIN, CHORUS_RATE_MAX, CHORUS_RATE_DEFAULT, "Hz");
+        knob_ch_depth =
+            new KnobWidget("Depth", CHORUS_DEPTH_MIN, CHORUS_DEPTH_MAX, CHORUS_DEPTH_DEFAULT, "%");
+        knob_ch_mix =
+            new KnobWidget("Mix", CHORUS_MIX_MIN, CHORUS_MIX_MAX, CHORUS_MIX_DEFAULT, "%");
+        knob_ch_rate->set_scroll_step(0.1);
+        knob_ch_depth->set_scroll_step(1.0);
+        knob_ch_mix->set_scroll_step(1.0);
 
-        auto* col =
-            make_effect_row("Chorus", m_sw_chorus_enable,
-                            {m_knob_ch_mix, m_knob_ch_rate, m_knob_ch_depth}, &m_sw_chorus_stereo);
-        add_tempo_sync(col, m_knob_ch_rate, "Rate", false, 2 /* 1/1 */, K_CHORUS_RATE_MIN,
-                       K_CHORUS_RATE_MAX, [this](double v) {
-                           m_engine->get_chorus().set_rate_hz(static_cast<float>(v));
+        auto* col = make_effect_row("Chorus", sw_chorus_enable,
+                                    {knob_ch_mix, knob_ch_rate, knob_ch_depth}, &sw_chorus_stereo);
+        add_tempo_sync(col, knob_ch_rate, "Rate", false, 2 /* 1/1 */, CHORUS_RATE_MIN,
+                       CHORUS_RATE_MAX, [this](double v) {
+                           engine->get_chorus().set_rate_hz(static_cast<float>(v));
                        });
         auto* mode = late_knob("chorus", "mode", new KnobWidget("Mode", 0, 3, 0), [this](double v) {
-            m_engine->get_chorus().set_mode(static_cast<int>(std::lround(v)));
+            engine->get_chorus().set_mode(static_cast<int>(std::lround(v)));
         });
         mode->set_snap(1.0);
         mode->set_value_formatter([](double v) {
@@ -892,49 +881,48 @@ void MainWindow::setup_ui() {
         add_detail_row(col, {mode});
         Theme::tag_card(col, "chorus");
 
-        m_fx_cols[&m_engine->get_chorus()] = col;
+        fx_cols[&engine->get_chorus()] = col;
     }
 
     // ---- Tremolo ----
     {
         using namespace NAMConstants;
-        m_knob_tr_rate = new KnobWidget("Rate", K_TREMOLO_RATE_MIN, K_TREMOLO_RATE_MAX,
-                                        K_TREMOLO_RATE_DEFAULT, "Hz");
-        m_knob_tr_depth = new KnobWidget("Depth", K_TREMOLO_DEPTH_MIN, K_TREMOLO_DEPTH_MAX,
-                                         K_TREMOLO_DEPTH_DEFAULT, "%");
-        m_knob_tr_rate->set_scroll_step(0.1);
-        m_knob_tr_depth->set_scroll_step(1.0);
+        knob_tr_rate =
+            new KnobWidget("Rate", TREMOLO_RATE_MIN, TREMOLO_RATE_MAX, TREMOLO_RATE_DEFAULT, "Hz");
+        knob_tr_depth = new KnobWidget("Depth", TREMOLO_DEPTH_MIN, TREMOLO_DEPTH_MAX,
+                                       TREMOLO_DEPTH_DEFAULT, "%");
+        knob_tr_rate->set_scroll_step(0.1);
+        knob_tr_depth->set_scroll_step(1.0);
 
-        auto* col = make_effect_row("Tremolo", m_sw_tremolo_enable,
-                                    {m_knob_tr_rate, m_knob_tr_depth}, &m_sw_tremolo_stereo);
-        add_tempo_sync(col, m_knob_tr_rate, "Rate", false, 10 /* 1/8 */, K_TREMOLO_RATE_MIN,
-                       K_TREMOLO_RATE_MAX, [this](double v) {
-                           m_engine->get_tremolo().set_rate_hz(static_cast<float>(v));
+        auto* col = make_effect_row("Tremolo", sw_tremolo_enable, {knob_tr_rate, knob_tr_depth},
+                                    &sw_tremolo_stereo);
+        add_tempo_sync(col, knob_tr_rate, "Rate", false, 10 /* 1/8 */, TREMOLO_RATE_MIN,
+                       TREMOLO_RATE_MAX, [this](double v) {
+                           engine->get_tremolo().set_rate_hz(static_cast<float>(v));
                        });
         Theme::tag_card(col, "tremolo");
 
-        m_fx_cols[&m_engine->get_tremolo()] = col;
+        fx_cols[&engine->get_tremolo()] = col;
     }
 
     // ---- Delay ----
     {
         using namespace NAMConstants;
-        m_knob_del_time =
-            new KnobWidget("Time", K_DELAY_TIME_MIN, K_DELAY_TIME_MAX, K_DELAY_TIME_DEFAULT, "ms");
-        m_knob_del_feedback = new KnobWidget("Feedback", K_DELAY_FEEDBACK_MIN, K_DELAY_FEEDBACK_MAX,
-                                             K_DELAY_FEEDBACK_DEFAULT, "%");
-        m_knob_del_mix =
-            new KnobWidget("Mix", K_DELAY_MIX_MIN, K_DELAY_MIX_MAX, K_DELAY_MIX_DEFAULT, "%");
-        m_knob_del_time->set_scroll_step(1.0);
-        m_knob_del_feedback->set_scroll_step(1.0);
-        m_knob_del_mix->set_scroll_step(1.0);
+        knob_del_time =
+            new KnobWidget("Time", DELAY_TIME_MIN, DELAY_TIME_MAX, DELAY_TIME_DEFAULT, "ms");
+        knob_del_feedback = new KnobWidget("Feedback", DELAY_FEEDBACK_MIN, DELAY_FEEDBACK_MAX,
+                                           DELAY_FEEDBACK_DEFAULT, "%");
+        knob_del_mix = new KnobWidget("Mix", DELAY_MIX_MIN, DELAY_MIX_MAX, DELAY_MIX_DEFAULT, "%");
+        knob_del_time->set_scroll_step(1.0);
+        knob_del_feedback->set_scroll_step(1.0);
+        knob_del_mix->set_scroll_step(1.0);
 
-        auto* col = make_effect_row("Delay", m_sw_delay_enable,
-                                    {m_knob_del_mix, m_knob_del_time, m_knob_del_feedback},
-                                    &m_sw_delay_stereo);
-        add_tempo_sync(col, m_knob_del_time, "Time", true, 8 /* 1/8. */, K_DELAY_TIME_MIN,
-                       K_DELAY_TIME_MAX, [this](double v) {
-                           m_engine->get_delay().set_time(static_cast<float>(v));
+        auto* col =
+            make_effect_row("Delay", sw_delay_enable,
+                            {knob_del_mix, knob_del_time, knob_del_feedback}, &sw_delay_stereo);
+        add_tempo_sync(col, knob_del_time, "Time", true, 8 /* 1/8. */, DELAY_TIME_MIN,
+                       DELAY_TIME_MAX, [this](double v) {
+                           engine->get_delay().set_time(static_cast<float>(v));
                        });
         auto pct = [&](const QString& key, const QString& label, double lo, double hi, double def,
                        std::function<void(double)> f, const QString& tip) {
@@ -946,128 +934,124 @@ void MainWindow::setup_ui() {
         };
         auto* low_cut = late_knob(
             "delay", "lowCut",
-            new KnobWidget("Low Cut", K_LOW_CUT_MIN, K_DELAY_LOW_CUT_MAX, K_LOW_CUT_DEFAULT, "Hz"),
+            new KnobWidget("Low Cut", LOW_CUT_MIN, DELAY_LOW_CUT_MAX, LOW_CUT_DEFAULT, "Hz"),
             [this](double v) {
-                m_engine->get_delay().set_low_cut(static_cast<float>(v));
+                engine->get_delay().set_low_cut(static_cast<float>(v));
             });
         low_cut->set_log_taper(true);
-        low_cut->set_value_formatter(hz_label(K_LOW_CUT_MIN + 0.5));
-        auto* high_cut = late_knob("delay", "highCut",
-                                   new KnobWidget("High Cut", K_DELAY_HIGH_CUT_MIN, K_HIGH_CUT_MAX,
-                                                  K_HIGH_CUT_DEFAULT, "Hz"),
-                                   [this](double v) {
-                                       m_engine->get_delay().set_high_cut(static_cast<float>(v));
-                                   });
+        low_cut->set_value_formatter(hz_label(LOW_CUT_MIN + 0.5));
+        auto* high_cut = late_knob(
+            "delay", "highCut",
+            new KnobWidget("High Cut", DELAY_HIGH_CUT_MIN, HIGH_CUT_MAX, HIGH_CUT_DEFAULT, "Hz"),
+            [this](double v) {
+                engine->get_delay().set_high_cut(static_cast<float>(v));
+            });
         high_cut->set_log_taper(true);
-        high_cut->set_value_formatter(hz_label(-(K_HIGH_CUT_MAX - 1.0)));
+        high_cut->set_value_formatter(hz_label(-(HIGH_CUT_MAX - 1.0)));
         add_detail_row(
-            col, {
-                     pct(
-                         "rightRatio", "R Time", K_DELAY_RIGHT_MIN, K_DELAY_RIGHT_MAX,
-                         K_DELAY_RIGHT_DEFAULT,
-                         [this](double v) {
-                             m_engine->get_delay().set_right_ratio(static_cast<float>(v));
-                         },
-                         "Right repeat time as a share of Time (stereo): 75 % or 150 % for a wide, "
-                         "uneven bounce"),
-                     pct(
-                         "crossFeed", "Cross-feed", K_DELAY_CROSS_MIN, K_DELAY_CROSS_MAX,
-                         K_DELAY_CROSS_DEFAULT,
-                         [this](double v) {
-                             m_engine->get_delay().set_cross_feed(static_cast<float>(v));
-                         },
-                         "100 % = ping-pong between the sides · 0 % = two separate echoes"),
-                     low_cut,
-                     high_cut,
-                     pct(
-                         "saturation", "Saturation", K_DELAY_SAT_MIN, K_DELAY_SAT_MAX,
-                         K_DELAY_SAT_DEFAULT,
-                         [this](double v) {
-                             m_engine->get_delay().set_saturation(static_cast<float>(v));
-                         },
-                         "Tape-style rounding of the repeats as they build up"),
-                     pct(
-                         "modulation", "Modulation", K_DELAY_MOD_MIN, K_DELAY_MOD_MAX,
-                         K_DELAY_MOD_DEFAULT,
-                         [this](double v) {
-                             m_engine->get_delay().set_modulation(static_cast<float>(v));
-                         },
-                         "Wobble on the repeats (tape flutter / chorused echoes)"),
-                     pct(
-                         "crystals", "Crystals", 0.0, 100.0, 0.0,
-                         [this](double v) {
-                             m_engine->get_delay().set_crystals(static_cast<float>(v));
-                         },
-                         "Octave-up repeats: each echo climbs higher"),
-                 });
-        m_sw_delay_stereo->setChecked(true);
+            col,
+            {
+                pct(
+                    "rightRatio", "R Time", DELAY_RIGHT_MIN, DELAY_RIGHT_MAX, DELAY_RIGHT_DEFAULT,
+                    [this](double v) {
+                        engine->get_delay().set_right_ratio(static_cast<float>(v));
+                    },
+                    "Right repeat time as a share of Time (stereo): 75 % or 150 % for a wide, "
+                    "uneven bounce"),
+                pct(
+                    "crossFeed", "Cross-feed", DELAY_CROSS_MIN, DELAY_CROSS_MAX,
+                    DELAY_CROSS_DEFAULT,
+                    [this](double v) {
+                        engine->get_delay().set_cross_feed(static_cast<float>(v));
+                    },
+                    "100 % = ping-pong between the sides · 0 % = two separate echoes"),
+                low_cut,
+                high_cut,
+                pct(
+                    "saturation", "Saturation", DELAY_SAT_MIN, DELAY_SAT_MAX, DELAY_SAT_DEFAULT,
+                    [this](double v) {
+                        engine->get_delay().set_saturation(static_cast<float>(v));
+                    },
+                    "Tape-style rounding of the repeats as they build up"),
+                pct(
+                    "modulation", "Modulation", DELAY_MOD_MIN, DELAY_MOD_MAX, DELAY_MOD_DEFAULT,
+                    [this](double v) {
+                        engine->get_delay().set_modulation(static_cast<float>(v));
+                    },
+                    "Wobble on the repeats (tape flutter / chorused echoes)"),
+                pct(
+                    "crystals", "Crystals", 0.0, 100.0, 0.0,
+                    [this](double v) {
+                        engine->get_delay().set_crystals(static_cast<float>(v));
+                    },
+                    "Octave-up repeats: each echo climbs higher"),
+            });
+        sw_delay_stereo->setChecked(true);
         Theme::tag_card(col, "delay");
 
-        m_fx_cols[&m_engine->get_delay()] = col;
+        fx_cols[&engine->get_delay()] = col;
     }
 
     // ---- Reverb ----
     {
         using namespace NAMConstants;
-        m_knob_rev_room = new KnobWidget("Decay", K_REVERB_ROOM_MIN, K_REVERB_ROOM_MAX,
-                                         K_REVERB_ROOM_DEFAULT, "%");
-        m_knob_rev_damping = new KnobWidget("Damping", K_REVERB_DAMPING_MIN, K_REVERB_DAMPING_MAX,
-                                            K_REVERB_DAMPING_DEFAULT, "%");
-        m_knob_rev_width = new KnobWidget("Width", K_REVERB_WIDTH_MIN, K_REVERB_WIDTH_MAX,
-                                          K_REVERB_WIDTH_DEFAULT, "%");
-        m_knob_rev_mix =
-            new KnobWidget("Mix", K_REVERB_MIX_MIN, K_REVERB_MIX_MAX, K_REVERB_MIX_DEFAULT, "%");
-        m_knob_rev_room->set_scroll_step(1.0);
-        m_knob_rev_damping->set_scroll_step(1.0);
-        m_knob_rev_width->set_scroll_step(1.0);
-        m_knob_rev_mix->set_scroll_step(1.0);
+        knob_rev_room =
+            new KnobWidget("Decay", REVERB_ROOM_MIN, REVERB_ROOM_MAX, REVERB_ROOM_DEFAULT, "%");
+        knob_rev_damping = new KnobWidget("Damping", REVERB_DAMPING_MIN, REVERB_DAMPING_MAX,
+                                          REVERB_DAMPING_DEFAULT, "%");
+        knob_rev_width =
+            new KnobWidget("Width", REVERB_WIDTH_MIN, REVERB_WIDTH_MAX, REVERB_WIDTH_DEFAULT, "%");
+        knob_rev_mix =
+            new KnobWidget("Mix", REVERB_MIX_MIN, REVERB_MIX_MAX, REVERB_MIX_DEFAULT, "%");
+        knob_rev_room->set_scroll_step(1.0);
+        knob_rev_damping->set_scroll_step(1.0);
+        knob_rev_width->set_scroll_step(1.0);
+        knob_rev_mix->set_scroll_step(1.0);
 
-        auto* col = make_effect_row(
-            "Reverb", m_sw_reverb_enable,
-            {m_knob_rev_mix, m_knob_rev_room, m_knob_rev_damping, m_knob_rev_width});
-        auto* pre =
-            late_knob("reverb", "preDelay",
-                      new KnobWidget("Pre-delay", K_REVERB_PRE_DELAY_MIN, K_REVERB_PRE_DELAY_MAX,
-                                     K_REVERB_PRE_DELAY_DEFAULT, "ms"),
-                      [this](double v) {
-                          m_engine->get_reverb().set_pre_delay(static_cast<float>(v));
-                      });
+        auto* col =
+            make_effect_row("Reverb", sw_reverb_enable,
+                            {knob_rev_mix, knob_rev_room, knob_rev_damping, knob_rev_width});
+        auto* pre = late_knob("reverb", "preDelay",
+                              new KnobWidget("Pre-delay", REVERB_PRE_DELAY_MIN,
+                                             REVERB_PRE_DELAY_MAX, REVERB_PRE_DELAY_DEFAULT, "ms"),
+                              [this](double v) {
+                                  engine->get_reverb().set_pre_delay(static_cast<float>(v));
+                              });
         pre->set_scroll_step(5.0);
         pre->setToolTip("Gap before the tail starts: keeps the note clear of the room");
         auto* low_cut = late_knob(
             "reverb", "lowCut",
-            new KnobWidget("Low Cut", K_LOW_CUT_MIN, K_REVERB_LOW_CUT_MAX, K_LOW_CUT_DEFAULT, "Hz"),
+            new KnobWidget("Low Cut", LOW_CUT_MIN, REVERB_LOW_CUT_MAX, LOW_CUT_DEFAULT, "Hz"),
             [this](double v) {
-                m_engine->get_reverb().set_low_cut(static_cast<float>(v));
+                engine->get_reverb().set_low_cut(static_cast<float>(v));
             });
         low_cut->set_log_taper(true);
-        low_cut->set_value_formatter(hz_label(K_LOW_CUT_MIN + 0.5));
-        auto* high_cut = late_knob("reverb", "highCut",
-                                   new KnobWidget("High Cut", K_REVERB_HIGH_CUT_MIN, K_HIGH_CUT_MAX,
-                                                  K_HIGH_CUT_DEFAULT, "Hz"),
-                                   [this](double v) {
-                                       m_engine->get_reverb().set_high_cut(static_cast<float>(v));
-                                   });
+        low_cut->set_value_formatter(hz_label(LOW_CUT_MIN + 0.5));
+        auto* high_cut = late_knob(
+            "reverb", "highCut",
+            new KnobWidget("High Cut", REVERB_HIGH_CUT_MIN, HIGH_CUT_MAX, HIGH_CUT_DEFAULT, "Hz"),
+            [this](double v) {
+                engine->get_reverb().set_high_cut(static_cast<float>(v));
+            });
         high_cut->set_log_taper(true);
-        high_cut->set_value_formatter(hz_label(-(K_HIGH_CUT_MAX - 1.0)));
+        high_cut->set_value_formatter(hz_label(-(HIGH_CUT_MAX - 1.0)));
         auto* shimmer = late_knob(
             "reverb", "shimmer", new KnobWidget("Shimmer", 0.0, 100.0, 0.0, "%"), [this](double v) {
-                m_engine->get_reverb().set_shimmer_pct(static_cast<float>(v));
+                engine->get_reverb().set_shimmer_pct(static_cast<float>(v));
             });
         shimmer->set_scroll_step(1.0);
         shimmer->setToolTip("Octave-up feedback into the tail — the shimmer reverb");
         add_detail_row(col, {pre, low_cut, high_cut, shimmer});
         Theme::tag_card(col, "reverb");
 
-        m_fx_cols[&m_engine->get_reverb()] = col;
+        fx_cols[&engine->get_reverb()] = col;
     }
 
     // ---- IR toggle ----
     {
-        auto* col = make_effect_row("Cabinet", m_sw_ir_enable, {});
-        m_sw_ir_enable->setChecked(true);
-        make_hero_controls(col, LibraryEntry::Kind::IR, m_lbl_ir_status, m_lbl_ir_meta,
-                           m_lbl_ir_origin);
+        auto* col = make_effect_row("Cabinet", sw_ir_enable, {});
+        sw_ir_enable->setChecked(true);
+        make_hero_controls(col, LibraryEntry::Kind::IR, lbl_ir_status, lbl_ir_meta, lbl_ir_origin);
 
         // Dual cab (Phase 17): A/B mixer + cuts, then slot B's picker.
         using namespace NAMConstants;
@@ -1075,7 +1059,7 @@ void MainWindow::setup_ui() {
             auto* k = late_knob("ir", slot ? "levelB" : "levelA",
                                 new KnobWidget(slot ? "Level B" : "Level A", -24.0, 6.0, 0.0, "dB"),
                                 [this, slot](double v) {
-                                    m_engine->get_ir().set_level(slot, static_cast<float>(v));
+                                    engine->get_ir().set_level(slot, static_cast<float>(v));
                                 });
             k->set_scroll_step(0.5);
             return static_cast<QWidget*>(k);
@@ -1084,7 +1068,7 @@ void MainWindow::setup_ui() {
             auto* k = late_knob("ir", slot ? "panB" : "panA",
                                 new KnobWidget(slot ? "Pan B" : "Pan A", -100.0, 100.0, 0.0, "%"),
                                 [this, slot](double v) {
-                                    m_engine->get_ir().set_pan(slot, static_cast<float>(v));
+                                    engine->get_ir().set_pan(slot, static_cast<float>(v));
                                 });
             k->set_scroll_step(10.0);
             k->set_value_formatter([](double v) {
@@ -1098,9 +1082,9 @@ void MainWindow::setup_ui() {
             auto* sw = new ToggleSwitch;
             sw->setCheckable(true);
             sw->setToolTip("Invert this slot's polarity (fix phase cancellation between two mics)");
-            m_late_params.push_back([this, sw, slot] {
+            late_params.push_back([this, sw, slot] {
                 toggle_param("ir", slot ? "invertB" : "invertA", sw, [this, slot](bool b) {
-                    m_engine->get_ir().set_phase(slot, b);
+                    engine->get_ir().set_phase(slot, b);
                 });
             });
             auto* w = new QWidget;
@@ -1115,7 +1099,7 @@ void MainWindow::setup_ui() {
         };
         auto* blend = late_knob("ir", "blend", new KnobWidget("Blend", 0.0, 100.0, 50.0, "%"),
                                 [this](double v) {
-                                    m_engine->get_ir().set_blend_pct(static_cast<float>(v));
+                                    engine->get_ir().set_blend_pct(static_cast<float>(v));
                                 });
         blend->set_scroll_step(1.0);
         blend->set_value_formatter([](double v) {
@@ -1125,22 +1109,22 @@ void MainWindow::setup_ui() {
                             : QString("B %1").arg(b);
         });
         blend->setToolTip("Crossfade between the two IRs (only when both slots are loaded)");
-        auto* low_cut = late_knob(
-            "ir", "lowCut",
-            new KnobWidget("Low Cut", K_LOW_CUT_MIN, K_LOW_CUT_MAX, K_LOW_CUT_DEFAULT, "Hz"),
-            [this](double v) {
-                m_engine->get_ir().set_low_cut(static_cast<float>(v));
-            });
+        auto* low_cut =
+            late_knob("ir", "lowCut",
+                      new KnobWidget("Low Cut", LOW_CUT_MIN, LOW_CUT_MAX, LOW_CUT_DEFAULT, "Hz"),
+                      [this](double v) {
+                          engine->get_ir().set_low_cut(static_cast<float>(v));
+                      });
         low_cut->set_log_taper(true);
-        low_cut->set_value_formatter(hz_label(K_LOW_CUT_MIN + 0.5));
+        low_cut->set_value_formatter(hz_label(LOW_CUT_MIN + 0.5));
         auto* high_cut = late_knob(
             "ir", "highCut",
-            new KnobWidget("High Cut", K_HIGH_CUT_MIN, K_HIGH_CUT_MAX, K_HIGH_CUT_DEFAULT, "Hz"),
+            new KnobWidget("High Cut", HIGH_CUT_MIN, HIGH_CUT_MAX, HIGH_CUT_DEFAULT, "Hz"),
             [this](double v) {
-                m_engine->get_ir().set_high_cut(static_cast<float>(v));
+                engine->get_ir().set_high_cut(static_cast<float>(v));
             });
         high_cut->set_log_taper(true);
-        high_cut->set_value_formatter(hz_label(-(K_HIGH_CUT_MAX - 1.0)));
+        high_cut->set_value_formatter(hz_label(-(HIGH_CUT_MAX - 1.0)));
         add_detail_row(col, {level(0), pan(0), phase(0), blend, low_cut, high_cut});
 
         // Slot B: ‹ › through the library's IRs, Choose… (file dialog), ×.
@@ -1155,8 +1139,8 @@ void MainWindow::setup_ui() {
             b->setToolTip(step < 0 ? "Previous IR in the library (slot B)"
                                    : "Next IR in the library (slot B)");
             connect(b, &QToolButton::clicked, this, [this, step] {
-                const QString next = m_library->neighbour(
-                    LibraryEntry::Kind::IR, QString::fromStdString(m_engine->ir_path_b()), step);
+                const QString next = library->neighbour(
+                    LibraryEntry::Kind::IR, QString::fromStdString(engine->ir_path_b()), step);
                 if (!next.isEmpty()) {
                     load_irb_file(next);
                 }
@@ -1166,9 +1150,9 @@ void MainWindow::setup_ui() {
         auto* choose = new QPushButton("Choose…");
         choose->setFocusPolicy(Qt::NoFocus);
         connect(choose, &QPushButton::clicked, this, [this] {
-            QString start = QString::fromStdString(m_engine->ir_path_b());
+            QString start = QString::fromStdString(engine->ir_path_b());
             if (start.isEmpty()) {
-                start = QString::fromStdString(m_engine->ir_path());
+                start = QString::fromStdString(engine->ir_path());
             }
             const QString p = QFileDialog::getOpenFileName(
                 nullptr, "Impulse Response for Slot B", start, "WAV Files (*.wav);;All Files (*)");
@@ -1183,17 +1167,17 @@ void MainWindow::setup_ui() {
         clear->setFocusPolicy(Qt::NoFocus);
         clear->setToolTip("Empty slot B");
         connect(clear, &QToolButton::clicked, this, [this] {
-            m_engine->unload_irb();
+            engine->unload_irb();
             QSettings().remove("files/lastIRB");
             update_hero_cards();
         });
-        m_lbl_irb_status = new QLabel;
-        m_lbl_irb_status->setObjectName("fileStatus");
-        add_detail_row(col, {b_title, arrow("‹", -1), arrow("›", +1), choose, clear,
-                             m_lbl_irb_status, level(1), pan(1), phase(1)});
+        lbl_irb_status = new QLabel;
+        lbl_irb_status->setObjectName("fileStatus");
+        add_detail_row(col, {b_title, arrow("‹", -1), arrow("›", +1), choose, clear, lbl_irb_status,
+                             level(1), pan(1), phase(1)});
 
         Theme::tag_card(col, "ir");
-        m_fx_cols[&m_engine->get_ir()] = col;
+        fx_cols[&engine->get_ir()] = col;
     }
 
     // Input/Output gain columns. Not draggable and not part of the chain, so
@@ -1212,7 +1196,7 @@ void MainWindow::setup_ui() {
         auto* name = new QLabel(title);
         name->setObjectName("fxName");
         name->setAlignment(Qt::AlignHCenter);
-        knob = new KnobWidget("Gain", K_GAIN_MIN, K_GAIN_MAX, K_GAIN_DEFAULT, "dB",
+        knob = new KnobWidget("Gain", GAIN_MIN, GAIN_MAX, GAIN_DEFAULT, "dB",
                               KnobWidget::Form::STACKED);
         knob->set_scroll_step(0.1);
         meter = new VUMeter(Qt::Vertical);
@@ -1224,15 +1208,15 @@ void MainWindow::setup_ui() {
         return col;
     };
 
-    m_input_card = make_gain_column("Input", m_knob_input_gain, m_meter_in);
-    m_output_card = make_gain_column("Output", m_knob_output_gain, m_meter_out);
+    input_card = make_gain_column("Input", knob_input_gain, meter_in);
+    output_card = make_gain_column("Output", knob_output_gain, meter_out);
     {
         // Output limiter switch under the gain knob.
-        m_sw_limiter = new ToggleSwitch;
-        m_sw_limiter->setCheckable(true);
-        m_sw_limiter->setToolTip(
+        sw_limiter = new ToggleSwitch;
+        sw_limiter->setCheckable(true);
+        sw_limiter->setToolTip(
             "Look-ahead limiter: catches peaks at −0.3 dBFS (adds 1 ms latency)");
-        m_sw_limiter->set_accent(Theme::generic_accent());
+        sw_limiter->set_accent(Theme::generic_accent());
         auto* row = new QWidget;
         auto* rl = new QVBoxLayout(row);
         rl->setContentsMargins(0, 0, 0, 0);
@@ -1240,35 +1224,34 @@ void MainWindow::setup_ui() {
         auto* cap = new QLabel("Limit");
         cap->setObjectName("toggleCaption");
         cap->setAlignment(Qt::AlignHCenter);
-        rl->addWidget(m_sw_limiter, 0, Qt::AlignHCenter);
+        rl->addWidget(sw_limiter, 0, Qt::AlignHCenter);
         rl->addWidget(cap);
-        static_cast<QVBoxLayout*>(m_output_card->layout())
-            ->insertWidget(2, row, 0, Qt::AlignHCenter);
+        static_cast<QVBoxLayout*>(output_card->layout())->insertWidget(2, row, 0, Qt::AlignHCenter);
     }
 
     // Keyboard shortcut targets per card; keys are (re)assigned left to right
     // on every strip rebuild so they always match the visual order.
-    m_fx_toggles = {
-        {&m_engine->get_tuner(), {m_sw_tuner_enable, nullptr}},
-        {&m_engine->get_gate(), {m_sw_gate_enable, nullptr}},
-        {&m_engine->get_comp(), {m_sw_comp_enable, nullptr}},
-        {&m_engine->get_wah(), {m_sw_wah_enable, nullptr}},
-        {&m_engine->get_flanger(), {m_sw_flanger_enable, m_sw_flanger_stereo}},
-        {&m_engine->get_phaser(), {m_sw_phaser_enable, m_sw_phaser_stereo}},
-        {&m_engine->get_nam(), {m_sw_nam_enable, nullptr}},
-        {&m_engine->get_eq(), {m_sw_eq_enable, nullptr}},
-        {&m_engine->get_chorus(), {m_sw_chorus_enable, m_sw_chorus_stereo}},
-        {&m_engine->get_tremolo(), {m_sw_tremolo_enable, m_sw_tremolo_stereo}},
-        {&m_engine->get_delay(), {m_sw_delay_enable, m_sw_delay_stereo}},
-        {&m_engine->get_reverb(), {m_sw_reverb_enable, nullptr}},
-        {&m_engine->get_ir(), {m_sw_ir_enable, nullptr}},
-        {&m_engine->get_drive(), {m_sw_drive_enable, nullptr}},
-        {&m_engine->get_doubler(), {m_sw_doubler_enable, nullptr}},
-        {&m_engine->get_volume(), {m_sw_volume_enable, nullptr}},
-        {&m_engine->get_transpose(), {m_sw_transpose_enable, nullptr}},
+    fx_toggles = {
+        {&engine->get_tuner(), {sw_tuner_enable, nullptr}},
+        {&engine->get_gate(), {sw_gate_enable, nullptr}},
+        {&engine->get_comp(), {sw_comp_enable, nullptr}},
+        {&engine->get_wah(), {sw_wah_enable, nullptr}},
+        {&engine->get_flanger(), {sw_flanger_enable, sw_flanger_stereo}},
+        {&engine->get_phaser(), {sw_phaser_enable, sw_phaser_stereo}},
+        {&engine->get_nam(), {sw_nam_enable, nullptr}},
+        {&engine->get_eq(), {sw_eq_enable, nullptr}},
+        {&engine->get_chorus(), {sw_chorus_enable, sw_chorus_stereo}},
+        {&engine->get_tremolo(), {sw_tremolo_enable, sw_tremolo_stereo}},
+        {&engine->get_delay(), {sw_delay_enable, sw_delay_stereo}},
+        {&engine->get_reverb(), {sw_reverb_enable, nullptr}},
+        {&engine->get_ir(), {sw_ir_enable, nullptr}},
+        {&engine->get_drive(), {sw_drive_enable, nullptr}},
+        {&engine->get_doubler(), {sw_doubler_enable, nullptr}},
+        {&engine->get_volume(), {sw_volume_enable, nullptr}},
+        {&engine->get_transpose(), {sw_transpose_enable, nullptr}},
     };
 
-    for (const auto& [fx, toggles] : m_fx_toggles) {
+    for (const auto& [fx, toggles] : fx_toggles) {
         connect(toggles.enable, &ToggleSwitch::toggled, this, [this, fx](bool enabled) {
             update_card_bypass_state(fx, enabled);
         });
@@ -1276,53 +1259,53 @@ void MainWindow::setup_ui() {
     }
 
     // Drag sources + context menus: every card. Drop target: the strip itself.
-    for (const auto& [fx, card] : m_fx_cols) {
+    for (const auto& [fx, card] : fx_cols) {
         card->installEventFilter(this);
     }
-    m_input_card->installEventFilter(this); // context menu only — not draggable
-    m_output_card->installEventFilter(this);
-    m_lbl_nam_origin->installEventFilter(this); // T3K mark click
-    m_lbl_ir_origin->installEventFilter(this);
-    m_strip->setAcceptDrops(true);
-    m_strip->installEventFilter(this);
+    input_card->installEventFilter(this); // context menu only — not draggable
+    output_card->installEventFilter(this);
+    lbl_nam_origin->installEventFilter(this); // T3K mark click
+    lbl_ir_origin->installEventFilter(this);
+    strip->setAcceptDrops(true);
+    strip->installEventFilter(this);
 
     rebuild_effect_strip();
-    m_midi_menu = midi_top_menu;
+    midi_menu = midi_top_menu;
 
-    scroll->setWidget(m_strip);
+    scroll->setWidget(strip);
 
     // Rack row: input column | effect strip | output column.
     auto* rack_row = new QHBoxLayout;
     rack_row->setSpacing(6);
-    rack_row->addWidget(m_input_card);
+    rack_row->addWidget(input_card);
     rack_row->addWidget(scroll, 1);
-    rack_row->addWidget(m_output_card);
+    rack_row->addWidget(output_card);
     root_layout->addLayout(rack_row, 1);
 
     // ---- Library dock (left of the rig; closable, movable, remembers state) ----
-    m_library_tabs = new LibraryDock(*m_library_index, *m_tone3000);
-    m_library = m_library_tabs->get_local();
-    m_t3k_panel = m_library_tabs->tone3000();
-    connect(m_library, &LibraryPanel::activated, this, &MainWindow::load_library_entry);
-    connect(m_t3k_panel, &Tone3000Panel::load_requested, this, &MainWindow::load_library_entry);
-    connect(m_tone3000, &Tone3000Client::auth_finished, this, [this](bool ok, const QString&, int) {
+    library_tabs = new LibraryDock(*library_index, *tone3000);
+    library = library_tabs->get_local();
+    t3k_panel = library_tabs->tone3000();
+    connect(library, &LibraryPanel::activated, this, &MainWindow::load_library_entry);
+    connect(t3k_panel, &Tone3000Panel::load_requested, this, &MainWindow::load_library_entry);
+    connect(tone3000, &Tone3000Client::auth_finished, this, [this](bool ok, const QString&, int) {
         if (ok) {
-            m_library_dock->show();
-            m_library_tabs->set_tab(LibraryDock::TONE3000);
+            library_dock->show();
+            library_tabs->set_tab(LibraryDock::TONE3000);
         }
     });
 
-    m_library_dock = new QDockWidget("Library", this);
-    m_library_dock->setObjectName("libraryDock"); // saveState() needs a name
-    m_library_dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-    m_library_dock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable |
-                                QDockWidget::DockWidgetFloatable);
-    m_library_dock->setWidget(m_library_tabs);
-    addDockWidget(Qt::LeftDockWidgetArea, m_library_dock);
-    resizeDocks({m_library_dock}, {320}, Qt::Horizontal);
+    library_dock = new QDockWidget("Library", this);
+    library_dock->setObjectName("libraryDock"); // saveState() needs a name
+    library_dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    library_dock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable |
+                              QDockWidget::DockWidgetFloatable);
+    library_dock->setWidget(library_tabs);
+    addDockWidget(Qt::LeftDockWidgetArea, library_dock);
+    resizeDocks({library_dock}, {320}, Qt::Horizontal);
 
     {
-        QAction* show = m_library_dock->toggleViewAction();
+        QAction* show = library_dock->toggleViewAction();
         show->setText("Show Library");
         show->setShortcut(QKeySequence("Ctrl+L"));
         library_menu->addAction(show);
@@ -1330,24 +1313,24 @@ void MainWindow::setup_ui() {
         auto* find = library_menu->addAction("Find in Library");
         find->setShortcut(QKeySequence::Find); // Ctrl+F
         connect(find, &QAction::triggered, this, [this] {
-            m_library_dock->show();
-            m_library_tabs->set_tab(LibraryDock::LOCAL);
-            m_library->focus_search();
+            library_dock->show();
+            library_tabs->set_tab(LibraryDock::LOCAL);
+            library->focus_search();
         });
         auto* t3k = library_menu->addAction("Browse TONE3000…");
         t3k->setIcon(
             QIcon(QPixmap(":/tone3000/t3k-mark.png").scaledToHeight(14, Qt::SmoothTransformation)));
         connect(t3k, &QAction::triggered, this, [this] {
-            m_library_dock->show();
-            m_library_tabs->set_tab(LibraryDock::TONE3000);
-            if (m_tone3000->is_signed_in()) {
-                m_t3k_panel->browse_catalog();
+            library_dock->show();
+            library_tabs->set_tab(LibraryDock::TONE3000);
+            if (tone3000->is_signed_in()) {
+                t3k_panel->browse_catalog();
             }
         });
         library_menu->addSeparator();
-        connect(library_menu->addAction("Folders…"), &QAction::triggered, m_library,
+        connect(library_menu->addAction("Folders…"), &QAction::triggered, library,
                 &LibraryPanel::edit_folders);
-        connect(library_menu->addAction("Rescan"), &QAction::triggered, m_library_index,
+        connect(library_menu->addAction("Rescan"), &QAction::triggered, library_index,
                 &LibraryIndex::rescan);
         library_menu->addSeparator();
         connect(library_menu->addAction("Import Model…"), &QAction::triggered, this,
@@ -1384,9 +1367,9 @@ void MainWindow::make_hero_controls(QWidget* card, LibraryEntry::Kind kind, QLab
                              : "Show the IR list in the Library");
     browse->setFocusPolicy(Qt::NoFocus);
     connect(browse, &QPushButton::clicked, this, [this, kind] {
-        m_library_dock->show();
-        m_library_tabs->set_tab(LibraryDock::LOCAL);
-        m_library->show_section(kind);
+        library_dock->show();
+        library_tabs->set_tab(LibraryDock::LOCAL);
+        library->show_section(kind);
     });
 
     // TONE3000 origin marker (the compact T3K mark), shown only when the
@@ -1416,36 +1399,36 @@ void MainWindow::make_hero_controls(QWidget* card, LibraryEntry::Kind kind, QLab
 void MainWindow::layout_strip(const std::vector<EffectBase*>& order) {
     // Empty the layout: the stretch is recreated below, cards are reused
     // (they stay children of the strip while out of the layout).
-    while (QLayoutItem* item = m_strip_lay->takeAt(0)) {
+    while (QLayoutItem* item = strip_lay->takeAt(0)) {
         delete item;
     }
 
     for (auto* fx : order) {
-        auto it = m_fx_cols.find(fx);
-        if (it != m_fx_cols.end()) {
-            m_strip_lay->addWidget(it->second);
+        auto it = fx_cols.find(fx);
+        if (it != fx_cols.end()) {
+            strip_lay->addWidget(it->second);
         }
     }
-    m_strip_lay->addStretch();
-    m_strip_lay->activate(); // fresh geometry now — the drag preview reads card centres
+    strip_lay->addStretch();
+    strip_lay->activate(); // fresh geometry now — the drag preview reads card centres
 }
 
 void MainWindow::rebuild_effect_strip() {
-    layout_strip(m_engine->get_chain());
+    layout_strip(engine->get_chain());
 
     // Digit/QWE shortcuts always match the visual top-to-bottom order.
-    m_shortcuts.clear();
-    for (auto* fx : m_engine->get_chain()) {
-        auto tg = m_fx_toggles.find(fx);
-        if (tg != m_fx_toggles.end()) {
-            m_shortcuts.add_effect(tg->second.enable, tg->second.stereo);
+    shortcuts.clear();
+    for (auto* fx : engine->get_chain()) {
+        auto tg = fx_toggles.find(fx);
+        if (tg != fx_toggles.end()) {
+            shortcuts.add_effect(tg->second.enable, tg->second.stereo);
         }
     }
 }
 
 void MainWindow::update_card_bypass_state(EffectBase* effect, bool enabled) {
-    const auto it = m_fx_cols.find(effect);
-    if (it == m_fx_cols.end()) {
+    const auto it = fx_cols.find(effect);
+    if (it == fx_cols.end()) {
         return;
     }
 
@@ -1460,7 +1443,7 @@ void MainWindow::update_card_bypass_state(EffectBase* effect, bool enabled) {
 }
 
 void MainWindow::apply_chain_order(const QStringList& ids) {
-    m_engine->set_chain_order(to_std_strings(ids));
+    engine->set_chain_order(to_std_strings(ids));
     rebuild_effect_strip();
 }
 
@@ -1470,7 +1453,7 @@ void MainWindow::apply_chain_order(const QStringList& ids) {
 
 void MainWindow::start_card_drag(QWidget* card) {
     EffectBase* fx = nullptr;
-    for (const auto& [e, w] : m_fx_cols) {
+    for (const auto& [e, w] : fx_cols) {
         if (w == card) {
             fx = e;
             break;
@@ -1479,20 +1462,20 @@ void MainWindow::start_card_drag(QWidget* card) {
     if (!fx) {
         return;
     }
-    const std::string id = m_engine->id_for_effect(fx);
+    const std::string id = engine->id_for_effect(fx);
     if (id.empty()) {
         return;
     }
 
-    m_drag_id = id;
-    m_preview_ids = m_engine->chain_ids();
+    drag_id = id;
+    preview_ids = engine->chain_ids();
 
     auto* mime = new QMimeData;
-    mime->setData(K_EFFECT_MIME, QByteArray::fromStdString(id));
+    mime->setData(EFFECT_MIME, QByteArray::fromStdString(id));
     auto* drag = new QDrag(card);
     drag->setMimeData(mime);
     drag->setPixmap(card->grab()); // grab before dimming
-    drag->setHotSpot(m_drag_start_pos);
+    drag->setHotSpot(drag_start_pos);
 
     // Dim the in-strip card: it marks its landing slot in the live preview
     // while the full-opacity pixmap follows the cursor.
@@ -1504,20 +1487,20 @@ void MainWindow::start_card_drag(QWidget* card) {
 
     // Drop committed inside the event filter; a cancelled drag just falls
     // back to the engine order here.
-    auto toggles = m_fx_toggles.find(fx);
+    auto toggles = fx_toggles.find(fx);
     update_card_bypass_state(fx,
-                             toggles != m_fx_toggles.end() && toggles->second.enable->isChecked());
-    m_drag_id.clear();
+                             toggles != fx_toggles.end() && toggles->second.enable->isChecked());
+    drag_id.clear();
     rebuild_effect_strip();
 }
 
 void MainWindow::update_drag_preview(const QPoint& pos) {
-    if (m_drag_id.empty()) {
+    if (drag_id.empty()) {
         return;
     }
 
-    std::vector<std::string> ids = m_preview_ids;
-    ids.erase(std::remove(ids.begin(), ids.end(), m_drag_id), ids.end());
+    std::vector<std::string> ids = preview_ids;
+    ids.erase(std::remove(ids.begin(), ids.end(), drag_id), ids.end());
     if (ids.empty()) {
         return;
     }
@@ -1525,22 +1508,22 @@ void MainWindow::update_drag_preview(const QPoint& pos) {
     // Insert after every card whose centre lies above the cursor.
     int insert = 0;
     for (size_t i = 0; i < ids.size(); ++i) {
-        auto it = m_fx_cols.find(m_engine->effect_by_id(ids[i]));
-        if (it != m_fx_cols.end() && pos.y() > it->second->geometry().center().y()) {
+        auto it = fx_cols.find(engine->effect_by_id(ids[i]));
+        if (it != fx_cols.end() && pos.y() > it->second->geometry().center().y()) {
             insert = static_cast<int>(i) + 1;
         }
     }
-    ids.insert(ids.begin() + insert, m_drag_id);
+    ids.insert(ids.begin() + insert, drag_id);
 
-    if (ids == m_preview_ids) {
+    if (ids == preview_ids) {
         return;
     }
-    m_preview_ids = ids;
+    preview_ids = ids;
 
     std::vector<EffectBase*> order;
     order.reserve(ids.size());
     for (const auto& s : ids) {
-        if (EffectBase* e = m_engine->effect_by_id(s)) {
+        if (EffectBase* e = engine->effect_by_id(s)) {
             order.push_back(e);
         }
     }
@@ -1548,11 +1531,11 @@ void MainWindow::update_drag_preview(const QPoint& pos) {
 }
 
 void MainWindow::commit_drag_preview() {
-    if (m_drag_id.empty()) {
+    if (drag_id.empty()) {
         return;
     }
     QStringList qids;
-    for (const auto& s : m_preview_ids) {
+    for (const auto& s : preview_ids) {
         qids << QString::fromStdString(s);
     }
     apply_chain_order(qids);
@@ -1560,10 +1543,10 @@ void MainWindow::commit_drag_preview() {
 }
 
 void MainWindow::cancel_drag_preview() {
-    if (m_drag_id.empty()) {
+    if (drag_id.empty()) {
         return;
     }
-    m_preview_ids = m_engine->chain_ids();
+    preview_ids = engine->chain_ids();
     rebuild_effect_strip();
 }
 
@@ -1571,10 +1554,10 @@ void MainWindow::reset_card_to_defaults(QWidget* card) {
     // The enable toggle keeps its state — resetting restores the effect's
     // sound, it doesn't kick it in or out of the chain.
     ToggleSwitch* enable = nullptr;
-    for (const auto& [fx, w] : m_fx_cols) {
+    for (const auto& [fx, w] : fx_cols) {
         if (w == card) {
-            auto tg = m_fx_toggles.find(fx);
-            if (tg != m_fx_toggles.end()) {
+            auto tg = fx_toggles.find(fx);
+            if (tg != fx_toggles.end()) {
                 enable = tg->second.enable;
             }
             break;
@@ -1584,7 +1567,7 @@ void MainWindow::reset_card_to_defaults(QWidget* card) {
     // A parameter belongs to this card iff its widget lives inside it — the
     // registry needs no extra per-effect bookkeeping. Widget signals update
     // the engine and schedule the session save.
-    for (const auto& p : m_params) {
+    for (const auto& p : params) {
         QWidget* w = p.knob ? static_cast<QWidget*>(p.knob) : static_cast<QWidget*>(p.toggle);
         if (!card->isAncestorOf(w)) {
             continue;
@@ -1608,43 +1591,43 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* ev) {
             // filter sees it with the position already in card coordinates.
             auto* me = static_cast<QMouseEvent*>(ev);
             auto* card = qobject_cast<QWidget*>(obj);
-            auto it = card ? m_card_grips.find(card) : m_card_grips.end();
-            if (it != m_card_grips.end() && me->button() == Qt::LeftButton &&
+            auto it = card ? card_grips.find(card) : card_grips.end();
+            if (it != card_grips.end() && me->button() == Qt::LeftButton &&
                 it->second->geometry().contains(me->pos())) {
-                m_drag_card = card;
-                m_drag_start_pos = me->pos();
+                drag_card = card;
+                drag_start_pos = me->pos();
             }
             break;
         }
         case QEvent::MouseMove: {
-            if (!m_drag_card || obj != m_drag_card) {
+            if (!drag_card || obj != drag_card) {
                 break;
             }
             auto* me = static_cast<QMouseEvent*>(ev);
             if (!(me->buttons() & Qt::LeftButton)) {
-                m_drag_card = nullptr;
+                drag_card = nullptr;
                 break;
             }
-            if ((me->pos() - m_drag_start_pos).manhattanLength() <
+            if ((me->pos() - drag_start_pos).manhattanLength() <
                 QApplication::startDragDistance()) {
                 break;
             }
-            QWidget* card = m_drag_card;
-            m_drag_card = nullptr;
+            QWidget* card = drag_card;
+            drag_card = nullptr;
             start_card_drag(card);
             return true;
         }
         case QEvent::MouseButtonRelease:
-            if (obj == m_drag_card) {
-                m_drag_card = nullptr;
+            if (obj == drag_card) {
+                drag_card = nullptr;
             }
-            if (obj == m_lbl_nam_origin || obj == m_lbl_ir_origin) {
+            if (obj == lbl_nam_origin || obj == lbl_ir_origin) {
                 // T3K mark on a hero row: open that tone in the TONE3000 tab.
                 const int tone_id = static_cast<QWidget*>(obj)->property("toneId").toInt();
                 if (tone_id > 0) {
-                    m_library_dock->show();
-                    m_library_tabs->set_tab(LibraryDock::TONE3000);
-                    m_t3k_panel->show_tone(tone_id);
+                    library_dock->show();
+                    library_tabs->set_tab(LibraryDock::TONE3000);
+                    t3k_panel->show_tone(tone_id);
                 }
                 return true;
             }
@@ -1652,23 +1635,22 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* ev) {
         case QEvent::ContextMenu: {
             // Right-click on a card (knobs keep their own menu): per-effect reset.
             auto* card = qobject_cast<QWidget*>(obj);
-            if (card && obj != m_strip && card->property("fxCard").toBool()) {
+            if (card && obj != strip && card->property("fxCard").toBool()) {
                 auto* ce = static_cast<QContextMenuEvent*>(ev);
                 const QString name = card->property("displayName").toString();
                 QMenu menu(card);
 
                 // Hero rows: Import (file dialog) and Unload live here — the
                 // library is the primary path, so they left the row itself.
-                const bool is_amp = card == m_fx_cols[&m_engine->get_nam()];
-                const bool is_cab = card == m_fx_cols[&m_engine->get_ir()];
+                const bool is_amp = card == fx_cols[&engine->get_nam()];
+                const bool is_cab = card == fx_cols[&engine->get_ir()];
                 if (is_amp || is_cab) {
                     connect(menu.addAction(is_amp ? "Import Model…" : "Import Impulse Response…"),
                             &QAction::triggered, this,
                             is_amp ? &MainWindow::on_import_nam : &MainWindow::on_import_ir);
                     QAction* unload =
                         menu.addAction(is_amp ? "Unload Model" : "Unload Impulse Response");
-                    unload->setEnabled(is_amp ? m_engine->is_model_loaded()
-                                              : m_engine->is_ir_loaded());
+                    unload->setEnabled(is_amp ? engine->is_model_loaded() : engine->is_ir_loaded());
                     connect(unload, &QAction::triggered, this,
                             is_amp ? &MainWindow::on_unload_nam : &MainWindow::on_unload_ir);
                     menu.addSeparator();
@@ -1679,7 +1661,7 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* ev) {
                 // A right-click on a switch: MIDI Learn for that switch.
                 for (QWidget* w = card->childAt(card->mapFromGlobal(ce->globalPos()));
                      w && w != card; w = w->parentWidget()) {
-                    if (const MidiTarget* t = m_midi_mapper->target_for(w); t && t->toggle) {
+                    if (const MidiTarget* t = midi_mapper->target_for(w); t && t->toggle) {
                         menu.addSeparator();
                         add_learn_entries(t->id, &menu);
                         break;
@@ -1694,18 +1676,18 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* ev) {
             break;
         }
         case QEvent::DragEnter:
-            if (obj == m_strip) {
+            if (obj == strip) {
                 auto* de = static_cast<QDragEnterEvent*>(ev);
-                if (de->mimeData()->hasFormat(K_EFFECT_MIME) || has_loadable_urls(de->mimeData())) {
+                if (de->mimeData()->hasFormat(EFFECT_MIME) || has_loadable_urls(de->mimeData())) {
                     de->acceptProposedAction(); // files: the strip is the drop
                     return true; // target Qt found, so accept here
                 }
             }
             break;
         case QEvent::DragMove:
-            if (obj == m_strip) {
+            if (obj == strip) {
                 auto* de = static_cast<QDragMoveEvent*>(ev);
-                if (de->mimeData()->hasFormat(K_EFFECT_MIME)) {
+                if (de->mimeData()->hasFormat(EFFECT_MIME)) {
                     de->acceptProposedAction();
                     update_drag_preview(de->position().toPoint());
                     return true;
@@ -1717,14 +1699,14 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* ev) {
             }
             break;
         case QEvent::DragLeave:
-            if (obj == m_strip) {
+            if (obj == strip) {
                 cancel_drag_preview();
             }
             break;
         case QEvent::Drop:
-            if (obj == m_strip) {
+            if (obj == strip) {
                 auto* de = static_cast<QDropEvent*>(ev);
-                if (de->mimeData()->hasFormat(K_EFFECT_MIME)) {
+                if (de->mimeData()->hasFormat(EFFECT_MIME)) {
                     de->acceptProposedAction();
                     commit_drag_preview();
                     return true;
@@ -1748,35 +1730,35 @@ void MainWindow::setup_audio() {
 
     bool started = false;
     if (!saved_in.isEmpty() || !saved_out.isEmpty()) {
-        started = m_engine->start_with_devices(saved_in.toStdString(), saved_out.toStdString());
+        started = engine->start_with_devices(saved_in.toStdString(), saved_out.toStdString());
     }
     if (!started) {
-        started = m_engine->start("NAMPlayer");
+        started = engine->start("NAMPlayer");
     }
 
-    m_audio_ok = started;
+    audio_ok = started;
     if (started) {
-        m_audio_bar->refresh();
-        if (m_engine->supports_port_routing()) {
+        audio_bar->refresh();
+        if (engine->supports_port_routing()) {
             restore_connections();
         }
     } else {
-        m_audio_bar->set_error("Not connected");
+        audio_bar->set_error("Not connected");
     }
 }
 
 void MainWindow::restart_audio_with_current_devices() {
-    const QString in_id = m_audio_bar->input_device_id();
-    const QString out_id = m_audio_bar->output_device_id();
+    const QString in_id = audio_bar->input_device_id();
+    const QString out_id = audio_bar->output_device_id();
 
-    m_audio_ok = m_engine->start_with_devices(in_id.toStdString(), out_id.toStdString());
-    if (m_audio_ok) {
-        m_audio_bar->refresh();
-        if (m_engine->supports_port_routing()) {
+    audio_ok = engine->start_with_devices(in_id.toStdString(), out_id.toStdString());
+    if (audio_ok) {
+        audio_bar->refresh();
+        if (engine->supports_port_routing()) {
             restore_connections();
         }
     } else {
-        m_audio_bar->set_error("Not connected");
+        audio_bar->set_error("Not connected");
     }
 }
 
@@ -1794,9 +1776,9 @@ void MainWindow::on_import_nam() {
 }
 
 void MainWindow::on_unload_nam() {
-    m_engine->unload_model();
+    engine->unload_model();
     QSettings().remove("files/lastNAM");
-    m_library->set_loaded_path(LibraryEntry::Kind::MODEL, {});
+    library->set_loaded_path(LibraryEntry::Kind::MODEL, {});
     update_hero_cards();
 }
 
@@ -1810,9 +1792,9 @@ void MainWindow::on_import_ir() {
 }
 
 void MainWindow::on_unload_ir() {
-    m_engine->unload_ir();
+    engine->unload_ir();
     QSettings().remove("files/lastIR");
-    m_library->set_loaded_path(LibraryEntry::Kind::IR, {});
+    library->set_loaded_path(LibraryEntry::Kind::IR, {});
     update_hero_cards();
 }
 
@@ -1824,56 +1806,56 @@ bool MainWindow::load_model_file(const QString& path, bool quiet) {
     const QString clean = QDir::cleanPath(path);
     // Same file again (preset reload, arrow wrap-around on a one-item list):
     // skip the synchronous rebuild + prewarm and the audible state swap.
-    if (!(m_engine->is_model_loaded() && QString::fromStdString(m_engine->model_path()) == clean)) {
-        if (!m_engine->load_model(clean.toStdString())) {
+    if (!(engine->is_model_loaded() && QString::fromStdString(engine->model_path()) == clean)) {
+        if (!engine->load_model(clean.toStdString())) {
             if (!quiet) {
                 QMessageBox::critical(this, "Model",
                                       "Failed to load NAM model:\n" + clean + "\n\n" +
-                                          QString::fromStdString(m_engine->model_load_error()));
+                                          QString::fromStdString(engine->model_load_error()));
             }
             return false;
         }
     }
     QSettings().setValue("files/lastNAM", clean);
-    m_library->note_used(clean);
-    m_library->set_loaded_path(LibraryEntry::Kind::MODEL, clean);
+    library->note_used(clean);
+    library->set_loaded_path(LibraryEntry::Kind::MODEL, clean);
     update_hero_cards();
     return true;
 }
 
 bool MainWindow::load_ir_file(const QString& path, bool quiet) {
     const QString clean = QDir::cleanPath(path);
-    if (!(m_engine->is_ir_loaded() && QString::fromStdString(m_engine->ir_path()) == clean)) {
-        if (!m_engine->load_ir(clean.toStdString())) {
+    if (!(engine->is_ir_loaded() && QString::fromStdString(engine->ir_path()) == clean)) {
+        if (!engine->load_ir(clean.toStdString())) {
             if (!quiet) {
                 QMessageBox::critical(this, "Impulse Response",
                                       "Failed to load IR:\n" + clean + "\n\n" +
-                                          QString::fromStdString(m_engine->ir_load_error()));
+                                          QString::fromStdString(engine->ir_load_error()));
             }
             return false;
         }
     }
     QSettings().setValue("files/lastIR", clean);
-    m_library->note_used(clean);
-    m_library->set_loaded_path(LibraryEntry::Kind::IR, clean);
+    library->note_used(clean);
+    library->set_loaded_path(LibraryEntry::Kind::IR, clean);
     update_hero_cards();
     return true;
 }
 
 bool MainWindow::load_irb_file(const QString& path, bool quiet) {
     const QString clean = QDir::cleanPath(path);
-    if (!(m_engine->is_irb_loaded() && QString::fromStdString(m_engine->ir_path_b()) == clean)) {
-        if (!m_engine->load_irb(clean.toStdString())) {
+    if (!(engine->is_irb_loaded() && QString::fromStdString(engine->ir_path_b()) == clean)) {
+        if (!engine->load_irb(clean.toStdString())) {
             if (!quiet) {
                 QMessageBox::critical(this, "Impulse Response",
                                       "Failed to load IR (slot B):\n" + clean + "\n\n" +
-                                          QString::fromStdString(m_engine->ir_b_load_error()));
+                                          QString::fromStdString(engine->ir_b_load_error()));
             }
             return false;
         }
     }
     QSettings().setValue("files/lastIRB", clean);
-    m_library->note_used(clean);
+    library->note_used(clean);
     update_hero_cards();
     return true;
 }
@@ -1894,9 +1876,9 @@ void MainWindow::load_library_entry(LibraryEntry::Kind kind, const QString& path
 
 void MainWindow::step_library(LibraryEntry::Kind kind, int step) {
     const QString current = kind == LibraryEntry::Kind::MODEL
-                                ? QString::fromStdString(m_engine->model_path())
-                                : QString::fromStdString(m_engine->ir_path());
-    const QString next = m_library->neighbour(kind, current, step);
+                                ? QString::fromStdString(engine->model_path())
+                                : QString::fromStdString(engine->ir_path());
+    const QString next = library->neighbour(kind, current, step);
     if (!next.isEmpty() && next != QDir::cleanPath(current)) {
         load_library_entry(kind, next);
     }
@@ -1984,11 +1966,11 @@ void MainWindow::knob_param(const QString& group, const QString& key, KnobWidget
         apply(v);
         schedule_session_save();
     });
-    m_params.push_back({group, key, knob, nullptr, knob->default_value(), false});
+    params.push_back({group, key, knob, nullptr, knob->get_default_value(), false});
     const QString card = target_label_for(knob, group, key);
-    m_midi_mapper->add_knob("param:" + (group.isEmpty() ? key : group + "/" + key), card,
-                            key == "syncNote" ? knob->get_label() + " (note)" : knob->get_label(),
-                            knob);
+    midi_mapper->add_knob("param:" + (group.isEmpty() ? key : group + "/" + key), card,
+                          key == "syncNote" ? knob->get_label() + " (note)" : knob->get_label(),
+                          knob);
 }
 
 void MainWindow::toggle_param(const QString& group, const QString& key, ToggleSwitch* sw,
@@ -1997,10 +1979,10 @@ void MainWindow::toggle_param(const QString& group, const QString& key, ToggleSw
         apply(b);
         schedule_session_save();
     });
-    m_params.push_back({group, key, nullptr, sw, 0.0, sw->isChecked()});
+    params.push_back({group, key, nullptr, sw, 0.0, sw->isChecked()});
     const QString label = key == "stereo" ? "Stereo" : key == "sync" ? "Sync" : "On / Off";
-    m_midi_mapper->add_toggle("param:" + (group.isEmpty() ? key : group + "/" + key),
-                              target_label_for(sw, group, key), label, sw);
+    midi_mapper->add_toggle("param:" + (group.isEmpty() ? key : group + "/" + key),
+                            target_label_for(sw, group, key), label, sw);
 }
 
 // ---------------------------------------------------------------------------
@@ -2017,33 +1999,33 @@ QString MainWindow::target_label_for(QWidget* w, const QString& group, const QSt
     return group.isEmpty() ? key : group;
 }
 
-void MainWindow::setup_midi(QMenu* menu) {
+void MainWindow::setup_midi(QMenu* top_menu) {
     // ---- Actions ----
-    for (int i = 0; i < PresetBar::K_SLOT_COUNT; ++i) {
-        m_midi_mapper->add_action(QString("action:slot%1").arg(i + 1), "Presets",
-                                  QString("Slot %1").arg(i + 1), [this, i] {
-                                      m_preset_bar->recall_slot(i);
-                                  });
+    for (int i = 0; i < PresetBar::SLOT_COUNT; ++i) {
+        midi_mapper->add_action(QString("action:slot%1").arg(i + 1), "Presets",
+                                QString("Slot %1").arg(i + 1), [this, i] {
+                                    preset_bar->recall_slot(i);
+                                });
     }
-    m_midi_mapper->add_action("action:presetNext", "Presets", "Next preset", [this] {
+    midi_mapper->add_action("action:presetNext", "Presets", "Next preset", [this] {
         step_preset(+1);
     });
-    m_midi_mapper->add_action("action:presetPrev", "Presets", "Previous preset", [this] {
+    midi_mapper->add_action("action:presetPrev", "Presets", "Previous preset", [this] {
         step_preset(-1);
     });
-    m_midi_mapper->add_action("action:abToggle", "Presets", "Switch A / B", [this] {
-        switch_ab(1 - m_ab_active);
+    midi_mapper->add_action("action:abToggle", "Presets", "Switch A / B", [this] {
+        switch_ab(1 - ab_active);
     });
-    m_midi_mapper->add_action("action:metronome", "Metronome", "Start / stop", [this] {
-        m_tempo_bar->toggle_play();
+    midi_mapper->add_action("action:metronome", "Metronome", "Start / stop", [this] {
+        tempo_bar->toggle_play();
     });
-    m_midi_mapper->add_action("action:tap", "Tempo", "Tap", [this] {
-        m_tempo_bar->tap_tempo();
+    midi_mapper->add_action("action:tap", "Tempo", "Tap", [this] {
+        tempo_bar->tap_tempo();
     });
 
     // ---- Learn entries in every context menu ----
     KnobWidget::set_menu_hook([this](KnobWidget* k, QMenu* menu) {
-        if (const MidiTarget* t = m_midi_mapper->target_for(k)) {
+        if (const MidiTarget* t = midi_mapper->target_for(k)) {
             menu->addSeparator();
             add_learn_entries(t->id, menu);
         }
@@ -2051,95 +2033,93 @@ void MainWindow::setup_midi(QMenu* menu) {
     auto hook = [this](const QString& id, QMenu* menu) {
         add_learn_entries(id, menu);
     };
-    m_preset_bar->set_learn_menu_hook(hook);
-    m_tempo_bar->set_learn_menu_hook(hook);
+    preset_bar->set_learn_menu_hook(hook);
+    tempo_bar->set_learn_menu_hook(hook);
 
-    m_learn_esc = new QShortcut(QKeySequence(Qt::Key_Escape), this);
-    m_learn_esc->setEnabled(false);
-    connect(m_learn_esc, &QShortcut::activated, m_midi_mapper, &MidiMapper::cancel_learn);
-    connect(m_midi_mapper, &MidiMapper::learn_changed, this, &MainWindow::on_learn_changed);
+    learn_esc = new QShortcut(QKeySequence(Qt::Key_Escape), this);
+    learn_esc->setEnabled(false);
+    connect(learn_esc, &QShortcut::activated, midi_mapper, &MidiMapper::cancel_learn);
+    connect(midi_mapper, &MidiMapper::learn_changed, this, &MainWindow::on_learn_changed);
 
     // ---- Input ----
-    m_midi = MidiInput::create(this);
-    connect(m_midi.get(), &MidiInput::message_received, m_midi_mapper, &MidiMapper::handle);
-    m_midi_ok = m_midi->start();
-    connect(m_midi_mapper, &MidiMapper::tempo_from_clock, m_tempo_bar, &TempoBar::set_bpm);
+    midi = MidiInput::create(this);
+    connect(midi.get(), &MidiInput::message_received, midi_mapper, &MidiMapper::handle);
+    midi_ok = midi->start();
+    connect(midi_mapper, &MidiMapper::tempo_from_clock, tempo_bar, &TempoBar::set_bpm);
 
     // Status bar: a light that blinks on incoming MIDI.
-    m_lbl_midi = new QLabel;
-    m_lbl_midi->setObjectName("statusItem");
-    m_lbl_midi->setTextFormat(Qt::RichText);
-    statusBar()->addWidget(m_lbl_midi);
-    m_midi_blink = new QTimer(this);
-    m_midi_blink->setSingleShot(true);
-    m_midi_blink->setInterval(120);
+    lbl_midi = new QLabel;
+    lbl_midi->setObjectName("statusItem");
+    lbl_midi->setTextFormat(Qt::RichText);
+    statusBar()->addWidget(lbl_midi);
+    midi_blink = new QTimer(this);
+    midi_blink->setSingleShot(true);
+    midi_blink->setInterval(120);
     auto show_light = [this](bool lit) {
-        const QColor c = !m_midi_ok ? Theme::track()
-                         : lit      ? Theme::meter_mid()
-                                    : Theme::meter_low();
-        m_lbl_midi->setText(QString("<span style=\"color:%1\">●</span> MIDI").arg(c.name()));
+        const QColor c = !midi_ok ? Theme::track() : lit ? Theme::meter_mid() : Theme::meter_low();
+        lbl_midi->setText(QString("<span style=\"color:%1\">●</span> MIDI").arg(c.name()));
     };
-    connect(m_midi_blink, &QTimer::timeout, this, [show_light] {
+    connect(midi_blink, &QTimer::timeout, this, [show_light] {
         show_light(false);
     });
-    connect(m_midi_mapper, &MidiMapper::activity, this, [this, show_light](const QString& what) {
+    connect(midi_mapper, &MidiMapper::activity, this, [this, show_light](const QString& what) {
         show_light(true);
-        m_midi_blink->start();
-        m_lbl_midi->setToolTip("Last MIDI message: " + what);
+        midi_blink->start();
+        lbl_midi->setToolTip("Last MIDI message: " + what);
     });
     show_light(false);
-    m_lbl_midi->setToolTip(
-        m_midi_ok ? QString("MIDI input (%1) — MIDI → Mappings…").arg(m_midi->backend_name())
-                  : QString("MIDI is not available on this system"));
+    lbl_midi->setToolTip(
+        midi_ok ? QString("MIDI input (%1) — MIDI → Mappings…").arg(midi->backend_name())
+                : QString("MIDI is not available on this system"));
 
     // ---- Menu ----
-    connect(menu->addAction("Mappings…"), &QAction::triggered, this, [this] {
-        MidiMappingsDialog dlg(*m_midi_mapper, m_midi_ok ? m_midi.get() : nullptr, this);
+    connect(top_menu->addAction("Mappings…"), &QAction::triggered, this, [this] {
+        MidiMappingsDialog dlg(*midi_mapper, midi_ok ? midi.get() : nullptr, this);
         dlg.exec();
     });
-    QMenu* devices = menu->addMenu("Devices");
+    QMenu* devices = top_menu->addMenu("Devices");
     connect(devices, &QMenu::aboutToShow, this, [this, devices] {
         devices->clear();
-        const QStringList list = m_midi_ok ? m_midi->devices() : QStringList();
+        const QStringList list = midi_ok ? midi->devices() : QStringList();
         if (list.isEmpty()) {
-            devices->addAction(m_midi_ok ? "No MIDI devices found" : "MIDI not available")
+            devices->addAction(midi_ok ? "No MIDI devices found" : "MIDI not available")
                 ->setEnabled(false);
         }
         for (const QString& d : list) {
             QAction* a = devices->addAction(d);
             a->setCheckable(true);
-            a->setChecked(m_midi->is_enabled(d));
+            a->setChecked(midi->is_enabled(d));
             connect(a, &QAction::toggled, this, [this, d](bool on) {
-                m_midi->set_enabled(d, on);
+                midi->set_enabled(d, on);
             });
         }
     });
-    QAction* clock = menu->addAction("Follow MIDI Clock");
+    QAction* clock = top_menu->addAction("Follow MIDI Clock");
     clock->setCheckable(true);
-    connect(menu, &QMenu::aboutToShow, clock, [this, clock] {
-        clock->setChecked(m_midi_mapper->get_follow_clock());
+    connect(top_menu, &QMenu::aboutToShow, clock, [this, clock] {
+        clock->setChecked(midi_mapper->get_follow_clock());
     });
-    connect(clock, &QAction::toggled, m_midi_mapper, &MidiMapper::set_follow_clock);
+    connect(clock, &QAction::toggled, midi_mapper, &MidiMapper::set_follow_clock);
 }
 
 void MainWindow::add_learn_entries(const QString& target_id, QMenu* menu) {
-    const MidiTarget* t = m_midi_mapper->target(target_id);
+    const MidiTarget* t = midi_mapper->target(target_id);
     if (!t) {
         return;
     }
     connect(menu->addAction("MIDI Learn"), &QAction::triggered, this, [this, target_id] {
         start_learn(target_id);
     });
-    if (m_midi_mapper->has_mapping(target_id)) {
-        connect(menu->addAction("Forget MIDI (" + m_midi_mapper->mapping_summary(target_id) + ")"),
+    if (midi_mapper->has_mapping(target_id)) {
+        connect(menu->addAction("Forget MIDI (" + midi_mapper->mapping_summary(target_id) + ")"),
                 &QAction::triggered, this, [this, target_id] {
-                    m_midi_mapper->forget(target_id);
+                    midi_mapper->forget(target_id);
                 });
     }
 }
 
 QWidget* MainWindow::widget_for_target(const QString& target_id) const {
-    if (const MidiTarget* t = m_midi_mapper->target(target_id)) {
+    if (const MidiTarget* t = midi_mapper->target(target_id)) {
         if (t->knob) {
             return t->knob;
         }
@@ -2147,43 +2127,43 @@ QWidget* MainWindow::widget_for_target(const QString& target_id) const {
             return t->toggle;
         }
     }
-    if (QWidget* w = m_preset_bar->action_widget(target_id)) {
+    if (QWidget* w = preset_bar->action_widget(target_id)) {
         return w;
     }
-    return m_tempo_bar->action_widget(target_id);
+    return tempo_bar->action_widget(target_id);
 }
 
 void MainWindow::start_learn(const QString& target_id) {
-    if (!m_midi_ok) {
+    if (!midi_ok) {
         QMessageBox::information(this, "MIDI Learn", "MIDI input is not available on this system.");
         return;
     }
-    m_midi_mapper->learn(target_id);
+    midi_mapper->learn(target_id);
 }
 
 void MainWindow::on_learn_changed() {
     // Drop the previous highlight.
-    if (m_learn_widget) {
-        m_learn_widget->setGraphicsEffect(nullptr);
-        m_learn_widget = nullptr;
+    if (learn_widget) {
+        learn_widget->setGraphicsEffect(nullptr);
+        learn_widget = nullptr;
     }
-    const QString target = m_midi_mapper->learning();
-    m_learn_esc->setEnabled(!target.isEmpty());
+    const QString target = midi_mapper->learning();
+    learn_esc->setEnabled(!target.isEmpty());
     if (target.isEmpty()) {
-        if (!m_learn_target.isEmpty()) {
-            const MidiTarget* t = m_midi_mapper->target(m_learn_target);
-            const QString summary = m_midi_mapper->mapping_summary(m_learn_target);
+        if (!learn_target.isEmpty()) {
+            const MidiTarget* t = midi_mapper->target(learn_target);
+            const QString summary = midi_mapper->mapping_summary(learn_target);
             statusBar()->showMessage(
                 summary.isEmpty() || !t
                     ? QString("MIDI Learn cancelled")
                     : QString("MIDI: %1 → %2 · %3").arg(summary, t->group, t->label),
                 4000);
         }
-        m_learn_target.clear();
+        learn_target.clear();
         return;
     }
-    m_learn_target = target;
-    const MidiTarget* t = m_midi_mapper->target(target);
+    learn_target = target;
+    const MidiTarget* t = midi_mapper->target(target);
     statusBar()->showMessage(
         QString("MIDI Learn: move a control on your MIDI device for %1 · %2 — Esc cancels")
             .arg(t ? t->group : QString(), t ? t->label : target));
@@ -2193,7 +2173,7 @@ void MainWindow::on_learn_changed() {
         glow->setBlurRadius(22);
         glow->setOffset(0, 0);
         w->setGraphicsEffect(glow);
-        m_learn_widget = w;
+        learn_widget = w;
     }
 }
 
@@ -2208,7 +2188,7 @@ void MainWindow::add_tempo_sync(QWidget* card, KnobWidget* free_knob, const QStr
 
     // Note knob in the free knob's place, shown while synced.
     auto* note =
-        new KnobWidget(label, 0, static_cast<double>(TempoSync::K_NOTES.size() - 1), default_note);
+        new KnobWidget(label, 0, static_cast<double>(TempoSync::NOTES.size() - 1), default_note);
     note->set_snap(1.0);
     note->set_value_formatter([](double v) {
         return TempoSync::label(v);
@@ -2239,11 +2219,11 @@ void MainWindow::add_tempo_sync(QWidget* card, KnobWidget* free_knob, const QStr
         free_knob->setVisible(!on);
         note->setVisible(on);
     });
-    m_synced.push_back({free_knob, note, sw, is_time, min, max, std::move(push)});
+    synced.push_back({free_knob, note, sw, is_time, min, max, std::move(push)});
 }
 
 MainWindow::SyncedParam& MainWindow::sync_of(KnobWidget* free_knob) {
-    for (auto& s : m_synced) {
+    for (auto& s : synced) {
         if (s.free_knob == free_knob) {
             return s;
         }
@@ -2258,13 +2238,13 @@ void MainWindow::push_synced(KnobWidget* free_knob) {
         return;
     }
     const double idx = s.note_knob->value();
-    const double v = s.is_time ? TempoSync::note_ms(m_bpm, idx) : TempoSync::note_hz(m_bpm, idx);
+    const double v = s.is_time ? TempoSync::note_ms(bpm, idx) : TempoSync::note_hz(bpm, idx);
     s.push(std::clamp(v, s.min, s.max));
 }
 
 void MainWindow::set_tempo(double new_bpm) {
-    m_bpm = new_bpm;
-    for (auto& s : m_synced) {
+    bpm = new_bpm;
+    for (auto& s : synced) {
         if (s.sync->isChecked()) {
             push_synced(s.free_knob);
         }
@@ -2276,41 +2256,41 @@ void MainWindow::set_tempo(double new_bpm) {
 // ---------------------------------------------------------------------------
 
 void MainWindow::schedule_session_save() {
-    if (m_session_save_timer) {
-        m_session_save_timer->start();
+    if (session_save_timer) {
+        session_save_timer->start();
     }
-    if (m_preset_state_timer) {
-        m_preset_state_timer->start();
+    if (preset_state_timer) {
+        preset_state_timer->start();
     }
 }
 
 void MainWindow::save_session_state() {
     QSettings s;
     s.beginGroup("session");
-    for (const auto& p : m_params) {
+    for (const auto& p : params) {
         const QString path = p.group.isEmpty() ? p.key : p.group + "/" + p.key;
         s.setValue(path, p.knob ? QVariant(p.knob->value()) : QVariant(p.toggle->isChecked()));
     }
     QStringList order;
-    for (const auto& id : m_engine->chain_ids()) {
+    for (const auto& id : engine->chain_ids()) {
         order << QString::fromStdString(id);
     }
     s.setValue("effectOrder", order);
     // The current preset and the state it was loaded with, so the name and
     // its `*` come back exactly after a restart.
-    s.setValue("presetPath", m_preset_path);
+    s.setValue("presetPath", preset_path);
     s.setValue(
         "presetBaseline",
-        m_preset_path.isEmpty()
+        preset_path.isEmpty()
             ? QString()
-            : QString::fromUtf8(QJsonDocument(m_preset_baseline).toJson(QJsonDocument::Compact)));
+            : QString::fromUtf8(QJsonDocument(preset_baseline).toJson(QJsonDocument::Compact)));
     s.endGroup();
 }
 
 void MainWindow::restore_session_state() {
     QSettings s;
     s.beginGroup("session");
-    for (const auto& p : m_params) {
+    for (const auto& p : params) {
         const QString path = p.group.isEmpty() ? p.key : p.group + "/" + p.key;
         if (!s.contains(path)) {
             continue; // first run: widgets keep their defaults
@@ -2333,7 +2313,7 @@ void MainWindow::restore_session_state() {
 // Group/key names are the v1 preset schema; an empty group means the key sits
 // at the JSON root.
 void MainWindow::register_parameters() {
-    auto* e = m_engine.get();
+    auto* e = engine.get();
     // Time-based knobs: every change of free value, sync toggle or note value
     // re-pushes the effective value (see pushSynced).
     auto synced_handler = [this](KnobWidget* k) {
@@ -2342,236 +2322,234 @@ void MainWindow::register_parameters() {
         };
     };
 
-    knob_param("", "inputGain", m_knob_input_gain, [e](double v) {
+    knob_param("", "inputGain", knob_input_gain, [e](double v) {
         e->set_input_gain(static_cast<float>(v));
     });
-    knob_param("", "outputGain", m_knob_output_gain, [e](double v) {
+    knob_param("", "outputGain", knob_output_gain, [e](double v) {
         e->set_output_gain(static_cast<float>(v));
     });
 
-    toggle_param("tuner", "enabled", m_sw_tuner_enable, [e](bool b) {
+    toggle_param("tuner", "enabled", sw_tuner_enable, [e](bool b) {
         e->get_tuner().set_enabled(b);
     });
-    m_params.back().in_preset = false; // a practice tool, not part of the sound
+    params.back().in_preset = false; // a practice tool, not part of the sound
 
-    toggle_param("transpose", "enabled", m_sw_transpose_enable, [e](bool b) {
+    toggle_param("transpose", "enabled", sw_transpose_enable, [e](bool b) {
         e->get_transpose().set_enabled(b);
     });
 
-    toggle_param("noiseGate", "enabled", m_sw_gate_enable, [e](bool b) {
+    toggle_param("noiseGate", "enabled", sw_gate_enable, [e](bool b) {
         e->get_gate().set_enabled(b);
     });
-    knob_param("noiseGate", "threshold", m_knob_gate_thresh, [e](double v) {
+    knob_param("noiseGate", "threshold", knob_gate_thresh, [e](double v) {
         e->get_gate().set_threshold(static_cast<float>(v));
     });
-    knob_param("noiseGate", "attack", m_knob_gate_attack, [e](double v) {
+    knob_param("noiseGate", "attack", knob_gate_attack, [e](double v) {
         e->get_gate().set_attack(static_cast<float>(v));
     });
-    knob_param("noiseGate", "release", m_knob_gate_release, [e](double v) {
+    knob_param("noiseGate", "release", knob_gate_release, [e](double v) {
         e->get_gate().set_release(static_cast<float>(v));
     });
 
-    toggle_param("compressor", "enabled", m_sw_comp_enable, [e](bool b) {
+    toggle_param("compressor", "enabled", sw_comp_enable, [e](bool b) {
         e->get_comp().set_enabled(b);
     });
-    knob_param("compressor", "threshold", m_knob_comp_thresh, [e](double v) {
+    knob_param("compressor", "threshold", knob_comp_thresh, [e](double v) {
         e->get_comp().set_threshold(static_cast<float>(v));
     });
-    knob_param("compressor", "ratio", m_knob_comp_ratio, [e](double v) {
+    knob_param("compressor", "ratio", knob_comp_ratio, [e](double v) {
         e->get_comp().set_ratio(static_cast<float>(v));
     });
-    knob_param("compressor", "attack", m_knob_comp_attack, [e](double v) {
+    knob_param("compressor", "attack", knob_comp_attack, [e](double v) {
         e->get_comp().set_attack(static_cast<float>(v));
     });
-    knob_param("compressor", "release", m_knob_comp_release, [e](double v) {
+    knob_param("compressor", "release", knob_comp_release, [e](double v) {
         e->get_comp().set_release(static_cast<float>(v));
     });
-    knob_param("compressor", "makeup", m_knob_comp_makeup, [e](double v) {
+    knob_param("compressor", "makeup", knob_comp_makeup, [e](double v) {
         e->get_comp().set_makeup(static_cast<float>(v));
     });
 
-    toggle_param("dynamicWah", "enabled", m_sw_wah_enable, [e](bool b) {
+    toggle_param("dynamicWah", "enabled", sw_wah_enable, [e](bool b) {
         e->get_wah().set_enabled(b);
     });
-    knob_param("dynamicWah", "sensitivity", m_knob_wah_sens, [e](double v) {
+    knob_param("dynamicWah", "sensitivity", knob_wah_sens, [e](double v) {
         e->get_wah().set_sensitivity_pct(static_cast<float>(v));
     });
-    knob_param("dynamicWah", "resonance", m_knob_wah_res, [e](double v) {
+    knob_param("dynamicWah", "resonance", knob_wah_res, [e](double v) {
         e->get_wah().set_resonance_pct(static_cast<float>(v));
     });
-    knob_param("dynamicWah", "mix", m_knob_wah_mix, [e](double v) {
+    knob_param("dynamicWah", "mix", knob_wah_mix, [e](double v) {
         e->get_wah().set_mix_pct(static_cast<float>(v));
     });
 
-    toggle_param("flanger", "enabled", m_sw_flanger_enable, [e](bool b) {
+    toggle_param("flanger", "enabled", sw_flanger_enable, [e](bool b) {
         e->get_flanger().set_enabled(b);
     });
-    toggle_param("flanger", "stereo", m_sw_flanger_stereo, [e](bool b) {
+    toggle_param("flanger", "stereo", sw_flanger_stereo, [e](bool b) {
         e->get_flanger().set_stereo_mode(b);
     });
-    knob_param("flanger", "rate", m_knob_fl_rate, synced_handler(m_knob_fl_rate));
-    toggle_param("flanger", "sync", sync_of(m_knob_fl_rate).sync, synced_handler(m_knob_fl_rate));
-    knob_param("flanger", "syncNote", sync_of(m_knob_fl_rate).note_knob,
-               synced_handler(m_knob_fl_rate));
-    knob_param("flanger", "depth", m_knob_fl_depth, [e](double v) {
+    knob_param("flanger", "rate", knob_fl_rate, synced_handler(knob_fl_rate));
+    toggle_param("flanger", "sync", sync_of(knob_fl_rate).sync, synced_handler(knob_fl_rate));
+    knob_param("flanger", "syncNote", sync_of(knob_fl_rate).note_knob,
+               synced_handler(knob_fl_rate));
+    knob_param("flanger", "depth", knob_fl_depth, [e](double v) {
         e->get_flanger().set_depth_pct(static_cast<float>(v));
     });
-    knob_param("flanger", "feedback", m_knob_fl_feedback, [e](double v) {
+    knob_param("flanger", "feedback", knob_fl_feedback, [e](double v) {
         e->get_flanger().set_feedback_pct(static_cast<float>(v));
     });
-    knob_param("flanger", "mix", m_knob_fl_mix, [e](double v) {
+    knob_param("flanger", "mix", knob_fl_mix, [e](double v) {
         e->get_flanger().set_mix_pct(static_cast<float>(v));
     });
 
-    toggle_param("phaser", "enabled", m_sw_phaser_enable, [e](bool b) {
+    toggle_param("phaser", "enabled", sw_phaser_enable, [e](bool b) {
         e->get_phaser().set_enabled(b);
     });
-    toggle_param("phaser", "stereo", m_sw_phaser_stereo, [e](bool b) {
+    toggle_param("phaser", "stereo", sw_phaser_stereo, [e](bool b) {
         e->get_phaser().set_stereo_mode(b);
     });
-    knob_param("phaser", "rate", m_knob_ph_rate, synced_handler(m_knob_ph_rate));
-    toggle_param("phaser", "sync", sync_of(m_knob_ph_rate).sync, synced_handler(m_knob_ph_rate));
-    knob_param("phaser", "syncNote", sync_of(m_knob_ph_rate).note_knob,
-               synced_handler(m_knob_ph_rate));
-    knob_param("phaser", "depth", m_knob_ph_depth, [e](double v) {
+    knob_param("phaser", "rate", knob_ph_rate, synced_handler(knob_ph_rate));
+    toggle_param("phaser", "sync", sync_of(knob_ph_rate).sync, synced_handler(knob_ph_rate));
+    knob_param("phaser", "syncNote", sync_of(knob_ph_rate).note_knob, synced_handler(knob_ph_rate));
+    knob_param("phaser", "depth", knob_ph_depth, [e](double v) {
         e->get_phaser().set_depth_pct(static_cast<float>(v));
     });
-    knob_param("phaser", "feedback", m_knob_ph_feedback, [e](double v) {
+    knob_param("phaser", "feedback", knob_ph_feedback, [e](double v) {
         e->get_phaser().set_feedback_pct(static_cast<float>(v));
     });
-    knob_param("phaser", "mix", m_knob_ph_mix, [e](double v) {
+    knob_param("phaser", "mix", knob_ph_mix, [e](double v) {
         e->get_phaser().set_mix_pct(static_cast<float>(v));
     });
 
-    toggle_param("drive", "enabled", m_sw_drive_enable, [e](bool b) {
+    toggle_param("drive", "enabled", sw_drive_enable, [e](bool b) {
         e->get_drive().set_enabled(b);
     });
-    knob_param("drive", "drive", m_knob_drive, [e](double v) {
+    knob_param("drive", "drive", knob_drive, [e](double v) {
         e->get_drive().set_drive_pct(static_cast<float>(v));
     });
-    knob_param("drive", "tone", m_knob_drive_tone, [e](double v) {
+    knob_param("drive", "tone", knob_drive_tone, [e](double v) {
         e->get_drive().set_tone_pct(static_cast<float>(v));
     });
-    knob_param("drive", "level", m_knob_drive_level, [e](double v) {
+    knob_param("drive", "level", knob_drive_level, [e](double v) {
         e->get_drive().set_level(static_cast<float>(v));
     });
 
-    toggle_param("", "namEnabled", m_sw_nam_enable, [e](bool b) {
+    toggle_param("", "namEnabled", sw_nam_enable, [e](bool b) {
         e->get_nam().set_enabled(b);
     });
-    toggle_param("", "namStereo", m_sw_nam_stereo, [e](bool b) {
+    toggle_param("", "namStereo", sw_nam_stereo, [e](bool b) {
         e->get_nam().set_stereo_amp(b);
     });
 
-    toggle_param("eq", "enabled", m_sw_eq_enable, [e](bool b) {
+    toggle_param("eq", "enabled", sw_eq_enable, [e](bool b) {
         e->get_eq().set_enabled(b);
     });
-    knob_param("eq", "low", m_knob_low, [e](double v) {
+    knob_param("eq", "low", knob_low, [e](double v) {
         e->get_eq().set_low_gain(v);
     });
-    knob_param("eq", "mid", m_knob_mid, [e](double v) {
+    knob_param("eq", "mid", knob_mid, [e](double v) {
         e->get_eq().set_mid_gain(v);
     });
-    knob_param("eq", "treble", m_knob_treble, [e](double v) {
+    knob_param("eq", "treble", knob_treble, [e](double v) {
         e->get_eq().set_treble_gain(v);
     });
 
-    toggle_param("doubler", "enabled", m_sw_doubler_enable, [e](bool b) {
+    toggle_param("doubler", "enabled", sw_doubler_enable, [e](bool b) {
         e->get_doubler().set_enabled(b);
     });
-    knob_param("doubler", "spread", m_knob_dbl_spread, [e](double v) {
+    knob_param("doubler", "spread", knob_dbl_spread, [e](double v) {
         e->get_doubler().set_spread(static_cast<float>(v));
     });
-    knob_param("doubler", "mix", m_knob_dbl_mix, [e](double v) {
+    knob_param("doubler", "mix", knob_dbl_mix, [e](double v) {
         e->get_doubler().set_mix_pct(static_cast<float>(v));
     });
 
-    toggle_param("chorus", "enabled", m_sw_chorus_enable, [e](bool b) {
+    toggle_param("chorus", "enabled", sw_chorus_enable, [e](bool b) {
         e->get_chorus().set_enabled(b);
     });
-    toggle_param("chorus", "stereo", m_sw_chorus_stereo, [e](bool b) {
+    toggle_param("chorus", "stereo", sw_chorus_stereo, [e](bool b) {
         e->get_chorus().set_stereo_mode(b);
     });
-    knob_param("chorus", "rate", m_knob_ch_rate, synced_handler(m_knob_ch_rate));
-    toggle_param("chorus", "sync", sync_of(m_knob_ch_rate).sync, synced_handler(m_knob_ch_rate));
-    knob_param("chorus", "syncNote", sync_of(m_knob_ch_rate).note_knob,
-               synced_handler(m_knob_ch_rate));
-    knob_param("chorus", "depth", m_knob_ch_depth, [e](double v) {
+    knob_param("chorus", "rate", knob_ch_rate, synced_handler(knob_ch_rate));
+    toggle_param("chorus", "sync", sync_of(knob_ch_rate).sync, synced_handler(knob_ch_rate));
+    knob_param("chorus", "syncNote", sync_of(knob_ch_rate).note_knob, synced_handler(knob_ch_rate));
+    knob_param("chorus", "depth", knob_ch_depth, [e](double v) {
         e->get_chorus().set_depth_pct(static_cast<float>(v));
     });
-    knob_param("chorus", "mix", m_knob_ch_mix, [e](double v) {
+    knob_param("chorus", "mix", knob_ch_mix, [e](double v) {
         e->get_chorus().set_mix_pct(static_cast<float>(v));
     });
 
-    toggle_param("tremolo", "enabled", m_sw_tremolo_enable, [e](bool b) {
+    toggle_param("tremolo", "enabled", sw_tremolo_enable, [e](bool b) {
         e->get_tremolo().set_enabled(b);
     });
-    toggle_param("tremolo", "stereo", m_sw_tremolo_stereo, [e](bool b) {
+    toggle_param("tremolo", "stereo", sw_tremolo_stereo, [e](bool b) {
         e->get_tremolo().set_stereo_mode(b);
     });
-    knob_param("tremolo", "rate", m_knob_tr_rate, synced_handler(m_knob_tr_rate));
-    toggle_param("tremolo", "sync", sync_of(m_knob_tr_rate).sync, synced_handler(m_knob_tr_rate));
-    knob_param("tremolo", "syncNote", sync_of(m_knob_tr_rate).note_knob,
-               synced_handler(m_knob_tr_rate));
-    knob_param("tremolo", "depth", m_knob_tr_depth, [e](double v) {
+    knob_param("tremolo", "rate", knob_tr_rate, synced_handler(knob_tr_rate));
+    toggle_param("tremolo", "sync", sync_of(knob_tr_rate).sync, synced_handler(knob_tr_rate));
+    knob_param("tremolo", "syncNote", sync_of(knob_tr_rate).note_knob,
+               synced_handler(knob_tr_rate));
+    knob_param("tremolo", "depth", knob_tr_depth, [e](double v) {
         e->get_tremolo().set_depth_pct(static_cast<float>(v));
     });
 
-    toggle_param("delay", "enabled", m_sw_delay_enable, [e](bool b) {
+    toggle_param("delay", "enabled", sw_delay_enable, [e](bool b) {
         e->get_delay().set_enabled(b);
     });
-    toggle_param("delay", "stereo", m_sw_delay_stereo, [e](bool b) {
+    toggle_param("delay", "stereo", sw_delay_stereo, [e](bool b) {
         e->get_delay().set_stereo_mode(b);
     });
-    knob_param("delay", "time", m_knob_del_time, synced_handler(m_knob_del_time));
-    toggle_param("delay", "sync", sync_of(m_knob_del_time).sync, synced_handler(m_knob_del_time));
-    knob_param("delay", "syncNote", sync_of(m_knob_del_time).note_knob,
-               synced_handler(m_knob_del_time));
-    knob_param("delay", "feedback", m_knob_del_feedback, [e](double v) {
+    knob_param("delay", "time", knob_del_time, synced_handler(knob_del_time));
+    toggle_param("delay", "sync", sync_of(knob_del_time).sync, synced_handler(knob_del_time));
+    knob_param("delay", "syncNote", sync_of(knob_del_time).note_knob,
+               synced_handler(knob_del_time));
+    knob_param("delay", "feedback", knob_del_feedback, [e](double v) {
         e->get_delay().set_feedback_pct(static_cast<float>(v));
     });
-    knob_param("delay", "mix", m_knob_del_mix, [e](double v) {
+    knob_param("delay", "mix", knob_del_mix, [e](double v) {
         e->get_delay().set_mix_pct(static_cast<float>(v));
     });
 
-    toggle_param("reverb", "enabled", m_sw_reverb_enable, [e](bool b) {
+    toggle_param("reverb", "enabled", sw_reverb_enable, [e](bool b) {
         e->get_reverb().set_enabled(b);
     });
-    knob_param("reverb", "roomSize", m_knob_rev_room, [e](double v) {
+    knob_param("reverb", "roomSize", knob_rev_room, [e](double v) {
         e->get_reverb().set_room_size_pct(static_cast<float>(v));
     });
-    knob_param("reverb", "damping", m_knob_rev_damping, [e](double v) {
+    knob_param("reverb", "damping", knob_rev_damping, [e](double v) {
         e->get_reverb().set_damping_pct(static_cast<float>(v));
     });
-    knob_param("reverb", "width", m_knob_rev_width, [e](double v) {
+    knob_param("reverb", "width", knob_rev_width, [e](double v) {
         e->get_reverb().set_width_pct(static_cast<float>(v));
     });
-    knob_param("reverb", "mix", m_knob_rev_mix, [e](double v) {
+    knob_param("reverb", "mix", knob_rev_mix, [e](double v) {
         e->get_reverb().set_mix_pct(static_cast<float>(v));
     });
 
-    toggle_param("", "irEnabled", m_sw_ir_enable, [e](bool b) {
+    toggle_param("", "irEnabled", sw_ir_enable, [e](bool b) {
         e->get_ir().set_enabled(b);
     });
 
-    toggle_param("volume", "enabled", m_sw_volume_enable, [e](bool b) {
+    toggle_param("volume", "enabled", sw_volume_enable, [e](bool b) {
         e->get_volume().set_enabled(b);
     });
-    knob_param("volume", "position", m_knob_vol_pos, [e](double v) {
+    knob_param("volume", "position", knob_vol_pos, [e](double v) {
         e->get_volume().set_position_pct(static_cast<float>(v));
     });
-    knob_param("volume", "mid", m_knob_vol_mid, [e](double v) {
+    knob_param("volume", "mid", knob_vol_mid, [e](double v) {
         e->get_volume().set_mid(static_cast<float>(v));
     });
 
-    toggle_param("", "limiter", m_sw_limiter, [e](bool b) {
+    toggle_param("", "limiter", sw_limiter, [e](bool b) {
         e->get_limiter().set_enabled(b);
     });
 
-    for (auto& reg : m_late_params) {
+    for (auto& reg : late_params) {
         reg();
     }
-    m_late_params.clear();
+    late_params.clear();
 }
 
 // ---------------------------------------------------------------------------
@@ -2579,22 +2557,22 @@ void MainWindow::register_parameters() {
 // ---------------------------------------------------------------------------
 
 void MainWindow::update_meters() {
-    m_meter_in->set_peak(m_engine->take_input_peak());
-    m_meter_out->set_peak(m_engine->take_output_peak());
-    m_gr_gate->set_reduction(m_engine->get_gate().take_gain_reduction_db());
-    m_gr_comp->set_reduction(m_engine->get_comp().take_gain_reduction_db());
-    m_tempo_bar->poll();
+    meter_in->set_peak(engine->take_input_peak());
+    meter_out->set_peak(engine->take_output_peak());
+    gr_gate->set_reduction(engine->get_gate().take_gain_reduction_db());
+    gr_comp->set_reduction(engine->get_comp().take_gain_reduction_db());
+    tempo_bar->poll();
 }
 
 void MainWindow::update_meter_timer() {
-    if (!m_meter_timer) {
+    if (!meter_timer) {
         return;
     }
     const bool visible = isVisible() && !isMinimized();
-    if (visible && !m_meter_timer->isActive()) {
-        m_meter_timer->start();
+    if (visible && !meter_timer->isActive()) {
+        meter_timer->start();
     } else if (!visible) {
-        m_meter_timer->stop();
+        meter_timer->stop();
     }
 }
 
@@ -2616,26 +2594,26 @@ void MainWindow::hideEvent(QHideEvent* ev) {
 }
 
 void MainWindow::update_status() {
-    m_audio_bar->update_metrics(); // PipeWire can change the quantum while running
-    if (m_audio_ok && !m_engine->is_running()) {
-        m_audio_ok = false;
-        m_audio_bar->set_error("Disconnected");
+    audio_bar->update_metrics(); // PipeWire can change the quantum while running
+    if (audio_ok && !engine->is_running()) {
+        audio_ok = false;
+        audio_bar->set_error("Disconnected");
     }
 }
 
 void MainWindow::update_tuner() {
     const float freq =
-        m_engine->get_tuner().is_enabled() ? m_engine->get_tuner().get_last_pitch() : 0.0f;
+        engine->get_tuner().is_enabled() ? engine->get_tuner().get_last_pitch() : 0.0f;
     if (freq <= 0.0f) {
-        m_tuner_display->set_reading("-", 0.0f, false);
+        tuner_display->set_reading("-", 0.0f, false);
         return;
     }
 
-    const float ref = static_cast<float>(m_tuner_ref_hz);
+    const float ref = static_cast<float>(tuner_ref_hz);
     const int midi_note = TunerProcessor::freq_to_midi(freq, ref);
     const float cents = TunerProcessor::cents_offset(freq, ref);
-    m_tuner_display->set_reading(QString::fromStdString(TunerProcessor::midi_to_name(midi_note)),
-                                 cents, true, freq);
+    tuner_display->set_reading(QString::fromStdString(TunerProcessor::midi_to_name(midi_note)),
+                               cents, true, freq);
 }
 
 // ---------------------------------------------------------------------------
@@ -2673,7 +2651,7 @@ void MainWindow::restore_connections() {
         c.input_sources = {"system:capture_1"};
         c.output_l_dests = {"system:playback_1"};
         c.output_r_dests = {"system:playback_2"};
-        m_engine->apply_connections(c);
+        engine->apply_connections(c);
         return;
     }
 
@@ -2681,11 +2659,11 @@ void MainWindow::restore_connections() {
     c.input_sources = to_std_strings(s.value("connections/inputSources").toStringList());
     c.output_l_dests = to_std_strings(s.value("connections/outputLDests").toStringList());
     c.output_r_dests = to_std_strings(s.value("connections/outputRDests").toStringList());
-    m_engine->apply_connections(c);
+    engine->apply_connections(c);
 }
 
 void MainWindow::save_connections() {
-    if (!m_engine->is_running() || !m_engine->supports_port_routing()) {
+    if (!engine->is_running() || !engine->supports_port_routing()) {
         return;
     }
 
@@ -2698,7 +2676,7 @@ void MainWindow::save_connections() {
         return l;
     };
 
-    auto c = m_engine->current_connections();
+    auto c = engine->current_connections();
     QSettings s;
     s.setValue("connections/inputSources", to_list(c.input_sources));
     s.setValue("connections/outputLDests", to_list(c.output_l_dests));
@@ -2723,10 +2701,10 @@ void MainWindow::update_hero_cards() {
         } else {
             // Metadata comes from the index when the file is in the library,
             // otherwise it is read now (one-off imports, dropped files).
-            const LibraryEntry* e = m_library_index->find(path);
+            const LibraryEntry* e = library_index->find(path);
             const LibraryEntry fresh = e ? *e : LibraryIndex::describe(path);
             name->setText(
-                name->fontMetrics().elidedText(fresh.name, Qt::ElideMiddle, K_HERO_NAME_MAX_WIDTH));
+                name->fontMetrics().elidedText(fresh.name, Qt::ElideMiddle, HERO_NAME_MAX_WIDTH));
             name->setObjectName("fileStatusOk");
             name->setToolTip(QDir::toNativeSeparators(fresh.path));
             meta->setText(fresh.summary);
@@ -2742,24 +2720,24 @@ void MainWindow::update_hero_cards() {
         name->style()->polish(name);
     };
 
-    set_status(m_lbl_nam_status, m_lbl_nam_meta, m_lbl_nam_origin, m_engine->is_model_loaded(),
-               QString::fromStdString(m_engine->model_path()), "No model loaded");
-    set_status(m_lbl_ir_status, m_lbl_ir_meta, m_lbl_ir_origin, m_engine->is_ir_loaded(),
-               QString::fromStdString(m_engine->ir_path()), "No impulse response loaded");
-    if (m_lbl_irb_status) {
-        const bool b = m_engine->is_irb_loaded();
-        const QString p = QString::fromStdString(m_engine->ir_path_b());
-        m_lbl_irb_status->setText(b ? m_lbl_irb_status->fontMetrics().elidedText(
-                                          QFileInfo(p).completeBaseName(), Qt::ElideMiddle, 300)
-                                    : QString("Empty — Choose… or ‹ ›"));
-        m_lbl_irb_status->setToolTip(b ? QDir::toNativeSeparators(p) : QString());
-        m_lbl_irb_status->setObjectName(b ? "fileStatusOk" : "fileStatus");
-        m_lbl_irb_status->style()->unpolish(m_lbl_irb_status);
-        m_lbl_irb_status->style()->polish(m_lbl_irb_status);
+    set_status(lbl_nam_status, lbl_nam_meta, lbl_nam_origin, engine->is_model_loaded(),
+               QString::fromStdString(engine->model_path()), "No model loaded");
+    set_status(lbl_ir_status, lbl_ir_meta, lbl_ir_origin, engine->is_ir_loaded(),
+               QString::fromStdString(engine->ir_path()), "No impulse response loaded");
+    if (lbl_irb_status) {
+        const bool b = engine->is_irb_loaded();
+        const QString p = QString::fromStdString(engine->ir_path_b());
+        lbl_irb_status->setText(b ? lbl_irb_status->fontMetrics().elidedText(
+                                        QFileInfo(p).completeBaseName(), Qt::ElideMiddle, 300)
+                                  : QString("Empty — Choose… or ‹ ›"));
+        lbl_irb_status->setToolTip(b ? QDir::toNativeSeparators(p) : QString());
+        lbl_irb_status->setObjectName(b ? "fileStatusOk" : "fileStatus");
+        lbl_irb_status->style()->unpolish(lbl_irb_status);
+        lbl_irb_status->style()->polish(lbl_irb_status);
     }
     // Every model/IR change lands here — it counts toward the preset `*`.
-    if (m_preset_state_timer) {
-        m_preset_state_timer->start();
+    if (preset_state_timer) {
+        preset_state_timer->start();
     }
     update_rig_status();
 }
@@ -2769,22 +2747,21 @@ void MainWindow::update_rig_status() {
         return QString("<span style=\"color:%1\">●</span> %2")
             .arg((on ? Theme::meter_low() : Theme::track()).name(), text.toHtmlEscaped());
     };
-    const bool model = m_engine->is_model_loaded();
-    const bool ir = m_engine->is_ir_loaded();
-    const bool t3k = m_tone3000->is_signed_in();
+    const bool model = engine->is_model_loaded();
+    const bool ir = engine->is_ir_loaded();
+    const bool t3k = tone3000->is_signed_in();
     QString t3k_text = "TONE3000";
-    if (t3k && m_tone3000->get_user().is_valid()) {
-        t3k_text += " @" + m_tone3000->get_user().username;
+    if (t3k && tone3000->get_user().is_valid()) {
+        t3k_text += " @" + tone3000->get_user().username;
     }
 
-    m_lbl_rig_status->setText(item(model, "Model") + "&nbsp;&nbsp;&nbsp;" + item(ir, "IR") +
-                              "&nbsp;&nbsp;&nbsp;" + item(t3k, t3k_text));
-    m_lbl_rig_status->setToolTip(
+    lbl_rig_status->setText(item(model, "Model") + "&nbsp;&nbsp;&nbsp;" + item(ir, "IR") +
+                            "&nbsp;&nbsp;&nbsp;" + item(t3k, t3k_text));
+    lbl_rig_status->setToolTip(
         QString("Model: %1\nIR: %2\nTONE3000: %3")
-            .arg(model
-                     ? QFileInfo(QString::fromStdString(m_engine->model_path())).completeBaseName()
-                     : "none",
-                 ir ? QFileInfo(QString::fromStdString(m_engine->ir_path())).completeBaseName()
+            .arg(model ? QFileInfo(QString::fromStdString(engine->model_path())).completeBaseName()
+                       : "none",
+                 ir ? QFileInfo(QString::fromStdString(engine->ir_path())).completeBaseName()
                     : "none",
                  t3k ? "signed in" : "signed out"));
 }
@@ -2815,11 +2792,11 @@ void MainWindow::seed_starter_presets() {
 }
 
 QJsonObject MainWindow::current_preset_json() const {
-    QJsonObject obj = PresetSerializer::to_json(m_params, *m_engine);
+    QJsonObject obj = PresetSerializer::to_json(params, *engine);
     // TONE3000 linkage: lets the preset find its model on another machine.
     auto linkage = [this](const std::string& p) {
         QJsonObject o;
-        if (const LibraryEntry* e = m_library_index->find(QString::fromStdString(p));
+        if (const LibraryEntry* e = library_index->find(QString::fromStdString(p));
             e && e->from_tone3000()) {
             o["toneId"] = e->t3k_tone_id;
             o["modelId"] = e->t3k_model_id;
@@ -2829,14 +2806,14 @@ QJsonObject MainWindow::current_preset_json() const {
         return o;
     };
     QJsonObject t3k;
-    if (m_engine->is_model_loaded()) {
-        const QJsonObject m = linkage(m_engine->model_path());
+    if (engine->is_model_loaded()) {
+        const QJsonObject m = linkage(engine->model_path());
         if (!m.isEmpty()) {
             t3k["model"] = m;
         }
     }
-    if (m_engine->is_ir_loaded()) {
-        const QJsonObject m = linkage(m_engine->ir_path());
+    if (engine->is_ir_loaded()) {
+        const QJsonObject m = linkage(engine->ir_path());
         if (!m.isEmpty()) {
             t3k["ir"] = m;
         }
@@ -2869,19 +2846,19 @@ static QString ask_preset_save_path(QWidget* parent, const QString& title, const
 }
 
 void MainWindow::on_save_preset() {
-    if (m_preset_path.isEmpty() || !QFile::exists(m_preset_path)) {
+    if (preset_path.isEmpty() || !QFile::exists(preset_path)) {
         on_save_preset_as();
         return;
     }
-    if (write_preset_file(m_preset_path)) {
-        set_current_preset(m_preset_path);
+    if (write_preset_file(preset_path)) {
+        set_current_preset(preset_path);
     }
 }
 
 void MainWindow::on_save_preset_as() {
     // Default to the library's presets folder so a saved preset shows up in
     // the list right away (the folder watcher picks it up).
-    QString start = m_preset_path;
+    QString start = preset_path;
     if (start.isEmpty()) {
         start = LibraryRoots::default_preset_dir();
         QDir().mkpath(start);
@@ -2893,14 +2870,14 @@ void MainWindow::on_save_preset_as() {
 
     path = QDir::cleanPath(path);
     QSettings().setValue("files/lastPreset", path);
-    m_library->note_used(path);
-    m_library->set_loaded_path(LibraryEntry::Kind::PRESET, path);
+    library->note_used(path);
+    library->set_loaded_path(LibraryEntry::Kind::PRESET, path);
     set_current_preset(path);
 }
 
 void MainWindow::on_export_preset() {
-    const QString name = m_preset_path.isEmpty() ? QString("Untitled.nampreset")
-                                                 : QFileInfo(m_preset_path).fileName();
+    const QString name =
+        preset_path.isEmpty() ? QString("Untitled.nampreset") : QFileInfo(preset_path).fileName();
     const QString path = ask_preset_save_path(
         nullptr, "Export Preset",
         QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/" + name);
@@ -2948,10 +2925,10 @@ void MainWindow::on_import_presets() {
 }
 
 void MainWindow::on_delete_preset() {
-    if (m_preset_path.isEmpty() || !QFile::exists(m_preset_path)) {
+    if (preset_path.isEmpty() || !QFile::exists(preset_path)) {
         return;
     }
-    const QString name = QFileInfo(m_preset_path).completeBaseName();
+    const QString name = QFileInfo(preset_path).completeBaseName();
     if (QMessageBox::question(this, "Delete Preset",
                               "Move the preset \"" + name +
                                   "\" to the trash?\n"
@@ -2959,27 +2936,27 @@ void MainWindow::on_delete_preset() {
         QMessageBox::Yes) {
         return;
     }
-    if (!QFile::moveToTrash(m_preset_path) && !QFile::remove(m_preset_path)) {
-        QMessageBox::critical(this, "Delete Preset", "Cannot delete:\n" + m_preset_path);
+    if (!QFile::moveToTrash(preset_path) && !QFile::remove(preset_path)) {
+        QMessageBox::critical(this, "Delete Preset", "Cannot delete:\n" + preset_path);
         return;
     }
-    m_library->set_loaded_path(LibraryEntry::Kind::PRESET, {});
+    library->set_loaded_path(LibraryEntry::Kind::PRESET, {});
     set_current_preset({});
 }
 
 void MainWindow::on_locate_preset() {
-    const QString dir = m_preset_path.isEmpty() ? LibraryRoots::default_preset_dir()
-                                                : QFileInfo(m_preset_path).absolutePath();
+    const QString dir = preset_path.isEmpty() ? LibraryRoots::default_preset_dir()
+                                              : QFileInfo(preset_path).absolutePath();
     QDir().mkpath(dir);
     QDesktopServices::openUrl(QUrl::fromLocalFile(dir));
 }
 
 void MainWindow::set_current_preset(const QString& path) {
-    m_preset_path = path;
-    m_preset_baseline = PresetSerializer::to_json(m_params, *m_engine);
-    m_ab[0] = m_ab[1] = QJsonObject();
-    m_ab_active = 0;
-    m_preset_bar->set_ab_state(0);
+    preset_path = path;
+    preset_baseline = PresetSerializer::to_json(params, *engine);
+    ab[0] = ab[1] = QJsonObject();
+    ab_active = 0;
+    preset_bar->set_ab_state(0);
     update_preset_state();
     schedule_session_save();
 }
@@ -3021,14 +2998,13 @@ static bool same_state(const QJsonValue& a, const QJsonValue& b) {
 }
 
 void MainWindow::update_preset_state() {
-    const bool modified =
-        !m_preset_path.isEmpty() &&
-        !same_state(PresetSerializer::to_json(m_params, *m_engine), m_preset_baseline);
-    m_preset_bar->set_preset(m_preset_path, modified);
-    setWindowTitle(m_preset_path.isEmpty() ? QString("NAM Player")
-                                           : QString("%1%2 — NAM Player")
-                                                 .arg(QFileInfo(m_preset_path).completeBaseName(),
-                                                      modified ? "*" : ""));
+    const bool modified = !preset_path.isEmpty() &&
+                          !same_state(PresetSerializer::to_json(params, *engine), preset_baseline);
+    preset_bar->set_preset(preset_path, modified);
+    setWindowTitle(preset_path.isEmpty()
+                       ? QString("NAM Player")
+                       : QString("%1%2 — NAM Player")
+                             .arg(QFileInfo(preset_path).completeBaseName(), modified ? "*" : ""));
 }
 
 void MainWindow::restore_preset_state() {
@@ -3038,7 +3014,7 @@ void MainWindow::restore_preset_state() {
         update_preset_state();
         return;
     }
-    m_preset_path = path;
+    preset_path = path;
     // A baseline saved by an older version lacks parameters added since;
     // those take the live (= restored) values, so an upgrade alone never
     // marks the preset modified.
@@ -3068,33 +3044,33 @@ void MainWindow::restore_preset_state() {
             }
             return base;
         };
-    m_preset_baseline = fill(
+    preset_baseline = fill(
         QJsonDocument::fromJson(s.value("session/presetBaseline").toString().toUtf8()).object(),
-        PresetSerializer::to_json(m_params, *m_engine));
-    m_library->set_loaded_path(LibraryEntry::Kind::PRESET, path);
+        PresetSerializer::to_json(params, *engine));
+    library->set_loaded_path(LibraryEntry::Kind::PRESET, path);
     update_preset_state();
 }
 
 void MainWindow::step_preset(int step) {
-    const QString next = m_library->neighbour(LibraryEntry::Kind::PRESET, m_preset_path, step);
-    if (!next.isEmpty() && next != m_preset_path) {
+    const QString next = library->neighbour(LibraryEntry::Kind::PRESET, preset_path, step);
+    if (!next.isEmpty() && next != preset_path) {
         load_preset_file(next);
     }
 }
 
 void MainWindow::switch_ab(int side) {
-    if (side == m_ab_active) {
+    if (side == ab_active) {
         return;
     }
     // The side being left keeps the live state; the other side starts as a
     // copy of it the first time it is visited.
-    const QJsonObject live = PresetSerializer::to_json(m_params, *m_engine);
-    m_ab[m_ab_active] = live;
-    m_ab_active = side;
-    if (m_ab[side].isEmpty()) {
-        m_ab[side] = live;
+    const QJsonObject live = PresetSerializer::to_json(params, *engine);
+    ab[ab_active] = live;
+    ab_active = side;
+    if (ab[side].isEmpty()) {
+        ab[side] = live;
     } else {
-        const auto applied = apply_preset_params(m_ab[side]);
+        const auto applied = apply_preset_params(ab[side]);
         if (!applied.nam_path.isEmpty() && QFile::exists(applied.nam_path)) {
             load_model_file(applied.nam_path, true);
         }
@@ -3102,12 +3078,12 @@ void MainWindow::switch_ab(int side) {
             load_ir_file(applied.ir_path, true);
         }
     }
-    m_preset_bar->set_ab_state(side);
+    preset_bar->set_ab_state(side);
     schedule_session_save();
 }
 
 void MainWindow::copy_ab() {
-    m_ab[1 - m_ab_active] = PresetSerializer::to_json(m_params, *m_engine);
+    ab[1 - ab_active] = PresetSerializer::to_json(params, *engine);
 }
 
 void MainWindow::on_reset_all() {
@@ -3119,7 +3095,7 @@ void MainWindow::on_reset_all() {
 
     // Registry defaults through the widgets — the engine follows via the
     // registry connections, exactly like a preset load.
-    for (const auto& p : m_params) {
+    for (const auto& p : params) {
         if (p.knob) {
             p.knob->set_value(p.knob_default);
         } else {
@@ -3128,7 +3104,7 @@ void MainWindow::on_reset_all() {
     }
 
     QStringList order;
-    for (const auto& id : m_engine->default_chain_ids()) {
+    for (const auto& id : engine->default_chain_ids()) {
         order << QString::fromStdString(id);
     }
     apply_chain_order(order);
@@ -3165,8 +3141,8 @@ bool MainWindow::load_preset_file(const QString& path_in) {
     }
     QSettings settings;
     settings.setValue("files/lastPreset", path);
-    m_library->note_used(path);
-    m_library->set_loaded_path(LibraryEntry::Kind::PRESET, path);
+    library->note_used(path);
+    library->set_loaded_path(LibraryEntry::Kind::PRESET, path);
 
     const auto applied = apply_preset_params(doc.object());
 
@@ -3185,7 +3161,7 @@ bool MainWindow::load_preset_file(const QString& path_in) {
     // A TONE3000 fetch can land after this returns: the fetched model is
     // part of the preset, not an edit, so it moves the baseline.
     auto rebaseline = [this, path] {
-        if (m_preset_path == path) {
+        if (preset_path == path) {
             set_current_preset(path);
         }
     };
@@ -3227,7 +3203,7 @@ bool MainWindow::load_preset_file(const QString& path_in) {
     // newer ones say exactly what slot B holds, empty included.
     if (applied.has_ir_path_b) {
         if (applied.ir_path_b.isEmpty()) {
-            m_engine->unload_irb();
+            engine->unload_irb();
             QSettings().remove("files/lastIRB");
         } else if (!(QFile::exists(applied.ir_path_b) && load_irb_file(applied.ir_path_b, true))) {
             failed << applied.ir_path_b;
@@ -3247,7 +3223,7 @@ bool MainWindow::load_preset_file(const QString& path_in) {
 PresetSerializer::Applied MainWindow::apply_preset_params(const QJsonObject& obj) {
     // Widgets first (engine follows via the registry connections), then the
     // chain order (engine-side sanitizer handles unknown/missing IDs).
-    const auto applied = PresetSerializer::apply(obj, m_params);
+    const auto applied = PresetSerializer::apply(obj, params);
     if (!applied.effect_order.isEmpty()) {
         apply_chain_order(applied.effect_order);
     }
@@ -3257,7 +3233,7 @@ PresetSerializer::Applied MainWindow::apply_preset_params(const QJsonObject& obj
 void MainWindow::resolve_tone3000_model(int model_id, const QString& title,
                                         std::function<void(const QString&)> then) {
     // 1. Already in the library under another path (downloaded on this machine).
-    if (const LibraryEntry* e = m_library_index->find_tone3000_model(model_id)) {
+    if (const LibraryEntry* e = library_index->find_tone3000_model(model_id)) {
         then(e->path);
         return;
     }
@@ -3271,14 +3247,14 @@ void MainWindow::resolve_tone3000_model(int model_id, const QString& title,
         then({});
         return;
     }
-    if (!m_tone3000->is_signed_in()) {
+    if (!tone3000->is_signed_in()) {
         QMessageBox::information(
             this, "Preset",
             "This preset uses \"" + title +
                 "\" from TONE3000, which isn't on this computer.\n\n"
                 "Sign in on the Library's TONE3000 tab, then load the preset again to fetch it.");
-        m_library_dock->show();
-        m_library_tabs->set_tab(LibraryDock::TONE3000);
+        library_dock->show();
+        library_tabs->set_tab(LibraryDock::TONE3000);
         then({});
         return;
     }
@@ -3290,7 +3266,7 @@ void MainWindow::resolve_tone3000_model(int model_id, const QString& title,
         return;
     }
 
-    m_tone3000->fetch_model(model_id, [this, then, title](const Tone3000Client::Result& r) {
+    tone3000->fetch_model(model_id, [this, then, title](const Tone3000Client::Result& r) {
         if (!r.ok) {
             QMessageBox::warning(this, "TONE3000",
                                  "Could not look up \"" + title + "\": " + r.error);
@@ -3298,7 +3274,7 @@ void MainWindow::resolve_tone3000_model(int model_id, const QString& title,
             return;
         }
         const T3kModel model = Tone3000Client::parse_model(r.object());
-        m_tone3000->fetch_tone(
+        tone3000->fetch_tone(
             model.tone_id, [this, then, title, model](const Tone3000Client::Result& tr) {
                 if (!tr.ok) {
                     QMessageBox::warning(this, "TONE3000",
@@ -3308,7 +3284,7 @@ void MainWindow::resolve_tone3000_model(int model_id, const QString& title,
                     return;
                 }
                 const T3kTone tone = Tone3000Client::parse_tone(tr.object());
-                m_tone3000->download_model(
+                tone3000->download_model(
                     model, tone, [this, then, title](bool ok, QString path, QString err) {
                         if (!ok) {
                             QMessageBox::warning(this, "TONE3000",
@@ -3316,7 +3292,7 @@ void MainWindow::resolve_tone3000_model(int model_id, const QString& title,
                             then({});
                             return;
                         }
-                        m_library_index->rescan();
+                        library_index->rescan();
                         then(path);
                     });
             });

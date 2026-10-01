@@ -22,7 +22,7 @@ struct FxColor
     const char* id;
     const char* accent;
 };
-static constexpr FxColor K_FX_COLORS[] = {
+static constexpr FxColor FX_COLORS[] = {
     {"tuner", "#b6aa8d"},     {"gate", "#8f969e"},    {"comp", "#4f78bd"},    {"wah", "#d4c19a"},
     {"flanger", "#93477b"},   {"phaser", "#4bba5b"},  {"nam", "#e4b954"},     {"eq", "#a5a38f"},
     {"chorus", "#8dccf3"},    {"tremolo", "#19848e"}, {"delay", "#aaa6a0"},   {"reverb", "#8f7d99"},
@@ -31,7 +31,7 @@ static constexpr FxColor K_FX_COLORS[] = {
 };
 
 QColor accent(const QString& fx_id) {
-    for (const auto& fc : K_FX_COLORS) {
+    for (const auto& fc : FX_COLORS) {
         if (fx_id == QLatin1String(fc.id)) {
             return QColor(fc.accent);
         }
@@ -818,7 +818,7 @@ void apply_to(QWidget& root) {
     // and the loaded-file label on the Amplifier/Cabinet rows (knob rings and
     // toggles get theirs pushed by tagCard).
     QString qss = QString::fromUtf8(k_style_sheet);
-    for (const auto& fc : K_FX_COLORS) {
+    for (const auto& fc : FX_COLORS) {
         qss += QString::fromUtf8("QFrame[fx=\"%1\"] QLabel#fxName { color: %2; }\n"
                                  "QFrame[fx=\"%1\"] QLabel#fileStatusOk { color: %2; }\n")
                    .arg(QLatin1String(fc.id), QLatin1String(fc.accent));

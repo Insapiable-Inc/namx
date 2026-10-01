@@ -24,7 +24,7 @@ class PresetBar : public QFrame
 {
     Q_OBJECT
 public:
-    static constexpr int K_SLOT_COUNT = 8;
+    static constexpr int SLOT_COUNT = 8;
 
     PresetBar(const LibraryIndex& new_index, QMenu* preset_menu, QWidget* parent = nullptr);
 
@@ -39,11 +39,11 @@ public:
     /// Widget for an action id ("action:slot3", "action:presetNext", …), for
     /// the MIDI Learn highlight.
     QWidget* action_widget(const QString& id) const {
-        return m_action_widgets.value(id);
+        return action_widgets.value(id);
     }
     /// Adds MIDI Learn entries to the context menus of the bar's buttons.
     void set_learn_menu_hook(std::function<void(const QString& action_id, QMenu* menu)> hook) {
-        m_learn_hook = std::move(hook);
+        learn_hook = std::move(hook);
     }
 
 signals:
@@ -60,16 +60,16 @@ private:
     void show_slot_menu(int i, const QPoint& global_pos);
     void update_slots();
 
-    const LibraryIndex& m_library_index;
-    QString m_path;
-    QToolButton* m_name = nullptr;
-    QLabel* m_modified = nullptr;
-    QToolButton* m_quick_slots[K_SLOT_COUNT]{};
-    QStringList m_slot_paths; // kSlotCount entries, "" = empty slot
-    QToolButton* m_ab[2]{};
-    QToolButton* m_ab_copy = nullptr;
-    int m_ab_active = 0;
-    QHash<QString, QWidget*> m_action_widgets;
-    std::function<void(const QString&, QMenu*)> m_learn_hook;
+    const LibraryIndex& library_index;
+    QString path;
+    QToolButton* name = nullptr;
+    QLabel* modified = nullptr;
+    QToolButton* quick_slots[SLOT_COUNT]{};
+    QStringList slot_paths; // kSlotCount entries, "" = empty slot
+    QToolButton* ab[2]{};
+    QToolButton* ab_copy = nullptr;
+    int ab_active = 0;
+    QHash<QString, QWidget*> action_widgets;
+    std::function<void(const QString&, QMenu*)> learn_hook;
     void learn_menu_for(QWidget* w, const QString& action_id);
 };

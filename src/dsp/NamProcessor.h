@@ -27,29 +27,29 @@ public:
     bool load_model(const std::string& path);
     void unload_model();
     bool is_model_loaded() const {
-        return m_slot.current() != nullptr;
+        return slot.current() != nullptr;
     }
     std::string get_model_path() const {
-        return m_model_path;
+        return model_path;
     }
 
     /// Human-readable reason the last loadModel() returned false (GUI thread only).
     std::string get_last_error() const {
-        return m_last_error;
+        return last_error;
     }
 
     /// Free retired model pairs. Called by the engine whenever the audio
     /// thread is known to be stopped (so pairs retired while it was idle
     /// don't linger); otherwise loads reclaim lazily.
     void reclaim_retired(bool audio_stopped) {
-        m_slot.reclaim(audio_stopped);
+        slot.reclaim(audio_stopped);
     }
 
     /// Must be called whenever the backend reports a (new) buffer size, before
     /// the next process callback. Re-Reset()s the live models if the size grew.
     void prepare_buffer(size_t new_max_buf);
     size_t get_max_buf() const {
-        return m_max_buf.load();
+        return max_buf.load();
     }
 
     void reset() override {
@@ -58,7 +58,7 @@ public:
     /// Stereo input → run the model per channel (on) or sum to mono and run
     /// it once (off, the default: half the CPU, and an amp is mono anyway).
     void set_stereo_amp(bool on) {
-        m_stereo_amp.store(on);
+        stereo_amp.store(on);
     }
 
     /// Overrides the default EffectBase dispatch so that stereo input is
@@ -92,20 +92,20 @@ private:
         }
     };
 
-    RtSlot<ModelPair> m_slot;
-    std::mutex m_model_mutex; // serializes publish vs. prepareBuffer / SR change
-    std::string m_model_path; // GUI thread only
-    std::string m_last_error; // GUI thread only
-    std::atomic<size_t> m_max_buf{0};
-    std::atomic<bool> m_stereo_amp{false};
-    double m_model_rate{0.0}; // engine SR as last propagated (guarded by mModelMutex)
-    std::vector<float> m_scratch_l, m_scratch_r;
+    RtSlot<ModelPair> slot;
+    std::mutex model_mutex; // serializes publish vs. prepareBuffer / SR change
+    std::string model_path; // GUI thread only
+    std::string last_error; // GUI thread only
+    std::atomic<size_t> max_buf{0};
+    std::atomic<bool> stereo_amp{false};
+    double model_rate{0.0}; // engine SR as last propagated (guarded by mModelMutex)
+    std::vector<float> scratch_l, scratch_r;
 
     // Click-free swap: load/unload flag a short output fade-in, applied by
     // the audio thread, that masks the waveform discontinuity.
-    std::atomic<bool> m_fade_pending{false};
-    size_t m_fade_total{1}; // samples; audio thread only
-    size_t m_fade_remaining{0}; // audio thread only
+    std::atomic<bool> fade_pending{false};
+    size_t fade_total{1}; // samples; audio thread only
+    size_t fade_remaining{0}; // audio thread only
 
     static void run_model(nam::DSP* model, float* buf, size_t n, std::vector<float>& scratch);
 };

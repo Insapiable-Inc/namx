@@ -16,45 +16,45 @@ AudioEngine::AudioEngine() {
 
     // Effects that are naturally stereo default to stereo mode on.
     // Flanger/Phaser stereo mode is user-controlled (default off).
-    m_chorus.set_stereo_mode(true);
-    m_tremolo.set_stereo_mode(true);
-    m_reverb.set_stereo_mode(true);
+    chorus.set_stereo_mode(true);
+    tremolo.set_stereo_mode(true);
+    reverb.set_stereo_mode(true);
     // Delay stereo (ping-pong) is on by default to match original behaviour.
-    m_delay.set_stereo_mode(true);
+    delay.set_stereo_mode(true);
 
     // NAM and Tuner start enabled; all others start disabled.
-    m_nam.set_enabled(true);
-    m_tuner.set_enabled(false);
-    m_eq.set_enabled(true);
-    m_ir.set_enabled(true);
+    nam.set_enabled(true);
+    tuner.set_enabled(false);
+    eq.set_enabled(true);
+    ir.set_enabled(true);
 
     // Stable effect IDs in default processing order — the contract for chain
     // reordering and for session/preset persistence. Never rename an ID.
-    m_effect_table = {
-        {"tuner", &m_tuner},
-        {"transpose", &m_transpose}, // after the tuner: it reads the real string
-        {"gate", &m_gate},
-        {"comp", &m_comp},
-        {"wah", &m_wah},
-        {"flanger", &m_flanger},
-        {"phaser", &m_phaser},
-        {"drive", &m_drive}, // Phase 17 — new IDs re-enter old sessions here
-        {"nam", &m_nam},
-        {"eq", &m_eq},
-        {"doubler", &m_doubler},
-        {"chorus", &m_chorus},
-        {"tremolo", &m_tremolo},
-        {"delay", &m_delay},
-        {"reverb", &m_reverb},
-        {"ir", &m_ir},
-        {"volume", &m_volume},
+    effect_table = {
+        {"tuner", &tuner},
+        {"transpose", &transpose}, // after the tuner: it reads the real string
+        {"gate", &gate},
+        {"comp", &comp},
+        {"wah", &wah},
+        {"flanger", &flanger},
+        {"phaser", &phaser},
+        {"drive", &drive}, // Phase 17 — new IDs re-enter old sessions here
+        {"nam", &nam},
+        {"eq", &eq},
+        {"doubler", &doubler},
+        {"chorus", &chorus},
+        {"tremolo", &tremolo},
+        {"delay", &delay},
+        {"reverb", &reverb},
+        {"ir", &ir},
+        {"volume", &volume},
     };
     auto chain = std::make_unique<Chain>();
-    chain->reserve(m_effect_table.size());
-    for (const auto& [id, fx] : m_effect_table) {
+    chain->reserve(effect_table.size());
+    for (const auto& [id, fx] : effect_table) {
         chain->push_back(fx);
     }
-    m_chain_slot.publish(std::move(chain));
+    chain_slot.publish(std::move(chain));
 }
 
 // ---------------------------------------------------------------------------
@@ -65,41 +65,41 @@ void AudioEngine::reclaim_retired() {
     // Only valid with no audio callback possible: after stop(), or before
     // the backend was ever started.
     const bool stopped = !is_running();
-    m_chain_slot.reclaim(stopped);
-    m_nam.reclaim_retired(stopped);
-    m_ir.reclaim_retired(stopped);
+    chain_slot.reclaim(stopped);
+    nam.reclaim_retired(stopped);
+    ir.reclaim_retired(stopped);
 }
 
 bool AudioEngine::load_model(const std::string& path) {
-    const bool ok = m_nam.load_model(path);
+    const bool ok = nam.load_model(path);
     reclaim_retired();
     return ok;
 }
 
 void AudioEngine::unload_model() {
-    m_nam.unload_model();
+    nam.unload_model();
     reclaim_retired();
 }
 
 bool AudioEngine::load_ir(const std::string& path) {
-    const bool ok = m_ir.load(path);
+    const bool ok = ir.load(path);
     reclaim_retired();
     return ok;
 }
 
 void AudioEngine::unload_ir() {
-    m_ir.unload();
+    ir.unload();
     reclaim_retired();
 }
 
 bool AudioEngine::load_irb(const std::string& path) {
-    const bool ok = m_ir.load_b(path);
+    const bool ok = ir.load_b(path);
     reclaim_retired();
     return ok;
 }
 
 void AudioEngine::unload_irb() {
-    m_ir.unload_b();
+    ir.unload_b();
     reclaim_retired();
 }
 
@@ -109,8 +109,8 @@ void AudioEngine::unload_irb() {
 
 std::vector<std::string> AudioEngine::default_chain_ids() const {
     std::vector<std::string> ids;
-    ids.reserve(m_effect_table.size());
-    for (const auto& [id, fx] : m_effect_table) {
+    ids.reserve(effect_table.size());
+    for (const auto& [id, fx] : effect_table) {
         ids.push_back(id);
     }
     return ids;
@@ -118,15 +118,15 @@ std::vector<std::string> AudioEngine::default_chain_ids() const {
 
 std::vector<std::string> AudioEngine::chain_ids() const {
     std::vector<std::string> ids;
-    ids.reserve(m_effect_table.size());
-    for (const auto* fx : *m_chain_slot.current()) {
+    ids.reserve(effect_table.size());
+    for (const auto* fx : *chain_slot.current()) {
         ids.push_back(id_for_effect(fx));
     }
     return ids;
 }
 
 EffectBase* AudioEngine::effect_by_id(const std::string& id) const {
-    for (const auto& [eid, fx] : m_effect_table) {
+    for (const auto& [eid, fx] : effect_table) {
         if (eid == id) {
             return fx;
         }
@@ -135,7 +135,7 @@ EffectBase* AudioEngine::effect_by_id(const std::string& id) const {
 }
 
 std::string AudioEngine::id_for_effect(const EffectBase* fx) const {
-    for (const auto& [eid, e] : m_effect_table) {
+    for (const auto& [eid, e] : effect_table) {
         if (e == fx) {
             return eid;
         }
@@ -146,7 +146,7 @@ std::string AudioEngine::id_for_effect(const EffectBase* fx) const {
 void AudioEngine::set_chain_order(const std::vector<std::string>& ids) {
     // Sanitize: known IDs only, no duplicates.
     std::vector<EffectBase*> new_chain;
-    new_chain.reserve(m_effect_table.size());
+    new_chain.reserve(effect_table.size());
     for (const auto& id : ids) {
         EffectBase* fx = effect_by_id(id);
         if (!fx) {
@@ -160,7 +160,7 @@ void AudioEngine::set_chain_order(const std::vector<std::string>& ids) {
 
     // Effects missing from the list re-enter at their default position.
     size_t default_idx = 0;
-    for (const auto& [id, fx] : m_effect_table) {
+    for (const auto& [id, fx] : effect_table) {
         if (std::find(new_chain.begin(), new_chain.end(), fx) == new_chain.end()) {
             const auto slot =
                 static_cast<Chain::difference_type>(std::min(default_idx, new_chain.size()));
@@ -169,7 +169,7 @@ void AudioEngine::set_chain_order(const std::vector<std::string>& ids) {
         ++default_idx;
     }
 
-    const Chain& cur = *m_chain_slot.current();
+    const Chain& cur = *chain_slot.current();
     if (new_chain == cur) {
         return;
     }
@@ -184,7 +184,7 @@ void AudioEngine::set_chain_order(const std::vector<std::string>& ids) {
 
     // Publish a fresh vector; the one the audio thread may still be iterating
     // is retired and freed only once it has provably moved on. No waiting.
-    m_chain_slot.publish(std::make_unique<Chain>(std::move(new_chain)));
+    chain_slot.publish(std::make_unique<Chain>(std::move(new_chain)));
     reclaim_retired();
 }
 
@@ -193,12 +193,12 @@ AudioEngine::~AudioEngine() {
 }
 
 bool AudioEngine::start(const std::string& client_name) {
-    if (m_backend && m_backend->is_running()) {
+    if (backend && backend->is_running()) {
         return true;
     }
 
-    m_backend = IAudioBackend::create();
-    if (!m_backend) {
+    backend = IAudioBackend::create();
+    if (!backend) {
         qCWarning(lc_audio, "[AudioEngine] No audio backend available for this platform");
         return false;
     }
@@ -206,8 +206,8 @@ bool AudioEngine::start(const std::string& client_name) {
     // Sample rate and buffer size reach the effects via on_buffer_size_changed,
     // which the backend invokes BEFORE activating the stream — configuring
     // effects after activation would race the audio thread.
-    if (!m_backend->start(client_name, this)) {
-        m_backend.reset();
+    if (!backend->start(client_name, this)) {
+        backend.reset();
         return false;
     }
 
@@ -219,14 +219,14 @@ bool AudioEngine::start_with_devices(const std::string& input_device_id,
                                      const std::string& client_name) {
     stop();
 
-    m_backend = IAudioBackend::create();
-    if (!m_backend) {
+    backend = IAudioBackend::create();
+    if (!backend) {
         qCWarning(lc_audio, "[AudioEngine] No audio backend available for this platform");
         return false;
     }
 
-    if (!m_backend->start_with_devices(client_name, this, input_device_id, output_device_id)) {
-        m_backend.reset();
+    if (!backend->start_with_devices(client_name, this, input_device_id, output_device_id)) {
+        backend.reset();
         return false;
     }
 
@@ -234,9 +234,9 @@ bool AudioEngine::start_with_devices(const std::string& input_device_id,
 }
 
 void AudioEngine::stop() {
-    if (m_backend) {
-        m_backend->stop();
-        m_backend.reset();
+    if (backend) {
+        backend->stop();
+        backend.reset();
     }
     // No callback can run now — drop everything retired while it was live.
     reclaim_retired();
@@ -259,27 +259,27 @@ void AudioEngine::on_buffer_size_changed(int new_size) {
         return;
     }
     const size_t n = static_cast<size_t>(new_size); // backends report int; positive here
-    if (n > m_work_buf_l.size()) {
-        m_work_buf_l.resize(n, 0.0f);
-        m_work_buf_r.resize(n, 0.0f);
+    if (n > work_buf_l.size()) {
+        work_buf_l.resize(n, 0.0f);
+        work_buf_r.resize(n, 0.0f);
     }
 
     // Backends call this before activating the stream, and with processing
     // suspended on later changes — the one safe point to reconfigure effects.
-    const double sr = m_backend ? m_backend->get_sample_rate() : 0.0;
-    if (sr > 0.0 && sr != m_chain_sample_rate) {
-        m_chain_sample_rate = sr;
-        for (const auto& [id, fx] : m_effect_table) {
+    const double sr = backend ? backend->get_sample_rate() : 0.0;
+    if (sr > 0.0 && sr != chain_sample_rate) {
+        chain_sample_rate = sr;
+        for (const auto& [id, fx] : effect_table) {
             fx->set_sample_rate(sr);
         }
-        m_metronome.set_sample_rate(sr);
-        m_limiter.set_sample_rate(sr);
+        metronome.set_sample_rate(sr);
+        limiter.set_sample_rate(sr);
         // ~20 ms one-pole gain smoothing, independent of sample rate.
-        m_smooth_coeff = std::exp(-1.0f / (0.020f * static_cast<float>(sr)));
+        smooth_coeff = std::exp(-1.0f / (0.020f * static_cast<float>(sr)));
     }
 
     // After SR propagation, so a re-Reset() picks up the new rate.
-    m_nam.prepare_buffer(std::max(n, m_nam.get_max_buf()));
+    nam.prepare_buffer(std::max(n, nam.get_max_buf()));
 }
 
 void AudioEngine::on_audio(const float* in, float* out_l, float* out_r, size_t n) {
@@ -289,10 +289,10 @@ void AudioEngine::on_audio(const float* in, float* out_l, float* out_r, size_t n
     process_block(in, out_l, out_r, n);
     const double secs =
         std::chrono::duration<double>(std::chrono::steady_clock::now() - t0).count();
-    if (n > 0 && m_chain_sample_rate > 0.0) {
-        const float load = static_cast<float>(secs * m_chain_sample_rate / static_cast<double>(n));
-        if (load > m_dsp_load_peak.load(std::memory_order_relaxed)) {
-            m_dsp_load_peak.store(load, std::memory_order_relaxed);
+    if (n > 0 && chain_sample_rate > 0.0) {
+        const float load = static_cast<float>(secs * chain_sample_rate / static_cast<double>(n));
+        if (load > dsp_load_peak.load(std::memory_order_relaxed)) {
+            dsp_load_peak.store(load, std::memory_order_relaxed);
         }
     }
 }
@@ -306,65 +306,65 @@ void AudioEngine::process_block(const float* in, float* out_l, float* out_r, siz
         ~BlockGuard() {
             s.end_block();
         }
-    } guard{m_chain_slot};
+    } guard{chain_slot};
 
     // Defensive: if a process callback ever fires before on_buffer_size_changed
     // has grown the work buffers, emit silence rather than overrunning.
-    if (static_cast<size_t>(n) > m_work_buf_l.size()) {
+    if (static_cast<size_t>(n) > work_buf_l.size()) {
         std::fill_n(out_l, n, 0.0f);
         std::fill_n(out_r, n, 0.0f);
         return;
     }
 
     // 1. Input gain (smoothed) → both work buffers (identical at this point)
-    const float target_in_gain = db_to_linear(m_input_gain_db.load());
+    const float target_in_gain = db_to_linear(input_gain_db.load());
     float in_peak = 0.0f;
     for (size_t i = 0; i < n; ++i) {
-        m_input_gain_smooth =
-            m_smooth_coeff * m_input_gain_smooth + (1.0f - m_smooth_coeff) * target_in_gain;
-        float s = in[i] * m_input_gain_smooth;
-        m_work_buf_l[i] = s;
-        m_work_buf_r[i] = s;
+        input_gain_smooth =
+            smooth_coeff * input_gain_smooth + (1.0f - smooth_coeff) * target_in_gain;
+        float s = in[i] * input_gain_smooth;
+        work_buf_l[i] = s;
+        work_buf_r[i] = s;
         in_peak = std::max(in_peak, std::abs(s));
     }
     // Peak-hold: accumulate the max until the GUI takes and resets it, so the
     // 50 ms poll can't miss transients between blocks.
-    if (in_peak > m_input_peak.load(std::memory_order_relaxed)) {
-        m_input_peak.store(in_peak, std::memory_order_relaxed);
+    if (in_peak > input_peak.load(std::memory_order_relaxed)) {
+        input_peak.store(in_peak, std::memory_order_relaxed);
     }
 
     // 2. Run the signal chain (chain vector bound once per callback; a
     //    reorder publishes a new vector and never touches this one)
     bool stereo = false;
-    const Chain& chain = *m_chain_slot.acquire();
+    const Chain& chain = *chain_slot.acquire();
     for (auto* fx : chain) {
         fx->consume_pending_reset();
-        stereo = fx->process(m_work_buf_l.data(), m_work_buf_r.data(), n, stereo);
+        stereo = fx->process(work_buf_l.data(), work_buf_r.data(), n, stereo);
     }
 
     (void)stereo; // consumed by downstream effects; output always written to both channels
 
     // 3. Output gain (smoothed) + write to output buffers
-    const float target_out_gain = db_to_linear(m_output_gain_db.load());
+    const float target_out_gain = db_to_linear(output_gain_db.load());
     for (size_t i = 0; i < n; ++i) {
-        m_output_gain_smooth =
-            m_smooth_coeff * m_output_gain_smooth + (1.0f - m_smooth_coeff) * target_out_gain;
-        out_l[i] = m_work_buf_l[i] * m_output_gain_smooth;
-        out_r[i] = m_work_buf_r[i] * m_output_gain_smooth;
+        output_gain_smooth =
+            smooth_coeff * output_gain_smooth + (1.0f - smooth_coeff) * target_out_gain;
+        out_l[i] = work_buf_l[i] * output_gain_smooth;
+        out_r[i] = work_buf_r[i] * output_gain_smooth;
     }
 
     // 4. Output limiter (look-ahead; a no-op when off), then the meter, so
     //    it shows what actually leaves the app.
-    m_limiter.process(out_l, out_r, n);
+    limiter.process(out_l, out_r, n);
     float out_peak = 0.0f;
     for (size_t i = 0; i < n; ++i) {
         out_peak = std::max(out_peak, std::max(std::abs(out_l[i]), std::abs(out_r[i])));
     }
-    if (out_peak > m_output_peak.load(std::memory_order_relaxed)) {
-        m_output_peak.store(out_peak, std::memory_order_relaxed);
+    if (out_peak > output_peak.load(std::memory_order_relaxed)) {
+        output_peak.store(out_peak, std::memory_order_relaxed);
     }
 
     // 5. Metronome on top: own volume/pan, after the meter so the VU shows
     //    the guitar only.
-    m_metronome.process(out_l, out_r, n);
+    metronome.process(out_l, out_r, n);
 }

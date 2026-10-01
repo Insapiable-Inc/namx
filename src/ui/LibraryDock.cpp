@@ -34,28 +34,28 @@ LibraryDock::LibraryDock(LibraryIndex& index, Tone3000Client& client, QWidget* p
             set_tab(static_cast<Tab>(i));
         });
         row->addWidget(b);
-        m_tab_btn[i] = b;
+        tab_btn[i] = b;
     }
     lay->addWidget(tabs);
 
-    m_stack = new QStackedWidget;
-    m_local = new LibraryPanel(index);
-    m_t3k = new Tone3000Panel(client, index);
-    m_stack->addWidget(m_local);
-    m_stack->addWidget(m_t3k);
-    lay->addWidget(m_stack, 1);
+    stack = new QStackedWidget;
+    local = new LibraryPanel(index);
+    t3k = new Tone3000Panel(client, index);
+    stack->addWidget(local);
+    stack->addWidget(t3k);
+    lay->addWidget(stack, 1);
 
     set_tab(QSettings().value("library/tab", 0).toInt() == 1 ? TONE3000 : LOCAL);
 }
 
 int LibraryDock::current_index() const {
-    return m_stack->currentIndex();
+    return stack->currentIndex();
 }
 
 void LibraryDock::set_tab(Tab tab) {
-    m_stack->setCurrentIndex(static_cast<int>(tab));
+    stack->setCurrentIndex(static_cast<int>(tab));
     for (int i = 0; i < 2; ++i) {
-        m_tab_btn[i]->setChecked(i == static_cast<int>(tab));
+        tab_btn[i]->setChecked(i == static_cast<int>(tab));
     }
     QSettings().setValue("library/tab", static_cast<int>(tab));
 }

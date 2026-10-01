@@ -58,6 +58,18 @@ everywhere.
   where the invariant is enforced.
 - **No trailing-underscore members** (`threshold_db_`): it's too easy to miss and to
   mix up with the accessor.
+- **No parameter or local reuses a member's name** (decided 2026-10-01). Without
+  prefixes, a same-named local would silently hide the member. The conventions:
+  - a setter or constructor parameter that feeds a member is `new_<member>`:
+    `set_bpm(double new_bpm)`, `KnobWidget(const QString& new_label)`;
+  - a per-block snapshot of an atomic is `current_<member>`:
+    `const int current_mode = mode.load();`;
+  - per-channel state arrays are `<name>_per_channel`, so the channel's local
+    reference keeps the short name: `float& gain = gain_per_channel[ch];`;
+  - otherwise, pick a more precise name for one of the two.
+
+  `-Wshadow` is not in the permanent flags; build once with
+  `-DCMAKE_CXX_FLAGS=-Wshadow` after a rename to check.
 
 ## `auto`
 

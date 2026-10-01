@@ -3,31 +3,31 @@
 #include <algorithm>
 #include <cmath>
 
-static constexpr float K_DB_PER_OCTAVE = 6.0205999f; // 20·log10(2)
+static constexpr float DB_PER_OCTAVE = 6.0205999f; // 20·log10(2)
 
 void CompressorProcessor::reset() {
-    m_env_db_per_channel[0] = m_env_db_per_channel[1] = -120.0f;
-    m_gain_db_per_channel[0] = m_gain_db_per_channel[1] = 0.0f;
+    env_db_per_channel[0] = env_db_per_channel[1] = -120.0f;
+    gain_db_per_channel[0] = gain_db_per_channel[1] = 0.0f;
 }
 
 void CompressorProcessor::process_channel(float* buf, size_t nframes, int ch) {
-    const float threshold = m_threshold_db.load();
-    const float current_ratio = m_ratio.load();
-    const float makeup = m_makeup_db.load();
-    const float fs = static_cast<float>(m_sample_rate);
+    const float threshold = threshold_db.load();
+    const float current_ratio = ratio.load();
+    const float makeup = makeup_db.load();
+    const float fs = static_cast<float>(sample_rate);
 
-    const float at_coeff = std::exp(-1.0f / (fs * m_attack_ms.load() * 0.001f));
-    const float rel_coeff = std::exp(-1.0f / (fs * m_release_ms.load() * 0.001f));
+    const float at_coeff = std::exp(-1.0f / (fs * attack_ms.load() * 0.001f));
+    const float rel_coeff = std::exp(-1.0f / (fs * release_ms.load() * 0.001f));
 
-    float& env_db = m_env_db_per_channel[ch];
-    float& gain_db = m_gain_db_per_channel[ch];
+    float& env_db = env_db_per_channel[ch];
+    float& gain_db = gain_db_per_channel[ch];
     float min_gain_db = 0.0f;
 
     for (size_t i = 0; i < nframes; ++i) {
         // 20·log10(x) = (20·log10 2)·log2(x); log2/exp2 are much cheaper
         // than log10/pow per sample.
         float level = std::abs(buf[i]);
-        float level_db = (level > 1e-9f) ? K_DB_PER_OCTAVE * std::log2(level) : -120.0f;
+        float level_db = (level > 1e-9f) ? DB_PER_OCTAVE * std::log2(level) : -120.0f;
 
         if (level_db > env_db) {
             env_db = at_coeff * env_db + (1.0f - at_coeff) * level_db;
@@ -47,10 +47,10 @@ void CompressorProcessor::process_channel(float* buf, size_t nframes, int ch) {
         }
 
         min_gain_db = std::min(min_gain_db, gain_db);
-        buf[i] *= std::exp2((gain_db + makeup) * (1.0f / K_DB_PER_OCTAVE));
+        buf[i] *= std::exp2((gain_db + makeup) * (1.0f / DB_PER_OCTAVE));
     }
-    if (-min_gain_db > m_gr_peak_db.load(std::memory_order_relaxed)) {
-        m_gr_peak_db.store(-min_gain_db, std::memory_order_relaxed);
+    if (-min_gain_db > gr_peak_db.load(std::memory_order_relaxed)) {
+        gr_peak_db.store(-min_gain_db, std::memory_order_relaxed);
     }
 }
 

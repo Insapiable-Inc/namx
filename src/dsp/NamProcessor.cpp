@@ -13,9 +13,9 @@ NamProcessor::NamProcessor() {
 
 NamProcessor::~NamProcessor() {
     // Audio thread must be stopped before this is called.
-    std::lock_guard<std::mutex> lock(m_model_mutex);
-    m_slot.publish(nullptr);
-    m_slot.reclaim(true);
+    std::lock_guard<std::mutex> lock(model_mutex);
+    slot.publish(nullptr);
+    slot.reclaim(true);
 }
 
 bool NamProcessor::load_model(const std::string& path) {
@@ -27,12 +27,12 @@ bool NamProcessor::load_model(const std::string& path) {
         pair->l = nam::get_dsp(std::filesystem::path(path));
         pair->r = nam::get_dsp(std::filesystem::path(path));
     } catch (const std::exception& e) {
-        m_last_error = e.what();
+        last_error = e.what();
         qCWarning(lc_audio, "[NamProcessor] Failed to load model: %s", e.what());
         return false;
     }
     if (!pair->l || !pair->r) {
-        m_last_error = "Model loader returned no DSP object.";
+        last_error = "Model loader returned no DSP object.";
         return false;
     }
 
@@ -42,65 +42,65 @@ bool NamProcessor::load_model(const std::string& path) {
     const int in_ch = pair->l->NumInputChannels();
     const int out_ch = pair->l->NumOutputChannels();
     if (in_ch != 1 || out_ch != 1) {
-        m_last_error = "Model has " + std::to_string(in_ch) + " input / " + std::to_string(out_ch) +
-                       " output channels; only 1-in/1-out models are supported.";
-        qCWarning(lc_audio, "[NamProcessor] %s (%s)", m_last_error.c_str(), path.c_str());
+        last_error = "Model has " + std::to_string(in_ch) + " input / " + std::to_string(out_ch) +
+                     " output channels; only 1-in/1-out models are supported.";
+        qCWarning(lc_audio, "[NamProcessor] %s (%s)", last_error.c_str(), path.c_str());
         return false;
     }
-    m_last_error.clear();
+    last_error.clear();
 
     // Prewarm outside the lock (slow), then re-check inside it: the buffer
     // size or sample rate may have moved meanwhile.
     size_t current_max_buf;
     double rate;
     {
-        std::lock_guard<std::mutex> lock(m_model_mutex);
-        current_max_buf = m_max_buf.load();
-        rate = m_model_rate > 0.0 ? m_model_rate : m_sample_rate;
+        std::lock_guard<std::mutex> lock(model_mutex);
+        current_max_buf = max_buf.load();
+        rate = model_rate > 0.0 ? model_rate : sample_rate;
     }
     pair->reset(rate, current_max_buf);
 
     {
-        std::lock_guard<std::mutex> lock(m_model_mutex);
-        const size_t cur_buf = m_max_buf.load();
-        const double cur_rate = m_model_rate > 0.0 ? m_model_rate : m_sample_rate;
+        std::lock_guard<std::mutex> lock(model_mutex);
+        const size_t cur_buf = max_buf.load();
+        const double cur_rate = model_rate > 0.0 ? model_rate : sample_rate;
         if (cur_buf > pair->reset_buf || cur_rate != pair->reset_rate) {
             pair->reset(cur_rate, std::max(cur_buf, pair->reset_buf));
         }
-        m_slot.publish(std::move(pair));
-        m_model_path = path;
+        slot.publish(std::move(pair));
+        model_path = path;
     }
-    m_fade_pending.store(true, std::memory_order_release);
+    fade_pending.store(true, std::memory_order_release);
     return true;
 }
 
 void NamProcessor::unload_model() {
     {
-        std::lock_guard<std::mutex> lock(m_model_mutex);
-        m_slot.publish(nullptr);
-        m_model_path = "";
+        std::lock_guard<std::mutex> lock(model_mutex);
+        slot.publish(nullptr);
+        model_path = "";
     }
-    m_fade_pending.store(true, std::memory_order_release);
+    fade_pending.store(true, std::memory_order_release);
 }
 
 void NamProcessor::prepare_buffer(size_t new_max_buf) {
     // Safe to block and mutate the live pair here: both backends invoke
     // buffer-size changes on a non-RT thread with no process callback in
     // flight, and the scratch buffers are only touched by that callback.
-    std::lock_guard<std::mutex> lock(m_model_mutex);
-    m_max_buf.store(new_max_buf);
-    m_scratch_l.resize(new_max_buf);
-    m_scratch_r.resize(new_max_buf);
+    std::lock_guard<std::mutex> lock(model_mutex);
+    max_buf.store(new_max_buf);
+    scratch_l.resize(new_max_buf);
+    scratch_r.resize(new_max_buf);
 
     // A model Reset() with a smaller max buffer will overrun the NAM core's
     // preallocated storage on a larger block (the core only assert()s, and
     // Release strips asserts) — re-Reset the live pair when we grow, or when
     // the sample rate changed since it was prepared.
-    ModelPair* p = m_slot.current();
+    ModelPair* p = slot.current();
     if (!p) {
         return;
     }
-    const double rate = m_model_rate > 0.0 ? m_model_rate : m_sample_rate;
+    const double rate = model_rate > 0.0 ? model_rate : sample_rate;
     if (new_max_buf > p->reset_buf || rate != p->reset_rate) {
         p->reset(rate, std::max(new_max_buf, p->reset_buf));
     }
@@ -110,8 +110,8 @@ void NamProcessor::on_sample_rate_changed(double sr) {
     // Record the rate; the following prepareBuffer() (AudioEngine always
     // calls it right after propagating a sample-rate change) re-Resets the
     // live pair with it.
-    std::lock_guard<std::mutex> lock(m_model_mutex);
-    m_model_rate = sr;
+    std::lock_guard<std::mutex> lock(model_mutex);
+    model_rate = sr;
 }
 
 /*static*/ void NamProcessor::run_model(nam::DSP* model, float* buf, size_t n,
@@ -136,14 +136,14 @@ bool NamProcessor::process(float* l, float* r, size_t n, bool input_is_stereo) {
         ~BlockGuard() {
             s.end_block();
         }
-    } guard{m_slot};
+    } guard{slot};
 
-    if (!m_enabled.load()) {
+    if (!enabled.load()) {
         return input_is_stereo;
     }
 
     // A stereo pre-effect feeding a mono amp: sum, run one model.
-    if (input_is_stereo && !m_stereo_amp.load(std::memory_order_relaxed)) {
+    if (input_is_stereo && !stereo_amp.load(std::memory_order_relaxed)) {
         for (size_t i = 0; i < n; ++i) {
             l[i] = 0.5f * (l[i] + r[i]);
         }
@@ -152,15 +152,15 @@ bool NamProcessor::process(float* l, float* r, size_t n, bool input_is_stereo) {
 
     // One snapshot per block: both channels run the same pair even if a load
     // lands mid-block.
-    ModelPair* p = m_slot.acquire();
+    ModelPair* p = slot.acquire();
 
     // RT-safety guard: a block larger than what the pair was prepared for
     // would overrun the core's buffers — bypass instead (see prepareBuffer).
-    const bool can_run = p && n <= p->reset_buf && n <= m_scratch_l.size();
+    const bool can_run = p && n <= p->reset_buf && n <= scratch_l.size();
     if (can_run) {
-        run_model(p->l.get(), l, n, m_scratch_l);
+        run_model(p->l.get(), l, n, scratch_l);
         if (input_is_stereo) {
-            run_model(p->r.get(), r, n, m_scratch_r);
+            run_model(p->r.get(), r, n, scratch_r);
         }
     }
     if (!input_is_stereo) {
@@ -169,13 +169,12 @@ bool NamProcessor::process(float* l, float* r, size_t n, bool input_is_stereo) {
 
     // ~15 ms fade-in after a model load/unload masks the discontinuity
     // between the old and new amp (or between amp and dry passthrough).
-    if (m_fade_pending.exchange(false, std::memory_order_acq_rel)) {
-        m_fade_total = std::max<size_t>(1, static_cast<size_t>(m_sample_rate * 0.015));
-        m_fade_remaining = m_fade_total;
+    if (fade_pending.exchange(false, std::memory_order_acq_rel)) {
+        fade_total = std::max<size_t>(1, static_cast<size_t>(sample_rate * 0.015));
+        fade_remaining = fade_total;
     }
-    for (size_t i = 0; i < n && m_fade_remaining > 0; ++i, --m_fade_remaining) {
-        const float g =
-            1.0f - static_cast<float>(m_fade_remaining) / static_cast<float>(m_fade_total);
+    for (size_t i = 0; i < n && fade_remaining > 0; ++i, --fade_remaining) {
+        const float g = 1.0f - static_cast<float>(fade_remaining) / static_cast<float>(fade_total);
         l[i] *= g;
         r[i] *= g;
     }

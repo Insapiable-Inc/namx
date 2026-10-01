@@ -11,14 +11,14 @@
 
 ToggleSwitch::ToggleSwitch(QWidget* parent)
     : QAbstractButton(parent)
-    , m_accent(Theme::generic_accent()) {
+    , accent(Theme::generic_accent()) {
     setCheckable(true);
     setCursor(Qt::PointingHandCursor);
     setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 }
 
 void ToggleSwitch::set_accent(const QColor& c) {
-    m_accent = c;
+    accent = c;
     update();
 }
 
@@ -32,8 +32,8 @@ void ToggleSwitch::paintEvent(QPaintEvent*) {
     const qreal rx = h / 2.0;
 
     // ---- Track ----
-    const QColor color = m_accent;
-    const QColor track_off = m_hovered ? Theme::track_hover() : Theme::track();
+    const QColor color = accent;
+    const QColor track_off = hovered ? Theme::track_hover() : Theme::track();
 
     if (isChecked()) {
         QLinearGradient trk(0, 0, 0, h);
@@ -94,13 +94,13 @@ void ToggleSwitch::mouseReleaseEvent(QMouseEvent* e) {
 }
 
 void ToggleSwitch::enterEvent(QEnterEvent* e) {
-    m_hovered = true;
+    hovered = true;
     update();
     QAbstractButton::enterEvent(e);
 }
 
 void ToggleSwitch::leaveEvent(QEvent* e) {
-    m_hovered = false;
+    hovered = false;
     update();
     QAbstractButton::leaveEvent(e);
 }

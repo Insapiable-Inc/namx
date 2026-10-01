@@ -32,13 +32,13 @@ protected:
     void paintEvent(QPaintEvent* event) override;
 
 private:
-    QString m_note{"-"};
-    float m_cents{0.0f};
-    bool m_valid{false};
-    float m_hz{0.0f};
-    bool m_show_hz{false};
-    int m_reference{440};
+    QString note{"-"};
+    float cents{0.0f};
+    bool valid{false};
+    float hz{0.0f};
+    bool show_hz{false};
+    int reference{440};
 
-    static constexpr int K_LED_COUNT = 21; // odd, so one LED is dead center
-    static constexpr float K_IN_TUNE_CENTS = 3.0f; // |cents| at or below: green
+    static constexpr int LED_COUNT = 21; // odd, so one LED is dead center
+    static constexpr float IN_TUNE_CENTS = 3.0f; // |cents| at or below: green
 };

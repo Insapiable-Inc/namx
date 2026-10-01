@@ -201,7 +201,7 @@ private:
     // --- MIDI (Phase 16) ----------------------------------------------------
     // Every registry knob/toggle is a target (registered by knobParam /
     // toggleParam), plus the actions added here.
-    void setup_midi(QMenu* menu);
+    void setup_midi(QMenu* top_menu);
     QString target_label_for(QWidget* w, const QString& group, const QString& key) const;
     void add_learn_entries(const QString& target_id, QMenu* menu);
     void start_learn(const QString& target_id);
@@ -213,14 +213,14 @@ private:
     void restore_session_state();
     void schedule_session_save();
 
-    ParamRegistry m_params;
+    ParamRegistry params;
     // Parameters created in setupUI that don't need a named member (the
     // Phase 17 advanced knobs): registered at the end of registerParameters.
-    std::vector<std::function<void()>> m_late_params;
+    std::vector<std::function<void()>> late_params;
     KnobWidget* late_knob(const QString& group, const QString& key, KnobWidget* k,
                           std::function<void(double)> apply);
 
-    std::unique_ptr<AudioEngine> m_engine;
+    std::unique_ptr<AudioEngine> engine;
 
     // Effect strip state
     struct CardToggles
@@ -228,157 +228,157 @@ private:
         ToggleSwitch* enable;
         ToggleSwitch* stereo;
     };
-    std::unordered_map<EffectBase*, QWidget*> m_fx_cols;
-    std::unordered_map<EffectBase*, CardToggles> m_fx_toggles;
-    std::unordered_map<QWidget*, QWidget*> m_card_grips; // card → ≡ drag handle
-    QWidget* m_strip = nullptr;
-    QVBoxLayout* m_strip_lay = nullptr;
-    QWidget* m_input_card = nullptr;
-    QWidget* m_output_card = nullptr;
-    EffectShortcuts m_shortcuts{this};
+    std::unordered_map<EffectBase*, QWidget*> fx_cols;
+    std::unordered_map<EffectBase*, CardToggles> fx_toggles;
+    std::unordered_map<QWidget*, QWidget*> card_grips; // card → ≡ drag handle
+    QWidget* strip = nullptr;
+    QVBoxLayout* strip_lay = nullptr;
+    QWidget* input_card = nullptr;
+    QWidget* output_card = nullptr;
+    EffectShortcuts shortcuts{this};
 
     // Drag state for card reordering
-    QWidget* m_drag_card = nullptr;
-    QPoint m_drag_start_pos;
-    std::string m_drag_id; // effect ID being dragged; empty = no drag
-    std::vector<std::string> m_preview_ids; // strip order currently shown while dragging
+    QWidget* drag_card = nullptr;
+    QPoint drag_start_pos;
+    std::string drag_id; // effect ID being dragged; empty = no drag
+    std::vector<std::string> preview_ids; // strip order currently shown while dragging
 
-    QLabel* m_lbl_nam_status = nullptr; // file name (accent when loaded)
-    QLabel* m_lbl_nam_meta = nullptr; // architecture · rate · gear
-    QLabel* m_lbl_ir_status = nullptr;
-    QLabel* m_lbl_ir_meta = nullptr;
-    QLabel* m_lbl_irb_status = nullptr; // Cabinet slot B (detail row)
+    QLabel* lbl_nam_status = nullptr; // file name (accent when loaded)
+    QLabel* lbl_nam_meta = nullptr; // architecture · rate · gear
+    QLabel* lbl_ir_status = nullptr;
+    QLabel* lbl_ir_meta = nullptr;
+    QLabel* lbl_irb_status = nullptr; // Cabinet slot B (detail row)
 
-    LibraryIndex* m_library_index = nullptr;
-    Tone3000Client* m_tone3000 = nullptr;
-    LibraryDock* m_library_tabs = nullptr;
-    LibraryPanel* m_library = nullptr; // local tab (owned by mLibraryTabs)
-    Tone3000Panel* m_t3k_panel = nullptr; // community tab
-    QDockWidget* m_library_dock = nullptr;
-    QLabel* m_lbl_nam_origin = nullptr; // T3K mark when the model came from TONE3000
-    QLabel* m_lbl_ir_origin = nullptr;
+    LibraryIndex* library_index = nullptr;
+    Tone3000Client* tone3000 = nullptr;
+    LibraryDock* library_tabs = nullptr;
+    LibraryPanel* library = nullptr; // local tab (owned by mLibraryTabs)
+    Tone3000Panel* t3k_panel = nullptr; // community tab
+    QDockWidget* library_dock = nullptr;
+    QLabel* lbl_nam_origin = nullptr; // T3K mark when the model came from TONE3000
+    QLabel* lbl_ir_origin = nullptr;
 
-    AudioStatusBar* m_audio_bar = nullptr;
-    QLabel* m_lbl_rig_status = nullptr;
-    bool m_audio_ok = false; // last known backend state (drives the
-                             // disconnect watchdog in updateMeters)
+    AudioStatusBar* audio_bar = nullptr;
+    QLabel* lbl_rig_status = nullptr;
+    bool audio_ok = false; // last known backend state (drives the
+                           // disconnect watchdog in updateMeters)
 
-    VUMeter* m_meter_in = nullptr;
-    VUMeter* m_meter_out = nullptr;
-    GainReductionMeter* m_gr_gate = nullptr;
-    GainReductionMeter* m_gr_comp = nullptr;
+    VUMeter* meter_in = nullptr;
+    VUMeter* meter_out = nullptr;
+    GainReductionMeter* gr_gate = nullptr;
+    GainReductionMeter* gr_comp = nullptr;
 
-    TunerDisplay* m_tuner_display = nullptr;
-    int m_tuner_ref_hz = 440;
+    TunerDisplay* tuner_display = nullptr;
+    int tuner_ref_hz = 440;
 
-    KnobWidget* m_knob_input_gain = nullptr;
-    KnobWidget* m_knob_output_gain = nullptr;
+    KnobWidget* knob_input_gain = nullptr;
+    KnobWidget* knob_output_gain = nullptr;
 
-    ToggleSwitch* m_sw_eq_enable = nullptr;
-    KnobWidget* m_knob_low = nullptr;
-    KnobWidget* m_knob_mid = nullptr;
-    KnobWidget* m_knob_treble = nullptr;
+    ToggleSwitch* sw_eq_enable = nullptr;
+    KnobWidget* knob_low = nullptr;
+    KnobWidget* knob_mid = nullptr;
+    KnobWidget* knob_treble = nullptr;
 
-    ToggleSwitch* m_sw_tuner_enable = nullptr;
+    ToggleSwitch* sw_tuner_enable = nullptr;
 
-    ToggleSwitch* m_sw_gate_enable = nullptr;
-    KnobWidget* m_knob_gate_thresh = nullptr;
-    KnobWidget* m_knob_gate_attack = nullptr;
-    KnobWidget* m_knob_gate_release = nullptr;
+    ToggleSwitch* sw_gate_enable = nullptr;
+    KnobWidget* knob_gate_thresh = nullptr;
+    KnobWidget* knob_gate_attack = nullptr;
+    KnobWidget* knob_gate_release = nullptr;
 
-    ToggleSwitch* m_sw_comp_enable = nullptr;
-    KnobWidget* m_knob_comp_thresh = nullptr;
-    KnobWidget* m_knob_comp_ratio = nullptr;
-    KnobWidget* m_knob_comp_attack = nullptr;
-    KnobWidget* m_knob_comp_release = nullptr;
-    KnobWidget* m_knob_comp_makeup = nullptr;
+    ToggleSwitch* sw_comp_enable = nullptr;
+    KnobWidget* knob_comp_thresh = nullptr;
+    KnobWidget* knob_comp_ratio = nullptr;
+    KnobWidget* knob_comp_attack = nullptr;
+    KnobWidget* knob_comp_release = nullptr;
+    KnobWidget* knob_comp_makeup = nullptr;
 
-    ToggleSwitch* m_sw_wah_enable = nullptr;
-    KnobWidget* m_knob_wah_sens = nullptr;
-    KnobWidget* m_knob_wah_res = nullptr;
-    KnobWidget* m_knob_wah_mix = nullptr;
+    ToggleSwitch* sw_wah_enable = nullptr;
+    KnobWidget* knob_wah_sens = nullptr;
+    KnobWidget* knob_wah_res = nullptr;
+    KnobWidget* knob_wah_mix = nullptr;
 
-    ToggleSwitch* m_sw_flanger_enable = nullptr;
-    ToggleSwitch* m_sw_flanger_stereo = nullptr;
-    KnobWidget* m_knob_fl_rate = nullptr;
-    KnobWidget* m_knob_fl_depth = nullptr;
-    KnobWidget* m_knob_fl_feedback = nullptr;
-    KnobWidget* m_knob_fl_mix = nullptr;
+    ToggleSwitch* sw_flanger_enable = nullptr;
+    ToggleSwitch* sw_flanger_stereo = nullptr;
+    KnobWidget* knob_fl_rate = nullptr;
+    KnobWidget* knob_fl_depth = nullptr;
+    KnobWidget* knob_fl_feedback = nullptr;
+    KnobWidget* knob_fl_mix = nullptr;
 
-    ToggleSwitch* m_sw_phaser_enable = nullptr;
-    ToggleSwitch* m_sw_phaser_stereo = nullptr;
-    KnobWidget* m_knob_ph_rate = nullptr;
-    KnobWidget* m_knob_ph_depth = nullptr;
-    KnobWidget* m_knob_ph_feedback = nullptr;
-    KnobWidget* m_knob_ph_mix = nullptr;
+    ToggleSwitch* sw_phaser_enable = nullptr;
+    ToggleSwitch* sw_phaser_stereo = nullptr;
+    KnobWidget* knob_ph_rate = nullptr;
+    KnobWidget* knob_ph_depth = nullptr;
+    KnobWidget* knob_ph_feedback = nullptr;
+    KnobWidget* knob_ph_mix = nullptr;
 
-    ToggleSwitch* m_sw_chorus_enable = nullptr;
-    ToggleSwitch* m_sw_chorus_stereo = nullptr;
-    KnobWidget* m_knob_ch_rate = nullptr;
-    KnobWidget* m_knob_ch_depth = nullptr;
-    KnobWidget* m_knob_ch_mix = nullptr;
+    ToggleSwitch* sw_chorus_enable = nullptr;
+    ToggleSwitch* sw_chorus_stereo = nullptr;
+    KnobWidget* knob_ch_rate = nullptr;
+    KnobWidget* knob_ch_depth = nullptr;
+    KnobWidget* knob_ch_mix = nullptr;
 
-    ToggleSwitch* m_sw_tremolo_enable = nullptr;
-    ToggleSwitch* m_sw_tremolo_stereo = nullptr;
-    KnobWidget* m_knob_tr_rate = nullptr;
-    KnobWidget* m_knob_tr_depth = nullptr;
+    ToggleSwitch* sw_tremolo_enable = nullptr;
+    ToggleSwitch* sw_tremolo_stereo = nullptr;
+    KnobWidget* knob_tr_rate = nullptr;
+    KnobWidget* knob_tr_depth = nullptr;
 
-    ToggleSwitch* m_sw_delay_enable = nullptr;
-    ToggleSwitch* m_sw_delay_stereo = nullptr;
-    KnobWidget* m_knob_del_time = nullptr;
-    KnobWidget* m_knob_del_feedback = nullptr;
-    KnobWidget* m_knob_del_mix = nullptr;
+    ToggleSwitch* sw_delay_enable = nullptr;
+    ToggleSwitch* sw_delay_stereo = nullptr;
+    KnobWidget* knob_del_time = nullptr;
+    KnobWidget* knob_del_feedback = nullptr;
+    KnobWidget* knob_del_mix = nullptr;
 
-    ToggleSwitch* m_sw_reverb_enable = nullptr;
-    KnobWidget* m_knob_rev_room = nullptr;
-    KnobWidget* m_knob_rev_damping = nullptr;
-    KnobWidget* m_knob_rev_width = nullptr;
-    KnobWidget* m_knob_rev_mix = nullptr;
+    ToggleSwitch* sw_reverb_enable = nullptr;
+    KnobWidget* knob_rev_room = nullptr;
+    KnobWidget* knob_rev_damping = nullptr;
+    KnobWidget* knob_rev_width = nullptr;
+    KnobWidget* knob_rev_mix = nullptr;
 
-    ToggleSwitch* m_sw_transpose_enable = nullptr;
-    ToggleSwitch* m_sw_drive_enable = nullptr;
-    KnobWidget* m_knob_drive = nullptr;
-    KnobWidget* m_knob_drive_tone = nullptr;
-    KnobWidget* m_knob_drive_level = nullptr;
+    ToggleSwitch* sw_transpose_enable = nullptr;
+    ToggleSwitch* sw_drive_enable = nullptr;
+    KnobWidget* knob_drive = nullptr;
+    KnobWidget* knob_drive_tone = nullptr;
+    KnobWidget* knob_drive_level = nullptr;
 
-    ToggleSwitch* m_sw_doubler_enable = nullptr;
-    KnobWidget* m_knob_dbl_spread = nullptr;
-    KnobWidget* m_knob_dbl_mix = nullptr;
+    ToggleSwitch* sw_doubler_enable = nullptr;
+    KnobWidget* knob_dbl_spread = nullptr;
+    KnobWidget* knob_dbl_mix = nullptr;
 
-    ToggleSwitch* m_sw_volume_enable = nullptr;
-    KnobWidget* m_knob_vol_pos = nullptr;
-    KnobWidget* m_knob_vol_mid = nullptr;
+    ToggleSwitch* sw_volume_enable = nullptr;
+    KnobWidget* knob_vol_pos = nullptr;
+    KnobWidget* knob_vol_mid = nullptr;
 
-    ToggleSwitch* m_sw_limiter = nullptr; // Output card
-    ToggleSwitch* m_sw_nam_stereo = nullptr; // Amplifier row: per-channel amp
+    ToggleSwitch* sw_limiter = nullptr; // Output card
+    ToggleSwitch* sw_nam_stereo = nullptr; // Amplifier row: per-channel amp
 
-    ToggleSwitch* m_sw_nam_enable = nullptr;
-    ToggleSwitch* m_sw_ir_enable = nullptr;
+    ToggleSwitch* sw_nam_enable = nullptr;
+    ToggleSwitch* sw_ir_enable = nullptr;
 
     void update_meter_timer();
 
-    QTimer* m_meter_timer = nullptr; // ~60 fps, paused while minimized/hidden
-    QTimer* m_status_timer = nullptr; // 50 ms, always
-    QTimer* m_tuner_timer = nullptr;
-    QTimer* m_session_save_timer = nullptr;
+    QTimer* meter_timer = nullptr; // ~60 fps, paused while minimized/hidden
+    QTimer* status_timer = nullptr; // 50 ms, always
+    QTimer* tuner_timer = nullptr;
+    QTimer* session_save_timer = nullptr;
 
-    TempoBar* m_tempo_bar = nullptr;
-    double m_bpm = 120.0;
-    std::vector<SyncedParam> m_synced;
-    PresetBar* m_preset_bar = nullptr;
-    QString m_preset_path; // current preset file; empty = untitled
-    QJsonObject m_preset_baseline; // toJson() when it was loaded/saved
-    QJsonObject m_ab[2]; // A/B snapshots; empty = not taken yet
-    int m_ab_active = 0;
-    QTimer* m_preset_state_timer = nullptr;
+    TempoBar* tempo_bar = nullptr;
+    double bpm = 120.0;
+    std::vector<SyncedParam> synced;
+    PresetBar* preset_bar = nullptr;
+    QString preset_path; // current preset file; empty = untitled
+    QJsonObject preset_baseline; // toJson() when it was loaded/saved
+    QJsonObject ab[2]; // A/B snapshots; empty = not taken yet
+    int ab_active = 0;
+    QTimer* preset_state_timer = nullptr;
 
-    std::unique_ptr<MidiInput> m_midi;
-    MidiMapper* m_midi_mapper = nullptr;
-    bool m_midi_ok = false;
-    QShortcut* m_learn_esc = nullptr;
-    QWidget* m_learn_widget = nullptr; // highlighted while learning
-    QString m_learn_target;
-    QLabel* m_lbl_midi = nullptr; // status bar activity light
-    QMenu* m_midi_menu = nullptr;
-    QTimer* m_midi_blink = nullptr;
+    std::unique_ptr<MidiInput> midi;
+    MidiMapper* midi_mapper = nullptr;
+    bool midi_ok = false;
+    QShortcut* learn_esc = nullptr;
+    QWidget* learn_widget = nullptr; // highlighted while learning
+    QString learn_target;
+    QLabel* lbl_midi = nullptr; // status bar activity light
+    QMenu* midi_menu = nullptr;
+    QTimer* midi_blink = nullptr;
 };

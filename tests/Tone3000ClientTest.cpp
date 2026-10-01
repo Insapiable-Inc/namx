@@ -43,7 +43,7 @@ static int gFailures = 0;
         } \
     } while (0)
 
-static const int K_PORT = 8765;
+static const int PORT = 8765;
 
 // Runs the event loop until `done` is set or the timeout hits.
 template <typename F>
@@ -77,19 +77,19 @@ static QJsonDocument http_get(QNetworkAccessManager& nam, const QUrl& url) {
     return QJsonDocument::fromJson(body);
 }
 
-static QString g_authorize_url;
+static QString authorize_url;
 static void message_handler(QtMsgType, const QMessageLogContext&, const QString& msg) {
     static const QRegularExpression RE("TONE3000 authorize URL: \"?(\\S+?)\"?$");
     const auto m = RE.match(msg);
     if (m.hasMatch()) {
-        g_authorize_url = m.captured(1);
+        authorize_url = m.captured(1);
     }
     std::fprintf(stderr, "%s\n", qPrintable(msg));
 }
 
 int main(int argc, char** argv) {
     qputenv("QT_QPA_PLATFORM", "offscreen");
-    qputenv("NAM_TONE3000_API_BASE", QString("http://127.0.0.1:%1/api/v1").arg(K_PORT).toUtf8());
+    qputenv("NAM_TONE3000_API_BASE", QString("http://127.0.0.1:%1/api/v1").arg(PORT).toUtf8());
     qputenv("NAM_TONE3000_NO_BROWSER", "1");
     QGuiApplication app(argc, argv); // QPixmap needs a GUI application
     app.setOrganizationName("pichulero.cl");
@@ -105,7 +105,7 @@ int main(int argc, char** argv) {
     // Mock server.
     QProcess mock;
     mock.setProcessChannelMode(QProcess::ForwardedErrorChannel);
-    mock.start("python3", {QString::fromUtf8(MOCK_SERVER_PY), QString::number(K_PORT)});
+    mock.start("python3", {QString::fromUtf8(MOCK_SERVER_PY), QString::number(PORT)});
     if (!mock.waitForStarted(5000)) {
         std::printf("cannot start python3 mock\n");
         return 2;
@@ -132,10 +132,10 @@ int main(int argc, char** argv) {
         client.start_auth(Tone3000Client::Flow::SELECT_TONE);
         // "Browser": GET the authorize URL; the mock redirects to our loopback.
         QTimer::singleShot(100, &client, [&] {
-            CHECK(!g_authorize_url.isEmpty(), "authorize URL logged (NO_BROWSER mode)");
-            CHECK(g_authorize_url.contains("prompt=select_tone"), "select_tone prompt in URL");
-            CHECK(g_authorize_url.contains("code_challenge_method=S256"), "PKCE S256 in URL");
-            http_get(nam, QUrl(g_authorize_url));
+            CHECK(!authorize_url.isEmpty(), "authorize URL logged (NO_BROWSER mode)");
+            CHECK(authorize_url.contains("prompt=select_tone"), "select_tone prompt in URL");
+            CHECK(authorize_url.contains("code_challenge_method=S256"), "PKCE S256 in URL");
+            http_get(nam, QUrl(authorize_url));
         });
     });
     CHECK(finished, "auth flow finished");
@@ -162,7 +162,7 @@ int main(int argc, char** argv) {
         CHECK(tones[0].gear_label() == "Amp + Cab" && tones[0].format_label() == "NAM", "labels");
         CHECK(tones[2].format == "ir", "IR tone parsed");
         // Cached: a second call must not hit the server.
-        const int before = http_get(nam, QUrl(QString("http://127.0.0.1:%1/control").arg(K_PORT)))
+        const int before = http_get(nam, QUrl(QString("http://127.0.0.1:%1/control").arg(PORT)))
                                .object()
                                .value("requests")
                                .toInt();
@@ -173,7 +173,7 @@ int main(int argc, char** argv) {
                                   done();
                               });
         });
-        const int after = http_get(nam, QUrl(QString("http://127.0.0.1:%1/control").arg(K_PORT)))
+        const int after = http_get(nam, QUrl(QString("http://127.0.0.1:%1/control").arg(PORT)))
                               .object()
                               .value("requests")
                               .toInt();
@@ -210,7 +210,7 @@ int main(int argc, char** argv) {
     });
 
     std::printf("token refresh (401 → refresh → retry)\n");
-    http_get(nam, QUrl(QString("http://127.0.0.1:%1/control?expire=1").arg(K_PORT)));
+    http_get(nam, QUrl(QString("http://127.0.0.1:%1/control?expire=1").arg(PORT)));
     {
         T3kTone t;
         wait_for([&](auto done) {
@@ -226,7 +226,7 @@ int main(int argc, char** argv) {
     }
 
     std::printf("rate limit (429 + Retry-After → one retry)\n");
-    http_get(nam, QUrl(QString("http://127.0.0.1:%1/control?ratelimit=1").arg(K_PORT)));
+    http_get(nam, QUrl(QString("http://127.0.0.1:%1/control?ratelimit=1").arg(PORT)));
     {
         bool status_seen = false;
         QObject::connect(&client, &Tone3000Client::status, &client, [&](const QString&) {
@@ -295,7 +295,7 @@ int main(int argc, char** argv) {
         CHECK(Tone3000Client::local_path_for(models[0], tone) == path, "localPathFor matches");
         // The storage hop must not carry Authorization (the mock rejects it).
         const QJsonArray reqs =
-            http_get(nam, QUrl(QString("http://127.0.0.1:%1/requests").arg(K_PORT))).array();
+            http_get(nam, QUrl(QString("http://127.0.0.1:%1/requests").arg(PORT))).array();
         bool storage_clean = false, api_authed = false;
         for (const QJsonValue v : reqs) {
             const QJsonObject o = v.toObject();
@@ -315,7 +315,7 @@ int main(int argc, char** argv) {
     {
         QPixmap px;
         wait_for([&](auto done) {
-            client.fetch_image(QString("http://127.0.0.1:%1/img/tone1.png").arg(K_PORT),
+            client.fetch_image(QString("http://127.0.0.1:%1/img/tone1.png").arg(PORT),
                                QSize(48, 48), [&, done](QPixmap p) {
                                    px = p;
                                    done();

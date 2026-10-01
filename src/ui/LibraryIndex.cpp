@@ -473,36 +473,35 @@ private:
 
 LibraryIndex::LibraryIndex(QObject* parent)
     : QObject(parent)
-    , m_roots(load_roots()) {
-    m_cache_path =
+    , roots(load_roots()) {
+    cache_path =
         QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/library-index.json";
 
-    m_thread = new QThread(this);
-    m_thread->setObjectName("LibraryScan");
-    m_worker = new LibraryScanWorker;
-    m_worker->moveToThread(m_thread);
-    connect(m_thread, &QThread::finished, m_worker, &QObject::deleteLater);
-    connect(m_worker, &LibraryScanWorker::finished, this, &LibraryIndex::on_scan_finished);
-    m_thread->start(QThread::LowPriority);
+    thread = new QThread(this);
+    thread->setObjectName("LibraryScan");
+    worker = new LibraryScanWorker;
+    worker->moveToThread(thread);
+    connect(thread, &QThread::finished, worker, &QObject::deleteLater);
+    connect(worker, &LibraryScanWorker::finished, this, &LibraryIndex::on_scan_finished);
+    thread->start(QThread::LowPriority);
 
-    m_watcher = new QFileSystemWatcher(this);
-    m_debounce = new QTimer(this);
-    m_debounce->setSingleShot(true);
-    m_debounce->setInterval(600);
-    connect(m_debounce, &QTimer::timeout, this, &LibraryIndex::request_scan);
-    connect(m_watcher, &QFileSystemWatcher::directoryChanged, m_debounce,
-            qOverload<>(&QTimer::start));
+    watcher = new QFileSystemWatcher(this);
+    debounce = new QTimer(this);
+    debounce->setSingleShot(true);
+    debounce->setInterval(600);
+    connect(debounce, &QTimer::timeout, this, &LibraryIndex::request_scan);
+    connect(watcher, &QFileSystemWatcher::directoryChanged, debounce, qOverload<>(&QTimer::start));
 
     request_scan();
 }
 
 LibraryIndex::~LibraryIndex() {
-    m_thread->quit();
-    m_thread->wait();
+    thread->quit();
+    thread->wait();
 }
 
 void LibraryIndex::set_roots(const LibraryRoots& new_roots) {
-    m_roots = new_roots;
+    roots = new_roots;
     save_roots(new_roots);
     request_scan();
 }
@@ -512,45 +511,45 @@ void LibraryIndex::rescan() {
 }
 
 void LibraryIndex::request_scan() {
-    if (m_scanning) {
-        m_rescan_queued = true;
+    if (scanning) {
+        rescan_queued = true;
         return;
     }
-    m_scanning = true;
+    scanning = true;
     emit scan_started();
     QMetaObject::invokeMethod(
-        m_worker,
-        [w = m_worker, roots = m_roots.with_tone3000_dir(), cache = m_cache_path] {
+        worker,
+        [w = worker, roots = roots.with_tone3000_dir(), cache = cache_path] {
             w->scan(roots, cache);
         },
         Qt::QueuedConnection);
 }
 
 void LibraryIndex::on_scan_finished(QList<LibraryEntry> new_entries, QStringList dirs) {
-    m_entries = std::move(new_entries);
-    m_scanning = false;
+    entries = std::move(new_entries);
+    scanning = false;
 
     // Watch every scanned directory (new files, deletions, new subfolders);
     // a burst of changes collapses into one rescan through the debounce.
-    const QStringList old = m_watcher->directories();
+    const QStringList old = watcher->directories();
     if (!old.isEmpty()) {
-        m_watcher->removePaths(old);
+        watcher->removePaths(old);
     }
     if (!dirs.isEmpty()) {
-        m_watcher->addPaths(dirs);
+        watcher->addPaths(dirs);
     }
 
     emit entries_changed();
 
-    if (m_rescan_queued) {
-        m_rescan_queued = false;
+    if (rescan_queued) {
+        rescan_queued = false;
         request_scan();
     }
 }
 
 const LibraryEntry* LibraryIndex::find(const QString& path) const {
     const QString c = QDir::cleanPath(path);
-    for (const auto& e : m_entries) {
+    for (const auto& e : entries) {
         if (e.path == c) {
             return &e;
         }
@@ -590,7 +589,7 @@ const LibraryEntry* LibraryIndex::find_tone3000_model(int model_id) const {
     if (model_id == 0) {
         return nullptr;
     }
-    for (const auto& e : m_entries) {
+    for (const auto& e : entries) {
         if (e.t3k_model_id == model_id) {
             return &e;
         }
@@ -602,7 +601,7 @@ bool LibraryIndex::has_tone3000_tone(int tone_id) const {
     if (tone_id == 0) {
         return false;
     }
-    for (const auto& e : m_entries) {
+    for (const auto& e : entries) {
         if (e.t3k_tone_id == tone_id) {
             return true;
         }

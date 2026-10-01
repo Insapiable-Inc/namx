@@ -24,45 +24,45 @@ public:
     void reset() override;
 
     void set_time(float ms) {
-        m_time_ms.store(ms);
+        time_ms.store(ms);
     }
     void set_feedback_pct(float pct) {
-        m_feedback_pct.store(pct);
+        feedback_pct.store(pct);
     }
     void set_mix_pct(float pct) {
-        m_mix_pct.store(pct);
+        mix_pct.store(pct);
     }
     void set_right_ratio(float pct) {
-        m_right_pct.store(pct);
+        right_pct.store(pct);
     } // 25–200 % of Time
     void set_cross_feed(float pct) {
-        m_cross_pct.store(pct);
+        cross_pct.store(pct);
     }
     void set_low_cut(float hz) {
-        m_low_cut_hz.store(hz);
+        low_cut_hz.store(hz);
     }
     void set_high_cut(float hz) {
-        m_high_cut_hz.store(hz);
+        high_cut_hz.store(hz);
     }
     void set_saturation(float pct) {
-        m_sat_pct.store(pct);
+        sat_pct.store(pct);
     }
     void set_modulation(float pct) {
-        m_mod_pct.store(pct);
+        mod_pct.store(pct);
     }
     /// Octave-up repeats (0–100 %): each pass through the loop climbs.
     void set_crystals(float pct) {
-        m_crystals_pct.store(pct);
+        crystals_pct.store(pct);
     }
 
     float time() const {
-        return m_time_ms.load();
+        return time_ms.load();
     }
     float get_feedback_pct() const {
-        return m_feedback_pct.load();
+        return feedback_pct.load();
     }
     float get_mix_pct() const {
-        return m_mix_pct.load();
+        return mix_pct.load();
     }
 
 protected:
@@ -98,20 +98,20 @@ private:
     float loop(int line, float d, const Params& p); // what re-enters the line (crystals)
     static float saturate(float x, float amount);
 
-    std::atomic<float> m_time_ms{250.0f};
-    std::atomic<float> m_feedback_pct{40.0f};
-    std::atomic<float> m_mix_pct{30.0f};
-    std::atomic<float> m_right_pct{100.0f};
-    std::atomic<float> m_cross_pct{100.0f};
-    std::atomic<float> m_low_cut_hz{20.0f};
-    std::atomic<float> m_high_cut_hz{20000.0f};
-    std::atomic<float> m_sat_pct{0.0f};
-    std::atomic<float> m_mod_pct{0.0f};
-    std::atomic<float> m_crystals_pct{0.0f};
-    PitchShifter m_shift[2];
+    std::atomic<float> time_ms{250.0f};
+    std::atomic<float> feedback_pct{40.0f};
+    std::atomic<float> mix_pct{30.0f};
+    std::atomic<float> right_pct{100.0f};
+    std::atomic<float> cross_pct{100.0f};
+    std::atomic<float> low_cut_hz{20.0f};
+    std::atomic<float> high_cut_hz{20000.0f};
+    std::atomic<float> sat_pct{0.0f};
+    std::atomic<float> mod_pct{0.0f};
+    std::atomic<float> crystals_pct{0.0f};
+    PitchShifter shift[2];
 
-    Line m_lines[2];
-    float m_mod_phase = 0.0f;
+    Line lines[2];
+    float mod_phase = 0.0f;
 
-    static constexpr float K_MAX_DELAY_MS = 2100.0f; // 1000 ms × 200 % + modulation
+    static constexpr float MAX_DELAY_MS = 2100.0f; // 1000 ms × 200 % + modulation
 };

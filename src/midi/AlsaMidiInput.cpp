@@ -30,34 +30,34 @@ public:
     }
 
     bool start() override {
-        if (m_seq) {
+        if (seq) {
             return true;
         }
-        if (snd_seq_open(&m_seq, "default", SND_SEQ_OPEN_DUPLEX, SND_SEQ_NONBLOCK) < 0) {
+        if (snd_seq_open(&seq, "default", SND_SEQ_OPEN_DUPLEX, SND_SEQ_NONBLOCK) < 0) {
             qCWarning(lc_audio, "[MIDI] ALSA sequencer unavailable — MIDI disabled");
-            m_seq = nullptr;
+            seq = nullptr;
             return false;
         }
-        snd_seq_set_client_name(m_seq, "NAM Player");
-        m_client = snd_seq_client_id(m_seq);
-        m_port = snd_seq_create_simple_port(
-            m_seq, "MIDI In", SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE,
+        snd_seq_set_client_name(seq, "NAM Player");
+        client = snd_seq_client_id(seq);
+        port = snd_seq_create_simple_port(
+            seq, "MIDI In", SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE,
             SND_SEQ_PORT_TYPE_MIDI_GENERIC | SND_SEQ_PORT_TYPE_APPLICATION);
-        if (m_port < 0) {
+        if (port < 0) {
             qCWarning(lc_audio, "[MIDI] cannot create the input port");
-            snd_seq_close(m_seq);
-            m_seq = nullptr;
+            snd_seq_close(seq);
+            seq = nullptr;
             return false;
         }
         // Hot-plug: the system announce port reports clients/ports coming and going.
-        snd_seq_connect_from(m_seq, m_port, SND_SEQ_CLIENT_SYSTEM, SND_SEQ_PORT_SYSTEM_ANNOUNCE);
+        snd_seq_connect_from(seq, port, SND_SEQ_CLIENT_SYSTEM, SND_SEQ_PORT_SYSTEM_ANNOUNCE);
 
         rescan();
         sync_connections();
 
-        m_wake = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
-        m_running = true;
-        m_thread = std::thread([this] {
+        wake = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
+        running = true;
+        thread = std::thread([this] {
             run();
         });
         return true;
@@ -68,9 +68,9 @@ public:
     }
 
     QStringList devices() const override {
-        std::lock_guard<std::mutex> lock(m_mutex);
+        std::lock_guard<std::mutex> lock(mutex);
         QStringList out;
-        for (const auto& [name, addr] : m_present) {
+        for (const auto& [name, addr] : present) {
             out << name;
         }
         return out; // std::map: already sorted
@@ -78,24 +78,24 @@ public:
 
 protected:
     void sync_connections() override {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        if (!m_seq) {
+        std::lock_guard<std::mutex> lock(mutex);
+        if (!seq) {
             return;
         }
         // Disconnect what is gone or disabled, connect what is enabled.
-        for (auto it = m_connected.begin(); it != m_connected.end();) {
-            const auto p = m_present.find(it->first);
-            if (p == m_present.end() || !is_enabled(it->first) || p->second != it->second) {
-                snd_seq_disconnect_from(m_seq, m_port, it->second.client, it->second.port);
-                it = m_connected.erase(it);
+        for (auto it = connected.begin(); it != connected.end();) {
+            const auto p = present.find(it->first);
+            if (p == present.end() || !is_enabled(it->first) || p->second != it->second) {
+                snd_seq_disconnect_from(seq, port, it->second.client, it->second.port);
+                it = connected.erase(it);
             } else {
                 ++it;
             }
         }
-        for (const auto& [name, addr] : m_present) {
-            if (is_enabled(name) && !m_connected.count(name) &&
-                snd_seq_connect_from(m_seq, m_port, addr.client, addr.port) == 0) {
-                m_connected[name] = addr;
+        for (const auto& [name, addr] : present) {
+            if (is_enabled(name) && !connected.count(name) &&
+                snd_seq_connect_from(seq, port, addr.client, addr.port) == 0) {
+                connected[name] = addr;
             }
         }
     }
@@ -110,43 +110,43 @@ private:
     };
 
     void shutdown() {
-        if (!m_seq) {
+        if (!seq) {
             return;
         }
-        m_running = false;
+        running = false;
         const uint64_t one = 1;
-        if (m_wake >= 0) {
-            (void)!write(m_wake, &one, sizeof one);
+        if (wake >= 0) {
+            (void)!write(wake, &one, sizeof one);
         }
-        if (m_thread.joinable()) {
-            m_thread.join();
+        if (thread.joinable()) {
+            thread.join();
         }
-        if (m_wake >= 0) {
-            close(m_wake);
+        if (wake >= 0) {
+            close(wake);
         }
-        snd_seq_close(m_seq);
-        m_seq = nullptr;
+        snd_seq_close(seq);
+        seq = nullptr;
     }
 
     // Readable, subscribable ports of other clients (GUI thread).
     void rescan() {
         std::map<QString, Addr> found;
         {
-            std::lock_guard<std::mutex> lock(m_mutex);
+            std::lock_guard<std::mutex> lock(mutex);
             snd_seq_client_info_t* cinfo;
             snd_seq_port_info_t* pinfo;
             snd_seq_client_info_alloca(&cinfo);
             snd_seq_port_info_alloca(&pinfo);
             snd_seq_client_info_set_client(cinfo, -1);
-            while (snd_seq_query_next_client(m_seq, cinfo) >= 0) {
+            while (snd_seq_query_next_client(seq, cinfo) >= 0) {
                 const int client_id = snd_seq_client_info_get_client(cinfo);
-                if (client_id == SND_SEQ_CLIENT_SYSTEM || client_id == m_client) {
+                if (client_id == SND_SEQ_CLIENT_SYSTEM || client_id == client) {
                     continue;
                 }
                 const QString client_name = QString::fromUtf8(snd_seq_client_info_get_name(cinfo));
                 snd_seq_port_info_set_client(pinfo, client_id);
                 snd_seq_port_info_set_port(pinfo, -1);
-                while (snd_seq_query_next_port(m_seq, pinfo) >= 0) {
+                while (snd_seq_query_next_port(seq, pinfo) >= 0) {
                     const unsigned caps = snd_seq_port_info_get_capability(pinfo);
                     const unsigned need = SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ;
                     if ((caps & need) != need || (caps & SND_SEQ_PORT_CAP_NO_EXPORT)) {
@@ -160,26 +160,26 @@ private:
                     found[name] = {client_id, snd_seq_port_info_get_port(pinfo)};
                 }
             }
-            m_present = std::move(found);
+            present = std::move(found);
         }
     }
 
     void run() {
         std::vector<pollfd> fds;
         {
-            std::lock_guard<std::mutex> lock(m_mutex);
+            std::lock_guard<std::mutex> lock(mutex);
             // ALSA returns the count as int (never negative) but takes it back as unsigned.
-            const auto n = static_cast<unsigned int>(snd_seq_poll_descriptors_count(m_seq, POLLIN));
+            const auto n = static_cast<unsigned int>(snd_seq_poll_descriptors_count(seq, POLLIN));
             fds.resize(n + 1);
-            snd_seq_poll_descriptors(m_seq, fds.data(), n, POLLIN);
+            snd_seq_poll_descriptors(seq, fds.data(), n, POLLIN);
         }
-        fds.back() = {m_wake, POLLIN, 0};
+        fds.back() = {wake, POLLIN, 0};
 
-        while (m_running) {
+        while (running) {
             if (poll(fds.data(), fds.size(), -1) < 0) {
                 continue;
             }
-            if (!m_running) {
+            if (!running) {
                 break;
             }
             bool topology = false;
@@ -187,8 +187,8 @@ private:
                 snd_seq_event_t* ev = nullptr;
                 int r;
                 {
-                    std::lock_guard<std::mutex> lock(m_mutex);
-                    r = snd_seq_event_input(m_seq, &ev);
+                    std::lock_guard<std::mutex> lock(mutex);
+                    r = snd_seq_event_input(seq, &ev);
                 }
                 if (r < 0 || !ev) {
                     break; // -EAGAIN: drained
@@ -261,16 +261,16 @@ private:
         }
     }
 
-    snd_seq_t* m_seq = nullptr;
-    int m_client = -1;
-    int m_port = -1;
-    int m_wake = -1;
-    std::thread m_thread;
-    std::atomic<bool> m_running{false};
-    mutable std::mutex m_mutex; // guards mSeq calls and the maps
+    snd_seq_t* seq = nullptr;
+    int client = -1;
+    int port = -1;
+    int wake = -1;
+    std::thread thread;
+    std::atomic<bool> running{false};
+    mutable std::mutex mutex; // guards mSeq calls and the maps
 
-    std::map<QString, Addr> m_present; // name → address, current
-    std::map<QString, Addr> m_connected; // what we subscribed
+    std::map<QString, Addr> present; // name → address, current
+    std::map<QString, Addr> connected; // what we subscribed
 };
 
 } // namespace

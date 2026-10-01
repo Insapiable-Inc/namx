@@ -14,7 +14,7 @@
 class IRLoader
 {
 public:
-    static constexpr size_t K_MAX_IR_LENGTH = 4096;
+    static constexpr size_t MAX_IR_LENGTH = 4096;
 
     IRLoader();
     ~IRLoader();
@@ -28,15 +28,15 @@ public:
     void unload();
 
     bool is_loaded() const {
-        return m_slot.current() != nullptr;
+        return slot.current() != nullptr;
     }
     std::string get_file_path() const {
-        return m_file_path;
+        return file_path;
     }
 
     /// Human-readable reason the last load() returned false (GUI thread only).
     std::string get_last_error() const {
-        return m_last_error;
+        return last_error;
     }
 
     /// Engine sample rate. If an IR is loaded whose kernel was built for a
@@ -46,7 +46,7 @@ public:
 
     /// Free retired kernels; `audioStopped` frees unconditionally.
     void reclaim_retired(bool audio_stopped) {
-        m_slot.reclaim(audio_stopped);
+        slot.reclaim(audio_stopped);
     }
 
     /// Process a block in-place. inputIsStereo=false means L and R hold the
@@ -73,15 +73,15 @@ private:
         double built_rate = 0.0; // engine rate this kernel was resampled to
     };
 
-    RtSlot<Kernel> m_slot;
-    std::mutex m_load_mutex; // load/unload (GUI) vs. setTargetSampleRate (backend thread)
+    RtSlot<Kernel> slot;
+    std::mutex load_mutex; // load/unload (GUI) vs. setTargetSampleRate (backend thread)
 
     // Owner-side state (guarded by mLoadMutex)
-    std::string m_file_path;
-    std::string m_last_error;
-    std::vector<float> m_raw; // native samples of the loaded file
-    double m_raw_rate{0.0}; // their sample rate
-    double m_target_rate{0.0};
+    std::string file_path;
+    std::string last_error;
+    std::vector<float> raw; // native samples of the loaded file
+    double raw_rate{0.0}; // their sample rate
+    double target_rate{0.0};
 
     std::unique_ptr<Kernel> build_kernel() const;
 

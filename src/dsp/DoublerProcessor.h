@@ -19,10 +19,10 @@ public:
     void reset() override;
 
     void set_spread(float ms) {
-        m_spread_ms.store(ms);
+        spread_ms.store(ms);
     }
     void set_mix_pct(float pct) {
-        m_mix_pct.store(pct);
+        mix_pct.store(pct);
     }
 
     bool process(float* l, float* r, size_t n, bool input_is_stereo) override;
@@ -31,11 +31,11 @@ protected:
     void on_sample_rate_changed(double sr) override;
 
 private:
-    std::atomic<float> m_spread_ms{10.0f};
-    std::atomic<float> m_mix_pct{100.0f};
+    std::atomic<float> spread_ms{10.0f};
+    std::atomic<float> mix_pct{100.0f};
 
-    DelayLine m_line;
-    float m_drift = 0.0f, m_drift_target = 0.0f; // −1 … 1
-    int m_until_new_target = 0;
-    uint32_t m_seed = 0x9e3779b9u;
+    DelayLine line;
+    float drift = 0.0f, drift_target = 0.0f; // −1 … 1
+    int until_new_target = 0;
+    uint32_t seed = 0x9e3779b9u;
 };

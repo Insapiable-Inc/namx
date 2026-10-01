@@ -25,7 +25,7 @@ static void repolish(QWidget* w) {
 
 PresetBar::PresetBar(const LibraryIndex& new_index, QMenu* preset_menu, QWidget* parent)
     : QFrame(parent)
-    , m_library_index(new_index) {
+    , library_index(new_index) {
     setObjectName("presetBar");
     auto* lay = new QHBoxLayout(this);
     lay->setContentsMargins(8, 4, 8, 4);
@@ -55,23 +55,23 @@ PresetBar::PresetBar(const LibraryIndex& new_index, QMenu* preset_menu, QWidget*
     });
 
     // Name button: the library's presets as a menu, folders as submenus.
-    m_name = tool({}, {}, "presetName");
-    m_name->setPopupMode(QToolButton::InstantPopup);
-    auto* list_menu = new QMenu(m_name);
+    name = tool({}, {}, "presetName");
+    name->setPopupMode(QToolButton::InstantPopup);
+    auto* list_menu = new QMenu(name);
     connect(list_menu, &QMenu::aboutToShow, this, [this, list_menu] {
         populate_preset_menu(list_menu);
     });
-    m_name->setMenu(list_menu);
+    name->setMenu(list_menu);
 
-    m_modified = new QLabel("*", this);
-    m_modified->setObjectName("presetModified");
-    m_modified->setToolTip("Modified since the preset was loaded or saved");
+    modified = new QLabel("*", this);
+    modified->setObjectName("presetModified");
+    modified->setToolTip("Modified since the preset was loaded or saved");
 
     learn_menu_for(prev, "action:presetPrev");
     learn_menu_for(next, "action:presetNext");
     lay->addWidget(prev);
-    lay->addWidget(m_name);
-    lay->addWidget(m_modified);
+    lay->addWidget(name);
+    lay->addWidget(modified);
     lay->addWidget(next);
     lay->addSpacing(8);
 
@@ -87,11 +87,11 @@ PresetBar::PresetBar(const LibraryIndex& new_index, QMenu* preset_menu, QWidget*
     auto* slots_caption = new QLabel("Slots", this);
     slots_caption->setObjectName("presetCaption");
     lay->addWidget(slots_caption);
-    m_slot_paths = QSettings().value("presets/slots").toStringList();
-    while (m_slot_paths.size() < K_SLOT_COUNT) {
-        m_slot_paths << QString();
+    slot_paths = QSettings().value("presets/slots").toStringList();
+    while (slot_paths.size() < SLOT_COUNT) {
+        slot_paths << QString();
     }
-    for (int i = 0; i < K_SLOT_COUNT; ++i) {
+    for (int i = 0; i < SLOT_COUNT; ++i) {
         auto* b = tool(QString::number(i + 1), {}, "presetSlot");
         b->setContextMenuPolicy(Qt::CustomContextMenu);
         connect(b, &QToolButton::clicked, this, [this, i] {
@@ -105,27 +105,27 @@ PresetBar::PresetBar(const LibraryIndex& new_index, QMenu* preset_menu, QWidget*
         connect(sc, &QShortcut::activated, this, [this, i] {
             activate_slot(i);
         });
-        m_quick_slots[i] = b;
-        m_action_widgets.insert(QString("action:slot%1").arg(i + 1), b);
+        quick_slots[i] = b;
+        action_widgets.insert(QString("action:slot%1").arg(i + 1), b);
         lay->addWidget(b);
     }
     lay->addSpacing(12);
 
     // A/B compare: two in-memory states; the owner swaps them.
     for (int i = 0; i < 2; ++i) {
-        m_ab[i] = tool(i == 0 ? "A" : "B", {}, "presetAb");
-        m_ab[i]->setCheckable(true);
-        connect(m_ab[i], &QToolButton::clicked, this, [this, i] {
-            m_ab[i]->setChecked(i == m_ab_active); // the owner confirms via setAbState
+        ab[i] = tool(i == 0 ? "A" : "B", {}, "presetAb");
+        ab[i]->setCheckable(true);
+        connect(ab[i], &QToolButton::clicked, this, [this, i] {
+            ab[i]->setChecked(i == ab_active); // the owner confirms via setAbState
             emit ab_switch_requested(i);
         });
-        lay->addWidget(m_ab[i]);
+        lay->addWidget(ab[i]);
     }
-    learn_menu_for(m_ab[0], "action:abToggle");
-    learn_menu_for(m_ab[1], "action:abToggle");
-    m_ab_copy = tool({}, {}, "presetTool");
-    connect(m_ab_copy, &QToolButton::clicked, this, &PresetBar::ab_copy_requested);
-    lay->addWidget(m_ab_copy);
+    learn_menu_for(ab[0], "action:abToggle");
+    learn_menu_for(ab[1], "action:abToggle");
+    ab_copy = tool({}, {}, "presetTool");
+    connect(ab_copy, &QToolButton::clicked, this, &PresetBar::ab_copy_requested);
+    lay->addWidget(ab_copy);
     lay->addSpacing(8);
 
     auto* more = tool("⋯", "Preset menu", "presetTool");
@@ -138,16 +138,16 @@ PresetBar::PresetBar(const LibraryIndex& new_index, QMenu* preset_menu, QWidget*
 }
 
 void PresetBar::learn_menu_for(QWidget* w, const QString& action_id) {
-    if (!m_action_widgets.contains(action_id)) {
-        m_action_widgets.insert(action_id, w);
+    if (!action_widgets.contains(action_id)) {
+        action_widgets.insert(action_id, w);
     }
     w->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(w, &QWidget::customContextMenuRequested, this, [this, w, action_id](const QPoint& p) {
-        if (!m_learn_hook) {
+        if (!learn_hook) {
             return;
         }
         QMenu menu(this);
-        m_learn_hook(action_id, &menu);
+        learn_hook(action_id, &menu);
         if (!menu.isEmpty()) {
             menu.exec(w->mapToGlobal(p));
         }
@@ -155,49 +155,49 @@ void PresetBar::learn_menu_for(QWidget* w, const QString& action_id) {
 }
 
 void PresetBar::recall_slot(int i) {
-    if (i < 0 || i >= K_SLOT_COUNT) {
+    if (i < 0 || i >= SLOT_COUNT) {
         return;
     }
-    const QString& p = m_slot_paths[i];
+    const QString& p = slot_paths[i];
     if (!p.isEmpty() && QFile::exists(p)) {
         emit preset_chosen(p);
     }
 }
 
 void PresetBar::set_preset(const QString& new_path, bool new_modified) {
-    m_path = new_path;
+    path = new_path;
     if (new_path.isEmpty()) {
-        m_name->setText("Untitled");
-        m_name->setToolTip("Not saved as a preset — click to pick one");
-        m_modified->hide();
+        name->setText("Untitled");
+        name->setToolTip("Not saved as a preset — click to pick one");
+        modified->hide();
     } else {
-        m_name->setText(QFileInfo(new_path).completeBaseName());
-        m_name->setToolTip(QDir::toNativeSeparators(new_path));
-        m_modified->setVisible(new_modified);
+        name->setText(QFileInfo(new_path).completeBaseName());
+        name->setToolTip(QDir::toNativeSeparators(new_path));
+        modified->setVisible(new_modified);
     }
-    m_name->setProperty("untitled", new_path.isEmpty());
-    repolish(m_name);
+    name->setProperty("untitled", new_path.isEmpty());
+    repolish(name);
     update_slots();
 }
 
 void PresetBar::set_ab_state(int active) {
-    m_ab_active = active;
+    ab_active = active;
     for (int i = 0; i < 2; ++i) {
-        m_ab[i]->setChecked(i == active);
-        m_ab[i]->setToolTip(i == active
-                                ? QString("Editing state %1").arg(i == 0 ? 'A' : 'B')
-                                : QString("Switch to state %1 (the current one is kept as %2)")
-                                      .arg(i == 0 ? 'A' : 'B', i == 0 ? 'B' : 'A'));
+        ab[i]->setChecked(i == active);
+        ab[i]->setToolTip(i == active
+                              ? QString("Editing state %1").arg(i == 0 ? 'A' : 'B')
+                              : QString("Switch to state %1 (the current one is kept as %2)")
+                                    .arg(i == 0 ? 'A' : 'B', i == 0 ? 'B' : 'A'));
     }
-    m_ab_copy->setText(active == 0 ? "A→B" : "B→A");
-    m_ab_copy->setToolTip(QString("Copy the current state over %1").arg(active == 0 ? 'B' : 'A'));
+    ab_copy->setText(active == 0 ? "A→B" : "B→A");
+    ab_copy->setToolTip(QString("Copy the current state over %1").arg(active == 0 ? 'B' : 'A'));
 }
 
 void PresetBar::populate_preset_menu(QMenu* menu) {
     menu->clear();
 
     QList<const LibraryEntry*> presets;
-    for (const auto& e : m_library_index.get_entries()) {
+    for (const auto& e : library_index.get_entries()) {
         if (e.kind == LibraryEntry::Kind::PRESET) {
             presets << &e;
         }
@@ -238,7 +238,7 @@ void PresetBar::populate_preset_menu(QMenu* menu) {
     for (const LibraryEntry* e : presets) {
         QAction* a = menu_for(e->folder)->addAction(e->name);
         a->setCheckable(true);
-        a->setChecked(e->path == m_path);
+        a->setChecked(e->path == path);
         a->setToolTip(e->summary);
         const QString entry_path = e->path;
         connect(a, &QAction::triggered, this, [this, entry_path] {
@@ -248,7 +248,7 @@ void PresetBar::populate_preset_menu(QMenu* menu) {
 }
 
 void PresetBar::activate_slot(int i) {
-    const QString& p = m_slot_paths[i];
+    const QString& p = slot_paths[i];
     if (!p.isEmpty()) {
         if (QFile::exists(p)) {
             emit preset_chosen(p);
@@ -256,42 +256,41 @@ void PresetBar::activate_slot(int i) {
         return;
     }
     // Empty slot: a click stores the current preset there.
-    if (m_path.isEmpty()) {
+    if (path.isEmpty()) {
         return;
     }
-    m_slot_paths[i] = m_path;
-    QSettings().setValue("presets/slots", m_slot_paths);
+    slot_paths[i] = path;
+    QSettings().setValue("presets/slots", slot_paths);
     update_slots();
 }
 
 void PresetBar::show_slot_menu(int i, const QPoint& global_pos) {
     QMenu menu(this);
-    QAction* store =
-        menu.addAction(m_path.isEmpty() ? QString("Store current preset (save it first)")
-                                        : QString("Store \"%1\" in slot %2")
-                                              .arg(QFileInfo(m_path).completeBaseName())
-                                              .arg(i + 1));
-    store->setEnabled(!m_path.isEmpty());
+    QAction* store = menu.addAction(path.isEmpty() ? QString("Store current preset (save it first)")
+                                                   : QString("Store \"%1\" in slot %2")
+                                                         .arg(QFileInfo(path).completeBaseName())
+                                                         .arg(i + 1));
+    store->setEnabled(!path.isEmpty());
     QAction* clear = menu.addAction(QString("Clear slot %1").arg(i + 1));
-    clear->setEnabled(!m_slot_paths[i].isEmpty());
-    if (m_learn_hook) {
+    clear->setEnabled(!slot_paths[i].isEmpty());
+    if (learn_hook) {
         menu.addSeparator();
-        m_learn_hook(QString("action:slot%1").arg(i + 1), &menu);
+        learn_hook(QString("action:slot%1").arg(i + 1), &menu);
     }
 
     QAction* picked = menu.exec(global_pos);
     if (!picked || (picked != store && picked != clear)) {
         return;
     }
-    m_slot_paths[i] = picked == store ? m_path : QString();
-    QSettings().setValue("presets/slots", m_slot_paths);
+    slot_paths[i] = picked == store ? path : QString();
+    QSettings().setValue("presets/slots", slot_paths);
     update_slots();
 }
 
 void PresetBar::update_slots() {
-    for (int i = 0; i < K_SLOT_COUNT; ++i) {
-        const QString& p = m_slot_paths[i];
-        QToolButton* b = m_quick_slots[i];
+    for (int i = 0; i < SLOT_COUNT; ++i) {
+        const QString& p = slot_paths[i];
+        QToolButton* b = quick_slots[i];
         const bool filled = !p.isEmpty();
         const bool missing = filled && !QFile::exists(p);
         if (!filled) {
@@ -305,7 +304,7 @@ void PresetBar::update_slots() {
                 QString("Slot %1: %2 (Ctrl+%1)").arg(i + 1).arg(QFileInfo(p).completeBaseName()));
         }
         b->setProperty("filled", filled && !missing);
-        b->setProperty("active", filled && p == m_path);
+        b->setProperty("active", filled && p == path);
         repolish(b);
     }
 }

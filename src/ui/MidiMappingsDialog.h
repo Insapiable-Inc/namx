@@ -25,10 +25,10 @@ private:
     void rebuild_table();
     void commit_row(int row);
 
-    MidiMapper& m_mapper;
-    MidiInput* m_input;
-    QVBoxLayout* m_device_box = nullptr;
-    QTableWidget* m_table = nullptr;
-    QLabel* m_activity = nullptr;
-    bool m_rebuilding = false;
+    MidiMapper& mapper;
+    MidiInput* input;
+    QVBoxLayout* device_box = nullptr;
+    QTableWidget* table = nullptr;
+    QLabel* activity = nullptr;
+    bool rebuilding = false;
 };

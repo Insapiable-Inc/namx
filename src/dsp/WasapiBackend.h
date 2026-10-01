@@ -38,13 +38,13 @@ public:
     void stop() override;
 
     bool is_running() const override {
-        return m_running.load();
+        return running.load();
     }
     double get_sample_rate() const override {
-        return m_sample_rate;
+        return sample_rate;
     }
     int get_buffer_size() const override {
-        return m_buffer_size;
+        return buffer_size;
     }
     std::string status_string() const override;
 
@@ -56,10 +56,10 @@ public:
 
     // Capture packets flagged DATA_DISCONTINUITY (the engine dropped input).
     int xrun_count() const override {
-        return m_xruns.load(std::memory_order_relaxed);
+        return xruns.load(std::memory_order_relaxed);
     }
     void reset_xruns() override {
-        m_xruns.store(0, std::memory_order_relaxed);
+        xruns.store(0, std::memory_order_relaxed);
     }
 
     // WASAPI has no port graph — defaults from base (supports_port_routing=false)
@@ -74,29 +74,29 @@ private:
 
     IMMDevice* open_device_by_id(const std::string& deviceId) const;
 
-    IMMDeviceEnumerator* m_enumerator = nullptr;
-    IMMDevice* m_capture_device = nullptr;
-    IMMDevice* m_render_device = nullptr;
-    IAudioClient* m_capture_client = nullptr;
-    IAudioClient* m_render_client = nullptr;
-    IAudioCaptureClient* m_capture = nullptr;
-    IAudioRenderClient* m_render = nullptr;
+    IMMDeviceEnumerator* enumerator = nullptr;
+    IMMDevice* capture_device = nullptr;
+    IMMDevice* render_device = nullptr;
+    IAudioClient* capture_client = nullptr;
+    IAudioClient* render_client = nullptr;
+    IAudioCaptureClient* capture = nullptr;
+    IAudioRenderClient* render = nullptr;
 
     // HANDLEs from <synchapi.h>; void* keeps the header windows.h-free.
-    void* m_capture_event = nullptr;
-    void* m_render_event = nullptr;
-    void* m_stop_event = nullptr;
+    void* capture_event = nullptr;
+    void* render_event = nullptr;
+    void* stop_event = nullptr;
 
-    std::thread m_audio_thread;
-    std::string m_device_name;
-    bool m_com_initialized = false;
+    std::thread audio_thread;
+    std::string device_name;
+    bool com_initialized = false;
 #endif
 
-    Callback* m_callback = nullptr;
-    std::atomic<bool> m_running{false};
-    std::atomic<int> m_xruns{0};
-    double m_sample_rate = 48000.0;
-    int m_buffer_size = 0;
-    int m_capture_channels = 0;
-    int m_render_channels = 0;
+    Callback* callback = nullptr;
+    std::atomic<bool> running{false};
+    std::atomic<int> xruns{0};
+    double sample_rate = 48000.0;
+    int buffer_size = 0;
+    int capture_channels = 0;
+    int render_channels = 0;
 };

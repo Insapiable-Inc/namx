@@ -75,14 +75,14 @@ public:
     void add_action(const QString& id, const QString& group, const QString& label,
                     std::function<void()> fn);
     const std::vector<MidiTarget>& get_targets() const {
-        return m_targets;
+        return targets;
     }
     const MidiTarget* target(const QString& id) const;
     /// Target driven by this widget (knob or toggle), or null.
     const MidiTarget* target_for(const QWidget* w) const;
 
     const QList<MidiMapping>& get_mappings() const {
-        return m_mappings;
+        return mappings;
     }
     void set_mappings(const QList<MidiMapping>& m); // persists, emits mappingsChanged
     static QList<MidiMapping> default_mappings(); // program 0–7 → slots 1–8
@@ -100,14 +100,14 @@ public:
     void learn_row(qsizetype row);
     void cancel_learn();
     QString learning() const {
-        return m_learn_target;
+        return learn_target;
     }
     qsizetype learning_row() const {
-        return m_pending_learn_row;
+        return pending_learn_row;
     }
 
     bool get_follow_clock() const {
-        return m_follow_clock;
+        return follow_clock;
     }
     void set_follow_clock(bool on);
 
@@ -125,16 +125,16 @@ private:
     void handle_clock(const MidiMessage& m);
     void save() const;
 
-    std::vector<MidiTarget> m_targets;
-    QList<MidiMapping> m_mappings;
-    QHash<int, int> m_last_value; // mapping index → last CC value (edge detection)
-    QString m_learn_target;
-    qsizetype m_pending_learn_row = -1;
+    std::vector<MidiTarget> targets;
+    QList<MidiMapping> mappings;
+    QHash<int, int> last_value; // mapping index → last CC value (edge detection)
+    QString learn_target;
+    qsizetype pending_learn_row = -1;
 
-    bool m_follow_clock = false;
-    QElapsedTimer m_clock;
-    qint64 m_beat_start_ms = -1;
-    int m_clock_ticks = 0;
-    QList<double> m_beat_ms; // recent beat lengths (24 ticks each)
-    double m_last_clock_bpm = 0.0;
+    bool follow_clock = false;
+    QElapsedTimer clock;
+    qint64 beat_start_ms = -1;
+    int clock_ticks = 0;
+    QList<double> beat_ms; // recent beat lengths (24 ticks each)
+    double last_clock_bpm = 0.0;
 };

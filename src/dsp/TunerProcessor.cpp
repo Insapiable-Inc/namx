@@ -5,35 +5,35 @@
 #include <cmath>
 
 TunerProcessor::TunerProcessor() {
-    m_ring_buf.fill(0.f);
-    m_snap_buf.fill(0.f);
-    m_worker = std::thread(&TunerProcessor::worker_main, this);
+    ring_buf.fill(0.f);
+    snap_buf.fill(0.f);
+    worker = std::thread(&TunerProcessor::worker_main, this);
 }
 
 TunerProcessor::~TunerProcessor() {
     {
-        std::lock_guard<std::mutex> lock(m_work_mutex);
-        m_stop = true;
+        std::lock_guard<std::mutex> lock(work_mutex);
+        stop = true;
     }
-    m_work_cv.notify_all();
-    if (m_worker.joinable()) {
-        m_worker.join();
+    work_cv.notify_all();
+    if (worker.joinable()) {
+        worker.join();
     }
 }
 
 void TunerProcessor::worker_main() {
-    std::unique_lock<std::mutex> lk(m_work_mutex);
-    while (!m_stop) {
-        m_work_cv.wait_for(lk, std::chrono::milliseconds(100));
-        if (m_stop) {
+    std::unique_lock<std::mutex> lk(work_mutex);
+    while (!stop) {
+        work_cv.wait_for(lk, std::chrono::milliseconds(100));
+        if (stop) {
             break;
         }
         if (!is_enabled()) {
-            m_last_pitch.store(0.0f);
+            last_pitch.store(0.0f);
             continue;
         }
         lk.unlock();
-        m_last_pitch.store(detect_pitch());
+        last_pitch.store(detect_pitch());
         lk.lock();
     }
 }
@@ -42,42 +42,42 @@ void TunerProcessor::reset() {
     // May run on the audio thread (chain reorder) — never block. If the
     // worker is mid-snapshot, the ring keeps its stale contents; it is
     // overwritten within a few blocks anyway.
-    if (m_buf_mutex.try_lock()) {
-        m_ring_buf.fill(0.f);
-        m_write_pos = 0;
-        m_buffer_ready = false;
-        m_buf_mutex.unlock();
+    if (buf_mutex.try_lock()) {
+        ring_buf.fill(0.f);
+        write_pos = 0;
+        buffer_ready = false;
+        buf_mutex.unlock();
     }
 }
 
 void TunerProcessor::process_block_mono(float* buf, size_t nframes) {
     // try_lock: if the GUI thread is currently snapshotting, skip the write for this
     // block. A ~5 ms gap in ring-buffer data is completely unnoticeable in a tuner display.
-    if (m_buf_mutex.try_lock()) {
+    if (buf_mutex.try_lock()) {
         for (size_t i = 0; i < nframes; ++i) {
-            m_ring_buf[m_write_pos] = buf[i];
-            m_write_pos = (m_write_pos + 1) % K_BUF_SIZE;
+            ring_buf[write_pos] = buf[i];
+            write_pos = (write_pos + 1) % BUF_SIZE;
         }
-        m_buffer_ready = true;
-        m_buf_mutex.unlock();
+        buffer_ready = true;
+        buf_mutex.unlock();
     }
 
-    if (m_mute.load()) {
+    if (mute.load()) {
         std::fill(buf, buf + nframes, 0.0f);
     }
 }
 
 void TunerProcessor::process_block_dual(float* l, float* r, size_t nframes) {
-    if (m_buf_mutex.try_lock()) {
+    if (buf_mutex.try_lock()) {
         for (size_t i = 0; i < nframes; ++i) {
-            m_ring_buf[m_write_pos] = 0.5f * (l[i] + r[i]);
-            m_write_pos = (m_write_pos + 1) % K_BUF_SIZE;
+            ring_buf[write_pos] = 0.5f * (l[i] + r[i]);
+            write_pos = (write_pos + 1) % BUF_SIZE;
         }
-        m_buffer_ready = true;
-        m_buf_mutex.unlock();
+        buffer_ready = true;
+        buf_mutex.unlock();
     }
 
-    if (m_mute.load()) {
+    if (mute.load()) {
         std::fill(l, l + nframes, 0.0f);
         std::fill(r, r + nframes, 0.0f);
     }
@@ -85,30 +85,30 @@ void TunerProcessor::process_block_dual(float* l, float* r, size_t nframes) {
 
 float TunerProcessor::detect_pitch() {
     {
-        std::lock_guard<std::mutex> lock(m_buf_mutex);
-        if (!m_buffer_ready) {
+        std::lock_guard<std::mutex> lock(buf_mutex);
+        if (!buffer_ready) {
             return 0.0f;
         }
 
-        for (size_t i = 0; i < K_BUF_SIZE; ++i) {
-            m_snap_buf[i] = m_ring_buf[(m_write_pos + i) % K_BUF_SIZE];
+        for (size_t i = 0; i < BUF_SIZE; ++i) {
+            snap_buf[i] = ring_buf[(write_pos + i) % BUF_SIZE];
         }
     }
 
     double rms_sum = 0.0;
-    for (const float sample : m_snap_buf) {
+    for (const float sample : snap_buf) {
         rms_sum += sample * sample;
     }
-    if (std::sqrt(rms_sum / static_cast<double>(K_BUF_SIZE)) < 5e-4) {
+    if (std::sqrt(rms_sum / static_cast<double>(BUF_SIZE)) < 5e-4) {
         return 0.0f;
     }
 
-    const float current_fs = m_fs.load();
-    const size_t win_len = std::min<size_t>(K_BUF_SIZE, 1024);
+    const float current_fs = fs.load();
+    const size_t win_len = std::min<size_t>(BUF_SIZE, 1024);
     const size_t min_lag =
         std::max<size_t>(2, static_cast<size_t>(current_fs / 1400.0f)); // ~1400 Hz ceiling
     const size_t max_lag =
-        std::min(static_cast<size_t>(current_fs / 50.0f), K_BUF_SIZE - win_len - 1); // ~50 Hz floor
+        std::min(static_cast<size_t>(current_fs / 50.0f), BUF_SIZE - win_len - 1); // ~50 Hz floor
     if (max_lag <= min_lag) {
         return 0.0f;
     }
@@ -118,19 +118,19 @@ float TunerProcessor::detect_pitch() {
     // positive lobe (around τ = 0) can be skipped explicitly below.
     double r0 = 0.0;
     for (size_t i = 0; i < win_len; ++i) {
-        r0 += m_snap_buf[i] * m_snap_buf[i];
+        r0 += snap_buf[i] * snap_buf[i];
     }
 
-    m_nsdf.assign(max_lag + 2, 0.0f);
-    m_nsdf[0] = 1.0f;
+    nsdf.assign(max_lag + 2, 0.0f);
+    nsdf[0] = 1.0f;
     for (size_t lag = 1; lag <= max_lag + 1; ++lag) {
         double r = 0.0, mk = 0.0;
         for (size_t i = 0; i < win_len; ++i) {
-            r += m_snap_buf[i] * m_snap_buf[i + lag];
-            mk += m_snap_buf[i + lag] * m_snap_buf[i + lag];
+            r += snap_buf[i] * snap_buf[i + lag];
+            mk += snap_buf[i + lag] * snap_buf[i + lag];
         }
         const double denom = r0 + mk;
-        m_nsdf[lag] = (denom > 1e-12) ? static_cast<float>(2.0 * r / denom) : 0.0f;
+        nsdf[lag] = (denom > 1e-12) ? static_cast<float>(2.0 * r / denom) : 0.0f;
     }
 
     // Key-maxima picking. The global NSDF maximum is unreliable: for a
@@ -139,10 +139,10 @@ float TunerProcessor::detect_pitch() {
     // MPM instead takes the highest point of each positive lobe after the
     // first negative crossing, then picks the FIRST such peak that is within
     // a fraction k of the tallest — that is the fundamental period.
-    constexpr float K_KEY_MAX_RATIO = 0.8f;
+    constexpr float KEY_MAX_RATIO = 0.8f;
 
     size_t lag = 1;
-    while (lag <= max_lag && m_nsdf[lag] > 0.0f) {
+    while (lag <= max_lag && nsdf[lag] > 0.0f) {
         ++lag; // skip the τ≈0 lobe
     }
 
@@ -158,17 +158,17 @@ float TunerProcessor::detect_pitch() {
     size_t n_keys = 0;
 
     while (lag <= max_lag && n_keys < 64) {
-        while (lag <= max_lag && m_nsdf[lag] <= 0.0f) {
+        while (lag <= max_lag && nsdf[lag] <= 0.0f) {
             ++lag;
         }
         if (lag > max_lag) {
             break;
         }
         size_t peak_lag = lag;
-        float peak_val = m_nsdf[lag];
-        while (lag <= max_lag && m_nsdf[lag] > 0.0f) {
-            if (m_nsdf[lag] > peak_val) {
-                peak_val = m_nsdf[lag];
+        float peak_val = nsdf[lag];
+        while (lag <= max_lag && nsdf[lag] > 0.0f) {
+            if (nsdf[lag] > peak_val) {
+                peak_val = nsdf[lag];
                 peak_lag = lag;
             }
             ++lag;
@@ -184,7 +184,7 @@ float TunerProcessor::detect_pitch() {
         return 0.0f;
     }
 
-    const float threshold = K_KEY_MAX_RATIO * best_val;
+    const float threshold = KEY_MAX_RATIO * best_val;
     for (size_t i = 0; i < n_keys; ++i) {
         if (keys[i].val >= threshold) {
             pick_lag = keys[i].lag;
@@ -200,9 +200,9 @@ float TunerProcessor::detect_pitch() {
     // y = a·x² + b·x + c fitted at x = -1, 0, +1 the vertex sits at
     // x = (y2 - y0) / (2·(2·y1 - y0 - y2)).
     if (pick_lag >= 1 && pick_lag + 1 <= max_lag + 1) {
-        const float y0 = m_nsdf[pick_lag - 1];
+        const float y0 = nsdf[pick_lag - 1];
         const float y1 = pick_val;
-        const float y2 = m_nsdf[pick_lag + 1];
+        const float y2 = nsdf[pick_lag + 1];
         const float denom = 2.0f * (2.0f * y1 - y0 - y2);
         if (std::abs(denom) > 1e-6f) {
             const float delta = std::max(-1.0f, std::min(1.0f, (y2 - y0) / denom));

@@ -28,14 +28,14 @@
 namespace
 {
 
-constexpr int K_THUMB = 44;
-constexpr int K_AVATAR = 16;
-constexpr int K_ROW_HEIGHT = 58;
-constexpr int K_STAR_WIDTH = 26;
-constexpr int K_MODEL_ROW_H = 34;
+constexpr int THUMB = 44;
+constexpr int AVATAR = 16;
+constexpr int ROW_HEIGHT = 58;
+constexpr int STAR_WIDTH = 26;
+constexpr int MODEL_ROW_H = 34;
 
 const char* k_list_names[5] = {"Trending", "Latest", "Favorites", "Downloads", "Mine"};
-const Tone3000Client::ListKind K_LIST_KINDS[5] = {
+const Tone3000Client::ListKind LIST_KINDS[5] = {
     Tone3000Client::ListKind::TRENDING,  Tone3000Client::ListKind::LATEST,
     Tone3000Client::ListKind::FAVORITED, Tone3000Client::ListKind::DOWNLOADED,
     Tone3000Client::ListKind::CREATED,
@@ -96,21 +96,21 @@ QString model_info(const T3kModel& m, const T3kTone& t) {
 
 ToneListModel::ToneListModel(Tone3000Client& new_client, LibraryIndex& new_index, QObject* parent)
     : QAbstractListModel(parent)
-    , m_client(new_client)
-    , m_library_index(new_index) {
-    connect(&m_library_index, &LibraryIndex::entries_changed, this,
+    , client(new_client)
+    , library_index(new_index) {
+    connect(&library_index, &LibraryIndex::entries_changed, this,
             &ToneListModel::refresh_downloaded);
 }
 
 int ToneListModel::rowCount(const QModelIndex& parent) const {
-    return parent.isValid() ? 0 : static_cast<int>(m_tones.size());
+    return parent.isValid() ? 0 : static_cast<int>(tones.size());
 }
 
 QVariant ToneListModel::data(const QModelIndex& index, int role) const {
-    if (!index.isValid() || index.row() >= m_tones.size()) {
+    if (!index.isValid() || index.row() >= tones.size()) {
         return {};
     }
-    const T3kTone& t = m_tones[index.row()];
+    const T3kTone& t = tones[index.row()];
     switch (role) {
         case Qt::DisplayRole:
         case TITLE_ROLE:
@@ -141,11 +141,11 @@ QVariant ToneListModel::data(const QModelIndex& index, int role) const {
         case FAVORITE_ROLE:
             return t.is_favorite;
         case DOWNLOADED_ROLE:
-            return m_downloaded.value(t.id, false);
+            return downloaded.value(t.id, false);
         case THUMB_ROLE:
-            return m_images.value(t.image_url());
+            return images.value(t.image_url());
         case AVATAR_ROLE:
-            return m_images.value(t.user.avatar_url);
+            return images.value(t.user.avatar_url);
         default:
             return {};
     }
@@ -153,56 +153,56 @@ QVariant ToneListModel::data(const QModelIndex& index, int role) const {
 
 void ToneListModel::set_tones(const QList<T3kTone>& new_tones) {
     beginResetModel();
-    m_tones = new_tones;
+    tones = new_tones;
     endResetModel();
     refresh_downloaded();
     request_images();
 }
 
 void ToneListModel::set_favorite(int tone_id, bool on) {
-    for (int i = 0; i < m_tones.size(); ++i) {
-        if (m_tones[i].id != tone_id) {
+    for (int i = 0; i < tones.size(); ++i) {
+        if (tones[i].id != tone_id) {
             continue;
         }
-        m_tones[i].is_favorite = on;
-        m_tones[i].favorites += on ? 1 : -1;
+        tones[i].is_favorite = on;
+        tones[i].favorites += on ? 1 : -1;
         emit dataChanged(index(i), index(i), {FAVORITE_ROLE});
     }
 }
 
 void ToneListModel::refresh_downloaded() {
-    m_downloaded.clear();
-    for (const auto& t : m_tones) {
-        m_downloaded[t.id] = m_library_index.has_tone3000_tone(t.id);
+    downloaded.clear();
+    for (const auto& t : tones) {
+        downloaded[t.id] = library_index.has_tone3000_tone(t.id);
     }
-    if (!m_tones.isEmpty()) {
+    if (!tones.isEmpty()) {
         emit dataChanged(index(0), index(rowCount() - 1), {DOWNLOADED_ROLE});
     }
 }
 
 void ToneListModel::request_images() {
     auto want = [this](const QString& url, int size, bool circle, int role) {
-        if (url.isEmpty() || m_images.contains(url) || m_requested.contains(url)) {
+        if (url.isEmpty() || images.contains(url) || requested.contains(url)) {
             return;
         }
-        m_requested.insert(url);
-        m_client.fetch_image(
+        requested.insert(url);
+        client.fetch_image(
             url, QSize(size * 2, size * 2), [this, url, size, circle, role](QPixmap px) {
-                m_requested.remove(url);
+                requested.remove(url);
                 if (px.isNull()) {
                     return;
                 }
-                m_images.insert(url, rounded_thumb(px, size, circle));
-                for (int i = 0; i < m_tones.size(); ++i) {
-                    if (m_tones[i].image_url() == url || m_tones[i].user.avatar_url == url) {
+                images.insert(url, rounded_thumb(px, size, circle));
+                for (int i = 0; i < tones.size(); ++i) {
+                    if (tones[i].image_url() == url || tones[i].user.avatar_url == url) {
                         emit dataChanged(index(i), index(i), {role});
                     }
                 }
             });
     };
-    for (const auto& t : m_tones) {
-        want(t.image_url(), K_THUMB, false, THUMB_ROLE);
-        want(t.user.avatar_url, K_AVATAR, true, AVATAR_ROLE);
+    for (const auto& t : tones) {
+        want(t.image_url(), THUMB, false, THUMB_ROLE);
+        want(t.user.avatar_url, AVATAR, true, AVATAR_ROLE);
     }
 }
 
@@ -211,11 +211,11 @@ void ToneListModel::request_images() {
 // ===========================================================================
 
 QRect ToneDelegate::star_rect(const QRect& row) {
-    return QRect(row.right() - K_STAR_WIDTH, row.top(), K_STAR_WIDTH, row.height());
+    return QRect(row.right() - STAR_WIDTH, row.top(), STAR_WIDTH, row.height());
 }
 
 QSize ToneDelegate::sizeHint(const QStyleOptionViewItem& opt, const QModelIndex&) const {
-    return QSize(opt.rect.width(), K_ROW_HEIGHT);
+    return QSize(opt.rect.width(), ROW_HEIGHT);
 }
 
 void ToneDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt,
@@ -232,7 +232,7 @@ void ToneDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt,
     }
 
     // Thumbnail (placeholder square while loading).
-    const QRect thumb_rect(r.left() + 8, r.top() + (r.height() - K_THUMB) / 2, K_THUMB, K_THUMB);
+    const QRect thumb_rect(r.left() + 8, r.top() + (r.height() - THUMB) / 2, THUMB, THUMB);
     const QPixmap thumb = idx.data(ToneListModel::THUMB_ROLE).value<QPixmap>();
     if (thumb.isNull()) {
         p->setPen(Qt::NoPen);
@@ -297,13 +297,13 @@ void ToneDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt,
     int cx = left;
     const QPixmap avatar = idx.data(ToneListModel::AVATAR_ROLE).value<QPixmap>();
     if (!avatar.isNull()) {
-        p->drawPixmap(cx, y3 + (sfm.height() - K_AVATAR) / 2, avatar);
-        cx += K_AVATAR + 4;
+        p->drawPixmap(cx, y3 + (sfm.height() - AVATAR) / 2, avatar);
+        cx += AVATAR + 4;
     } else {
         p->setPen(Qt::NoPen);
         p->setBrush(Theme::well());
-        p->drawEllipse(QRect(cx, y3 + (sfm.height() - K_AVATAR) / 2, K_AVATAR, K_AVATAR));
-        cx += K_AVATAR + 4;
+        p->drawEllipse(QRect(cx, y3 + (sfm.height() - AVATAR) / 2, AVATAR, AVATAR));
+        cx += AVATAR + 4;
     }
     p->setPen(Theme::dim_text());
     p->drawText(QRect(cx, y3, width - (cx - left), sfm.height()), Qt::AlignLeft | Qt::AlignVCenter,
@@ -317,14 +317,14 @@ void ToneDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt,
 // ===========================================================================
 
 int ToneModelsModel::rowCount(const QModelIndex& parent) const {
-    return parent.isValid() ? 0 : static_cast<int>(m_models.size());
+    return parent.isValid() ? 0 : static_cast<int>(models.size());
 }
 
 QVariant ToneModelsModel::data(const QModelIndex& index, int role) const {
-    if (!index.isValid() || index.row() >= m_models.size()) {
+    if (!index.isValid() || index.row() >= models.size()) {
         return {};
     }
-    const Row& r = m_models[index.row()];
+    const Row& r = models[index.row()];
     switch (role) {
         case Qt::DisplayRole:
         case NAME_ROLE:
@@ -353,7 +353,7 @@ QVariant ToneModelsModel::data(const QModelIndex& index, int role) const {
 void ToneModelsModel::set_models(const QList<T3kModel>& new_models, const T3kTone& tone,
                                  LibraryIndex& index) {
     beginResetModel();
-    m_models.clear();
+    models.clear();
     for (const T3kModel& m : new_models) {
         Row r;
         r.model = m;
@@ -368,14 +368,14 @@ void ToneModelsModel::set_models(const QList<T3kModel>& new_models, const T3kTon
                 r.path = local;
             }
         }
-        m_models << r;
+        models << r;
     }
     endResetModel();
 }
 
 int ToneModelsModel::row_of(int model_id) const {
-    for (int i = 0; i < m_models.size(); ++i) {
-        if (m_models[i].model.id == model_id) {
+    for (int i = 0; i < models.size(); ++i) {
+        if (models[i].model.id == model_id) {
             return i;
         }
     }
@@ -387,7 +387,7 @@ void ToneModelsModel::set_state(int model_id, State s, const QString& path_or_er
     if (row < 0) {
         return;
     }
-    Row& r = m_models[row];
+    Row& r = models[row];
     r.state = s;
     if (s == DONE) {
         r.path = path_or_error;
@@ -407,13 +407,13 @@ void ToneModelsModel::set_progress(int model_id, int percent) {
     if (row < 0) {
         return;
     }
-    m_models[row].progress = percent;
+    models[row].progress = percent;
     emit dataChanged(index(row), index(row), {PROGRESS_ROLE});
 }
 
 QList<T3kModel> ToneModelsModel::pending() const {
     QList<T3kModel> out;
-    for (const Row& r : m_models) {
+    for (const Row& r : models) {
         if (r.state == IDLE || r.state == FAILED) {
             out << r.model;
         }
@@ -422,7 +422,7 @@ QList<T3kModel> ToneModelsModel::pending() const {
 }
 
 QSize ToneModelDelegate::sizeHint(const QStyleOptionViewItem& opt, const QModelIndex&) const {
-    return QSize(opt.rect.width(), K_MODEL_ROW_H);
+    return QSize(opt.rect.width(), MODEL_ROW_H);
 }
 
 void ToneModelDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt,
@@ -512,59 +512,59 @@ void ToneModelDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt,
 
 Tone3000Panel::Tone3000Panel(Tone3000Client& new_client, LibraryIndex& new_index, QWidget* parent)
     : QWidget(parent)
-    , m_client(new_client)
-    , m_library_index(new_index) {
+    , client(new_client)
+    , library_index(new_index) {
     setObjectName("tone3000Panel");
     auto* lay = new QVBoxLayout(this);
     lay->setContentsMargins(6, 6, 6, 6);
     lay->setSpacing(6);
 
     build_header();
-    lay->addWidget(m_logo->parentWidget());
-    m_notice = new QLabel;
-    m_notice->setObjectName("t3kNotice");
-    m_notice->setWordWrap(true);
-    m_notice->hide();
-    lay->addWidget(m_notice);
+    lay->addWidget(logo->parentWidget());
+    notice = new QLabel;
+    notice->setObjectName("t3kNotice");
+    notice->setWordWrap(true);
+    notice->hide();
+    lay->addWidget(notice);
 
-    m_pages = new QStackedWidget;
-    lay->addWidget(m_pages, 1);
+    pages = new QStackedWidget;
+    lay->addWidget(pages, 1);
     build_setup_page();
     build_splash_page();
     build_browse_page();
     build_detail_page();
 
-    connect(&m_client, &Tone3000Client::auth_changed, this, [this] {
+    connect(&client, &Tone3000Client::auth_changed, this, [this] {
         sync_state();
     });
-    connect(&m_client, &Tone3000Client::user_changed, this, [this] {
+    connect(&client, &Tone3000Client::user_changed, this, [this] {
         update_user_header();
     });
-    connect(&m_client, &Tone3000Client::status, this, [this](const QString& m) {
-        m_notice->setText(m);
-        m_notice->show();
-        QTimer::singleShot(6000, m_notice, &QWidget::hide);
+    connect(&client, &Tone3000Client::status, this, [this](const QString& m) {
+        notice->setText(m);
+        notice->show();
+        QTimer::singleShot(6000, notice, &QWidget::hide);
     });
-    connect(&m_client, &Tone3000Client::auth_finished, this,
+    connect(&client, &Tone3000Client::auth_finished, this,
             [this](bool ok, const QString& err, int tone_id) {
-                m_browse_btn->setEnabled(true);
+                browse_btn->setEnabled(true);
                 if (!ok) {
-                    m_notice->setText(err);
-                    m_notice->show();
-                    QTimer::singleShot(8000, m_notice, &QWidget::hide);
+                    notice->setText(err);
+                    notice->show();
+                    QTimer::singleShot(8000, notice, &QWidget::hide);
                     sync_state();
                     return;
                 }
-                m_notice->hide();
+                notice->hide();
                 sync_state();
                 if (tone_id > 0) {
                     show_tone(tone_id);
                 }
             });
-    connect(&m_client, &Tone3000Client::download_progress, this,
+    connect(&client, &Tone3000Client::download_progress, this,
             [this](int model_id, qint64 rec, qint64 tot) {
                 if (tot > 0) {
-                    m_models_model->set_progress(model_id, static_cast<int>(rec * 100 / tot));
+                    models_model->set_progress(model_id, static_cast<int>(rec * 100 / tot));
                 }
             });
 
@@ -579,25 +579,25 @@ void Tone3000Panel::build_header() {
     row->setContentsMargins(2, 0, 0, 0);
     row->setSpacing(6);
 
-    m_logo = new QLabel(header);
-    m_logo->setObjectName("t3kLogo");
-    m_logo->setPixmap(
+    logo = new QLabel(header);
+    logo->setObjectName("t3kLogo");
+    logo->setPixmap(
         QPixmap(":/tone3000/tone3000-logo.png").scaledToHeight(20, Qt::SmoothTransformation));
-    m_logo->setToolTip("TONE3000 — NAM captures and IRs");
-    m_logo->setCursor(Qt::PointingHandCursor);
-    row->addWidget(m_logo, 0, Qt::AlignVCenter);
+    logo->setToolTip("TONE3000 — NAM captures and IRs");
+    logo->setCursor(Qt::PointingHandCursor);
+    row->addWidget(logo, 0, Qt::AlignVCenter);
     row->addStretch();
 
-    m_user_btn = new QToolButton;
-    m_user_btn->setObjectName("t3kUser");
-    m_user_btn->setAutoRaise(true);
-    m_user_btn->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-    m_user_btn->setPopupMode(QToolButton::InstantPopup);
-    m_user_btn->setFocusPolicy(Qt::NoFocus);
-    auto* menu = new QMenu(m_user_btn);
+    user_btn = new QToolButton;
+    user_btn->setObjectName("t3kUser");
+    user_btn->setAutoRaise(true);
+    user_btn->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    user_btn->setPopupMode(QToolButton::InstantPopup);
+    user_btn->setFocusPolicy(Qt::NoFocus);
+    auto* menu = new QMenu(user_btn);
     connect(menu->addAction("Open my TONE3000 profile"), &QAction::triggered, this, [this] {
-        const QString u = m_client.get_user().url;
-        QDesktopServices::openUrl(QUrl(u.isEmpty() ? QString(Tone3000Client::K_SITE_URL) : u));
+        const QString u = client.get_user().url;
+        QDesktopServices::openUrl(QUrl(u.isEmpty() ? QString(Tone3000Client::SITE_URL) : u));
     });
     connect(menu->addAction("Change download folder…"), &QAction::triggered, this, [this] {
         const QString dir = pick_download_dir(this);
@@ -605,7 +605,7 @@ void Tone3000Panel::build_header() {
             return;
         }
         QSettings().setValue("library/tone3000Dir", dir);
-        m_library_index.rescan();
+        library_index.rescan();
     });
     connect(menu->addAction("TONE3000 publishable key…"), &QAction::triggered, this, [this] {
         bool ok = false;
@@ -618,17 +618,17 @@ void Tone3000Panel::build_header() {
             return;
         }
         Tone3000Client::set_client_id(key);
-        m_client.sign_out();
+        client.sign_out();
         sync_state();
     });
     menu->addSeparator();
     connect(menu->addAction("Sign out"), &QAction::triggered, this, [this] {
-        m_client.sign_out();
+        client.sign_out();
     });
-    m_user_btn->setMenu(menu);
-    row->addWidget(m_user_btn, 0, Qt::AlignVCenter);
+    user_btn->setMenu(menu);
+    row->addWidget(user_btn, 0, Qt::AlignVCenter);
 
-    m_logo->installEventFilter(this);
+    logo->installEventFilter(this);
     update_user_header();
 }
 
@@ -638,11 +638,11 @@ QString Tone3000Panel::pick_download_dir(QWidget* parent) {
 }
 
 bool Tone3000Panel::eventFilter(QObject* obj, QEvent* ev) {
-    if (obj == m_logo && ev->type() == QEvent::MouseButtonRelease) {
-        QDesktopServices::openUrl(QUrl(Tone3000Client::K_SITE_URL));
+    if (obj == logo && ev->type() == QEvent::MouseButtonRelease) {
+        QDesktopServices::openUrl(QUrl(Tone3000Client::SITE_URL));
         return true;
     }
-    if (m_tone_view && obj == m_tone_view->viewport() && ev->type() == QEvent::MouseButtonPress) {
+    if (tone_view && obj == tone_view->viewport() && ev->type() == QEvent::MouseButtonPress) {
         auto* me = static_cast<QMouseEvent*>(ev);
         if (me->button() == Qt::LeftButton && handle_tone_view_click(me)) {
             return true;
@@ -652,22 +652,22 @@ bool Tone3000Panel::eventFilter(QObject* obj, QEvent* ev) {
 }
 
 void Tone3000Panel::update_user_header() {
-    const T3kUser& u = m_client.get_user();
-    const bool in = m_client.is_signed_in();
-    m_user_btn->setVisible(in);
+    const T3kUser& u = client.get_user();
+    const bool in = client.is_signed_in();
+    user_btn->setVisible(in);
     if (!in) {
         return;
     }
-    m_user_btn->setText(u.username.isEmpty() ? QStringLiteral("account") : "@" + u.username);
-    m_user_btn->setToolTip(u.label());
-    m_user_btn->setIcon(QIcon());
+    user_btn->setText(u.username.isEmpty() ? QStringLiteral("account") : "@" + u.username);
+    user_btn->setToolTip(u.label());
+    user_btn->setIcon(QIcon());
     if (!u.avatar_url.isEmpty()) {
         const QString url = u.avatar_url;
-        m_client.fetch_image(url, QSize(64, 64), [this, url](QPixmap px) {
-            if (px.isNull() || m_client.get_user().avatar_url != url) {
+        client.fetch_image(url, QSize(64, 64), [this, url](QPixmap px) {
+            if (px.isNull() || client.get_user().avatar_url != url) {
                 return;
             }
-            m_user_btn->setIcon(QIcon(rounded_thumb(px, 18, true)));
+            user_btn->setIcon(QIcon(rounded_thumb(px, 18, true)));
         });
     }
 }
@@ -689,19 +689,19 @@ void Tone3000Panel::build_setup_page() {
     text->setOpenExternalLinks(true);
     text->setTextInteractionFlags(Qt::TextBrowserInteraction);
     lay->addWidget(text);
-    m_key_edit = new QLineEdit;
-    m_key_edit->setObjectName("librarySearch");
-    m_key_edit->setPlaceholderText("t3k_pub_…");
-    lay->addWidget(m_key_edit);
+    key_edit = new QLineEdit;
+    key_edit->setObjectName("librarySearch");
+    key_edit->setPlaceholderText("t3k_pub_…");
+    lay->addWidget(key_edit);
     auto* save = new QPushButton("Save key");
     connect(save, &QPushButton::clicked, this, [this] {
-        Tone3000Client::set_client_id(m_key_edit->text());
+        Tone3000Client::set_client_id(key_edit->text());
         sync_state();
     });
-    connect(m_key_edit, &QLineEdit::returnPressed, save, &QPushButton::click);
+    connect(key_edit, &QLineEdit::returnPressed, save, &QPushButton::click);
     lay->addWidget(save, 0, Qt::AlignLeft);
     lay->addStretch();
-    m_pages->insertWidget(PAGE_SETUP, page);
+    pages->insertWidget(PAGE_SETUP, page);
 }
 
 void Tone3000Panel::build_splash_page() {
@@ -745,7 +745,7 @@ void Tone3000Panel::build_splash_page() {
     fine->setAlignment(Qt::AlignHCenter);
     lay->addWidget(fine);
     lay->addStretch();
-    m_pages->insertWidget(PAGE_SPLASH, page);
+    pages->insertWidget(PAGE_SPLASH, page);
 }
 
 void Tone3000Panel::build_browse_page() {
@@ -770,66 +770,66 @@ void Tone3000Panel::build_browse_page() {
                 select_list(i);
             });
             row->addWidget(b);
-            m_list_btn[i] = b;
+            list_btn[i] = b;
         }
         lay->addLayout(row);
     }
 
     // The persistent path to the whole catalog: the select flow in the browser.
-    m_browse_btn = new QPushButton("Browse TONE3000…");
-    m_browse_btn->setObjectName("t3kBrowse");
-    m_browse_btn->setIcon(
+    browse_btn = new QPushButton("Browse TONE3000…");
+    browse_btn->setObjectName("t3kBrowse");
+    browse_btn->setIcon(
         QIcon(QPixmap(":/tone3000/t3k-mark.png").scaledToHeight(14, Qt::SmoothTransformation)));
-    m_browse_btn->setToolTip(
+    browse_btn->setToolTip(
         "Search the full TONE3000 catalog in your browser and pick a tone to bring back here");
-    m_browse_btn->setFocusPolicy(Qt::NoFocus);
-    connect(m_browse_btn, &QPushButton::clicked, this, [this] {
+    browse_btn->setFocusPolicy(Qt::NoFocus);
+    connect(browse_btn, &QPushButton::clicked, this, [this] {
         browse_catalog();
     });
-    lay->addWidget(m_browse_btn);
+    lay->addWidget(browse_btn);
 
-    m_tone_model = new ToneListModel(m_client, m_library_index, this);
-    m_tone_view = new QListView;
-    m_tone_view->setObjectName("libraryList");
-    m_tone_view->setModel(m_tone_model);
-    m_tone_view->setItemDelegate(new ToneDelegate(m_tone_view));
-    m_tone_view->setUniformItemSizes(true);
-    m_tone_view->setSelectionMode(QAbstractItemView::NoSelection);
-    m_tone_view->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    m_tone_view->setMouseTracking(true);
-    m_tone_view->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
-    m_tone_view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    m_tone_view->setFrameShape(QFrame::NoFrame);
-    m_tone_view->viewport()->installEventFilter(this);
-    lay->addWidget(m_tone_view, 1);
+    tone_model = new ToneListModel(client, library_index, this);
+    tone_view = new QListView;
+    tone_view->setObjectName("libraryList");
+    tone_view->setModel(tone_model);
+    tone_view->setItemDelegate(new ToneDelegate(tone_view));
+    tone_view->setUniformItemSizes(true);
+    tone_view->setSelectionMode(QAbstractItemView::NoSelection);
+    tone_view->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    tone_view->setMouseTracking(true);
+    tone_view->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+    tone_view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    tone_view->setFrameShape(QFrame::NoFrame);
+    tone_view->viewport()->installEventFilter(this);
+    lay->addWidget(tone_view, 1);
 
     // Footer: status + paging + refresh.
     {
         auto* row = new QHBoxLayout;
         row->setSpacing(4);
-        m_list_status = new QLabel;
-        m_list_status->setObjectName("libraryStatus");
-        m_list_status->setWordWrap(true);
-        row->addWidget(m_list_status, 1);
-        m_prev_page = new QToolButton;
-        m_prev_page->setObjectName("libraryTool");
-        m_prev_page->setText("‹");
-        m_prev_page->setAutoRaise(true);
-        m_prev_page->setFocusPolicy(Qt::NoFocus);
-        connect(m_prev_page, &QToolButton::clicked, this, [this] {
-            if (m_list_page > 1) {
-                --m_list_page;
+        list_status = new QLabel;
+        list_status->setObjectName("libraryStatus");
+        list_status->setWordWrap(true);
+        row->addWidget(list_status, 1);
+        prev_page = new QToolButton;
+        prev_page->setObjectName("libraryTool");
+        prev_page->setText("‹");
+        prev_page->setAutoRaise(true);
+        prev_page->setFocusPolicy(Qt::NoFocus);
+        connect(prev_page, &QToolButton::clicked, this, [this] {
+            if (list_page > 1) {
+                --list_page;
                 load_list(true);
             }
         });
-        m_next_page = new QToolButton;
-        m_next_page->setObjectName("libraryTool");
-        m_next_page->setText("›");
-        m_next_page->setAutoRaise(true);
-        m_next_page->setFocusPolicy(Qt::NoFocus);
-        connect(m_next_page, &QToolButton::clicked, this, [this] {
-            if (m_list_page < m_total_pages) {
-                ++m_list_page;
+        next_page = new QToolButton;
+        next_page->setObjectName("libraryTool");
+        next_page->setText("›");
+        next_page->setAutoRaise(true);
+        next_page->setFocusPolicy(Qt::NoFocus);
+        connect(next_page, &QToolButton::clicked, this, [this] {
+            if (list_page < total_pages) {
+                ++list_page;
                 load_list(true);
             }
         });
@@ -842,13 +842,13 @@ void Tone3000Panel::build_browse_page() {
         connect(refresh, &QToolButton::clicked, this, [this] {
             load_list(false);
         });
-        row->addWidget(m_prev_page);
-        row->addWidget(m_next_page);
+        row->addWidget(prev_page);
+        row->addWidget(next_page);
         row->addWidget(refresh);
         lay->addLayout(row);
     }
 
-    m_pages->insertWidget(PAGE_BROWSE, page);
+    pages->insertWidget(PAGE_BROWSE, page);
 }
 
 void Tone3000Panel::build_detail_page() {
@@ -867,28 +867,28 @@ void Tone3000Panel::build_detail_page() {
         back->setAutoRaise(true);
         back->setFocusPolicy(Qt::NoFocus);
         connect(back, &QToolButton::clicked, this, [this] {
-            m_pages->setCurrentIndex(PAGE_BROWSE);
+            pages->setCurrentIndex(PAGE_BROWSE);
         });
         row->addWidget(back);
         row->addStretch();
-        m_detail_fav = new QToolButton;
-        m_detail_fav->setObjectName("libraryMode");
-        m_detail_fav->setCheckable(true);
-        m_detail_fav->setAutoRaise(true);
-        m_detail_fav->setFocusPolicy(Qt::NoFocus);
-        m_detail_fav->setToolTip("Favorite on TONE3000");
-        connect(m_detail_fav, &QToolButton::clicked, this, [this](bool on) {
-            toggle_favorite(m_detail_tone.id, on);
+        detail_fav = new QToolButton;
+        detail_fav->setObjectName("libraryMode");
+        detail_fav->setCheckable(true);
+        detail_fav->setAutoRaise(true);
+        detail_fav->setFocusPolicy(Qt::NoFocus);
+        detail_fav->setToolTip("Favorite on TONE3000");
+        connect(detail_fav, &QToolButton::clicked, this, [this](bool on) {
+            toggle_favorite(detail_tone.id, on);
         });
-        row->addWidget(m_detail_fav);
+        row->addWidget(detail_fav);
         auto* open = new QToolButton;
         open->setObjectName("libraryTool");
         open->setText("Open on TONE3000 ↗");
         open->setAutoRaise(true);
         open->setFocusPolicy(Qt::NoFocus);
         connect(open, &QToolButton::clicked, this, [this] {
-            if (!m_detail_tone.url.isEmpty()) {
-                QDesktopServices::openUrl(QUrl(m_detail_tone.url));
+            if (!detail_tone.url.isEmpty()) {
+                QDesktopServices::openUrl(QUrl(detail_tone.url));
             }
         });
         row->addWidget(open);
@@ -904,74 +904,74 @@ void Tone3000Panel::build_detail_page() {
     lay->setContentsMargins(2, 0, 2, 0);
     lay->setSpacing(6);
 
-    m_detail_image = new QLabel;
-    m_detail_image->setObjectName("t3kDetailImage");
-    m_detail_image->setAlignment(Qt::AlignCenter);
-    m_detail_image->setMinimumHeight(120);
-    lay->addWidget(m_detail_image);
+    detail_image = new QLabel;
+    detail_image->setObjectName("t3kDetailImage");
+    detail_image->setAlignment(Qt::AlignCenter);
+    detail_image->setMinimumHeight(120);
+    lay->addWidget(detail_image);
 
-    m_detail_title = new QLabel;
-    m_detail_title->setObjectName("t3kDetailTitle");
-    m_detail_title->setWordWrap(true);
-    lay->addWidget(m_detail_title);
+    detail_title = new QLabel;
+    detail_title->setObjectName("t3kDetailTitle");
+    detail_title->setWordWrap(true);
+    lay->addWidget(detail_title);
 
-    m_detail_meta = new QLabel;
-    m_detail_meta->setObjectName("t3kDetailMeta");
-    m_detail_meta->setWordWrap(true);
-    lay->addWidget(m_detail_meta);
+    detail_meta = new QLabel;
+    detail_meta->setObjectName("t3kDetailMeta");
+    detail_meta->setWordWrap(true);
+    lay->addWidget(detail_meta);
 
     {
         auto* row = new QHBoxLayout;
         row->setSpacing(6);
-        m_detail_creator_avatar = new QLabel;
-        m_detail_creator_avatar->setFixedSize(20, 20);
-        row->addWidget(m_detail_creator_avatar);
-        m_detail_creator = new QLabel;
-        m_detail_creator->setObjectName("t3kDetailMeta");
-        m_detail_creator->setOpenExternalLinks(true);
-        m_detail_creator->setTextInteractionFlags(Qt::TextBrowserInteraction);
-        row->addWidget(m_detail_creator, 1);
+        detail_creator_avatar = new QLabel;
+        detail_creator_avatar->setFixedSize(20, 20);
+        row->addWidget(detail_creator_avatar);
+        detail_creator = new QLabel;
+        detail_creator->setObjectName("t3kDetailMeta");
+        detail_creator->setOpenExternalLinks(true);
+        detail_creator->setTextInteractionFlags(Qt::TextBrowserInteraction);
+        row->addWidget(detail_creator, 1);
         lay->addLayout(row);
     }
 
-    m_detail_desc = new QLabel;
-    m_detail_desc->setObjectName("t3kDetailDesc");
-    m_detail_desc->setWordWrap(true);
-    m_detail_desc->setTextInteractionFlags(Qt::TextSelectableByMouse);
-    lay->addWidget(m_detail_desc);
+    detail_desc = new QLabel;
+    detail_desc->setObjectName("t3kDetailDesc");
+    detail_desc->setWordWrap(true);
+    detail_desc->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    lay->addWidget(detail_desc);
 
     auto* models_header = new QLabel("Models");
     models_header->setObjectName("t3kSection");
     lay->addWidget(models_header);
 
-    m_detail_status = new QLabel;
-    m_detail_status->setObjectName("libraryStatus");
-    m_detail_status->setWordWrap(true);
-    lay->addWidget(m_detail_status);
+    detail_status = new QLabel;
+    detail_status->setObjectName("libraryStatus");
+    detail_status->setWordWrap(true);
+    lay->addWidget(detail_status);
 
-    m_models_model = new ToneModelsModel(this);
-    m_models_view = new QListView;
-    m_models_view->setObjectName("libraryList");
-    m_models_view->setModel(m_models_model);
-    m_models_view->setItemDelegate(new ToneModelDelegate(m_models_view));
-    m_models_view->setUniformItemSizes(true);
-    m_models_view->setSelectionMode(QAbstractItemView::NoSelection);
-    m_models_view->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    m_models_view->setMouseTracking(true);
-    m_models_view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    m_models_view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    m_models_view->setFrameShape(QFrame::NoFrame);
-    m_models_view->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
-    connect(m_models_view, &QListView::clicked, this, &Tone3000Panel::on_model_row_clicked);
-    connect(m_models_model, &QAbstractItemModel::modelReset, this, [this] {
-        m_models_view->setFixedHeight(std::max(1, m_models_model->rowCount()) * K_MODEL_ROW_H + 4);
+    models_model = new ToneModelsModel(this);
+    models_view = new QListView;
+    models_view->setObjectName("libraryList");
+    models_view->setModel(models_model);
+    models_view->setItemDelegate(new ToneModelDelegate(models_view));
+    models_view->setUniformItemSizes(true);
+    models_view->setSelectionMode(QAbstractItemView::NoSelection);
+    models_view->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    models_view->setMouseTracking(true);
+    models_view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    models_view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    models_view->setFrameShape(QFrame::NoFrame);
+    models_view->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
+    connect(models_view, &QListView::clicked, this, &Tone3000Panel::on_model_row_clicked);
+    connect(models_model, &QAbstractItemModel::modelReset, this, [this] {
+        models_view->setFixedHeight(std::max(1, models_model->rowCount()) * MODEL_ROW_H + 4);
     });
-    lay->addWidget(m_models_view);
+    lay->addWidget(models_view);
 
-    m_download_all_button = new QPushButton("Download all");
-    m_download_all_button->setFocusPolicy(Qt::NoFocus);
-    connect(m_download_all_button, &QPushButton::clicked, this, &Tone3000Panel::download_all);
-    lay->addWidget(m_download_all_button, 0, Qt::AlignLeft);
+    download_all_button = new QPushButton("Download all");
+    download_all_button->setFocusPolicy(Qt::NoFocus);
+    connect(download_all_button, &QPushButton::clicked, this, &Tone3000Panel::download_all);
+    lay->addWidget(download_all_button, 0, Qt::AlignLeft);
 
     auto* license = new QLabel;
     license->setObjectName("t3kFinePrint");
@@ -983,7 +983,7 @@ void Tone3000Panel::build_detail_page() {
 
     scroll->setWidget(body);
     outer->addWidget(scroll, 1);
-    m_pages->insertWidget(PAGE_DETAIL, page);
+    pages->insertWidget(PAGE_DETAIL, page);
 }
 
 // --- State -------------------------------------------------------------------
@@ -991,63 +991,63 @@ void Tone3000Panel::build_detail_page() {
 void Tone3000Panel::sync_state() {
     update_user_header();
     if (!Tone3000Client::has_client_id()) {
-        m_logo->parentWidget()->show();
-        m_key_edit->setText(QSettings().value("tone3000/clientId").toString());
-        m_pages->setCurrentIndex(PAGE_SETUP);
+        logo->parentWidget()->show();
+        key_edit->setText(QSettings().value("tone3000/clientId").toString());
+        pages->setCurrentIndex(PAGE_SETUP);
         return;
     }
-    if (!m_client.is_signed_in()) {
-        m_logo->parentWidget()->hide(); // the splash carries the big logo
-        m_pages->setCurrentIndex(PAGE_SPLASH);
+    if (!client.is_signed_in()) {
+        logo->parentWidget()->hide(); // the splash carries the big logo
+        pages->setCurrentIndex(PAGE_SPLASH);
         return;
     }
-    m_logo->parentWidget()->show();
-    if (m_pages->currentIndex() != PAGE_DETAIL) {
-        m_pages->setCurrentIndex(PAGE_BROWSE);
+    logo->parentWidget()->show();
+    if (pages->currentIndex() != PAGE_DETAIL) {
+        pages->setCurrentIndex(PAGE_BROWSE);
         select_list(std::clamp(QSettings().value("tone3000/list", 0).toInt(), 0, 4), true);
     }
 }
 
 void Tone3000Panel::browse_catalog() {
-    m_browse_btn->setEnabled(false);
-    m_notice->setText(
+    browse_btn->setEnabled(false);
+    notice->setText(
         "Waiting for the browser… pick a tone on TONE3000 and you'll be brought back here.");
-    m_notice->show();
-    m_client.start_auth(Tone3000Client::Flow::SELECT_TONE);
+    notice->show();
+    client.start_auth(Tone3000Client::Flow::SELECT_TONE);
 }
 
 void Tone3000Panel::select_list(int which, bool force) {
-    if (which == m_list && !force && m_tone_model->rowCount() > 0) {
+    if (which == list && !force && tone_model->rowCount() > 0) {
         return;
     }
-    if (which != m_list) {
-        m_list_page = 1;
+    if (which != list) {
+        list_page = 1;
     }
-    m_list = which;
+    list = which;
     for (int i = 0; i < 5; ++i) {
-        m_list_btn[i]->setChecked(i == which);
+        list_btn[i]->setChecked(i == which);
     }
     QSettings().setValue("tone3000/list", which);
     load_list(true);
 }
 
 void Tone3000Panel::show_list_status(const QString& text) {
-    m_list_status->setText(text);
+    list_status->setText(text);
 }
 
 void Tone3000Panel::load_list(bool use_cache) {
-    const auto kind = K_LIST_KINDS[m_list];
+    const auto kind = LIST_KINDS[list];
     const bool paged = kind == Tone3000Client::ListKind::FAVORITED ||
                        kind == Tone3000Client::ListKind::DOWNLOADED ||
                        kind == Tone3000Client::ListKind::CREATED;
     show_list_status("Loading…");
-    m_prev_page->setVisible(paged);
-    m_next_page->setVisible(paged);
-    const int my_list = m_list, my_page = m_list_page;
-    m_client.list_tones(
-        kind, m_list_page,
+    prev_page->setVisible(paged);
+    next_page->setVisible(paged);
+    const int my_list = list, my_page = list_page;
+    client.list_tones(
+        kind, list_page,
         [this, my_list, my_page, paged](const Tone3000Client::Result& r) {
-            if (my_list != m_list || my_page != m_list_page) {
+            if (my_list != list || my_page != list_page) {
                 return; // switched meanwhile
             }
             if (!r.ok) {
@@ -1067,11 +1067,11 @@ void Tone3000Panel::load_list(bool use_cache) {
             for (const QJsonValue v : r.object().value("data").toArray()) {
                 tones << Tone3000Client::parse_tone(v.toObject());
             }
-            m_tone_model->set_tones(tones);
-            m_tone_view->scrollToTop();
-            m_total_pages = paged ? std::max(1, r.object().value("total_pages").toInt(1)) : 1;
-            m_prev_page->setEnabled(m_list_page > 1);
-            m_next_page->setEnabled(m_list_page < m_total_pages);
+            tone_model->set_tones(tones);
+            tone_view->scrollToTop();
+            total_pages = paged ? std::max(1, r.object().value("total_pages").toInt(1)) : 1;
+            prev_page->setEnabled(list_page > 1);
+            next_page->setEnabled(list_page < total_pages);
             if (tones.isEmpty()) {
                 show_list_status(my_list == 2   ? "No favorites yet. ★ a tone here or on TONE3000."
                                  : my_list == 3 ? "Nothing downloaded on TONE3000 yet."
@@ -1081,8 +1081,8 @@ void Tone3000Panel::load_list(bool use_cache) {
                 show_list_status(QString("%1 tones · page %2 of %3")
                                      .arg(r.object().value("total").toInt(
                                          static_cast<int>(tones.size()))) // JSON ints are int
-                                     .arg(m_list_page)
-                                     .arg(m_total_pages));
+                                     .arg(list_page)
+                                     .arg(total_pages));
             } else {
                 show_list_status(QString("%1 tones").arg(tones.size()));
             }
@@ -1091,15 +1091,15 @@ void Tone3000Panel::load_list(bool use_cache) {
 }
 
 bool Tone3000Panel::handle_tone_view_click(QMouseEvent* me) {
-    const QModelIndex idx = m_tone_view->indexAt(me->pos());
+    const QModelIndex idx = tone_view->indexAt(me->pos());
     if (!idx.isValid()) {
         return false;
     }
-    const T3kTone* t = m_tone_model->tone(idx.row());
+    const T3kTone* t = tone_model->tone(idx.row());
     if (!t) {
         return false;
     }
-    if (ToneDelegate::star_rect(m_tone_view->visualRect(idx)).contains(me->pos())) {
+    if (ToneDelegate::star_rect(tone_view->visualRect(idx)).contains(me->pos())) {
         toggle_favorite(t->id, !t->is_favorite);
         return true;
     }
@@ -1108,49 +1108,49 @@ bool Tone3000Panel::handle_tone_view_click(QMouseEvent* me) {
 }
 
 void Tone3000Panel::toggle_favorite(int tone_id, bool on) {
-    m_tone_model->set_favorite(tone_id, on);
-    if (m_detail_tone.id == tone_id) {
-        m_detail_tone.is_favorite = on;
-        m_detail_fav->setChecked(on);
-        m_detail_fav->setText(on ? "★" : "☆");
+    tone_model->set_favorite(tone_id, on);
+    if (detail_tone.id == tone_id) {
+        detail_tone.is_favorite = on;
+        detail_fav->setChecked(on);
+        detail_fav->setText(on ? "★" : "☆");
     }
-    m_client.set_favorite(tone_id, on, [this, tone_id, on](const Tone3000Client::Result& r) {
+    client.set_favorite(tone_id, on, [this, tone_id, on](const Tone3000Client::Result& r) {
         if (r.ok) {
             return;
         }
-        m_tone_model->set_favorite(tone_id, !on); // revert
-        if (m_detail_tone.id == tone_id) {
-            m_detail_tone.is_favorite = !on;
-            m_detail_fav->setChecked(!on);
-            m_detail_fav->setText(!on ? "★" : "☆");
+        tone_model->set_favorite(tone_id, !on); // revert
+        if (detail_tone.id == tone_id) {
+            detail_tone.is_favorite = !on;
+            detail_fav->setChecked(!on);
+            detail_fav->setText(!on ? "★" : "☆");
         }
-        m_notice->setText(r.offline ? QStringLiteral("Offline — favorite not saved.") : r.error);
-        m_notice->show();
-        QTimer::singleShot(6000, m_notice, &QWidget::hide);
+        notice->setText(r.offline ? QStringLiteral("Offline — favorite not saved.") : r.error);
+        notice->show();
+        QTimer::singleShot(6000, notice, &QWidget::hide);
     });
 }
 
 // --- Detail ------------------------------------------------------------------
 
 void Tone3000Panel::show_tone(int tone_id) {
-    m_pages->setCurrentIndex(PAGE_DETAIL);
-    m_detail_title->setText("Loading…");
-    m_detail_meta->clear();
-    m_detail_creator->clear();
-    m_detail_creator_avatar->clear();
-    m_detail_desc->clear();
-    m_detail_image->clear();
-    m_detail_status->clear();
-    m_models_model->set_models({}, {}, m_library_index);
-    const int req = ++m_detail_request;
-    m_client.fetch_tone(tone_id, [this, req](const Tone3000Client::Result& r) {
-        if (req != m_detail_request) {
+    pages->setCurrentIndex(PAGE_DETAIL);
+    detail_title->setText("Loading…");
+    detail_meta->clear();
+    detail_creator->clear();
+    detail_creator_avatar->clear();
+    detail_desc->clear();
+    detail_image->clear();
+    detail_status->clear();
+    models_model->set_models({}, {}, library_index);
+    const int req = ++detail_request;
+    client.fetch_tone(tone_id, [this, req](const Tone3000Client::Result& r) {
+        if (req != detail_request) {
             return;
         }
         if (!r.ok) {
-            m_detail_title->setText(r.offline ? QStringLiteral("Offline")
-                                              : QStringLiteral("Could not load this tone"));
-            m_detail_status->setText(r.error);
+            detail_title->setText(r.offline ? QStringLiteral("Offline")
+                                            : QStringLiteral("Could not load this tone"));
+            detail_status->setText(r.error);
             return;
         }
         open_detail(Tone3000Client::parse_tone(r.object()));
@@ -1158,48 +1158,48 @@ void Tone3000Panel::show_tone(int tone_id) {
 }
 
 void Tone3000Panel::open_detail(const T3kTone& tone) {
-    m_detail_tone = tone;
-    m_pages->setCurrentIndex(PAGE_DETAIL);
+    detail_tone = tone;
+    pages->setCurrentIndex(PAGE_DETAIL);
 
-    m_detail_title->setText(tone.title);
+    detail_title->setText(tone.title);
     QStringList meta{tone.gear_label(), tone.format_label(), tone.license_label()};
     if (!tone.makes.isEmpty()) {
         meta << tone.makes.join(", ");
     }
     meta << QString("%1 downloads · %2 favorites")
                 .arg(count_label(tone.downloads), count_label(tone.favorites));
-    m_detail_meta->setText(meta.join(" · "));
-    m_detail_creator->setText(
+    detail_meta->setText(meta.join(" · "));
+    detail_creator->setText(
         QString("<a href=\"%1\">@%2</a>%3")
-            .arg(tone.user.url.isEmpty() ? Tone3000Client::K_SITE_URL : tone.user.url,
+            .arg(tone.user.url.isEmpty() ? Tone3000Client::SITE_URL : tone.user.url,
                  tone.user.username.toHtmlEscaped(),
                  tone.user.display_name.isEmpty() || tone.user.display_name == tone.user.username
                      ? QString()
                      : " · " + tone.user.display_name.toHtmlEscaped()));
-    m_detail_desc->setText(tone.description.trimmed());
-    m_detail_desc->setVisible(!tone.description.trimmed().isEmpty());
-    m_detail_fav->setChecked(tone.is_favorite);
-    m_detail_fav->setText(tone.is_favorite ? "★" : "☆");
-    m_detail_status->setText("Loading models…");
-    m_download_all_button->setEnabled(false);
+    detail_desc->setText(tone.description.trimmed());
+    detail_desc->setVisible(!tone.description.trimmed().isEmpty());
+    detail_fav->setChecked(tone.is_favorite);
+    detail_fav->setText(tone.is_favorite ? "★" : "☆");
+    detail_status->setText("Loading models…");
+    download_all_button->setEnabled(false);
 
-    set_thumbnail(m_detail_image, tone.image_url(), QSize(600, 400), false);
-    set_thumbnail(m_detail_creator_avatar, tone.user.avatar_url, QSize(20, 20), true);
+    set_thumbnail(detail_image, tone.image_url(), QSize(600, 400), false);
+    set_thumbnail(detail_creator_avatar, tone.user.avatar_url, QSize(20, 20), true);
 
     // Fresh tone (description, counts) if we came from a list card.
     if (tone.description.isEmpty()) {
-        const int req = ++m_detail_request;
-        m_client.fetch_tone(tone.id, [this, req](const Tone3000Client::Result& r) {
-            if (req != m_detail_request || !r.ok) {
+        const int req = ++detail_request;
+        client.fetch_tone(tone.id, [this, req](const Tone3000Client::Result& r) {
+            if (req != detail_request || !r.ok) {
                 return;
             }
             const T3kTone full = Tone3000Client::parse_tone(r.object());
-            if (full.id != m_detail_tone.id) {
+            if (full.id != detail_tone.id) {
                 return;
             }
-            m_detail_tone.description = full.description;
-            m_detail_desc->setText(full.description.trimmed());
-            m_detail_desc->setVisible(!full.description.trimmed().isEmpty());
+            detail_tone.description = full.description;
+            detail_desc->setText(full.description.trimmed());
+            detail_desc->setVisible(!full.description.trimmed().isEmpty());
         });
     }
     load_detail_models();
@@ -1213,14 +1213,14 @@ void Tone3000Panel::set_thumbnail(QLabel* label, const QString& url, const QSize
         return;
     }
     label->setVisible(true);
-    m_client.fetch_image(url, size, [this, label, url, size, round](QPixmap px) {
+    client.fetch_image(url, size, [this, label, url, size, round](QPixmap px) {
         if (px.isNull()) {
             return;
         }
-        if (label == m_detail_image && m_detail_tone.image_url() != url) {
+        if (label == detail_image && detail_tone.image_url() != url) {
             return;
         }
-        if (label == m_detail_creator_avatar && m_detail_tone.user.avatar_url != url) {
+        if (label == detail_creator_avatar && detail_tone.user.avatar_url != url) {
             return;
         }
         if (round) {
@@ -1246,29 +1246,29 @@ void Tone3000Panel::set_thumbnail(QLabel* label, const QString& url, const QSize
 }
 
 void Tone3000Panel::load_detail_models() {
-    const int req = ++m_detail_request;
-    const T3kTone tone = m_detail_tone;
-    m_client.list_models(
+    const int req = ++detail_request;
+    const T3kTone tone = detail_tone;
+    client.list_models(
         tone, [this, req, tone](const Tone3000Client::Result& r, QList<T3kModel> models) {
-            if (req != m_detail_request) {
+            if (req != detail_request) {
                 return;
             }
             if (!r.ok) {
-                m_detail_status->setText(
+                detail_status->setText(
                     r.offline ? QStringLiteral("Offline — models can't be listed right now.")
                               : r.error);
                 return;
             }
-            m_models_model->set_models(models, tone, m_library_index);
-            const qsizetype pending = m_models_model->pending().size();
-            m_detail_status->setText(
+            models_model->set_models(models, tone, library_index);
+            const qsizetype pending = models_model->pending().size();
+            detail_status->setText(
                 models.isEmpty() ? QStringLiteral("This tone has no downloadable models.")
                 : pending == 0   ? QStringLiteral("All models are in your library.")
                                  : QString("%1 models · click one to download").arg(models.size()));
-            m_download_all_button->setEnabled(pending > 0);
-            m_download_all_button->setText(pending > 0 && pending < models.size()
-                                               ? QString("Download the other %1").arg(pending)
-                                               : QStringLiteral("Download all"));
+            download_all_button->setEnabled(pending > 0);
+            download_all_button->setText(pending > 0 && pending < models.size()
+                                             ? QString("Download the other %1").arg(pending)
+                                             : QStringLiteral("Download all"));
         });
 }
 
@@ -1291,36 +1291,35 @@ void Tone3000Panel::on_model_row_clicked(const QModelIndex& idx) {
 }
 
 void Tone3000Panel::start_download(int row) {
-    const T3kModel* m = m_models_model->model(row);
+    const T3kModel* m = models_model->model(row);
     if (!m) {
         return;
     }
     const T3kModel model = *m;
-    const T3kTone tone = m_detail_tone;
-    m_models_model->set_state(model.id, ToneModelsModel::DOWNLOADING);
-    m_client.download_model(model, tone, [this, model](bool ok, QString path, QString err) {
-        m_models_model->set_state(model.id, ok ? ToneModelsModel::DONE : ToneModelsModel::FAILED,
-                                  ok ? path : err);
+    const T3kTone tone = detail_tone;
+    models_model->set_state(model.id, ToneModelsModel::DOWNLOADING);
+    client.download_model(model, tone, [this, model](bool ok, QString path, QString err) {
+        models_model->set_state(model.id, ok ? ToneModelsModel::DONE : ToneModelsModel::FAILED,
+                                ok ? path : err);
         if (ok) {
-            m_library_index.rescan(); // a new folder isn't watched until scanned once
-            const qsizetype pending = m_models_model->pending().size();
-            m_download_all_button->setEnabled(pending > 0);
-            m_detail_status->setText(pending == 0
-                                         ? QStringLiteral("All models are in your library.")
-                                         : QString("%1 left to download").arg(pending));
+            library_index.rescan(); // a new folder isn't watched until scanned once
+            const qsizetype pending = models_model->pending().size();
+            download_all_button->setEnabled(pending > 0);
+            detail_status->setText(pending == 0 ? QStringLiteral("All models are in your library.")
+                                                : QString("%1 left to download").arg(pending));
         } else {
-            m_detail_status->setText(err);
+            detail_status->setText(err);
         }
     });
 }
 
 void Tone3000Panel::download_all() {
-    for (int i = 0; i < m_models_model->rowCount(); ++i) {
+    for (int i = 0; i < models_model->rowCount(); ++i) {
         const auto state = static_cast<ToneModelsModel::State>(
-            m_models_model->index(i).data(ToneModelsModel::STATE_ROLE).toInt());
+            models_model->index(i).data(ToneModelsModel::STATE_ROLE).toInt());
         if (state == ToneModelsModel::IDLE || state == ToneModelsModel::FAILED) {
             start_download(i);
         }
     }
-    m_download_all_button->setEnabled(false);
+    download_all_button->setEnabled(false);
 }

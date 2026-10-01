@@ -24,22 +24,22 @@ public:
     LibraryDock(LibraryIndex& index, Tone3000Client& client, QWidget* parent = nullptr);
 
     LibraryPanel* get_local() const {
-        return m_local;
+        return local;
     }
     Tone3000Panel* tone3000() const {
-        return m_t3k;
+        return t3k;
     }
 
     void set_tab(Tab tab);
     Tab tab() const {
-        return static_cast<Tab>(m_stack ? current_index() : 0);
+        return static_cast<Tab>(stack ? current_index() : 0);
     }
 
 private:
     int current_index() const;
 
-    QToolButton* m_tab_btn[2]{};
-    QStackedWidget* m_stack = nullptr;
-    LibraryPanel* m_local = nullptr;
-    Tone3000Panel* m_t3k = nullptr;
+    QToolButton* tab_btn[2]{};
+    QStackedWidget* stack = nullptr;
+    LibraryPanel* local = nullptr;
+    Tone3000Panel* t3k = nullptr;
 };

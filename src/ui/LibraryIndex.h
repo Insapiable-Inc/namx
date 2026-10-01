@@ -67,16 +67,16 @@ public:
 
     void set_roots(const LibraryRoots& new_roots); // persists + rescans
     const LibraryRoots& get_roots() const {
-        return m_roots;
+        return roots;
     }
 
     void rescan();
     bool is_scanning() const {
-        return m_scanning;
+        return scanning;
     }
 
     const QList<LibraryEntry>& get_entries() const {
-        return m_entries;
+        return entries;
     }
     const LibraryEntry* find(const QString& path) const;
     /// Library file downloaded from TONE3000 with this model id, or null.
@@ -96,13 +96,13 @@ private:
     void request_scan();
     void on_scan_finished(QList<LibraryEntry> new_entries, QStringList dirs);
 
-    LibraryRoots m_roots;
-    QList<LibraryEntry> m_entries;
-    QThread* m_thread = nullptr;
-    LibraryScanWorker* m_worker = nullptr;
-    QFileSystemWatcher* m_watcher = nullptr;
-    QTimer* m_debounce = nullptr; // coalesces watcher bursts
-    bool m_scanning = false;
-    bool m_rescan_queued = false;
-    QString m_cache_path;
+    LibraryRoots roots;
+    QList<LibraryEntry> entries;
+    QThread* thread = nullptr;
+    LibraryScanWorker* worker = nullptr;
+    QFileSystemWatcher* watcher = nullptr;
+    QTimer* debounce = nullptr; // coalesces watcher bursts
+    bool scanning = false;
+    bool rescan_queued = false;
+    QString cache_path;
 };

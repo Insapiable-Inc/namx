@@ -34,15 +34,15 @@ public:
     }
 
     void set_accent(const QColor& new_accent) {
-        m_accent = new_accent;
+        accent = new_accent;
         update();
     }
 
 protected:
     void mousePressEvent(QMouseEvent* e) override {
         if (e->button() == Qt::LeftButton) {
-            m_drag_start_y = e->pos().y();
-            m_drag_start_val = value();
+            drag_start_y = e->pos().y();
+            drag_start_val = value();
             e->accept();
         } else {
             QDial::mousePressEvent(e);
@@ -51,9 +51,9 @@ protected:
 
     void mouseMoveEvent(QMouseEvent* e) override {
         if (e->buttons() & Qt::LeftButton) {
-            int dy = m_drag_start_y - e->pos().y(); // up → positive
+            int dy = drag_start_y - e->pos().y(); // up → positive
             int range = maximum() - minimum();
-            int new_val = m_drag_start_val + (dy * range) / 200;
+            int new_val = drag_start_val + (dy * range) / 200;
             setValue(qBound(minimum(), new_val, maximum()));
             e->accept();
         } else {
@@ -95,7 +95,7 @@ protected:
         p.drawArc(arc_rect, start_angle, sweep_total);
 
         // Value arc.
-        const QColor color = m_accent;
+        const QColor color = accent;
         const double range = std::max(1, maximum() - minimum());
         const double t = (value() - minimum()) / range;
         QPen value_pen(color, arc_width);
@@ -136,16 +136,16 @@ protected:
                          body_rect.center().y() - r1 * std::sin(angle_rad));
         const QPointF p2(body_rect.center().x() + r2 * std::cos(angle_rad),
                          body_rect.center().y() - r2 * std::sin(angle_rad));
-        QPen indicator_pen(m_accent, 2.6);
+        QPen indicator_pen(accent, 2.6);
         indicator_pen.setCapStyle(Qt::RoundCap);
         p.setPen(indicator_pen);
         p.drawLine(p1, p2);
     }
 
 private:
-    QColor m_accent{Theme::generic_accent()};
-    int m_drag_start_y{0};
-    int m_drag_start_val{0};
+    QColor accent{Theme::generic_accent()};
+    int drag_start_y{0};
+    int drag_start_val{0};
 };
 
 // ---------------------------------------------------------------------------
@@ -155,11 +155,11 @@ private:
 KnobWidget::KnobWidget(const QString& new_label, double min_val, double max_val, double default_val,
                        const QString& new_unit, Form form, QWidget* parent)
     : QWidget(parent)
-    , m_min(min_val)
-    , m_max(max_val)
-    , m_default_value(default_val)
-    , m_unit(new_unit)
-    , m_label(new_label) {
+    , min(min_val)
+    , max(max_val)
+    , default_value(default_val)
+    , unit(new_unit)
+    , label(new_label) {
     setAttribute(Qt::WA_StyledBackground, false);
 
     auto* name_label = new QLabel(new_label);
@@ -171,42 +171,42 @@ KnobWidget::KnobWidget(const QString& new_label, double min_val, double max_val,
 
     setToolTip(QString("%1: drag or scroll to adjust, double-click to reset").arg(new_label));
 
-    m_dial = new VerticalDial;
-    m_dial->setMinimum(0);
-    m_dial->setMaximum(K_STEPS);
-    m_dial->setValue(value_to_dial(default_val));
+    dial = new VerticalDial;
+    dial->setMinimum(0);
+    dial->setMaximum(STEPS);
+    dial->setValue(value_to_dial(default_val));
 
-    m_label_value = new QLabel;
+    label_value = new QLabel;
     {
-        QFont f = m_label_value->font();
+        QFont f = label_value->font();
         f.setBold(true);
-        m_label_value->setFont(f);
+        label_value->setFont(f);
     }
 
     if (form == Form::STACKED) {
         // Prominent stacked form (Input/Output gain): centred name over a
         // large dial over the value.
         setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
-        m_dial->setFixedSize(64, 64);
+        dial->setFixedSize(64, 64);
         name_label->setAlignment(Qt::AlignHCenter);
-        m_label_value->setAlignment(Qt::AlignHCenter);
+        label_value->setAlignment(Qt::AlignHCenter);
 
         auto* layout = new QVBoxLayout(this);
         layout->setContentsMargins(4, 4, 4, 4);
         layout->setSpacing(2);
         layout->addWidget(name_label);
-        layout->addWidget(m_dial, 0, Qt::AlignHCenter);
-        layout->addWidget(m_label_value);
+        layout->addWidget(dial, 0, Qt::AlignHCenter);
+        layout->addWidget(label_value);
     } else {
         // Compact row form: dial on the left, name over value on the right.
         // Keeps the dial a usable size while the whole widget stays ~46px
         // tall, so a full effect row fits in ~58px.
         setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
         setFixedWidth(142); // uniform tiles — knob columns align across rows
-        m_dial->setFixedSize(40, 40);
+        dial->setFixedSize(40, 40);
         name_label->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-        m_label_value->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-        m_label_value->setMinimumWidth(64); // steady width while the value changes
+        label_value->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+        label_value->setMinimumWidth(64); // steady width while the value changes
 
         auto* layout = new QHBoxLayout(this);
         layout->setContentsMargins(6, 4, 8, 4);
@@ -217,70 +217,70 @@ KnobWidget::KnobWidget(const QString& new_label, double min_val, double max_val,
         text->setSpacing(0);
         text->addStretch();
         text->addWidget(name_label);
-        text->addWidget(m_label_value);
+        text->addWidget(label_value);
         text->addStretch();
 
-        layout->addWidget(m_dial, 0, Qt::AlignVCenter);
+        layout->addWidget(dial, 0, Qt::AlignVCenter);
         layout->addLayout(text);
     }
 
     update_label();
-    m_dial->installEventFilter(this);
-    connect(m_dial, &QDial::valueChanged, this, &KnobWidget::on_dial_changed);
+    dial->installEventFilter(this);
+    connect(dial, &QDial::valueChanged, this, &KnobWidget::on_dial_changed);
 }
 
 void KnobWidget::set_accent(const QColor& new_accent) {
-    m_accent = new_accent;
-    m_dial->set_accent(new_accent);
+    accent = new_accent;
+    dial->set_accent(new_accent);
     update_label();
 }
 
 double KnobWidget::value() const {
-    const double v = dial_to_value(m_dial->value());
-    return m_snap > 0.0 ? qBound(m_min, std::round(v / m_snap) * m_snap, m_max) : v;
+    const double v = dial_to_value(dial->value());
+    return snap > 0.0 ? qBound(min, std::round(v / snap) * snap, max) : v;
 }
 
 void KnobWidget::set_value(double v) {
-    v = qBound(m_min, v, m_max);
-    const bool blocked = m_dial->blockSignals(true);
-    m_dial->setValue(value_to_dial(v));
-    m_dial->blockSignals(blocked);
+    v = qBound(min, v, max);
+    const bool blocked = dial->blockSignals(true);
+    dial->setValue(value_to_dial(v));
+    dial->blockSignals(blocked);
     update_label();
     // Programmatic writes must reach the engine too; the dial's own signal is
     // blocked above, so emit the (dial-quantized) value ourselves.
-    m_last_emitted = value();
-    emit value_changed(m_last_emitted);
+    last_emitted = value();
+    emit value_changed(last_emitted);
 }
 
 void KnobWidget::reset_to_default() {
-    set_value(m_default_value);
+    set_value(default_value);
 }
 
 void KnobWidget::on_dial_changed(int) {
     const double v = value();
-    if (m_snap > 0.0 && v == m_last_emitted) {
+    if (snap > 0.0 && v == last_emitted) {
         return; // still inside the same step
     }
-    m_last_emitted = v;
+    last_emitted = v;
     update_label();
     emit value_changed(v);
 }
 
 void KnobWidget::update_label() {
     double v = value();
-    QString txt = m_int_display ? QString::number(static_cast<int>(std::round(v)))
-                                : QString::number(v, 'f', 1);
-    if (!m_unit.isEmpty()) {
-        txt += " " + m_unit;
+    QString txt =
+        int_display ? QString::number(static_cast<int>(std::round(v))) : QString::number(v, 'f', 1);
+    if (!unit.isEmpty()) {
+        txt += " " + unit;
     }
-    if (m_formatter) {
-        txt = m_formatter(v);
+    if (formatter) {
+        txt = formatter(v);
     }
 
-    QPalette p = m_label_value->palette();
-    p.setColor(QPalette::WindowText, m_accent);
-    m_label_value->setPalette(p);
-    m_label_value->setText(txt);
+    QPalette p = label_value->palette();
+    p.setColor(QPalette::WindowText, accent);
+    label_value->setPalette(p);
+    label_value->setText(txt);
 }
 
 static std::function<void(KnobWidget*, QMenu*)>& menu_hook() {
@@ -304,53 +304,53 @@ void KnobWidget::contextMenuEvent(QContextMenuEvent* event) {
 }
 
 bool KnobWidget::eventFilter(QObject* obj, QEvent* event) {
-    if (obj == m_dial && event->type() == QEvent::MouseButtonDblClick) {
+    if (obj == dial && event->type() == QEvent::MouseButtonDblClick) {
         reset_to_default();
         return true;
     }
-    if (obj == m_dial && event->type() == QEvent::Wheel) {
+    if (obj == dial && event->type() == QEvent::Wheel) {
         auto* we = static_cast<QWheelEvent*>(event);
         int delta = we->angleDelta().y();
         if (delta == 0) {
             return true;
         }
-        if (m_snap > 0.0) {
-            set_value(value() + (delta > 0 ? m_snap : -m_snap)); // one step per notch
+        if (snap > 0.0) {
+            set_value(value() + (delta > 0 ? snap : -snap)); // one step per notch
             return true;
         }
         int dial_step;
-        if (m_scroll_step > 0.0 && !m_log_taper) {
-            dial_step = qMax(1, static_cast<int>(m_scroll_step / (m_max - m_min) * K_STEPS + 0.5));
+        if (scroll_step > 0.0 && !log_taper) {
+            dial_step = qMax(1, static_cast<int>(scroll_step / (max - min) * STEPS + 0.5));
         } else {
-            dial_step = K_STEPS / 100;
+            dial_step = STEPS / 100;
         }
-        int new_val = m_dial->value() + (delta > 0 ? dial_step : -dial_step);
-        m_dial->setValue(qBound(0, new_val, K_STEPS));
+        int new_val = dial->value() + (delta > 0 ? dial_step : -dial_step);
+        dial->setValue(qBound(0, new_val, STEPS));
         return true;
     }
     return QWidget::eventFilter(obj, event);
 }
 
 double KnobWidget::dial_to_value(int d) const {
-    const double t = static_cast<double>(d) / K_STEPS;
-    if (m_log_taper) {
-        return m_min * std::pow(m_max / m_min, t);
+    const double t = static_cast<double>(d) / STEPS;
+    if (log_taper) {
+        return min * std::pow(max / min, t);
     }
-    return m_min + (m_max - m_min) * t;
+    return min + (max - min) * t;
 }
 
 int KnobWidget::value_to_dial(double v) const {
-    double norm = m_log_taper ? std::log(qBound(m_min, v, m_max) / m_min) / std::log(m_max / m_min)
-                              : (v - m_min) / (m_max - m_min);
+    double norm = log_taper ? std::log(qBound(min, v, max) / min) / std::log(max / min)
+                            : (v - min) / (max - min);
     norm = qBound(0.0, norm, 1.0);
-    return static_cast<int>(norm * K_STEPS + 0.5);
+    return static_cast<int>(norm * STEPS + 0.5);
 }
 
 void KnobWidget::set_log_taper(bool on) {
     const double v = value();
-    m_log_taper = on && m_min > 0.0 && m_max > m_min; // needs a positive range
-    const bool blocked = m_dial->blockSignals(true);
-    m_dial->setValue(value_to_dial(v));
-    m_dial->blockSignals(blocked);
+    log_taper = on && min > 0.0 && max > min; // needs a positive range
+    const bool blocked = dial->blockSignals(true);
+    dial->setValue(value_to_dial(v));
+    dial->blockSignals(blocked);
     update_label();
 }

@@ -44,7 +44,7 @@ public:
 
     void set_tones(const QList<T3kTone>& new_tones);
     const T3kTone* tone(int row) const {
-        return row >= 0 && row < m_tones.size() ? &m_tones[row] : nullptr;
+        return row >= 0 && row < tones.size() ? &tones[row] : nullptr;
     }
     void set_favorite(int tone_id, bool on);
     void refresh_downloaded();
@@ -52,12 +52,12 @@ public:
 private:
     void request_images();
 
-    Tone3000Client& m_client;
-    LibraryIndex& m_library_index;
-    QList<T3kTone> m_tones;
-    QHash<QString, QPixmap> m_images; // url → scaled pixmap (thumbs + avatars)
-    QSet<QString> m_requested;
-    QHash<int, bool> m_downloaded; // tone id → any model in the library
+    Tone3000Client& client;
+    LibraryIndex& library_index;
+    QList<T3kTone> tones;
+    QHash<QString, QPixmap> images; // url → scaled pixmap (thumbs + avatars)
+    QSet<QString> requested;
+    QHash<int, bool> downloaded; // tone id → any model in the library
 };
 
 /// Card: 44 px image, title, "gear · format", creator avatar + @name, ★ and ✓.
@@ -103,7 +103,7 @@ public:
 
     void set_models(const QList<T3kModel>& new_models, const T3kTone& tone, LibraryIndex& index);
     const T3kModel* model(int row) const {
-        return row >= 0 && row < m_models.size() ? &m_models[row].model : nullptr;
+        return row >= 0 && row < models.size() ? &models[row].model : nullptr;
     }
     int row_of(int model_id) const;
     void set_state(int model_id, State s, const QString& path_or_error = {});
@@ -118,7 +118,7 @@ private:
         int progress = 0;
         QString path, error;
     };
-    QList<Row> m_models;
+    QList<Row> models;
 };
 
 class ToneModelDelegate : public QStyledItemDelegate
@@ -184,39 +184,39 @@ private:
     void toggle_favorite(int tone_id, bool on);
     void set_thumbnail(QLabel* label, const QString& url, const QSize& size, bool round);
 
-    Tone3000Client& m_client;
-    LibraryIndex& m_library_index;
+    Tone3000Client& client;
+    LibraryIndex& library_index;
 
-    QStackedWidget* m_pages = nullptr;
-    QLabel* m_logo = nullptr;
-    QToolButton* m_user_btn = nullptr;
-    QLabel* m_notice = nullptr; // transient status line under the header
+    QStackedWidget* pages = nullptr;
+    QLabel* logo = nullptr;
+    QToolButton* user_btn = nullptr;
+    QLabel* notice = nullptr; // transient status line under the header
 
     // Setup
-    QLineEdit* m_key_edit = nullptr;
+    QLineEdit* key_edit = nullptr;
     // Browse
-    QToolButton* m_list_btn[5]{};
-    int m_list = 0;
-    int m_list_page = 1, m_total_pages = 1;
-    ToneListModel* m_tone_model = nullptr;
-    QListView* m_tone_view = nullptr;
-    QLabel* m_list_status = nullptr;
-    QToolButton* m_prev_page = nullptr;
-    QToolButton* m_next_page = nullptr;
-    QPushButton* m_browse_btn = nullptr;
+    QToolButton* list_btn[5]{};
+    int list = 0;
+    int list_page = 1, total_pages = 1;
+    ToneListModel* tone_model = nullptr;
+    QListView* tone_view = nullptr;
+    QLabel* list_status = nullptr;
+    QToolButton* prev_page = nullptr;
+    QToolButton* next_page = nullptr;
+    QPushButton* browse_btn = nullptr;
     // Detail
-    T3kTone m_detail_tone;
-    QLabel* m_detail_image = nullptr;
-    QLabel* m_detail_title = nullptr;
-    QLabel* m_detail_meta = nullptr;
-    QLabel* m_detail_creator_avatar = nullptr;
-    QLabel* m_detail_creator = nullptr;
-    QLabel* m_detail_desc = nullptr;
-    QToolButton* m_detail_fav = nullptr;
-    QLabel* m_detail_status = nullptr;
-    ToneModelsModel* m_models_model = nullptr;
-    QListView* m_models_view = nullptr;
-    QPushButton* m_download_all_button = nullptr;
-    int m_detail_request = 0; // ignore stale replies
-    bool m_notice_busy = false;
+    T3kTone detail_tone;
+    QLabel* detail_image = nullptr;
+    QLabel* detail_title = nullptr;
+    QLabel* detail_meta = nullptr;
+    QLabel* detail_creator_avatar = nullptr;
+    QLabel* detail_creator = nullptr;
+    QLabel* detail_desc = nullptr;
+    QToolButton* detail_fav = nullptr;
+    QLabel* detail_status = nullptr;
+    ToneModelsModel* models_model = nullptr;
+    QListView* models_view = nullptr;
+    QPushButton* download_all_button = nullptr;
+    int detail_request = 0; // ignore stale replies
+    bool notice_busy = false;
 };

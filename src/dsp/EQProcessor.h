@@ -27,7 +27,7 @@ public:
         HIGH_MID,
         TREBLE,
         HIGH_CUT,
-        K_BANDS
+        BANDS
     };
 
     EQProcessor();
@@ -83,10 +83,10 @@ private:
     void rebuild(Band b); // caller holds mMutex
     bool active(Band b) const;
 
-    std::array<double, K_BANDS> m_gain{}; // dB (shelf/peak bands)
-    std::array<double, K_BANDS> m_freq{20.0, 250.0, 1000.0, 3000.0, 4000.0, 20000.0};
-    std::array<Biquad, K_BANDS> m_filters_l, m_filters_r;
-    std::array<bool, K_BANDS> m_band_on{}; // band changes the signal (skip flat ones)
+    std::array<double, BANDS> gain{}; // dB (shelf/peak bands)
+    std::array<double, BANDS> freq{20.0, 250.0, 1000.0, 3000.0, 4000.0, 20000.0};
+    std::array<Biquad, BANDS> filters_l, filters_r;
+    std::array<bool, BANDS> band_on{}; // band changes the signal (skip flat ones)
 
-    std::mutex m_mutex; // GUI writes coefficients; audio thread uses try_lock
+    std::mutex mutex; // GUI writes coefficients; audio thread uses try_lock
 };

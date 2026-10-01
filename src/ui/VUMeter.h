@@ -27,24 +27,24 @@ protected:
 
 private:
     static float to_value(float db) {
-        return (db - K_MIN_DB) / (K_MAX_DB - K_MIN_DB) * 100.0f;
+        return (db - MIN_DB) / (MAX_DB - MIN_DB) * 100.0f;
     }
 
-    static constexpr float K_MIN_DB = -60.0f;
-    static constexpr float K_MAX_DB = 6.0f; // headroom above the clip point
-    static constexpr float K_RELEASE_DB_PER_SEC = 24.0f; // bar fall (digital peak meter)
-    static constexpr qint64 K_HOLD_MS = 1000; // hold line waits…
-    static constexpr float K_HOLD_FALL_DB_PER_SEC = 12.0f; // …then falls
+    static constexpr float MIN_DB = -60.0f;
+    static constexpr float MAX_DB = 6.0f; // headroom above the clip point
+    static constexpr float RELEASE_DB_PER_SEC = 24.0f; // bar fall (digital peak meter)
+    static constexpr qint64 HOLD_MS = 1000; // hold line waits…
+    static constexpr float HOLD_FALL_DB_PER_SEC = 12.0f; // …then falls
 
-    float m_level_db{K_MIN_DB};
-    float m_hold_db{K_MIN_DB};
-    qint64 m_last_ms{0};
-    qint64 m_hold_since_ms{0};
-    QElapsedTimer m_clock;
-    float m_level{0.0f}; // painted positions, 0..100 value scale
-    float m_hold{0.0f};
+    float level_db{MIN_DB};
+    float hold_db{MIN_DB};
+    qint64 last_ms{0};
+    qint64 hold_since_ms{0};
+    QElapsedTimer clock;
+    float level{0.0f}; // painted positions, 0..100 value scale
+    float hold{0.0f};
 
     // Zone boundaries on the 0..100 value scale ((dB - min) / span * 100).
-    static constexpr float K_HOT_VALUE = (-6.0f - K_MIN_DB) / (K_MAX_DB - K_MIN_DB) * 100.0f;
-    static constexpr float K_CLIP_VALUE = (0.0f - K_MIN_DB) / (K_MAX_DB - K_MIN_DB) * 100.0f;
+    static constexpr float HOT_VALUE = (-6.0f - MIN_DB) / (MAX_DB - MIN_DB) * 100.0f;
+    static constexpr float CLIP_VALUE = (0.0f - MIN_DB) / (MAX_DB - MIN_DB) * 100.0f;
 };

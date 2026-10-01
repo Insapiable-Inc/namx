@@ -27,23 +27,23 @@ public:
         : MidiInput(parent) {
     }
     ~WinMidiInput() override {
-        for (auto& [name, h] : m_open) {
+        for (auto& [name, h] : open) {
             close_device(h);
         }
     }
 
     bool start() override {
-        if (m_started) {
+        if (started) {
             return true;
         }
-        m_started = true;
+        started = true;
         rescan();
         sync_connections();
         auto* poll = new QTimer(this);
         connect(poll, &QTimer::timeout, this, [this] {
-            const auto before = m_present;
+            const auto before = present;
             rescan();
-            if (before != m_present) {
+            if (before != present) {
                 sync_connections();
                 emit devices_changed();
             }
@@ -58,7 +58,7 @@ public:
 
     QStringList devices() const override {
         QStringList out;
-        for (const auto& [name, id] : m_present) {
+        for (const auto& [name, id] : present) {
             out << name;
         }
         return out;
@@ -66,16 +66,16 @@ public:
 
 protected:
     void sync_connections() override {
-        for (auto it = m_open.begin(); it != m_open.end();) {
-            if (!m_present.count(it->first) || !is_enabled(it->first)) {
+        for (auto it = open.begin(); it != open.end();) {
+            if (!present.count(it->first) || !is_enabled(it->first)) {
                 close_device(it->second);
-                it = m_open.erase(it);
+                it = open.erase(it);
             } else {
                 ++it;
             }
         }
-        for (const auto& [name, id] : m_present) {
-            if (!is_enabled(name) || m_open.count(name)) {
+        for (const auto& [name, id] : present) {
+            if (!is_enabled(name) || open.count(name)) {
                 continue;
             }
             HMIDIIN h = nullptr;
@@ -83,7 +83,7 @@ protected:
                            reinterpret_cast<DWORD_PTR>(this),
                            CALLBACK_FUNCTION) == MMSYSERR_NOERROR) {
                 midiInStart(h);
-                m_open[name] = h;
+                open[name] = h;
             } else {
                 qCWarning(lc_audio, "[MIDI] cannot open %s", qPrintable(name));
             }
@@ -131,22 +131,22 @@ private:
             found[name] = i;
         }
         // A device id can shift when another one is unplugged: reopen those.
-        for (auto it = m_open.begin(); it != m_open.end();) {
+        for (auto it = open.begin(); it != open.end();) {
             const auto f = found.find(it->first);
-            const auto p = m_present.find(it->first);
-            if (f != found.end() && p != m_present.end() && f->second != p->second) {
+            const auto p = present.find(it->first);
+            if (f != found.end() && p != present.end() && f->second != p->second) {
                 close_device(it->second);
-                it = m_open.erase(it);
+                it = open.erase(it);
             } else {
                 ++it;
             }
         }
-        m_present = std::move(found);
+        present = std::move(found);
     }
 
-    bool m_started = false;
-    std::map<QString, UINT> m_present;
-    std::map<QString, HMIDIIN> m_open;
+    bool started = false;
+    std::map<QString, UINT> present;
+    std::map<QString, HMIDIIN> open;
 };
 
 } // namespace

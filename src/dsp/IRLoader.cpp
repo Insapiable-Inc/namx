@@ -55,24 +55,24 @@ IRLoader::IRLoader() {
 
 IRLoader::~IRLoader() {
     // Audio thread must be stopped before this is called.
-    m_slot.publish(nullptr);
-    m_slot.reclaim(true);
+    slot.publish(nullptr);
+    slot.reclaim(true);
 }
 
 std::unique_ptr<IRLoader::Kernel> IRLoader::build_kernel() const {
     auto k = std::make_unique<Kernel>();
 
     std::vector<float> samples;
-    const bool resample = m_target_rate > 0.0 && m_raw_rate > 0.0 && m_target_rate != m_raw_rate;
+    const bool resample = target_rate > 0.0 && raw_rate > 0.0 && target_rate != raw_rate;
     if (resample) {
-        samples = resample_sinc(m_raw, m_raw_rate, m_target_rate, K_MAX_IR_LENGTH);
+        samples = resample_sinc(raw, raw_rate, target_rate, MAX_IR_LENGTH);
     } else {
-        samples = m_raw;
-        samples.resize(std::min(samples.size(), K_MAX_IR_LENGTH));
+        samples = raw;
+        samples.resize(std::min(samples.size(), MAX_IR_LENGTH));
     }
 
     k->ir_len = static_cast<int>(samples.size());
-    k->built_rate = resample ? m_target_rate : m_raw_rate;
+    k->built_rate = resample ? target_rate : raw_rate;
     k->ir = std::move(samples);
 
     // Normalize energy (L2) to 1.0 so the convolution is roughly unity-gain;
@@ -93,7 +93,7 @@ std::unique_ptr<IRLoader::Kernel> IRLoader::build_kernel() const {
     std::reverse(k->ir.begin(), k->ir.end());
 
     for (int ch = 0; ch < 2; ++ch) {
-        k->buffers[ch].assign(2 * K_MAX_IR_LENGTH, 0.0f);
+        k->buffers[ch].assign(2 * MAX_IR_LENGTH, 0.0f);
     }
     return k;
 }
@@ -103,50 +103,50 @@ bool IRLoader::load(const std::string& path) {
     double sample_rate = 0.0;
 
     auto result = dsp::wav::Load(path.c_str(), raw_samples, sample_rate);
-    std::lock_guard<std::mutex> lock(m_load_mutex);
+    std::lock_guard<std::mutex> lock(load_mutex);
     if (result != dsp::wav::LoadReturnCode::SUCCESS) {
-        m_last_error = dsp::wav::GetMsgForLoadReturnCode(result);
+        last_error = dsp::wav::GetMsgForLoadReturnCode(result);
         if (result == dsp::wav::LoadReturnCode::ERROR_NOT_MONO) {
-            m_last_error += " Stereo IRs are not supported; convert the file to mono.";
+            last_error += " Stereo IRs are not supported; convert the file to mono.";
         }
         return false;
     }
 
     if (raw_samples.empty()) {
-        m_last_error = "IR file contains no samples.";
+        last_error = "IR file contains no samples.";
         return false;
     }
-    m_last_error.clear();
+    last_error.clear();
 
-    m_raw = std::move(raw_samples);
-    m_raw_rate = sample_rate;
-    if (m_target_rate > 0.0 && sample_rate > 0.0 && sample_rate != m_target_rate) {
+    raw = std::move(raw_samples);
+    raw_rate = sample_rate;
+    if (target_rate > 0.0 && sample_rate > 0.0 && sample_rate != target_rate) {
         qCInfo(lc_audio, "[IRLoader] Resampling IR from %.0f Hz to %.0f Hz", sample_rate,
-               m_target_rate);
+               target_rate);
     }
 
-    m_slot.publish(build_kernel());
-    m_file_path = path;
+    slot.publish(build_kernel());
+    file_path = path;
     return true;
 }
 
 void IRLoader::unload() {
-    std::lock_guard<std::mutex> lock(m_load_mutex);
-    m_slot.publish(nullptr);
-    m_file_path = "";
-    m_raw.clear();
-    m_raw_rate = 0.0;
+    std::lock_guard<std::mutex> lock(load_mutex);
+    slot.publish(nullptr);
+    file_path = "";
+    raw.clear();
+    raw_rate = 0.0;
 }
 
 void IRLoader::set_target_sample_rate(double sr) {
-    std::lock_guard<std::mutex> lock(m_load_mutex);
-    m_target_rate = sr;
-    Kernel* k = m_slot.current();
-    if (!k || m_raw.empty() || sr <= 0.0 || k->built_rate == sr) {
+    std::lock_guard<std::mutex> lock(load_mutex);
+    target_rate = sr;
+    Kernel* k = slot.current();
+    if (!k || raw.empty() || sr <= 0.0 || k->built_rate == sr) {
         return;
     }
     qCInfo(lc_audio, "[IRLoader] Engine rate changed to %.0f Hz — rebuilding IR kernel", sr);
-    m_slot.publish(build_kernel());
+    slot.publish(build_kernel());
 }
 
 /*static*/ void IRLoader::push_sample(Kernel& k, int ch, float in) {
@@ -181,10 +181,10 @@ void IRLoader::process_block(float* l, float* r, size_t num_frames, bool input_i
         ~BlockGuard() {
             s.end_block();
         }
-    } guard{m_slot};
+    } guard{slot};
 
     // One snapshot per block; the kernel stays alive until endBlock() runs.
-    Kernel* kp = m_slot.acquire();
+    Kernel* kp = slot.acquire();
     if (!enabled || !kp || kp->ir_len <= 0) {
         return;
     }
@@ -220,7 +220,7 @@ void IRLoader::process_block(float* l, float* r, size_t num_frames, bool input_i
 void IRLoader::reset() {
     // Audio thread (chain reorder): clear the delay lines of whatever kernel
     // is live. std::fill only — no allocation.
-    if (Kernel* k = m_slot.acquire()) {
+    if (Kernel* k = slot.acquire()) {
         clear_kernel_buffers(k->buffers, k->write_pos);
     }
 }

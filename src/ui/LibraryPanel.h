@@ -48,18 +48,18 @@ public:
     void set_loaded(LibraryEntry::Kind kind, const QString& path);
 
     bool is_favorite(const QString& path) const {
-        return m_favorites.contains(path);
+        return favorites.contains(path);
     }
     int row_of(const QString& path) const;
     QString get_loaded(LibraryEntry::Kind kind) const {
-        return m_loaded[static_cast<int>(kind)];
+        return loaded[static_cast<int>(kind)];
     }
 
 private:
-    QList<LibraryEntry> m_entries;
-    QSet<QString> m_favorites;
-    QStringList m_recents;
-    QString m_loaded[3];
+    QList<LibraryEntry> entries;
+    QSet<QString> favorites;
+    QStringList recents;
+    QString loaded[3];
 };
 
 /// One proxy per kind: kind filter, search words, All / Favorites / Recent
@@ -91,10 +91,10 @@ protected:
     bool lessThan(const QModelIndex& a, const QModelIndex& b) const override;
 
 private:
-    LibraryEntry::Kind m_kind;
-    QStringList m_words;
-    Mode m_mode{Mode::ALL};
-    Sort m_sort{Sort::NAME};
+    LibraryEntry::Kind kind;
+    QStringList words;
+    Mode mode{Mode::ALL};
+    Sort sort_order{Sort::NAME};
 };
 
 /// Two-line rows (name / summary), a ★ toggle at the right edge, and an
@@ -169,21 +169,21 @@ private:
     void update_counts();
     void restore_current_from_loaded();
     LibraryFilterProxy* proxy(LibraryEntry::Kind kind) const {
-        return m_proxies[static_cast<int>(kind)];
+        return proxies[static_cast<int>(kind)];
     }
 
-    LibraryIndex& m_library_index;
-    LibraryListModel* m_model = nullptr;
-    LibraryFilterProxy* m_proxies[3]{};
-    QToolButton* m_section_btn[3]{};
-    QToolButton* m_mode_btn[3]{};
-    QComboBox* m_sort_box = nullptr;
-    QLineEdit* m_search = nullptr;
-    LibraryListView* m_view = nullptr;
-    QLabel* m_status = nullptr;
-    QTimer* m_activate_timer = nullptr; // debounces arrow-key browsing
-    int m_section = 0;
-    bool m_syncing = false; // programmatic selection changes
-    QSet<QString> m_favorites;
-    QStringList m_recents;
+    LibraryIndex& library_index;
+    LibraryListModel* model = nullptr;
+    LibraryFilterProxy* proxies[3]{};
+    QToolButton* section_btn[3]{};
+    QToolButton* mode_btn[3]{};
+    QComboBox* sort_box = nullptr;
+    QLineEdit* search = nullptr;
+    LibraryListView* view = nullptr;
+    QLabel* status = nullptr;
+    QTimer* activate_timer = nullptr; // debounces arrow-key browsing
+    int section = 0;
+    bool syncing = false; // programmatic selection changes
+    QSet<QString> favorites;
+    QStringList recents;
 };

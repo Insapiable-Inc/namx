@@ -27,10 +27,10 @@ public:
     void update_metrics();
 
     QString input_device_id() const {
-        return m_input_id;
+        return input_id;
     }
     QString output_device_id() const {
-        return m_output_id;
+        return output_id;
     }
 
 signals:
@@ -46,23 +46,23 @@ private:
     void reset_counters();
     void set_device_labels();
 
-    AudioEngine& m_engine;
-    QLabel* m_lbl_backend = nullptr;
-    QLabel* m_lbl_rate = nullptr;
-    QLabel* m_lbl_buffer = nullptr;
-    QLabel* m_lbl_latency = nullptr;
-    QLabel* m_lbl_load = nullptr;
-    QLabel* m_lbl_xruns = nullptr;
-    QLabel* m_lbl_input = nullptr;
-    QLabel* m_lbl_output = nullptr;
-    QString m_input_id, m_output_id;
-    bool m_connected = false;
+    AudioEngine& engine;
+    QLabel* lbl_backend = nullptr;
+    QLabel* lbl_rate = nullptr;
+    QLabel* lbl_buffer = nullptr;
+    QLabel* lbl_latency = nullptr;
+    QLabel* lbl_load = nullptr;
+    QLabel* lbl_xruns = nullptr;
+    QLabel* lbl_input = nullptr;
+    QLabel* lbl_output = nullptr;
+    QString input_id, output_id;
+    bool connected = false;
 
     // DSP load: peaks taken every metrics tick, shown as the max over a
     // ~0.5 s window (readable, still catches spikes); the all-time max since
     // the last reset goes in the tooltip.
-    float m_load_window = 0.0f;
-    int m_load_ticks = 0;
-    float m_load_max = 0.0f;
-    int m_shown_xruns = -2;
+    float load_window = 0.0f;
+    int load_ticks = 0;
+    float load_max = 0.0f;
+    int shown_xruns = -2;
 };

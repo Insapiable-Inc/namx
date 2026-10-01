@@ -30,6 +30,6 @@ protected:
     void leaveEvent(QEvent*) override;
 
 private:
-    QColor m_accent;
-    bool m_hovered{false};
+    QColor accent;
+    bool hovered{false};
 };

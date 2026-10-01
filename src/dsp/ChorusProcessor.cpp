@@ -3,21 +3,20 @@
 #include <algorithm>
 #include <cmath>
 
-static constexpr float K_PI = 3.14159265358979323846f;
+static constexpr float PI = 3.14159265358979323846f;
 
 void ChorusProcessor::on_sample_rate_changed(double sr) {
-    const size_t length =
-        static_cast<size_t>((K_BASE_MS + K_MAX_DEPTH_MS + 5.0f) * sr / 1000.0f) + 4;
-    m_line_l.resize(length);
-    m_line_r.resize(length);
+    const size_t length = static_cast<size_t>((BASE_MS + MAX_DEPTH_MS + 5.0f) * sr / 1000.0f) + 4;
+    line_l.resize(length);
+    line_r.resize(length);
     reset();
 }
 
 void ChorusProcessor::reset() {
-    m_line_l.clear();
-    m_line_r.clear();
-    m_lfo_phase = 0.0f;
-    m_vint_lp[0] = m_vint_lp[1] = 0.0f;
+    line_l.clear();
+    line_r.clear();
+    lfo_phase = 0.0f;
+    vint_lp[0] = vint_lp[1] = 0.0f;
 }
 
 float ChorusProcessor::wet(const DelayLine& line, float phase, float depth, float fs,
@@ -28,9 +27,9 @@ float ChorusProcessor::wet(const DelayLine& line, float phase, float depth, floa
             const float f = ph - std::floor(ph);
             lfo = 4.0f * std::abs(f - 0.5f) - 1.0f; // triangle
         } else {
-            lfo = std::sin(2.0f * K_PI * ph);
+            lfo = std::sin(2.0f * PI * ph);
         }
-        const float del = std::max(1.0f, (K_BASE_MS + depth * K_MAX_DEPTH_MS * lfo) * fs / 1000.0f);
+        const float del = std::max(1.0f, (BASE_MS + depth * MAX_DEPTH_MS * lfo) * fs / 1000.0f);
         return line.interpolate(del);
     };
     if (current_mode == TRI) {
@@ -47,78 +46,78 @@ static inline float vintage_tone(float x, float& lp, float k) {
 }
 
 void ChorusProcessor::process_block_mono(float* buf, size_t nframes) {
-    const float depth = m_depth_pct.load() / 100.0f;
-    const float mix = m_mix_pct.load() / 100.0f;
-    const float fs = static_cast<float>(m_sample_rate);
-    const float ph_inc = m_rate_hz.load() / fs;
-    const int current_mode = m_mode.load(std::memory_order_relaxed);
-    const float lp_k = 1.0f - std::exp(-2.0f * K_PI * 3200.0f / fs);
+    const float depth = depth_pct.load() / 100.0f;
+    const float mix = mix_pct.load() / 100.0f;
+    const float fs = static_cast<float>(sample_rate);
+    const float ph_inc = rate_hz.load() / fs;
+    const int current_mode = mode.load(std::memory_order_relaxed);
+    const float lp_k = 1.0f - std::exp(-2.0f * PI * 3200.0f / fs);
 
     for (size_t i = 0; i < nframes; ++i) {
-        m_line_l.push(buf[i]);
-        float w = wet(m_line_l, m_lfo_phase, depth, fs, current_mode);
+        line_l.push(buf[i]);
+        float w = wet(line_l, lfo_phase, depth, fs, current_mode);
         if (current_mode == VINTAGE) {
-            w = vintage_tone(w, m_vint_lp[0], lp_k);
+            w = vintage_tone(w, vint_lp[0], lp_k);
         }
         buf[i] = buf[i] * (1.0f - mix) + w * mix;
-        m_lfo_phase += ph_inc;
-        if (m_lfo_phase >= 1.0f) {
-            m_lfo_phase -= 1.0f;
+        lfo_phase += ph_inc;
+        if (lfo_phase >= 1.0f) {
+            lfo_phase -= 1.0f;
         }
     }
 }
 
 void ChorusProcessor::process_block_dual(float* l, float* r, size_t nframes) {
-    const float depth = m_depth_pct.load() / 100.0f;
-    const float mix = m_mix_pct.load() / 100.0f;
-    const float fs = static_cast<float>(m_sample_rate);
-    const float ph_inc = m_rate_hz.load() / fs;
-    const int current_mode = m_mode.load(std::memory_order_relaxed);
-    const float lp_k = 1.0f - std::exp(-2.0f * K_PI * 3200.0f / fs);
+    const float depth = depth_pct.load() / 100.0f;
+    const float mix = mix_pct.load() / 100.0f;
+    const float fs = static_cast<float>(sample_rate);
+    const float ph_inc = rate_hz.load() / fs;
+    const int current_mode = mode.load(std::memory_order_relaxed);
+    const float lp_k = 1.0f - std::exp(-2.0f * PI * 3200.0f / fs);
 
     for (size_t i = 0; i < nframes; ++i) {
         // Same LFO for both channels: identical mono effect applied per channel.
-        m_line_l.push(l[i]);
-        m_line_r.push(r[i]);
-        float w_l = wet(m_line_l, m_lfo_phase, depth, fs, current_mode);
-        float w_r = wet(m_line_r, m_lfo_phase, depth, fs, current_mode);
+        line_l.push(l[i]);
+        line_r.push(r[i]);
+        float w_l = wet(line_l, lfo_phase, depth, fs, current_mode);
+        float w_r = wet(line_r, lfo_phase, depth, fs, current_mode);
         if (current_mode == VINTAGE) {
-            w_l = vintage_tone(w_l, m_vint_lp[0], lp_k);
-            w_r = vintage_tone(w_r, m_vint_lp[1], lp_k);
+            w_l = vintage_tone(w_l, vint_lp[0], lp_k);
+            w_r = vintage_tone(w_r, vint_lp[1], lp_k);
         }
         l[i] = l[i] * (1.0f - mix) + w_l * mix;
         r[i] = r[i] * (1.0f - mix) + w_r * mix;
-        m_lfo_phase += ph_inc;
-        if (m_lfo_phase >= 1.0f) {
-            m_lfo_phase -= 1.0f;
+        lfo_phase += ph_inc;
+        if (lfo_phase >= 1.0f) {
+            lfo_phase -= 1.0f;
         }
     }
 }
 
 void ChorusProcessor::process_block_stereo_out(float* l, float* r, size_t nframes) {
-    const float depth = m_depth_pct.load() / 100.0f;
-    const float mix = m_mix_pct.load() / 100.0f;
-    const float fs = static_cast<float>(m_sample_rate);
-    const float ph_inc = m_rate_hz.load() / fs;
-    const int current_mode = m_mode.load(std::memory_order_relaxed);
-    const float lp_k = 1.0f - std::exp(-2.0f * K_PI * 3200.0f / fs);
+    const float depth = depth_pct.load() / 100.0f;
+    const float mix = mix_pct.load() / 100.0f;
+    const float fs = static_cast<float>(sample_rate);
+    const float ph_inc = rate_hz.load() / fs;
+    const int current_mode = mode.load(std::memory_order_relaxed);
+    const float lp_k = 1.0f - std::exp(-2.0f * PI * 3200.0f / fs);
     const float off = current_mode == SPATIAL ? 0.25f : 0.5f; // LFO offset
     const float r_sign = current_mode == SPATIAL ? -1.0f : 1.0f; // Spatial: inverted right wet
 
     for (size_t i = 0; i < nframes; ++i) {
-        m_line_l.push(l[i]);
-        m_line_r.push(r[i]);
-        float w_l = wet(m_line_l, m_lfo_phase, depth, fs, current_mode);
-        float w_r = wet(m_line_r, m_lfo_phase + off, depth, fs, current_mode);
+        line_l.push(l[i]);
+        line_r.push(r[i]);
+        float w_l = wet(line_l, lfo_phase, depth, fs, current_mode);
+        float w_r = wet(line_r, lfo_phase + off, depth, fs, current_mode);
         if (current_mode == VINTAGE) {
-            w_l = vintage_tone(w_l, m_vint_lp[0], lp_k);
-            w_r = vintage_tone(w_r, m_vint_lp[1], lp_k);
+            w_l = vintage_tone(w_l, vint_lp[0], lp_k);
+            w_r = vintage_tone(w_r, vint_lp[1], lp_k);
         }
         l[i] = l[i] * (1.0f - mix) + w_l * mix;
         r[i] = r[i] * (1.0f - mix) + r_sign * w_r * mix;
-        m_lfo_phase += ph_inc;
-        if (m_lfo_phase >= 1.0f) {
-            m_lfo_phase -= 1.0f;
+        lfo_phase += ph_inc;
+        if (lfo_phase >= 1.0f) {
+            lfo_phase -= 1.0f;
         }
     }
 }

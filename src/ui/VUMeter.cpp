@@ -24,36 +24,34 @@ VUMeter::VUMeter(Qt::Orientation orientation, QWidget* parent)
 }
 
 void VUMeter::set_peak(float peak) {
-    if (!m_clock.isValid()) {
-        m_clock.start();
+    if (!clock.isValid()) {
+        clock.start();
     }
-    const qint64 now = m_clock.elapsed();
-    const float dt = static_cast<float>(now - m_last_ms) / 1000.0f;
-    m_last_ms = now;
+    const qint64 now = clock.elapsed();
+    const float dt = static_cast<float>(now - last_ms) / 1000.0f;
+    last_ms = now;
 
-    const float in_db =
-        peak > 0.0f ? std::clamp(20.0f * std::log10(peak), K_MIN_DB, K_MAX_DB) : K_MIN_DB;
+    const float in_db = peak > 0.0f ? std::clamp(20.0f * std::log10(peak), MIN_DB, MAX_DB) : MIN_DB;
 
     // Instant attack, linear-in-dB release.
-    m_level_db =
-        in_db >= m_level_db ? in_db : std::max(in_db, m_level_db - K_RELEASE_DB_PER_SEC * dt);
+    level_db = in_db >= level_db ? in_db : std::max(in_db, level_db - RELEASE_DB_PER_SEC * dt);
 
     // Peak hold: track the recent maximum, wait, then fall (never below the bar).
-    if (in_db >= m_hold_db) {
-        m_hold_db = in_db;
-        m_hold_since_ms = now;
-    } else if (now - m_hold_since_ms > K_HOLD_MS) {
-        m_hold_db = std::max(m_level_db, m_hold_db - K_HOLD_FALL_DB_PER_SEC * dt);
+    if (in_db >= hold_db) {
+        hold_db = in_db;
+        hold_since_ms = now;
+    } else if (now - hold_since_ms > HOLD_MS) {
+        hold_db = std::max(level_db, hold_db - HOLD_FALL_DB_PER_SEC * dt);
     }
 
     // Repaint only on visible movement — a silent input costs nothing.
-    const float level_value = to_value(m_level_db);
-    const float hold_value = to_value(m_hold_db);
-    if (std::abs(level_value - m_level) < 0.05f && std::abs(hold_value - m_hold) < 0.05f) {
+    const float level_value = to_value(level_db);
+    const float hold_value = to_value(hold_db);
+    if (std::abs(level_value - level) < 0.05f && std::abs(hold_value - hold) < 0.05f) {
         return;
     }
-    m_level = level_value;
-    m_hold = hold_value;
+    level = level_value;
+    hold = hold_value;
     update();
 }
 
@@ -86,7 +84,7 @@ void VUMeter::paintEvent(QPaintEvent*) {
 
     // Zone fill: one rect per zone the level reaches — color by absolute
     // level, red strictly above the 0 dBFS mark.
-    const float t = m_level;
+    const float t = level;
     auto zone_rect = [&](float from, float to) -> QRectF {
         const qreal a = pos(from), b = pos(to);
         return vert ? QRectF(inner.left(), inner.bottom() - b, inner.width(), b - a)
@@ -94,20 +92,20 @@ void VUMeter::paintEvent(QPaintEvent*) {
     };
     if (t > 0.0f) {
         p.setBrush(Theme::meter_low());
-        p.drawRect(zone_rect(0.0f, std::min(t, K_HOT_VALUE)));
+        p.drawRect(zone_rect(0.0f, std::min(t, HOT_VALUE)));
     }
-    if (t > K_HOT_VALUE) {
+    if (t > HOT_VALUE) {
         p.setBrush(Theme::meter_mid());
-        p.drawRect(zone_rect(K_HOT_VALUE, std::min(t, K_CLIP_VALUE)));
+        p.drawRect(zone_rect(HOT_VALUE, std::min(t, CLIP_VALUE)));
     }
-    if (t > K_CLIP_VALUE) {
+    if (t > CLIP_VALUE) {
         p.setBrush(Theme::meter_clip());
-        p.drawRect(zone_rect(K_CLIP_VALUE, t));
+        p.drawRect(zone_rect(CLIP_VALUE, t));
     }
 
     // 0 dBFS mark on the groove.
     {
-        const qreal c = pos(K_CLIP_VALUE);
+        const qreal c = pos(CLIP_VALUE);
         p.setBrush(Theme::track());
         if (vert) {
             p.drawRect(QRectF(inner.left(), inner.bottom() - c - 0.5, inner.width(), 1.0));
@@ -117,11 +115,11 @@ void VUMeter::paintEvent(QPaintEvent*) {
     }
 
     // Peak-hold line, colored by the zone it sits in.
-    if (m_hold > 0.5f) {
-        p.setBrush(m_hold > K_CLIP_VALUE  ? Theme::meter_clip()
-                   : m_hold > K_HOT_VALUE ? Theme::meter_mid()
-                                          : Theme::meter_low());
-        const qreal hp = pos(m_hold);
+    if (hold > 0.5f) {
+        p.setBrush(hold > CLIP_VALUE  ? Theme::meter_clip()
+                   : hold > HOT_VALUE ? Theme::meter_mid()
+                                      : Theme::meter_low());
+        const qreal hp = pos(hold);
         if (vert) {
             p.drawRect(QRectF(inner.left(), inner.bottom() - hp - 1.0, inner.width(), 2.0));
         } else {

@@ -19,13 +19,13 @@ public:
     void stop() override;
 
     bool is_running() const override {
-        return m_running.load();
+        return running.load();
     }
     double get_sample_rate() const override {
-        return m_sample_rate;
+        return sample_rate;
     }
     int get_buffer_size() const override {
-        return m_buffer_size;
+        return buffer_size;
     }
     std::string status_string() const override;
 
@@ -36,10 +36,10 @@ public:
     void apply_connections(const PortConnections& c) override;
 
     int xrun_count() const override {
-        return m_xruns.load(std::memory_order_relaxed);
+        return xruns.load(std::memory_order_relaxed);
     }
     void reset_xruns() override {
-        m_xruns.store(0, std::memory_order_relaxed);
+        xruns.store(0, std::memory_order_relaxed);
     }
     int io_latency_frames() const override;
 
@@ -55,14 +55,14 @@ private:
     int process_audio(jack_nframes_t nframes);
     int on_buffer_size(jack_nframes_t nframes);
 
-    jack_client_t* m_client = nullptr;
-    jack_port_t* m_port_in = nullptr;
-    jack_port_t* m_port_out_l = nullptr;
-    jack_port_t* m_port_out_r = nullptr;
+    jack_client_t* client = nullptr;
+    jack_port_t* port_in = nullptr;
+    jack_port_t* port_out_l = nullptr;
+    jack_port_t* port_out_r = nullptr;
 
-    Callback* m_callback = nullptr;
-    std::atomic<bool> m_running{false};
-    std::atomic<int> m_xruns{0};
-    double m_sample_rate = 44100.0;
-    int m_buffer_size = 0;
+    Callback* callback = nullptr;
+    std::atomic<bool> running{false};
+    std::atomic<int> xruns{0};
+    double sample_rate = 44100.0;
+    int buffer_size = 0;
 };

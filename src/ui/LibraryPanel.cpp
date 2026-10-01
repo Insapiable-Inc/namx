@@ -30,10 +30,10 @@
 namespace
 {
 
-constexpr int K_ROW_HEIGHT = 42;
-constexpr int K_STAR_WIDTH = 26;
-constexpr int K_ACCENT_BAR = 3;
-constexpr int K_MAX_RECENTS = 30;
+constexpr int ROW_HEIGHT = 42;
+constexpr int STAR_WIDTH = 26;
+constexpr int ACCENT_BAR = 3;
+constexpr int MAX_RECENTS = 30;
 
 const char* k_section_names[3] = {"Models", "IRs", "Presets"};
 const char* k_section_single[3] = {"model", "IR", "preset"};
@@ -61,14 +61,14 @@ LibraryListModel::LibraryListModel(QObject* parent)
 }
 
 int LibraryListModel::rowCount(const QModelIndex& parent) const {
-    return parent.isValid() ? 0 : static_cast<int>(m_entries.size());
+    return parent.isValid() ? 0 : static_cast<int>(entries.size());
 }
 
 QVariant LibraryListModel::data(const QModelIndex& index, int role) const {
-    if (!index.isValid() || index.row() >= m_entries.size()) {
+    if (!index.isValid() || index.row() >= entries.size()) {
         return {};
     }
-    const LibraryEntry& e = m_entries[index.row()];
+    const LibraryEntry& e = entries[index.row()];
     switch (role) {
         case Qt::DisplayRole:
         case NAME_ROLE:
@@ -92,13 +92,13 @@ QVariant LibraryListModel::data(const QModelIndex& index, int role) const {
         case DETAILS_ROLE:
             return e.details;
         case FAVORITE_ROLE:
-            return m_favorites.contains(e.path);
+            return favorites.contains(e.path);
         case RECENT_RANK_ROLE:
-            return static_cast<int>(m_recents.indexOf(e.path));
+            return static_cast<int>(recents.indexOf(e.path));
         case MTIME_ROLE:
             return e.mtime_ms;
         case LOADED_ROLE:
-            return m_loaded[static_cast<int>(e.kind)] == e.path;
+            return loaded[static_cast<int>(e.kind)] == e.path;
         default:
             return {};
     }
@@ -106,26 +106,26 @@ QVariant LibraryListModel::data(const QModelIndex& index, int role) const {
 
 void LibraryListModel::set_entries(const QList<LibraryEntry>& new_entries) {
     beginResetModel();
-    m_entries = new_entries;
+    entries = new_entries;
     endResetModel();
 }
 
 void LibraryListModel::set_favorites(const QSet<QString>& favs) {
-    m_favorites = favs;
-    if (!m_entries.isEmpty()) {
+    favorites = favs;
+    if (!entries.isEmpty()) {
         emit dataChanged(index(0), index(rowCount() - 1), {FAVORITE_ROLE});
     }
 }
 
 void LibraryListModel::set_recents(const QStringList& new_recents) {
-    m_recents = new_recents;
-    if (!m_entries.isEmpty()) {
+    recents = new_recents;
+    if (!entries.isEmpty()) {
         emit dataChanged(index(0), index(rowCount() - 1), {RECENT_RANK_ROLE});
     }
 }
 
 void LibraryListModel::set_loaded(LibraryEntry::Kind kind, const QString& path) {
-    QString& slot = m_loaded[static_cast<int>(kind)];
+    QString& slot = loaded[static_cast<int>(kind)];
     const int before = row_of(slot);
     slot = QDir::cleanPath(path);
     const int after = row_of(slot);
@@ -141,8 +141,8 @@ int LibraryListModel::row_of(const QString& path) const {
     if (path.isEmpty()) {
         return -1;
     }
-    for (int i = 0; i < m_entries.size(); ++i) {
-        if (m_entries[i].path == path) {
+    for (int i = 0; i < entries.size(); ++i) {
+        if (entries[i].path == path) {
             return i;
         }
     }
@@ -155,7 +155,7 @@ int LibraryListModel::row_of(const QString& path) const {
 
 LibraryFilterProxy::LibraryFilterProxy(LibraryEntry::Kind new_kind, QObject* parent)
     : QSortFilterProxyModel(parent)
-    , m_kind(new_kind) {
+    , kind(new_kind) {
     setDynamicSortFilter(true);
     sort(0);
 }
@@ -165,40 +165,40 @@ void LibraryFilterProxy::set_search(const QString& text) {
     // replacement.
 #if QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
     beginFilterChange();
-    m_words = text.simplified().split(' ', Qt::SkipEmptyParts);
+    words = text.simplified().split(' ', Qt::SkipEmptyParts);
     endFilterChange();
 #else
-    mWords = text.simplified().split(' ', Qt::SkipEmptyParts);
+    words = text.simplified().split(' ', Qt::SkipEmptyParts);
     invalidateFilter();
 #endif
 }
 
 void LibraryFilterProxy::set_mode(Mode m) {
-    m_mode = m;
+    mode = m;
     invalidate();
 }
 
 void LibraryFilterProxy::set_sort_key(Sort s) {
-    m_sort = s;
+    sort_order = s;
     invalidate();
 }
 
 bool LibraryFilterProxy::filterAcceptsRow(int row, const QModelIndex& parent) const {
     const QModelIndex i = sourceModel()->index(row, 0, parent);
-    if (i.data(LibraryListModel::KIND_ROLE).toInt() != static_cast<int>(m_kind)) {
+    if (i.data(LibraryListModel::KIND_ROLE).toInt() != static_cast<int>(kind)) {
         return false;
     }
-    if (m_mode == Mode::FAVORITES && !i.data(LibraryListModel::FAVORITE_ROLE).toBool()) {
+    if (mode == Mode::FAVORITES && !i.data(LibraryListModel::FAVORITE_ROLE).toBool()) {
         return false;
     }
-    if (m_mode == Mode::RECENT && i.data(LibraryListModel::RECENT_RANK_ROLE).toInt() < 0) {
+    if (mode == Mode::RECENT && i.data(LibraryListModel::RECENT_RANK_ROLE).toInt() < 0) {
         return false;
     }
-    if (!m_words.isEmpty()) {
+    if (!words.isEmpty()) {
         const QString hay = i.data(LibraryListModel::NAME_ROLE).toString() + ' ' +
                             i.data(LibraryListModel::FOLDER_ROLE).toString() + ' ' +
                             i.data(LibraryListModel::SUMMARY_ROLE).toString();
-        for (const QString& w : m_words) {
+        for (const QString& w : words) {
             if (!hay.contains(w, Qt::CaseInsensitive)) {
                 return false;
             }
@@ -208,11 +208,11 @@ bool LibraryFilterProxy::filterAcceptsRow(int row, const QModelIndex& parent) co
 }
 
 bool LibraryFilterProxy::lessThan(const QModelIndex& a, const QModelIndex& b) const {
-    if (m_mode == Mode::RECENT) {
+    if (mode == Mode::RECENT) {
         return a.data(LibraryListModel::RECENT_RANK_ROLE).toInt() <
                b.data(LibraryListModel::RECENT_RANK_ROLE).toInt();
     }
-    if (m_sort == Sort::NEWEST) {
+    if (sort_order == Sort::NEWEST) {
         const qint64 ma = a.data(LibraryListModel::MTIME_ROLE).toLongLong();
         const qint64 mb = b.data(LibraryListModel::MTIME_ROLE).toLongLong();
         if (ma != mb) {
@@ -239,11 +239,11 @@ bool LibraryFilterProxy::lessThan(const QModelIndex& a, const QModelIndex& b) co
 // ===========================================================================
 
 QRect LibraryItemDelegate::star_rect(const QRect& row) {
-    return QRect(row.right() - K_STAR_WIDTH, row.top(), K_STAR_WIDTH, row.height());
+    return QRect(row.right() - STAR_WIDTH, row.top(), STAR_WIDTH, row.height());
 }
 
 QSize LibraryItemDelegate::sizeHint(const QStyleOptionViewItem& opt, const QModelIndex&) const {
-    return QSize(opt.rect.width(), K_ROW_HEIGHT);
+    return QSize(opt.rect.width(), ROW_HEIGHT);
 }
 
 void LibraryItemDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt,
@@ -267,7 +267,7 @@ void LibraryItemDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt,
     }
 
     if (loaded) {
-        p->fillRect(QRect(r.left(), r.top() + 6, K_ACCENT_BAR, r.height() - 12), accent);
+        p->fillRect(QRect(r.left(), r.top() + 6, ACCENT_BAR, r.height() - 12), accent);
     }
 
     // Star column, then the text block fills what's left.
@@ -373,9 +373,9 @@ public:
         for (int i = 0; i < 3; ++i) {
             auto* page = new QWidget;
             auto* pl = new QHBoxLayout(page);
-            m_lists[i] = new QListWidget;
-            m_lists[i]->addItems(*root_lists[i]);
-            pl->addWidget(m_lists[i], 1);
+            lists[i] = new QListWidget;
+            lists[i]->addItems(*root_lists[i]);
+            pl->addWidget(lists[i], 1);
 
             auto* btns = new QVBoxLayout;
             auto* add = new QPushButton("Add…");
@@ -385,7 +385,7 @@ public:
             btns->addStretch();
             pl->addLayout(btns);
 
-            QListWidget* lw = m_lists[i];
+            QListWidget* lw = lists[i];
             connect(add, &QPushButton::clicked, this, [this, lw, i] {
                 const QString start =
                     lw->count() ? lw->item(lw->count() - 1)->text() : QDir::homePath();
@@ -424,14 +424,14 @@ public:
             return l;
         };
         LibraryRoots r;
-        r.models = items(m_lists[0]);
-        r.irs = items(m_lists[1]);
-        r.presets = items(m_lists[2]);
+        r.models = items(lists[0]);
+        r.irs = items(lists[1]);
+        r.presets = items(lists[2]);
         return r;
     }
 
 private:
-    QListWidget* m_lists[3]{};
+    QListWidget* lists[3]{};
 };
 
 } // namespace
@@ -442,21 +442,21 @@ private:
 
 LibraryPanel::LibraryPanel(LibraryIndex& new_index, QWidget* parent)
     : QWidget(parent)
-    , m_library_index(new_index) {
+    , library_index(new_index) {
     setObjectName("libraryPanel");
     setMinimumWidth(240);
 
     QSettings s;
-    m_favorites = QSet<QString>(s.value("library/favorites").toStringList().begin(),
-                                s.value("library/favorites").toStringList().end());
-    m_recents = s.value("library/recents").toStringList();
+    favorites = QSet<QString>(s.value("library/favorites").toStringList().begin(),
+                              s.value("library/favorites").toStringList().end());
+    recents = s.value("library/recents").toStringList();
 
-    m_model = new LibraryListModel(this);
-    m_model->set_favorites(m_favorites);
-    m_model->set_recents(m_recents);
+    model = new LibraryListModel(this);
+    model->set_favorites(favorites);
+    model->set_recents(recents);
     for (int i = 0; i < 3; ++i) {
-        m_proxies[i] = new LibraryFilterProxy(static_cast<LibraryEntry::Kind>(i), this);
-        m_proxies[i]->setSourceModel(m_model);
+        proxies[i] = new LibraryFilterProxy(static_cast<LibraryEntry::Kind>(i), this);
+        proxies[i]->setSourceModel(model);
     }
 
     auto* lay = new QVBoxLayout(this);
@@ -479,23 +479,23 @@ LibraryPanel::LibraryPanel(LibraryIndex& new_index, QWidget* parent)
                 set_section(i, true);
             });
             row->addWidget(b);
-            m_section_btn[i] = b;
+            section_btn[i] = b;
         }
         lay->addLayout(row);
     }
 
-    m_search = new QLineEdit;
-    m_search->setObjectName("librarySearch");
-    m_search->setPlaceholderText("Search…");
-    m_search->setClearButtonEnabled(true);
-    connect(m_search, &QLineEdit::textChanged, this, [this](const QString& t) {
-        for (auto* p : m_proxies) {
+    search = new QLineEdit;
+    search->setObjectName("librarySearch");
+    search->setPlaceholderText("Search…");
+    search->setClearButtonEnabled(true);
+    connect(search, &QLineEdit::textChanged, this, [this](const QString& t) {
+        for (auto* p : proxies) {
             p->set_search(t);
         }
         update_counts();
         restore_current_from_loaded();
     });
-    lay->addWidget(m_search);
+    lay->addWidget(search);
 
     // Mode buttons + sort key.
     {
@@ -513,59 +513,59 @@ LibraryPanel::LibraryPanel(LibraryIndex& new_index, QWidget* parent)
             b->setFocusPolicy(Qt::NoFocus);
             connect(b, &QToolButton::clicked, this, [this, i] {
                 for (int k = 0; k < 3; ++k) {
-                    m_mode_btn[k]->setChecked(k == i);
+                    mode_btn[k]->setChecked(k == i);
                 }
-                for (auto* p : m_proxies) {
+                for (auto* p : proxies) {
                     p->set_mode(static_cast<LibraryFilterProxy::Mode>(i));
                 }
-                m_sort_box->setEnabled(i != 2);
+                sort_box->setEnabled(i != 2);
                 QSettings().setValue("library/mode", i);
                 update_counts();
                 restore_current_from_loaded();
             });
             row->addWidget(b);
-            m_mode_btn[i] = b;
+            mode_btn[i] = b;
         }
         row->addStretch();
-        m_sort_box = new QComboBox;
-        m_sort_box->setObjectName("librarySort");
-        m_sort_box->addItems({"Name", "Newest"});
-        m_sort_box->setToolTip("Sort order");
-        m_sort_box->setFocusPolicy(Qt::NoFocus);
-        connect(m_sort_box, &QComboBox::currentIndexChanged, this, [this](int i) {
-            for (auto* p : m_proxies) {
+        sort_box = new QComboBox;
+        sort_box->setObjectName("librarySort");
+        sort_box->addItems({"Name", "Newest"});
+        sort_box->setToolTip("Sort order");
+        sort_box->setFocusPolicy(Qt::NoFocus);
+        connect(sort_box, &QComboBox::currentIndexChanged, this, [this](int i) {
+            for (auto* p : proxies) {
                 p->set_sort_key(static_cast<LibraryFilterProxy::Sort>(i));
             }
             QSettings().setValue("library/sort", i);
             restore_current_from_loaded();
         });
-        row->addWidget(m_sort_box);
+        row->addWidget(sort_box);
         lay->addLayout(row);
     }
 
-    m_view = new LibraryListView;
-    m_view->setObjectName("libraryList");
-    m_view->setItemDelegate(new LibraryItemDelegate(m_view));
-    m_view->setUniformItemSizes(true);
-    m_view->setSelectionMode(QAbstractItemView::SingleSelection);
-    m_view->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    m_view->setMouseTracking(true);
-    m_view->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
-    m_view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    m_view->setFrameShape(QFrame::NoFrame);
-    connect(m_view, &LibraryListView::favorite_toggled, this, &LibraryPanel::toggle_favorite);
-    connect(m_view, &QAbstractItemView::activated, this, [this] {
+    view = new LibraryListView;
+    view->setObjectName("libraryList");
+    view->setItemDelegate(new LibraryItemDelegate(view));
+    view->setUniformItemSizes(true);
+    view->setSelectionMode(QAbstractItemView::SingleSelection);
+    view->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    view->setMouseTracking(true);
+    view->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+    view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    view->setFrameShape(QFrame::NoFrame);
+    connect(view, &LibraryListView::favorite_toggled, this, &LibraryPanel::toggle_favorite);
+    connect(view, &QAbstractItemView::activated, this, [this] {
         activate_current();
     });
-    lay->addWidget(m_view, 1);
+    lay->addWidget(view, 1);
 
     // Footer: count / scanning state, folders, rescan.
     {
         auto* row = new QHBoxLayout;
         row->setSpacing(4);
-        m_status = new QLabel;
-        m_status->setObjectName("libraryStatus");
-        row->addWidget(m_status, 1);
+        status = new QLabel;
+        status->setObjectName("libraryStatus");
+        row->addWidget(status, 1);
 
         auto* folders = new QToolButton;
         folders->setObjectName("libraryTool");
@@ -582,54 +582,54 @@ LibraryPanel::LibraryPanel(LibraryIndex& new_index, QWidget* parent)
         rescan->setAutoRaise(true);
         rescan->setFocusPolicy(Qt::NoFocus);
         rescan->setToolTip("Rescan the library folders");
-        connect(rescan, &QToolButton::clicked, &m_library_index, &LibraryIndex::rescan);
+        connect(rescan, &QToolButton::clicked, &library_index, &LibraryIndex::rescan);
         row->addWidget(rescan);
         lay->addLayout(row);
     }
 
     // Browsing with the arrow keys loads the entry under the cursor once the
     // cursor rests — a full model load per keystroke would stutter.
-    m_activate_timer = new QTimer(this);
-    m_activate_timer->setSingleShot(true);
-    m_activate_timer->setInterval(180);
-    connect(m_activate_timer, &QTimer::timeout, this, &LibraryPanel::activate_current);
+    activate_timer = new QTimer(this);
+    activate_timer->setSingleShot(true);
+    activate_timer->setInterval(180);
+    connect(activate_timer, &QTimer::timeout, this, &LibraryPanel::activate_current);
 
-    connect(&m_library_index, &LibraryIndex::scan_started, this, &LibraryPanel::update_counts);
-    connect(&m_library_index, &LibraryIndex::entries_changed, this,
+    connect(&library_index, &LibraryIndex::scan_started, this, &LibraryPanel::update_counts);
+    connect(&library_index, &LibraryIndex::entries_changed, this,
             &LibraryPanel::on_entries_changed);
 
     const int mode = std::clamp(s.value("library/mode", 0).toInt(), 0, 2);
-    m_mode_btn[mode]->setChecked(true);
-    for (auto* p : m_proxies) {
+    mode_btn[mode]->setChecked(true);
+    for (auto* p : proxies) {
         p->set_mode(static_cast<LibraryFilterProxy::Mode>(mode));
     }
-    m_sort_box->setCurrentIndex(std::clamp(s.value("library/sort", 0).toInt(), 0, 1));
-    m_sort_box->setEnabled(mode != 2);
+    sort_box->setCurrentIndex(std::clamp(s.value("library/sort", 0).toInt(), 0, 1));
+    sort_box->setEnabled(mode != 2);
 
     set_section(std::clamp(s.value("library/section", 0).toInt(), 0, 2), false);
     on_entries_changed();
 }
 
 void LibraryPanel::set_section(int new_section, bool focus_list) {
-    m_section = new_section;
+    section = new_section;
     for (int i = 0; i < 3; ++i) {
-        m_section_btn[i]->setChecked(i == new_section);
+        section_btn[i]->setChecked(i == new_section);
     }
     QSettings().setValue("library/section", new_section);
 
-    m_syncing = true;
-    if (m_view->selectionModel()) {
-        disconnect(m_view->selectionModel(), nullptr, this, nullptr);
+    syncing = true;
+    if (view->selectionModel()) {
+        disconnect(view->selectionModel(), nullptr, this, nullptr);
     }
-    m_view->setModel(m_proxies[new_section]);
-    connect(m_view->selectionModel(), &QItemSelectionModel::currentChanged, this,
+    view->setModel(proxies[new_section]);
+    connect(view->selectionModel(), &QItemSelectionModel::currentChanged, this,
             &LibraryPanel::on_current_changed);
-    m_syncing = false;
+    syncing = false;
 
     restore_current_from_loaded();
     update_counts();
     if (focus_list) {
-        m_view->setFocus(Qt::OtherFocusReason);
+        view->setFocus(Qt::OtherFocusReason);
     }
 }
 
@@ -638,48 +638,48 @@ void LibraryPanel::show_section(LibraryEntry::Kind kind) {
 }
 
 void LibraryPanel::focus_search() {
-    m_search->setFocus(Qt::ShortcutFocusReason);
-    m_search->selectAll();
+    search->setFocus(Qt::ShortcutFocusReason);
+    search->selectAll();
 }
 
 void LibraryPanel::on_entries_changed() {
-    m_syncing = true;
-    m_model->set_entries(m_library_index.get_entries());
-    m_syncing = false;
+    syncing = true;
+    model->set_entries(library_index.get_entries());
+    syncing = false;
     restore_current_from_loaded();
     update_counts();
 }
 
 void LibraryPanel::restore_current_from_loaded() {
     // Selection follows the loaded file; never fires a load.
-    const auto kind = static_cast<LibraryEntry::Kind>(m_section);
-    const int src_row = m_model->row_of(m_model->get_loaded(kind));
-    m_syncing = true;
+    const auto kind = static_cast<LibraryEntry::Kind>(section);
+    const int src_row = model->row_of(model->get_loaded(kind));
+    syncing = true;
     if (src_row >= 0) {
-        const QModelIndex pi = m_proxies[m_section]->mapFromSource(m_model->index(src_row));
-        m_view->setCurrentIndex(pi); // invalid index clears the selection
+        const QModelIndex pi = proxies[section]->mapFromSource(model->index(src_row));
+        view->setCurrentIndex(pi); // invalid index clears the selection
         if (pi.isValid()) {
-            m_view->scrollTo(pi, QAbstractItemView::EnsureVisible);
+            view->scrollTo(pi, QAbstractItemView::EnsureVisible);
         }
     } else {
-        m_view->setCurrentIndex({});
+        view->setCurrentIndex({});
     }
-    m_syncing = false;
+    syncing = false;
 }
 
 void LibraryPanel::on_current_changed() {
-    if (m_syncing) {
+    if (syncing) {
         return;
     }
-    if (!m_view->currentIndex().isValid()) {
+    if (!view->currentIndex().isValid()) {
         return;
     }
-    m_activate_timer->start();
+    activate_timer->start();
 }
 
 void LibraryPanel::activate_current() {
-    m_activate_timer->stop();
-    const QModelIndex idx = m_view->currentIndex();
+    activate_timer->stop();
+    const QModelIndex idx = view->currentIndex();
     if (!idx.isValid()) {
         return;
     }
@@ -690,15 +690,15 @@ void LibraryPanel::activate_current() {
 }
 
 void LibraryPanel::toggle_favorite(const QString& path) {
-    if (m_favorites.contains(path)) {
-        m_favorites.remove(path);
+    if (favorites.contains(path)) {
+        favorites.remove(path);
     } else {
-        m_favorites.insert(path);
+        favorites.insert(path);
     }
-    QSettings().setValue("library/favorites", QStringList(m_favorites.begin(), m_favorites.end()));
-    m_syncing = true;
-    m_model->set_favorites(m_favorites);
-    m_syncing = false;
+    QSettings().setValue("library/favorites", QStringList(favorites.begin(), favorites.end()));
+    syncing = true;
+    model->set_favorites(favorites);
+    syncing = false;
     update_counts();
 }
 
@@ -707,29 +707,29 @@ void LibraryPanel::note_used(const QString& path) {
     if (c.isEmpty()) {
         return;
     }
-    m_recents.removeAll(c);
-    m_recents.prepend(c);
-    while (m_recents.size() > K_MAX_RECENTS) {
-        m_recents.removeLast();
+    recents.removeAll(c);
+    recents.prepend(c);
+    while (recents.size() > MAX_RECENTS) {
+        recents.removeLast();
     }
-    QSettings().setValue("library/recents", m_recents);
-    m_syncing = true;
-    m_model->set_recents(m_recents);
-    m_syncing = false;
+    QSettings().setValue("library/recents", recents);
+    syncing = true;
+    model->set_recents(recents);
+    syncing = false;
     update_counts();
 }
 
 void LibraryPanel::set_loaded_path(LibraryEntry::Kind kind, const QString& path) {
-    m_syncing = true;
-    m_model->set_loaded(kind, path);
-    m_syncing = false;
-    if (static_cast<int>(kind) == m_section) {
+    syncing = true;
+    model->set_loaded(kind, path);
+    syncing = false;
+    if (static_cast<int>(kind) == section) {
         restore_current_from_loaded();
     }
 }
 
 QString LibraryPanel::loaded_path(LibraryEntry::Kind kind) const {
-    return m_model->get_loaded(kind);
+    return model->get_loaded(kind);
 }
 
 QString LibraryPanel::neighbour(LibraryEntry::Kind kind, const QString& from_path, int step) const {
@@ -739,9 +739,9 @@ QString LibraryPanel::neighbour(LibraryEntry::Kind kind, const QString& from_pat
         return {};
     }
     int row = -1;
-    const int src = m_model->row_of(QDir::cleanPath(from_path));
+    const int src = model->row_of(QDir::cleanPath(from_path));
     if (src >= 0) {
-        row = p->mapFromSource(m_model->index(src)).row();
+        row = p->mapFromSource(model->index(src)).row();
     }
     if (row < 0) {
         row = step > 0 ? -1 : n; // nothing loaded: first / last
@@ -753,33 +753,33 @@ QString LibraryPanel::neighbour(LibraryEntry::Kind kind, const QString& from_pat
 void LibraryPanel::update_counts() {
     // Section buttons show the unfiltered totals; the footer the visible count.
     int total[3] = {0, 0, 0};
-    for (const auto& e : m_library_index.get_entries()) {
+    for (const auto& e : library_index.get_entries()) {
         ++total[static_cast<int>(e.kind)];
     }
     for (int i = 0; i < 3; ++i) {
-        m_section_btn[i]->setText(QString("%1  %2").arg(k_section_names[i]).arg(total[i]));
+        section_btn[i]->setText(QString("%1  %2").arg(k_section_names[i]).arg(total[i]));
     }
 
-    const int visible = m_proxies[m_section]->rowCount();
+    const int visible = proxies[section]->rowCount();
     QString text;
-    if (m_library_index.is_scanning()) {
+    if (library_index.is_scanning()) {
         text = "Scanning…";
-    } else if (total[m_section] == 0) {
-        text = QString("No %1s found. Add folders below.").arg(k_section_single[m_section]);
-    } else if (visible != total[m_section]) {
-        text = QString("%1 of %2").arg(visible).arg(total[m_section]);
+    } else if (total[section] == 0) {
+        text = QString("No %1s found. Add folders below.").arg(k_section_single[section]);
+    } else if (visible != total[section]) {
+        text = QString("%1 of %2").arg(visible).arg(total[section]);
     } else {
         text = QString("%1 %2%3")
                    .arg(visible)
-                   .arg(k_section_single[m_section])
+                   .arg(k_section_single[section])
                    .arg(visible == 1 ? "" : "s");
     }
-    m_status->setText(text);
+    status->setText(text);
 }
 
 void LibraryPanel::edit_folders() {
-    FoldersDialog dlg(m_library_index.get_roots(), window());
+    FoldersDialog dlg(library_index.get_roots(), window());
     if (dlg.exec() == QDialog::Accepted) {
-        m_library_index.set_roots(dlg.roots());
+        library_index.set_roots(dlg.roots());
     }
 }

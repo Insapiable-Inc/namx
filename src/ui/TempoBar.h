@@ -22,7 +22,7 @@ public:
     explicit BpmField(QWidget* parent = nullptr);
 
     double value() const {
-        return m_bpm;
+        return bpm;
     }
     void set_value(double new_bpm); // clamps + rounds to 0.1; emits on change
 
@@ -44,12 +44,12 @@ private:
     void begin_edit();
     void end_edit(bool commit);
 
-    double m_bpm = 120.0;
-    QLineEdit* m_edit = nullptr;
-    bool m_dragging = false;
-    bool m_pressed = false;
-    int m_press_y = 0;
-    double m_press_bpm = 0.0;
+    double bpm = 120.0;
+    QLineEdit* edit = nullptr;
+    bool dragging = false;
+    bool pressed = false;
+    int press_y = 0;
+    double press_bpm = 0.0;
 };
 
 /// One column per beat: height = accent (strong / normal / soft / mute
@@ -74,11 +74,11 @@ protected:
     void mousePressEvent(QMouseEvent* ev) override;
 
 private:
-    static constexpr int K_W = 12, K_GAP = 4, K_H = 26;
-    int m_beats = 4;
-    uint32_t m_accents = 0;
-    int m_beat = -1;
-    bool m_count_in = false;
+    static constexpr int W = 12, GAP = 4, H = 26;
+    int beats = 4;
+    uint32_t accents = 0;
+    int beat = -1;
+    bool count_in = false;
 };
 
 /// Global tempo + metronome strip under the preset bar.
@@ -104,7 +104,7 @@ public:
 
     QWidget* action_widget(const QString& id) const;
     void set_learn_menu_hook(std::function<void(const QString& action_id, QMenu* menu)> hook) {
-        m_learn_hook = std::move(hook);
+        learn_hook = std::move(hook);
     }
 
 signals:
@@ -116,19 +116,19 @@ private:
     void update_labels();
     QToolButton* menu_button(const QString& tip);
 
-    Metronome& m_metro;
-    BpmField* m_bpm = nullptr;
-    QToolButton* m_tap_button = nullptr;
-    QToolButton* m_play = nullptr;
-    BeatLeds* m_leds = nullptr;
-    QToolButton* m_meter_btn = nullptr;
-    QToolButton* m_subdiv_btn = nullptr;
-    QToolButton* m_sound_btn = nullptr;
-    QToolButton* m_count_in_btn = nullptr;
-    KnobWidget* m_volume = nullptr;
-    KnobWidget* m_pan = nullptr;
-    QElapsedTimer m_tap_clock;
-    QVector<qint64> m_taps; // ms timestamps of the recent taps
-    std::function<void(const QString&, QMenu*)> m_learn_hook;
+    Metronome& metro;
+    BpmField* bpm = nullptr;
+    QToolButton* tap_button = nullptr;
+    QToolButton* play = nullptr;
+    BeatLeds* leds = nullptr;
+    QToolButton* meter_btn = nullptr;
+    QToolButton* subdiv_btn = nullptr;
+    QToolButton* sound_btn = nullptr;
+    QToolButton* count_in_btn = nullptr;
+    KnobWidget* volume = nullptr;
+    KnobWidget* pan = nullptr;
+    QElapsedTimer tap_clock;
+    QVector<qint64> taps; // ms timestamps of the recent taps
+    std::function<void(const QString&, QMenu*)> learn_hook;
     void learn_menu_for(QWidget* w, const QString& action_id);
 };

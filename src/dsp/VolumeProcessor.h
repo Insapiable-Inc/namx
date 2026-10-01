@@ -12,14 +12,14 @@ class VolumeProcessor : public EffectBase
 {
 public:
     void reset() override {
-        m_gain = target_gain();
+        gain = target_gain();
     }
 
     void set_position_pct(float pct) {
-        m_position_pct.store(pct);
+        position_pct.store(pct);
     }
     void set_mid(float db) {
-        m_mid_db.store(db);
+        mid_db.store(db);
     }
 
     bool process(float* l, float* r, size_t n, bool input_is_stereo) override;
@@ -27,7 +27,7 @@ public:
 private:
     float target_gain() const;
 
-    std::atomic<float> m_position_pct{100.0f};
-    std::atomic<float> m_mid_db{-12.0f};
-    float m_gain = 1.0f;
+    std::atomic<float> position_pct{100.0f};
+    std::atomic<float> mid_db{-12.0f};
+    float gain = 1.0f;
 };

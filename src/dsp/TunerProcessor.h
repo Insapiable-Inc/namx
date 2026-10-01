@@ -18,7 +18,7 @@
 class TunerProcessor : public EffectBase
 {
 public:
-    static constexpr size_t K_BUF_SIZE = 4096;
+    static constexpr size_t BUF_SIZE = 4096;
 
     TunerProcessor();
     ~TunerProcessor() override;
@@ -26,15 +26,15 @@ public:
     void reset() override;
 
     void set_mute(bool m) {
-        m_mute.store(m);
+        mute.store(m);
     }
     bool get_mute() const {
-        return m_mute.load();
+        return mute.load();
     }
 
     /// Latest pitch computed by the worker thread, in Hz (0.0 = no pitch).
     float get_last_pitch() const {
-        return m_last_pitch.load();
+        return last_pitch.load();
     }
 
     /// `refHz` = the A4 reference (concert pitch 440; 420–460 for bands
@@ -45,7 +45,7 @@ public:
 
 protected:
     void on_sample_rate_changed(double sr) override {
-        m_fs.store(static_cast<float>(sr));
+        fs.store(static_cast<float>(sr));
     }
 
     // Accumulates samples into ring buffer; applies mute if set.
@@ -60,23 +60,23 @@ private:
     void worker_main();
     float detect_pitch();
 
-    std::atomic<bool> m_mute{false};
+    std::atomic<bool> mute{false};
 
     // Ring buffer filled by audio thread, consumed by the worker thread.
     // Protected by mBufMutex; audio uses try_lock (non-blocking).
-    std::array<float, K_BUF_SIZE> m_ring_buf{};
-    size_t m_write_pos{0};
-    bool m_buffer_ready{false};
-    std::mutex m_buf_mutex;
+    std::array<float, BUF_SIZE> ring_buf{};
+    size_t write_pos{0};
+    bool buffer_ready{false};
+    std::mutex buf_mutex;
 
     // Snapshot and NSDF scratch used exclusively by detectPitch() (worker thread only)
-    std::array<float, K_BUF_SIZE> m_snap_buf{};
-    std::vector<float> m_nsdf;
+    std::array<float, BUF_SIZE> snap_buf{};
+    std::vector<float> nsdf;
 
-    std::thread m_worker;
-    std::mutex m_work_mutex;
-    std::condition_variable m_work_cv;
-    bool m_stop{false}; // guarded by mWorkMutex
-    std::atomic<float> m_last_pitch{0.0f};
-    std::atomic<float> m_fs{44100.0f}; // worker-safe copy of the sample rate
+    std::thread worker;
+    std::mutex work_mutex;
+    std::condition_variable work_cv;
+    bool stop{false}; // guarded by mWorkMutex
+    std::atomic<float> last_pitch{0.0f};
+    std::atomic<float> fs{44100.0f}; // worker-safe copy of the sample rate
 };

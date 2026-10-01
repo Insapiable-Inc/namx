@@ -68,31 +68,31 @@ TunerDisplay::TunerDisplay(QWidget* parent)
 
 void TunerDisplay::set_reading(const QString& new_note, float new_cents, bool new_valid,
                                float new_hz) {
-    const bool same_cents = std::lround(new_cents) == std::lround(m_cents);
-    const bool same_hz = !m_show_hz || std::lround(new_hz * 10.0f) == std::lround(m_hz * 10.0f);
-    if (new_valid == m_valid && new_note == m_note && ((same_cents && same_hz) || !new_valid)) {
+    const bool same_cents = std::lround(new_cents) == std::lround(cents);
+    const bool same_hz = !show_hz || std::lround(new_hz * 10.0f) == std::lround(hz * 10.0f);
+    if (new_valid == valid && new_note == note && ((same_cents && same_hz) || !new_valid)) {
         return;
     }
-    m_note = new_note;
-    m_cents = new_cents;
-    m_valid = new_valid;
-    m_hz = new_hz;
+    note = new_note;
+    cents = new_cents;
+    valid = new_valid;
+    hz = new_hz;
     update();
 }
 
 void TunerDisplay::set_show_hz(bool on) {
-    if (on == m_show_hz) {
+    if (on == show_hz) {
         return;
     }
-    m_show_hz = on;
+    show_hz = on;
     update();
 }
 
 void TunerDisplay::set_reference(int new_hz) {
-    if (new_hz == m_reference) {
+    if (new_hz == reference) {
         return;
     }
-    m_reference = new_hz;
+    reference = new_hz;
     update();
 }
 
@@ -106,7 +106,7 @@ void TunerDisplay::paintEvent(QPaintEvent*) {
     p.setBrush(Theme::display_bg());
     p.drawRoundedRect(panel, 5, 5);
 
-    const bool in_tune = m_valid && std::abs(m_cents) <= K_IN_TUNE_CENTS;
+    const bool in_tune = valid && std::abs(cents) <= IN_TUNE_CENTS;
     const QColor green = Theme::led_green();
     const QColor red = Theme::led_red();
 
@@ -115,29 +115,29 @@ void TunerDisplay::paintEvent(QPaintEvent*) {
         const qreal margin = 14.0;
         const qreal led_d = 6.0;
         const qreal y = panel.top() + 5.0;
-        const qreal step = (panel.width() - 2 * margin - led_d) / (K_LED_COUNT - 1);
-        const int center = K_LED_COUNT / 2;
+        const qreal step = (panel.width() - 2 * margin - led_d) / (LED_COUNT - 1);
+        const int center = LED_COUNT / 2;
 
         // Offset LED index for the current detune (at least one step off
         // center when audibly out of tune).
         int target = center;
-        if (m_valid && !in_tune) {
-            const float span = std::clamp(m_cents, -50.0f, 50.0f) / 50.0f;
+        if (valid && !in_tune) {
+            const float span = std::clamp(cents, -50.0f, 50.0f) / 50.0f;
             int off = static_cast<int>(std::lround(span * center));
             if (off == 0) {
-                off = m_cents < 0 ? -1 : 1;
+                off = cents < 0 ? -1 : 1;
             }
             target = center + off;
         }
 
-        for (int i = 0; i < K_LED_COUNT; ++i) {
+        for (int i = 0; i < LED_COUNT; ++i) {
             const QRectF r(panel.left() + margin + i * step, y, led_d, led_d);
             const QColor base = (i == center) ? green : red;
             bool lit = false;
-            if (m_valid) {
+            if (valid) {
                 if (in_tune) {
                     lit = (i == center);
-                } else if (m_cents < 0) {
+                } else if (cents < 0) {
                     lit = (i >= target && i < center);
                 } else {
                     lit = (i > center && i <= target);
@@ -156,7 +156,7 @@ void TunerDisplay::paintEvent(QPaintEvent*) {
     }
 
     // ---- Seven-segment note in the center ----
-    const QColor digit_color = !m_valid ? Theme::track().lighter(150) : in_tune ? green : red;
+    const QColor digit_color = !valid ? Theme::track().lighter(150) : in_tune ? green : red;
     const qreal w = 18.0, h = 26.0, t = 3.5;
     const qreal half = (h - 3 * t) / 2.0;
     const qreal digit_x = panel.center().x() - w / 2.0 - 12.0;
@@ -176,7 +176,7 @@ void TunerDisplay::paintEvent(QPaintEvent*) {
         {SC, {digit_x + w - t, digit_y + 2 * t + half, t, half}},
     };
 
-    const int lit = segments_for(m_note.isEmpty() ? QChar('-') : m_note.at(0));
+    const int lit = segments_for(note.isEmpty() ? QChar('-') : note.at(0));
     for (const auto& s : segs) {
         if (lit & s.seg) {
             draw_glow_rect(p, s.r, digit_color, t / 2.0);
@@ -190,7 +190,7 @@ void TunerDisplay::paintEvent(QPaintEvent*) {
     }
 
     // Sharp marker at the digit's top right.
-    if (m_valid && m_note.contains('#')) {
+    if (valid && note.contains('#')) {
         QFont f = font();
         f.setPixelSize(12);
         f.setBold(true);
@@ -213,9 +213,9 @@ void TunerDisplay::paintEvent(QPaintEvent*) {
         f.setBold(true);
         p.setFont(f);
         p.setPen(digit_color);
-        const int c = static_cast<int>(std::lround(m_cents));
+        const int c = static_cast<int>(std::lround(cents));
         const QString text =
-            !m_valid ? QStringLiteral("--") : QString("%1%2¢").arg(c > 0 ? "+" : "").arg(c);
+            !valid ? QStringLiteral("--") : QString("%1%2¢").arg(c > 0 ? "+" : "").arg(c);
         const QRectF text_rect(panel.center().x() + 24.0, digit_y, 90.0, h);
         p.drawText(text_rect, Qt::AlignLeft | Qt::AlignVCenter, text);
     }
@@ -223,18 +223,18 @@ void TunerDisplay::paintEvent(QPaintEvent*) {
     // ---- Left of the digit: detected Hz, or the reference when that's off ----
     {
         QFont f = font();
-        f.setPointSizeF(m_show_hz ? 10.0 : 8.5);
-        f.setBold(m_show_hz);
+        f.setPointSizeF(show_hz ? 10.0 : 8.5);
+        f.setBold(show_hz);
         p.setFont(f);
         const QRectF text_rect(panel.center().x() - 24.0 - 12.0 - 100.0, digit_y, 100.0, h);
-        if (m_show_hz) {
+        if (show_hz) {
             p.setPen(digit_color);
             p.drawText(text_rect, Qt::AlignRight | Qt::AlignVCenter,
-                       m_valid ? QString("%1 Hz").arg(m_hz, 0, 'f', 1) : QStringLiteral("-- Hz"));
+                       valid ? QString("%1 Hz").arg(hz, 0, 'f', 1) : QStringLiteral("-- Hz"));
         } else {
             p.setPen(Theme::track().lighter(170));
             p.drawText(text_rect, Qt::AlignRight | Qt::AlignVCenter,
-                       QString("A4 = %1").arg(m_reference));
+                       QString("A4 = %1").arg(reference));
         }
     }
 }

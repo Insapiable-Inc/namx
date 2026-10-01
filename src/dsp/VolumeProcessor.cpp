@@ -4,11 +4,11 @@
 #include <cmath>
 
 float VolumeProcessor::target_gain() const {
-    const float p = std::clamp(m_position_pct.load(), 0.0f, 100.0f) / 100.0f;
+    const float p = std::clamp(position_pct.load(), 0.0f, 100.0f) / 100.0f;
     if (p <= 0.0f) {
         return 0.0f;
     }
-    const float mid = std::clamp(m_mid_db.load(), -40.0f, 0.0f);
+    const float mid = std::clamp(mid_db.load(), -40.0f, 0.0f);
     // dB linear in travel on each half: −60 dB → Mid → 0 dB.
     const float db =
         p < 0.5f ? -60.0f + (mid + 60.0f) * (p / 0.5f) : mid + (0.0f - mid) * ((p - 0.5f) / 0.5f);
@@ -18,16 +18,16 @@ float VolumeProcessor::target_gain() const {
 }
 
 bool VolumeProcessor::process(float* l, float* r, size_t n, bool input_is_stereo) {
-    if (!m_enabled.load()) {
+    if (!enabled.load()) {
         return input_is_stereo;
     }
     const float target = target_gain();
-    const float k = 1.0f - std::exp(-1.0f / (0.010f * static_cast<float>(m_sample_rate)));
+    const float k = 1.0f - std::exp(-1.0f / (0.010f * static_cast<float>(sample_rate)));
     for (size_t i = 0; i < n; ++i) {
-        m_gain += k * (target - m_gain);
-        l[i] *= m_gain;
+        gain += k * (target - gain);
+        l[i] *= gain;
         if (input_is_stereo) {
-            r[i] *= m_gain;
+            r[i] *= gain;
         }
     }
     if (!input_is_stereo) {

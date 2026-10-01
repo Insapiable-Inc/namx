@@ -87,17 +87,17 @@ public:
     /// the library's model and IR roots.
     static QString download_dir();
 
-    static constexpr const char* K_SITE_URL = "https://www.tone3000.com";
+    static constexpr const char* SITE_URL = "https://www.tone3000.com";
     /// "https://www.tone3000.com/api/v1", or NAM_TONE3000_API_BASE from the
     /// environment (development: point the client at a mock server).
     static QString api_base();
 
     // --- Auth --------------------------------------------------------------
     bool is_signed_in() const {
-        return !m_access_token.isEmpty();
+        return !access_token.isEmpty();
     }
     const T3kUser& get_user() const {
-        return m_user;
+        return user;
     }
 
     enum class Flow
@@ -109,7 +109,7 @@ public:
     /// authorize-URL parameters (format, gears…).
     void start_auth(Flow flow, const QHash<QString, QString>& extra = {});
     bool auth_in_progress() const {
-        return m_auth_server != nullptr;
+        return auth_server != nullptr;
     }
     void cancel_auth();
     void sign_out();
@@ -206,24 +206,24 @@ private:
     void finish_auth(bool ok, const QString& error, int tone_id);
     void exchange_code(const QString& code, int tone_id);
 
-    QNetworkAccessManager* m_nam = nullptr;
-    QString m_access_token, m_refresh_token;
-    qint64 m_expires_at_ms = 0;
-    T3kUser m_user;
-    bool m_refreshing = false;
-    QList<std::function<void(bool)>> m_waiting_for_token;
+    QNetworkAccessManager* nam = nullptr;
+    QString access_token, refresh_token;
+    qint64 expires_at_ms = 0;
+    T3kUser user;
+    bool refreshing = false;
+    QList<std::function<void(bool)>> waiting_for_token;
 
     struct CacheEntry
     {
         QJsonDocument doc;
         qint64 at_ms = 0;
     };
-    QHash<QString, CacheEntry> m_cache;
+    QHash<QString, CacheEntry> cache;
 
     // In-flight auth flow
-    QTcpServer* m_auth_server = nullptr;
-    QTcpServer* m_auth_server_v6 = nullptr;
-    QTimer* m_auth_timeout = nullptr;
-    QString m_auth_state, m_auth_verifier, m_auth_redirect;
-    Flow m_auth_flow = Flow::STANDARD;
+    QTcpServer* auth_server = nullptr;
+    QTcpServer* auth_server_v6 = nullptr;
+    QTimer* auth_timeout = nullptr;
+    QString auth_state, auth_verifier, auth_redirect;
+    Flow auth_flow = Flow::STANDARD;
 };
