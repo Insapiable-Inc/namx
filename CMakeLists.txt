@@ -71,6 +71,8 @@ set(GUI_SOURCES
     src/ui/ParamRegistry.h
     src/ui/PresetSerializer.cpp
     src/ui/PresetSerializer.h
+    src/ui/PresetBar.cpp
+    src/ui/PresetBar.h
     src/ui/VUMeter.cpp
     src/ui/VUMeter.h
     src/ui/Theme.cpp

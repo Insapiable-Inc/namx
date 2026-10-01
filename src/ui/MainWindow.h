@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QJsonObject>
 #include <QMainWindow>
 #include <QPoint>
 #include <QTimer>
@@ -13,6 +14,7 @@
 #include "KnobWidget.h"
 #include "LibraryIndex.h"
 #include "ParamRegistry.h"
+#include "PresetSerializer.h"
 #include "ToggleSwitch.h"
 
 class QDockWidget;
@@ -28,6 +30,7 @@ class QToolButton;
 class AudioStatusBar;
 class LibraryDock;
 class LibraryPanel;
+class PresetBar;
 class Tone3000Client;
 class Tone3000Panel;
 class TunerDisplay;
@@ -61,8 +64,13 @@ private slots:
     void onImportIR();
     void onUnloadIR();
 
-    void onSavePreset();
+    void onSavePreset();   // overwrite the current file; Save As when untitled
+    void onSavePresetAs();
     void onLoadPreset();
+    void onImportPresets(); // copy files into the presets folder, load the last
+    void onExportPreset();  // write a copy elsewhere; the current file is unchanged
+    void onDeletePreset();
+    void onLocatePreset();
     void onResetAll();
 
     void restartAudioWithCurrentDevices();
@@ -84,6 +92,8 @@ private:
     bool loadModelFile(const QString& path, bool quiet = false);
     bool loadIRFile(const QString& path, bool quiet = false);
     bool loadPresetFile(const QString& path);
+    // Registry values + chain order from a preset object (no files).
+    PresetSerializer::Applied applyPresetParams(const QJsonObject& obj);
     void loadLibraryEntry(LibraryEntry::Kind kind, const QString& path);
     // ‹ › on the hero rows: next/previous entry in the library's visible order.
     void stepLibrary(LibraryEntry::Kind kind, int step);
@@ -132,6 +142,21 @@ private:
                    const std::function<void(double)>& apply);
     void toggleParam(const QString& group, const QString& key, ToggleSwitch* sw,
                      const std::function<void(bool)>& apply);
+
+    // --- Current preset: name, `*` state, A/B ---------------------------
+    // Serialized state written by Save (registry + order + model/IR + the
+    // TONE3000 linkage).
+    QJsonObject currentPresetJson() const;
+    bool writePresetFile(const QString& path);
+    // Makes `path` the current preset with the live state as its baseline
+    // (empty = untitled); resets A/B.
+    void setCurrentPreset(const QString& path);
+    // Recomputes the `*`: live state vs the baseline. Coalesced via a timer.
+    void updatePresetState();
+    void stepPreset(int step);
+    void switchAb(int side);
+    void copyAb();
+    void restorePresetState();
 
     // Session persistence: same table, QSettings instead of a preset file.
     void saveSessionState();
@@ -253,4 +278,11 @@ private:
     QTimer* mMeterTimer = nullptr;
     QTimer* mTunerTimer = nullptr;
     QTimer* mSessionSaveTimer = nullptr;
+
+    PresetBar*  mPresetBar = nullptr;
+    QString     mPresetPath;        // current preset file; empty = untitled
+    QJsonObject mPresetBaseline;    // toJson() when it was loaded/saved
+    QJsonObject mAb[2];             // A/B snapshots; empty = not taken yet
+    int         mAbActive = 0;
+    QTimer*     mPresetStateTimer = nullptr;
 };

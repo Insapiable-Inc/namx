@@ -4,6 +4,7 @@
 #include "EffectShortcuts.h"
 #include "LibraryDock.h"
 #include "LibraryPanel.h"
+#include "PresetBar.h"
 #include "PresetSerializer.h"
 #include "Tone3000Client.h"
 #include "Tone3000Panel.h"
@@ -14,6 +15,7 @@
 
 #include <QAction>
 #include <QApplication>
+#include <QDesktopServices>
 #include <QDir>
 #include <QDockWidget>
 #include <QDrag>
@@ -38,6 +40,7 @@
 #include <QPushButton>
 #include <QScrollArea>
 #include <QSettings>
+#include <QStandardPaths>
 #include <QStatusBar>
 #include <QStyle>
 #include <QTimer>
@@ -143,6 +146,12 @@ MainWindow::MainWindow(QWidget* parent)
     mSessionSaveTimer->setSingleShot(true);
     mSessionSaveTimer->setInterval(1000);
     connect(mSessionSaveTimer, &QTimer::timeout, this, &MainWindow::saveSessionState);
+    // The preset `*` follows the same changes, coalesced to one compare per
+    // event-loop pass (a preset load moves dozens of widgets).
+    mPresetStateTimer = new QTimer(this);
+    mPresetStateTimer->setSingleShot(true);
+    mPresetStateTimer->setInterval(0);
+    connect(mPresetStateTimer, &QTimer::timeout, this, &MainWindow::updatePresetState);
 
     restoreSessionState();
     {
@@ -155,6 +164,7 @@ MainWindow::MainWindow(QWidget* parent)
 
     setupAudio();
     restoreLastFiles();
+    restorePresetState();
 
     mMeterTimer = new QTimer(this);
     connect(mMeterTimer, &QTimer::timeout, this, &MainWindow::updateMeters);
@@ -170,6 +180,7 @@ MainWindow::~MainWindow()
     mMeterTimer->stop();
     mTunerTimer->stop();
     mSessionSaveTimer->stop();
+    mPresetStateTimer->stop();
     QSettings().setValue("window/geometry", saveGeometry());
     QSettings().setValue("window/state", saveState());
     saveSessionState();
@@ -244,15 +255,25 @@ void MainWindow::setupUI()
 
     // ---- Menu bar ----
     QMenu* libraryMenu = nullptr;
+    QMenu* presetMenu  = nullptr;
     {
         auto* mb         = menuBar();
-        auto* presetMenu = mb->addMenu("Preset");
-        auto* actSave = presetMenu->addAction("Save Preset…");
+        presetMenu = mb->addMenu("Preset"); // also behind ⋯ on the preset bar
+        auto* actSave = presetMenu->addAction("Save");
         actSave->setShortcut(QKeySequence::Save); // Ctrl+S
         connect(actSave, &QAction::triggered, this, &MainWindow::onSavePreset);
-        auto* actLoad = presetMenu->addAction("Load Preset…");
+        auto* actSaveAs = presetMenu->addAction("Save As…");
+        actSaveAs->setShortcut(QKeySequence("Ctrl+Shift+S"));
+        connect(actSaveAs, &QAction::triggered, this, &MainWindow::onSavePresetAs);
+        auto* actLoad = presetMenu->addAction("Open…");
         actLoad->setShortcut(QKeySequence::Open); // Ctrl+O
         connect(actLoad, &QAction::triggered, this, &MainWindow::onLoadPreset);
+        presetMenu->addSeparator();
+        connect(presetMenu->addAction("Import…"), &QAction::triggered, this, &MainWindow::onImportPresets);
+        connect(presetMenu->addAction("Export…"), &QAction::triggered, this, &MainWindow::onExportPreset);
+        presetMenu->addSeparator();
+        connect(presetMenu->addAction("Show in Folder"), &QAction::triggered, this, &MainWindow::onLocatePreset);
+        connect(presetMenu->addAction("Delete…"), &QAction::triggered, this, &MainWindow::onDeletePreset);
         presetMenu->addSeparator();
         connect(presetMenu->addAction("Reset All to Defaults…"), &QAction::triggered, this, &MainWindow::onResetAll);
 
@@ -270,8 +291,17 @@ void MainWindow::setupUI()
         });
     }
 
+    // ---- Preset bar (top): name, ‹ ›, Save, quick slots, A/B, Preset menu.
+    mPresetBar = new PresetBar(*mLibraryIndex, presetMenu);
+    rootLayout->addWidget(mPresetBar);
+    connect(mPresetBar, &PresetBar::presetChosen,      this, [this](const QString& p) { loadPresetFile(p); });
+    connect(mPresetBar, &PresetBar::stepRequested,     this, &MainWindow::stepPreset);
+    connect(mPresetBar, &PresetBar::saveRequested,     this, &MainWindow::onSavePreset);
+    connect(mPresetBar, &PresetBar::saveAsRequested,   this, &MainWindow::onSavePresetAs);
+    connect(mPresetBar, &PresetBar::abSwitchRequested, this, &MainWindow::switchAb);
+    connect(mPresetBar, &PresetBar::abCopyRequested,   this, &MainWindow::copyAb);
+
     // ---- Status bar (bottom right): backend, rate, buffer, latency, devices.
-    // Preset save/load/reset live in the Preset menu — no top button row.
     mAudioBar = new AudioStatusBar(*mEngine);
     statusBar()->setSizeGripEnabled(false);
     statusBar()->addPermanentWidget(mAudioBar);
@@ -1222,6 +1252,7 @@ void MainWindow::toggleParam(const QString& group, const QString& key,
 void MainWindow::scheduleSessionSave()
 {
     if (mSessionSaveTimer) mSessionSaveTimer->start();
+    if (mPresetStateTimer) mPresetStateTimer->start();
 }
 
 void MainWindow::saveSessionState()
@@ -1238,6 +1269,12 @@ void MainWindow::saveSessionState()
     for (const auto& id : mEngine->chainIds())
         order << QString::fromStdString(id);
     s.setValue("effectOrder", order);
+    // The current preset and the state it was loaded with, so the name and
+    // its `*` come back exactly after a restart.
+    s.setValue("presetPath", mPresetPath);
+    s.setValue("presetBaseline", mPresetPath.isEmpty()
+                                     ? QString()
+                                     : QString::fromUtf8(QJsonDocument(mPresetBaseline).toJson(QJsonDocument::Compact)));
     s.endGroup();
 }
 
@@ -1481,30 +1518,16 @@ void MainWindow::updateHeroCards()
               QString::fromStdString(mEngine->modelPath()), "No model loaded");
     setStatus(mLblIRStatus, mLblIRMeta, mLblIROrigin, mEngine->isIRLoaded(),
               QString::fromStdString(mEngine->irPath()), "No impulse response loaded");
+    // Every model/IR change lands here — it counts toward the preset `*`.
+    if (mPresetStateTimer) mPresetStateTimer->start();
 }
 
 // ---------------------------------------------------------------------------
 // Preset save / load
 // ---------------------------------------------------------------------------
 
-void MainWindow::onSavePreset()
+QJsonObject MainWindow::currentPresetJson() const
 {
-    QSettings settings;
-    // Default to the library's presets folder so a saved preset shows up in
-    // the list right away (the folder watcher picks it up).
-    QString start = settings.value("files/lastPreset").toString();
-    if (start.isEmpty())
-    {
-        start = LibraryRoots::defaultPresetDir();
-        QDir().mkpath(start);
-    }
-    QString path = QFileDialog::getSaveFileName(
-        nullptr, "Save Preset", start,
-        "NAM Preset (*.nampreset);;JSON (*.json);;All Files (*)");
-    if (path.isEmpty()) return;
-    if (QFileInfo(path).suffix().isEmpty())
-        path += ".nampreset"; // portal dialogs don't append the filter's suffix
-
     QJsonObject obj = PresetSerializer::toJson(mParams, *mEngine);
     // TONE3000 linkage: lets the preset find its model on another machine.
     auto linkage = [this](const std::string& p) {
@@ -1522,20 +1545,191 @@ void MainWindow::onSavePreset()
     if (mEngine->isModelLoaded()) { const QJsonObject m = linkage(mEngine->modelPath()); if (!m.isEmpty()) t3k["model"] = m; }
     if (mEngine->isIRLoaded())    { const QJsonObject m = linkage(mEngine->irPath());    if (!m.isEmpty()) t3k["ir"]    = m; }
     if (!t3k.isEmpty()) obj["tone3000"] = t3k;
+    return obj;
+}
 
+bool MainWindow::writePresetFile(const QString& path)
+{
     QFile f(path);
     if (!f.open(QIODevice::WriteOnly))
     {
         QMessageBox::critical(this, "Preset", "Cannot write preset:\n" + path);
+        return false;
+    }
+    f.write(QJsonDocument(currentPresetJson()).toJson());
+    f.close();
+    return true;
+}
+
+// Save-dialog path with the .nampreset suffix; empty when cancelled.
+static QString askPresetSavePath(QWidget* parent, const QString& title, const QString& start)
+{
+    QString path = QFileDialog::getSaveFileName(
+        parent, title, start, "NAM Preset (*.nampreset);;JSON (*.json);;All Files (*)");
+    if (!path.isEmpty() && QFileInfo(path).suffix().isEmpty())
+        path += ".nampreset"; // portal dialogs don't append the filter's suffix
+    return path;
+}
+
+void MainWindow::onSavePreset()
+{
+    if (mPresetPath.isEmpty() || !QFile::exists(mPresetPath))
+    {
+        onSavePresetAs();
         return;
     }
-    f.write(QJsonDocument(obj).toJson());
-    f.close();
+    if (writePresetFile(mPresetPath))
+        setCurrentPreset(mPresetPath);
+}
+
+void MainWindow::onSavePresetAs()
+{
+    // Default to the library's presets folder so a saved preset shows up in
+    // the list right away (the folder watcher picks it up).
+    QString start = mPresetPath;
+    if (start.isEmpty())
+    {
+        start = LibraryRoots::defaultPresetDir();
+        QDir().mkpath(start);
+    }
+    QString path = askPresetSavePath(nullptr, "Save Preset As", start);
+    if (path.isEmpty() || !writePresetFile(path)) return;
 
     path = QDir::cleanPath(path);
-    settings.setValue("files/lastPreset", path);
+    QSettings().setValue("files/lastPreset", path);
     mLibrary->noteUsed(path);
     mLibrary->setLoadedPath(LibraryEntry::Kind::Preset, path);
+    setCurrentPreset(path);
+}
+
+void MainWindow::onExportPreset()
+{
+    const QString name = mPresetPath.isEmpty() ? QString("Untitled.nampreset")
+                                               : QFileInfo(mPresetPath).fileName();
+    const QString path = askPresetSavePath(
+        nullptr, "Export Preset",
+        QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/" + name);
+    if (!path.isEmpty()) writePresetFile(path); // a copy — the current preset stays
+}
+
+void MainWindow::onImportPresets()
+{
+    const QStringList files = QFileDialog::getOpenFileNames(
+        nullptr, "Import Presets", QStandardPaths::writableLocation(QStandardPaths::DownloadLocation),
+        "NAM Preset (*.nampreset);;JSON (*.json);;All Files (*)");
+    if (files.isEmpty()) return;
+
+    const QString dir = LibraryRoots::defaultPresetDir();
+    QDir().mkpath(dir);
+    QString last;
+    QStringList failed;
+    for (const QString& src : files)
+    {
+        const QFileInfo fi(src);
+        if (QDir::cleanPath(fi.absolutePath()) == QDir::cleanPath(dir)) { last = src; continue; }
+        // Never overwrite: "Name.nampreset" → "Name (2).nampreset" …
+        QString dest = dir + "/" + fi.fileName();
+        for (int n = 2; QFile::exists(dest); ++n)
+            dest = QString("%1/%2 (%3).%4").arg(dir, fi.completeBaseName()).arg(n).arg(fi.suffix());
+        if (QFile::copy(src, dest)) last = dest;
+        else                        failed << src;
+    }
+    if (!failed.isEmpty())
+        QMessageBox::warning(this, "Import Presets", "Could not copy:\n" + failed.join('\n'));
+    if (!last.isEmpty()) loadPresetFile(last);
+}
+
+void MainWindow::onDeletePreset()
+{
+    if (mPresetPath.isEmpty() || !QFile::exists(mPresetPath)) return;
+    const QString name = QFileInfo(mPresetPath).completeBaseName();
+    if (QMessageBox::question(this, "Delete Preset",
+                              "Move the preset \"" + name + "\" to the trash?\n"
+                              "The current sound is kept as an untitled state.")
+        != QMessageBox::Yes)
+        return;
+    if (!QFile::moveToTrash(mPresetPath) && !QFile::remove(mPresetPath))
+    {
+        QMessageBox::critical(this, "Delete Preset", "Cannot delete:\n" + mPresetPath);
+        return;
+    }
+    mLibrary->setLoadedPath(LibraryEntry::Kind::Preset, {});
+    setCurrentPreset({});
+}
+
+void MainWindow::onLocatePreset()
+{
+    const QString dir = mPresetPath.isEmpty() ? LibraryRoots::defaultPresetDir()
+                                              : QFileInfo(mPresetPath).absolutePath();
+    QDir().mkpath(dir);
+    QDesktopServices::openUrl(QUrl::fromLocalFile(dir));
+}
+
+void MainWindow::setCurrentPreset(const QString& path)
+{
+    mPresetPath     = path;
+    mPresetBaseline = PresetSerializer::toJson(mParams, *mEngine);
+    mAb[0] = mAb[1] = QJsonObject();
+    mAbActive = 0;
+    mPresetBar->setAbState(0);
+    updatePresetState();
+    scheduleSessionSave();
+}
+
+void MainWindow::updatePresetState()
+{
+    const bool modified = !mPresetPath.isEmpty()
+                          && PresetSerializer::toJson(mParams, *mEngine) != mPresetBaseline;
+    mPresetBar->setPreset(mPresetPath, modified);
+    setWindowTitle(mPresetPath.isEmpty()
+                       ? QString("NAM Player")
+                       : QString("%1%2 — NAM Player")
+                             .arg(QFileInfo(mPresetPath).completeBaseName(), modified ? "*" : ""));
+}
+
+void MainWindow::restorePresetState()
+{
+    QSettings s;
+    const QString path = s.value("session/presetPath").toString();
+    if (path.isEmpty() || !QFile::exists(path)) { updatePresetState(); return; }
+    mPresetPath     = path;
+    mPresetBaseline = QJsonDocument::fromJson(s.value("session/presetBaseline").toString().toUtf8()).object();
+    mLibrary->setLoadedPath(LibraryEntry::Kind::Preset, path);
+    updatePresetState();
+}
+
+void MainWindow::stepPreset(int step)
+{
+    const QString next = mLibrary->neighbour(LibraryEntry::Kind::Preset, mPresetPath, step);
+    if (!next.isEmpty() && next != mPresetPath)
+        loadPresetFile(next);
+}
+
+void MainWindow::switchAb(int side)
+{
+    if (side == mAbActive) return;
+    // The side being left keeps the live state; the other side starts as a
+    // copy of it the first time it is visited.
+    const QJsonObject live = PresetSerializer::toJson(mParams, *mEngine);
+    mAb[mAbActive] = live;
+    mAbActive = side;
+    if (mAb[side].isEmpty())
+    {
+        mAb[side] = live;
+    }
+    else
+    {
+        const auto applied = applyPresetParams(mAb[side]);
+        if (!applied.namPath.isEmpty() && QFile::exists(applied.namPath)) loadModelFile(applied.namPath, true);
+        if (!applied.irPath.isEmpty()  && QFile::exists(applied.irPath))  loadIRFile(applied.irPath, true);
+    }
+    mPresetBar->setAbState(side);
+    scheduleSessionSave();
+}
+
+void MainWindow::copyAb()
+{
+    mAb[1 - mAbActive] = PresetSerializer::toJson(mParams, *mEngine);
 }
 
 void MainWindow::onResetAll()
@@ -1593,11 +1787,7 @@ bool MainWindow::loadPresetFile(const QString& pathIn)
     mLibrary->noteUsed(path);
     mLibrary->setLoadedPath(LibraryEntry::Kind::Preset, path);
 
-    // Widgets first (engine follows via the registry connections), then the
-    // chain order (engine-side sanitizer handles unknown/missing IDs).
-    const auto applied = PresetSerializer::apply(doc.object(), mParams);
-    if (!applied.effectOrder.isEmpty())
-        applyChainOrder(applied.effectOrder);
+    const auto applied = applyPresetParams(doc.object());
 
     // v2 presets embed the model/IR paths. Only a non-empty path acts — a
     // preset saved without a model must not unload the current one — and when
@@ -1609,6 +1799,9 @@ bool MainWindow::loadPresetFile(const QString& pathIn)
         if (p.isEmpty() || !QFile::exists(p)) return false;
         return kind == LibraryEntry::Kind::Model ? loadModelFile(p, true) : loadIRFile(p, true);
     };
+    // A TONE3000 fetch can land after this returns: the fetched model is
+    // part of the preset, not an edit, so it moves the baseline.
+    auto rebaseline = [this, path] { if (mPresetPath == path) setCurrentPreset(path); };
 
     QStringList failed;
     if (!applied.namPath.isEmpty() && !tryLoad(applied.namPath, LibraryEntry::Kind::Model))
@@ -1620,8 +1813,8 @@ bool MainWindow::loadPresetFile(const QString& pathIn)
             const QString title = link.value("title").toString().isEmpty()
                                       ? QFileInfo(applied.namPath).completeBaseName()
                                       : link.value("title").toString();
-            resolveTone3000Model(modelId, title, [this, tryLoad](const QString& p) {
-                if (!p.isEmpty()) tryLoad(p, LibraryEntry::Kind::Model);
+            resolveTone3000Model(modelId, title, [this, tryLoad, rebaseline](const QString& p) {
+                if (!p.isEmpty() && tryLoad(p, LibraryEntry::Kind::Model)) rebaseline();
             });
         }
         else
@@ -1638,8 +1831,8 @@ bool MainWindow::loadPresetFile(const QString& pathIn)
             const QString title = link.value("title").toString().isEmpty()
                                       ? QFileInfo(applied.irPath).completeBaseName()
                                       : link.value("title").toString();
-            resolveTone3000Model(modelId, title, [this, tryLoad](const QString& p) {
-                if (!p.isEmpty()) tryLoad(p, LibraryEntry::Kind::IR);
+            resolveTone3000Model(modelId, title, [this, tryLoad, rebaseline](const QString& p) {
+                if (!p.isEmpty() && tryLoad(p, LibraryEntry::Kind::IR)) rebaseline();
             });
         }
         else
@@ -1648,11 +1841,22 @@ bool MainWindow::loadPresetFile(const QString& pathIn)
         }
     }
     updateHeroCards();
+    setCurrentPreset(path);
     if (!failed.isEmpty())
         QMessageBox::warning(this, "Preset",
                              "The preset references files that could not be loaded "
                              "(the current model/IR was kept):\n" + failed.join('\n'));
     return failed.isEmpty();
+}
+
+PresetSerializer::Applied MainWindow::applyPresetParams(const QJsonObject& obj)
+{
+    // Widgets first (engine follows via the registry connections), then the
+    // chain order (engine-side sanitizer handles unknown/missing IDs).
+    const auto applied = PresetSerializer::apply(obj, mParams);
+    if (!applied.effectOrder.isEmpty())
+        applyChainOrder(applied.effectOrder);
+    return applied;
 }
 
 void MainWindow::resolveTone3000Model(int modelId, const QString& title,

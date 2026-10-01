@@ -286,6 +286,86 @@ QToolButton#heroArrow:pressed {
     background-color: #1f242c;
 }
 
+/* === Preset bar (top of the rack) === */
+QFrame#presetBar {
+    background-color: #1a1d24;
+    border: 1px solid #2a2f38;
+    border-radius: 6px;
+}
+QLabel#presetCaption {
+    color: #7d8590;
+    font-weight: 600;
+    padding: 0 4px;
+}
+QToolButton#presetName {
+    color: #5cc8a8;
+    font-size: 11pt;
+    font-weight: 700;
+    min-width: 220px;
+    padding: 3px 10px;
+    text-align: left;
+    border: 1px solid #2a2f38;
+    border-radius: 5px;
+    background-color: #15171c;
+}
+QToolButton#presetName[untitled="true"] {
+    color: #9aa1ad;
+    font-style: italic;
+    font-weight: 500;
+}
+QToolButton#presetName:hover {
+    border-color: #424b5c;
+}
+QToolButton#presetName::menu-indicator {
+    subcontrol-position: right center;
+    right: 6px;
+}
+QLabel#presetModified {
+    color: #f0c850;
+    font-size: 13pt;
+    font-weight: 700;
+    min-width: 10px;
+}
+QToolButton#presetTool, QToolButton#presetSlot, QToolButton#presetAb {
+    color: #d8dee9;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    padding: 3px 8px;
+}
+QToolButton#presetTool:hover, QToolButton#presetSlot:hover, QToolButton#presetAb:hover {
+    background-color: #2f3744;
+}
+QToolButton#presetTool::menu-indicator {
+    image: none;
+    width: 0;
+}
+QToolButton#presetSlot {
+    color: #555c6b;
+    min-width: 14px;
+    padding: 3px 5px;
+    font-weight: 600;
+}
+QToolButton#presetSlot[filled="true"] {
+    color: #d8dee9;
+    border-color: #353c4a;
+}
+QToolButton#presetSlot[active="true"] {
+    color: #15171c;
+    background-color: #5cc8a8;
+    border-color: #5cc8a8;
+}
+QToolButton#presetAb {
+    min-width: 14px;
+    font-weight: 700;
+    border-color: #353c4a;
+}
+QToolButton#presetAb:checked {
+    color: #15171c;
+    background-color: #5cc8a8;
+    border-color: #5cc8a8;
+}
+
 /* === Library dock === */
 QDockWidget {
     color: #9aa1ad;
