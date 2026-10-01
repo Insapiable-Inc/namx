@@ -2,8 +2,8 @@
 
 #include <atomic>
 #include <cstdint>
-#include <vector>
 
+#include "DelayLine.h"
 #include "EffectBase.h"
 
 /// Double-tracking: from a mono signal, the right channel becomes a second
@@ -34,8 +34,7 @@ private:
     std::atomic<float> mSpreadMs{10.0f};
     std::atomic<float> mMix{100.0f};
 
-    std::vector<float> mBuf;
-    int mWrite = 0;
+    DelayLine mLine;
     float mDrift = 0.0f, mDriftTarget = 0.0f; // −1 … 1
     int mUntilNewTarget = 0;
     uint32_t mSeed = 0x9e3779b9u;

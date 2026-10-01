@@ -1,8 +1,8 @@
 #pragma once
 
 #include <atomic>
-#include <vector>
 
+#include "DelayLine.h"
 #include "EffectBase.h"
 
 /// Chorus: LFO-modulated delay. Modes: Normal (one voice), Tri (three voices
@@ -63,14 +63,10 @@ private:
     float mVintLp[2]{}; // Vintage wet low-pass per channel
 
     // Wet sample for one channel at an LFO phase (all modes).
-    float wet(const std::vector<float>& buf, int write, float phase, float depth, float fs,
-              int mode);
+    float wet(const DelayLine& line, float phase, float depth, float fs, int mode);
 
-    std::vector<float> mBufL, mBufR;
-    int mWriteL{0}, mWriteR{0};
+    DelayLine mLineL, mLineR;
 
     static constexpr float kBaseMs = 20.0f;
     static constexpr float kMaxDepthMs = 5.0f;
-
-    float readInterp(const std::vector<float>& buf, int writePos, float delaySamples) const;
 };

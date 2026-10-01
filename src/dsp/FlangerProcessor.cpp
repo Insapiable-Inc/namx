@@ -6,40 +6,21 @@
 static constexpr float kPi = 3.14159265358979323846f;
 
 void FlangerProcessor::onSampleRateChanged(double sr) {
-    int bufSamples = static_cast<int>((kBaseMs + kDepthMs + 5.0f) * sr / 1000.0f) + 4;
-    mBufL.assign(bufSamples, 0.0f);
-    mBufR.assign(bufSamples, 0.0f);
+    const size_t length = static_cast<size_t>((kBaseMs + kDepthMs + 5.0f) * sr / 1000.0f) + 4;
+    mLineL.resize(length);
+    mLineR.resize(length);
     reset();
 }
 
 void FlangerProcessor::reset() {
-    std::fill(mBufL.begin(), mBufL.end(), 0.0f);
-    std::fill(mBufR.begin(), mBufR.end(), 0.0f);
-    mWriteL = mWriteR = 0;
+    mLineL.clear();
+    mLineR.clear();
     mFbL = mFbR = 0.0f;
     mPhase = 0.0f;
 }
 
-float FlangerProcessor::readInterp(const std::vector<float>& buf, int writePos,
-                                   float delaySamples) const {
-    int sz = static_cast<int>(buf.size());
-    float readF = static_cast<float>(writePos) - delaySamples;
-    while (readF < 0.0f) {
-        readF += sz;
-    }
-
-    int r0 = static_cast<int>(readF); // < sz: delaySamples >= 1
-    if (r0 >= sz) {
-        r0 -= sz;
-    }
-    int r1 = r0 + 1 == sz ? 0 : r0 + 1;
-    float frac = readF - std::floor(readF);
-    return buf[r0] + (buf[r1] - buf[r0]) * frac;
-}
-
-void FlangerProcessor::processSample(float in, float phase, std::vector<float>& buf, int& writePos,
-                                     float& fb, float depth, float fbAmt, float mix,
-                                     float& out) const {
+void FlangerProcessor::processSample(float in, float phase, DelayLine& line, float& fb, float depth,
+                                     float fbAmt, float mix, float& out) const {
     float lfo = std::sin(2.0f * kPi * phase);
     // Range scales the sweep centre and width together (max = kBaseMs/kDepthMs).
     const float r = std::clamp(mRange.load(std::memory_order_relaxed), 0.0f, 100.0f) / 100.0f;
@@ -48,13 +29,9 @@ void FlangerProcessor::processSample(float in, float phase, std::vector<float>& 
     float delaySam =
         std::max(1.0f, (base + depth * span * lfo) * static_cast<float>(mSampleRate) / 1000.0f);
 
-    int sz = static_cast<int>(buf.size());
-    buf[writePos] = in + fbAmt * fb;
-    float wet = readInterp(buf, writePos, delaySam);
+    line.push(in + fbAmt * fb);
+    const float wet = line.interpolate(delaySam);
     fb = wet;
-    if (++writePos == sz) {
-        writePos = 0;
-    }
 
     out = in * (1.0f - mix) + wet * mix;
 }
@@ -67,7 +44,7 @@ void FlangerProcessor::processBlockMono(float* buf, int nframes) {
 
     for (int i = 0; i < nframes; ++i) {
         float out;
-        processSample(buf[i], mPhase, mBufL, mWriteL, mFbL, depth, fbAmt, mix, out);
+        processSample(buf[i], mPhase, mLineL, mFbL, depth, fbAmt, mix, out);
         buf[i] = out;
 
         mPhase += phInc;
@@ -86,8 +63,8 @@ void FlangerProcessor::processBlockDual(float* L, float* R, int nframes) {
     for (int i = 0; i < nframes; ++i) {
         // Same LFO phase for both channels: identical mono effect per channel.
         float outL, outR;
-        processSample(L[i], mPhase, mBufL, mWriteL, mFbL, depth, fbAmt, mix, outL);
-        processSample(R[i], mPhase, mBufR, mWriteR, mFbR, depth, fbAmt, mix, outR);
+        processSample(L[i], mPhase, mLineL, mFbL, depth, fbAmt, mix, outL);
+        processSample(R[i], mPhase, mLineR, mFbR, depth, fbAmt, mix, outR);
         L[i] = outL;
         R[i] = outR;
 
@@ -106,8 +83,8 @@ void FlangerProcessor::processBlockStereoOut(float* L, float* R, int nframes) {
 
     for (int i = 0; i < nframes; ++i) {
         float outL, outR;
-        processSample(L[i], mPhase, mBufL, mWriteL, mFbL, depth, fbAmt, mix, outL);
-        processSample(R[i], mPhase + 0.5f, mBufR, mWriteR, mFbR, depth, fbAmt, mix, outR);
+        processSample(L[i], mPhase, mLineL, mFbL, depth, fbAmt, mix, outL);
+        processSample(R[i], mPhase + 0.5f, mLineR, mFbR, depth, fbAmt, mix, outR);
         L[i] = outL;
         R[i] = outR;
 

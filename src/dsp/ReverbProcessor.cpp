@@ -13,15 +13,15 @@ ReverbProcessor::ReverbProcessor() {
 void ReverbProcessor::allocate() {
     double scale = mSampleRate / 44100.0;
     for (auto& p : mPre) {
-        p.assign(static_cast<size_t>(mSampleRate * kMaxPreDelayMs / 1000.0) + 2, 0.0f);
+        p.resize(static_cast<size_t>(mSampleRate * kMaxPreDelayMs / 1000.0) + 2);
     }
     for (int i = 0; i < kNumCombs; ++i) {
-        mCombL[i].resize(static_cast<int>(kCombLengths[i] * scale));
-        mCombR[i].resize(static_cast<int>((kCombLengths[i] + kStereoOffset) * scale));
+        mCombL[i].resize(static_cast<size_t>(kCombLengths[i] * scale));
+        mCombR[i].resize(static_cast<size_t>((kCombLengths[i] + kStereoOffset) * scale));
     }
     for (int i = 0; i < kNumAllPasses; ++i) {
-        mApL[i].resize(static_cast<int>(kApLengths[i] * scale));
-        mApR[i].resize(static_cast<int>((kApLengths[i] + kStereoOffset) * scale));
+        mApL[i].resize(static_cast<size_t>(kApLengths[i] * scale));
+        mApR[i].resize(static_cast<size_t>((kApLengths[i] + kStereoOffset) * scale));
     }
 }
 
@@ -48,8 +48,7 @@ void ReverbProcessor::reset() {
         a.reset();
     }
     for (int b = 0; b < 2; ++b) {
-        std::fill(mPre[b].begin(), mPre[b].end(), 0.0f);
-        mPreWrite[b] = 0;
+        mPre[b].clear();
         mHpX[b] = mHpY[b] = mLp[b] = 0.0f;
         mShift[b].reset();
         mShimFb[b] = 0.0f;
@@ -57,21 +56,12 @@ void ReverbProcessor::reset() {
 }
 
 float ReverbProcessor::preDelay(int bank, float x, int d) {
-    std::vector<float>& buf = mPre[bank];
-    const int sz = static_cast<int>(buf.size());
-    if (d <= 0 || sz == 0) {
+    DelayLine& line = mPre[bank];
+    if (d <= 0 || line.empty()) {
         return x;
     }
-    int& w = mPreWrite[bank];
-    buf[w] = x;
-    int r = w - d;
-    if (r < 0) {
-        r += sz;
-    }
-    if (++w == sz) {
-        w = 0;
-    }
-    return buf[r];
+    line.push(x);
+    return line.at(static_cast<size_t>(d));
 }
 
 float ReverbProcessor::wetFilter(int ch, float x, float hpA, float lpK) {

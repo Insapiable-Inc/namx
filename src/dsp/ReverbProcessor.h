@@ -2,8 +2,8 @@
 
 #include <array>
 #include <atomic>
-#include <vector>
 
+#include "DelayLine.h"
 #include "EffectBase.h"
 #include "PitchShifter.h"
 
@@ -77,8 +77,7 @@ private:
 
     static constexpr float kMaxPreDelayMs = 250.0f;
     // Pre-delay line per input bank ([0] mono/L/sum, [1] R) + wet filters per output.
-    std::vector<float> mPre[2];
-    int mPreWrite[2]{};
+    DelayLine mPre[2];
     float mHpX[2]{}, mHpY[2]{}, mLp[2]{};
 
     float preDelay(int bank, float x, int delaySamples);
@@ -86,54 +85,41 @@ private:
 
     struct CombFilter
     {
-        std::vector<float> buf;
-        int writePos{0};
+        DelayLine line;
         float filterStore{0.0f};
 
-        void resize(int n) {
-            buf.assign(n, 0.0f);
+        void resize(size_t n) {
+            line.resize(n);
         }
         void reset() {
-            std::fill(buf.begin(), buf.end(), 0.0f);
+            line.clear();
             filterStore = 0.0f;
-            writePos = 0;
         }
 
         float process(float in, float feedback, float damp) {
-            int sz = static_cast<int>(buf.size());
-            float out = buf[writePos];
+            const float out = line.oldest();
             filterStore = out * (1.0f - damp) + filterStore * damp;
-            buf[writePos] = in + filterStore * feedback;
-            if (++writePos == sz) {
-                writePos = 0;
-            }
+            line.push(in + filterStore * feedback);
             return out;
         }
     };
 
     struct AllPassFilter
     {
-        std::vector<float> buf;
-        int writePos{0};
+        DelayLine line;
         static constexpr float kFeedback = 0.5f;
 
-        void resize(int n) {
-            buf.assign(n, 0.0f);
+        void resize(size_t n) {
+            line.resize(n);
         }
         void reset() {
-            std::fill(buf.begin(), buf.end(), 0.0f);
-            writePos = 0;
+            line.clear();
         }
 
         float process(float in) {
-            int sz = static_cast<int>(buf.size());
-            float bufOut = buf[writePos];
-            float output = -in + bufOut;
-            buf[writePos] = in + bufOut * kFeedback;
-            if (++writePos == sz) {
-                writePos = 0;
-            }
-            return output;
+            const float bufOut = line.oldest();
+            line.push(in + bufOut * kFeedback);
+            return -in + bufOut;
         }
     };
 

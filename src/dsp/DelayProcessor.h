@@ -1,8 +1,8 @@
 #pragma once
 
 #include <atomic>
-#include <vector>
 
+#include "DelayLine.h"
 #include "EffectBase.h"
 #include "PitchShifter.h"
 
@@ -74,15 +74,15 @@ protected:
 private:
     struct Line
     {
-        std::vector<float> buf;
-        int write = 0;
+        DelayLine samples;
         float hpX = 0.0f, hpY = 0.0f, lp = 0.0f;
-        float read(float delaySamples) const;
+        // Read before this sample's push(), so "d samples ago" is d - 1 behind the
+        // newest sample in the line.
+        float read(float delaySamples) const {
+            return samples.interpolate(delaySamples - 1.0f);
+        }
         void push(float x) {
-            buf[write] = x;
-            if (++write == static_cast<int>(buf.size())) {
-                write = 0;
-            }
+            samples.push(x);
         }
     };
 

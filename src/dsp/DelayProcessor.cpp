@@ -8,7 +8,7 @@ static constexpr float kTwoPi = 6.28318530718f;
 void DelayProcessor::onSampleRateChanged(double sr) {
     const size_t n = static_cast<size_t>(kMaxDelayMs * sr / 1000.0) + 4;
     for (auto& l : mLine) {
-        l.buf.assign(n, 0.0f);
+        l.samples.resize(n);
     }
     for (auto& s : mShift) {
         s.prepare(sr, 60.0f);
@@ -19,8 +19,7 @@ void DelayProcessor::onSampleRateChanged(double sr) {
 
 void DelayProcessor::reset() {
     for (auto& l : mLine) {
-        std::fill(l.buf.begin(), l.buf.end(), 0.0f);
-        l.write = 0;
+        l.samples.clear();
         l.hpX = l.hpY = l.lp = 0.0f;
     }
     mModPhase = 0.0f;
@@ -36,21 +35,6 @@ float DelayProcessor::loop(int line, float d, const Params& p) {
     return d + p.crystals * (mShift[line].process(d) - d);
 }
 
-float DelayProcessor::Line::read(float d) const {
-    const int sz = static_cast<int>(buf.size());
-    float r = static_cast<float>(write) - d;
-    if (r < 0.0f) {
-        r += sz;
-    }
-    int r0 = static_cast<int>(r);
-    if (r0 >= sz) {
-        r0 -= sz;
-    }
-    const int r1 = r0 + 1 == sz ? 0 : r0 + 1;
-    const float frac = r - std::floor(r);
-    return buf[r0] + (buf[r1] - buf[r0]) * frac;
-}
-
 DelayProcessor::Params DelayProcessor::params() const {
     const float fs = static_cast<float>(mSampleRate);
     Params p;
@@ -63,7 +47,7 @@ DelayProcessor::Params DelayProcessor::params() const {
     p.modDepth = 0.003f * fs * std::clamp(mModPct.load(), 0.0f, 100.0f) / 100.0f; // up to ±3 ms
     p.phInc = 0.55f / fs; // 0.55 Hz wobble
     p.crystals = std::clamp(mCrystalsPct.load(), 0.0f, 100.0f) / 100.0f;
-    const float maxD = static_cast<float>(mLine[0].buf.size()) - 2.0f - p.modDepth;
+    const float maxD = static_cast<float>(mLine[0].samples.size()) - 2.0f - p.modDepth;
     p.delL = std::clamp(mTimeMS.load() * fs / 1000.0f, 1.0f + p.modDepth, maxD);
     p.delR = std::clamp(p.delL * std::clamp(mRightPct.load(), 25.0f, 200.0f) / 100.0f,
                         1.0f + p.modDepth, maxD);
@@ -90,7 +74,7 @@ float DelayProcessor::saturate(float x, float amount) {
 }
 
 void DelayProcessor::processBlockMono(float* buf, int nframes) {
-    if (mLine[0].buf.empty()) {
+    if (mLine[0].samples.empty()) {
         return;
     }
     const Params p = params();
@@ -110,7 +94,7 @@ void DelayProcessor::processBlockMono(float* buf, int nframes) {
 
 void DelayProcessor::processBlockDual(float* L, float* R, int nframes) {
     // Stereo input: independent line per channel (no cross-feedback).
-    if (mLine[0].buf.empty()) {
+    if (mLine[0].samples.empty()) {
         return;
     }
     const Params p = params();
@@ -133,7 +117,7 @@ void DelayProcessor::processBlockDual(float* L, float* R, int nframes) {
 void DelayProcessor::processBlockStereoOut(float* L, float* R, int nframes) {
     // Cross-feed c: 1 = ping-pong (input → left only, repeats alternate),
     // 0 = two independent lines (input into both, L/R times).
-    if (mLine[0].buf.empty()) {
+    if (mLine[0].samples.empty()) {
         return;
     }
     const Params p = params();

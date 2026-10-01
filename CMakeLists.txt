@@ -137,6 +137,7 @@ set(GUI_SOURCES
     src/dsp/VolumeProcessor.h
     src/dsp/OutputLimiter.cpp
     src/dsp/OutputLimiter.h
+    src/dsp/DelayLine.h
     src/dsp/PitchShifter.h
     src/dsp/TransposeProcessor.h
     src/dsp/Metronome.h

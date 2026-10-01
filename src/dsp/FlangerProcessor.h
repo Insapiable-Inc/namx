@@ -1,8 +1,8 @@
 #pragma once
 
 #include <atomic>
-#include <vector>
 
+#include "DelayLine.h"
 #include "EffectBase.h"
 
 /// Flanger: short modulated delay with feedback. Stereo uses 180° LFO offset.
@@ -59,14 +59,12 @@ private:
 
     float mPhase{0.0f};
 
-    std::vector<float> mBufL, mBufR;
-    int mWriteL{0}, mWriteR{0};
+    DelayLine mLineL, mLineR;
     float mFbL{0.0f}, mFbR{0.0f};
 
     static constexpr float kBaseMs = 7.0f;
     static constexpr float kDepthMs = 7.0f;
 
-    float readInterp(const std::vector<float>& buf, int writePos, float delaySamples) const;
-    void processSample(float in, float phase, std::vector<float>& buf, int& writePos, float& fb,
-                       float depth, float fbAmt, float mix, float& out) const;
+    void processSample(float in, float phase, DelayLine& line, float& fb, float depth, float fbAmt,
+                       float mix, float& out) const;
 };
