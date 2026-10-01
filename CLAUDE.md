@@ -69,6 +69,8 @@ cmake -S gui -B gui/build-test -DCMAKE_BUILD_TYPE=Debug -DNAM_BUILD_TESTS=ON
 cmake --build gui/build-test --target Tone3000ClientTest && gui/build-test/Tone3000ClientTest
 ```
 
+`DspGoldenTest` (same option) renders every effect over a fixed signal and compares a hash of the exact output bits — any DSP refactor that must not change the sound has to keep it green; re-record with `NAM_GOLDEN_PRINT=1` only when a change is meant to alter the sound.
+
 `-DNAM_BUILD_BENCH=ON` adds `NAMPlayerBench` (`gui/bench/`): the DSP chain timed per stage against the block budget (`--model`, `--ir`, `--frames`, `--rate`, `--no-fast-tanh`, `--only`). The Phase 14 efficiency budget and reference numbers are in `gui/BUILD.md` → High CPU usage; re-run the bench after DSP changes. `--self-test-and-exit` also prints cold-start time and peak RSS.
 
 ## Running

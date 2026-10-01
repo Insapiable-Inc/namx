@@ -66,6 +66,8 @@ jobs:
           ./build-release/NAMPlayer --version
           timeout 30 ./build-release/NAMPlayer --self-test-and-exit
           ./build-release/Tone3000ClientTest
+          ./build-release/MidiMapperTest
+          ./build-release/DspGoldenTest
 
       - name: Packaging files + install layout
         working-directory: gui

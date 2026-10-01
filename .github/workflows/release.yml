@@ -80,6 +80,7 @@ jobs:
           timeout 30 ./build-release/NAMPlayer --self-test-and-exit
           ./build-release/Tone3000ClientTest
           ./build-release/MidiMapperTest
+          ./build-release/DspGoldenTest
       - name: Validate packaging files + install layout
         working-directory: gui
         run: |
@@ -118,6 +119,7 @@ jobs:
           timeout 30 ./build-release/NAMPlayer --self-test-and-exit
           ./build-release/Tone3000ClientTest
           ./build-release/MidiMapperTest
+          ./build-release/DspGoldenTest
           DESTDIR="$PWD/stage" cmake --install build-release --prefix /usr
           find stage -type f | sort
 
