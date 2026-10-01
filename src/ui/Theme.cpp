@@ -429,6 +429,53 @@ QToolButton#tunerOption:checked {
     border-color: #5cc8a8;
 }
 
+/* === MIDI Mappings window === */
+QDialog#midiMappings QGroupBox {
+    border: 1px solid #2a2f38;
+    border-radius: 6px;
+    margin-top: 14px;
+    padding: 8px;
+}
+QDialog#midiMappings QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 8px;
+    color: #9aa1ad;
+}
+QDialog#midiMappings QTableWidget {
+    background-color: #1a1d24;
+    border: 1px solid #2a2f38;
+    border-radius: 5px;
+    gridline-color: #2a2f38;
+}
+QDialog#midiMappings QHeaderView::section {
+    background-color: #1f242c;
+    color: #9aa1ad;
+    border: none;
+    border-bottom: 1px solid #2a2f38;
+    padding: 4px 6px;
+    font-weight: 600;
+}
+QDialog#midiMappings QSpinBox {
+    background-color: #15171c;
+    color: #d8dee9;
+    border: 1px solid #2a2f38;
+    border-radius: 4px;
+    padding: 2px 4px;
+}
+QDialog#midiMappings QToolButton {
+    color: #d8dee9;
+    background: transparent;
+    border: 1px solid #353c4a;
+    border-radius: 4px;
+    padding: 2px 8px;
+}
+QDialog#midiMappings QToolButton:hover {
+    background-color: #2f3744;
+}
+QDialog#midiMappings QCheckBox {
+    color: #d8dee9;
+}
+
 /* === Library dock === */
 QDockWidget {
     color: #9aa1ad;
