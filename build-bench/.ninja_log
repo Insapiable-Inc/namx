@@ -50,3 +50,16 @@
 51	2168	1790877305443243017	CMakeFiles/NAMPlayerBench.dir/bench/NAMPlayerBench.cpp.o	fa25f4a0f4fb359b
 51	2330	1790877305443563236	CMakeFiles/NAMPlayerBench.dir/src/dsp/NamProcessor.cpp.o	7185fd53b960eb9d
 2330	2412	1790877307721852330	NAMPlayerBench	3ca4dcec65ea4f17
+5	24	1790877758291447085	NAMPlayerBench_autogen/timestamp	98c3f1b9d9331b54
+5	24	1790877758291447085	NAMPlayerBench_autogen/mocs_compilation.cpp	98c3f1b9d9331b54
+5	24	1790877758291447085	/home/silvercobraa/Git/nam-linux-gui/gui/build-bench/NAMPlayerBench_autogen/timestamp	98c3f1b9d9331b54
+5	24	1790877758291447085	/home/silvercobraa/Git/nam-linux-gui/gui/build-bench/NAMPlayerBench_autogen/mocs_compilation.cpp	98c3f1b9d9331b54
+25	247	1790877758312244272	CMakeFiles/NAMPlayerBench.dir/src/dsp/DynamicWahProcessor.cpp.o	3b36c78a076c4198
+25	283	1790877758311974571	CMakeFiles/NAMPlayerBench.dir/src/dsp/PhaserProcessor.cpp.o	e29366eb23a1c2c6
+24	301	1790877758311554894	CMakeFiles/NAMPlayerBench.dir/src/dsp/EQProcessor.cpp.o	2411dc333411f4c9
+24	307	1790877758311829203	CMakeFiles/NAMPlayerBench.dir/src/dsp/FlangerProcessor.cpp.o	eb8e715fa753c818
+25	366	1790877758312074161	CMakeFiles/NAMPlayerBench.dir/src/dsp/DelayProcessor.cpp.o	d471927a44d0420b
+24	382	1790877758311684721	CMakeFiles/NAMPlayerBench.dir/src/dsp/ChorusProcessor.cpp.o	3ef8756c1f74d865
+25	466	1790877758312159655	CMakeFiles/NAMPlayerBench.dir/src/dsp/ReverbProcessor.cpp.o	b4ceb03391d9c528
+24	2120	1790877758310447230	CMakeFiles/NAMPlayerBench.dir/bench/NAMPlayerBench.cpp.o	fa25f4a0f4fb359b
+2120	2204	1790877760406463233	NAMPlayerBench	3ca4dcec65ea4f17

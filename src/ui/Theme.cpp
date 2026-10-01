@@ -404,6 +404,20 @@ QToolButton#metroPlay:checked {
     border-color: #5cc8a8;
 }
 
+/* === Effect card ▾ detail toggle === */
+QToolButton#cardMore {
+    color: #9aa1ad;
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    min-width: 22px;
+    font-size: 14pt;
+}
+QToolButton#cardMore:hover {
+    color: #d8dee9;
+    background-color: #2f3744;
+}
+
 /* === Tuner row: reference pitch + Hz toggle === */
 QSpinBox#tunerRef {
     background-color: #15171c;

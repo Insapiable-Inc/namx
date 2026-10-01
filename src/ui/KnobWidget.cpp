@@ -1,4 +1,6 @@
 #include "KnobWidget.h"
+
+#include <cmath>
 #include "Theme.h"
 
 #include <QContextMenuEvent>
@@ -332,7 +334,7 @@ bool KnobWidget::eventFilter(QObject* obj, QEvent* event)
             return true;
         }
         int dialStep;
-        if (mScrollStep > 0.0)
+        if (mScrollStep > 0.0 && !mLogTaper)
             dialStep = qMax(1, static_cast<int>(mScrollStep / (mMax - mMin) * kSteps + 0.5));
         else
             dialStep = kSteps / 100;
@@ -345,12 +347,25 @@ bool KnobWidget::eventFilter(QObject* obj, QEvent* event)
 
 double KnobWidget::dialToValue(int d) const
 {
-    return mMin + (mMax - mMin) * static_cast<double>(d) / kSteps;
+    const double t = static_cast<double>(d) / kSteps;
+    if (mLogTaper) return mMin * std::pow(mMax / mMin, t);
+    return mMin + (mMax - mMin) * t;
 }
 
 int KnobWidget::valueToDial(double v) const
 {
-    double norm = (v - mMin) / (mMax - mMin);
+    double norm = mLogTaper ? std::log(qBound(mMin, v, mMax) / mMin) / std::log(mMax / mMin)
+                            : (v - mMin) / (mMax - mMin);
     norm = qBound(0.0, norm, 1.0);
     return static_cast<int>(norm * kSteps + 0.5);
+}
+
+void KnobWidget::setLogTaper(bool on)
+{
+    const double v = value();
+    mLogTaper = on && mMin > 0.0 && mMax > mMin; // needs a positive range
+    const bool blocked = mDial->blockSignals(true);
+    mDial->setValue(valueToDial(v));
+    mDial->blockSignals(blocked);
+    updateLabel();
 }

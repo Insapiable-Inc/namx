@@ -1,4 +1,5 @@
 #include "ChorusProcessor.h"
+#include <algorithm>
 #include <cmath>
 
 static constexpr float kPi = 3.14159265358979323846f;
@@ -17,6 +18,7 @@ void ChorusProcessor::reset()
     std::fill(mBufR.begin(), mBufR.end(), 0.0f);
     mWriteL = mWriteR = 0;
     mPhase  = 0.0f;
+    mVintLp[0] = mVintLp[1] = 0.0f;
 }
 
 float ChorusProcessor::readInterp(const std::vector<float>& buf, int writePos, float delaySamples) const
@@ -32,26 +34,52 @@ float ChorusProcessor::readInterp(const std::vector<float>& buf, int writePos, f
     return buf[r0] * (1.0f - frac) + buf[r1] * frac;
 }
 
+float ChorusProcessor::wet(const std::vector<float>& buf, int write, float phase, float depth, float fs, int mode)
+{
+    auto tap = [&](float ph) {
+        float lfo;
+        if (mode == Vintage)
+        {
+            const float f = ph - std::floor(ph);
+            lfo = 4.0f * std::abs(f - 0.5f) - 1.0f; // triangle
+        }
+        else
+        {
+            lfo = std::sin(2.0f * kPi * ph);
+        }
+        const float del = std::max(1.0f, (kBaseMs + depth * kMaxDepthMs * lfo) * fs / 1000.0f);
+        return readInterp(buf, write, del);
+    };
+    if (mode == Tri)
+        return (tap(phase) + tap(phase + 1.0f / 3.0f) + tap(phase + 2.0f / 3.0f)) * (1.0f / 3.0f);
+    return tap(phase);
+}
+
+// One processing loop for every dispatch case: `stereoOut` = mono in, true
+// stereo out (L/R LFOs offset); `dual` = stereo in, same LFO per channel.
+static inline float vintageTone(float x, float& lp, float k)
+{
+    lp += k * (x - lp);
+    return lp;
+}
+
 void ChorusProcessor::processBlockMono(float* buf, int nframes)
 {
-    const float rate  = mRate.load();
     const float depth = mDepth.load() / 100.0f;
     const float mix   = mMix.load()   / 100.0f;
-    const float phInc = rate / static_cast<float>(mSampleRate);
     const float fs    = static_cast<float>(mSampleRate);
+    const float phInc = mRate.load() / fs;
+    const int   mode  = mMode.load(std::memory_order_relaxed);
+    const float lpK   = 1.0f - std::exp(-2.0f * kPi * 3200.0f / fs);
     const int   sz    = static_cast<int>(mBufL.size());
 
     for (int i = 0; i < nframes; ++i)
     {
-        float lfo     = std::sin(2.0f * kPi * mPhase);
-        float delayMs = kBaseMs + depth * kMaxDepthMs * lfo;
-        float delaySamples = std::max(1.0f, delayMs * fs / 1000.0f);
-
         mBufL[mWriteL] = buf[i];
-        float wet = readInterp(mBufL, mWriteL, delaySamples);
-        buf[i] = buf[i] * (1.0f - mix) + wet * mix;
+        float w = wet(mBufL, mWriteL, mPhase, depth, fs, mode);
+        if (mode == Vintage) w = vintageTone(w, mVintLp[0], lpK);
+        buf[i] = buf[i] * (1.0f - mix) + w * mix;
         if (++mWriteL == sz) mWriteL = 0;
-
         mPhase += phInc;
         if (mPhase >= 1.0f) mPhase -= 1.0f;
     }
@@ -59,30 +87,31 @@ void ChorusProcessor::processBlockMono(float* buf, int nframes)
 
 void ChorusProcessor::processBlockDual(float* L, float* R, int nframes)
 {
-    const float rate  = mRate.load();
     const float depth = mDepth.load() / 100.0f;
     const float mix   = mMix.load()   / 100.0f;
-    const float phInc = rate / static_cast<float>(mSampleRate);
     const float fs    = static_cast<float>(mSampleRate);
+    const float phInc = mRate.load() / fs;
+    const int   mode  = mMode.load(std::memory_order_relaxed);
+    const float lpK   = 1.0f - std::exp(-2.0f * kPi * 3200.0f / fs);
     const int   szL   = static_cast<int>(mBufL.size());
     const int   szR   = static_cast<int>(mBufR.size());
 
     for (int i = 0; i < nframes; ++i)
     {
         // Same LFO for both channels: identical mono effect applied per channel.
-        float lfo = std::sin(2.0f * kPi * mPhase);
-        float del = std::max(1.0f, (kBaseMs + depth * kMaxDepthMs * lfo) * fs / 1000.0f);
-
         mBufL[mWriteL] = L[i];
-        float wetL = readInterp(mBufL, mWriteL, del);
-        L[i] = L[i] * (1.0f - mix) + wetL * mix;
-        if (++mWriteL == szL) mWriteL = 0;
-
         mBufR[mWriteR] = R[i];
-        float wetR = readInterp(mBufR, mWriteR, del);
-        R[i] = R[i] * (1.0f - mix) + wetR * mix;
+        float wL = wet(mBufL, mWriteL, mPhase, depth, fs, mode);
+        float wR = wet(mBufR, mWriteR, mPhase, depth, fs, mode);
+        if (mode == Vintage)
+        {
+            wL = vintageTone(wL, mVintLp[0], lpK);
+            wR = vintageTone(wR, mVintLp[1], lpK);
+        }
+        L[i] = L[i] * (1.0f - mix) + wL * mix;
+        R[i] = R[i] * (1.0f - mix) + wR * mix;
+        if (++mWriteL == szL) mWriteL = 0;
         if (++mWriteR == szR) mWriteR = 0;
-
         mPhase += phInc;
         if (mPhase >= 1.0f) mPhase -= 1.0f;
     }
@@ -90,32 +119,32 @@ void ChorusProcessor::processBlockDual(float* L, float* R, int nframes)
 
 void ChorusProcessor::processBlockStereoOut(float* L, float* R, int nframes)
 {
-    const float rate  = mRate.load();
     const float depth = mDepth.load() / 100.0f;
     const float mix   = mMix.load()   / 100.0f;
-    const float phInc = rate / static_cast<float>(mSampleRate);
     const float fs    = static_cast<float>(mSampleRate);
+    const float phInc = mRate.load() / fs;
+    const int   mode  = mMode.load(std::memory_order_relaxed);
+    const float lpK   = 1.0f - std::exp(-2.0f * kPi * 3200.0f / fs);
+    const float off   = mode == Spatial ? 0.25f : 0.5f;   // LFO offset
+    const float rSign = mode == Spatial ? -1.0f : 1.0f;   // Spatial: inverted right wet
     const int   szL   = static_cast<int>(mBufL.size());
     const int   szR   = static_cast<int>(mBufR.size());
 
     for (int i = 0; i < nframes; ++i)
     {
-        float lfoL = std::sin(2.0f * kPi * mPhase);
-        float lfoR = std::sin(2.0f * kPi * (mPhase + 0.5f)); // 180° apart
-
-        float delL = std::max(1.0f, (kBaseMs + depth * kMaxDepthMs * lfoL) * fs / 1000.0f);
-        float delR = std::max(1.0f, (kBaseMs + depth * kMaxDepthMs * lfoR) * fs / 1000.0f);
-
         mBufL[mWriteL] = L[i];
-        float wetL = readInterp(mBufL, mWriteL, delL);
-        L[i] = L[i] * (1.0f - mix) + wetL * mix;
-        if (++mWriteL == szL) mWriteL = 0;
-
         mBufR[mWriteR] = R[i];
-        float wetR = readInterp(mBufR, mWriteR, delR);
-        R[i] = R[i] * (1.0f - mix) + wetR * mix;
+        float wL = wet(mBufL, mWriteL, mPhase, depth, fs, mode);
+        float wR = wet(mBufR, mWriteR, mPhase + off, depth, fs, mode);
+        if (mode == Vintage)
+        {
+            wL = vintageTone(wL, mVintLp[0], lpK);
+            wR = vintageTone(wR, mVintLp[1], lpK);
+        }
+        L[i] = L[i] * (1.0f - mix) + wL * mix;
+        R[i] = R[i] * (1.0f - mix) + rSign * wR * mix;
+        if (++mWriteL == szL) mWriteL = 0;
         if (++mWriteR == szR) mWriteR = 0;
-
         mPhase += phInc;
         if (mPhase >= 1.0f) mPhase -= 1.0f;
     }

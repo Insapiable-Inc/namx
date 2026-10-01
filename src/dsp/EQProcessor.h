@@ -7,26 +7,32 @@
 
 #include "EffectBase.h"
 
-/// 3-band parametric EQ (low shelf 250 Hz, mid peak 1 kHz, high shelf 4 kHz).
-/// Uses a try_lock in the audio thread so GUI coefficient updates never stall the callback.
-/// Maintains independent L/R biquad state for stereo processing.
+/// 4-band semi-parametric EQ + low/high cut (Audio EQ Cookbook biquads):
+///   Bass     low shelf    40–500 Hz   (default 250 — the old fixed band)
+///   Middle   peak, Q 0.7  200–2.5 kHz (default 1 kHz)
+///   High-Mid peak, Q 1.0  800–8 kHz   (default 3 kHz)
+///   Treble   high shelf   1.5–12 kHz  (default 4 kHz)
+///   Low Cut  2nd-order high-pass 20–500 Hz (20 = off)
+///   High Cut 2nd-order low-pass 2–20 kHz (20 kHz = off)
+/// GUI setters rebuild coefficients under a mutex; the audio thread
+/// try_locks and skips a block rather than wait. Independent L/R state.
 class EQProcessor : public EffectBase
 {
 public:
+    enum Band { LowCut = 0, Bass, Middle, HighMid, Treble, HighCut, kBands };
+
     EQProcessor();
 
-    /// Override: try_lock the internal mutex before processing; skip block if unavailable.
     bool process(float* L, float* R, int n, bool inputIsStereo) override;
-
     void reset() override;
 
-    void setLowGain(double dB);
-    void setMidGain(double dB);
-    void setTrebleGain(double dB);
+    void setGain(Band b, double dB);
+    void setFreq(Band b, double hz);
 
-    double lowGainDB()    const { return mLowGainDB;    }
-    double midGainDB()    const { return mMidGainDB;    }
-    double trebleGainDB() const { return mTrebleGainDB; }
+    // Back-compat names (3-band era).
+    void setLowGain(double dB)    { setGain(Bass, dB); }
+    void setMidGain(double dB)    { setGain(Middle, dB); }
+    void setTrebleGain(double dB) { setGain(Treble, dB); }
 
 protected:
     void onSampleRateChanged(double sr) override;
@@ -45,33 +51,18 @@ private:
             y2 = y1; y1 = y0;
             return static_cast<float>(y0);
         }
-
         void reset() { x1 = x2 = y1 = y2 = 0.0; }
-
-        void setCoeffs(const Biquad& src)
-        {
-            b0 = src.b0; b1 = src.b1; b2 = src.b2;
-            a1 = src.a1; a2 = src.a2;
-            // state left intact
-        }
+        void setCoeffs(const Biquad& s) { b0 = s.b0; b1 = s.b1; b2 = s.b2; a1 = s.a1; a2 = s.a2; }
     };
 
-    static Biquad makeLowShelf(double sampleRate, double freq, double gainDB);
-    static Biquad makePeaking(double sampleRate, double freq, double gainDB, double Q);
-    static Biquad makeHighShelf(double sampleRate, double freq, double gainDB);
+    Biquad design(Band b) const;
+    void   rebuild(Band b);   // caller holds mMutex
+    bool   active(Band b) const;
 
-    double mLowGainDB    = 0.0;
-    double mMidGainDB    = 0.0;
-    double mTrebleGainDB = 0.0;
-
-    // Independent L/R biquad state (same coefficients, separate delay lines)
-    Biquad mLowShelfL, mMidPeakL, mHighShelfL;
-    Biquad mLowShelfR, mMidPeakR, mHighShelfR;
+    std::array<double, kBands> mGain{};   // dB (shelf/peak bands)
+    std::array<double, kBands> mFreq{20.0, 250.0, 1000.0, 3000.0, 4000.0, 20000.0};
+    std::array<Biquad, kBands> mL, mR;
+    std::array<bool, kBands>   mOn{};     // band changes the signal (skip flat ones)
 
     std::mutex mMutex; // GUI writes coefficients; audio thread uses try_lock
-
-    void rebuildFilters();
-
-    float processSampleL(float in) { return mHighShelfL.process(mMidPeakL.process(mLowShelfL.process(in))); }
-    float processSampleR(float in) { return mHighShelfR.process(mMidPeakR.process(mLowShelfR.process(in))); }
 };

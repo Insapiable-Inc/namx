@@ -18,6 +18,9 @@ public:
     void setDamping(float pct)  { mDamping.store(pct);  }
     void setWidth(float pct)    { mWidth.store(pct);    }
     void setMix(float pct)      { mMix.store(pct);      }
+    void setPreDelay(float ms)  { mPreDelayMs.store(ms); }  // 0–250 ms before the tail
+    void setLowCut(float hz)    { mLowCutHz.store(hz);   }  // on the wet signal
+    void setHighCut(float hz)   { mHighCutHz.store(hz);  }
 
     float roomSize() const { return mRoomSize.load(); }
     float damping()  const { return mDamping.load();  }
@@ -35,6 +38,18 @@ private:
     std::atomic<float> mDamping {50.0f};
     std::atomic<float> mWidth   {100.0f};
     std::atomic<float> mMix     {30.0f};
+    std::atomic<float> mPreDelayMs{0.0f};
+    std::atomic<float> mLowCutHz  {20.0f};
+    std::atomic<float> mHighCutHz {20000.0f};
+
+    static constexpr float kMaxPreDelayMs = 250.0f;
+    // Pre-delay line per input bank ([0] mono/L/sum, [1] R) + wet filters per output.
+    std::vector<float> mPre[2];
+    int   mPreWrite[2]{};
+    float mHpX[2]{}, mHpY[2]{}, mLp[2]{};
+
+    float preDelay(int bank, float x, int delaySamples);
+    float wetFilter(int ch, float x, float hpA, float lpK);
 
     struct CombFilter
     {
@@ -51,7 +66,7 @@ private:
             float out = buf[writePos];
             filterStore = out * (1.0f - damp) + filterStore * damp;
             buf[writePos] = in + filterStore * feedback;
-            writePos = (writePos + 1) % sz;
+            if (++writePos == sz) writePos = 0;
             return out;
         }
     };
@@ -71,7 +86,7 @@ private:
             float bufOut = buf[writePos];
             float output = -in + bufOut;
             buf[writePos] = in + bufOut * kFeedback;
-            writePos = (writePos + 1) % sz;
+            if (++writePos == sz) writePos = 0;
             return output;
         }
     };
@@ -87,7 +102,7 @@ private:
     static constexpr int kStereoOffset             = 23;
 
     void allocate();
-    void processMonoBank(float* buf, int nframes,
+    void processMonoBank(float* buf, int nframes, int bank,
                          std::array<CombFilter, kNumCombs>& combs,
                          std::array<AllPassFilter, kNumAllPasses>& aps);
 };

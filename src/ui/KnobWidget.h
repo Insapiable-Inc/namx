@@ -55,6 +55,12 @@ public:
     /// number + unit text. Pass {} to restore the default.
     void setValueFormatter(std::function<QString(double)> f) { mFormatter = std::move(f); updateLabel(); }
 
+    /// Logarithmic dial (frequencies, times, rates): equal travel = equal
+    /// ratio, so 100 Hz–1 kHz gets as much of the sweep as 1–10 kHz. Values
+    /// stored in presets don't change — only how the dial maps to them.
+    /// Requires min > 0. The wheel then steps 1 % of the travel.
+    void setLogTaper(bool on);
+
     /// Set the scroll-wheel increment in value units (e.g. 0.1 for 0.1 dB).
     /// Pass 0 to use the default (1% of range).
     void setScrollStep(double step) { mScrollStep = step; }
@@ -83,10 +89,11 @@ private:
     bool    mIntDisplay{false};
     double  mScrollStep{0.0};
     double  mSnap{0.0};
+    bool    mLogTaper{false};
     double  mLastEmitted{0.0}; // snapped knobs emit only on a step change
     std::function<QString(double)> mFormatter;
 
-    static constexpr int kSteps = 10000;
+    static constexpr int kSteps = 100000; // fine enough that log-taper round trips stay exact at 0.1
 
     double dialToValue(int d) const;
     int    valueToDial(double v) const;

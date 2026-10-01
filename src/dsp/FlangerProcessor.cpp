@@ -1,4 +1,5 @@
 #include "FlangerProcessor.h"
+#include <algorithm>
 #include <cmath>
 
 static constexpr float kPi = 3.14159265358979323846f;
@@ -38,7 +39,11 @@ void FlangerProcessor::processSample(float in, float phase,
     float depth, float fbAmt, float mix, float& out) const
 {
     float lfo      = std::sin(2.0f * kPi * phase);
-    float delaySam = std::max(1.0f, (kBaseMs + depth * kDepthMs * lfo) * static_cast<float>(mSampleRate) / 1000.0f);
+    // Range scales the sweep centre and width together (max = kBaseMs/kDepthMs).
+    const float r    = std::clamp(mRange.load(std::memory_order_relaxed), 0.0f, 100.0f) / 100.0f;
+    const float base = 1.5f + (kBaseMs - 1.5f) * r;
+    const float span = 1.5f + (kDepthMs - 1.5f) * r;
+    float delaySam = std::max(1.0f, (base + depth * span * lfo) * static_cast<float>(mSampleRate) / 1000.0f);
 
     int sz        = static_cast<int>(buf.size());
     buf[writePos] = in + fbAmt * fb;

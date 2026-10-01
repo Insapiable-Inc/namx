@@ -4,7 +4,10 @@
 #include <vector>
 #include "EffectBase.h"
 
-/// Chorus: LFO-modulated delay. Stereo mode uses 180° phase offset for width.
+/// Chorus: LFO-modulated delay. Modes: Normal (one voice), Tri (three voices
+/// 120° apart — lusher), Vintage (triangle LFO, darker BBD-style wet),
+/// Spatial (stereo: 90° LFOs, right wet phase-inverted for extra width).
+/// Stereo mode uses a 180° offset (90° in Spatial).
 class ChorusProcessor : public EffectBase
 {
 public:
@@ -14,6 +17,8 @@ public:
     void setRate(float hz)   { mRate.store(hz);   }
     void setDepth(float pct) { mDepth.store(pct); }
     void setMix(float pct)   { mMix.store(pct);   }
+    enum Mode { Normal = 0, Tri, Vintage, Spatial };
+    void setMode(int m)      { mMode.store(m);    }
 
     float rate()  const { return mRate.load();  }
     float depth() const { return mDepth.load(); }
@@ -31,6 +36,11 @@ private:
     std::atomic<float> mMix  {50.0f};
 
     float mPhase{0.0f};
+    std::atomic<int> mMode{Normal};
+    float mVintLp[2]{}; // Vintage wet low-pass per channel
+
+    // Wet sample for one channel at an LFO phase (all modes).
+    float wet(const std::vector<float>& buf, int write, float phase, float depth, float fs, int mode);
 
     std::vector<float> mBufL, mBufR;
     int mWriteL{0}, mWriteR{0};

@@ -15,6 +15,8 @@ public:
     void setDepth(float pct)    { mDepth.store(pct);     }
     void setFeedback(float pct) { mFeedback.store(pct);  }
     void setMix(float pct)      { mMix.store(pct);       }
+    /// 0 = short, metallic sweep (≈0–3 ms) … 100 = long jet sweep (0–14 ms).
+    void setRange(float pct)    { mRange.store(pct);     }
 
     float rate()     const { return mRate.load();     }
     float depth()    const { return mDepth.load();    }
@@ -32,6 +34,7 @@ private:
     std::atomic<float> mDepth   {50.0f};
     std::atomic<float> mFeedback{ 0.0f};
     std::atomic<float> mMix     {50.0f};
+    std::atomic<float> mRange   {100.0f};
 
     float mPhase{0.0f};
 

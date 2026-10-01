@@ -148,6 +148,11 @@ private:
     void pushSynced(KnobWidget* freeKnob);
     void setTempo(double bpm);
 
+    // Second row of advanced controls under a card's main row, behind a
+    // ▾ toggle at the row's right end. Starts at the knob column; expanded
+    // state persists per card (QSettings ui/expandedCards).
+    void addDetailRow(QWidget* card, const QList<QWidget*>& widgets);
+
     // --- Effect strip / chain reordering ---
     // Lays the cards out in the given order: dividers follow NAM/EQ.
     void layoutStrip(const std::vector<EffectBase*>& order);
@@ -208,6 +213,11 @@ private:
     void scheduleSessionSave();
 
     ParamRegistry mParams;
+    // Parameters created in setupUI that don't need a named member (the
+    // Phase 17 advanced knobs): registered at the end of registerParameters.
+    std::vector<std::function<void()>> mLateParams;
+    KnobWidget* lateKnob(const QString& group, const QString& key, KnobWidget* k,
+                         std::function<void(double)> apply);
 
     std::unique_ptr<AudioEngine> mEngine;
 

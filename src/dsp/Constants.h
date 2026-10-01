@@ -180,4 +180,29 @@ constexpr double kVolumeMidMin     = -40.0;
 constexpr double kVolumeMidMax     =   0.0;
 constexpr double kVolumeMidDefault = -12.0;
 
+// ---- Phase 17: EQ frequencies + cuts ------------------------------------
+constexpr double kEQBassFreqMin = 40.0,    kEQBassFreqMax = 500.0,    kEQBassFreqDefault = 250.0;
+constexpr double kEQMidFreqMin  = 200.0,   kEQMidFreqMax  = 2500.0,   kEQMidFreqDefault  = 1000.0;
+constexpr double kEQHiMidFreqMin = 800.0,  kEQHiMidFreqMax = 8000.0,  kEQHiMidFreqDefault = 3000.0;
+constexpr double kEQTrebleFreqMin = 1500.0, kEQTrebleFreqMax = 12000.0, kEQTrebleFreqDefault = 4000.0;
+constexpr double kLowCutMin  = 20.0,   kLowCutMax  = 500.0,   kLowCutDefault  = 20.0;    // 20 = off
+constexpr double kHighCutMin = 2000.0, kHighCutMax = 20000.0, kHighCutDefault = 20000.0; // 20k = off
+
+// ---- Phase 17: Delay ----------------------------------------------------
+constexpr double kDelayRightMin = 25.0, kDelayRightMax = 200.0, kDelayRightDefault = 100.0; // % of Time
+constexpr double kDelayCrossMin = 0.0,  kDelayCrossMax = 100.0, kDelayCrossDefault = 100.0; // 100 = ping-pong
+constexpr double kDelayLowCutMax  = 1000.0;
+constexpr double kDelayHighCutMin = 1000.0;
+constexpr double kDelaySatMin = 0.0, kDelaySatMax = 100.0, kDelaySatDefault = 0.0;
+constexpr double kDelayModMin = 0.0, kDelayModMax = 100.0, kDelayModDefault = 0.0;
+
+// ---- Phase 17: Reverb ---------------------------------------------------
+constexpr double kReverbPreDelayMin = 0.0, kReverbPreDelayMax = 250.0, kReverbPreDelayDefault = 0.0;
+constexpr double kReverbLowCutMax   = 1000.0;
+constexpr double kReverbHighCutMin  = 1000.0;
+
+// ---- Phase 17: modulation modes / ranges ---------------------------------
+constexpr double kFlangerRangeMin = 0.0, kFlangerRangeMax = 100.0, kFlangerRangeDefault = 100.0;
+constexpr double kWahPositionMin = 0.0, kWahPositionMax = 100.0, kWahPositionDefault = 50.0;
+
 } // namespace NAMConstants

@@ -1,91 +1,133 @@
 #include "DelayProcessor.h"
+
 #include <algorithm>
 #include <cmath>
 
+static constexpr float kTwoPi = 6.28318530718f;
+
 void DelayProcessor::onSampleRateChanged(double sr)
 {
-    int maxSamples = static_cast<int>(kMaxDelayMs * sr / 1000.0) + 4;
-    mBufL.assign(maxSamples, 0.0f);
-    mBufR.assign(maxSamples, 0.0f);
+    const size_t n = static_cast<size_t>(kMaxDelayMs * sr / 1000.0) + 4;
+    for (auto& l : mLine) l.buf.assign(n, 0.0f);
     reset();
 }
 
 void DelayProcessor::reset()
 {
-    std::fill(mBufL.begin(), mBufL.end(), 0.0f);
-    std::fill(mBufR.begin(), mBufR.end(), 0.0f);
-    mWriteL = mWriteR = 0;
+    for (auto& l : mLine)
+    {
+        std::fill(l.buf.begin(), l.buf.end(), 0.0f);
+        l.write = 0;
+        l.hpX = l.hpY = l.lp = 0.0f;
+    }
+    mModPhase = 0.0f;
+}
+
+float DelayProcessor::Line::read(float d) const
+{
+    const int sz = static_cast<int>(buf.size());
+    float r = static_cast<float>(write) - d;
+    if (r < 0.0f) r += sz;
+    int r0 = static_cast<int>(r);
+    if (r0 >= sz) r0 -= sz;
+    const int   r1   = r0 + 1 == sz ? 0 : r0 + 1;
+    const float frac = r - std::floor(r);
+    return buf[r0] + (buf[r1] - buf[r0]) * frac;
+}
+
+DelayProcessor::Params DelayProcessor::params() const
+{
+    const float fs = static_cast<float>(mSampleRate);
+    Params p;
+    p.fb       = std::min(mFeedback.load() / 100.0f, 0.99f);
+    p.mix      = mMix.load() / 100.0f;
+    p.cross    = std::clamp(mCrossPct.load(), 0.0f, 100.0f) / 100.0f;
+    p.hpA      = std::exp(-kTwoPi * std::clamp(mLowCutHz.load(), 20.0f, 2000.0f) / fs);
+    p.lpK      = 1.0f - std::exp(-kTwoPi * std::clamp(mHighCutHz.load(), 500.0f, 0.45f * fs) / fs);
+    p.satDrive = std::clamp(mSatPct.load(), 0.0f, 100.0f) / 100.0f;
+    p.modDepth = 0.003f * fs * std::clamp(mModPct.load(), 0.0f, 100.0f) / 100.0f; // up to ±3 ms
+    p.phInc    = 0.55f / fs;                                                       // 0.55 Hz wobble
+    const float maxD = static_cast<float>(mLine[0].buf.size()) - 2.0f - p.modDepth;
+    p.delL = std::clamp(mTimeMS.load() * fs / 1000.0f, 1.0f + p.modDepth, maxD);
+    p.delR = std::clamp(p.delL * std::clamp(mRightPct.load(), 25.0f, 200.0f) / 100.0f, 1.0f + p.modDepth, maxD);
+    return p;
+}
+
+float DelayProcessor::tone(Line& l, float x, const Params& p) const
+{
+    const float hp = p.hpA * (l.hpY + x - l.hpX);
+    l.hpX = x;
+    l.hpY = hp;
+    l.lp += p.lpK * (hp - l.lp);
+    return l.lp;
+}
+
+float DelayProcessor::saturate(float x, float amount)
+{
+    if (amount <= 0.0f) return x;
+    // Blend toward a soft clip (Padé tanh): unity small-signal gain, loud
+    // repeats round off and compress — tape-like, never harsher.
+    const float v = std::clamp(x, -3.0f, 3.0f);
+    const float t = v * (27.0f + v * v) / (27.0f + 9.0f * v * v);
+    return x + amount * (t - x);
 }
 
 void DelayProcessor::processBlockMono(float* buf, int nframes)
 {
-    const float fb    = std::min(mFeedback.load() / 100.0f, 0.99f);
-    const float mix   = mMix.load() / 100.0f;
-    const int   sz    = static_cast<int>(mBufL.size());
-    const int   delay = std::min(static_cast<int>(mTimeMS.load() * mSampleRate / 1000.0), sz - 1);
-
+    if (mLine[0].buf.empty()) return;
+    const Params p = params();
+    Line& l = mLine[0];
     for (int i = 0; i < nframes; ++i)
     {
-        int   readPos = mWriteL - delay;
-        if (readPos < 0) readPos += sz;
-        float delayed = mBufL[readPos];
-        mBufL[mWriteL] = buf[i] + fb * delayed;
-        buf[i] = buf[i] * (1.0f - mix) + delayed * mix;
-        if (++mWriteL == sz) mWriteL = 0;
+        const float mod = p.modDepth * std::sin(kTwoPi * mModPhase);
+        mModPhase += p.phInc;
+        if (mModPhase >= 1.0f) mModPhase -= 1.0f;
+
+        const float d = tone(l, l.read(p.delL + mod), p);
+        l.push(saturate(buf[i] + p.fb * d, p.satDrive));
+        buf[i] = buf[i] * (1.0f - p.mix) + d * p.mix;
     }
 }
 
 void DelayProcessor::processBlockDual(float* L, float* R, int nframes)
 {
-    // Stereo input: independent mono delay per channel (no cross-feedback).
-    const float fb    = std::min(mFeedback.load() / 100.0f, 0.99f);
-    const float mix   = mMix.load() / 100.0f;
-    const int   sz    = static_cast<int>(mBufL.size());
-    const int   delay = std::min(static_cast<int>(mTimeMS.load() * mSampleRate / 1000.0), sz - 1);
-
+    // Stereo input: independent line per channel (no cross-feedback).
+    if (mLine[0].buf.empty()) return;
+    const Params p = params();
     for (int i = 0; i < nframes; ++i)
     {
-        int   readPosL = mWriteL - delay;
-        if (readPosL < 0) readPosL += sz;
-        float delayedL = mBufL[readPosL];
-        mBufL[mWriteL] = L[i] + fb * delayedL;
-        L[i] = L[i] * (1.0f - mix) + delayedL * mix;
-        if (++mWriteL == sz) mWriteL = 0;
+        const float mod = p.modDepth * std::sin(kTwoPi * mModPhase);
+        mModPhase += p.phInc;
+        if (mModPhase >= 1.0f) mModPhase -= 1.0f;
 
-        int   readPosR = mWriteR - delay;
-        if (readPosR < 0) readPosR += sz;
-        float delayedR = mBufR[readPosR];
-        mBufR[mWriteR] = R[i] + fb * delayedR;
-        R[i] = R[i] * (1.0f - mix) + delayedR * mix;
-        if (++mWriteR == sz) mWriteR = 0;
+        const float dL = tone(mLine[0], mLine[0].read(p.delL + mod), p);
+        const float dR = tone(mLine[1], mLine[1].read(p.delR - mod), p);
+        mLine[0].push(saturate(L[i] + p.fb * dL, p.satDrive));
+        mLine[1].push(saturate(R[i] + p.fb * dR, p.satDrive));
+        L[i] = L[i] * (1.0f - p.mix) + dL * p.mix;
+        R[i] = R[i] * (1.0f - p.mix) + dR * p.mix;
     }
 }
 
 void DelayProcessor::processBlockStereoOut(float* L, float* R, int nframes)
 {
-    // Ping-pong: input enters L buffer, echoes alternate L→R→L→…
-    const float fb    = std::min(mFeedback.load() / 100.0f, 0.99f);
-    const float mix   = mMix.load() / 100.0f;
-    const int   sz    = static_cast<int>(mBufL.size());
-    const int   delay = std::min(static_cast<int>(mTimeMS.load() * mSampleRate / 1000.0), sz - 1);
-
+    // Cross-feed c: 1 = ping-pong (input → left only, repeats alternate),
+    // 0 = two independent lines (input into both, L/R times).
+    if (mLine[0].buf.empty()) return;
+    const Params p = params();
+    const float  c = p.cross;
     for (int i = 0; i < nframes; ++i)
     {
-        int readPosL = mWriteL - delay;
-        if (readPosL < 0) readPosL += sz;
-        int readPosR = mWriteR - delay;
-        if (readPosR < 0) readPosR += sz;
+        const float mod = p.modDepth * std::sin(kTwoPi * mModPhase);
+        mModPhase += p.phInc;
+        if (mModPhase >= 1.0f) mModPhase -= 1.0f;
 
-        float delayedL = mBufL[readPosL];
-        float delayedR = mBufR[readPosR];
-
-        mBufL[mWriteL] = L[i] + fb * delayedR;
-        mBufR[mWriteR] = fb * delayedL;
-
-        L[i] = L[i] * (1.0f - mix) + delayedL * mix;
-        R[i] = R[i] * (1.0f - mix) + delayedR * mix;
-
-        if (++mWriteL == sz) mWriteL = 0;
-        if (++mWriteR == sz) mWriteR = 0;
+        const float x  = L[i];
+        const float dL = tone(mLine[0], mLine[0].read(p.delL + mod), p);
+        const float dR = tone(mLine[1], mLine[1].read(p.delR - mod), p);
+        mLine[0].push(saturate(x + p.fb * ((1.0f - c) * dL + c * dR), p.satDrive));
+        mLine[1].push(saturate((1.0f - c) * x + p.fb * ((1.0f - c) * dR + c * dL), p.satDrive));
+        L[i] = x * (1.0f - p.mix) + dL * p.mix;
+        R[i] = R[i] * (1.0f - p.mix) + dR * p.mix;
     }
 }

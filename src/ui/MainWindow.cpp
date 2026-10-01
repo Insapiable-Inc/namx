@@ -76,6 +76,7 @@ static constexpr int kStereoSlotWidth = 96;  // toggle + "Stereo" caption
 // Every row is exactly as tall as a knob row (40 px dial + knob margins +
 // card margins + border), so knob-less rows and the tuner match the rest.
 static constexpr int kRowCardHeight   = 62;
+static constexpr int kDetailRowHeight = 54;  // the ▾ row of advanced knobs
 // Loaded file name on the Amplifier/Cabinet rows elides beyond this.
 static constexpr int kHeroNameMaxWidth = 420;
 
@@ -126,13 +127,31 @@ static QWidget* makeStereoSlot(ToggleSwitch** outToggle)
     return w;
 }
 
+// A card's main row (grip, name, enable slot, stereo slot, controls…).
+static QHBoxLayout* rowLayout(QWidget* card)
+{
+    return static_cast<QHBoxLayout*>(
+        card->findChild<QWidget*>("cardRow", Qt::FindDirectChildrenOnly)->layout());
+}
+
 // Rows without a stereo mode (Gate, Compressor) show their gain-reduction
 // meter in the reserved stereo slot, so the knob column stays aligned.
 static void placeInStereoSlot(QWidget* card, QWidget* w)
 {
-    // Card layout: grip, name, enable slot, stereo slot, …
-    QWidget* slot = card->layout()->itemAt(3)->widget();
+    // Main row: grip, name, enable slot, stereo slot, …
+    QWidget* slot = rowLayout(card)->itemAt(3)->widget();
     slot->layout()->addWidget(w);
+}
+
+// Frequency readout for EQ/cut knobs: "250 Hz", "3.2 kHz", or "Off" at the
+// knob's open end (offAt > 0: at or below it; offAt < 0: at or above −offAt).
+static std::function<QString(double)> hzLabel(double offAt = 0.0)
+{
+    return [offAt](double hz) {
+        if ((offAt > 0.0 && hz <= offAt) || (offAt < 0.0 && hz >= -offAt)) return QString("Off");
+        return hz < 1000.0 ? QString("%1 Hz").arg(qRound(hz))
+                           : QString("%1 kHz").arg(hz / 1000.0, 0, 'f', hz < 10000.0 ? 1 : 0);
+    };
 }
 
 // ---------------------------------------------------------------------------
@@ -174,6 +193,11 @@ MainWindow::MainWindow(QWidget* parent)
     mPresetStateTimer->setSingleShot(true);
     mPresetStateTimer->setInterval(0);
     connect(mPresetStateTimer, &QTimer::timeout, this, &MainWindow::updatePresetState);
+
+    // Knob tapers (Phase 9): times, rates and frequencies on log dials.
+    for (KnobWidget* k : {mKnobGateAttack, mKnobGateRelease, mKnobCompAttack, mKnobCompRelease,
+                          mKnobFlRate, mKnobPhRate, mKnobChRate, mKnobTrRate, mKnobDelTime})
+        k->setLogTaper(true);
 
     restoreSessionState();
     {
@@ -225,7 +249,16 @@ QFrame* MainWindow::makeRowCard(const QString& title)
     card->setProperty("fxCard", true);        // card chrome lives in the Theme QSS
     card->setProperty("displayName", title);  // context menu + drag bookkeeping
     card->setFixedHeight(kRowCardHeight);
-    auto* lay = new QHBoxLayout(card);
+    // Card = main row (+ an optional detail row, see addDetailRow).
+    auto* outer = new QVBoxLayout(card);
+    outer->setContentsMargins(0, 0, 0, 0);
+    outer->setSpacing(0);
+    auto* row = new QWidget;
+    row->setObjectName("cardRow");
+    row->setFixedHeight(kRowCardHeight - 2); // inside the 1 px border
+    outer->addWidget(row);
+    outer->addStretch();
+    auto* lay = new QHBoxLayout(row);
     lay->setContentsMargins(10, 6, 10, 6);
     lay->setSpacing(10);
 
@@ -248,13 +281,61 @@ QFrame* MainWindow::makeRowCard(const QString& title)
     return card;
 }
 
+KnobWidget* MainWindow::lateKnob(const QString& group, const QString& key, KnobWidget* k,
+                                 std::function<void(double)> apply)
+{
+    mLateParams.push_back([this, group, key, k, apply] { knobParam(group, key, k, apply); });
+    return k;
+}
+
+void MainWindow::addDetailRow(QWidget* card, const QList<QWidget*>& widgets)
+{
+    auto* detail = new QWidget;
+    detail->setObjectName("cardDetail");
+    detail->setFixedHeight(kDetailRowHeight);
+    auto* lay = new QHBoxLayout(detail);
+    // Indent to the knob column: margin + grip + name + enable + stereo slots.
+    const int indent = 10 + kGripColumnWidth + kNameColumnWidth + kEnableSlotWidth + kStereoSlotWidth + 4 * 10;
+    lay->setContentsMargins(indent, 0, 10, 8);
+    lay->setSpacing(10);
+    for (QWidget* w : widgets) lay->addWidget(w, 0, Qt::AlignVCenter);
+    lay->addStretch();
+    detail->hide();
+    static_cast<QVBoxLayout*>(card->layout())->insertWidget(1, detail);
+
+    const QString name = card->property("displayName").toString();
+    auto* more = new QToolButton;
+    more->setObjectName("cardMore");
+    more->setCheckable(true);
+    more->setFocusPolicy(Qt::NoFocus);
+    more->setAutoRaise(true);
+    rowLayout(card)->addWidget(more, 0, Qt::AlignVCenter); // after the stretch: right edge
+    auto apply = [card, detail, more](bool open) {
+        detail->setVisible(open);
+        card->setFixedHeight(kRowCardHeight + (open ? kDetailRowHeight : 0));
+        more->setText(open ? "▴" : "▾");
+        more->setToolTip(open ? "Fewer controls" : "More controls");
+    };
+    connect(more, &QToolButton::toggled, this, [apply, name](bool open) {
+        apply(open);
+        QSettings s;
+        QStringList open_ = s.value("ui/expandedCards").toStringList();
+        open_.removeAll(name);
+        if (open) open_ << name;
+        s.setValue("ui/expandedCards", open_);
+    });
+    const bool open = QSettings().value("ui/expandedCards").toStringList().contains(name);
+    more->setChecked(open);
+    apply(open);
+}
+
 QWidget* MainWindow::makeEffectRow(const QString& title,
                                    ToggleSwitch*& toggleOut,
                                    const std::initializer_list<KnobWidget*>& knobs,
                                    ToggleSwitch** stereoToggleOut)
 {
     QFrame* card = makeRowCard(title);
-    auto* lay = static_cast<QHBoxLayout*>(card->layout());
+    auto* lay = rowLayout(card);
 
     toggleOut = new ToggleSwitch;
     toggleOut->setCheckable(true);
@@ -374,7 +455,7 @@ void MainWindow::setupUI()
     // ---- Tuner ----
     {
         QFrame* col = makeRowCard("Tuner");
-        auto* lay = static_cast<QHBoxLayout*>(col->layout());
+        auto* lay = rowLayout(col);
 
         mSwTunerEnable = new ToggleSwitch;
         mSwTunerEnable->setCheckable(true);
@@ -479,8 +560,18 @@ void MainWindow::setupUI()
         mKnobWahRes->setScrollStep(1.0);
         mKnobWahMix->setScrollStep(1.0);
 
+        auto* mode = lateKnob("dynamicWah", "mode", new KnobWidget("Mode", 0, 1, 0), [this](double v) {
+            mEngine->wah().setPedalMode(v > 0.5);
+        });
+        mode->setSnap(1.0);
+        mode->setValueFormatter([](double v) { return v > 0.5 ? QString("Pedal") : QString("Auto"); });
+        mode->setToolTip("Auto: the envelope sweeps the wah · Pedal: Position sweeps it (map an expression pedal)");
+        auto* pos = lateKnob("dynamicWah", "position",
+                             new KnobWidget("Position", kWahPositionMin, kWahPositionMax, kWahPositionDefault, "%"),
+                             [this](double v) { mEngine->wah().setPosition(static_cast<float>(v)); });
+        pos->setScrollStep(1.0);
         auto* col = makeEffectRow("Dynamic Wah", mSwWahEnable,
-            {mKnobWahMix, mKnobWahSens, mKnobWahRes});
+            {mKnobWahMix, mKnobWahSens, mKnobWahRes, mode, pos});
         Theme::tagCard(col, "wah");
 
         mFxCols[&mEngine->wah()] = col;
@@ -522,7 +613,28 @@ void MainWindow::setupUI()
         mKnobMid->setScrollStep(0.1);
         mKnobTreble->setScrollStep(0.1);
 
-        auto* col = makeEffectRow("Equalizer", mSwEQEnable, {mKnobLow, mKnobMid, mKnobTreble});
+        auto eqSet = [this](EQProcessor::Band b, bool gain) {
+            return [this, b, gain](double v) { gain ? mEngine->eq().setGain(b, v) : mEngine->eq().setFreq(b, v); };
+        };
+        auto* hiMid = lateKnob("eq", "highMid", new KnobWidget("High-Mid", kEQBandMin, kEQBandMax, kEQBandDefault, "dB"),
+                               eqSet(EQProcessor::HighMid, true));
+        hiMid->setScrollStep(0.1);
+        auto freqKnob = [&](const QString& key, const QString& label, double lo, double hi, double def,
+                            EQProcessor::Band b, double offAt) {
+            auto* k = lateKnob("eq", key, new KnobWidget(label, lo, hi, def, "Hz"), eqSet(b, false));
+            k->setLogTaper(true);
+            k->setValueFormatter(hzLabel(offAt));
+            return static_cast<QWidget*>(k);
+        };
+        auto* col = makeEffectRow("Equalizer", mSwEQEnable, {mKnobLow, mKnobMid, hiMid, mKnobTreble});
+        addDetailRow(col, {
+            freqKnob("lowFreq",     "Bass Freq",     kEQBassFreqMin,   kEQBassFreqMax,   kEQBassFreqDefault,   EQProcessor::Bass, 0),
+            freqKnob("midFreq",     "Mid Freq",      kEQMidFreqMin,    kEQMidFreqMax,    kEQMidFreqDefault,    EQProcessor::Middle, 0),
+            freqKnob("highMidFreq", "High-Mid Freq", kEQHiMidFreqMin,  kEQHiMidFreqMax,  kEQHiMidFreqDefault,  EQProcessor::HighMid, 0),
+            freqKnob("trebleFreq",  "Treble Freq",   kEQTrebleFreqMin, kEQTrebleFreqMax, kEQTrebleFreqDefault, EQProcessor::Treble, 0),
+            freqKnob("lowCut",      "Low Cut",       kLowCutMin,       kLowCutMax,       kLowCutDefault,       EQProcessor::LowCut, kLowCutMin + 0.5),
+            freqKnob("highCut",     "High Cut",      kHighCutMin,      kHighCutMax,      kHighCutDefault,      EQProcessor::HighCut, -(kHighCutMax - 1.0)),
+        });
         mSwEQEnable->setChecked(true);
         Theme::tagCard(col, "eq");
         mFxCols[&mEngine->eq()] = col;
@@ -571,6 +683,12 @@ void MainWindow::setupUI()
             {mKnobFlMix, mKnobFlRate, mKnobFlDepth, mKnobFlFeedback}, &mSwFlangerStereo);
         addTempoSync(col, mKnobFlRate, "Rate", false, 1 /* 2 bars */, kFlangerRateMin, kFlangerRateMax,
                      [this](double v) { mEngine->flanger().setRate(static_cast<float>(v)); });
+        auto* range = lateKnob("flanger", "range",
+                               new KnobWidget("Range", kFlangerRangeMin, kFlangerRangeMax, kFlangerRangeDefault, "%"),
+                               [this](double v) { mEngine->flanger().setRange(static_cast<float>(v)); });
+        range->setScrollStep(1.0);
+        range->setToolTip("Sweep length: low = short, metallic · high = long jet sweep");
+        addDetailRow(col, {range});
         Theme::tagCard(col, "flanger");
 
         mFxCols[&mEngine->flanger()] = col;
@@ -592,6 +710,12 @@ void MainWindow::setupUI()
             {mKnobPhMix, mKnobPhRate, mKnobPhDepth, mKnobPhFeedback}, &mSwPhaserStereo);
         addTempoSync(col, mKnobPhRate, "Rate", false, 4 /* 1/2 */, kPhaserRateMin, kPhaserRateMax,
                      [this](double v) { mEngine->phaser().setRate(static_cast<float>(v)); });
+        auto* mode = lateKnob("phaser", "mode", new KnobWidget("Mode", 0, 1, 0),
+                              [this](double v) { mEngine->phaser().setVibe(v > 0.5); });
+        mode->setSnap(1.0);
+        mode->setValueFormatter([](double v) { return v > 0.5 ? QString("Vibe") : QString("Classic"); });
+        mode->setToolTip("Classic phaser, or Vibe: staggered stages, lamp-shaped sweep, no feedback");
+        addDetailRow(col, {mode});
         Theme::tagCard(col, "phaser");
 
         mFxCols[&mEngine->phaser()] = col;
@@ -611,6 +735,15 @@ void MainWindow::setupUI()
             {mKnobChMix, mKnobChRate, mKnobChDepth}, &mSwChorusStereo);
         addTempoSync(col, mKnobChRate, "Rate", false, 2 /* 1/1 */, kChorusRateMin, kChorusRateMax,
                      [this](double v) { mEngine->chorus().setRate(static_cast<float>(v)); });
+        auto* mode = lateKnob("chorus", "mode", new KnobWidget("Mode", 0, 3, 0),
+                              [this](double v) { mEngine->chorus().setMode(static_cast<int>(std::lround(v))); });
+        mode->setSnap(1.0);
+        mode->setValueFormatter([](double v) {
+            static const char* names[] = {"Normal", "Tri", "Vintage", "Spatial"};
+            return QString(names[std::clamp(static_cast<int>(std::lround(v)), 0, 3)]);
+        });
+        mode->setToolTip("Normal · Tri (three voices) · Vintage (darker, triangle LFO) · Spatial (wider stereo)");
+        addDetailRow(col, {mode});
         Theme::tagCard(col, "chorus");
 
         mFxCols[&mEngine->chorus()] = col;
@@ -647,6 +780,36 @@ void MainWindow::setupUI()
             {mKnobDelMix, mKnobDelTime, mKnobDelFeedback}, &mSwDelayStereo);
         addTempoSync(col, mKnobDelTime, "Time", true, 8 /* 1/8. */, kDelayTimeMin, kDelayTimeMax,
                      [this](double v) { mEngine->delay().setTime(static_cast<float>(v)); });
+        auto pct = [&](const QString& key, const QString& label, double lo, double hi, double def,
+                       std::function<void(double)> f, const QString& tip) {
+            auto* k = lateKnob("delay", key, new KnobWidget(label, lo, hi, def, "%"), std::move(f));
+            k->setScrollStep(1.0);
+            k->setToolTip(tip);
+            return static_cast<QWidget*>(k);
+        };
+        auto* lowCut = lateKnob("delay", "lowCut", new KnobWidget("Low Cut", kLowCutMin, kDelayLowCutMax, kLowCutDefault, "Hz"),
+                                [this](double v) { mEngine->delay().setLowCut(static_cast<float>(v)); });
+        lowCut->setLogTaper(true);
+        lowCut->setValueFormatter(hzLabel(kLowCutMin + 0.5));
+        auto* highCut = lateKnob("delay", "highCut", new KnobWidget("High Cut", kDelayHighCutMin, kHighCutMax, kHighCutDefault, "Hz"),
+                                 [this](double v) { mEngine->delay().setHighCut(static_cast<float>(v)); });
+        highCut->setLogTaper(true);
+        highCut->setValueFormatter(hzLabel(-(kHighCutMax - 1.0)));
+        addDetailRow(col, {
+            pct("rightRatio", "R Time", kDelayRightMin, kDelayRightMax, kDelayRightDefault,
+                [this](double v) { mEngine->delay().setRightRatio(static_cast<float>(v)); },
+                "Right repeat time as a share of Time (stereo): 75 % or 150 % for a wide, uneven bounce"),
+            pct("crossFeed", "Cross-feed", kDelayCrossMin, kDelayCrossMax, kDelayCrossDefault,
+                [this](double v) { mEngine->delay().setCrossFeed(static_cast<float>(v)); },
+                "100 % = ping-pong between the sides · 0 % = two separate echoes"),
+            lowCut, highCut,
+            pct("saturation", "Saturation", kDelaySatMin, kDelaySatMax, kDelaySatDefault,
+                [this](double v) { mEngine->delay().setSaturation(static_cast<float>(v)); },
+                "Tape-style rounding of the repeats as they build up"),
+            pct("modulation", "Modulation", kDelayModMin, kDelayModMax, kDelayModDefault,
+                [this](double v) { mEngine->delay().setModulation(static_cast<float>(v)); },
+                "Wobble on the repeats (tape flutter / chorused echoes)"),
+        });
         mSwDelayStereo->setChecked(true);
         Theme::tagCard(col, "delay");
 
@@ -656,7 +819,7 @@ void MainWindow::setupUI()
     // ---- Reverb ----
     {
         using namespace NAMConstants;
-        mKnobRevRoom    = new KnobWidget("Room Size", kReverbRoomMin,    kReverbRoomMax,    kReverbRoomDefault,    "%");
+        mKnobRevRoom    = new KnobWidget("Decay", kReverbRoomMin,    kReverbRoomMax,    kReverbRoomDefault,    "%");
         mKnobRevDamping = new KnobWidget("Damping", kReverbDampingMin, kReverbDampingMax, kReverbDampingDefault, "%");
         mKnobRevWidth   = new KnobWidget("Width",   kReverbWidthMin,   kReverbWidthMax,   kReverbWidthDefault,   "%");
         mKnobRevMix     = new KnobWidget("Mix",     kReverbMixMin,     kReverbMixMax,     kReverbMixDefault,     "%");
@@ -667,6 +830,20 @@ void MainWindow::setupUI()
 
         auto* col = makeEffectRow("Reverb", mSwReverbEnable,
             {mKnobRevMix, mKnobRevRoom, mKnobRevDamping, mKnobRevWidth});
+        auto* pre = lateKnob("reverb", "preDelay",
+                             new KnobWidget("Pre-delay", kReverbPreDelayMin, kReverbPreDelayMax, kReverbPreDelayDefault, "ms"),
+                             [this](double v) { mEngine->reverb().setPreDelay(static_cast<float>(v)); });
+        pre->setScrollStep(5.0);
+        pre->setToolTip("Gap before the tail starts: keeps the note clear of the room");
+        auto* lowCut = lateKnob("reverb", "lowCut", new KnobWidget("Low Cut", kLowCutMin, kReverbLowCutMax, kLowCutDefault, "Hz"),
+                                [this](double v) { mEngine->reverb().setLowCut(static_cast<float>(v)); });
+        lowCut->setLogTaper(true);
+        lowCut->setValueFormatter(hzLabel(kLowCutMin + 0.5));
+        auto* highCut = lateKnob("reverb", "highCut", new KnobWidget("High Cut", kReverbHighCutMin, kHighCutMax, kHighCutDefault, "Hz"),
+                                 [this](double v) { mEngine->reverb().setHighCut(static_cast<float>(v)); });
+        highCut->setLogTaper(true);
+        highCut->setValueFormatter(hzLabel(-(kHighCutMax - 1.0)));
+        addDetailRow(col, {pre, lowCut, highCut});
         Theme::tagCard(col, "reverb");
 
         mFxCols[&mEngine->reverb()] = col;
@@ -835,7 +1012,7 @@ void MainWindow::setupUI()
 void MainWindow::makeHeroControls(QWidget* card, LibraryEntry::Kind kind,
                                   QLabel*& nameOut, QLabel*& metaOut, QLabel*& originOut)
 {
-    auto* lay = static_cast<QHBoxLayout*>(card->layout());
+    auto* lay = rowLayout(card);
     const bool model = kind == LibraryEntry::Kind::Model;
 
     // ‹ › cycle the library section in its current visible order.
@@ -1594,7 +1771,7 @@ void MainWindow::onLearnChanged()
 void MainWindow::addTempoSync(QWidget* card, KnobWidget* freeKnob, const QString& label, bool isTime,
                               int defaultNote, double min, double max, std::function<void(double)> push)
 {
-    auto* lay = static_cast<QHBoxLayout*>(card->layout());
+    auto* lay = rowLayout(card);
 
     // Note knob in the free knob's place, shown while synced.
     auto* note = new KnobWidget(label, 0, static_cast<double>(TempoSync::kNotes.size() - 1), defaultNote);
@@ -1810,6 +1987,9 @@ void MainWindow::registerParameters()
     knobParam("volume", "mid",       mKnobVolMid,     [e](double v) { e->volume().setMid     (static_cast<float>(v)); });
 
     toggleParam("", "limiter", mSwLimiter, [e](bool b) { e->limiter().setEnabled(b); });
+
+    for (auto& reg : mLateParams) reg();
+    mLateParams.clear();
 }
 
 // ---------------------------------------------------------------------------

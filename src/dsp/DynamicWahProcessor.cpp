@@ -26,6 +26,11 @@ void DynamicWahProcessor::processChannel(float* buf, int nframes, int ch)
     const float q_inv = 1.0f / (0.5f + res * 7.5f);
     const float sr    = static_cast<float>(mSampleRate);
 
+    const bool  pedal  = mPedal.load(std::memory_order_relaxed);
+    const float posTgt = std::clamp(mPosition.load(std::memory_order_relaxed), 0.0f, 100.0f) / 100.0f;
+    const float posK   = 1.0f - std::exp(-1.0f / (0.015f * sr)); // ~15 ms pedal glide
+    float& pos = mPosSmooth[ch];
+
     float& env = mEnv[ch];
     float& lp  = mSVF_LP[ch];
     float& bp  = mSVF_BP[ch];
@@ -37,7 +42,17 @@ void DynamicWahProcessor::processChannel(float* buf, int nframes, int ch)
         float coeff = (level > env) ? mEnvAttack : mEnvRelease;
         env += (level - env) * (1.0f - coeff);
 
-        float cutoff = std::max(kBaseFreq, std::min(kBaseFreq + sens * env * (kPeakFreq - kBaseFreq), kPeakFreq));
+        float cutoff;
+        if (pedal)
+        {
+            // Rocker travel maps exponentially, like a real wah's pot taper.
+            pos += posK * (posTgt - pos);
+            cutoff = kBaseFreq * std::pow(kPeakFreq / kBaseFreq, pos);
+        }
+        else
+        {
+            cutoff = std::max(kBaseFreq, std::min(kBaseFreq + sens * env * (kPeakFreq - kBaseFreq), kPeakFreq));
+        }
         float f      = std::min(2.0f * kPi * cutoff / sr, 0.5f);
 
         float hp = dry - q_inv * bp - lp;

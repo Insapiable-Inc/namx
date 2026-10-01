@@ -1,48 +1,119 @@
 #include "EQProcessor.h"
 
+#include <algorithm>
+
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
 
 EQProcessor::EQProcessor()
 {
-    rebuildFilters();
+    for (int b = 0; b < kBands; ++b) rebuild(Band(b));
 }
 
-void EQProcessor::onSampleRateChanged(double /*sr*/)
+void EQProcessor::onSampleRateChanged(double)
 {
-    // Same lock discipline as the set*Gain setters: the audio thread try_locks
-    // this mutex, so coefficient/state rewrites must never happen bare.
+    // Same lock discipline as the setters: the audio thread try_locks this
+    // mutex, so coefficient/state rewrites must never happen bare.
     std::lock_guard<std::mutex> lock(mMutex);
-    rebuildFilters();
-    reset();
+    for (int b = 0; b < kBands; ++b) rebuild(Band(b));
+    for (int b = 0; b < kBands; ++b) { mL[b].reset(); mR[b].reset(); }
 }
 
-void EQProcessor::setLowGain(double dB)
+void EQProcessor::setGain(Band b, double dB)
 {
     std::lock_guard<std::mutex> lock(mMutex);
-    mLowGainDB = dB;
-    auto bq = makeLowShelf(mSampleRate, 250.0, dB);
-    mLowShelfL.setCoeffs(bq);
-    mLowShelfR.setCoeffs(bq);
+    mGain[b] = dB;
+    rebuild(b);
 }
 
-void EQProcessor::setMidGain(double dB)
+void EQProcessor::setFreq(Band b, double hz)
 {
     std::lock_guard<std::mutex> lock(mMutex);
-    mMidGainDB = dB;
-    auto bq = makePeaking(mSampleRate, 1000.0, dB, 0.707);
-    mMidPeakL.setCoeffs(bq);
-    mMidPeakR.setCoeffs(bq);
+    mFreq[b] = hz;
+    rebuild(b);
 }
 
-void EQProcessor::setTrebleGain(double dB)
+bool EQProcessor::active(Band b) const
 {
-    std::lock_guard<std::mutex> lock(mMutex);
-    mTrebleGainDB = dB;
-    auto bq = makeHighShelf(mSampleRate, 4000.0, dB);
-    mHighShelfL.setCoeffs(bq);
-    mHighShelfR.setCoeffs(bq);
+    switch (b)
+    {
+    case LowCut:  return mFreq[b] > 20.5;
+    case HighCut: return mFreq[b] < 19999.0 && mFreq[b] < 0.45 * mSampleRate;
+    default:      return std::abs(mGain[b]) > 0.01;
+    }
+}
+
+void EQProcessor::rebuild(Band b)
+{
+    const Biquad c = design(b);
+    mL[b].setCoeffs(c);
+    mR[b].setCoeffs(c);
+    const bool on = active(b);
+    if (on && !mOn[b]) { mL[b].reset(); mR[b].reset(); } // start a band from silence
+    mOn[b] = on;
+}
+
+EQProcessor::Biquad EQProcessor::design(Band band) const
+{
+    Biquad bq;
+    const double fs = mSampleRate;
+    const double f  = std::clamp(mFreq[band], 10.0, 0.45 * fs);
+    const double w0 = 2.0 * M_PI * f / fs;
+    const double cw = std::cos(w0), sw = std::sin(w0);
+    double b0, b1, b2, a0, a1, a2;
+
+    switch (band)
+    {
+    case LowCut:
+    case HighCut:
+    {
+        const double alpha = sw / (2.0 * 0.7071); // Butterworth Q
+        if (band == LowCut) { b0 = (1 + cw) / 2; b1 = -(1 + cw); b2 = (1 + cw) / 2; }
+        else                { b0 = (1 - cw) / 2; b1 =  (1 - cw); b2 = (1 - cw) / 2; }
+        a0 = 1 + alpha; a1 = -2 * cw; a2 = 1 - alpha;
+        break;
+    }
+    case Middle:
+    case HighMid:
+    {
+        const double A = std::pow(10.0, mGain[band] / 40.0);
+        const double alpha = sw / (2.0 * (band == Middle ? 0.707 : 1.0));
+        b0 = 1 + alpha * A; b1 = -2 * cw; b2 = 1 - alpha * A;
+        a0 = 1 + alpha / A; a1 = -2 * cw; a2 = 1 - alpha / A;
+        break;
+    }
+    case Bass:
+    case Treble:
+    default:
+    {
+        const double A = std::pow(10.0, mGain[band] / 40.0);
+        const double alpha = sw / 2.0 * std::sqrt(2.0); // shelf slope S = 1
+        const double sA = 2.0 * std::sqrt(A) * alpha;
+        if (band == Bass)
+        {
+            b0 =      A * ((A + 1) - (A - 1) * cw + sA);
+            b1 =  2 * A * ((A - 1) - (A + 1) * cw);
+            b2 =      A * ((A + 1) - (A - 1) * cw - sA);
+            a0 =           (A + 1) + (A - 1) * cw + sA;
+            a1 =     -2 * ((A - 1) + (A + 1) * cw);
+            a2 =           (A + 1) + (A - 1) * cw - sA;
+        }
+        else
+        {
+            b0 =      A * ((A + 1) + (A - 1) * cw + sA);
+            b1 = -2 * A * ((A - 1) + (A + 1) * cw);
+            b2 =      A * ((A + 1) + (A - 1) * cw - sA);
+            a0 =           (A + 1) - (A - 1) * cw + sA;
+            a1 =      2 * ((A - 1) - (A + 1) * cw);
+            a2 =           (A + 1) - (A - 1) * cw - sA;
+        }
+        break;
+    }
+    }
+    bq.b0 = b0 / a0; bq.b1 = b1 / a0; bq.b2 = b2 / a0;
+    bq.a1 = a1 / a0; bq.a2 = a2 / a0;
+    return bq;
 }
 
 bool EQProcessor::process(float* L, float* R, int n, bool inputIsStereo)
@@ -54,13 +125,18 @@ bool EQProcessor::process(float* L, float* R, int n, bool inputIsStereo)
     if (!mMutex.try_lock())
         return inputIsStereo;
 
-    for (int i = 0; i < n; ++i)
-        L[i] = processSampleL(L[i]);
-
-    if (inputIsStereo)
-        for (int i = 0; i < n; ++i)
-            R[i] = processSampleR(R[i]);
-    else
+    for (int b = 0; b < kBands; ++b)
+    {
+        if (!mOn[b]) continue;
+        Biquad& l = mL[b];
+        for (int i = 0; i < n; ++i) L[i] = l.process(L[i]);
+        if (inputIsStereo)
+        {
+            Biquad& r = mR[b];
+            for (int i = 0; i < n; ++i) R[i] = r.process(R[i]);
+        }
+    }
+    if (!inputIsStereo)
         std::copy(L, L + n, R);
 
     mMutex.unlock();
@@ -69,77 +145,5 @@ bool EQProcessor::process(float* L, float* R, int n, bool inputIsStereo)
 
 void EQProcessor::reset()
 {
-    mLowShelfL.reset(); mMidPeakL.reset(); mHighShelfL.reset();
-    mLowShelfR.reset(); mMidPeakR.reset(); mHighShelfR.reset();
-}
-
-void EQProcessor::rebuildFilters()
-{
-    auto ls = makeLowShelf(mSampleRate,  250.0, mLowGainDB);
-    auto mp = makePeaking (mSampleRate, 1000.0, mMidGainDB, 0.707);
-    auto hs = makeHighShelf(mSampleRate, 4000.0, mTrebleGainDB);
-
-    mLowShelfL.setCoeffs(ls); mLowShelfR.setCoeffs(ls);
-    mMidPeakL .setCoeffs(mp); mMidPeakR .setCoeffs(mp);
-    mHighShelfL.setCoeffs(hs); mHighShelfR.setCoeffs(hs);
-}
-
-EQProcessor::Biquad EQProcessor::makeLowShelf(double sampleRate, double freq, double gainDB)
-{
-    Biquad bq;
-    double A     = std::pow(10.0, gainDB / 40.0);
-    double w0    = 2.0 * M_PI * freq / sampleRate;
-    double cosW  = std::cos(w0);
-    double sinW  = std::sin(w0);
-    double alpha = sinW / 2.0 * std::sqrt((A + 1.0 / A) * (1.0 / 1.0 - 1.0) + 2.0);
-
-    double b0 =      A * ((A + 1.0) - (A - 1.0) * cosW + 2.0 * std::sqrt(A) * alpha);
-    double b1 = 2.0 * A * ((A - 1.0) - (A + 1.0) * cosW);
-    double b2 =      A * ((A + 1.0) - (A - 1.0) * cosW - 2.0 * std::sqrt(A) * alpha);
-    double a0 =           (A + 1.0) + (A - 1.0) * cosW + 2.0 * std::sqrt(A) * alpha;
-    double a1 =    -2.0 * ((A - 1.0) + (A + 1.0) * cosW);
-    double a2 =           (A + 1.0) + (A - 1.0) * cosW - 2.0 * std::sqrt(A) * alpha;
-
-    bq.b0 = b0/a0; bq.b1 = b1/a0; bq.b2 = b2/a0;
-    bq.a1 = a1/a0; bq.a2 = a2/a0;
-    return bq;
-}
-
-EQProcessor::Biquad EQProcessor::makePeaking(double sampleRate, double freq, double gainDB, double Q)
-{
-    Biquad bq;
-    double A     = std::pow(10.0, gainDB / 40.0);
-    double w0    = 2.0 * M_PI * freq / sampleRate;
-    double alpha = std::sin(w0) / (2.0 * Q);
-
-    double b0 =  1.0 + alpha * A;
-    double b1 = -2.0 * std::cos(w0);
-    double b2 =  1.0 - alpha * A;
-    double a0 =  1.0 + alpha / A;
-    double a2 =  1.0 - alpha / A;
-
-    bq.b0 = b0/a0; bq.b1 = b1/a0; bq.b2 = b2/a0;
-    bq.a1 = b1/a0; bq.a2 = a2/a0;
-    return bq;
-}
-
-EQProcessor::Biquad EQProcessor::makeHighShelf(double sampleRate, double freq, double gainDB)
-{
-    Biquad bq;
-    double A     = std::pow(10.0, gainDB / 40.0);
-    double w0    = 2.0 * M_PI * freq / sampleRate;
-    double cosW  = std::cos(w0);
-    double sinW  = std::sin(w0);
-    double alpha = sinW / 2.0 * std::sqrt((A + 1.0 / A) * (1.0 / 1.0 - 1.0) + 2.0);
-
-    double b0 =       A * ((A + 1.0) + (A - 1.0) * cosW + 2.0 * std::sqrt(A) * alpha);
-    double b1 = -2.0 * A * ((A - 1.0) + (A + 1.0) * cosW);
-    double b2 =       A * ((A + 1.0) + (A - 1.0) * cosW - 2.0 * std::sqrt(A) * alpha);
-    double a0 =            (A + 1.0) - (A - 1.0) * cosW + 2.0 * std::sqrt(A) * alpha;
-    double a1 =   2.0 * ((A - 1.0) - (A + 1.0) * cosW);
-    double a2 =            (A + 1.0) - (A - 1.0) * cosW - 2.0 * std::sqrt(A) * alpha;
-
-    bq.b0 = b0/a0; bq.b1 = b1/a0; bq.b2 = b2/a0;
-    bq.a1 = a1/a0; bq.a2 = a2/a0;
-    return bq;
+    for (int b = 0; b < kBands; ++b) { mL[b].reset(); mR[b].reset(); }
 }
