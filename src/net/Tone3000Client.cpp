@@ -222,7 +222,7 @@ Tone3000Client::Tone3000Client(QObject* parent)
     : QObject(parent)
     , nam(new QNetworkAccessManager(this)) {
     // Disk cache for images (the API answers carry no-store; they go through
-    // mCache instead).
+    // cache instead).
     auto* disk = new QNetworkDiskCache(this);
     disk->setCacheDirectory(QStandardPaths::writableLocation(QStandardPaths::CacheLocation) +
                             "/tone3000");

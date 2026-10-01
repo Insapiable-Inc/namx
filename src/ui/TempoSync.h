@@ -45,7 +45,7 @@ inline constexpr double MIN_BPM = 40.0;
 inline constexpr double MAX_BPM = 240.0;
 inline constexpr double DEFAULT_BPM = 120.0;
 
-// The knob's value (a double) rounded to a valid kNotes index.
+// The knob's value (a double) rounded to a valid NOTES index.
 inline size_t clamp_index(double v) {
     const long last = static_cast<long>(NOTES.size()) - 1;
     return static_cast<size_t>(std::clamp(std::lround(v), 0L, last));

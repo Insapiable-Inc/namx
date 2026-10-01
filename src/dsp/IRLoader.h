@@ -10,7 +10,7 @@
 
 /// Loads an IR (Impulse Response) WAV file and applies it as a convolution
 /// cab simulator using a simple brute-force FIR convolution.
-/// The IR is resampled to the engine rate, then truncated to kMaxIRLength.
+/// The IR is resampled to the engine rate, then truncated to MAX_IR_LENGTH.
 class IRLoader
 {
 public:
@@ -65,7 +65,7 @@ private:
     struct Kernel
     {
         std::vector<float> ir; // stored REVERSED so the convolution is a forward dot product
-        std::vector<float> buffers[2]; // per-channel delay line, 2*kMaxIRLength: each sample is
+        std::vector<float> buffers[2]; // per-channel delay line, 2*MAX_IR_LENGTH: each sample is
                                        // written twice (writePos and writePos+irLen) so the last
                                        // irLen samples are always contiguous — no wrap in the loop
         int write_pos[2] = {0, 0};
@@ -76,7 +76,7 @@ private:
     RtSlot<Kernel> slot;
     std::mutex load_mutex; // load/unload (GUI) vs. setTargetSampleRate (backend thread)
 
-    // Owner-side state (guarded by mLoadMutex)
+    // Owner-side state (guarded by load_mutex)
     std::string file_path;
     std::string last_error;
     std::vector<float> raw; // native samples of the loaded file

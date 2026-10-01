@@ -65,7 +65,7 @@ private:
     QToolButton* name = nullptr;
     QLabel* modified = nullptr;
     QToolButton* quick_slots[SLOT_COUNT]{};
-    QStringList slot_paths; // kSlotCount entries, "" = empty slot
+    QStringList slot_paths; // SLOT_COUNT entries, "" = empty slot
     QToolButton* ab[2]{};
     QToolButton* ab_copy = nullptr;
     int ab_active = 0;

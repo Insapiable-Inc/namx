@@ -63,7 +63,7 @@ private:
     std::atomic<bool> mute{false};
 
     // Ring buffer filled by audio thread, consumed by the worker thread.
-    // Protected by mBufMutex; audio uses try_lock (non-blocking).
+    // Protected by buf_mutex; audio uses try_lock (non-blocking).
     std::array<float, BUF_SIZE> ring_buf{};
     size_t write_pos{0};
     bool buffer_ready{false};
@@ -76,7 +76,7 @@ private:
     std::thread worker;
     std::mutex work_mutex;
     std::condition_variable work_cv;
-    bool stop{false}; // guarded by mWorkMutex
+    bool stop{false}; // guarded by work_mutex
     std::atomic<float> last_pitch{0.0f};
     std::atomic<float> fs{44100.0f}; // worker-safe copy of the sample rate
 };

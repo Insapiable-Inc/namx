@@ -16,7 +16,7 @@ namespace Theme
 // ---------------------------------------------------------------------------
 
 // Per-effect accents (user-chosen, 2026-08-10). IDs match
-// AudioEngine::mEffectTable; "neutral" covers Input/Output and fallbacks.
+// AudioEngine::effect_table; "neutral" covers Input/Output and fallbacks.
 struct FxColor
 {
     const char* id;

@@ -25,7 +25,7 @@ struct IAudioRenderClient;
 /// Windows is almost always 32-bit float, so no resampling is needed in
 /// the common path).
 ///
-/// Threading: an internal `mAudioThread` runs the capture+render loop. The
+/// Threading: an internal `audio_thread` runs the capture+render loop. The
 /// thread blocks on the capture-ready event, pulls a block, hands it to the
 /// AudioEngine callback, then writes the result to the render endpoint.
 class WasapiBackend : public IAudioBackend

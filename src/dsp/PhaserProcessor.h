@@ -71,7 +71,7 @@ private:
     static constexpr float MAX_FREQ = 4000.0f;
 
     // All-pass coefficient for an LFO phase (sin + pow + tan). Evaluated at
-    // control rate — every kCtrlInterval samples — not per sample.
+    // control rate — every CTRL_INTERVAL samples — not per sample.
     float coeff_at(float phase, float depth) const;
     // Vibe: four stages at staggered fixed ratios (the Uni-Vibe's mismatched
     // photocells), lamp-shaped LFO, no feedback.

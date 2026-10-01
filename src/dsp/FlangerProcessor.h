@@ -51,7 +51,7 @@ protected:
     void process_block_stereo_out(float* l, float* r, size_t nframes) override;
 
 private:
-    std::atomic<float> rate_hz{0.3f}; // matches kFlangerRateDefault
+    std::atomic<float> rate_hz{0.3f}; // matches FLANGER_RATE_DEFAULT
     std::atomic<float> depth_pct{50.0f};
     std::atomic<float> feedback_pct{0.0f};
     std::atomic<float> mix_pct{50.0f};

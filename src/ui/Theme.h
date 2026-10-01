@@ -10,7 +10,7 @@ class QWidget;
 /// (or in the stylesheet in Theme.cpp); widgets never hardcode hex values.
 ///
 /// Each effect card is tagged with its effect ID (same IDs as
-/// AudioEngine::mEffectTable, plus "neutral" for non-effect cards). The
+/// AudioEngine::effect_table, plus "neutral" for non-effect cards). The
 /// accent is rendered VERBATIM — stripe, title, knob ring/tick/value label,
 /// toggle "on" state all use the exact palette hex; contrast is managed by
 /// choosing the palette values, not by code. tagCard pushes the accent to

@@ -80,7 +80,7 @@ private:
     };
 
     Biquad design(Band b) const;
-    void rebuild(Band b); // caller holds mMutex
+    void rebuild(Band b); // caller holds mutex
     bool active(Band b) const;
 
     std::array<double, BANDS> gain{}; // dB (shelf/peak bands)

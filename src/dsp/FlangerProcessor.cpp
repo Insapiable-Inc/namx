@@ -22,7 +22,7 @@ void FlangerProcessor::reset() {
 void FlangerProcessor::process_sample(float in, float phase, DelayLine& line, float& fb,
                                       float depth, float fb_amt, float mix, float& out) const {
     float lfo = std::sin(2.0f * PI * phase);
-    // Range scales the sweep centre and width together (max = kBaseMs/kDepthMs).
+    // Range scales the sweep centre and width together (max = BASE_MS/DEPTH_MS).
     const float r = std::clamp(range_pct.load(std::memory_order_relaxed), 0.0f, 100.0f) / 100.0f;
     const float base = 1.5f + (BASE_MS - 1.5f) * r;
     const float span = 1.5f + (DEPTH_MS - 1.5f) * r;

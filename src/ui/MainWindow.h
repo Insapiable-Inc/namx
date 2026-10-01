@@ -252,7 +252,7 @@ private:
     LibraryIndex* library_index = nullptr;
     Tone3000Client* tone3000 = nullptr;
     LibraryDock* library_tabs = nullptr;
-    LibraryPanel* library = nullptr; // local tab (owned by mLibraryTabs)
+    LibraryPanel* library = nullptr; // local tab (owned by library_tabs)
     Tone3000Panel* t3k_panel = nullptr; // community tab
     QDockWidget* library_dock = nullptr;
     QLabel* lbl_nam_origin = nullptr; // T3K mark when the model came from TONE3000

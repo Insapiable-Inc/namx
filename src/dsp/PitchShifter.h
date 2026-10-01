@@ -84,7 +84,7 @@ private:
     }
 
     // Best offset in [−search, +search] (kept ≥ 0 delay) for a restarting
-    // tap: maximise the normalised correlation between the last mCorrLen
+    // tap: maximise the normalised correlation between the last corr_len
     // samples behind its new read point and behind the other tap's.
     float align(float p, float p_other, float off_other) const {
         const float d_other = delay_of(p_other, off_other);

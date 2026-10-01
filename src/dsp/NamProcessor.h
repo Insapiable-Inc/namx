@@ -98,7 +98,7 @@ private:
     std::string last_error; // GUI thread only
     std::atomic<size_t> max_buf{0};
     std::atomic<bool> stereo_amp{false};
-    double model_rate{0.0}; // engine SR as last propagated (guarded by mModelMutex)
+    double model_rate{0.0}; // engine SR as last propagated (guarded by model_mutex)
     std::vector<float> scratch_l, scratch_r;
 
     // Click-free swap: load/unload flag a short output fade-in, applied by

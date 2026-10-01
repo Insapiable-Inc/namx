@@ -111,7 +111,7 @@ private:
     std::atomic<float> high_cut_hz{20000.0f};
 
     static constexpr size_t CHUNK = 2048;
-    std::vector<float> al, ar, bl, br; // per-slot scratch (kChunk)
+    std::vector<float> al, ar, bl, br; // per-slot scratch (CHUNK)
     Biquad hp[2], lp[2];
     float designed_low = -1.0f, designed_high = -1.0f;
 };

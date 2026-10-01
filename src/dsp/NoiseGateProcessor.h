@@ -30,7 +30,7 @@ public:
         return release_ms.load();
     }
 
-    /// Deepest attenuation (dB, ≥ 0, capped at kMaxGrDb) since the last
+    /// Deepest attenuation (dB, ≥ 0, capped at MAX_GR_DB) since the last
     /// take — GUI meter.
     float take_gain_reduction_db() {
         return gr_peak_db.exchange(0.0f);

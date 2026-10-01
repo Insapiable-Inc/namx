@@ -267,7 +267,7 @@ private:
     int wake = -1;
     std::thread thread;
     std::atomic<bool> running{false};
-    mutable std::mutex mutex; // guards mSeq calls and the maps
+    mutable std::mutex mutex; // guards seq calls and the maps
 
     std::map<QString, Addr> present; // name → address, current
     std::map<QString, Addr> connected; // what we subscribed
