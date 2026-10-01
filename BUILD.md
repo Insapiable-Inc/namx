@@ -305,9 +305,10 @@ jack_connect NAMPlayer:output_R  system:playback_2
 | Knob | Range | Center freq / type |
 |------|-------|--------------------|
 | **Input** | ±20 dB | Input gain before model |
-| **Low** | ±12 dB | Low shelf at 250 Hz |
-| **Mid** | ±12 dB | Peaking EQ at 1 kHz (Q = 0.707) |
-| **Treble** | ±12 dB | High shelf at 4 kHz |
+| **Bass** | ±12 dB | Low shelf, 40–500 Hz (default 250) |
+| **Middle** | ±12 dB | Peak, 200 Hz–2.5 kHz (default 1 kHz, Q 0.7) |
+| **High-Mid** | ±12 dB | Peak, 800 Hz–8 kHz (default 3 kHz, Q 1) |
+| **Treble** | ±12 dB | High shelf, 1.5–12 kHz (default 4 kHz) |
 | **Output** | ±20 dB | Output gain after IR |
 
 Gain changes are sample-accurate smoothed (no clicks or zipper noise).
@@ -446,20 +447,35 @@ of opening it.
 
 ## 7. Signal chain
 
+Default order (drag the ≡ grips to reorder any effect):
+
 ```
-┌──────────┐    ┌────────────┐    ┌────────────────┐    ┌──────┐    ┌───────────┐    ┌───────────┐
-│ JACK in  │───▶│ Input Gain │───▶│  NAM Model     │───▶│  EQ  │───▶│  IR (cab) │───▶│ Output    │
-│          │    │  (±20 dB)  │    │  (WaveNet /    │    │ 3-band    │  FIR conv │    │  Gain     │
-└──────────┘    └────────────┘    │  LSTM / etc.)  │    │           └───────────┘    │  (±20 dB) │
-                                  └────────────────┘    └──────┘                     └─────┬─────┘
-                                                                                           │
-                                                                                     ┌─────▼─────┐
-                                                                                     │ JACK out  │
-                                                                                     └───────────┘
+input ─▶ Input Gain ─▶ Tuner ─▶ Transpose ─▶ Noise Gate ─▶ Compressor ─▶ Wah ─▶ Flanger ─▶ Phaser ─▶ Drive
+      ─▶ Amplifier (NAM) ─▶ Equalizer ─▶ Doubler ─▶ Chorus ─▶ Tremolo ─▶ Delay ─▶ Reverb
+      ─▶ Cabinet (IR A + IR B) ─▶ Volume Pedal ─▶ Output Gain ─▶ Limiter ─▶ (+ metronome) ─▶ output L/R
 ```
 
-If no NAM model is loaded, audio passes through to the EQ and IR unchanged.
-If the IR is disabled or not loaded, that stage is skipped.
+The chain starts mono. Effects in stereo mode (Chorus, Tremolo, Delay, Reverb by
+default; Flanger/Phaser when switched; the Doubler; a panned Cabinet) make it stereo from
+there on. A stereo signal reaching the Amplifier is summed to mono unless its **Stereo**
+switch is on, which runs the model once per channel at twice the CPU.
+
+| Stage | Main controls | ▾ More |
+|-------|---------------|--------|
+| Transpose | Semitones (±12), Mix | — |
+| Drive | Drive, Tone, Level (TS-style: clipping on the mids/highs, clean lows kept) | — |
+| Dynamic Wah | Mix, Sensitivity, Resonance, Mode (Auto / Pedal), Position | — |
+| Flanger / Phaser / Chorus | Mix, Rate (Sync), Depth, Feedback | Flanger Range · Phaser Mode (Classic / Vibe) · Chorus Mode (Normal / Tri / Vintage / Spatial) |
+| Equalizer | Bass, Middle, High-Mid, Treble (±12 dB) | the four band frequencies, Low Cut, High Cut |
+| Doubler | Mix, Spread (3–20 ms) | — |
+| Delay | Mix, Time (Sync), Feedback | R Time, Cross-feed, Low/High Cut, Saturation, Modulation, Crystals |
+| Reverb | Mix, Decay, Damping, Width | Pre-delay, Low/High Cut, Shimmer |
+| Cabinet | IR A (library, ‹ ›) | Level/Pan/Ø A, Blend, Low/High Cut · IR B (‹ ›, Choose…, ×), Level/Pan/Ø B |
+| Volume Pedal | Volume, Mid (level at half travel) | — |
+| Output | Gain, **Limit** (look-ahead limiter at −0.3 dBFS) | — |
+
+Times, rates and frequencies use logarithmic knobs. Transpose, Shimmer and Crystals use
+the built-in pitch shifter, which adds about 25 ms of latency while it's active.
 
 ---
 

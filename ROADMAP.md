@@ -416,7 +416,7 @@ app id in hicolor, `setWindowIcon` from the qrc, Windows exe icon + version bloc
       github v1.0.0` — the release workflow does the rest. Fill the PKGBUILD's
       `sha256sums` from the published tarball and push it to the AUR.
 
-## Phase 9 — Knob range calibration (post-1.0 unless pulled forward; added 2026-08-10)
+## Phase 9 — Knob range calibration (tapers done in Phase 17, 2026-10-01; range audit still open)
 
 Make every knob feel right across its whole travel, not just near the default.
 
@@ -727,36 +727,46 @@ The parameter registry (Phase 2) was built for this: every `ParamDesc` is mappab
 - [ ] Follow MIDI Clock from a DAW or drum machine; tempo settles within a few beats.
 - [ ] Windows build: WinMM backend compiles and receives.
 
-## Phase 17 — DSP parity with Petrucci X (the "at least everything it does" gap)
+## Phase 17 — DSP parity with Petrucci X ✅ (completed 2026-10-01, code; manual verification below)
 
-Ranked by musical value ÷ effort. NAM models replace the four amps; "Piezo" (acoustic
-sim) is out of scope — users load acoustic models.
+NAM models replace the four amps; "Piezo" (acoustic sim) is out of scope — users load
+acoustic models. UI: cards gained ▾ detail rows for advanced knobs (`addDetailRow`).
 
-- [ ] **Overdrive/boost pedal** pre-amp (Drive / Tone / Level, TS-style) — the one
-      thing every high-gain rig needs in front of the model. *easy*
-- [ ] **Doubler** (randomised 3–20 ms spread copy before the post section; off when
-      input is already stereo). *easy*
-- [ ] **Cab: dual IR slots** with level / pan / phase / blend + HPF/LPF. *easy–medium*
-      (IR resampling to the session rate landed 2026-09-12 — windowed-sinc in
-      `IRLoader`, kernel rebuilt on engine-rate change.)
-- [ ] **EQ → 4-band semi-parametric** (frequency per band, ±12 dB) + HPF/LPF. *easy*
-- [ ] **Delay:** sync FREE / TAP (Phase 15), dual L/R times + cross-feed, low/high cut,
-      tape saturation, modulation, tap tempo button. *medium* — "Crystals" (pitched-up
-      layers) needs the pitch shifter, see Transpose.
-- [ ] **Reverb:** pre-delay, decay, low/high cut. *medium* — Shimmer needs the pitch
-      shifter.
-- [ ] **Chorus modes** (Normal/Tri, Vintage/Spatial), **Phaser Vibe mode**, **Flanger
-      Range**. *easy*
-- [ ] **Wah: manual/expression position mode** beside the current envelope mode;
-      **Volume pedal** with mid-point. *easy*
-- [ ] **Output limiter** (was deferred). *easy*
-- [ ] **Stereo-amp toggle** (run NAM per channel only when asked; sum to mono
-      otherwise — halves the cost of a stereo pre-effect). *easy*
-- [ ] **Transpose ±12 st** (and with it Shimmer / Crystals) — a real pitch shifter,
-      latency vs quality trade-off; evaluate Rubber Band (GPL, fine for us) vs own
-      implementation. *hard* — last.
-- [ ] Phase 9 **knob tapers** land alongside whichever of the above touches the most
-      knobs.
+- [x] **Drive** (new ID before the amp): TS-style — 720 Hz high-passed path through
+      gain + soft clip, added to the clean signal; Tone low-pass; Level.
+- [x] **Doubler** (after the EQ): right = 3–20 ms copy with random drift; stereo input
+      passes untouched.
+- [x] **Cab: dual IR slots** — level / pan / phase per slot, A↔B blend, Low/High Cut;
+      slot B picker in the ▾ row; presets carry `irPathB`.
+- [x] **EQ → 4-band semi-parametric** (frequency per band, ±12 dB) + Low/High Cut;
+      3-band presets unchanged (same keys and default frequencies).
+- [x] **Delay:** sync (Phase 15), R Time ratio + Cross-feed (ping-pong ↔ dual), Low/High
+      Cut + Saturation in the loop, Modulation, **Crystals**; tap = the global Tap.
+- [x] **Reverb:** Pre-delay, Decay (= Room Size), Low/High Cut, **Shimmer**.
+- [x] **Chorus modes** (Normal / Tri / Vintage / Spatial), **Phaser Vibe**, **Flanger Range**.
+- [x] **Wah: Pedal mode + Position**; **Volume pedal** (new ID, end of chain) with Mid.
+- [x] **Output limiter** (Limit switch on the Output card; meter reads after it).
+- [x] **Stereo-amp toggle** (Amplifier row; off = sum a stereo input → one model).
+- [x] **Transpose ±12 st** (new ID after the tuner) + Shimmer + Crystals — own
+      two-tap + WSOLA shifter (`PitchShifter.h`), no GPL dependency; ~25 ms latency
+      when active. Rubber Band remains an option if quality ever demands it (would make
+      the binary GPL).
+- [x] Phase 9 **knob tapers**: log dials for times, rates, frequencies.
+
+### Phase 17 — manual verification pending
+
+- [ ] Drive in front of a clean/crunch model: tighter, mid-forward; Tone/Level sane.
+- [ ] Stereo switch: flanger-stereo before the amp sounds mono with it off (default!
+      — this changed the sound of sessions that had a stereo effect before the amp),
+      wide with it on.
+- [ ] EQ: sweep each frequency; Low/High Cut "Off" at the ends; an old 3-band preset
+      sounds identical.
+- [ ] Delay: Cross-feed 100 → 0, R Time 75 %, Saturation, Modulation, Crystals.
+- [ ] Reverb Shimmer stays stable at 100 % with long Decay.
+- [ ] Cabinet: two IRs, Blend, Ø B (thin when out of phase), pans → stereo.
+- [ ] Transpose −1/−2 (drop tuning feel) and ±12; Tuner before it reads the real string.
+- [ ] Limiter catches peaks with Output +20 dB; no pumping at normal levels.
+- [ ] Wah Pedal mode with a MIDI expression pedal on Position.
 
 ## Phase 18 — Settings, layout discipline, platform
 

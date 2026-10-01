@@ -87,16 +87,18 @@ Qt6 application with a platform audio backend behind the `IAudioBackend` interfa
 
 ### Signal chain
 
-`AudioEngine` (implements `IAudioBackend::Callback`) owns all processors and a **double-buffered chain** (two `std::vector<EffectBase*>` + atomic index) iterated every callback. **Processing order = UI order** — `MainWindow::rebuildEffectStrip` lays the cards out by iterating `chain()`, and the user can reorder by dragging cards. Each effect has a stable string ID (`AudioEngine::mEffectTable` — never rename); `setChainOrder(ids)` sanitizes (unknown IDs dropped, missing effects at default slot) and swaps RT-safely, flagging moved effects for an audio-thread `reset()` via `requestReset()`/`consumePendingReset()`. All 13 effects reorder freely — nothing is pinned; only the Input/Output gain stages sit outside the chain. The default order:
+`AudioEngine` (implements `IAudioBackend::Callback`) owns all processors and a **double-buffered chain** (two `std::vector<EffectBase*>` + atomic index) iterated every callback. **Processing order = UI order** — `MainWindow::rebuildEffectStrip` lays the cards out by iterating `chain()`, and the user can reorder by dragging cards. Each effect has a stable string ID (`AudioEngine::mEffectTable` — never rename); `setChainOrder(ids)` sanitizes (unknown IDs dropped, missing effects at default slot) and swaps RT-safely, flagging moved effects for an audio-thread `reset()` via `requestReset()`/`consumePendingReset()`. All 17 effects reorder freely — nothing is pinned; only the Input/Output gain stages, the output limiter and the metronome sit outside the chain. New effect IDs are appended to the table at their default slot, and old sessions/presets get them there via the sanitizer. The default order:
 
 ```
 mono input → input gain (smoothed)
-  → Tuner → Gate → Compressor → Wah → Flanger → Phaser   (mono section)
-  → NAM model → EQ
-  → Chorus → Tremolo → Delay → Reverb                     (stereo-capable section)
-  → IR convolution
-  → output gain (smoothed) → stereo out (L, R)
+  → Tuner → Transpose → Gate → Compressor → Wah → Flanger → Phaser → Drive   (mono section)
+  → NAM model (sums a stereo input unless the Amplifier's Stereo switch is on) → EQ
+  → Doubler → Chorus → Tremolo → Delay → Reverb                              (stereo-capable)
+  → Cabinet (2 IR slots) → Volume pedal
+  → output gain (smoothed) → output limiter → meter → + metronome → stereo out (L, R)
 ```
+
+Cards have a main row and optional ▾ detail rows (`MainWindow::addDetailRow`) for advanced knobs; those knobs register through `lateKnob` (deferred `knobParam`) so they don't need named members.
 
 ### EffectBase dispatch
 
@@ -124,14 +126,17 @@ All effects inherit `EffectBase` (`src/dsp/EffectBase.h` — the header comment 
 | `JackBackend` | `src/dsp/JackBackend.h/cpp` | Linux JACK/PipeWire-JACK backend |
 | `WasapiBackend` | `src/dsp/WasapiBackend.h/cpp` | Windows WASAPI shared-mode backend (float32 mix format only) |
 | `NamProcessor` | `src/dsp/NamProcessor.h/cpp` | NAM model hosting; independent L/R instances for stereo |
-| `IRLoader` / `IRProcessor` | `src/dsp/IRLoader.h/cpp` | FIR cab sim, energy-normalized, double-buffered kernel swap |
-| `EQProcessor` | `src/dsp/EQProcessor.h/cpp` | 3-band biquad EQ (Audio EQ Cookbook) |
+| `IRLoader` / `IRProcessor` | `src/dsp/IRLoader.h/cpp`, `IRProcessor.h/cpp` | FIR cab sim, energy-normalized, RtSlot kernel swap; `IRProcessor` = two loaders (slots A/B) with level/pan/phase/blend + cuts |
+| `EQProcessor` | `src/dsp/EQProcessor.h/cpp` | 4-band semi-parametric biquad EQ + low/high cut (Audio EQ Cookbook) |
 | `TunerProcessor` | `src/dsp/TunerProcessor.h/cpp` | NSDF pitch detect; audio thread fills, GUI timer reads |
 | `TunerDisplay` | `src/ui/TunerDisplay.h/cpp` | TU-3-style readout: LED ladder, glowing seven-segment note, signed cents |
 | `NoiseGateProcessor`, `CompressorProcessor`, `DynamicWahProcessor` | `src/dsp/…` | Mono dynamics (envelope gate, feedforward comp, envelope wah) |
 | `ChorusProcessor`, `FlangerProcessor`, `PhaserProcessor`, `TremoloProcessor` | `src/dsp/…` | Modulation effects; stereo variants use LFO phase offsets |
 | `DelayProcessor` | `src/dsp/DelayProcessor.h/cpp` | Ping-pong stereo delay |
-| `ReverbProcessor` | `src/dsp/ReverbProcessor.h/cpp` | Freeverb (8 comb + 4 all-pass, stereo) |
+| `ReverbProcessor` | `src/dsp/ReverbProcessor.h/cpp` | Freeverb (8 comb + 4 all-pass, stereo) + pre-delay, wet cuts, shimmer |
+| `DriveProcessor`, `DoublerProcessor`, `VolumeProcessor`, `TransposeProcessor` | `src/dsp/…` | Phase 17 stages: TS-style drive, double-tracker, volume pedal with mid-point, ±12 st transpose |
+| `PitchShifter` | `src/dsp/PitchShifter.h` | Two-tap Hann delay-line shifter with WSOLA re-alignment (Transpose, Shimmer, Crystals) |
+| `OutputLimiter` | `src/dsp/OutputLimiter.h/cpp` | Output-stage look-ahead limiter (not an effect; registry key `limiter`) |
 | `MainWindow` | `src/ui/MainWindow.h/cpp` | Window assembly, parameter registry, effect strip + DnD reorder, session state |
 | `ParamRegistry.h` | `src/ui/` | `ParamDesc` — one entry per user-facing parameter (shared by MainWindow + PresetSerializer) |
 | `PresetBar` | `src/ui/PresetBar.h/cpp` | Bar above the rack: preset name menu, ‹ ›, `*`, Save/Save As, quick slots 1–8 (owns `presets/slots`), A/B buttons; MainWindow owns the preset state (`mPresetPath` + baseline) |
