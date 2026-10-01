@@ -1,6 +1,6 @@
 name: Release
 
-# Tag push (v1.0.0, v1.1.0-rc1, …) → build + tests on Ubuntu 22.04 and Arch
+# Tag push (v1.0.0, v1.1.0-rc1, …) → build + tests on Ubuntu 24.04 and Arch
 # (Linux users install from source or the PKGBUILD against their own Qt and
 # JACK — no bundled AppImage/Flatpak, decision 2026-09-17), a Windows
 # windeployqt zip, a source tarball with the submodules vendored (for the
@@ -21,7 +21,7 @@ env:
 jobs:
   source:
     name: Source tarball (submodules vendored)
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     outputs:
       version: ${{ steps.ver.outputs.version }}
     steps:
@@ -46,8 +46,8 @@ jobs:
           path: out/*
 
   linux:
-    name: Linux (Ubuntu 22.04)
-    runs-on: ubuntu-22.04
+    name: Linux (Ubuntu 24.04)
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
         with:
@@ -55,11 +55,13 @@ jobs:
       - name: Install build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake ninja-build qt6-base-dev qt6-base-dev-tools \
+          sudo apt-get install -y cmake ninja-build g++-14 qt6-base-dev qt6-base-dev-tools \
             libjack-jackd2-dev libasound2-dev pkg-config libgl1-mesa-dev \
             desktop-file-utils appstream python3
       - name: Configure (portable, tests on)
         working-directory: gui
+        env:
+          CXX: g++-14 # C++23; 24.04 defaults to GCC 13
         run: |
           cmake -S . -B build-release -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \

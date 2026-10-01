@@ -17,8 +17,8 @@ on:
 
 jobs:
   build-linux:
-    name: Build (Ubuntu 22.04)
-    runs-on: ubuntu-22.04
+    name: Build (Ubuntu 24.04)
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
         with:
@@ -28,14 +28,16 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            cmake ninja-build \
+            cmake ninja-build g++-14 \
             qt6-base-dev qt6-base-dev-tools \
-            libjack-jackd2-dev pkg-config \
+            libjack-jackd2-dev libasound2-dev pkg-config \
             libgl1-mesa-dev \
             desktop-file-utils appstream python3
 
       - name: Configure (Release)
         working-directory: gui
+        env:
+          CXX: g++-14 # C++23; 24.04 defaults to GCC 13
         run: |
           cmake -S . -B build-release \
                 -G Ninja \

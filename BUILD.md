@@ -27,15 +27,19 @@ effects chain plus a 3-band EQ.
 
 ## 1. Prerequisites
 
-### Ubuntu / Debian (22.04 or later)
+### Ubuntu 24.04+ / Debian 13+
 
 ```bash
 sudo apt update
 sudo apt install \
-    git cmake ninja-build \
+    git cmake ninja-build g++-14 \
     qt6-base-dev \
     libjack-jackd2-dev libasound2-dev jackd2 qjackctl
 ```
+
+The code is C++23 and needs GCC 14. Ubuntu 24.04 defaults to GCC 13, so point CMake
+at the newer compiler: `export CXX=g++-14` before `bash build.sh` (Debian 13 and
+Ubuntu 24.10+ already default to GCC 14). Ubuntu 22.04 is no longer supported.
 
 > **PipeWire users:** PipeWire ships a JACK compatibility layer.
 > Install `pipewire-jack` instead of `jackd2` and start the session service —
@@ -94,11 +98,11 @@ no separate audio dependency — the Windows SDK already ships them.
 
 | Dependency | Minimum |
 |------------|---------|
-| CMake      | 3.16    |
+| CMake      | 3.20    |
 | Qt         | 6.2 (Linux) / 6.5 (Windows MSVC) |
 | JACK       | 1.9.17 (jackd2) or PipeWire-JACK — Linux only |
-| GCC / Clang| GCC 11 / Clang 13 (C++20 required) |
-| MSVC       | Visual Studio 2022 (17.6+) |
+| GCC / Clang| GCC 14 / Clang 18 (C++23 required) |
+| MSVC       | Visual Studio 2022 (17.10+) |
 
 ---
 

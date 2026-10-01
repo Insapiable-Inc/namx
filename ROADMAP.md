@@ -808,7 +808,7 @@ discussion is still open: references vs pointers, audio backend shape, further t
 No behavior changes: every step builds, passes the tests and the bench, and is its own
 commit.
 
-- [ ] **C++23:** `CMAKE_CXX_STANDARD 23`; CI (`gui-linux.yml`, `release.yml`) from
+- [x] **C++23:** `CMAKE_CXX_STANDARD 23`; CI (`gui-linux.yml`, `release.yml`) from
       `ubuntu-22.04` to `ubuntu-24.04` with GCC 14; `BUILD.md` minimums (GCC 14 /
       Clang 18 / MSVC 17.10, Ubuntu 24.04+).
 - [ ] **Format:** one `clang-format -i` commit over `gui/src`, `gui/tests`, `gui/bench`

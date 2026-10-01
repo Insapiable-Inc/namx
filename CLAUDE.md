@@ -56,7 +56,7 @@ cmake --build gui/build-release --parallel $(nproc)
 ```
 
 **Required packages (Arch):** `qt6-base jack2 alsa-lib cmake ninja`
-**Required packages (Ubuntu 22.04+):** `qt6-base-dev libjack-jackd2-dev libasound2-dev cmake ninja-build`
+**Required packages (Ubuntu 24.04+):** `qt6-base-dev libjack-jackd2-dev libasound2-dev cmake ninja-build g++-14` (C++23 → GCC 14; `CXX=g++-14` on 24.04)
 
 Release builds default to `-march=native` via the `NAM_NATIVE_OPT` CMake option (ON). **CI/release builds must configure with `-DNAM_NATIVE_OPT=OFF`** → portable `-mavx2 -mfma`.
 
