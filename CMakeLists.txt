@@ -261,3 +261,24 @@ if(NAM_BUILD_TESTS)
     target_link_libraries(Tone3000ClientTest PRIVATE Qt6::Core Qt6::Gui Qt6::Network)
     add_test(NAME Tone3000ClientTest COMMAND Tone3000ClientTest)
 endif()
+
+# ---------------------------------------------------------------------------
+# Benchmark (opt-in): -DNAM_BUILD_BENCH=ON → NAMPlayerBench, the chain timer
+# that checks the Phase 14 efficiency budget (see bench/NAMPlayerBench.cpp).
+# ---------------------------------------------------------------------------
+option(NAM_BUILD_BENCH "Build the NAMPlayerBench chain benchmark" OFF)
+if(NAM_BUILD_BENCH)
+    set(BENCH_DSP_SOURCES ${GUI_SOURCES})
+    list(FILTER BENCH_DSP_SOURCES INCLUDE REGEX "^src/dsp/.*\\.cpp$")
+    list(FILTER BENCH_DSP_SOURCES EXCLUDE REGEX "(AudioEngine|JackBackend|WasapiBackend)\\.cpp$")
+    add_executable(NAMPlayerBench bench/NAMPlayerBench.cpp ${BENCH_DSP_SOURCES} ${NAM_SOURCES} ${WAV_SOURCES})
+    target_include_directories(NAMPlayerBench PRIVATE
+        ${NAM_ROOT} ${NAM_DEPS_PATH}/eigen ${NAM_DEPS_PATH}/nlohmann ${AUDIO_DSP_TOOLS_DIR}/dsp src/dsp)
+    target_compile_definitions(NAMPlayerBench PRIVATE NAM_SAMPLE_FLOAT NAM_ENABLE_A2_FAST)
+    target_link_libraries(NAMPlayerBench PRIVATE Qt6::Core) # Log.cpp: QLoggingCategory
+    if(MSVC)
+        target_compile_options(NAMPlayerBench PRIVATE /O2 /arch:AVX2 /EHsc)
+    else()
+        target_compile_options(NAMPlayerBench PRIVATE -O3 ${NAM_SIMD_FLAGS})
+    endif()
+endif()

@@ -612,33 +612,43 @@ file, `*` on unsaved changes, folders/subfolders, and a defined set of things pr
       Export doesn't change the current name; Delete moves to the trash → Untitled.
 - [ ] Tuner state survives loading any preset.
 
-## Phase 14 — Cockpit: status bar, meters, tuner, efficiency
+## Phase 14 — Cockpit: status bar, meters, tuner, efficiency ✅ (completed 2026-10-01, code; manual verification below)
 
 The "at the speed of a cockpit" part. Also where *efficient* stops being a slogan.
 
-- [ ] **Status bar:** *(part-built 2026-08-23: backend state · sample rate · buffer ·
-      one-buffer latency · device pickers, in `AudioStatusBar`)* still missing:
-      **DSP load %** (audio-thread timing, max-hold) · **xrun counter** (JACK xrun
-      callback; click to reset) · round-trip latency · model / IR / login state. This
-      would have diagnosed the 2026-08-22 xrun hunt in five seconds.
-- [ ] **Meters at display rate** *(part-built 2026-08-23: absolute zones with red only
-      above 0 dBFS + falling peak-hold, at the 20 fps timer. Decision: zone coloring
-      instead of a latched click-to-clear clip lamp — the red peak-hold line carries
-      the "recently clipped" signal)* still missing: 60 fps tied to visibility,
-      proper ballistics.
-- [ ] **Gain-reduction meters** on Compressor and Gate (Petrucci has one on the comp).
-- [ ] **Tuner as a mode:** *(part-built 2026-08-23: TU-3-style `TunerDisplay` in the
-      row — LED ladder, seven-segment note, signed cents; mute removed by decision)*
-      still missing: Hz readout option, reference pitch 420–460 Hz (parity).
-- [ ] **Efficiency budget written down and checked:** DSP ≤ 10 % of a 128-frame
-      budget on a 2018 laptop core for the default chain; idle UI ≈ 0 % (no periodic
-      repaint of static widgets, no polling timers when nothing changes); cold start
-      < 1 s; RSS modest. The perf micro-benches from 2026-08-22 (NAM model at 128,
-      IR, each effect) move into `tools/` so regressions are measurable.
-- [ ] Free perf wins already identified, now also documented here so they're not
-      lost: `nam::activations::Activation::enable_fast_tanh()` at startup (2.4× on
-      Tanh WaveNets — what the official plugin does), Phaser/Compressor per-block
-      coefficient math, `% sz` ring-buffer wraps → compare-and-reset.
+- [x] **Status bar:** backend state · rate · buffer · **round-trip latency** (JACK
+      capture + playback latency around our ports; one buffer when unknown) ·
+      **DSP load %** (engine times every block; max over 0.5 s, all-time max in the
+      tooltip, amber ≥ 70 %, red ≥ 90 %) · **xrun counter** (JACK xrun callback,
+      WASAPI capture discontinuities; click resets) · device pickers; left side:
+      model / IR / TONE3000 sign-in dots.
+- [x] **Meters at display rate:** ~60 fps timer, paused while minimized/hidden;
+      time-based ballistics (instant attack, 24 dB/s release, 1 s hold → 12 dB/s);
+      repaint only on movement. Zone coloring + red peak-hold line kept (decision
+      2026-08-23).
+- [x] **Gain-reduction meters** on Compressor and Gate (in their unused stereo slot).
+- [x] **Tuner:** Hz readout toggle, reference pitch 420–460 Hz (QSettings `tuner/*`,
+      not in presets — tuner is `inPreset = false`).
+- [x] **Efficiency budget written down and checked** (BUILD.md → High CPU usage):
+      `gui/bench/NAMPlayerBench` (`-DNAM_BUILD_BENCH=ON`) times each stage in chain
+      order; `--self-test-and-exit` prints cold start + peak RSS. i9-12900K, 128 @ 48 k,
+      standard WaveNet + IR, everything on: 4.1 % of the block; cold start 135 ms;
+      peak RSS 170 MB. *Still to do:* a run on a 2018-class laptop core.
+- [x] Free perf wins: `enable_fast_tanh()` in the engine (amp 166 → 67 µs/block),
+      Phaser coefficients at control rate (every 16 samples; 2.8 → 1.4 µs),
+      Compressor log2/exp2 instead of log10/pow, `% sz` ring wraps → compare-and-reset
+      (Delay 0.66 → 0.26 µs).
+
+### Phase 14 — manual verification pending
+
+- [ ] DSP % moves with the chain (enable a stereo effect before the amp → roughly
+      doubles); kill/restart the server → xruns count; click resets.
+- [ ] Meters: smooth at 60 fps, hold line waits 1 s then falls; minimize → the GUI
+      thread goes quiet (`top -H`).
+- [ ] GR meters move with the compressor/gate working; bypass → 0.
+- [ ] Tuner: A4 = 432 makes a 440 Hz A read about +32¢; Hz toggle shows the
+      frequency; both survive relaunch and preset loads.
+- [ ] Fast tanh: A/B a high-gain model against an older build — no audible change.
 
 ## Phase 15 — Practice tools: metronome + global tempo (absorbs Phase 10)
 

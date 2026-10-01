@@ -1,4 +1,5 @@
 #include <QApplication>
+#include <QElapsedTimer>
 #include <QIcon>
 #include <QSettings>
 #include <QStringList>
@@ -40,6 +41,8 @@ static void migrateLegacySettings()
 
 int main(int argc, char* argv[])
 {
+    QElapsedTimer startup; // cold-start budget (Phase 14): window up in < 1 s
+    startup.start();
     // --version / --help answer before any GUI is created, so they work on a
     // headless box (and in the CI smoke test) without a display.
     bool selfTest = false;
@@ -56,7 +59,8 @@ int main(int argc, char* argv[])
             std::printf("Usage: NAMPlayer [options] [file...]\n"
                         "  file                 .nam model, .wav impulse response or .nampreset to open\n"
                         "  -v, --version        print the version and exit\n"
-                        "  --self-test-and-exit build the window, scan the library, exit 0 after 1.5 s\n"
+                        "  --self-test-and-exit build the window, scan the library, print the\n"
+                        "                       startup time and peak RSS, exit 0 after 1.5 s\n"
                         "  -h, --help           this text\n");
             return 0;
         }
@@ -94,6 +98,27 @@ int main(int argc, char* argv[])
     if (!files.isEmpty())
         w.openPaths(files);
     if (selfTest)
-        QTimer::singleShot(1500, &app, [] { QCoreApplication::exit(0); });
+    {
+        // First event-loop pass after show(): the window has been laid out
+        // and its first frame requested — what the user perceives as "up".
+        QTimer::singleShot(0, &app, [&startup] {
+            std::printf("self-test: window shown after %lld ms\n",
+                        static_cast<long long>(startup.elapsed()));
+        });
+        QTimer::singleShot(1500, &app, [] {
+#ifdef Q_OS_LINUX
+            // Peak resident set (VmHWM) after the library scan and audio start.
+            if (FILE* f = std::fopen("/proc/self/status", "r"))
+            {
+                char line[256];
+                while (std::fgets(line, sizeof line, f))
+                    if (!std::strncmp(line, "VmHWM:", 6)) std::printf("self-test: peak RSS %s", line + 6);
+                std::fclose(f);
+            }
+#endif
+            std::fflush(stdout);
+            QCoreApplication::exit(0);
+        });
+    }
     return app.exec();
 }

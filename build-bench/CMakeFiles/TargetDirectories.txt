@@ -1,0 +1,12 @@
+/home/silvercobraa/Git/nam-linux-gui/gui/build-bench/CMakeFiles/NAMPlayer.dir
+/home/silvercobraa/Git/nam-linux-gui/gui/build-bench/CMakeFiles/NAMPlayerBench.dir
+/home/silvercobraa/Git/nam-linux-gui/gui/build-bench/CMakeFiles/edit_cache.dir
+/home/silvercobraa/Git/nam-linux-gui/gui/build-bench/CMakeFiles/rebuild_cache.dir
+/home/silvercobraa/Git/nam-linux-gui/gui/build-bench/CMakeFiles/list_install_components.dir
+/home/silvercobraa/Git/nam-linux-gui/gui/build-bench/CMakeFiles/install.dir
+/home/silvercobraa/Git/nam-linux-gui/gui/build-bench/CMakeFiles/install/local.dir
+/home/silvercobraa/Git/nam-linux-gui/gui/build-bench/CMakeFiles/install/strip.dir
+/home/silvercobraa/Git/nam-linux-gui/gui/build-bench/CMakeFiles/NAMPlayer_autogen_timestamp_deps.dir
+/home/silvercobraa/Git/nam-linux-gui/gui/build-bench/CMakeFiles/NAMPlayer_autogen.dir
+/home/silvercobraa/Git/nam-linux-gui/gui/build-bench/CMakeFiles/NAMPlayerBench_autogen_timestamp_deps.dir
+/home/silvercobraa/Git/nam-linux-gui/gui/build-bench/CMakeFiles/NAMPlayerBench_autogen.dir

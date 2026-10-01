@@ -1,0 +1,210 @@
+// NAMPlayerBench — times the NAMPlayer effect chain block by block, the way
+// the audio callback runs it, and reports each stage against the real-time
+// budget. The Phase 14 efficiency budget is checked with this tool:
+//
+//   DSP ≤ 10 % of a 128-frame block for the default chain on one core.
+//
+// Build: cmake -S gui -B gui/build-bench -DCMAKE_BUILD_TYPE=Release -DNAM_BUILD_BENCH=ON
+//        cmake --build gui/build-bench --target NAMPlayerBench
+// Run:   gui/build-bench/NAMPlayerBench --model amp.nam --ir cab.wav [options]
+//
+// Every effect is enabled with its default settings (stereo effects in their
+// default stereo mode) and fed white noise at -12 dBFS, so data-dependent
+// paths (gate open, compressor working) are exercised.
+
+#include <algorithm>
+#include <chrono>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <random>
+#include <string>
+#include <vector>
+
+#if defined(__x86_64__) || defined(__i386__) || defined(_M_X64)
+#include <pmmintrin.h>
+#include <xmmintrin.h>
+#endif
+
+#include "NAM/activations.h"
+
+#include "ChorusProcessor.h"
+#include "CompressorProcessor.h"
+#include "DelayProcessor.h"
+#include "DynamicWahProcessor.h"
+#include "EQProcessor.h"
+#include "FlangerProcessor.h"
+#include "IRProcessor.h"
+#include "NamProcessor.h"
+#include "NoiseGateProcessor.h"
+#include "PhaserProcessor.h"
+#include "ReverbProcessor.h"
+#include "TremoloProcessor.h"
+#include "TunerProcessor.h"
+
+namespace {
+
+struct Stage
+{
+    const char*         name;
+    EffectBase*         fx;
+    std::vector<double> us; // per-block time
+};
+
+void usage()
+{
+    std::puts("usage: NAMPlayerBench [--model file.nam] [--ir file.wav] [--frames N] [--rate HZ]\n"
+              "                      [--blocks N] [--no-fast-tanh] [--only NAME[,NAME…]]\n"
+              "Without --model/--ir the amp/cab stages are skipped. --only limits the\n"
+              "enabled stages (names as printed, case-insensitive).");
+}
+
+double percentile(std::vector<double> v, double p)
+{
+    if (v.empty()) return 0.0;
+    std::sort(v.begin(), v.end());
+    const size_t i = std::min(v.size() - 1, static_cast<size_t>(p * (v.size() - 1) + 0.5));
+    return v[i];
+}
+
+bool listed(const std::string& only, const char* name)
+{
+    if (only.empty()) return true;
+    std::string hay = "," + only + ",", needle = std::string(",") + name + ",";
+    auto lower = [](std::string s) { for (auto& c : s) c = static_cast<char>(std::tolower(c)); return s; };
+    return lower(hay).find(lower(needle)) != std::string::npos;
+}
+
+} // namespace
+
+int main(int argc, char** argv)
+{
+    std::string model, ir, only;
+    int    frames   = 128;
+    double rate     = 48000.0;
+    int    blocks   = 4000;
+    bool   fastTanh = true;
+
+    for (int i = 1; i < argc; ++i)
+    {
+        const std::string a = argv[i];
+        auto next = [&]() -> const char* {
+            if (i + 1 >= argc) { usage(); std::exit(2); }
+            return argv[++i];
+        };
+        if      (a == "--model")        model    = next();
+        else if (a == "--ir")           ir       = next();
+        else if (a == "--frames")       frames   = std::atoi(next());
+        else if (a == "--rate")         rate     = std::atof(next());
+        else if (a == "--blocks")       blocks   = std::atoi(next());
+        else if (a == "--only")         only     = next();
+        else if (a == "--no-fast-tanh") fastTanh = false;
+        else { usage(); return a == "--help" || a == "-h" ? 0 : 2; }
+    }
+    if (frames <= 0 || rate <= 0.0 || blocks <= 0) { usage(); return 2; }
+
+    if (fastTanh) nam::activations::Activation::enable_fast_tanh();
+#if defined(__x86_64__) || defined(__i386__) || defined(_M_X64)
+    // Same MXCSR as the backends' audio threads: denormals flushed to zero.
+    _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+    _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
+#endif
+
+    TunerProcessor      tuner;
+    NoiseGateProcessor  gate;
+    CompressorProcessor comp;
+    DynamicWahProcessor wah;
+    FlangerProcessor    flanger;
+    PhaserProcessor     phaser;
+    NamProcessor        nam;
+    EQProcessor         eq;
+    ChorusProcessor     chorus;
+    TremoloProcessor    tremolo;
+    DelayProcessor      delay;
+    ReverbProcessor     reverb;
+    IRProcessor         cab;
+
+    // Same defaults as AudioEngine's constructor.
+    chorus.setStereoMode(true);
+    tremolo.setStereoMode(true);
+    delay.setStereoMode(true);
+    reverb.setStereoMode(true);
+
+    std::vector<Stage> chain = {
+        {"Tuner", &tuner, {}},     {"Gate", &gate, {}},       {"Compressor", &comp, {}},
+        {"Wah", &wah, {}},         {"Flanger", &flanger, {}}, {"Phaser", &phaser, {}},
+        {"Amp", &nam, {}},         {"EQ", &eq, {}},           {"Chorus", &chorus, {}},
+        {"Tremolo", &tremolo, {}}, {"Delay", &delay, {}},     {"Reverb", &reverb, {}},
+        {"Cab", &cab, {}},
+    };
+
+    for (auto& s : chain)
+    {
+        s.fx->setSampleRate(rate);
+        s.fx->setEnabled(listed(only, s.name));
+    }
+    nam.prepareBuffer(frames);
+    if (!model.empty() && !nam.loadModel(model))
+    {
+        std::fprintf(stderr, "model: %s\n", nam.lastError().c_str());
+        return 1;
+    }
+    if (!ir.empty() && !cab.load(ir))
+    {
+        std::fprintf(stderr, "ir: %s\n", cab.lastError().c_str());
+        return 1;
+    }
+    nam.reclaimRetired(true);
+    cab.reclaimRetired(true);
+    if (model.empty()) nam.setEnabled(false);
+    if (ir.empty())    cab.setEnabled(false);
+
+    std::vector<float> L(frames), R(frames);
+    std::mt19937 rng(1234);
+    std::uniform_real_distribution<float> noise(-0.25f, 0.25f);
+
+    const int warmup = std::max(50, blocks / 20);
+    std::vector<double> total;
+    total.reserve(blocks);
+    for (auto& s : chain) s.us.reserve(blocks);
+
+    using clock = std::chrono::steady_clock;
+    for (int b = 0; b < warmup + blocks; ++b)
+    {
+        for (int i = 0; i < frames; ++i) L[i] = R[i] = noise(rng);
+        bool stereo = false;
+        double blockUs = 0.0;
+        for (auto& s : chain)
+        {
+            const auto t0 = clock::now();
+            stereo = s.fx->process(L.data(), R.data(), frames, stereo);
+            const double us = std::chrono::duration<double, std::micro>(clock::now() - t0).count();
+            blockUs += us;
+            if (b >= warmup) s.us.push_back(us);
+        }
+        if (b >= warmup) total.push_back(blockUs);
+    }
+
+    const double budgetUs = frames / rate * 1e6;
+    std::printf("NAMPlayerBench  %d frames @ %.0f Hz  budget %.1f µs/block  %d blocks  fast tanh %s\n",
+                frames, rate, budgetUs, blocks, fastTanh ? "on" : "off");
+    if (!model.empty()) std::printf("model  %s\n", model.c_str());
+    if (!ir.empty())    std::printf("ir     %s\n", ir.c_str());
+    std::printf("\n%-12s %10s %10s %10s %8s\n", "stage", "mean µs", "p99 µs", "max µs", "% budget");
+    for (const auto& s : chain)
+    {
+        if (!s.fx->isEnabled()) continue;
+        double sum = 0.0;
+        for (double v : s.us) sum += v;
+        const double mean = sum / s.us.size();
+        std::printf("%-12s %10.2f %10.2f %10.2f %7.2f%%\n", s.name, mean, percentile(s.us, 0.99),
+                    percentile(s.us, 1.0), mean / budgetUs * 100.0);
+    }
+    double sum = 0.0;
+    for (double v : total) sum += v;
+    const double mean = sum / total.size();
+    std::printf("%-12s %10.2f %10.2f %10.2f %7.2f%%\n", "TOTAL", mean, percentile(total, 0.99),
+                percentile(total, 1.0), mean / budgetUs * 100.0);
+    return 0;
+}

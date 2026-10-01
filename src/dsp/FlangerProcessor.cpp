@@ -26,8 +26,9 @@ float FlangerProcessor::readInterp(const std::vector<float>& buf, int writePos, 
     float readF = static_cast<float>(writePos) - delaySamples;
     while (readF < 0.0f) readF += sz;
 
-    int   r0   = static_cast<int>(readF) % sz;
-    int   r1   = (r0 + 1) % sz;
+    int   r0   = static_cast<int>(readF); // < sz: delaySamples >= 1
+    if (r0 >= sz) r0 -= sz;
+    int   r1   = r0 + 1 == sz ? 0 : r0 + 1;
     float frac = readF - std::floor(readF);
     return buf[r0] * (1.0f - frac) + buf[r1] * frac;
 }
@@ -43,7 +44,7 @@ void FlangerProcessor::processSample(float in, float phase,
     buf[writePos] = in + fbAmt * fb;
     float wet     = readInterp(buf, writePos, delaySam);
     fb            = wet;
-    writePos      = (writePos + 1) % sz;
+    if (++writePos == sz) writePos = 0;
 
     out = in * (1.0f - mix) + wet * mix;
 }

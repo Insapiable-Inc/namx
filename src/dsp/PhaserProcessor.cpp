@@ -11,18 +11,19 @@ void PhaserProcessor::reset()
     mPhase    = 0.0f;
 }
 
-float PhaserProcessor::processChannel(float in, float phase,
-    std::array<float, kStages>& x1,
-    std::array<float, kStages>& y1,
-    float& fbState,
-    float depth, float fbAmt, float mix) const
+float PhaserProcessor::coeffAt(float phase, float depth) const
 {
     float lfo = 0.5f * (1.0f + std::sin(2.0f * kPi * phase));
     float fc  = kMinFreq * std::pow(kMaxFreq / kMinFreq, depth * lfo);
+    float w   = std::tan(kPi * fc / static_cast<float>(mSampleRate));
+    return (w - 1.0f) / (w + 1.0f);
+}
 
-    float w = std::tan(kPi * fc / static_cast<float>(mSampleRate));
-    float d = (w - 1.0f) / (w + 1.0f);
-
+float PhaserProcessor::processChannel(float in, float d,
+    std::array<float, kStages>& x1,
+    std::array<float, kStages>& y1,
+    float& fbState, float fbAmt, float mix) const
+{
     float sig = in + fbAmt * fbState;
 
     for (int s = 0; s < kStages; ++s)
@@ -44,9 +45,11 @@ void PhaserProcessor::processBlockMono(float* buf, int nframes)
     const float mix   = mMix.load()      / 100.0f;
     const float phInc = mRate.load()     / static_cast<float>(mSampleRate);
 
+    float d = 0.0f;
     for (int i = 0; i < nframes; ++i)
     {
-        buf[i] = processChannel(buf[i], mPhase, mX1L, mY1L, mFbStateL, depth, fbAmt, mix);
+        if (i % kCtrlInterval == 0) d = coeffAt(mPhase, depth);
+        buf[i] = processChannel(buf[i], d, mX1L, mY1L, mFbStateL, fbAmt, mix);
         mPhase += phInc;
         if (mPhase >= 1.0f) mPhase -= 1.0f;
     }
@@ -59,11 +62,13 @@ void PhaserProcessor::processBlockDual(float* L, float* R, int nframes)
     const float mix   = mMix.load()      / 100.0f;
     const float phInc = mRate.load()     / static_cast<float>(mSampleRate);
 
+    float d = 0.0f;
     for (int i = 0; i < nframes; ++i)
     {
         // Same LFO phase for both channels: identical mono effect per channel.
-        L[i] = processChannel(L[i], mPhase, mX1L, mY1L, mFbStateL, depth, fbAmt, mix);
-        R[i] = processChannel(R[i], mPhase, mX1R, mY1R, mFbStateR, depth, fbAmt, mix);
+        if (i % kCtrlInterval == 0) d = coeffAt(mPhase, depth);
+        L[i] = processChannel(L[i], d, mX1L, mY1L, mFbStateL, fbAmt, mix);
+        R[i] = processChannel(R[i], d, mX1R, mY1R, mFbStateR, fbAmt, mix);
         mPhase += phInc;
         if (mPhase >= 1.0f) mPhase -= 1.0f;
     }
@@ -76,10 +81,16 @@ void PhaserProcessor::processBlockStereoOut(float* L, float* R, int nframes)
     const float mix   = mMix.load()      / 100.0f;
     const float phInc = mRate.load()     / static_cast<float>(mSampleRate);
 
+    float dL = 0.0f, dR = 0.0f;
     for (int i = 0; i < nframes; ++i)
     {
-        L[i] = processChannel(L[i], mPhase,        mX1L, mY1L, mFbStateL, depth, fbAmt, mix);
-        R[i] = processChannel(R[i], mPhase + 0.5f, mX1R, mY1R, mFbStateR, depth, fbAmt, mix);
+        if (i % kCtrlInterval == 0)
+        {
+            dL = coeffAt(mPhase, depth);
+            dR = coeffAt(mPhase + 0.5f, depth); // 180° apart
+        }
+        L[i] = processChannel(L[i], dL, mX1L, mY1L, mFbStateL, fbAmt, mix);
+        R[i] = processChannel(R[i], dR, mX1R, mY1R, mFbStateR, fbAmt, mix);
         mPhase += phInc;
         if (mPhase >= 1.0f) mPhase -= 1.0f;
     }

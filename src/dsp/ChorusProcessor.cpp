@@ -25,8 +25,9 @@ float ChorusProcessor::readInterp(const std::vector<float>& buf, int writePos, f
     float readF = static_cast<float>(writePos) - delaySamples;
     while (readF < 0.0f) readF += sz;
 
-    int   r0   = static_cast<int>(readF) % sz;
-    int   r1   = (r0 + 1) % sz;
+    int   r0   = static_cast<int>(readF); // < sz: delaySamples >= 1
+    if (r0 >= sz) r0 -= sz;
+    int   r1   = r0 + 1 == sz ? 0 : r0 + 1;
     float frac = readF - std::floor(readF);
     return buf[r0] * (1.0f - frac) + buf[r1] * frac;
 }
@@ -49,7 +50,7 @@ void ChorusProcessor::processBlockMono(float* buf, int nframes)
         mBufL[mWriteL] = buf[i];
         float wet = readInterp(mBufL, mWriteL, delaySamples);
         buf[i] = buf[i] * (1.0f - mix) + wet * mix;
-        mWriteL = (mWriteL + 1) % sz;
+        if (++mWriteL == sz) mWriteL = 0;
 
         mPhase += phInc;
         if (mPhase >= 1.0f) mPhase -= 1.0f;
@@ -75,12 +76,12 @@ void ChorusProcessor::processBlockDual(float* L, float* R, int nframes)
         mBufL[mWriteL] = L[i];
         float wetL = readInterp(mBufL, mWriteL, del);
         L[i] = L[i] * (1.0f - mix) + wetL * mix;
-        mWriteL = (mWriteL + 1) % szL;
+        if (++mWriteL == szL) mWriteL = 0;
 
         mBufR[mWriteR] = R[i];
         float wetR = readInterp(mBufR, mWriteR, del);
         R[i] = R[i] * (1.0f - mix) + wetR * mix;
-        mWriteR = (mWriteR + 1) % szR;
+        if (++mWriteR == szR) mWriteR = 0;
 
         mPhase += phInc;
         if (mPhase >= 1.0f) mPhase -= 1.0f;
@@ -108,12 +109,12 @@ void ChorusProcessor::processBlockStereoOut(float* L, float* R, int nframes)
         mBufL[mWriteL] = L[i];
         float wetL = readInterp(mBufL, mWriteL, delL);
         L[i] = L[i] * (1.0f - mix) + wetL * mix;
-        mWriteL = (mWriteL + 1) % szL;
+        if (++mWriteL == szL) mWriteL = 0;
 
         mBufR[mWriteR] = R[i];
         float wetR = readInterp(mBufR, mWriteR, delR);
         R[i] = R[i] * (1.0f - mix) + wetR * mix;
-        mWriteR = (mWriteR + 1) % szR;
+        if (++mWriteR == szR) mWriteR = 0;
 
         mPhase += phInc;
         if (mPhase >= 1.0f) mPhase -= 1.0f;

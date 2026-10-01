@@ -1,0 +1,7 @@
+{
+	"InstallScripts" : 
+	[
+		"/home/silvercobraa/Git/nam-linux-gui/gui/build-bench/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

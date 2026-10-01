@@ -4,9 +4,15 @@
 #include <chrono>
 #include <cmath>
 #include "Log.h"
+#include "NAM/activations.h"
 
 AudioEngine::AudioEngine()
 {
+    // NAM's fast tanh approximation: ~2.4× on Tanh WaveNets (the common
+    // architecture), inaudible — the official plugin enables it too. Global
+    // to the NAM core, so it covers every model loaded later.
+    nam::activations::Activation::enable_fast_tanh();
+
     // Effects that are naturally stereo default to stereo mode on.
     // Flanger/Phaser stereo mode is user-controlled (default off).
     mChorus.setStereoMode(true);

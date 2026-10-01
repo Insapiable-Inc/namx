@@ -213,6 +213,9 @@ cmake --build build-release --parallel
 |------|---------|-------------|
 | `-DCMAKE_BUILD_TYPE=Release` | Release | `Debug` for symbols, `Release` for optimization |
 | `-DCMAKE_PREFIX_PATH=...` | none | Qt install root on Windows |
+| `-DNAM_NATIVE_OPT=OFF` | ON | Portable AVX2/FMA instead of `-march=native` (release/CI builds) |
+| `-DNAM_BUILD_TESTS=ON` | OFF | `Tone3000ClientTest` |
+| `-DNAM_BUILD_BENCH=ON` | OFF | `NAMPlayerBench`, the chain benchmark (see Troubleshooting → High CPU usage) |
 
 ---
 
@@ -456,9 +459,35 @@ IR files are compatible with any standard cab sim WAV (e.g., from OwnHammer, Cel
 
 ### High CPU usage
 
+- The status bar's **DSP %** is the audio thread's time per buffer as a share of
+  the buffer's duration (highest in the last half second); **xruns** counts dropouts.
+  Click either to reset.
 - Increase the JACK buffer size (`-p 512` or `-p 1024`).
 - Use a Release build (`./build.sh Release`), not Debug.
-- Large NAM models (e.g., standard WaveNet) are CPU-heavy by design.
+- Large NAM models (e.g., standard WaveNet) are CPU-heavy by design, and a stereo
+  effect placed *before* the Amplifier runs the model twice (one per channel).
+- With the `powersave` CPU governor, cores idle at low clock between audio buffers,
+  so DSP % reads several times higher than the benchmark below. `performance`
+  (or `cpupower frequency-set -g performance`) trades power for headroom.
+
+**Measuring.** `NAMPlayerBench` times every effect in chain order, block by block,
+against the real-time budget:
+
+```bash
+cmake -S gui -B gui/build-bench -DCMAKE_BUILD_TYPE=Release -DNAM_BUILD_BENCH=ON
+cmake --build gui/build-bench --target NAMPlayerBench
+gui/build-bench/NAMPlayerBench --model amp.nam --ir cab.wav   # --frames 128 --rate 48000 by default
+```
+
+`NAMPlayer --self-test-and-exit` prints the cold-start time and peak memory.
+
+**Budget** (checked with the tools above): the default chain with a standard
+WaveNet and an IR stays under **10 %** of a 128-frame block on one core; the idle UI
+does no periodic repaints (meters repaint only when they move and pause while the
+window is minimized); the window is up in **< 1 s**. Reference numbers (i9-12900K,
+128 frames @ 48 kHz, standard WaveNet + 2048-tap IR, every effect on): **4.1 %**
+(amp 2.5 %, cab 1.1 %, all other effects together 0.4 %); cold start 135 ms; peak
+RSS 170 MB.
 
 ### Submodule build errors (missing eigen / wav.h)
 

@@ -44,9 +44,13 @@ private:
     static constexpr float kMinFreq = 200.0f;
     static constexpr float kMaxFreq = 4000.0f;
 
-    float processChannel(float in, float phase,
+    // All-pass coefficient for an LFO phase (sin + pow + tan). Evaluated at
+    // control rate — every kCtrlInterval samples — not per sample.
+    float coeffAt(float phase, float depth) const;
+    static constexpr int kCtrlInterval = 16; // 0.33 ms @ 48 kHz; LFO ≤ 5 Hz
+
+    float processChannel(float in, float d,
                          std::array<float, kStages>& x1,
                          std::array<float, kStages>& y1,
-                         float& fbState,
-                         float depth, float fbAmt, float mix) const;
+                         float& fbState, float fbAmt, float mix) const;
 };

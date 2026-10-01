@@ -2,6 +2,8 @@
 #include <cmath>
 #include <algorithm>
 
+static constexpr float kDbPerOctave = 6.0205999f; // 20·log10(2)
+
 void CompressorProcessor::reset()
 {
     mEnvDB[0]  = mEnvDB[1]  = -120.0f;
@@ -24,8 +26,10 @@ void CompressorProcessor::processChannel(float* buf, int nframes, int ch)
 
     for (int i = 0; i < nframes; ++i)
     {
+        // 20·log10(x) = (20·log10 2)·log2(x); log2/exp2 are much cheaper
+        // than log10/pow per sample.
         float level   = std::abs(buf[i]);
-        float levelDB = (level > 1e-9f) ? 20.0f * std::log10(level) : -120.0f;
+        float levelDB = (level > 1e-9f) ? kDbPerOctave * std::log2(level) : -120.0f;
 
         if (levelDB > envDB)
             envDB = atCoeff  * envDB + (1.0f - atCoeff)  * levelDB;
@@ -42,7 +46,7 @@ void CompressorProcessor::processChannel(float* buf, int nframes, int ch)
             gainDB = relCoeff * gainDB + (1.0f - relCoeff) * targetGR;
 
         minGainDB = std::min(minGainDB, gainDB);
-        buf[i] *= std::pow(10.0f, (gainDB + makeup) / 20.0f);
+        buf[i] *= std::exp2((gainDB + makeup) * (1.0f / kDbPerOctave));
     }
     if (-minGainDB > mGrPeakDB.load(std::memory_order_relaxed))
         mGrPeakDB.store(-minGainDB, std::memory_order_relaxed);

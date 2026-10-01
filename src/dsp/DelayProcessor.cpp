@@ -26,11 +26,12 @@ void DelayProcessor::processBlockMono(float* buf, int nframes)
 
     for (int i = 0; i < nframes; ++i)
     {
-        int   readPos = (mWriteL - delay + sz) % sz;
+        int   readPos = mWriteL - delay;
+        if (readPos < 0) readPos += sz;
         float delayed = mBufL[readPos];
         mBufL[mWriteL] = buf[i] + fb * delayed;
         buf[i] = buf[i] * (1.0f - mix) + delayed * mix;
-        mWriteL = (mWriteL + 1) % sz;
+        if (++mWriteL == sz) mWriteL = 0;
     }
 }
 
@@ -44,17 +45,19 @@ void DelayProcessor::processBlockDual(float* L, float* R, int nframes)
 
     for (int i = 0; i < nframes; ++i)
     {
-        int   readPosL = (mWriteL - delay + sz) % sz;
+        int   readPosL = mWriteL - delay;
+        if (readPosL < 0) readPosL += sz;
         float delayedL = mBufL[readPosL];
         mBufL[mWriteL] = L[i] + fb * delayedL;
         L[i] = L[i] * (1.0f - mix) + delayedL * mix;
-        mWriteL = (mWriteL + 1) % sz;
+        if (++mWriteL == sz) mWriteL = 0;
 
-        int   readPosR = (mWriteR - delay + sz) % sz;
+        int   readPosR = mWriteR - delay;
+        if (readPosR < 0) readPosR += sz;
         float delayedR = mBufR[readPosR];
         mBufR[mWriteR] = R[i] + fb * delayedR;
         R[i] = R[i] * (1.0f - mix) + delayedR * mix;
-        mWriteR = (mWriteR + 1) % sz;
+        if (++mWriteR == sz) mWriteR = 0;
     }
 }
 
@@ -68,8 +71,10 @@ void DelayProcessor::processBlockStereoOut(float* L, float* R, int nframes)
 
     for (int i = 0; i < nframes; ++i)
     {
-        int readPosL = (mWriteL - delay + sz) % sz;
-        int readPosR = (mWriteR - delay + sz) % sz;
+        int readPosL = mWriteL - delay;
+        if (readPosL < 0) readPosL += sz;
+        int readPosR = mWriteR - delay;
+        if (readPosR < 0) readPosR += sz;
 
         float delayedL = mBufL[readPosL];
         float delayedR = mBufR[readPosR];
@@ -80,7 +85,7 @@ void DelayProcessor::processBlockStereoOut(float* L, float* R, int nframes)
         L[i] = L[i] * (1.0f - mix) + delayedL * mix;
         R[i] = R[i] * (1.0f - mix) + delayedR * mix;
 
-        mWriteL = (mWriteL + 1) % sz;
-        mWriteR = (mWriteR + 1) % sz;
+        if (++mWriteL == sz) mWriteL = 0;
+        if (++mWriteR == sz) mWriteR = 0;
     }
 }
