@@ -825,10 +825,15 @@ commit.
       waits for a Windows build.
 - [ ] **Namespace:** wrap `gui/` in `namespace npl` (placeholder — renamed along with
       the app once it has a final name) with the shared `using std::…` header.
-- [ ] **Naming:** `snake_case` methods/locals/members, `SCREAMING_SNAKE_CASE`
+- [x] **Naming:** `snake_case` methods/locals/members, `SCREAMING_SNAKE_CASE`
       constants, no `m`/`k`/`s` prefixes; unit suffixes `_ms`/`_db`/`_hz`. Accessors:
       public members on plain containers, `get_`/`set_` on classes with an invariant.
       Mechanical, one directory per commit (`dsp/`, `midi/`, `net/`, `ui/`).
+      Done 2026-10-01 in passes (clang-tidy case conversion → getter collisions →
+      no name reuse → prefix strip), all by symbol (libclang/clang-tidy), not text;
+      `-Wshadow` clean. Windows-only files renamed by the same map, unverified until a
+      Windows CI build. Accessors: `get_` where a getter collided with its member;
+      other getters (`status_string()`, `value()`…) keep their names for now.
 - [ ] **`auto`:** spell out built-in types and function results; keep it for class
       casts, iterators, lambdas, range-for.
 - [ ] **Lambdas:** one-statement bodies; the ~110 multi-line ones (32 over 10 lines,
