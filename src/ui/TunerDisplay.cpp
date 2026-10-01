@@ -66,16 +66,17 @@ TunerDisplay::TunerDisplay(QWidget* parent)
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 }
 
-void TunerDisplay::set_reading(const QString& note, float cents, bool valid, float hz) {
-    const bool same_cents = std::lround(cents) == std::lround(m_cents);
-    const bool same_hz = !m_show_hz || std::lround(hz * 10.0f) == std::lround(m_hz * 10.0f);
-    if (valid == m_valid && note == m_note && ((same_cents && same_hz) || !valid)) {
+void TunerDisplay::set_reading(const QString& new_note, float new_cents, bool new_valid,
+                               float new_hz) {
+    const bool same_cents = std::lround(new_cents) == std::lround(m_cents);
+    const bool same_hz = !m_show_hz || std::lround(new_hz * 10.0f) == std::lround(m_hz * 10.0f);
+    if (new_valid == m_valid && new_note == m_note && ((same_cents && same_hz) || !new_valid)) {
         return;
     }
-    m_note = note;
-    m_cents = cents;
-    m_valid = valid;
-    m_hz = hz;
+    m_note = new_note;
+    m_cents = new_cents;
+    m_valid = new_valid;
+    m_hz = new_hz;
     update();
 }
 
@@ -87,11 +88,11 @@ void TunerDisplay::set_show_hz(bool on) {
     update();
 }
 
-void TunerDisplay::set_reference(int hz) {
-    if (hz == m_reference) {
+void TunerDisplay::set_reference(int new_hz) {
+    if (new_hz == m_reference) {
         return;
     }
-    m_reference = hz;
+    m_reference = new_hz;
     update();
 }
 

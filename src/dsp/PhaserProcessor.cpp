@@ -11,7 +11,7 @@ void PhaserProcessor::reset() {
     m_x1_r.fill(0.f);
     m_y1_r.fill(0.f);
     m_fb_state_l = m_fb_state_r = 0.0f;
-    m_phase = 0.0f;
+    m_lfo_phase = 0.0f;
 }
 
 float PhaserProcessor::coeff_at(float phase, float depth) const {
@@ -64,86 +64,87 @@ float PhaserProcessor::process_channel(float in, float d, std::array<float, K_ST
 }
 
 void PhaserProcessor::process_block_mono(float* buf, size_t nframes) {
-    const float depth = m_depth.load() / 100.0f;
-    const float fb_amt = m_feedback.load() / 100.0f;
-    const float mix = m_mix.load() / 100.0f;
-    const float ph_inc = m_rate.load() / static_cast<float>(m_sample_rate);
+    const float depth = m_depth_pct.load() / 100.0f;
+    const float fb_amt = m_feedback_pct.load() / 100.0f;
+    const float mix = m_mix_pct.load() / 100.0f;
+    const float ph_inc = m_rate_hz.load() / static_cast<float>(m_sample_rate);
 
-    const bool vibe = m_vibe.load(std::memory_order_relaxed);
+    const bool current_vibe = m_vibe.load(std::memory_order_relaxed);
     float d = 0.0f;
     std::array<float, K_STAGES> dv{};
     for (size_t i = 0; i < nframes; ++i) {
         if (i % K_CTRL_INTERVAL == 0) {
-            if (vibe) {
-                vibe_coeffs(m_phase, depth, dv);
+            if (current_vibe) {
+                vibe_coeffs(m_lfo_phase, depth, dv);
             } else {
-                d = coeff_at(m_phase, depth);
+                d = coeff_at(m_lfo_phase, depth);
             }
         }
-        buf[i] = vibe ? process_vibe(buf[i], dv, m_x1_l, m_y1_l, mix)
-                      : process_channel(buf[i], d, m_x1_l, m_y1_l, m_fb_state_l, fb_amt, mix);
-        m_phase += ph_inc;
-        if (m_phase >= 1.0f) {
-            m_phase -= 1.0f;
+        buf[i] = current_vibe
+                     ? process_vibe(buf[i], dv, m_x1_l, m_y1_l, mix)
+                     : process_channel(buf[i], d, m_x1_l, m_y1_l, m_fb_state_l, fb_amt, mix);
+        m_lfo_phase += ph_inc;
+        if (m_lfo_phase >= 1.0f) {
+            m_lfo_phase -= 1.0f;
         }
     }
 }
 
 void PhaserProcessor::process_block_dual(float* l, float* r, size_t nframes) {
-    const float depth = m_depth.load() / 100.0f;
-    const float fb_amt = m_feedback.load() / 100.0f;
-    const float mix = m_mix.load() / 100.0f;
-    const float ph_inc = m_rate.load() / static_cast<float>(m_sample_rate);
+    const float depth = m_depth_pct.load() / 100.0f;
+    const float fb_amt = m_feedback_pct.load() / 100.0f;
+    const float mix = m_mix_pct.load() / 100.0f;
+    const float ph_inc = m_rate_hz.load() / static_cast<float>(m_sample_rate);
 
-    const bool vibe = m_vibe.load(std::memory_order_relaxed);
+    const bool current_vibe = m_vibe.load(std::memory_order_relaxed);
     float d = 0.0f;
     std::array<float, K_STAGES> dv{};
     for (size_t i = 0; i < nframes; ++i) {
         // Same LFO phase for both channels: identical mono effect per channel.
         if (i % K_CTRL_INTERVAL == 0) {
-            if (vibe) {
-                vibe_coeffs(m_phase, depth, dv);
+            if (current_vibe) {
+                vibe_coeffs(m_lfo_phase, depth, dv);
             } else {
-                d = coeff_at(m_phase, depth);
+                d = coeff_at(m_lfo_phase, depth);
             }
         }
-        l[i] = vibe ? process_vibe(l[i], dv, m_x1_l, m_y1_l, mix)
-                    : process_channel(l[i], d, m_x1_l, m_y1_l, m_fb_state_l, fb_amt, mix);
-        r[i] = vibe ? process_vibe(r[i], dv, m_x1_r, m_y1_r, mix)
-                    : process_channel(r[i], d, m_x1_r, m_y1_r, m_fb_state_r, fb_amt, mix);
-        m_phase += ph_inc;
-        if (m_phase >= 1.0f) {
-            m_phase -= 1.0f;
+        l[i] = current_vibe ? process_vibe(l[i], dv, m_x1_l, m_y1_l, mix)
+                            : process_channel(l[i], d, m_x1_l, m_y1_l, m_fb_state_l, fb_amt, mix);
+        r[i] = current_vibe ? process_vibe(r[i], dv, m_x1_r, m_y1_r, mix)
+                            : process_channel(r[i], d, m_x1_r, m_y1_r, m_fb_state_r, fb_amt, mix);
+        m_lfo_phase += ph_inc;
+        if (m_lfo_phase >= 1.0f) {
+            m_lfo_phase -= 1.0f;
         }
     }
 }
 
 void PhaserProcessor::process_block_stereo_out(float* l, float* r, size_t nframes) {
-    const float depth = m_depth.load() / 100.0f;
-    const float fb_amt = m_feedback.load() / 100.0f;
-    const float mix = m_mix.load() / 100.0f;
-    const float ph_inc = m_rate.load() / static_cast<float>(m_sample_rate);
+    const float depth = m_depth_pct.load() / 100.0f;
+    const float fb_amt = m_feedback_pct.load() / 100.0f;
+    const float mix = m_mix_pct.load() / 100.0f;
+    const float ph_inc = m_rate_hz.load() / static_cast<float>(m_sample_rate);
 
-    const bool vibe = m_vibe.load(std::memory_order_relaxed);
+    const bool current_vibe = m_vibe.load(std::memory_order_relaxed);
     float d_l = 0.0f, d_r = 0.0f;
     std::array<float, K_STAGES> dv_l{}, dv_r{};
     for (size_t i = 0; i < nframes; ++i) {
         if (i % K_CTRL_INTERVAL == 0) {
-            if (vibe) {
-                vibe_coeffs(m_phase, depth, dv_l);
-                vibe_coeffs(m_phase + 0.5f, depth, dv_r);
+            if (current_vibe) {
+                vibe_coeffs(m_lfo_phase, depth, dv_l);
+                vibe_coeffs(m_lfo_phase + 0.5f, depth, dv_r);
             } else {
-                d_l = coeff_at(m_phase, depth);
-                d_r = coeff_at(m_phase + 0.5f, depth); // 180° apart
+                d_l = coeff_at(m_lfo_phase, depth);
+                d_r = coeff_at(m_lfo_phase + 0.5f, depth); // 180° apart
             }
         }
-        l[i] = vibe ? process_vibe(l[i], dv_l, m_x1_l, m_y1_l, mix)
-                    : process_channel(l[i], d_l, m_x1_l, m_y1_l, m_fb_state_l, fb_amt, mix);
-        r[i] = vibe ? process_vibe(r[i], dv_r, m_x1_r, m_y1_r, mix)
-                    : process_channel(r[i], d_r, m_x1_r, m_y1_r, m_fb_state_r, fb_amt, mix);
-        m_phase += ph_inc;
-        if (m_phase >= 1.0f) {
-            m_phase -= 1.0f;
+        l[i] = current_vibe ? process_vibe(l[i], dv_l, m_x1_l, m_y1_l, mix)
+                            : process_channel(l[i], d_l, m_x1_l, m_y1_l, m_fb_state_l, fb_amt, mix);
+        r[i] = current_vibe ? process_vibe(r[i], dv_r, m_x1_r, m_y1_r, mix)
+                            : process_channel(r[i], d_r, m_x1_r, m_y1_r, m_fb_state_r, fb_amt, mix);
+        m_lfo_phase += ph_inc;
+        if (m_lfo_phase >= 1.0f) {
+            m_lfo_phase -= 1.0f;
         }
     }
 }

@@ -13,10 +13,10 @@ class GainReductionMeter : public QWidget
     Q_OBJECT
 public:
     /// `rangeDb` = reduction at full bar; `accent` = the card's color.
-    GainReductionMeter(float range_db, const QColor& accent, QWidget* parent = nullptr);
+    GainReductionMeter(float new_range_db, const QColor& new_accent, QWidget* parent = nullptr);
 
     /// Deepest reduction since the last call (dB, ≥ 0).
-    void set_reduction(float d_b);
+    void set_reduction(float new_db);
 
     QSize sizeHint() const override {
         return {90, 34};

@@ -19,8 +19,8 @@ public:
     void set_semitones(float st) {
         m_semis.store(st);
     }
-    void set_mix(float pct) {
-        m_mix.store(pct);
+    void set_mix_pct(float pct) {
+        m_mix_pct.store(pct);
     }
 
 protected:
@@ -42,7 +42,7 @@ private:
         if (std::abs(st) < 0.01f) {
             return;
         }
-        const float mix = m_mix.load(std::memory_order_relaxed) / 100.0f;
+        const float mix = m_mix_pct.load(std::memory_order_relaxed) / 100.0f;
         PitchShifter& s = m_shift[ch];
         s.set_semitones(st);
         for (size_t i = 0; i < n; ++i) {
@@ -51,6 +51,6 @@ private:
     }
 
     std::atomic<float> m_semis{0.0f};
-    std::atomic<float> m_mix{100.0f};
+    std::atomic<float> m_mix_pct{100.0f};
     PitchShifter m_shift[2];
 };

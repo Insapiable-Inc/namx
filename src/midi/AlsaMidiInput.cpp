@@ -139,12 +139,12 @@ private:
             snd_seq_port_info_alloca(&pinfo);
             snd_seq_client_info_set_client(cinfo, -1);
             while (snd_seq_query_next_client(m_seq, cinfo) >= 0) {
-                const int client = snd_seq_client_info_get_client(cinfo);
-                if (client == SND_SEQ_CLIENT_SYSTEM || client == m_client) {
+                const int client_id = snd_seq_client_info_get_client(cinfo);
+                if (client_id == SND_SEQ_CLIENT_SYSTEM || client_id == m_client) {
                     continue;
                 }
                 const QString client_name = QString::fromUtf8(snd_seq_client_info_get_name(cinfo));
-                snd_seq_port_info_set_client(pinfo, client);
+                snd_seq_port_info_set_client(pinfo, client_id);
                 snd_seq_port_info_set_port(pinfo, -1);
                 while (snd_seq_query_next_port(m_seq, pinfo) >= 0) {
                     const unsigned caps = snd_seq_port_info_get_capability(pinfo);
@@ -157,7 +157,7 @@ private:
                     const QString name = port_name.startsWith(client_name)
                                              ? port_name
                                              : client_name + ": " + port_name;
-                    found[name] = {client, snd_seq_port_info_get_port(pinfo)};
+                    found[name] = {client_id, snd_seq_port_info_get_port(pinfo)};
                 }
             }
             m_present = std::move(found);

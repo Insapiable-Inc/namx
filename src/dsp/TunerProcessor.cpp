@@ -103,12 +103,12 @@ float TunerProcessor::detect_pitch() {
         return 0.0f;
     }
 
-    const float fs = m_fs.load();
+    const float current_fs = m_fs.load();
     const size_t win_len = std::min<size_t>(K_BUF_SIZE, 1024);
     const size_t min_lag =
-        std::max<size_t>(2, static_cast<size_t>(fs / 1400.0f)); // ~1400 Hz ceiling
+        std::max<size_t>(2, static_cast<size_t>(current_fs / 1400.0f)); // ~1400 Hz ceiling
     const size_t max_lag =
-        std::min(static_cast<size_t>(fs / 50.0f), K_BUF_SIZE - win_len - 1); // ~50 Hz floor
+        std::min(static_cast<size_t>(current_fs / 50.0f), K_BUF_SIZE - win_len - 1); // ~50 Hz floor
     if (max_lag <= min_lag) {
         return 0.0f;
     }
@@ -206,11 +206,11 @@ float TunerProcessor::detect_pitch() {
         const float denom = 2.0f * (2.0f * y1 - y0 - y2);
         if (std::abs(denom) > 1e-6f) {
             const float delta = std::max(-1.0f, std::min(1.0f, (y2 - y0) / denom));
-            return fs / (static_cast<float>(pick_lag) + delta);
+            return current_fs / (static_cast<float>(pick_lag) + delta);
         }
     }
 
-    return fs / static_cast<float>(pick_lag);
+    return current_fs / static_cast<float>(pick_lag);
 }
 
 int TunerProcessor::freq_to_midi(float freq, float ref_hz) {

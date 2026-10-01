@@ -32,13 +32,13 @@ void ToggleSwitch::paintEvent(QPaintEvent*) {
     const qreal rx = h / 2.0;
 
     // ---- Track ----
-    const QColor accent = m_accent;
+    const QColor color = m_accent;
     const QColor track_off = m_hovered ? Theme::track_hover() : Theme::track();
 
     if (isChecked()) {
         QLinearGradient trk(0, 0, 0, h);
-        trk.setColorAt(0.0, accent.lighter(115));
-        trk.setColorAt(1.0, accent.darker(110));
+        trk.setColorAt(0.0, color.lighter(115));
+        trk.setColorAt(1.0, color.darker(110));
         p.setBrush(trk);
     } else {
         p.setBrush(track_off);

@@ -35,18 +35,18 @@ public:
     bool process(float* l, float* r, size_t n, bool input_is_stereo) override;
     void reset() override;
 
-    void set_gain(Band b, double d_b);
+    void set_gain(Band b, double db);
     void set_freq(Band b, double hz);
 
     // Back-compat names (3-band era).
-    void set_low_gain(double d_b) {
-        set_gain(BASS, d_b);
+    void set_low_gain(double db) {
+        set_gain(BASS, db);
     }
-    void set_mid_gain(double d_b) {
-        set_gain(MIDDLE, d_b);
+    void set_mid_gain(double db) {
+        set_gain(MIDDLE, db);
     }
-    void set_treble_gain(double d_b) {
-        set_gain(TREBLE, d_b);
+    void set_treble_gain(double db) {
+        set_gain(TREBLE, db);
     }
 
 protected:
@@ -85,8 +85,8 @@ private:
 
     std::array<double, K_BANDS> m_gain{}; // dB (shelf/peak bands)
     std::array<double, K_BANDS> m_freq{20.0, 250.0, 1000.0, 3000.0, 4000.0, 20000.0};
-    std::array<Biquad, K_BANDS> m_l, m_r;
-    std::array<bool, K_BANDS> m_on{}; // band changes the signal (skip flat ones)
+    std::array<Biquad, K_BANDS> m_filters_l, m_filters_r;
+    std::array<bool, K_BANDS> m_band_on{}; // band changes the signal (skip flat ones)
 
     std::mutex m_mutex; // GUI writes coefficients; audio thread uses try_lock
 };

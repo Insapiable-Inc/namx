@@ -93,17 +93,17 @@ Cuts cuts_for(double sr, float low_hz, float high_hz, float pre_ms, float max_pr
 } // namespace
 
 void ReverbProcessor::process_block_stereo_out(float* l, float* r, size_t nframes) {
-    const float room_size = m_room_size.load() / 100.0f;
-    const float damping = m_damping.load() / 100.0f;
-    const float width = m_width.load() / 100.0f;
-    const float mix = m_mix.load() / 100.0f;
+    const float room_size = m_room_size_pct.load() / 100.0f;
+    const float damping = m_damping_pct.load() / 100.0f;
+    const float width = m_width_pct.load() / 100.0f;
+    const float mix = m_mix_pct.load() / 100.0f;
     const float feedback = 0.28f + room_size * 0.7f;
     const float damp = damping * 0.4f;
     const Cuts cut = cuts_for(m_sample_rate, m_low_cut_hz.load(), m_high_cut_hz.load(),
                               m_pre_delay_ms.load(), K_MAX_PRE_DELAY_MS);
 
     // Shimmer loop gain stays well under 1 — the comb feedback adds its own.
-    const float shim = std::clamp(m_shimmer.load(), 0.0f, 100.0f) / 100.0f * 0.45f;
+    const float shim = std::clamp(m_shimmer_pct.load(), 0.0f, 100.0f) / 100.0f * 0.45f;
 
     for (size_t i = 0; i < nframes; ++i) {
         float in_mono = pre_delay(0, (l[i] + r[i]) * 0.015f, cut.pre) + shim * m_shim_fb[0];
@@ -134,15 +134,15 @@ void ReverbProcessor::process_block_stereo_out(float* l, float* r, size_t nframe
 void ReverbProcessor::process_mono_bank(float* buf, size_t nframes, int bank,
                                         std::array<CombFilter, K_NUM_COMBS>& combs,
                                         std::array<AllPassFilter, K_NUM_ALL_PASSES>& aps) {
-    const float room_size = m_room_size.load() / 100.0f;
-    const float damping = m_damping.load() / 100.0f;
-    const float mix = m_mix.load() / 100.0f;
+    const float room_size = m_room_size_pct.load() / 100.0f;
+    const float damping = m_damping_pct.load() / 100.0f;
+    const float mix = m_mix_pct.load() / 100.0f;
     const float feedback = 0.28f + room_size * 0.7f;
     const float damp = damping * 0.4f;
     const Cuts cut = cuts_for(m_sample_rate, m_low_cut_hz.load(), m_high_cut_hz.load(),
                               m_pre_delay_ms.load(), K_MAX_PRE_DELAY_MS);
 
-    const float shim = std::clamp(m_shimmer.load(), 0.0f, 100.0f) / 100.0f * 0.45f;
+    const float shim = std::clamp(m_shimmer_pct.load(), 0.0f, 100.0f) / 100.0f * 0.45f;
 
     for (size_t i = 0; i < nframes; ++i) {
         float in_sig = pre_delay(bank, buf[i] * 0.015f, cut.pre) + shim * m_shim_fb[bank];

@@ -19,17 +19,17 @@ void EQProcessor::on_sample_rate_changed(double) {
     for (size_t b = 0; b < K_BANDS; ++b) {
         rebuild(Band(b));
     }
-    for (Biquad& filter : m_l) {
+    for (Biquad& filter : m_filters_l) {
         filter.reset();
     }
-    for (Biquad& filter : m_r) {
+    for (Biquad& filter : m_filters_r) {
         filter.reset();
     }
 }
 
-void EQProcessor::set_gain(Band b, double d_b) {
+void EQProcessor::set_gain(Band b, double db) {
     std::lock_guard<std::mutex> lock(m_mutex);
-    m_gain[b] = d_b;
+    m_gain[b] = db;
     rebuild(b);
 }
 
@@ -52,14 +52,14 @@ bool EQProcessor::active(Band b) const {
 
 void EQProcessor::rebuild(Band b) {
     const Biquad c = design(b);
-    m_l[b].set_coeffs(c);
-    m_r[b].set_coeffs(c);
+    m_filters_l[b].set_coeffs(c);
+    m_filters_r[b].set_coeffs(c);
     const bool on = active(b);
-    if (on && !m_on[b]) {
-        m_l[b].reset();
-        m_r[b].reset();
+    if (on && !m_band_on[b]) {
+        m_filters_l[b].reset();
+        m_filters_r[b].reset();
     } // start a band from silence
-    m_on[b] = on;
+    m_band_on[b] = on;
 }
 
 EQProcessor::Biquad EQProcessor::design(Band band) const {
@@ -143,15 +143,15 @@ bool EQProcessor::process(float* l, float* r, size_t n, bool input_is_stereo) {
     }
 
     for (size_t b = 0; b < K_BANDS; ++b) {
-        if (!m_on[b]) {
+        if (!m_band_on[b]) {
             continue;
         }
-        Biquad& filter_l = m_l[b];
+        Biquad& filter_l = m_filters_l[b];
         for (size_t i = 0; i < n; ++i) {
             l[i] = filter_l.process(l[i]);
         }
         if (input_is_stereo) {
-            Biquad& filter_r = m_r[b];
+            Biquad& filter_r = m_filters_r[b];
             for (size_t i = 0; i < n; ++i) {
                 r[i] = filter_r.process(r[i]);
             }
@@ -166,10 +166,10 @@ bool EQProcessor::process(float* l, float* r, size_t n, bool input_is_stereo) {
 }
 
 void EQProcessor::reset() {
-    for (Biquad& filter : m_l) {
+    for (Biquad& filter : m_filters_l) {
         filter.reset();
     }
-    for (Biquad& filter : m_r) {
+    for (Biquad& filter : m_filters_r) {
         filter.reset();
     }
 }

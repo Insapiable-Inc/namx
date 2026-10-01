@@ -22,54 +22,54 @@ public:
 
     // Slot A (the hero row / library / presets' irPath).
     bool load(const std::string& path) {
-        return m_a.load(path);
+        return m_slot_a.load(path);
     }
     void unload() {
-        m_a.unload();
+        m_slot_a.unload();
     }
     bool is_loaded() const {
-        return m_a.is_loaded();
+        return m_slot_a.is_loaded();
     }
     std::string file_path() const {
-        return m_a.get_file_path();
+        return m_slot_a.get_file_path();
     }
     std::string last_error() const {
-        return m_a.get_last_error();
+        return m_slot_a.get_last_error();
     }
 
     // Slot B.
     bool load_b(const std::string& path) {
-        return m_b.load(path);
+        return m_slot_b.load(path);
     }
     void unload_b() {
-        m_b.unload();
+        m_slot_b.unload();
     }
     bool is_loaded_b() const {
-        return m_b.is_loaded();
+        return m_slot_b.is_loaded();
     }
     std::string file_path_b() const {
-        return m_b.get_file_path();
+        return m_slot_b.get_file_path();
     }
     std::string last_error_b() const {
-        return m_b.get_last_error();
+        return m_slot_b.get_last_error();
     }
 
     void reclaim_retired(bool audio_stopped) {
-        m_a.reclaim_retired(audio_stopped);
-        m_b.reclaim_retired(audio_stopped);
+        m_slot_a.reclaim_retired(audio_stopped);
+        m_slot_b.reclaim_retired(audio_stopped);
     }
 
-    void set_level(int slot, float d_b) {
-        m_level_db[slot & 1].store(d_b);
+    void set_level(int slot, float db) {
+        m_level_db[slot & 1].store(db);
     }
     void set_pan(int slot, float pct) {
-        m_pan[slot & 1].store(pct);
+        m_pan_pct[slot & 1].store(pct);
     } // −100 … 100
     void set_phase(int slot, bool inv) {
         m_invert[slot & 1].store(inv);
     }
-    void set_blend(float pct) {
-        m_blend.store(pct);
+    void set_blend_pct(float pct) {
+        m_blend_pct.store(pct);
     } // 0 = A … 100 = B
     void set_low_cut(float hz) {
         m_low_cut_hz.store(hz);
@@ -101,12 +101,12 @@ private:
     void design_cuts(float low_hz, float high_hz);
     bool process_chunk(float* l, float* r, size_t n, bool input_is_stereo);
 
-    IRLoader m_a, m_b;
+    IRLoader m_slot_a, m_slot_b;
 
     std::atomic<float> m_level_db[2]{{0.0f}, {0.0f}};
-    std::atomic<float> m_pan[2]{{0.0f}, {0.0f}};
+    std::atomic<float> m_pan_pct[2]{{0.0f}, {0.0f}};
     std::atomic<bool> m_invert[2]{{false}, {false}};
-    std::atomic<float> m_blend{50.0f};
+    std::atomic<float> m_blend_pct{50.0f};
     std::atomic<float> m_low_cut_hz{20.0f};
     std::atomic<float> m_high_cut_hz{20000.0f};
 

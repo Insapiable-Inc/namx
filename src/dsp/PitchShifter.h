@@ -35,7 +35,7 @@ public:
     void reset() {
         m_line.clear();
         m_phase = 0.0f;
-        m_off[0] = m_off[1] = 0.0f;
+        m_tap_offsets[0] = m_tap_offsets[1] = 0.0f;
         m_prev[0] = 0.0f;
         m_prev[1] = 0.5f;
     }
@@ -62,12 +62,13 @@ public:
         const float p[2] = {m_phase, p_b};
         for (int k = 0; k < 2; ++k) {
             if (std::abs(p[k] - m_prev[k]) > 0.5f) {
-                m_off[k] = align(p[k], p[1 - k], m_off[1 - k]);
+                m_tap_offsets[k] = align(p[k], p[1 - k], m_tap_offsets[1 - k]);
             }
             m_prev[k] = p[k];
         }
 
-        const float out = tap(p[0], m_off[0]) * hann(p[0]) + tap(p[1], m_off[1]) * hann(p[1]);
+        const float out =
+            tap(p[0], m_tap_offsets[0]) * hann(p[0]) + tap(p[1], m_tap_offsets[1]) * hann(p[1]);
         return out;
     }
 
@@ -139,6 +140,6 @@ private:
     float m_ratio = 1.0f;
     int m_search = 576;
     size_t m_corr_len = 240;
-    float m_off[2]{}; // per-tap alignment offset (samples)
+    float m_tap_offsets[2]{}; // per-tap alignment offset (samples)
     float m_prev[2]{0.0f, 0.5f}; // last phase per tap (wrap detection)
 };

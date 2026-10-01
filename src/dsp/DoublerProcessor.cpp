@@ -21,7 +21,7 @@ bool DoublerProcessor::process(float* l, float* r, size_t n, bool input_is_stere
 
     const float fs = static_cast<float>(m_sample_rate);
     const float spread = std::clamp(m_spread_ms.load(), 3.0f, 20.0f) * 0.001f * fs;
-    const float mix = std::clamp(m_mix.load(), 0.0f, 100.0f) / 100.0f;
+    const float mix = std::clamp(m_mix_pct.load(), 0.0f, 100.0f) / 100.0f;
     // Drift: a new random target every ~120 ms, approached smoothly — the
     // delay wanders ±30 % of the spread, like a second player's timing.
     const int hold = static_cast<int>(0.12f * fs);

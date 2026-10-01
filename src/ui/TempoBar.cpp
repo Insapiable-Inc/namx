@@ -34,12 +34,13 @@ BpmField::BpmField(QWidget* parent)
                "(Shift = fine), click to type");
 }
 
-void BpmField::set_value(double bpm) {
-    bpm = std::round(std::clamp(bpm, TempoSync::K_MIN_BPM, TempoSync::K_MAX_BPM) * 10.0) / 10.0;
-    if (bpm == m_bpm) {
+void BpmField::set_value(double new_bpm) {
+    new_bpm =
+        std::round(std::clamp(new_bpm, TempoSync::K_MIN_BPM, TempoSync::K_MAX_BPM) * 10.0) / 10.0;
+    if (new_bpm == m_bpm) {
         return;
     }
-    m_bpm = bpm;
+    m_bpm = new_bpm;
     update();
     emit value_changed(m_bpm);
 }
@@ -161,19 +162,19 @@ QSize BeatLeds::sizeHint() const {
     return {m_beats * K_W + (m_beats - 1) * K_GAP + 2, K_H};
 }
 
-void BeatLeds::set_pattern(int beats, uint32_t accents) {
-    m_beats = std::clamp(beats, 1, Metronome::K_MAX_BEATS);
-    m_accents = accents;
+void BeatLeds::set_pattern(int new_beats, uint32_t new_accents) {
+    m_beats = std::clamp(new_beats, 1, Metronome::K_MAX_BEATS);
+    m_accents = new_accents;
     setFixedSize(sizeHint());
     update();
 }
 
-void BeatLeds::set_beat(int beat, bool count_in) {
-    if (beat == m_beat && count_in == m_count_in) {
+void BeatLeds::set_beat(int new_beat, bool new_count_in) {
+    if (new_beat == m_beat && new_count_in == m_count_in) {
         return;
     }
-    m_beat = beat;
-    m_count_in = count_in;
+    m_beat = new_beat;
+    m_count_in = new_count_in;
     update();
 }
 
@@ -258,10 +259,10 @@ TempoBar::TempoBar(Metronome& metronome, QWidget* parent)
     m_bpm = new BpmField(this);
     m_bpm->set_value(s.value("tempo/bpm", TempoSync::K_DEFAULT_BPM).toDouble());
     m_metro.set_bpm(m_bpm->value());
-    connect(m_bpm, &BpmField::value_changed, this, [this](double bpm) {
-        QSettings().setValue("tempo/bpm", bpm);
-        m_metro.set_bpm(bpm);
-        emit bpm_changed(bpm);
+    connect(m_bpm, &BpmField::value_changed, this, [this](double new_bpm) {
+        QSettings().setValue("tempo/bpm", new_bpm);
+        m_metro.set_bpm(new_bpm);
+        emit bpm_changed(new_bpm);
     });
     lay->addWidget(m_bpm);
 
@@ -436,8 +437,8 @@ double TempoBar::get_bpm() const {
     return m_bpm->value();
 }
 
-void TempoBar::set_bpm(double bpm) {
-    m_bpm->set_value(bpm);
+void TempoBar::set_bpm(double new_bpm) {
+    m_bpm->set_value(new_bpm);
 }
 
 void TempoBar::toggle_play() {

@@ -5,7 +5,7 @@
 
 void NoiseGateProcessor::reset() {
     m_envelope[0] = m_envelope[1] = 0.0f;
-    m_gain[0] = m_gain[1] = 0.0f;
+    m_gain_per_channel[0] = m_gain_per_channel[1] = 0.0f;
 }
 
 void NoiseGateProcessor::process_channel(float* buf, size_t nframes, int ch) {
@@ -18,7 +18,7 @@ void NoiseGateProcessor::process_channel(float* buf, size_t nframes, int ch) {
     const float rel_coeff = std::exp(-1.0f / (fs * rel_ms * 0.001f));
 
     float& env = m_envelope[ch];
-    float& gain = m_gain[ch];
+    float& gain = m_gain_per_channel[ch];
     float min_gain = 1.0f;
 
     for (size_t i = 0; i < nframes; ++i) {

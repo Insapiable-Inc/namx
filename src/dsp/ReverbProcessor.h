@@ -18,17 +18,17 @@ public:
     }
     void reset() override;
 
-    void set_room_size(float pct) {
-        m_room_size.store(pct);
+    void set_room_size_pct(float pct) {
+        m_room_size_pct.store(pct);
     }
-    void set_damping(float pct) {
-        m_damping.store(pct);
+    void set_damping_pct(float pct) {
+        m_damping_pct.store(pct);
     }
-    void set_width(float pct) {
-        m_width.store(pct);
+    void set_width_pct(float pct) {
+        m_width_pct.store(pct);
     }
-    void set_mix(float pct) {
-        m_mix.store(pct);
+    void set_mix_pct(float pct) {
+        m_mix_pct.store(pct);
     }
     void set_pre_delay(float ms) {
         m_pre_delay_ms.store(ms);
@@ -40,21 +40,21 @@ public:
         m_high_cut_hz.store(hz);
     }
     /// Octave-up feedback into the tail (0–100 %): the shimmer reverb.
-    void set_shimmer(float pct) {
-        m_shimmer.store(pct);
+    void set_shimmer_pct(float pct) {
+        m_shimmer_pct.store(pct);
     }
 
-    float get_room_size() const {
-        return m_room_size.load();
+    float get_room_size_pct() const {
+        return m_room_size_pct.load();
     }
-    float get_damping() const {
-        return m_damping.load();
+    float get_damping_pct() const {
+        return m_damping_pct.load();
     }
-    float get_width() const {
-        return m_width.load();
+    float get_width_pct() const {
+        return m_width_pct.load();
     }
-    float get_mix() const {
-        return m_mix.load();
+    float get_mix_pct() const {
+        return m_mix_pct.load();
     }
 
 protected:
@@ -64,14 +64,14 @@ protected:
     void process_block_stereo_out(float* l, float* r, size_t nframes) override;
 
 private:
-    std::atomic<float> m_room_size{50.0f};
-    std::atomic<float> m_damping{50.0f};
-    std::atomic<float> m_width{100.0f};
-    std::atomic<float> m_mix{30.0f};
+    std::atomic<float> m_room_size_pct{50.0f};
+    std::atomic<float> m_damping_pct{50.0f};
+    std::atomic<float> m_width_pct{100.0f};
+    std::atomic<float> m_mix_pct{30.0f};
     std::atomic<float> m_pre_delay_ms{0.0f};
     std::atomic<float> m_low_cut_hz{20.0f};
     std::atomic<float> m_high_cut_hz{20000.0f};
-    std::atomic<float> m_shimmer{0.0f};
+    std::atomic<float> m_shimmer_pct{0.0f};
     PitchShifter m_shift[2]; // per bank, +12 st
     float m_shim_fb[2]{}; // shifted wet fed into the next input sample
 

@@ -54,7 +54,7 @@ AudioEngine::AudioEngine() {
     for (const auto& [id, fx] : m_effect_table) {
         chain->push_back(fx);
     }
-    m_chain.publish(std::move(chain));
+    m_chain_slot.publish(std::move(chain));
 }
 
 // ---------------------------------------------------------------------------
@@ -65,7 +65,7 @@ void AudioEngine::reclaim_retired() {
     // Only valid with no audio callback possible: after stop(), or before
     // the backend was ever started.
     const bool stopped = !is_running();
-    m_chain.reclaim(stopped);
+    m_chain_slot.reclaim(stopped);
     m_nam.reclaim_retired(stopped);
     m_ir.reclaim_retired(stopped);
 }
@@ -119,7 +119,7 @@ std::vector<std::string> AudioEngine::default_chain_ids() const {
 std::vector<std::string> AudioEngine::chain_ids() const {
     std::vector<std::string> ids;
     ids.reserve(m_effect_table.size());
-    for (const auto* fx : *m_chain.current()) {
+    for (const auto* fx : *m_chain_slot.current()) {
         ids.push_back(id_for_effect(fx));
     }
     return ids;
@@ -169,7 +169,7 @@ void AudioEngine::set_chain_order(const std::vector<std::string>& ids) {
         ++default_idx;
     }
 
-    const Chain& cur = *m_chain.current();
+    const Chain& cur = *m_chain_slot.current();
     if (new_chain == cur) {
         return;
     }
@@ -184,7 +184,7 @@ void AudioEngine::set_chain_order(const std::vector<std::string>& ids) {
 
     // Publish a fresh vector; the one the audio thread may still be iterating
     // is retired and freed only once it has provably moved on. No waiting.
-    m_chain.publish(std::make_unique<Chain>(std::move(new_chain)));
+    m_chain_slot.publish(std::make_unique<Chain>(std::move(new_chain)));
     reclaim_retired();
 }
 
@@ -306,7 +306,7 @@ void AudioEngine::process_block(const float* in, float* out_l, float* out_r, siz
         ~BlockGuard() {
             s.end_block();
         }
-    } guard{m_chain};
+    } guard{m_chain_slot};
 
     // Defensive: if a process callback ever fires before on_buffer_size_changed
     // has grown the work buffers, emit silence rather than overrunning.
@@ -336,7 +336,7 @@ void AudioEngine::process_block(const float* in, float* out_l, float* out_r, siz
     // 2. Run the signal chain (chain vector bound once per callback; a
     //    reorder publishes a new vector and never touches this one)
     bool stereo = false;
-    const Chain& chain = *m_chain.acquire();
+    const Chain& chain = *m_chain_slot.acquire();
     for (auto* fx : chain) {
         fx->consume_pending_reset();
         stereo = fx->process(m_work_buf_l.data(), m_work_buf_r.data(), n, stereo);

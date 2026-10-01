@@ -10,11 +10,11 @@ class CompressorProcessor : public EffectBase
 public:
     void reset() override;
 
-    void set_threshold(float d_b) {
-        m_threshold_db.store(d_b);
+    void set_threshold(float db) {
+        m_threshold_db.store(db);
     }
-    void set_ratio(float ratio) {
-        m_ratio.store(ratio);
+    void set_ratio(float new_ratio) {
+        m_ratio.store(new_ratio);
     }
     void set_attack(float ms) {
         m_attack_ms.store(ms);
@@ -22,8 +22,8 @@ public:
     void set_release(float ms) {
         m_release_ms.store(ms);
     }
-    void set_makeup(float d_b) {
-        m_makeup_db.store(d_b);
+    void set_makeup(float db) {
+        m_makeup_db.store(db);
     }
 
     float threshold() const {
@@ -64,7 +64,7 @@ private:
     std::atomic<float> m_makeup_db{0.0f};
 
     // Per-channel state: [0] = mono/L, [1] = R (stereo input).
-    float m_env_db[2]{-120.0f, -120.0f};
-    float m_gain_db[2]{0.0f, 0.0f};
+    float m_env_db_per_channel[2]{-120.0f, -120.0f};
+    float m_gain_db_per_channel[2]{0.0f, 0.0f};
     std::atomic<float> m_gr_peak_db{0.0f};
 };

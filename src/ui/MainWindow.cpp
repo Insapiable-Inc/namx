@@ -403,7 +403,7 @@ void MainWindow::setup_ui() {
     // ---- Menu bar ----
     QMenu* library_menu = nullptr;
     QMenu* preset_menu = nullptr;
-    QMenu* midi_menu = nullptr;
+    QMenu* midi_top_menu = nullptr;
     {
         auto* mb = menuBar();
         preset_menu = mb->addMenu("Preset"); // also behind ⋯ on the preset bar
@@ -431,7 +431,7 @@ void MainWindow::setup_ui() {
                 &MainWindow::on_reset_all);
 
         library_menu = mb->addMenu("Library"); // filled once the dock exists (below)
-        midi_menu = mb->addMenu("MIDI"); // filled by setupMidi
+        midi_top_menu = mb->addMenu("MIDI"); // filled by setupMidi
 
         auto* help_menu = mb->addMenu("Help");
         connect(help_menu->addAction("About NAM Player"), &QAction::triggered, this, [this] {
@@ -568,7 +568,7 @@ void MainWindow::setup_ui() {
                           "(adds ~25 ms latency when not 0)");
         auto* mix = late_knob("transpose", "mix", new KnobWidget("Mix", 0.0, 100.0, 100.0, "%"),
                               [this](double v) {
-                                  m_engine->get_transpose().set_mix(static_cast<float>(v));
+                                  m_engine->get_transpose().set_mix_pct(static_cast<float>(v));
                               });
         mix->set_scroll_step(1.0);
         auto* col = make_effect_row("Transpose", m_sw_transpose_enable, {semis, mix});
@@ -654,7 +654,7 @@ void MainWindow::setup_ui() {
                               new KnobWidget("Position", K_WAH_POSITION_MIN, K_WAH_POSITION_MAX,
                                              K_WAH_POSITION_DEFAULT, "%"),
                               [this](double v) {
-                                  m_engine->get_wah().set_position(static_cast<float>(v));
+                                  m_engine->get_wah().set_position_pct(static_cast<float>(v));
                               });
         pos->set_scroll_step(1.0);
         auto* col = make_effect_row("Dynamic Wah", m_sw_wah_enable,
@@ -804,13 +804,13 @@ void MainWindow::setup_ui() {
                             &m_sw_flanger_stereo);
         add_tempo_sync(col, m_knob_fl_rate, "Rate", false, 1 /* 2 bars */, K_FLANGER_RATE_MIN,
                        K_FLANGER_RATE_MAX, [this](double v) {
-                           m_engine->get_flanger().set_rate(static_cast<float>(v));
+                           m_engine->get_flanger().set_rate_hz(static_cast<float>(v));
                        });
         auto* range = late_knob("flanger", "range",
                                 new KnobWidget("Range", K_FLANGER_RANGE_MIN, K_FLANGER_RANGE_MAX,
                                                K_FLANGER_RANGE_DEFAULT, "%"),
                                 [this](double v) {
-                                    m_engine->get_flanger().set_range(static_cast<float>(v));
+                                    m_engine->get_flanger().set_range_pct(static_cast<float>(v));
                                 });
         range->set_scroll_step(1.0);
         range->setToolTip("Sweep length: low = short, metallic · high = long jet sweep");
@@ -842,7 +842,7 @@ void MainWindow::setup_ui() {
                             &m_sw_phaser_stereo);
         add_tempo_sync(col, m_knob_ph_rate, "Rate", false, 4 /* 1/2 */, K_PHASER_RATE_MIN,
                        K_PHASER_RATE_MAX, [this](double v) {
-                           m_engine->get_phaser().set_rate(static_cast<float>(v));
+                           m_engine->get_phaser().set_rate_hz(static_cast<float>(v));
                        });
         auto* mode = late_knob("phaser", "mode", new KnobWidget("Mode", 0, 1, 0), [this](double v) {
             m_engine->get_phaser().set_vibe(v > 0.5);
@@ -877,7 +877,7 @@ void MainWindow::setup_ui() {
                             {m_knob_ch_mix, m_knob_ch_rate, m_knob_ch_depth}, &m_sw_chorus_stereo);
         add_tempo_sync(col, m_knob_ch_rate, "Rate", false, 2 /* 1/1 */, K_CHORUS_RATE_MIN,
                        K_CHORUS_RATE_MAX, [this](double v) {
-                           m_engine->get_chorus().set_rate(static_cast<float>(v));
+                           m_engine->get_chorus().set_rate_hz(static_cast<float>(v));
                        });
         auto* mode = late_knob("chorus", "mode", new KnobWidget("Mode", 0, 3, 0), [this](double v) {
             m_engine->get_chorus().set_mode(static_cast<int>(std::lround(v)));
@@ -909,7 +909,7 @@ void MainWindow::setup_ui() {
                                     {m_knob_tr_rate, m_knob_tr_depth}, &m_sw_tremolo_stereo);
         add_tempo_sync(col, m_knob_tr_rate, "Rate", false, 10 /* 1/8 */, K_TREMOLO_RATE_MIN,
                        K_TREMOLO_RATE_MAX, [this](double v) {
-                           m_engine->get_tremolo().set_rate(static_cast<float>(v));
+                           m_engine->get_tremolo().set_rate_hz(static_cast<float>(v));
                        });
         Theme::tag_card(col, "tremolo");
 
@@ -1052,7 +1052,7 @@ void MainWindow::setup_ui() {
         high_cut->set_value_formatter(hz_label(-(K_HIGH_CUT_MAX - 1.0)));
         auto* shimmer = late_knob(
             "reverb", "shimmer", new KnobWidget("Shimmer", 0.0, 100.0, 0.0, "%"), [this](double v) {
-                m_engine->get_reverb().set_shimmer(static_cast<float>(v));
+                m_engine->get_reverb().set_shimmer_pct(static_cast<float>(v));
             });
         shimmer->set_scroll_step(1.0);
         shimmer->setToolTip("Octave-up feedback into the tail — the shimmer reverb");
@@ -1115,7 +1115,7 @@ void MainWindow::setup_ui() {
         };
         auto* blend = late_knob("ir", "blend", new KnobWidget("Blend", 0.0, 100.0, 50.0, "%"),
                                 [this](double v) {
-                                    m_engine->get_ir().set_blend(static_cast<float>(v));
+                                    m_engine->get_ir().set_blend_pct(static_cast<float>(v));
                                 });
         blend->set_scroll_step(1.0);
         blend->set_value_formatter([](double v) {
@@ -1287,7 +1287,7 @@ void MainWindow::setup_ui() {
     m_strip->installEventFilter(this);
 
     rebuild_effect_strip();
-    m_midi_menu = midi_menu;
+    m_midi_menu = midi_top_menu;
 
     scroll->setWidget(m_strip);
 
@@ -2017,7 +2017,7 @@ QString MainWindow::target_label_for(QWidget* w, const QString& group, const QSt
     return group.isEmpty() ? key : group;
 }
 
-void MainWindow::setup_midi(QMenu* midi_menu) {
+void MainWindow::setup_midi(QMenu* menu) {
     // ---- Actions ----
     for (int i = 0; i < PresetBar::K_SLOT_COUNT; ++i) {
         m_midi_mapper->add_action(QString("action:slot%1").arg(i + 1), "Presets",
@@ -2093,11 +2093,11 @@ void MainWindow::setup_midi(QMenu* midi_menu) {
                   : QString("MIDI is not available on this system"));
 
     // ---- Menu ----
-    connect(midi_menu->addAction("Mappings…"), &QAction::triggered, this, [this] {
+    connect(menu->addAction("Mappings…"), &QAction::triggered, this, [this] {
         MidiMappingsDialog dlg(*m_midi_mapper, m_midi_ok ? m_midi.get() : nullptr, this);
         dlg.exec();
     });
-    QMenu* devices = midi_menu->addMenu("Devices");
+    QMenu* devices = menu->addMenu("Devices");
     connect(devices, &QMenu::aboutToShow, this, [this, devices] {
         devices->clear();
         const QStringList list = m_midi_ok ? m_midi->devices() : QStringList();
@@ -2114,9 +2114,9 @@ void MainWindow::setup_midi(QMenu* midi_menu) {
             });
         }
     });
-    QAction* clock = midi_menu->addAction("Follow MIDI Clock");
+    QAction* clock = menu->addAction("Follow MIDI Clock");
     clock->setCheckable(true);
-    connect(midi_menu, &QMenu::aboutToShow, clock, [this, clock] {
+    connect(menu, &QMenu::aboutToShow, clock, [this, clock] {
         clock->setChecked(m_midi_mapper->get_follow_clock());
     });
     connect(clock, &QAction::toggled, m_midi_mapper, &MidiMapper::set_follow_clock);
@@ -2262,8 +2262,8 @@ void MainWindow::push_synced(KnobWidget* free_knob) {
     s.push(std::clamp(v, s.min, s.max));
 }
 
-void MainWindow::set_tempo(double bpm) {
-    m_bpm = bpm;
+void MainWindow::set_tempo(double new_bpm) {
+    m_bpm = new_bpm;
     for (auto& s : m_synced) {
         if (s.sync->isChecked()) {
             push_synced(s.free_knob);
@@ -2336,7 +2336,7 @@ void MainWindow::register_parameters() {
     auto* e = m_engine.get();
     // Time-based knobs: every change of free value, sync toggle or note value
     // re-pushes the effective value (see pushSynced).
-    auto synced = [this](KnobWidget* k) {
+    auto synced_handler = [this](KnobWidget* k) {
         return [this, k](double) {
             push_synced(k);
         };
@@ -2394,13 +2394,13 @@ void MainWindow::register_parameters() {
         e->get_wah().set_enabled(b);
     });
     knob_param("dynamicWah", "sensitivity", m_knob_wah_sens, [e](double v) {
-        e->get_wah().set_sensitivity(static_cast<float>(v));
+        e->get_wah().set_sensitivity_pct(static_cast<float>(v));
     });
     knob_param("dynamicWah", "resonance", m_knob_wah_res, [e](double v) {
-        e->get_wah().set_resonance(static_cast<float>(v));
+        e->get_wah().set_resonance_pct(static_cast<float>(v));
     });
     knob_param("dynamicWah", "mix", m_knob_wah_mix, [e](double v) {
-        e->get_wah().set_mix(static_cast<float>(v));
+        e->get_wah().set_mix_pct(static_cast<float>(v));
     });
 
     toggle_param("flanger", "enabled", m_sw_flanger_enable, [e](bool b) {
@@ -2409,17 +2409,18 @@ void MainWindow::register_parameters() {
     toggle_param("flanger", "stereo", m_sw_flanger_stereo, [e](bool b) {
         e->get_flanger().set_stereo_mode(b);
     });
-    knob_param("flanger", "rate", m_knob_fl_rate, synced(m_knob_fl_rate));
-    toggle_param("flanger", "sync", sync_of(m_knob_fl_rate).sync, synced(m_knob_fl_rate));
-    knob_param("flanger", "syncNote", sync_of(m_knob_fl_rate).note_knob, synced(m_knob_fl_rate));
+    knob_param("flanger", "rate", m_knob_fl_rate, synced_handler(m_knob_fl_rate));
+    toggle_param("flanger", "sync", sync_of(m_knob_fl_rate).sync, synced_handler(m_knob_fl_rate));
+    knob_param("flanger", "syncNote", sync_of(m_knob_fl_rate).note_knob,
+               synced_handler(m_knob_fl_rate));
     knob_param("flanger", "depth", m_knob_fl_depth, [e](double v) {
-        e->get_flanger().set_depth(static_cast<float>(v));
+        e->get_flanger().set_depth_pct(static_cast<float>(v));
     });
     knob_param("flanger", "feedback", m_knob_fl_feedback, [e](double v) {
-        e->get_flanger().set_feedback(static_cast<float>(v));
+        e->get_flanger().set_feedback_pct(static_cast<float>(v));
     });
     knob_param("flanger", "mix", m_knob_fl_mix, [e](double v) {
-        e->get_flanger().set_mix(static_cast<float>(v));
+        e->get_flanger().set_mix_pct(static_cast<float>(v));
     });
 
     toggle_param("phaser", "enabled", m_sw_phaser_enable, [e](bool b) {
@@ -2428,27 +2429,28 @@ void MainWindow::register_parameters() {
     toggle_param("phaser", "stereo", m_sw_phaser_stereo, [e](bool b) {
         e->get_phaser().set_stereo_mode(b);
     });
-    knob_param("phaser", "rate", m_knob_ph_rate, synced(m_knob_ph_rate));
-    toggle_param("phaser", "sync", sync_of(m_knob_ph_rate).sync, synced(m_knob_ph_rate));
-    knob_param("phaser", "syncNote", sync_of(m_knob_ph_rate).note_knob, synced(m_knob_ph_rate));
+    knob_param("phaser", "rate", m_knob_ph_rate, synced_handler(m_knob_ph_rate));
+    toggle_param("phaser", "sync", sync_of(m_knob_ph_rate).sync, synced_handler(m_knob_ph_rate));
+    knob_param("phaser", "syncNote", sync_of(m_knob_ph_rate).note_knob,
+               synced_handler(m_knob_ph_rate));
     knob_param("phaser", "depth", m_knob_ph_depth, [e](double v) {
-        e->get_phaser().set_depth(static_cast<float>(v));
+        e->get_phaser().set_depth_pct(static_cast<float>(v));
     });
     knob_param("phaser", "feedback", m_knob_ph_feedback, [e](double v) {
-        e->get_phaser().set_feedback(static_cast<float>(v));
+        e->get_phaser().set_feedback_pct(static_cast<float>(v));
     });
     knob_param("phaser", "mix", m_knob_ph_mix, [e](double v) {
-        e->get_phaser().set_mix(static_cast<float>(v));
+        e->get_phaser().set_mix_pct(static_cast<float>(v));
     });
 
     toggle_param("drive", "enabled", m_sw_drive_enable, [e](bool b) {
         e->get_drive().set_enabled(b);
     });
     knob_param("drive", "drive", m_knob_drive, [e](double v) {
-        e->get_drive().set_drive(static_cast<float>(v));
+        e->get_drive().set_drive_pct(static_cast<float>(v));
     });
     knob_param("drive", "tone", m_knob_drive_tone, [e](double v) {
-        e->get_drive().set_tone(static_cast<float>(v));
+        e->get_drive().set_tone_pct(static_cast<float>(v));
     });
     knob_param("drive", "level", m_knob_drive_level, [e](double v) {
         e->get_drive().set_level(static_cast<float>(v));
@@ -2481,7 +2483,7 @@ void MainWindow::register_parameters() {
         e->get_doubler().set_spread(static_cast<float>(v));
     });
     knob_param("doubler", "mix", m_knob_dbl_mix, [e](double v) {
-        e->get_doubler().set_mix(static_cast<float>(v));
+        e->get_doubler().set_mix_pct(static_cast<float>(v));
     });
 
     toggle_param("chorus", "enabled", m_sw_chorus_enable, [e](bool b) {
@@ -2490,14 +2492,15 @@ void MainWindow::register_parameters() {
     toggle_param("chorus", "stereo", m_sw_chorus_stereo, [e](bool b) {
         e->get_chorus().set_stereo_mode(b);
     });
-    knob_param("chorus", "rate", m_knob_ch_rate, synced(m_knob_ch_rate));
-    toggle_param("chorus", "sync", sync_of(m_knob_ch_rate).sync, synced(m_knob_ch_rate));
-    knob_param("chorus", "syncNote", sync_of(m_knob_ch_rate).note_knob, synced(m_knob_ch_rate));
+    knob_param("chorus", "rate", m_knob_ch_rate, synced_handler(m_knob_ch_rate));
+    toggle_param("chorus", "sync", sync_of(m_knob_ch_rate).sync, synced_handler(m_knob_ch_rate));
+    knob_param("chorus", "syncNote", sync_of(m_knob_ch_rate).note_knob,
+               synced_handler(m_knob_ch_rate));
     knob_param("chorus", "depth", m_knob_ch_depth, [e](double v) {
-        e->get_chorus().set_depth(static_cast<float>(v));
+        e->get_chorus().set_depth_pct(static_cast<float>(v));
     });
     knob_param("chorus", "mix", m_knob_ch_mix, [e](double v) {
-        e->get_chorus().set_mix(static_cast<float>(v));
+        e->get_chorus().set_mix_pct(static_cast<float>(v));
     });
 
     toggle_param("tremolo", "enabled", m_sw_tremolo_enable, [e](bool b) {
@@ -2506,11 +2509,12 @@ void MainWindow::register_parameters() {
     toggle_param("tremolo", "stereo", m_sw_tremolo_stereo, [e](bool b) {
         e->get_tremolo().set_stereo_mode(b);
     });
-    knob_param("tremolo", "rate", m_knob_tr_rate, synced(m_knob_tr_rate));
-    toggle_param("tremolo", "sync", sync_of(m_knob_tr_rate).sync, synced(m_knob_tr_rate));
-    knob_param("tremolo", "syncNote", sync_of(m_knob_tr_rate).note_knob, synced(m_knob_tr_rate));
+    knob_param("tremolo", "rate", m_knob_tr_rate, synced_handler(m_knob_tr_rate));
+    toggle_param("tremolo", "sync", sync_of(m_knob_tr_rate).sync, synced_handler(m_knob_tr_rate));
+    knob_param("tremolo", "syncNote", sync_of(m_knob_tr_rate).note_knob,
+               synced_handler(m_knob_tr_rate));
     knob_param("tremolo", "depth", m_knob_tr_depth, [e](double v) {
-        e->get_tremolo().set_depth(static_cast<float>(v));
+        e->get_tremolo().set_depth_pct(static_cast<float>(v));
     });
 
     toggle_param("delay", "enabled", m_sw_delay_enable, [e](bool b) {
@@ -2519,30 +2523,31 @@ void MainWindow::register_parameters() {
     toggle_param("delay", "stereo", m_sw_delay_stereo, [e](bool b) {
         e->get_delay().set_stereo_mode(b);
     });
-    knob_param("delay", "time", m_knob_del_time, synced(m_knob_del_time));
-    toggle_param("delay", "sync", sync_of(m_knob_del_time).sync, synced(m_knob_del_time));
-    knob_param("delay", "syncNote", sync_of(m_knob_del_time).note_knob, synced(m_knob_del_time));
+    knob_param("delay", "time", m_knob_del_time, synced_handler(m_knob_del_time));
+    toggle_param("delay", "sync", sync_of(m_knob_del_time).sync, synced_handler(m_knob_del_time));
+    knob_param("delay", "syncNote", sync_of(m_knob_del_time).note_knob,
+               synced_handler(m_knob_del_time));
     knob_param("delay", "feedback", m_knob_del_feedback, [e](double v) {
-        e->get_delay().set_feedback(static_cast<float>(v));
+        e->get_delay().set_feedback_pct(static_cast<float>(v));
     });
     knob_param("delay", "mix", m_knob_del_mix, [e](double v) {
-        e->get_delay().set_mix(static_cast<float>(v));
+        e->get_delay().set_mix_pct(static_cast<float>(v));
     });
 
     toggle_param("reverb", "enabled", m_sw_reverb_enable, [e](bool b) {
         e->get_reverb().set_enabled(b);
     });
     knob_param("reverb", "roomSize", m_knob_rev_room, [e](double v) {
-        e->get_reverb().set_room_size(static_cast<float>(v));
+        e->get_reverb().set_room_size_pct(static_cast<float>(v));
     });
     knob_param("reverb", "damping", m_knob_rev_damping, [e](double v) {
-        e->get_reverb().set_damping(static_cast<float>(v));
+        e->get_reverb().set_damping_pct(static_cast<float>(v));
     });
     knob_param("reverb", "width", m_knob_rev_width, [e](double v) {
-        e->get_reverb().set_width(static_cast<float>(v));
+        e->get_reverb().set_width_pct(static_cast<float>(v));
     });
     knob_param("reverb", "mix", m_knob_rev_mix, [e](double v) {
-        e->get_reverb().set_mix(static_cast<float>(v));
+        e->get_reverb().set_mix_pct(static_cast<float>(v));
     });
 
     toggle_param("", "irEnabled", m_sw_ir_enable, [e](bool b) {
@@ -2553,7 +2558,7 @@ void MainWindow::register_parameters() {
         e->get_volume().set_enabled(b);
     });
     knob_param("volume", "position", m_knob_vol_pos, [e](double v) {
-        e->get_volume().set_position(static_cast<float>(v));
+        e->get_volume().set_position_pct(static_cast<float>(v));
     });
     knob_param("volume", "mid", m_knob_vol_mid, [e](double v) {
         e->get_volume().set_mid(static_cast<float>(v));
@@ -2627,10 +2632,10 @@ void MainWindow::update_tuner() {
     }
 
     const float ref = static_cast<float>(m_tuner_ref_hz);
-    const int midi = TunerProcessor::freq_to_midi(freq, ref);
+    const int midi_note = TunerProcessor::freq_to_midi(freq, ref);
     const float cents = TunerProcessor::cents_offset(freq, ref);
-    m_tuner_display->set_reading(QString::fromStdString(TunerProcessor::midi_to_name(midi)), cents,
-                                 true, freq);
+    m_tuner_display->set_reading(QString::fromStdString(TunerProcessor::midi_to_name(midi_note)),
+                                 cents, true, freq);
 }
 
 // ---------------------------------------------------------------------------

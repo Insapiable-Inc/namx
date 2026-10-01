@@ -18,7 +18,7 @@ class MidiMappingsDialog : public QDialog
 {
     Q_OBJECT
 public:
-    MidiMappingsDialog(MidiMapper& mapper, MidiInput* input, QWidget* parent = nullptr);
+    MidiMappingsDialog(MidiMapper& new_mapper, MidiInput* new_input, QWidget* parent = nullptr);
 
 private:
     void rebuild_devices();

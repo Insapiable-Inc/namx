@@ -75,9 +75,9 @@ QString device_name(const std::vector<IAudioBackend::DeviceInfo>& devs, const QS
 
 } // namespace
 
-AudioStatusBar::AudioStatusBar(AudioEngine& engine, QWidget* parent)
+AudioStatusBar::AudioStatusBar(AudioEngine& new_engine, QWidget* parent)
     : QWidget(parent)
-    , m_engine(engine) {
+    , m_engine(new_engine) {
     auto* lay = new QHBoxLayout(this);
     lay->setContentsMargins(0, 0, 4, 0);
     lay->setSpacing(2);

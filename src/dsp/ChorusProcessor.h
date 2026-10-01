@@ -17,14 +17,14 @@ public:
     }
     void reset() override;
 
-    void set_rate(float hz) {
-        m_rate.store(hz);
+    void set_rate_hz(float hz) {
+        m_rate_hz.store(hz);
     }
-    void set_depth(float pct) {
-        m_depth.store(pct);
+    void set_depth_pct(float pct) {
+        m_depth_pct.store(pct);
     }
-    void set_mix(float pct) {
-        m_mix.store(pct);
+    void set_mix_pct(float pct) {
+        m_mix_pct.store(pct);
     }
     enum Mode
     {
@@ -37,14 +37,14 @@ public:
         m_mode.store(m);
     }
 
-    float get_rate() const {
-        return m_rate.load();
+    float get_rate_hz() const {
+        return m_rate_hz.load();
     }
-    float get_depth() const {
-        return m_depth.load();
+    float get_depth_pct() const {
+        return m_depth_pct.load();
     }
-    float get_mix() const {
-        return m_mix.load();
+    float get_mix_pct() const {
+        return m_mix_pct.load();
     }
 
 protected:
@@ -54,16 +54,16 @@ protected:
     void process_block_stereo_out(float* l, float* r, size_t nframes) override;
 
 private:
-    std::atomic<float> m_rate{1.0f};
-    std::atomic<float> m_depth{50.0f};
-    std::atomic<float> m_mix{50.0f};
+    std::atomic<float> m_rate_hz{1.0f};
+    std::atomic<float> m_depth_pct{50.0f};
+    std::atomic<float> m_mix_pct{50.0f};
 
-    float m_phase{0.0f};
+    float m_lfo_phase{0.0f};
     std::atomic<int> m_mode{NORMAL};
     float m_vint_lp[2]{}; // Vintage wet low-pass per channel
 
     // Wet sample for one channel at an LFO phase (all modes).
-    float wet(const DelayLine& line, float phase, float depth, float fs, int mode);
+    float wet(const DelayLine& line, float phase, float depth, float fs, int current_mode);
 
     DelayLine m_line_l, m_line_r;
 

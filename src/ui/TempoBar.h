@@ -24,7 +24,7 @@ public:
     double value() const {
         return m_bpm;
     }
-    void set_value(double bpm); // clamps + rounds to 0.1; emits on change
+    void set_value(double new_bpm); // clamps + rounds to 0.1; emits on change
 
     QSize sizeHint() const override {
         return {86, 30};
@@ -60,9 +60,9 @@ class BeatLeds : public QWidget
 public:
     explicit BeatLeds(QWidget* parent = nullptr);
 
-    void set_pattern(int beats, uint32_t accents);
+    void set_pattern(int new_beats, uint32_t new_accents);
     /// Current beat (-1 = stopped); `countIn` lights it amber.
-    void set_beat(int beat, bool count_in);
+    void set_beat(int new_beat, bool new_count_in);
 
     QSize sizeHint() const override;
 
@@ -94,7 +94,7 @@ public:
     explicit TempoBar(Metronome& metronome, QWidget* parent = nullptr);
 
     double get_bpm() const;
-    void set_bpm(double bpm); // MIDI clock follow
+    void set_bpm(double new_bpm); // MIDI clock follow
     void toggle_play();
     void tap_tempo() {
         tap();

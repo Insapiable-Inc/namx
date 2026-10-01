@@ -108,11 +108,11 @@ public:
     }
 
     // ---- Gain ----
-    void set_input_gain(float d_b) {
-        m_input_gain_db.store(d_b);
+    void set_input_gain(float db) {
+        m_input_gain_db.store(db);
     }
-    void set_output_gain(float d_b) {
-        m_output_gain_db.store(d_b);
+    void set_output_gain(float db) {
+        m_output_gain_db.store(db);
     }
     float input_gain() const {
         return m_input_gain_db.load();
@@ -186,7 +186,7 @@ public:
     // GUI-thread snapshot of the active chain. Reordering goes through
     // setChainOrder().
     std::vector<EffectBase*> get_chain() const {
-        return *m_chain.current();
+        return *m_chain_slot.current();
     }
 
     /// Stable effect IDs in default (construction) order — the persistence
@@ -254,7 +254,7 @@ private:
     // one vector per callback; setChainOrder() publishes a new one and the
     // old vector is freed only after the audio thread has provably left it.
     using Chain = std::vector<EffectBase*>;
-    RtSlot<Chain> m_chain;
+    RtSlot<Chain> m_chain_slot;
 
     /// Free objects retired by loads/reorders while the audio thread is idle.
     void reclaim_retired();
@@ -304,7 +304,7 @@ private:
     double m_chain_sample_rate{0.0};
     float m_smooth_coeff{0.999f}; // recomputed per sample rate for a ~20 ms time constant
 
-    static inline float db_to_linear(float d_b) {
-        return std::pow(10.0f, d_b / 20.0f);
+    static inline float db_to_linear(float db) {
+        return std::pow(10.0f, db / 20.0f);
     }
 };

@@ -94,11 +94,12 @@ QString model_info(const T3kModel& m, const T3kTone& t) {
 // ToneListModel
 // ===========================================================================
 
-ToneListModel::ToneListModel(Tone3000Client& client, LibraryIndex& index, QObject* parent)
+ToneListModel::ToneListModel(Tone3000Client& new_client, LibraryIndex& new_index, QObject* parent)
     : QAbstractListModel(parent)
-    , m_client(client)
-    , m_index(index) {
-    connect(&m_index, &LibraryIndex::entries_changed, this, &ToneListModel::refresh_downloaded);
+    , m_client(new_client)
+    , m_library_index(new_index) {
+    connect(&m_library_index, &LibraryIndex::entries_changed, this,
+            &ToneListModel::refresh_downloaded);
 }
 
 int ToneListModel::rowCount(const QModelIndex& parent) const {
@@ -150,9 +151,9 @@ QVariant ToneListModel::data(const QModelIndex& index, int role) const {
     }
 }
 
-void ToneListModel::set_tones(const QList<T3kTone>& tones) {
+void ToneListModel::set_tones(const QList<T3kTone>& new_tones) {
     beginResetModel();
-    m_tones = tones;
+    m_tones = new_tones;
     endResetModel();
     refresh_downloaded();
     request_images();
@@ -172,7 +173,7 @@ void ToneListModel::set_favorite(int tone_id, bool on) {
 void ToneListModel::refresh_downloaded() {
     m_downloaded.clear();
     for (const auto& t : m_tones) {
-        m_downloaded[t.id] = m_index.has_tone3000_tone(t.id);
+        m_downloaded[t.id] = m_library_index.has_tone3000_tone(t.id);
     }
     if (!m_tones.isEmpty()) {
         emit dataChanged(index(0), index(rowCount() - 1), {DOWNLOADED_ROLE});
@@ -349,11 +350,11 @@ QVariant ToneModelsModel::data(const QModelIndex& index, int role) const {
     }
 }
 
-void ToneModelsModel::set_models(const QList<T3kModel>& models, const T3kTone& tone,
+void ToneModelsModel::set_models(const QList<T3kModel>& new_models, const T3kTone& tone,
                                  LibraryIndex& index) {
     beginResetModel();
     m_models.clear();
-    for (const T3kModel& m : models) {
+    for (const T3kModel& m : new_models) {
         Row r;
         r.model = m;
         r.model.size = model_info(m, tone); // reuse the field as the info line
@@ -509,10 +510,10 @@ void ToneModelDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt,
 // Tone3000Panel
 // ===========================================================================
 
-Tone3000Panel::Tone3000Panel(Tone3000Client& client, LibraryIndex& index, QWidget* parent)
+Tone3000Panel::Tone3000Panel(Tone3000Client& new_client, LibraryIndex& new_index, QWidget* parent)
     : QWidget(parent)
-    , m_client(client)
-    , m_index(index) {
+    , m_client(new_client)
+    , m_library_index(new_index) {
     setObjectName("tone3000Panel");
     auto* lay = new QVBoxLayout(this);
     lay->setContentsMargins(6, 6, 6, 6);
@@ -604,7 +605,7 @@ void Tone3000Panel::build_header() {
             return;
         }
         QSettings().setValue("library/tone3000Dir", dir);
-        m_index.rescan();
+        m_library_index.rescan();
     });
     connect(menu->addAction("TONE3000 publishable key…"), &QAction::triggered, this, [this] {
         bool ok = false;
@@ -709,11 +710,11 @@ void Tone3000Panel::build_splash_page() {
     lay->setContentsMargins(8, 18, 8, 8);
     lay->setSpacing(14);
 
-    auto* logo = new QLabel;
-    logo->setPixmap(
+    auto* splash_logo = new QLabel;
+    splash_logo->setPixmap(
         QPixmap(":/tone3000/tone3000-logo.png").scaledToWidth(200, Qt::SmoothTransformation));
-    logo->setAlignment(Qt::AlignHCenter);
-    lay->addWidget(logo);
+    splash_logo->setAlignment(Qt::AlignHCenter);
+    lay->addWidget(splash_logo);
 
     auto* title = new QLabel("NAM Player × TONE3000");
     title->setObjectName("t3kSplashTitle");
@@ -787,7 +788,7 @@ void Tone3000Panel::build_browse_page() {
     });
     lay->addWidget(m_browse_btn);
 
-    m_tone_model = new ToneListModel(m_client, m_index, this);
+    m_tone_model = new ToneListModel(m_client, m_library_index, this);
     m_tone_view = new QListView;
     m_tone_view->setObjectName("libraryList");
     m_tone_view->setModel(m_tone_model);
@@ -816,8 +817,8 @@ void Tone3000Panel::build_browse_page() {
         m_prev_page->setAutoRaise(true);
         m_prev_page->setFocusPolicy(Qt::NoFocus);
         connect(m_prev_page, &QToolButton::clicked, this, [this] {
-            if (m_page > 1) {
-                --m_page;
+            if (m_list_page > 1) {
+                --m_list_page;
                 load_list(true);
             }
         });
@@ -827,8 +828,8 @@ void Tone3000Panel::build_browse_page() {
         m_next_page->setAutoRaise(true);
         m_next_page->setFocusPolicy(Qt::NoFocus);
         connect(m_next_page, &QToolButton::clicked, this, [this] {
-            if (m_page < m_total_pages) {
-                ++m_page;
+            if (m_list_page < m_total_pages) {
+                ++m_list_page;
                 load_list(true);
             }
         });
@@ -1020,7 +1021,7 @@ void Tone3000Panel::select_list(int which, bool force) {
         return;
     }
     if (which != m_list) {
-        m_page = 1;
+        m_list_page = 1;
     }
     m_list = which;
     for (int i = 0; i < 5; ++i) {
@@ -1042,11 +1043,11 @@ void Tone3000Panel::load_list(bool use_cache) {
     show_list_status("Loading…");
     m_prev_page->setVisible(paged);
     m_next_page->setVisible(paged);
-    const int my_list = m_list, my_page = m_page;
+    const int my_list = m_list, my_page = m_list_page;
     m_client.list_tones(
-        kind, m_page,
+        kind, m_list_page,
         [this, my_list, my_page, paged](const Tone3000Client::Result& r) {
-            if (my_list != m_list || my_page != m_page) {
+            if (my_list != m_list || my_page != m_list_page) {
                 return; // switched meanwhile
             }
             if (!r.ok) {
@@ -1069,8 +1070,8 @@ void Tone3000Panel::load_list(bool use_cache) {
             m_tone_model->set_tones(tones);
             m_tone_view->scrollToTop();
             m_total_pages = paged ? std::max(1, r.object().value("total_pages").toInt(1)) : 1;
-            m_prev_page->setEnabled(m_page > 1);
-            m_next_page->setEnabled(m_page < m_total_pages);
+            m_prev_page->setEnabled(m_list_page > 1);
+            m_next_page->setEnabled(m_list_page < m_total_pages);
             if (tones.isEmpty()) {
                 show_list_status(my_list == 2   ? "No favorites yet. ★ a tone here or on TONE3000."
                                  : my_list == 3 ? "Nothing downloaded on TONE3000 yet."
@@ -1080,7 +1081,7 @@ void Tone3000Panel::load_list(bool use_cache) {
                 show_list_status(QString("%1 tones · page %2 of %3")
                                      .arg(r.object().value("total").toInt(
                                          static_cast<int>(tones.size()))) // JSON ints are int
-                                     .arg(m_page)
+                                     .arg(m_list_page)
                                      .arg(m_total_pages));
             } else {
                 show_list_status(QString("%1 tones").arg(tones.size()));
@@ -1140,7 +1141,7 @@ void Tone3000Panel::show_tone(int tone_id) {
     m_detail_desc->clear();
     m_detail_image->clear();
     m_detail_status->clear();
-    m_models_model->set_models({}, {}, m_index);
+    m_models_model->set_models({}, {}, m_library_index);
     const int req = ++m_detail_request;
     m_client.fetch_tone(tone_id, [this, req](const Tone3000Client::Result& r) {
         if (req != m_detail_request) {
@@ -1258,7 +1259,7 @@ void Tone3000Panel::load_detail_models() {
                               : r.error);
                 return;
             }
-            m_models_model->set_models(models, tone, m_index);
+            m_models_model->set_models(models, tone, m_library_index);
             const qsizetype pending = m_models_model->pending().size();
             m_detail_status->setText(
                 models.isEmpty() ? QStringLiteral("This tone has no downloadable models.")
@@ -1301,7 +1302,7 @@ void Tone3000Panel::start_download(int row) {
         m_models_model->set_state(model.id, ok ? ToneModelsModel::DONE : ToneModelsModel::FAILED,
                                   ok ? path : err);
         if (ok) {
-            m_index.rescan(); // a new folder isn't watched until scanned once
+            m_library_index.rescan(); // a new folder isn't watched until scanned once
             const qsizetype pending = m_models_model->pending().size();
             m_download_all_button->setEnabled(pending > 0);
             m_detail_status->setText(pending == 0

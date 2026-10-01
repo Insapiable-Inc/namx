@@ -5,8 +5,8 @@
 static constexpr float K_PI = 3.14159265358979323846f;
 
 void TremoloProcessor::process_block_mono(float* buf, size_t nframes) {
-    const float rate = m_rate.load();
-    const float depth = m_depth.load() / 100.0f;
+    const float rate = m_rate_hz.load();
+    const float depth = m_depth_pct.load() / 100.0f;
     const float ph_inc = rate / static_cast<float>(m_sample_rate);
 
     for (size_t i = 0; i < nframes; ++i) {
@@ -22,8 +22,8 @@ void TremoloProcessor::process_block_mono(float* buf, size_t nframes) {
 }
 
 void TremoloProcessor::process_block_dual(float* l, float* r, size_t nframes) {
-    const float rate = m_rate.load();
-    const float depth = m_depth.load() / 100.0f;
+    const float rate = m_rate_hz.load();
+    const float depth = m_depth_pct.load() / 100.0f;
     const float ph_inc = rate / static_cast<float>(m_sample_rate);
 
     for (size_t i = 0; i < nframes; ++i) {
@@ -41,8 +41,8 @@ void TremoloProcessor::process_block_dual(float* l, float* r, size_t nframes) {
 }
 
 void TremoloProcessor::process_block_stereo_out(float* l, float* r, size_t nframes) {
-    const float rate = m_rate.load();
-    const float depth = m_depth.load() / 100.0f;
+    const float rate = m_rate_hz.load();
+    const float depth = m_depth_pct.load() / 100.0f;
     const float ph_inc = rate / static_cast<float>(m_sample_rate);
 
     for (size_t i = 0; i < nframes; ++i) {

@@ -12,25 +12,25 @@ void DynamicWahProcessor::on_sample_rate_changed(double sr) {
 }
 
 void DynamicWahProcessor::reset() {
-    m_env[0] = m_env[1] = 0.0f;
+    m_env_per_channel[0] = m_env_per_channel[1] = 0.0f;
     m_svf_lp[0] = m_svf_lp[1] = 0.0f;
     m_svf_bp[0] = m_svf_bp[1] = 0.0f;
 }
 
 void DynamicWahProcessor::process_channel(float* buf, size_t nframes, int ch) {
-    const float sens = m_sensitivity.load() / 100.0f;
-    const float res = m_resonance.load() / 100.0f;
-    const float mix = m_mix.load() / 100.0f;
+    const float sens = m_sensitivity_pct.load() / 100.0f;
+    const float res = m_resonance_pct.load() / 100.0f;
+    const float mix = m_mix_pct.load() / 100.0f;
     const float q_inv = 1.0f / (0.5f + res * 7.5f);
     const float sr = static_cast<float>(m_sample_rate);
 
-    const bool pedal = m_pedal.load(std::memory_order_relaxed);
+    const bool current_pedal = m_pedal.load(std::memory_order_relaxed);
     const float pos_tgt =
-        std::clamp(m_position.load(std::memory_order_relaxed), 0.0f, 100.0f) / 100.0f;
+        std::clamp(m_position_pct.load(std::memory_order_relaxed), 0.0f, 100.0f) / 100.0f;
     const float pos_k = 1.0f - std::exp(-1.0f / (0.015f * sr)); // ~15 ms pedal glide
     float& pos = m_pos_smooth[ch];
 
-    float& env = m_env[ch];
+    float& env = m_env_per_channel[ch];
     float& lp = m_svf_lp[ch];
     float& bp = m_svf_bp[ch];
 
@@ -41,7 +41,7 @@ void DynamicWahProcessor::process_channel(float* buf, size_t nframes, int ch) {
         env += (level - env) * (1.0f - coeff);
 
         float cutoff;
-        if (pedal) {
+        if (current_pedal) {
             // Rocker travel maps exponentially, like a real wah's pot taper.
             pos += pos_k * (pos_tgt - pos);
             cutoff = K_BASE_FREQ * std::pow(K_PEAK_FREQ / K_BASE_FREQ, pos);

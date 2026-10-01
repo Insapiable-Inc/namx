@@ -26,11 +26,11 @@ public:
     void set_time(float ms) {
         m_time_ms.store(ms);
     }
-    void set_feedback(float pct) {
-        m_feedback.store(pct);
+    void set_feedback_pct(float pct) {
+        m_feedback_pct.store(pct);
     }
-    void set_mix(float pct) {
-        m_mix.store(pct);
+    void set_mix_pct(float pct) {
+        m_mix_pct.store(pct);
     }
     void set_right_ratio(float pct) {
         m_right_pct.store(pct);
@@ -58,11 +58,11 @@ public:
     float time() const {
         return m_time_ms.load();
     }
-    float get_feedback() const {
-        return m_feedback.load();
+    float get_feedback_pct() const {
+        return m_feedback_pct.load();
     }
-    float get_mix() const {
-        return m_mix.load();
+    float get_mix_pct() const {
+        return m_mix_pct.load();
     }
 
 protected:
@@ -99,8 +99,8 @@ private:
     static float saturate(float x, float amount);
 
     std::atomic<float> m_time_ms{250.0f};
-    std::atomic<float> m_feedback{40.0f};
-    std::atomic<float> m_mix{30.0f};
+    std::atomic<float> m_feedback_pct{40.0f};
+    std::atomic<float> m_mix_pct{30.0f};
     std::atomic<float> m_right_pct{100.0f};
     std::atomic<float> m_cross_pct{100.0f};
     std::atomic<float> m_low_cut_hz{20.0f};
@@ -110,7 +110,7 @@ private:
     std::atomic<float> m_crystals_pct{0.0f};
     PitchShifter m_shift[2];
 
-    Line m_line[2];
+    Line m_lines[2];
     float m_mod_phase = 0.0f;
 
     static constexpr float K_MAX_DELAY_MS = 2100.0f; // 1000 ms × 200 % + modulation

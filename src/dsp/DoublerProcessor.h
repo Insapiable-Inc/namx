@@ -21,8 +21,8 @@ public:
     void set_spread(float ms) {
         m_spread_ms.store(ms);
     }
-    void set_mix(float pct) {
-        m_mix.store(pct);
+    void set_mix_pct(float pct) {
+        m_mix_pct.store(pct);
     }
 
     bool process(float* l, float* r, size_t n, bool input_is_stereo) override;
@@ -32,7 +32,7 @@ protected:
 
 private:
     std::atomic<float> m_spread_ms{10.0f};
-    std::atomic<float> m_mix{100.0f};
+    std::atomic<float> m_mix_pct{100.0f};
 
     DelayLine m_line;
     float m_drift = 0.0f, m_drift_target = 0.0f; // −1 … 1

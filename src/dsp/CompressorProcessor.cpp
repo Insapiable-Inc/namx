@@ -6,21 +6,21 @@
 static constexpr float K_DB_PER_OCTAVE = 6.0205999f; // 20·log10(2)
 
 void CompressorProcessor::reset() {
-    m_env_db[0] = m_env_db[1] = -120.0f;
-    m_gain_db[0] = m_gain_db[1] = 0.0f;
+    m_env_db_per_channel[0] = m_env_db_per_channel[1] = -120.0f;
+    m_gain_db_per_channel[0] = m_gain_db_per_channel[1] = 0.0f;
 }
 
 void CompressorProcessor::process_channel(float* buf, size_t nframes, int ch) {
     const float threshold = m_threshold_db.load();
-    const float ratio = m_ratio.load();
+    const float current_ratio = m_ratio.load();
     const float makeup = m_makeup_db.load();
     const float fs = static_cast<float>(m_sample_rate);
 
     const float at_coeff = std::exp(-1.0f / (fs * m_attack_ms.load() * 0.001f));
     const float rel_coeff = std::exp(-1.0f / (fs * m_release_ms.load() * 0.001f));
 
-    float& env_db = m_env_db[ch];
-    float& gain_db = m_gain_db[ch];
+    float& env_db = m_env_db_per_channel[ch];
+    float& gain_db = m_gain_db_per_channel[ch];
     float min_gain_db = 0.0f;
 
     for (size_t i = 0; i < nframes; ++i) {
@@ -37,7 +37,7 @@ void CompressorProcessor::process_channel(float* buf, size_t nframes, int ch) {
 
         float target_gr = 0.0f;
         if (env_db > threshold) {
-            target_gr = (threshold - env_db) * (1.0f - 1.0f / ratio);
+            target_gr = (threshold - env_db) * (1.0f - 1.0f / current_ratio);
         }
 
         if (target_gr < gain_db) {

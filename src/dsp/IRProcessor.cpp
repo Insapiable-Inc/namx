@@ -13,14 +13,14 @@ IRProcessor::IRProcessor()
 }
 
 void IRProcessor::on_sample_rate_changed(double sr) {
-    m_a.set_target_sample_rate(sr);
-    m_b.set_target_sample_rate(sr);
+    m_slot_a.set_target_sample_rate(sr);
+    m_slot_b.set_target_sample_rate(sr);
     m_designed_low = m_designed_high = -1.0f; // redesign at the new rate
 }
 
 void IRProcessor::reset() {
-    m_a.reset();
-    m_b.reset();
+    m_slot_a.reset();
+    m_slot_b.reset();
     for (int c = 0; c < 2; ++c) {
         m_hp[c].clear();
         m_lp[c].clear();
@@ -61,8 +61,8 @@ bool IRProcessor::process(float* l, float* r, size_t n, bool input_is_stereo) {
 
 bool IRProcessor::process_chunk(float* l, float* r, size_t n, bool input_is_stereo) {
     const bool on = m_enabled.load();
-    const bool has_a = m_a.is_loaded();
-    const bool has_b = m_b.is_loaded();
+    const bool has_a = m_slot_a.is_loaded();
+    const bool has_b = m_slot_b.is_loaded();
 
     // Both loaders run every block (counting blocks for RtSlot reclaim);
     // a bypassed cab or an empty slot leaves the scratch untouched.
@@ -70,15 +70,15 @@ bool IRProcessor::process_chunk(float* l, float* r, size_t n, bool input_is_ster
     std::copy(r, r + n, m_ar.data());
     std::copy(l, l + n, m_bl.data());
     std::copy(r, r + n, m_br.data());
-    m_a.process_block(m_al.data(), m_ar.data(), n, input_is_stereo, on && has_a);
-    m_b.process_block(m_bl.data(), m_br.data(), n, input_is_stereo, on && has_b);
+    m_slot_a.process_block(m_al.data(), m_ar.data(), n, input_is_stereo, on && has_a);
+    m_slot_b.process_block(m_bl.data(), m_br.data(), n, input_is_stereo, on && has_b);
     if (!on || (!has_a && !has_b)) {
         return input_is_stereo;
     }
 
     // Per-slot gains: level × blend share × pan (constant power, unity at
     // centre) × phase. A single loaded slot plays at its own level only.
-    const float blend = std::clamp(m_blend.load(), 0.0f, 100.0f) / 100.0f;
+    const float blend = std::clamp(m_blend_pct.load(), 0.0f, 100.0f) / 100.0f;
     float g_l[2], g_r[2];
     bool panned = false;
     for (int s = 0; s < 2; ++s) {
@@ -89,7 +89,7 @@ bool IRProcessor::process_chunk(float* l, float* r, size_t n, bool input_is_ster
                                                 : (s == 0 ? 1.0f - blend : blend);
         const float lvl = std::pow(10.0f, m_level_db[s].load() / 20.0f) * share *
                           (m_invert[s].load() ? -1.0f : 1.0f);
-        const float pan = std::clamp(m_pan[s].load(), -100.0f, 100.0f) / 100.0f;
+        const float pan = std::clamp(m_pan_pct[s].load(), -100.0f, 100.0f) / 100.0f;
         const float ang = (pan + 1.0f) * 0.25f * K_PI;
         g_l[s] = lvl * std::cos(ang) * std::sqrt(2.0f);
         g_r[s] = lvl * std::sin(ang) * std::sqrt(2.0f);

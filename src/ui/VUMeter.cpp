@@ -47,13 +47,13 @@ void VUMeter::set_peak(float peak) {
     }
 
     // Repaint only on visible movement — a silent input costs nothing.
-    const float level = to_value(m_level_db);
-    const float hold = to_value(m_hold_db);
-    if (std::abs(level - m_level) < 0.05f && std::abs(hold - m_hold) < 0.05f) {
+    const float level_value = to_value(m_level_db);
+    const float hold_value = to_value(m_hold_db);
+    if (std::abs(level_value - m_level) < 0.05f && std::abs(hold_value - m_hold) < 0.05f) {
         return;
     }
-    m_level = level;
-    m_hold = hold;
+    m_level = level_value;
+    m_hold = hold_value;
     update();
 }
 

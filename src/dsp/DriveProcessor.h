@@ -13,14 +13,14 @@ class DriveProcessor : public EffectBase
 public:
     void reset() override;
 
-    void set_drive(float pct) {
-        m_drive.store(pct);
+    void set_drive_pct(float pct) {
+        m_drive_pct.store(pct);
     } // 0–100
-    void set_tone(float pct) {
-        m_tone.store(pct);
+    void set_tone_pct(float pct) {
+        m_tone_pct.store(pct);
     } // 0–100: dark → bright
-    void set_level(float d_b) {
-        m_level_db.store(d_b);
+    void set_level(float db) {
+        m_level_db.store(db);
     }
 
 protected:
@@ -38,10 +38,10 @@ protected:
 private:
     void process_channel(float* buf, size_t n, int ch);
 
-    std::atomic<float> m_drive{30.0f};
-    std::atomic<float> m_tone{50.0f};
+    std::atomic<float> m_drive_pct{30.0f};
+    std::atomic<float> m_tone_pct{50.0f};
     std::atomic<float> m_level_db{0.0f};
 
     // Per-channel state: input high-pass, tone low-pass.
-    float m_hp_x1[2]{}, m_hp_y1[2]{}, m_lp[2]{};
+    float m_hp_x1[2]{}, m_hp_y1[2]{}, m_lp_per_channel[2]{};
 };

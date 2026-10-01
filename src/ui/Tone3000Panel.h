@@ -37,12 +37,12 @@ public:
         LICENSE_ROLE
     };
 
-    ToneListModel(Tone3000Client& client, LibraryIndex& index, QObject* parent = nullptr);
+    ToneListModel(Tone3000Client& new_client, LibraryIndex& new_index, QObject* parent = nullptr);
 
     int rowCount(const QModelIndex& parent = {}) const override;
     QVariant data(const QModelIndex& index, int role) const override;
 
-    void set_tones(const QList<T3kTone>& tones);
+    void set_tones(const QList<T3kTone>& new_tones);
     const T3kTone* tone(int row) const {
         return row >= 0 && row < m_tones.size() ? &m_tones[row] : nullptr;
     }
@@ -53,7 +53,7 @@ private:
     void request_images();
 
     Tone3000Client& m_client;
-    LibraryIndex& m_index;
+    LibraryIndex& m_library_index;
     QList<T3kTone> m_tones;
     QHash<QString, QPixmap> m_images; // url → scaled pixmap (thumbs + avatars)
     QSet<QString> m_requested;
@@ -101,7 +101,7 @@ public:
     int rowCount(const QModelIndex& parent = {}) const override;
     QVariant data(const QModelIndex& index, int role) const override;
 
-    void set_models(const QList<T3kModel>& models, const T3kTone& tone, LibraryIndex& index);
+    void set_models(const QList<T3kModel>& new_models, const T3kTone& tone, LibraryIndex& index);
     const T3kModel* model(int row) const {
         return row >= 0 && row < m_models.size() ? &m_models[row].model : nullptr;
     }
@@ -138,7 +138,7 @@ class Tone3000Panel : public QWidget
 {
     Q_OBJECT
 public:
-    Tone3000Panel(Tone3000Client& client, LibraryIndex& index, QWidget* parent = nullptr);
+    Tone3000Panel(Tone3000Client& new_client, LibraryIndex& new_index, QWidget* parent = nullptr);
 
     /// Open a tone's detail page (after the select flow, or from a preset).
     void show_tone(int tone_id);
@@ -185,7 +185,7 @@ private:
     void set_thumbnail(QLabel* label, const QString& url, const QSize& size, bool round);
 
     Tone3000Client& m_client;
-    LibraryIndex& m_index;
+    LibraryIndex& m_library_index;
 
     QStackedWidget* m_pages = nullptr;
     QLabel* m_logo = nullptr;
@@ -197,7 +197,7 @@ private:
     // Browse
     QToolButton* m_list_btn[5]{};
     int m_list = 0;
-    int m_page = 1, m_total_pages = 1;
+    int m_list_page = 1, m_total_pages = 1;
     ToneListModel* m_tone_model = nullptr;
     QListView* m_tone_view = nullptr;
     QLabel* m_list_status = nullptr;

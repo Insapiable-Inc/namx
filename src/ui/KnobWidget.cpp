@@ -33,8 +33,8 @@ public:
         setWrapping(false);
     }
 
-    void set_accent(const QColor& accent) {
-        m_accent = accent;
+    void set_accent(const QColor& new_accent) {
+        m_accent = new_accent;
         update();
     }
 
@@ -95,10 +95,10 @@ protected:
         p.drawArc(arc_rect, start_angle, sweep_total);
 
         // Value arc.
-        const QColor accent = m_accent;
+        const QColor color = m_accent;
         const double range = std::max(1, maximum() - minimum());
         const double t = (value() - minimum()) / range;
-        QPen value_pen(accent, arc_width);
+        QPen value_pen(color, arc_width);
         value_pen.setCapStyle(Qt::RoundCap);
         p.setPen(value_pen);
         p.drawArc(arc_rect, start_angle, static_cast<int>(sweep_total * t));
@@ -152,24 +152,24 @@ private:
 // KnobWidget
 // ---------------------------------------------------------------------------
 
-KnobWidget::KnobWidget(const QString& label, double min_val, double max_val, double default_val,
-                       const QString& unit, Form form, QWidget* parent)
+KnobWidget::KnobWidget(const QString& new_label, double min_val, double max_val, double default_val,
+                       const QString& new_unit, Form form, QWidget* parent)
     : QWidget(parent)
     , m_min(min_val)
     , m_max(max_val)
-    , m_default(default_val)
-    , m_unit(unit)
-    , m_label(label) {
+    , m_default_value(default_val)
+    , m_unit(new_unit)
+    , m_label(new_label) {
     setAttribute(Qt::WA_StyledBackground, false);
 
-    auto* name_label = new QLabel(label);
+    auto* name_label = new QLabel(new_label);
     {
         QPalette p = name_label->palette();
         p.setColor(QPalette::WindowText, Theme::dim_text());
         name_label->setPalette(p);
     }
 
-    setToolTip(QString("%1: drag or scroll to adjust, double-click to reset").arg(label));
+    setToolTip(QString("%1: drag or scroll to adjust, double-click to reset").arg(new_label));
 
     m_dial = new VerticalDial;
     m_dial->setMinimum(0);
@@ -229,9 +229,9 @@ KnobWidget::KnobWidget(const QString& label, double min_val, double max_val, dou
     connect(m_dial, &QDial::valueChanged, this, &KnobWidget::on_dial_changed);
 }
 
-void KnobWidget::set_accent(const QColor& accent) {
-    m_accent = accent;
-    m_dial->set_accent(accent);
+void KnobWidget::set_accent(const QColor& new_accent) {
+    m_accent = new_accent;
+    m_dial->set_accent(new_accent);
     update_label();
 }
 
@@ -253,7 +253,7 @@ void KnobWidget::set_value(double v) {
 }
 
 void KnobWidget::reset_to_default() {
-    set_value(m_default);
+    set_value(m_default_value);
 }
 
 void KnobWidget::on_dial_changed(int) {

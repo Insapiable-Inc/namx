@@ -51,14 +51,14 @@ bool NamProcessor::load_model(const std::string& path) {
 
     // Prewarm outside the lock (slow), then re-check inside it: the buffer
     // size or sample rate may have moved meanwhile.
-    size_t max_buf;
+    size_t current_max_buf;
     double rate;
     {
         std::lock_guard<std::mutex> lock(m_model_mutex);
-        max_buf = m_max_buf.load();
+        current_max_buf = m_max_buf.load();
         rate = m_model_rate > 0.0 ? m_model_rate : m_sample_rate;
     }
-    pair->reset(rate, max_buf);
+    pair->reset(rate, current_max_buf);
 
     {
         std::lock_guard<std::mutex> lock(m_model_mutex);
@@ -83,14 +83,14 @@ void NamProcessor::unload_model() {
     m_fade_pending.store(true, std::memory_order_release);
 }
 
-void NamProcessor::prepare_buffer(size_t max_buf) {
+void NamProcessor::prepare_buffer(size_t new_max_buf) {
     // Safe to block and mutate the live pair here: both backends invoke
     // buffer-size changes on a non-RT thread with no process callback in
     // flight, and the scratch buffers are only touched by that callback.
     std::lock_guard<std::mutex> lock(m_model_mutex);
-    m_max_buf.store(max_buf);
-    m_scratch_l.resize(max_buf);
-    m_scratch_r.resize(max_buf);
+    m_max_buf.store(new_max_buf);
+    m_scratch_l.resize(new_max_buf);
+    m_scratch_r.resize(new_max_buf);
 
     // A model Reset() with a smaller max buffer will overrun the NAM core's
     // preallocated storage on a larger block (the core only assert()s, and
@@ -101,8 +101,8 @@ void NamProcessor::prepare_buffer(size_t max_buf) {
         return;
     }
     const double rate = m_model_rate > 0.0 ? m_model_rate : m_sample_rate;
-    if (max_buf > p->reset_buf || rate != p->reset_rate) {
-        p->reset(rate, std::max(max_buf, p->reset_buf));
+    if (new_max_buf > p->reset_buf || rate != p->reset_rate) {
+        p->reset(rate, std::max(new_max_buf, p->reset_buf));
     }
 }
 

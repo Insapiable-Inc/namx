@@ -28,13 +28,13 @@ public:
         STACKED
     };
 
-    explicit KnobWidget(const QString& label, double min_val, double max_val, double default_val,
-                        const QString& unit = "", Form form = Form::COMPACT,
+    explicit KnobWidget(const QString& new_label, double min_val, double max_val,
+                        double default_val, const QString& new_unit = "", Form form = Form::COMPACT,
                         QWidget* parent = nullptr);
 
     double value() const;
     double default_value() const {
-        return m_default;
+        return m_default_value;
     }
     double minimum() const {
         return m_min;
@@ -54,7 +54,7 @@ public:
     /// label (the knob body stays neutral). Pushed by Theme::tagCard — the
     /// app stylesheet disables parent→child palette propagation, so palette
     /// Highlight can NOT be used for this.
-    void set_accent(const QColor& accent);
+    void set_accent(const QColor& new_accent);
 
     /// When true, the value label shows a rounded integer.
     void set_integer_display(bool on) {
@@ -105,7 +105,7 @@ private:
     VerticalDial* m_dial;
     QLabel* m_label_value;
     QColor m_accent;
-    double m_min, m_max, m_default;
+    double m_min, m_max, m_default_value;
     QString m_unit;
     QString m_label;
     bool m_int_display{false};

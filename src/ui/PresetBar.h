@@ -26,11 +26,11 @@ class PresetBar : public QFrame
 public:
     static constexpr int K_SLOT_COUNT = 8;
 
-    PresetBar(const LibraryIndex& index, QMenu* preset_menu, QWidget* parent = nullptr);
+    PresetBar(const LibraryIndex& new_index, QMenu* preset_menu, QWidget* parent = nullptr);
 
     /// Current preset file (empty = untitled) and whether the live state
     /// differs from it.
-    void set_preset(const QString& path, bool modified);
+    void set_preset(const QString& new_path, bool new_modified);
     /// Active A/B side (0 = A, 1 = B).
     void set_ab_state(int active);
 
@@ -60,11 +60,11 @@ private:
     void show_slot_menu(int i, const QPoint& global_pos);
     void update_slots();
 
-    const LibraryIndex& m_index;
+    const LibraryIndex& m_library_index;
     QString m_path;
     QToolButton* m_name = nullptr;
     QLabel* m_modified = nullptr;
-    QToolButton* m_slots[K_SLOT_COUNT]{};
+    QToolButton* m_quick_slots[K_SLOT_COUNT]{};
     QStringList m_slot_paths; // kSlotCount entries, "" = empty slot
     QToolButton* m_ab[2]{};
     QToolButton* m_ab_copy = nullptr;

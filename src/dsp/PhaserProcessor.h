@@ -14,34 +14,34 @@ public:
     }
     void reset() override;
 
-    void set_rate(float hz) {
-        m_rate.store(hz);
+    void set_rate_hz(float hz) {
+        m_rate_hz.store(hz);
     }
-    void set_depth(float pct) {
-        m_depth.store(pct);
+    void set_depth_pct(float pct) {
+        m_depth_pct.store(pct);
     }
-    void set_feedback(float pct) {
-        m_feedback.store(pct);
+    void set_feedback_pct(float pct) {
+        m_feedback_pct.store(pct);
     }
     /// 0 = classic phaser, 1 = Vibe.
     void set_vibe(bool on) {
         m_vibe.store(on);
     }
-    void set_mix(float pct) {
-        m_mix.store(pct);
+    void set_mix_pct(float pct) {
+        m_mix_pct.store(pct);
     }
 
-    float get_rate() const {
-        return m_rate.load();
+    float get_rate_hz() const {
+        return m_rate_hz.load();
     }
-    float get_depth() const {
-        return m_depth.load();
+    float get_depth_pct() const {
+        return m_depth_pct.load();
     }
-    float get_feedback() const {
-        return m_feedback.load();
+    float get_feedback_pct() const {
+        return m_feedback_pct.load();
     }
-    float get_mix() const {
-        return m_mix.load();
+    float get_mix_pct() const {
+        return m_mix_pct.load();
     }
 
 protected:
@@ -53,12 +53,12 @@ protected:
     void process_block_stereo_out(float* l, float* r, size_t nframes) override;
 
 private:
-    std::atomic<float> m_rate{1.0f};
-    std::atomic<float> m_depth{50.0f};
-    std::atomic<float> m_feedback{50.0f};
-    std::atomic<float> m_mix{50.0f};
+    std::atomic<float> m_rate_hz{1.0f};
+    std::atomic<float> m_depth_pct{50.0f};
+    std::atomic<float> m_feedback_pct{50.0f};
+    std::atomic<float> m_mix_pct{50.0f};
 
-    float m_phase{0.0f};
+    float m_lfo_phase{0.0f};
 
     static constexpr size_t K_STAGES = 4;
     std::atomic<bool> m_vibe{false};

@@ -147,7 +147,7 @@ private:
                         int default_note, double min, double max, std::function<void(double)> push);
     SyncedParam& sync_of(KnobWidget* free_knob);
     void push_synced(KnobWidget* free_knob);
-    void set_tempo(double bpm);
+    void set_tempo(double new_bpm);
 
     // Second row of advanced controls under a card's main row, behind a
     // ▾ toggle at the row's right end. Starts at the knob column; expanded
@@ -201,7 +201,7 @@ private:
     // --- MIDI (Phase 16) ----------------------------------------------------
     // Every registry knob/toggle is a target (registered by knobParam /
     // toggleParam), plus the actions added here.
-    void setup_midi(QMenu* midi_menu);
+    void setup_midi(QMenu* menu);
     QString target_label_for(QWidget* w, const QString& group, const QString& key) const;
     void add_learn_entries(const QString& target_id, QMenu* menu);
     void start_learn(const QString& target_id);

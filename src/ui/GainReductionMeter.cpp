@@ -7,15 +7,16 @@
 
 #include "Theme.h"
 
-GainReductionMeter::GainReductionMeter(float range_db, const QColor& accent, QWidget* parent)
+GainReductionMeter::GainReductionMeter(float new_range_db, const QColor& new_accent,
+                                       QWidget* parent)
     : QWidget(parent)
-    , m_range_db(range_db)
-    , m_accent(accent) {
+    , m_range_db(new_range_db)
+    , m_accent(new_accent) {
     setFixedSize(sizeHint());
-    setToolTip(QString("Gain reduction (full bar = %1 dB)").arg(range_db, 0, 'f', 0));
+    setToolTip(QString("Gain reduction (full bar = %1 dB)").arg(new_range_db, 0, 'f', 0));
 }
 
-void GainReductionMeter::set_reduction(float d_b) {
+void GainReductionMeter::set_reduction(float new_db) {
     if (!m_clock.isValid()) {
         m_clock.start();
     }
@@ -23,8 +24,8 @@ void GainReductionMeter::set_reduction(float d_b) {
     const float dt = static_cast<float>(now - m_last_ms) / 1000.0f;
     m_last_ms = now;
 
-    d_b = std::clamp(d_b, 0.0f, m_range_db);
-    m_db = d_b >= m_db ? d_b : std::max(d_b, m_db - K_RELEASE_DB_PER_SEC * dt);
+    new_db = std::clamp(new_db, 0.0f, m_range_db);
+    m_db = new_db >= m_db ? new_db : std::max(new_db, m_db - K_RELEASE_DB_PER_SEC * dt);
 
     // Repaint on a visible change only: a tenth of a dB in the caption or a
     // fraction of a pixel on the bar.

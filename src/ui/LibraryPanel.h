@@ -42,9 +42,9 @@ public:
     int rowCount(const QModelIndex& parent = {}) const override;
     QVariant data(const QModelIndex& index, int role) const override;
 
-    void set_entries(const QList<LibraryEntry>& entries);
+    void set_entries(const QList<LibraryEntry>& new_entries);
     void set_favorites(const QSet<QString>& favs);
-    void set_recents(const QStringList& recents); // most recent first
+    void set_recents(const QStringList& new_recents); // most recent first
     void set_loaded(LibraryEntry::Kind kind, const QString& path);
 
     bool is_favorite(const QString& path) const {
@@ -80,7 +80,7 @@ public:
         NEWEST
     };
 
-    explicit LibraryFilterProxy(LibraryEntry::Kind kind, QObject* parent = nullptr);
+    explicit LibraryFilterProxy(LibraryEntry::Kind new_kind, QObject* parent = nullptr);
 
     void set_search(const QString& text);
     void set_mode(Mode m);
@@ -137,7 +137,7 @@ class LibraryPanel : public QWidget
 {
     Q_OBJECT
 public:
-    explicit LibraryPanel(LibraryIndex& index, QWidget* parent = nullptr);
+    explicit LibraryPanel(LibraryIndex& new_index, QWidget* parent = nullptr);
 
     /// Switch to a section and give the list keyboard focus.
     void show_section(LibraryEntry::Kind kind);
@@ -161,7 +161,7 @@ signals:
     void activated(LibraryEntry::Kind kind, const QString& path);
 
 private:
-    void set_section(int section, bool focus_list);
+    void set_section(int new_section, bool focus_list);
     void on_entries_changed();
     void on_current_changed();
     void activate_current();
@@ -172,7 +172,7 @@ private:
         return m_proxies[static_cast<int>(kind)];
     }
 
-    LibraryIndex& m_index;
+    LibraryIndex& m_library_index;
     LibraryListModel* m_model = nullptr;
     LibraryFilterProxy* m_proxies[3]{};
     QToolButton* m_section_btn[3]{};

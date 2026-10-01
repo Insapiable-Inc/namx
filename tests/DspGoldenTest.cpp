@@ -281,12 +281,12 @@ void DspGoldenTest::initTestCase() {
     both("wah-pedal", [] {
         auto fx = std::make_unique<DynamicWahProcessor>();
         fx->set_pedal_mode(true);
-        fx->set_position(70.0f);
+        fx->set_position_pct(70.0f);
         return fx;
     });
     both("flanger", [] {
         auto fx = std::make_unique<FlangerProcessor>();
-        fx->set_feedback(60.0f);
+        fx->set_feedback_pct(60.0f);
         return fx;
     });
     both("flanger-stereo", [] {
@@ -305,7 +305,7 @@ void DspGoldenTest::initTestCase() {
     });
     both("drive", [] {
         auto fx = std::make_unique<DriveProcessor>();
-        fx->set_drive(70.0f);
+        fx->set_drive_pct(70.0f);
         return fx;
     });
     both("eq", [] {
@@ -340,8 +340,8 @@ void DspGoldenTest::initTestCase() {
     both("delay", [] {
         auto fx = std::make_unique<DelayProcessor>();
         fx->set_time(180.0f);
-        fx->set_feedback(55.0f);
-        fx->set_mix(40.0f);
+        fx->set_feedback_pct(55.0f);
+        fx->set_mix_pct(40.0f);
         return fx;
     });
     both("delay-stereo-mod-sat", [] {
@@ -367,7 +367,7 @@ void DspGoldenTest::initTestCase() {
     both("reverb-stereo-shimmer", [] {
         auto fx = std::make_unique<ReverbProcessor>();
         fx->set_stereo_mode(true);
-        fx->set_shimmer(60.0f);
+        fx->set_shimmer_pct(60.0f);
         return fx;
     });
     both("transpose-down", [] {
@@ -378,12 +378,12 @@ void DspGoldenTest::initTestCase() {
     both("transpose-up", [] {
         auto fx = std::make_unique<TransposeProcessor>();
         fx->set_semitones(12.0f);
-        fx->set_mix(50.0f);
+        fx->set_mix_pct(50.0f);
         return fx;
     });
     both("volume", [] {
         auto fx = std::make_unique<VolumeProcessor>();
-        fx->set_position(40.0f);
+        fx->set_position_pct(40.0f);
         return fx;
     });
     both("cabinet", [ir_a, ir_b] {
@@ -391,7 +391,7 @@ void DspGoldenTest::initTestCase() {
         fx->set_sample_rate(SAMPLE_RATE);
         const bool loaded = fx->load(ir_a.toStdString()) && fx->load_b(ir_b.toStdString());
         fx->reclaim_retired(true);
-        fx->set_blend(35.0f);
+        fx->set_blend_pct(35.0f);
         fx->set_pan(1, 60.0f);
         return loaded ? std::move(fx) : nullptr;
     });

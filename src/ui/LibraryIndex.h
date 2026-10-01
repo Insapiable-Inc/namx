@@ -65,7 +65,7 @@ public:
     explicit LibraryIndex(QObject* parent = nullptr);
     ~LibraryIndex() override;
 
-    void set_roots(const LibraryRoots& roots); // persists + rescans
+    void set_roots(const LibraryRoots& new_roots); // persists + rescans
     const LibraryRoots& get_roots() const {
         return m_roots;
     }
@@ -94,7 +94,7 @@ signals:
 
 private:
     void request_scan();
-    void on_scan_finished(QList<LibraryEntry> entries, QStringList dirs);
+    void on_scan_finished(QList<LibraryEntry> new_entries, QStringList dirs);
 
     LibraryRoots m_roots;
     QList<LibraryEntry> m_entries;

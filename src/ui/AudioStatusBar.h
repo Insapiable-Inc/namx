@@ -16,7 +16,7 @@ class AudioStatusBar : public QWidget
 {
     Q_OBJECT
 public:
-    explicit AudioStatusBar(AudioEngine& engine, QWidget* parent = nullptr);
+    explicit AudioStatusBar(AudioEngine& new_engine, QWidget* parent = nullptr);
 
     /// Re-read backend state + device lists. Call after audio (re)starts.
     void refresh();

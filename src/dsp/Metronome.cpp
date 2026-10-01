@@ -7,11 +7,11 @@ static constexpr double K_TWO_PI = 6.283185307179586;
 
 Metronome::Metronome()
     : m_accents(default_accents(4, 4)) {
-    build_sounds(m_sr);
+    build_sounds(m_sample_rate);
 }
 
-void Metronome::set_sample_rate(double sr) {
-    if (sr <= 0.0 || sr == m_sr) {
+void Metronome::set_sample_rate(double new_sr) {
+    if (new_sr <= 0.0 || new_sr == m_sample_rate) {
         return;
     }
     // Called with processing suspended (on_buffer_size_changed); drop voices
@@ -19,13 +19,13 @@ void Metronome::set_sample_rate(double sr) {
     for (auto& v : m_voices) {
         v = {};
     }
-    m_sr = sr;
-    build_sounds(sr);
+    m_sample_rate = new_sr;
+    build_sounds(new_sr);
 }
 
-void Metronome::set_meter(int beats, int unit) {
-    m_beats.store(std::clamp(beats, 1, K_MAX_BEATS));
-    m_unit.store(unit == 2 || unit == 8 || unit == 16 ? unit : 4);
+void Metronome::set_meter(int new_beats, int new_unit) {
+    m_beats.store(std::clamp(new_beats, 1, K_MAX_BEATS));
+    m_unit.store(new_unit == 2 || new_unit == 8 || new_unit == 16 ? new_unit : 4);
 }
 
 uint32_t Metronome::default_accents(int beats, int unit) {
@@ -177,23 +177,24 @@ void Metronome::process(float* l, float* r, size_t n) {
     }
 
     const float vol = std::pow(10.0f, m_volume_db.load(std::memory_order_relaxed) / 20.0f);
-    const float pan = std::clamp(m_pan.load(std::memory_order_relaxed), -1.0f, 1.0f);
-    const float g_l = vol * std::cos((pan + 1.0f) * 0.25f * 3.14159265f); // constant power
-    const float g_r = vol * std::sin((pan + 1.0f) * 0.25f * 3.14159265f);
+    const float current_pan = std::clamp(m_pan.load(std::memory_order_relaxed), -1.0f, 1.0f);
+    const float g_l = vol * std::cos((current_pan + 1.0f) * 0.25f * 3.14159265f); // constant power
+    const float g_r = vol * std::sin((current_pan + 1.0f) * 0.25f * 3.14159265f);
 
     if (!run) {
         render(l, r, 0, n, g_l, g_r); // let the last click ring out
         return;
     }
 
-    const int beats = m_beats.load(std::memory_order_relaxed);
-    const int subdiv = m_subdiv.load(std::memory_order_relaxed);
-    const double bpm = std::clamp(m_bpm.load(std::memory_order_relaxed), 20.0, 400.0);
-    const double tick = m_sr * 60.0 / bpm * (4.0 / m_unit.load(std::memory_order_relaxed)) / subdiv;
+    const int current_beats = m_beats.load(std::memory_order_relaxed);
+    const int current_subdiv = m_subdiv.load(std::memory_order_relaxed);
+    const double current_bpm = std::clamp(m_bpm.load(std::memory_order_relaxed), 20.0, 400.0);
+    const double samples_per_tick = m_sample_rate * 60.0 / current_bpm *
+                                    (4.0 / m_unit.load(std::memory_order_relaxed)) / current_subdiv;
     const uint32_t acc = m_accents.load(std::memory_order_relaxed);
     const auto& set = m_samples[m_sound.load(std::memory_order_relaxed)];
-    const bool silent_after = m_silent_after.load(std::memory_order_relaxed) &&
-                              m_count_in_bars.load(std::memory_order_relaxed) > 0;
+    const bool current_silent_after = m_silent_after.load(std::memory_order_relaxed) &&
+                                      m_count_in_bars.load(std::memory_order_relaxed) > 0;
 
     // Tick positions are fractional samples; `frames` is the block length on that scale.
     const double frames = static_cast<double>(n);
@@ -204,11 +205,11 @@ void Metronome::process(float* l, float* r, size_t n) {
         render(l, r, i, at, g_l, g_r);
         i = at;
 
-        if (m_beat >= beats) {
+        if (m_beat >= current_beats) {
             m_beat = 0; // meter shortened while running
         }
         const bool counting = m_count_in_left > 0;
-        const bool audible = counting || !silent_after;
+        const bool audible = counting || !current_silent_after;
         const Accent a = counting ? (m_beat == 0 ? STRONG : NORMAL) : accent_of(acc, m_beat);
         if (m_tick == 0) {
             m_beat_now.store(m_beat, std::memory_order_relaxed);
@@ -220,16 +221,16 @@ void Metronome::process(float* l, float* r, size_t n) {
             trigger(set[2], 0.55f);
         }
 
-        if (++m_tick >= subdiv) {
+        if (++m_tick >= current_subdiv) {
             m_tick = 0;
-            if (++m_beat >= beats) {
+            if (++m_beat >= current_beats) {
                 m_beat = 0;
                 if (m_count_in_left > 0) {
                     --m_count_in_left;
                 }
             }
         }
-        until += tick;
+        until += samples_per_tick;
     }
     render(l, r, i, n, g_l, g_r);
     m_until_next = until - frames;

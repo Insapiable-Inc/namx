@@ -39,7 +39,7 @@ public:
 
     Metronome();
 
-    void set_sample_rate(double sr); // non-RT: rebuilds the click samples
+    void set_sample_rate(double new_sr); // non-RT: rebuilds the click samples
 
     // ---- Settings (any thread) ----
     void set_running(bool on) {
@@ -48,10 +48,10 @@ public:
     bool is_running() const {
         return m_running.load();
     }
-    void set_bpm(double bpm) {
-        m_bpm.store(bpm);
+    void set_bpm(double new_bpm) {
+        m_bpm.store(new_bpm);
     }
-    void set_meter(int beats, int unit);
+    void set_meter(int new_beats, int new_unit);
     int get_beats() const {
         return m_beats.load();
     }
@@ -81,11 +81,11 @@ public:
     void set_sound(int s) {
         m_sound.store(s < 0 || s >= K_SOUND_COUNT ? 0 : static_cast<size_t>(s));
     }
-    void set_volume_db(float d_b) {
-        m_volume_db.store(d_b);
+    void set_volume_db(float db) {
+        m_volume_db.store(db);
     }
-    void set_pan(float pan) {
-        m_pan.store(pan);
+    void set_pan(float new_pan) {
+        m_pan.store(new_pan);
     } // -1 … +1
     /// Bars counted in (all beats audible, downbeat strong) when starting.
     void set_count_in_bars(int bars) {
@@ -124,7 +124,7 @@ private:
 
     // Click samples: [sound][0 = accent, 1 = beat, 2 = subdivision].
     std::array<std::array<std::vector<float>, 3>, K_SOUND_COUNT> m_samples;
-    double m_sr = 48000.0;
+    double m_sample_rate = 48000.0;
 
     std::atomic<bool> m_running{false};
     std::atomic<double> m_bpm{120.0};

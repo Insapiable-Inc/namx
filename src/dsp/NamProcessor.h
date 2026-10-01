@@ -47,7 +47,7 @@ public:
 
     /// Must be called whenever the backend reports a (new) buffer size, before
     /// the next process callback. Re-Reset()s the live models if the size grew.
-    void prepare_buffer(size_t max_buf);
+    void prepare_buffer(size_t new_max_buf);
     size_t get_max_buf() const {
         return m_max_buf.load();
     }

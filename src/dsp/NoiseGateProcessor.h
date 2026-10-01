@@ -10,8 +10,8 @@ class NoiseGateProcessor : public EffectBase
 public:
     void reset() override;
 
-    void set_threshold(float d_b) {
-        m_threshold_db.store(d_b);
+    void set_threshold(float db) {
+        m_threshold_db.store(db);
     }
     void set_attack(float ms) {
         m_attack_ms.store(ms);
@@ -55,6 +55,6 @@ private:
 
     // Per-channel state: [0] = mono/L, [1] = R (stereo input).
     float m_envelope[2]{0.0f, 0.0f};
-    float m_gain[2]{0.0f, 0.0f};
+    float m_gain_per_channel[2]{0.0f, 0.0f};
     std::atomic<float> m_gr_peak_db{0.0f};
 };

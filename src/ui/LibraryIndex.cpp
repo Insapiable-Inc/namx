@@ -501,9 +501,9 @@ LibraryIndex::~LibraryIndex() {
     m_thread->wait();
 }
 
-void LibraryIndex::set_roots(const LibraryRoots& roots) {
-    m_roots = roots;
-    save_roots(roots);
+void LibraryIndex::set_roots(const LibraryRoots& new_roots) {
+    m_roots = new_roots;
+    save_roots(new_roots);
     request_scan();
 }
 
@@ -526,8 +526,8 @@ void LibraryIndex::request_scan() {
         Qt::QueuedConnection);
 }
 
-void LibraryIndex::on_scan_finished(QList<LibraryEntry> entries, QStringList dirs) {
-    m_entries = std::move(entries);
+void LibraryIndex::on_scan_finished(QList<LibraryEntry> new_entries, QStringList dirs) {
+    m_entries = std::move(new_entries);
     m_scanning = false;
 
     // Watch every scanned directory (new files, deletions, new subfolders);

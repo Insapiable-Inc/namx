@@ -28,7 +28,8 @@ public:
 private:
     std::atomic<bool> m_enabled{false};
     std::atomic<float> m_gr_peak_db{0.0f};
-    std::vector<float> m_delay_l, m_delay_r, m_need; // look-ahead lines + required gain per slot
+    std::vector<float> m_delay_l, m_delay_r,
+        m_need_window; // look-ahead lines + required gain per slot
     size_t m_pos = 0;
     size_t m_look = 48; // look-ahead, samples
     float m_gain = 1.0f;

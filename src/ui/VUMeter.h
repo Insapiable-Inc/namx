@@ -26,8 +26,8 @@ protected:
     void paintEvent(QPaintEvent* event) override;
 
 private:
-    static float to_value(float d_b) {
-        return (d_b - K_MIN_DB) / (K_MAX_DB - K_MIN_DB) * 100.0f;
+    static float to_value(float db) {
+        return (db - K_MIN_DB) / (K_MAX_DB - K_MIN_DB) * 100.0f;
     }
 
     static constexpr float K_MIN_DB = -60.0f;

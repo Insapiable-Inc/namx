@@ -42,10 +42,11 @@ QString mapping_dir() {
 }
 } // namespace
 
-MidiMappingsDialog::MidiMappingsDialog(MidiMapper& mapper, MidiInput* input, QWidget* parent)
+MidiMappingsDialog::MidiMappingsDialog(MidiMapper& new_mapper, MidiInput* new_input,
+                                       QWidget* parent)
     : QDialog(parent)
-    , m_mapper(mapper)
-    , m_input(input) {
+    , m_mapper(new_mapper)
+    , m_input(new_input) {
     setObjectName("midiMappings"); // scoped dark-table rules in Theme
     setWindowTitle("MIDI Mappings");
     resize(980, 560);
