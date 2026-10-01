@@ -34,7 +34,7 @@ float FlangerProcessor::readInterp(const std::vector<float>& buf, int writePos,
     }
     int r1 = r0 + 1 == sz ? 0 : r0 + 1;
     float frac = readF - std::floor(readF);
-    return buf[r0] * (1.0f - frac) + buf[r1] * frac;
+    return buf[r0] + (buf[r1] - buf[r0]) * frac;
 }
 
 void FlangerProcessor::processSample(float in, float phase, std::vector<float>& buf, int& writePos,

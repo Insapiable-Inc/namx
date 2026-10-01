@@ -34,7 +34,7 @@ float ChorusProcessor::readInterp(const std::vector<float>& buf, int writePos,
     }
     int r1 = r0 + 1 == sz ? 0 : r0 + 1;
     float frac = readF - std::floor(readF);
-    return buf[r0] * (1.0f - frac) + buf[r1] * frac;
+    return buf[r0] + (buf[r1] - buf[r0]) * frac;
 }
 
 float ChorusProcessor::wet(const std::vector<float>& buf, int write, float phase, float depth,

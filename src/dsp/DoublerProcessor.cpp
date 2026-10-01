@@ -49,7 +49,7 @@ bool DoublerProcessor::process(float* L, float* R, int n, bool inputIsStereo) {
         }
         const int r1 = r0 + 1 == sz ? 0 : r0 + 1;
         const float frac = readF - std::floor(readF);
-        const float dbl = mBuf[r0] * (1.0f - frac) + mBuf[r1] * frac;
+        const float dbl = mBuf[r0] + (mBuf[r1] - mBuf[r0]) * frac;
         if (++mWrite == sz) {
             mWrite = 0;
         }
