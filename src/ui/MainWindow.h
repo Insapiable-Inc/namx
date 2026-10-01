@@ -28,6 +28,7 @@ class QLabel;
 class QPushButton;
 class QToolButton;
 class AudioStatusBar;
+class GainReductionMeter;
 class LibraryDock;
 class LibraryPanel;
 class PresetBar;
@@ -213,6 +214,8 @@ private:
 
     VUMeter* mMeterIn  = nullptr;
     VUMeter* mMeterOut = nullptr;
+    GainReductionMeter* mGrGate = nullptr;
+    GainReductionMeter* mGrComp = nullptr;
 
     TunerDisplay* mTunerDisplay = nullptr;
 

@@ -17,6 +17,11 @@ public:
     float attack()    const { return mAttackMS.load();    }
     float release()   const { return mReleaseMS.load();   }
 
+    /// Deepest attenuation (dB, ≥ 0, capped at kMaxGrDb) since the last
+    /// take — GUI meter.
+    float takeGainReductionDb() { return mGrPeakDB.exchange(0.0f); }
+    static constexpr float kMaxGrDb = 60.0f;
+
 protected:
     void onSampleRateChanged(double /*sr*/) override { reset(); }
     void processBlockMono(float* buf, int nframes) override;
@@ -34,4 +39,5 @@ private:
     // Per-channel state: [0] = mono/L, [1] = R (stereo input).
     float mEnvelope[2]{0.0f, 0.0f};
     float mGain[2]{0.0f, 0.0f};
+    std::atomic<float> mGrPeakDB{0.0f};
 };

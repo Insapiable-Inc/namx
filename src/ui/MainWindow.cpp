@@ -2,6 +2,7 @@
 #include "AudioStatusBar.h"
 #include "Constants.h"
 #include "EffectShortcuts.h"
+#include "GainReductionMeter.h"
 #include "LibraryDock.h"
 #include "LibraryPanel.h"
 #include "PresetBar.h"
@@ -115,6 +116,15 @@ static QWidget* makeStereoSlot(ToggleSwitch** outToggle)
     }
 
     return w;
+}
+
+// Rows without a stereo mode (Gate, Compressor) show their gain-reduction
+// meter in the reserved stereo slot, so the knob column stays aligned.
+static void placeInStereoSlot(QWidget* card, QWidget* w)
+{
+    // Card layout: grip, name, enable slot, stereo slot, …
+    QWidget* slot = card->layout()->itemAt(3)->widget();
+    slot->layout()->addWidget(w);
 }
 
 // ---------------------------------------------------------------------------
@@ -373,6 +383,8 @@ void MainWindow::setupUI()
 
         auto* col = makeEffectRow("Noise Gate", mSwGateEnable,
             {mKnobGateThresh, mKnobGateAttack, mKnobGateRelease});
+        mGrGate = new GainReductionMeter(40.0f, Theme::accent("gate"));
+        placeInStereoSlot(col, mGrGate);
         Theme::tagCard(col, "gate");
 
         mFxCols[&mEngine->gate()] = col;
@@ -394,6 +406,8 @@ void MainWindow::setupUI()
 
         auto* col = makeEffectRow("Compressor", mSwCompEnable,
             {mKnobCompThresh, mKnobCompRatio, mKnobCompAttack, mKnobCompRelease, mKnobCompMakeup});
+        mGrComp = new GainReductionMeter(20.0f, Theme::accent("comp"));
+        placeInStereoSlot(col, mGrComp);
         Theme::tagCard(col, "comp");
 
         mFxCols[&mEngine->comp()] = col;
@@ -1398,6 +1412,8 @@ void MainWindow::updateMeters()
 {
     mMeterIn ->setPeak(mEngine->takeInputPeak());
     mMeterOut->setPeak(mEngine->takeOutputPeak());
+    mGrGate->setReduction(mEngine->gate().takeGainReductionDb());
+    mGrComp->setReduction(mEngine->comp().takeGainReductionDb());
 }
 
 void MainWindow::updateMeterTimer()

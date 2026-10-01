@@ -20,6 +20,7 @@ void CompressorProcessor::processChannel(float* buf, int nframes, int ch)
 
     float& envDB  = mEnvDB[ch];
     float& gainDB = mGainDB[ch];
+    float  minGainDB = 0.0f;
 
     for (int i = 0; i < nframes; ++i)
     {
@@ -40,8 +41,11 @@ void CompressorProcessor::processChannel(float* buf, int nframes, int ch)
         else
             gainDB = relCoeff * gainDB + (1.0f - relCoeff) * targetGR;
 
+        minGainDB = std::min(minGainDB, gainDB);
         buf[i] *= std::pow(10.0f, (gainDB + makeup) / 20.0f);
     }
+    if (-minGainDB > mGrPeakDB.load(std::memory_order_relaxed))
+        mGrPeakDB.store(-minGainDB, std::memory_order_relaxed);
 }
 
 void CompressorProcessor::processBlockMono(float* buf, int nframes)

@@ -75,6 +75,8 @@ set(GUI_SOURCES
     src/ui/PresetBar.h
     src/ui/VUMeter.cpp
     src/ui/VUMeter.h
+    src/ui/GainReductionMeter.cpp
+    src/ui/GainReductionMeter.h
     src/ui/Theme.cpp
     src/ui/TunerDisplay.cpp
     src/ui/TunerDisplay.h

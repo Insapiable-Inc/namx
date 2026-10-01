@@ -1,4 +1,5 @@
 #include "NoiseGateProcessor.h"
+#include <algorithm>
 #include <cmath>
 
 void NoiseGateProcessor::reset()
@@ -19,6 +20,7 @@ void NoiseGateProcessor::processChannel(float* buf, int nframes, int ch)
 
     float& env  = mEnvelope[ch];
     float& gain = mGain[ch];
+    float  minGain = 1.0f;
 
     for (int i = 0; i < nframes; ++i)
     {
@@ -35,8 +37,13 @@ void NoiseGateProcessor::processChannel(float* buf, int nframes, int ch)
         else
             gain = relCoeff * gain + (1.0f - relCoeff) * target;
 
+        minGain = std::min(minGain, gain);
         buf[i] *= gain;
     }
+    // One log per block, not per sample.
+    const float grDB = minGain > 1e-3f ? -20.0f * std::log10(minGain) : kMaxGrDb;
+    if (grDB > mGrPeakDB.load(std::memory_order_relaxed))
+        mGrPeakDB.store(std::min(grDB, kMaxGrDb), std::memory_order_relaxed);
 }
 
 void NoiseGateProcessor::processBlockMono(float* buf, int nframes)

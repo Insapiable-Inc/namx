@@ -21,6 +21,9 @@ public:
     float release()   const { return mReleaseMS.load();   }
     float makeup()    const { return mMakeupDB.load();    }
 
+    /// Deepest gain reduction (dB, ≥ 0) since the last take — GUI meter.
+    float takeGainReductionDb() { return mGrPeakDB.exchange(0.0f); }
+
 protected:
     void onSampleRateChanged(double /*sr*/) override { reset(); }
     void processBlockMono(float* buf, int nframes) override;
@@ -38,4 +41,5 @@ private:
     // Per-channel state: [0] = mono/L, [1] = R (stereo input).
     float mEnvDB[2]{-120.0f, -120.0f};
     float mGainDB[2]{0.0f, 0.0f};
+    std::atomic<float> mGrPeakDB{0.0f};
 };
