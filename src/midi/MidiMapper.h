@@ -97,12 +97,12 @@ public:
     /// (replacing that target's mappings). learnRow binds into an existing
     /// mapping row instead (Mappings window).
     void learn(const QString& targetId);
-    void learnRow(int row);
+    void learnRow(qsizetype row);
     void cancelLearn();
     QString learning() const {
         return mLearnTarget;
     }
-    int learningRow() const {
+    qsizetype learningRow() const {
         return mLearnRow;
     }
 
@@ -129,7 +129,7 @@ private:
     QList<MidiMapping> mMappings;
     QHash<int, int> mLastValue; // mapping index → last CC value (edge detection)
     QString mLearnTarget;
-    int mLearnRow = -1;
+    qsizetype mLearnRow = -1;
 
     bool mFollowClock = false;
     QElapsedTimer mClock;

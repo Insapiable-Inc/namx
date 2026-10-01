@@ -22,16 +22,12 @@
 #include <string>
 #include <vector>
 
-#if defined(__x86_64__) || defined(__i386__) || defined(_M_X64)
-#include <pmmintrin.h>
-#include <xmmintrin.h>
-#endif
-
 #include <NAM/activations.h>
 
 #include "ChorusProcessor.h"
 #include "CompressorProcessor.h"
 #include "DelayProcessor.h"
+#include "Denormals.h"
 #include "DoublerProcessor.h"
 #include "DriveProcessor.h"
 #include "DynamicWahProcessor.h"
@@ -71,8 +67,17 @@ double percentile(std::vector<double> v, double p) {
         return 0.0;
     }
     std::sort(v.begin(), v.end());
-    const size_t i = std::min(v.size() - 1, static_cast<size_t>(p * (v.size() - 1) + 0.5));
+    const size_t last = v.size() - 1;
+    const size_t i = std::min(last, static_cast<size_t>(p * static_cast<double>(last) + 0.5));
     return v[i];
+}
+
+double mean(const std::vector<double>& v) {
+    double sum = 0.0;
+    for (double x : v) {
+        sum += x;
+    }
+    return sum / static_cast<double>(v.size());
 }
 
 bool listed(const std::string& only, const char* name) {
@@ -93,9 +98,9 @@ bool listed(const std::string& only, const char* name) {
 
 int main(int argc, char** argv) {
     std::string model, ir, irB, only;
-    int frames = 128;
+    size_t frames = 128;
     double rate = 48000.0;
-    int blocks = 4000;
+    size_t blocks = 4000;
     bool fastTanh = true;
 
     for (int i = 1; i < argc; ++i) {
@@ -114,11 +119,11 @@ int main(int argc, char** argv) {
         } else if (a == "--ir-b") {
             irB = next();
         } else if (a == "--frames") {
-            frames = std::atoi(next());
+            frames = std::strtoul(next(), nullptr, 10);
         } else if (a == "--rate") {
             rate = std::atof(next());
         } else if (a == "--blocks") {
-            blocks = std::atoi(next());
+            blocks = std::strtoul(next(), nullptr, 10);
         } else if (a == "--only") {
             only = next();
         } else if (a == "--no-fast-tanh") {
@@ -128,7 +133,7 @@ int main(int argc, char** argv) {
             return a == "--help" || a == "-h" ? 0 : 2;
         }
     }
-    if (frames <= 0 || rate <= 0.0 || blocks <= 0) {
+    if (frames == 0 || rate <= 0.0 || blocks == 0) {
         usage();
         return 2;
     }
@@ -136,11 +141,7 @@ int main(int argc, char** argv) {
     if (fastTanh) {
         nam::activations::Activation::enable_fast_tanh();
     }
-#if defined(__x86_64__) || defined(__i386__) || defined(_M_X64)
-    // Same MXCSR as the backends' audio threads: denormals flushed to zero.
-    _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
-    _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
-#endif
+    enable_flush_to_zero(); // same MXCSR as the backends' audio threads
 
     TunerProcessor tuner;
     NoiseGateProcessor gate;
@@ -210,7 +211,7 @@ int main(int argc, char** argv) {
     std::mt19937 rng(1234);
     std::uniform_real_distribution<float> noise(-0.25f, 0.25f);
 
-    const int warmup = std::max(50, blocks / 20);
+    const size_t warmup = std::max<size_t>(50, blocks / 20);
     limiter.setSampleRate(rate);
     limiter.setEnabled(listed(only, "Limiter"));
     std::vector<double> limiterUs;
@@ -223,8 +224,8 @@ int main(int argc, char** argv) {
     }
 
     using clock = std::chrono::steady_clock;
-    for (int b = 0; b < warmup + blocks; ++b) {
-        for (int i = 0; i < frames; ++i) {
+    for (size_t b = 0; b < warmup + blocks; ++b) {
+        for (size_t i = 0; i < frames; ++i) {
             L[i] = R[i] = noise(rng);
         }
         bool stereo = false;
@@ -247,7 +248,7 @@ int main(int argc, char** argv) {
                 limiterUs.push_back(us);
             }
         }
-        for (int i = 0; i < frames; ++i) {
+        for (size_t i = 0; i < frames; ++i) {
             if (!std::isfinite(L[i]) || !std::isfinite(R[i])) {
                 finite = false;
             }
@@ -257,9 +258,9 @@ int main(int argc, char** argv) {
         }
     }
 
-    const double budgetUs = frames / rate * 1e6;
+    const double budgetUs = static_cast<double>(frames) / rate * 1e6;
     std::printf(
-        "NAMPlayerBench  %d frames @ %.0f Hz  budget %.1f µs/block  %d blocks  fast tanh %s\n",
+        "NAMPlayerBench  %zu frames @ %.0f Hz  budget %.1f µs/block  %zu blocks  fast tanh %s\n",
         frames, rate, budgetUs, blocks, fastTanh ? "on" : "off");
     if (!model.empty()) {
         std::printf("model  %s\n", model.c_str());
@@ -272,30 +273,18 @@ int main(int argc, char** argv) {
         if (!s.fx->isEnabled()) {
             continue;
         }
-        double sum = 0.0;
-        for (double v : s.us) {
-            sum += v;
-        }
-        const double mean = sum / s.us.size();
-        std::printf("%-12s %10.2f %10.2f %10.2f %7.2f%%\n", s.name, mean, percentile(s.us, 0.99),
-                    percentile(s.us, 1.0), mean / budgetUs * 100.0);
+        const double us = mean(s.us);
+        std::printf("%-12s %10.2f %10.2f %10.2f %7.2f%%\n", s.name, us, percentile(s.us, 0.99),
+                    percentile(s.us, 1.0), us / budgetUs * 100.0);
     }
     if (limiter.isEnabled()) {
-        double s = 0.0;
-        for (double v : limiterUs) {
-            s += v;
-        }
-        std::printf("%-12s %10.2f %10.2f %10.2f %7.2f%%\n", "Limiter", s / limiterUs.size(),
-                    percentile(limiterUs, 0.99), percentile(limiterUs, 1.0),
-                    s / limiterUs.size() / budgetUs * 100.0);
+        const double us = mean(limiterUs);
+        std::printf("%-12s %10.2f %10.2f %10.2f %7.2f%%\n", "Limiter", us,
+                    percentile(limiterUs, 0.99), percentile(limiterUs, 1.0), us / budgetUs * 100.0);
     }
-    double sum = 0.0;
-    for (double v : total) {
-        sum += v;
-    }
-    const double mean = sum / total.size();
-    std::printf("%-12s %10.2f %10.2f %10.2f %7.2f%%\n", "TOTAL", mean, percentile(total, 0.99),
-                percentile(total, 1.0), mean / budgetUs * 100.0);
+    const double totalUs = mean(total);
+    std::printf("%-12s %10.2f %10.2f %10.2f %7.2f%%\n", "TOTAL", totalUs, percentile(total, 0.99),
+                percentile(total, 1.0), totalUs / budgetUs * 100.0);
     if (!finite) {
         std::printf("\nWARNING: non-finite samples in the output\n");
     }

@@ -6,8 +6,8 @@
 static constexpr float kPi = 3.14159265358979323846f;
 
 void DynamicWahProcessor::onSampleRateChanged(double sr) {
-    mEnvAttack = std::exp(-1.0 / (0.002 * sr));
-    mEnvRelease = std::exp(-1.0 / (0.080 * sr));
+    mEnvAttack = static_cast<float>(std::exp(-1.0 / (0.002 * sr)));
+    mEnvRelease = static_cast<float>(std::exp(-1.0 / (0.080 * sr)));
     reset();
 }
 

@@ -62,7 +62,7 @@ void normalize(std::vector<float>& s) {
 std::vector<float> sineBlip(double sr, double freq, double lenS, double tau, double attackS) {
     std::vector<float> s(static_cast<size_t>(lenS * sr));
     for (size_t i = 0; i < s.size(); ++i) {
-        const double t = i / sr;
+        const double t = static_cast<double>(i) / sr;
         const double env = std::min(1.0, t / attackS) * std::exp(-t / tau);
         s[i] = static_cast<float>(std::sin(kTwoPi * freq * t) * env);
     }
@@ -81,8 +81,8 @@ std::vector<float> woodKnock(double sr, double freq, double lenS) {
     uint32_t seed = 0x1234567u;
     for (size_t i = 0; i < s.size(); ++i) {
         seed = seed * 1664525u + 1013904223u;
-        const double noise =
-            (static_cast<double>(seed >> 8) / 8388608.0 - 1.0) * std::exp(-(i / sr) / 0.0015);
+        const double noise = (static_cast<double>(seed >> 8) / 8388608.0 - 1.0) *
+                             std::exp(-(static_cast<double>(i) / sr) / 0.0015);
         const double y = b0 * noise + b2 * x2 - a1 * y1 - a2 * y2;
         x2 = x1;
         x1 = noise;
@@ -100,7 +100,7 @@ std::vector<float> cowbell(double sr, double f1, double f2, double lenS) {
     double lp = 0.0;
     const double k = 1.0 - std::exp(-kTwoPi * 3500.0 / sr);
     for (size_t i = 0; i < s.size(); ++i) {
-        const double t = i / sr;
+        const double t = static_cast<double>(i) / sr;
         const double sq = (std::sin(kTwoPi * f1 * t) >= 0 ? 1.0 : -1.0) +
                           (std::sin(kTwoPi * f2 * t) >= 0 ? 1.0 : -1.0);
         const double env =
@@ -138,17 +138,17 @@ void Metronome::trigger(const std::vector<float>& sample, float gain) {
         v = &mVoices[1];
     }
     v->data = sample.data();
-    v->len = static_cast<int>(sample.size());
+    v->len = sample.size();
     v->pos = 0;
     v->gain = gain;
 }
 
-void Metronome::render(float* L, float* R, int from, int to, float gL, float gR) {
+void Metronome::render(float* L, float* R, size_t from, size_t to, float gL, float gR) {
     for (auto& v : mVoices) {
         if (!v.data) {
             continue;
         }
-        for (int i = from; i < to; ++i) {
+        for (size_t i = from; i < to; ++i) {
             const float s = v.data[v.pos] * v.gain;
             L[i] += s * gL;
             R[i] += s * gR;
@@ -195,10 +195,12 @@ void Metronome::process(float* L, float* R, size_t n) {
     const bool silentAfter = mSilentAfter.load(std::memory_order_relaxed) &&
                              mCountInBars.load(std::memory_order_relaxed) > 0;
 
-    int i = 0;
+    // Tick positions are fractional samples; `frames` is the block length on that scale.
+    const double frames = static_cast<double>(n);
+    size_t i = 0;
     double until = mUntilNext;
-    while (until < n) {
-        const int at = std::max(i, static_cast<int>(until));
+    while (until < frames) {
+        const size_t at = std::max(i, static_cast<size_t>(until));
         render(L, R, i, at, gL, gR);
         i = at;
 
@@ -230,5 +232,5 @@ void Metronome::process(float* L, float* R, size_t n) {
         until += tick;
     }
     render(L, R, i, n, gL, gR);
-    mUntilNext = until - n;
+    mUntilNext = until - frames;
 }

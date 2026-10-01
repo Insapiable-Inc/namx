@@ -404,7 +404,7 @@ void Tone3000Client::onAuthConnection() {
     while (QTcpSocket* sock = server->nextPendingConnection()) {
         connect(sock, &QTcpSocket::readyRead, this, [this, sock] {
             const QByteArray data = sock->peek(64 * 1024);
-            const int eol = data.indexOf("\r\n");
+            const qsizetype eol = data.indexOf("\r\n");
             if (eol < 0) {
                 return; // request line not complete yet
             }

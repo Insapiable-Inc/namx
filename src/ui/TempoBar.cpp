@@ -325,10 +325,11 @@ TempoBar::TempoBar(Metronome& metronome, QWidget* parent)
             if (!ok) {
                 return;
             }
-            const QString unit = QInputDialog::getItem(
-                this, "Time Signature", "Beat unit:", {"2", "4", "8", "16"},
-                QStringList{"2", "4", "8", "16"}.indexOf(QString::number(mMetro.unit())), false,
-                &ok);
+            const QString unit =
+                QInputDialog::getItem(this, "Time Signature", "Beat unit:", {"2", "4", "8", "16"},
+                                      static_cast<int>(QStringList{"2", "4", "8", "16"}.indexOf(
+                                          QString::number(mMetro.unit()))),
+                                      false, &ok);
             if (ok) {
                 setMeter(beats, unit.toInt(), true);
             }
@@ -514,7 +515,8 @@ void TempoBar::tap() {
     if (mTaps.size() < 2) {
         return;
     }
-    const double avgMs = static_cast<double>(mTaps.last() - mTaps.first()) / (mTaps.size() - 1);
+    const double avgMs =
+        static_cast<double>(mTaps.last() - mTaps.first()) / static_cast<double>(mTaps.size() - 1);
     if (avgMs > 0.0) {
         mBpm->setValue(60000.0 / avgMs);
     }

@@ -14,7 +14,7 @@
 class IRLoader
 {
 public:
-    static constexpr int kMaxIRLength = 4096;
+    static constexpr size_t kMaxIRLength = 4096;
 
     IRLoader();
     ~IRLoader();

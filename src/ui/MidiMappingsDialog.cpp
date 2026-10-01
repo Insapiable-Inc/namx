@@ -185,7 +185,7 @@ void MidiMappingsDialog::rebuildDevices() {
 void MidiMappingsDialog::rebuildTable() {
     mRebuilding = true;
     const auto& list = mMapper.mappings();
-    mTable->setRowCount(list.size());
+    mTable->setRowCount(static_cast<int>(list.size())); // Qt widgets count rows in int
     for (int r = 0; r < list.size(); ++r) {
         const MidiMapping& m = list[r];
         auto commit = [this, r] {

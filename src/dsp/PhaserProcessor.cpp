@@ -27,7 +27,7 @@ void PhaserProcessor::vibeCoeffs(float phase, float depth, std::array<float, kSt
     const float lfo = std::pow(s, 1.8f);
     static constexpr float kRatio[kStages] = {1.0f, 1.65f, 2.7f, 4.4f};
     const float base = 90.0f * std::pow(1500.0f / 90.0f, depth * lfo);
-    for (int k = 0; k < kStages; ++k) {
+    for (size_t k = 0; k < kStages; ++k) {
         const float fc = std::min(base * kRatio[k], 0.45f * static_cast<float>(mSampleRate));
         const float w = std::tan(kPi * fc / static_cast<float>(mSampleRate));
         d[k] = (w - 1.0f) / (w + 1.0f);
@@ -38,7 +38,7 @@ float PhaserProcessor::processVibe(float in, const std::array<float, kStages>& d
                                    std::array<float, kStages>& x1, std::array<float, kStages>& y1,
                                    float mix) const {
     float sig = in;
-    for (int s = 0; s < kStages; ++s) {
+    for (size_t s = 0; s < kStages; ++s) {
         float y = d[s] * (sig - y1[s]) + x1[s];
         x1[s] = sig;
         y1[s] = y;
@@ -52,7 +52,7 @@ float PhaserProcessor::processChannel(float in, float d, std::array<float, kStag
                                       float mix) const {
     float sig = in + fbAmt * fbState;
 
-    for (int s = 0; s < kStages; ++s) {
+    for (size_t s = 0; s < kStages; ++s) {
         float y = d * (sig - y1[s]) + x1[s];
         x1[s] = sig;
         y1[s] = y;

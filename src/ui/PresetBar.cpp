@@ -223,7 +223,7 @@ void PresetBar::populatePresetMenu(QMenu* menu) {
         if (auto it = folders.find(folder); it != folders.end()) {
             return *it;
         }
-        const int slash = folder.lastIndexOf('/');
+        const qsizetype slash = folder.lastIndexOf('/');
         QMenu* parent = menuFor(slash < 0 ? QString() : folder.left(slash));
         QMenu* sub = parent->addMenu(folder.mid(slash + 1));
         folders.insert(folder, sub);

@@ -215,7 +215,7 @@ static void describeIR(const QString& path, LibraryEntry& e) {
     int channels = 0, bits = 0;
     quint32 rate = 0;
     qint64 dataBytes = -1;
-    int pos = 12;
+    qsizetype pos = 12;
     while (pos + 8 <= head.size()) {
         const QByteArray id = head.mid(pos, 4);
         const quint32 len =
@@ -229,7 +229,7 @@ static void describeIR(const QString& path, LibraryEntry& e) {
             dataBytes = len;
             break;
         }
-        pos += 8 + static_cast<int>(len) + (len & 1);
+        pos += 8 + static_cast<qsizetype>(len) + (len & 1);
     }
 
     QStringList sum, det;
@@ -240,7 +240,8 @@ static void describeIR(const QString& path, LibraryEntry& e) {
         sum << (channels == 1 ? "mono" : channels == 2 ? "stereo" : QString("%1 ch").arg(channels));
     }
     if (dataBytes > 0 && channels > 0 && bits > 0 && rate > 0) {
-        const double ms = 1000.0 * (dataBytes / (channels * bits / 8)) / double(rate);
+        const qint64 frames = dataBytes / (channels * bits / 8);
+        const double ms = 1000.0 * static_cast<double>(frames) / static_cast<double>(rate);
         sum << QString("%1 ms").arg(ms, 0, 'f', ms < 10 ? 1 : 0);
         det << QString("Length: %1 ms").arg(ms, 0, 'f', 1);
     }

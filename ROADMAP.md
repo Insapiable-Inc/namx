@@ -818,9 +818,11 @@ commit.
       `WinMidiInput.cpp`: put order-sensitive ones in `// clang-format off` first
       (`<windows.h>` before the rest) and get a Windows build checked by CI.
       Add a CI step that fails on unformatted files.
-- [ ] **Warnings:** `-Wall -Wextra -Wconversion -Wsign-conversion -Wsuggest-override` (`/W4` on MSVC);
+- [x] **Warnings:** `-Wall -Wextra -Wconversion -Wsign-conversion -Wsuggest-override` (`/W4` on MSVC);
       clear them (named casts, `enum class`, explicit signed/unsigned conversions),
-      then turn on `-Werror` (`/WX`).
+      then turn on `-Werror` (`/WX`). Done 2026-10-01 for GCC/Clang (via `DelayLine`,
+      `size_t` frame counts and types fixed at the source — not casts); MSVC `/WX`
+      waits for a Windows build.
 - [ ] **Namespace:** wrap `gui/` in `namespace npl` (placeholder — renamed along with
       the app once it has a final name) with the shared `using std::…` header.
 - [ ] **Naming:** `snake_case` methods/locals/members, `SCREAMING_SNAKE_CASE`

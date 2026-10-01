@@ -156,7 +156,7 @@ int main(int argc, char** argv) {
     {
         const QString path = tmp.path() + "/test.nammidi";
         CHECK(mapper.saveFile(path), "save .nammidi");
-        const int n = mapper.mappings().size();
+        const qsizetype n = mapper.mappings().size();
         mapper.setMappings(MidiMapper::defaultMappings());
         QString err;
         CHECK(mapper.loadFile(path, &err), "load .nammidi");

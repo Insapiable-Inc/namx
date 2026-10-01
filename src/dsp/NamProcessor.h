@@ -47,8 +47,8 @@ public:
 
     /// Must be called whenever the backend reports a (new) buffer size, before
     /// the next process callback. Re-Reset()s the live models if the size grew.
-    void prepareBuffer(int maxBuf);
-    int maxBuf() const {
+    void prepareBuffer(size_t maxBuf);
+    size_t maxBuf() const {
         return mMaxBuf.load();
     }
 
@@ -77,15 +77,26 @@ private:
     struct ModelPair
     {
         std::unique_ptr<nam::DSP> L, R;
-        int resetBuf{0};
+        size_t resetBuf{0};
         double resetRate{0.0};
+
+        // Reset() + prewarm() both models for blocks of up to `maxFrames`, and record it.
+        void reset(double rate, size_t maxFrames) {
+            const int frames = static_cast<int>(maxFrames); // the NAM core counts in int
+            L->Reset(rate, frames);
+            L->prewarm();
+            R->Reset(rate, frames);
+            R->prewarm();
+            resetBuf = maxFrames;
+            resetRate = rate;
+        }
     };
 
     RtSlot<ModelPair> mSlot;
     std::mutex mModelMutex; // serializes publish vs. prepareBuffer / SR change
     std::string mModelPath; // GUI thread only
     std::string mLastError; // GUI thread only
-    std::atomic<int> mMaxBuf{0};
+    std::atomic<size_t> mMaxBuf{0};
     std::atomic<bool> mStereoAmp{false};
     double mModelRate{0.0}; // engine SR as last propagated (guarded by mModelMutex)
     std::vector<float> mScratchL, mScratchR;
@@ -93,8 +104,8 @@ private:
     // Click-free swap: load/unload flag a short output fade-in, applied by
     // the audio thread, that masks the waveform discontinuity.
     std::atomic<bool> mFadePending{false};
-    int mFadeTotal{1}; // audio thread only
-    int mFadeRemaining{0}; // audio thread only
+    size_t mFadeTotal{1}; // samples; audio thread only
+    size_t mFadeRemaining{0}; // audio thread only
 
     static void runModel(nam::DSP* model, float* buf, size_t n, std::vector<float>& scratch);
 };

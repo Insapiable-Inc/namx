@@ -79,7 +79,7 @@ public:
         mSubdiv.store(n < 1 ? 1 : n > 4 ? 4 : n);
     }
     void setSound(int s) {
-        mSound.store(s < 0 || s >= kSoundCount ? 0 : s);
+        mSound.store(s < 0 || s >= kSoundCount ? 0 : static_cast<size_t>(s));
     }
     void setVolumeDb(float dB) {
         mVolumeDb.store(dB);
@@ -113,13 +113,13 @@ private:
     struct Voice
     {
         const float* data = nullptr;
-        int len = 0;
-        int pos = 0;
+        size_t len = 0;
+        size_t pos = 0;
         float gain = 0.0f;
     };
 
     void trigger(const std::vector<float>& sample, float gain);
-    void render(float* L, float* R, int from, int to, float gL, float gR);
+    void render(float* L, float* R, size_t from, size_t to, float gL, float gR);
     void buildSounds(double sr);
 
     // Click samples: [sound][0 = accent, 1 = beat, 2 = subdivision].
@@ -132,7 +132,7 @@ private:
     std::atomic<int> mUnit{4};
     std::atomic<uint32_t> mAccents;
     std::atomic<int> mSubdiv{1};
-    std::atomic<int> mSound{Click};
+    std::atomic<size_t> mSound{Click};
     std::atomic<float> mVolumeDb{-6.0f};
     std::atomic<float> mPan{0.0f};
     std::atomic<int> mCountInBars{0};

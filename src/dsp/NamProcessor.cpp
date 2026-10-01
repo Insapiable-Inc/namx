@@ -51,32 +51,22 @@ bool NamProcessor::loadModel(const std::string& path) {
 
     // Prewarm outside the lock (slow), then re-check inside it: the buffer
     // size or sample rate may have moved meanwhile.
-    int resetBuf;
-    double resetRate;
+    size_t maxBuf;
+    double rate;
     {
         std::lock_guard<std::mutex> lock(mModelMutex);
-        resetBuf = mMaxBuf.load();
-        resetRate = mModelRate > 0.0 ? mModelRate : mSampleRate;
+        maxBuf = mMaxBuf.load();
+        rate = mModelRate > 0.0 ? mModelRate : mSampleRate;
     }
-    pair->L->Reset(resetRate, resetBuf);
-    pair->L->prewarm();
-    pair->R->Reset(resetRate, resetBuf);
-    pair->R->prewarm();
+    pair->reset(rate, maxBuf);
 
     {
         std::lock_guard<std::mutex> lock(mModelMutex);
-        const int curBuf = mMaxBuf.load();
+        const size_t curBuf = mMaxBuf.load();
         const double curRate = mModelRate > 0.0 ? mModelRate : mSampleRate;
-        if (curBuf > resetBuf || curRate != resetRate) {
-            resetBuf = std::max(curBuf, resetBuf);
-            resetRate = curRate;
-            pair->L->Reset(resetRate, resetBuf);
-            pair->L->prewarm();
-            pair->R->Reset(resetRate, resetBuf);
-            pair->R->prewarm();
+        if (curBuf > pair->resetBuf || curRate != pair->resetRate) {
+            pair->reset(curRate, std::max(curBuf, pair->resetBuf));
         }
-        pair->resetBuf = resetBuf;
-        pair->resetRate = resetRate;
         mSlot.publish(std::move(pair));
         mModelPath = path;
     }
@@ -93,7 +83,7 @@ void NamProcessor::unloadModel() {
     mFadePending.store(true, std::memory_order_release);
 }
 
-void NamProcessor::prepareBuffer(int maxBuf) {
+void NamProcessor::prepareBuffer(size_t maxBuf) {
     // Safe to block and mutate the live pair here: both backends invoke
     // buffer-size changes on a non-RT thread with no process callback in
     // flight, and the scratch buffers are only touched by that callback.
@@ -112,13 +102,7 @@ void NamProcessor::prepareBuffer(int maxBuf) {
     }
     const double rate = mModelRate > 0.0 ? mModelRate : mSampleRate;
     if (maxBuf > p->resetBuf || rate != p->resetRate) {
-        const int buf = std::max(maxBuf, p->resetBuf);
-        p->L->Reset(rate, buf);
-        p->L->prewarm();
-        p->R->Reset(rate, buf);
-        p->R->prewarm();
-        p->resetBuf = buf;
-        p->resetRate = rate;
+        p->reset(rate, std::max(maxBuf, p->resetBuf));
     }
 }
 
@@ -134,13 +118,13 @@ void NamProcessor::onSampleRateChanged(double sr) {
                                        std::vector<float>& scratch) {
     // Sized by prepareBuffer(); process() bypasses oversized blocks, so this
     // must never allocate on the audio thread.
-    assert(static_cast<int>(scratch.size()) >= n);
+    assert(scratch.size() >= n);
 
     NAM_SAMPLE* inPtr = buf;
     NAM_SAMPLE* outPtr = scratch.data();
     NAM_SAMPLE** inPtrs = &inPtr;
     NAM_SAMPLE** outPtrs = &outPtr;
-    model->process(inPtrs, outPtrs, n);
+    model->process(inPtrs, outPtrs, static_cast<int>(n)); // the NAM core counts in int
     std::copy(scratch.data(), scratch.data() + n, buf);
 }
 
@@ -172,7 +156,7 @@ bool NamProcessor::process(float* L, float* R, size_t n, bool inputIsStereo) {
 
     // RT-safety guard: a block larger than what the pair was prepared for
     // would overrun the core's buffers — bypass instead (see prepareBuffer).
-    const bool canRun = p && n <= p->resetBuf && n <= static_cast<int>(mScratchL.size());
+    const bool canRun = p && n <= p->resetBuf && n <= mScratchL.size();
     if (canRun) {
         runModel(p->L.get(), L, n, mScratchL);
         if (inputIsStereo) {
@@ -186,10 +170,10 @@ bool NamProcessor::process(float* L, float* R, size_t n, bool inputIsStereo) {
     // ~15 ms fade-in after a model load/unload masks the discontinuity
     // between the old and new amp (or between amp and dry passthrough).
     if (mFadePending.exchange(false, std::memory_order_acq_rel)) {
-        mFadeTotal = std::max(1, static_cast<int>(mSampleRate * 0.015));
+        mFadeTotal = std::max<size_t>(1, static_cast<size_t>(mSampleRate * 0.015));
         mFadeRemaining = mFadeTotal;
     }
-    for (int i = 0; i < n && mFadeRemaining > 0; ++i, --mFadeRemaining) {
+    for (size_t i = 0; i < n && mFadeRemaining > 0; ++i, --mFadeRemaining) {
         const float g = 1.0f - static_cast<float>(mFadeRemaining) / static_cast<float>(mFadeTotal);
         L[i] *= g;
         R[i] *= g;

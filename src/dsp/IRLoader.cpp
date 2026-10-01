@@ -19,21 +19,25 @@ static void clearKernelBuffers(std::vector<float> buffers[2], int writePos[2]) {
 /// Windowed-sinc resampler. Produces at most maxOut output samples at fsOut
 /// from `in` at fsIn, band-limited to the lower of the two Nyquist rates.
 static std::vector<float> resampleSinc(const std::vector<float>& in, double fsIn, double fsOut,
-                                       int maxOut) {
+                                       size_t maxOut) {
+    if (in.empty()) {
+        return {};
+    }
     const double step = fsIn / fsOut; // input samples per output sample
     const double cutoff = 0.5 * std::min(1.0, 1.0 / step); // cycles per input sample
-    const int half = static_cast<int>(std::ceil(32.0 * std::max(1.0, step)));
-    const int outLen = std::min<int>(maxOut, static_cast<int>(std::ceil(in.size() / step)));
-    const int inLen = static_cast<int>(in.size());
+    const double half = std::ceil(32.0 * std::max(1.0, step)); // kernel half-width, samples
+    // Positions are fractional (t), sample indices whole: the casts below convert between them.
+    const size_t outLen =
+        std::min(maxOut, static_cast<size_t>(std::ceil(static_cast<double>(in.size()) / step)));
 
     std::vector<float> out(outLen);
-    for (int i = 0; i < outLen; ++i) {
-        const double t = i * step;
-        const int kMin = std::max(0, static_cast<int>(std::ceil(t - half)));
-        const int kMax = std::min(inLen - 1, static_cast<int>(std::floor(t + half)));
+    for (size_t i = 0; i < outLen; ++i) {
+        const double t = static_cast<double>(i) * step;
+        const size_t kMin = static_cast<size_t>(std::max(0.0, std::ceil(t - half)));
+        const size_t kMax = std::min(in.size() - 1, static_cast<size_t>(std::floor(t + half)));
         double acc = 0.0;
-        for (int k = kMin; k <= kMax; ++k) {
-            const double u = t - k;
+        for (size_t k = kMin; k <= kMax; ++k) {
+            const double u = t - static_cast<double>(k);
             const double x = 2.0 * cutoff * u;
             const double sinc = (std::abs(x) < 1e-9) ? 1.0 : std::sin(M_PI * x) / (M_PI * x);
             // Blackman window over [-half, half]
@@ -63,7 +67,8 @@ std::unique_ptr<IRLoader::Kernel> IRLoader::buildKernel() const {
     if (resample) {
         samples = resampleSinc(mRaw, mRawRate, mTargetRate, kMaxIRLength);
     } else {
-        samples.assign(mRaw.begin(), mRaw.begin() + std::min<size_t>(mRaw.size(), kMaxIRLength));
+        samples = mRaw;
+        samples.resize(std::min(samples.size(), kMaxIRLength));
     }
 
     k->irLen = static_cast<int>(samples.size());

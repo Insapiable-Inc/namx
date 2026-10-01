@@ -159,12 +159,14 @@ void AudioEngine::setChainOrder(const std::vector<std::string>& ids) {
     }
 
     // Effects missing from the list re-enter at their default position.
-    int tableIdx = 0;
+    size_t defaultIdx = 0;
     for (const auto& [id, fx] : mEffectTable) {
-        const size_t defaultIdx = tableIdx++;
         if (std::find(newChain.begin(), newChain.end(), fx) == newChain.end()) {
-            newChain.insert(newChain.begin() + std::min(defaultIdx, newChain.size()), fx);
+            const auto slot =
+                static_cast<Chain::difference_type>(std::min(defaultIdx, newChain.size()));
+            newChain.insert(newChain.begin() + slot, fx); // iterator offsets are signed
         }
+        ++defaultIdx;
     }
 
     const Chain& cur = *mChain.current();
@@ -252,11 +254,12 @@ std::vector<IAudioBackend::DeviceInfo> AudioEngine::enumerateOutputDevices() con
 
 // ---- IAudioBackend::Callback ----------------------------------------
 
-void AudioEngine::onBufferSizeChanged(int n) {
-    if (n <= 0) {
+void AudioEngine::onBufferSizeChanged(int newSize) {
+    if (newSize <= 0) {
         return;
     }
-    if (n > static_cast<int>(mWorkBufL.size())) {
+    const size_t n = static_cast<size_t>(newSize); // backends report int; positive here
+    if (n > mWorkBufL.size()) {
         mWorkBufL.resize(n, 0.0f);
         mWorkBufR.resize(n, 0.0f);
     }
@@ -287,7 +290,7 @@ void AudioEngine::onAudio(const float* in, float* outL, float* outR, size_t n) {
     const double secs =
         std::chrono::duration<double>(std::chrono::steady_clock::now() - t0).count();
     if (n > 0 && mChainSampleRate > 0.0) {
-        const float load = static_cast<float>(secs * mChainSampleRate / n);
+        const float load = static_cast<float>(secs * mChainSampleRate / static_cast<double>(n));
         if (load > mDspLoadPeak.load(std::memory_order_relaxed)) {
             mDspLoadPeak.store(load, std::memory_order_relaxed);
         }

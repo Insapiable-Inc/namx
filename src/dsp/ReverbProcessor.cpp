@@ -15,11 +15,11 @@ void ReverbProcessor::allocate() {
     for (auto& p : mPre) {
         p.resize(static_cast<size_t>(mSampleRate * kMaxPreDelayMs / 1000.0) + 2);
     }
-    for (int i = 0; i < kNumCombs; ++i) {
+    for (size_t i = 0; i < kNumCombs; ++i) {
         mCombL[i].resize(static_cast<size_t>(kCombLengths[i] * scale));
         mCombR[i].resize(static_cast<size_t>((kCombLengths[i] + kStereoOffset) * scale));
     }
-    for (int i = 0; i < kNumAllPasses; ++i) {
+    for (size_t i = 0; i < kNumAllPasses; ++i) {
         mApL[i].resize(static_cast<size_t>(kApLengths[i] * scale));
         mApR[i].resize(static_cast<size_t>((kApLengths[i] + kStereoOffset) * scale));
     }
@@ -55,13 +55,13 @@ void ReverbProcessor::reset() {
     }
 }
 
-float ReverbProcessor::preDelay(int bank, float x, int d) {
+float ReverbProcessor::preDelay(int bank, float x, size_t d) {
     DelayLine& line = mPre[bank];
-    if (d <= 0 || line.empty()) {
+    if (d == 0 || line.empty()) {
         return x;
     }
     line.push(x);
-    return line.at(static_cast<size_t>(d));
+    return line.at(d);
 }
 
 float ReverbProcessor::wetFilter(int ch, float x, float hpA, float lpK) {
@@ -79,7 +79,7 @@ namespace
 struct Cuts
 {
     float hpA, lpK;
-    int pre;
+    size_t pre; // samples
 };
 Cuts cutsFor(double sr, float lowHz, float highHz, float preMs, float maxPreMs) {
     constexpr float kTwoPi = 6.28318530718f;
@@ -87,7 +87,7 @@ Cuts cutsFor(double sr, float lowHz, float highHz, float preMs, float maxPreMs) 
     Cuts c;
     c.hpA = std::exp(-kTwoPi * std::clamp(lowHz, 20.0f, 2000.0f) / fs);
     c.lpK = 1.0f - std::exp(-kTwoPi * std::clamp(highHz, 500.0f, 0.45f * fs) / fs);
-    c.pre = static_cast<int>(std::clamp(preMs, 0.0f, maxPreMs) * fs / 1000.0f);
+    c.pre = static_cast<size_t>(std::clamp(preMs, 0.0f, maxPreMs) * fs / 1000.0f);
     return c;
 }
 } // namespace
@@ -109,11 +109,11 @@ void ReverbProcessor::processBlockStereoOut(float* L, float* R, size_t nframes) 
         float inMono = preDelay(0, (L[i] + R[i]) * 0.015f, cut.pre) + shim * mShimFb[0];
 
         float outL = 0.0f, outR = 0.0f;
-        for (int c = 0; c < kNumCombs; ++c) {
+        for (size_t c = 0; c < kNumCombs; ++c) {
             outL += mCombL[c].process(inMono, feedback, damp);
             outR += mCombR[c].process(inMono, feedback, damp);
         }
-        for (int a = 0; a < kNumAllPasses; ++a) {
+        for (size_t a = 0; a < kNumAllPasses; ++a) {
             outL = mApL[a].process(outL);
             outR = mApR[a].process(outR);
         }
@@ -147,11 +147,11 @@ void ReverbProcessor::processMonoBank(float* buf, size_t nframes, int bank,
     for (size_t i = 0; i < nframes; ++i) {
         float inSig = preDelay(bank, buf[i] * 0.015f, cut.pre) + shim * mShimFb[bank];
         float out = 0.0f;
-        for (int c = 0; c < kNumCombs; ++c) {
-            out += combs[c].process(inSig, feedback, damp);
+        for (CombFilter& comb : combs) {
+            out += comb.process(inSig, feedback, damp);
         }
-        for (int a = 0; a < kNumAllPasses; ++a) {
-            out = aps[a].process(out);
+        for (AllPassFilter& ap : aps) {
+            out = ap.process(out);
         }
         out = wetFilter(bank, out, cut.hpA, cut.lpK);
         if (shim > 0.0f) {

@@ -60,7 +60,7 @@ private:
 
     float mPhase{0.0f};
 
-    static constexpr int kStages = 4;
+    static constexpr size_t kStages = 4;
     std::atomic<bool> mVibe{false};
 
     std::array<float, kStages> mX1L{}, mY1L{};

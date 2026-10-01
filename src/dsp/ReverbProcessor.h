@@ -80,7 +80,7 @@ private:
     DelayLine mPre[2];
     float mHpX[2]{}, mHpY[2]{}, mLp[2]{};
 
-    float preDelay(int bank, float x, int delaySamples);
+    float preDelay(int bank, float x, size_t delaySamples);
     float wetFilter(int ch, float x, float hpA, float lpK);
 
     struct CombFilter
@@ -123,8 +123,8 @@ private:
         }
     };
 
-    static constexpr int kNumCombs = 8;
-    static constexpr int kNumAllPasses = 4;
+    static constexpr size_t kNumCombs = 8;
+    static constexpr size_t kNumAllPasses = 4;
 
     std::array<CombFilter, kNumCombs> mCombL, mCombR;
     std::array<AllPassFilter, kNumAllPasses> mApL, mApR;

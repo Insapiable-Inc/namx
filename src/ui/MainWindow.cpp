@@ -69,6 +69,15 @@
 // Mime type carrying the effect ID of a dragged strip card.
 static const char kEffectMime[] = "application/x-nam-effect-id";
 
+// QStringList → the engine's std::string list (effect IDs, JACK port names).
+static std::vector<std::string> toStdStrings(const QStringList& list) {
+    std::vector<std::string> out;
+    for (const QString& s : list) {
+        out.push_back(s.toStdString());
+    }
+    return out;
+}
+
 // Fixed columns at the left edge of every row card, so the enable toggles,
 // stereo slots, and first knobs line up vertically across the strip.
 static constexpr int kGripColumnWidth = 22; // "≡" drag handle
@@ -1422,12 +1431,7 @@ void MainWindow::updateCardBypassState(EffectBase* effect, bool enabled) {
 }
 
 void MainWindow::applyChainOrder(const QStringList& ids) {
-    std::vector<std::string> v;
-    v.reserve(ids.size());
-    for (const auto& s : ids) {
-        v.push_back(s.toStdString());
-    }
-    mEngine->setChainOrder(v);
+    mEngine->setChainOrder(toStdStrings(ids));
     rebuildEffectStrip();
 }
 
@@ -2632,19 +2636,10 @@ void MainWindow::restoreConnections() {
         return;
     }
 
-    auto toVec = [](const QStringList& l) {
-        std::vector<std::string> v;
-        v.reserve(l.size());
-        for (const auto& x : l) {
-            v.push_back(x.toStdString());
-        }
-        return v;
-    };
-
     AudioEngine::PortConnections c;
-    c.inputSources = toVec(s.value("connections/inputSources").toStringList());
-    c.outputLDests = toVec(s.value("connections/outputLDests").toStringList());
-    c.outputRDests = toVec(s.value("connections/outputRDests").toStringList());
+    c.inputSources = toStdStrings(s.value("connections/inputSources").toStringList());
+    c.outputLDests = toStdStrings(s.value("connections/outputLDests").toStringList());
+    c.outputRDests = toStdStrings(s.value("connections/outputRDests").toStringList());
     mEngine->applyConnections(c);
 }
 

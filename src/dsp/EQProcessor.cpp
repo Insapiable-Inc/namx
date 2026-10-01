@@ -7,7 +7,7 @@
 #endif
 
 EQProcessor::EQProcessor() {
-    for (int b = 0; b < kBands; ++b) {
+    for (size_t b = 0; b < kBands; ++b) {
         rebuild(Band(b));
     }
 }
@@ -16,12 +16,14 @@ void EQProcessor::onSampleRateChanged(double) {
     // Same lock discipline as the setters: the audio thread try_locks this
     // mutex, so coefficient/state rewrites must never happen bare.
     std::lock_guard<std::mutex> lock(mMutex);
-    for (int b = 0; b < kBands; ++b) {
+    for (size_t b = 0; b < kBands; ++b) {
         rebuild(Band(b));
     }
-    for (int b = 0; b < kBands; ++b) {
-        mL[b].reset();
-        mR[b].reset();
+    for (Biquad& filter : mL) {
+        filter.reset();
+    }
+    for (Biquad& filter : mR) {
+        filter.reset();
     }
 }
 
@@ -140,7 +142,7 @@ bool EQProcessor::process(float* L, float* R, size_t n, bool inputIsStereo) {
         return inputIsStereo;
     }
 
-    for (int b = 0; b < kBands; ++b) {
+    for (size_t b = 0; b < kBands; ++b) {
         if (!mOn[b]) {
             continue;
         }
@@ -164,8 +166,10 @@ bool EQProcessor::process(float* L, float* R, size_t n, bool inputIsStereo) {
 }
 
 void EQProcessor::reset() {
-    for (int b = 0; b < kBands; ++b) {
-        mL[b].reset();
-        mR[b].reset();
+    for (Biquad& filter : mL) {
+        filter.reset();
+    }
+    for (Biquad& filter : mR) {
+        filter.reset();
     }
 }

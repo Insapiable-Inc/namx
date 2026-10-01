@@ -138,6 +138,7 @@ set(GUI_SOURCES
     src/dsp/OutputLimiter.cpp
     src/dsp/OutputLimiter.h
     src/dsp/DelayLine.h
+    src/dsp/Denormals.h
     src/dsp/PitchShifter.h
     src/dsp/TransposeProcessor.h
     src/dsp/Metronome.h
@@ -168,11 +169,12 @@ add_executable(NAMPlayer ${GUI_SOURCES} ${NAM_SOURCES} ${WAV_SOURCES})
 
 # Warnings (CPP_GUIDELINES.md → Types and casts) apply to our code only: third-party
 # sources compiled into our targets are silenced, their headers included as SYSTEM.
+# Errors on GCC/Clang; MSVC stays at /W4 without /WX until a Windows build is clean.
 if(MSVC)
     set(NAM_WARNING_FLAGS /W4)
     set(NAM_THIRD_PARTY_FLAGS /w)
 else()
-    set(NAM_WARNING_FLAGS -Wall -Wextra -Wconversion -Wsign-conversion -Wsuggest-override)
+    set(NAM_WARNING_FLAGS -Wall -Wextra -Wconversion -Wsign-conversion -Wsuggest-override -Werror)
     set(NAM_THIRD_PARTY_FLAGS -w)
 endif()
 set_source_files_properties(${NAM_SOURCES} ${WAV_SOURCES} PROPERTIES COMPILE_OPTIONS "${NAM_THIRD_PARTY_FLAGS}")

@@ -27,14 +27,10 @@
 #include <QTemporaryDir>
 #include <QTest>
 
-#if defined(__x86_64__) || defined(__i386__) || defined(_M_X64)
-#include <pmmintrin.h>
-#include <xmmintrin.h>
-#endif
-
 #include "ChorusProcessor.h"
 #include "CompressorProcessor.h"
 #include "DelayProcessor.h"
+#include "Denormals.h"
 #include "DoublerProcessor.h"
 #include "DriveProcessor.h"
 #include "DynamicWahProcessor.h"
@@ -151,7 +147,7 @@ static void hash_samples(std::uint64_t& hash, const float* samples, size_t count
 // Runs `process` over the whole signal in irregular blocks and hashes L and R.
 // Halfway through, `on_halfway` runs (used to exercise reset()).
 static std::uint64_t render(bool stereo_input,
-                            const std::function<void(float*, float*, int)>& process,
+                            const std::function<void(float*, float*, size_t)>& process,
                             const std::function<void()>& on_halfway = {}) {
     std::uint64_t hash = 0xcbf29ce484222325ull;
     std::vector<float> left(256);
@@ -166,7 +162,7 @@ static std::uint64_t render(bool stereo_input,
             left[i] = input_left(frame + i);
             right[i] = stereo_input ? input_right(frame + i) : left[i];
         }
-        process(left.data(), right.data(), static_cast<int>(frames));
+        process(left.data(), right.data(), frames);
         hash_samples(hash, left.data(), frames);
         hash_samples(hash, right.data(), frames);
         frame += frames;
@@ -187,7 +183,7 @@ static std::uint64_t render_effect(EffectBase& fx, bool stereo_input) {
     fx.setEnabled(true);
     return render(
         stereo_input,
-        [&fx, stereo_input](float* left, float* right, int frames) {
+        [&fx, stereo_input](float* left, float* right, size_t frames) {
             fx.process(left, right, frames, stereo_input);
         },
         [&fx] {
@@ -249,11 +245,7 @@ private:
 };
 
 void DspGoldenTest::initTestCase() {
-#if defined(__x86_64__) || defined(__i386__) || defined(_M_X64)
-    // Same MXCSR as the backends' audio threads: denormals flushed to zero.
-    _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
-    _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
-#endif
+    enable_flush_to_zero(); // same MXCSR as the backends' audio threads
     print_mode = qEnvironmentVariableIsSet("NAM_GOLDEN_PRINT");
     QVERIFY(temp_dir.isValid());
     const QString ir_a = temp_dir.filePath("ir_a.wav");
@@ -408,9 +400,9 @@ void DspGoldenTest::initTestCase() {
         OutputLimiter limiter;
         limiter.setSampleRate(SAMPLE_RATE);
         limiter.setEnabled(true);
-        return render(false, [&limiter](float* left, float* right, int frames) {
+        return render(false, [&limiter](float* left, float* right, size_t frames) {
             // Drive it 18 dB hot so it actually limits.
-            for (int i = 0; i < frames; ++i) {
+            for (size_t i = 0; i < frames; ++i) {
                 left[i] *= 8.0f;
                 right[i] *= 8.0f;
             }
@@ -454,7 +446,7 @@ void DspGoldenTest::tuner_detects_pitch() {
                 const double t = static_cast<double>(frame++) / SAMPLE_RATE;
                 sample = static_cast<float>(0.3 * std::sin(2.0 * std::numbers::pi * 110.0 * t));
             }
-            tuner.process(block.data(), block.data(), static_cast<int>(block.size()), false);
+            tuner.process(block.data(), block.data(), block.size(), false);
         }
         QTest::qWait(10);
         pitch = tuner.lastPitch();

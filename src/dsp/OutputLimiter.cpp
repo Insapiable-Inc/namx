@@ -6,7 +6,7 @@
 static constexpr float kCeiling = 0.96605f; // −0.3 dBFS
 
 void OutputLimiter::setSampleRate(double sr) {
-    mLook = std::max(1, static_cast<int>(sr * 0.001));
+    mLook = std::max<size_t>(1, static_cast<size_t>(sr * 0.001));
     mDelayL.assign(mLook, 0.0f);
     mDelayR.assign(mLook, 0.0f);
     mNeed.assign(mLook, 1.0f);
@@ -14,7 +14,7 @@ void OutputLimiter::setSampleRate(double sr) {
     mGain = 1.0f;
     mRelease = std::exp(-1.0f / (0.080f * static_cast<float>(sr)));
     // Reach the target well within the look-ahead (5 time constants).
-    mAttack = 1.0f - std::exp(-5.0f / mLook);
+    mAttack = 1.0f - std::exp(-5.0f / static_cast<float>(mLook));
 }
 
 void OutputLimiter::process(float* L, float* R, size_t n) {

@@ -45,8 +45,10 @@ inline constexpr double kMinBpm = 40.0;
 inline constexpr double kMaxBpm = 240.0;
 inline constexpr double kDefaultBpm = 120.0;
 
-inline int clampIndex(double v) {
-    return std::clamp(static_cast<int>(std::lround(v)), 0, static_cast<int>(kNotes.size()) - 1);
+// The knob's value (a double) rounded to a valid kNotes index.
+inline size_t clampIndex(double v) {
+    const long last = static_cast<long>(kNotes.size()) - 1;
+    return static_cast<size_t>(std::clamp(std::lround(v), 0L, last));
 }
 
 inline QString label(double index) {

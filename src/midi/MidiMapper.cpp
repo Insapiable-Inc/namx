@@ -228,7 +228,7 @@ void MidiMapper::learn(const QString& targetId) {
     emit learnChanged();
 }
 
-void MidiMapper::learnRow(int row) {
+void MidiMapper::learnRow(qsizetype row) {
     mLearnTarget.clear();
     mLearnRow = row;
     emit learnChanged();
@@ -421,7 +421,8 @@ void MidiMapper::handleClock(const MidiMessage& m) {
     for (double b : mBeatMs) {
         sum += b;
     }
-    const double bpm = std::round(60000.0 / (sum / mBeatMs.size()) * 10.0) / 10.0;
+    const double avgMs = sum / static_cast<double>(mBeatMs.size());
+    const double bpm = std::round(60000.0 / avgMs * 10.0) / 10.0;
     if (std::abs(bpm - mLastClockBpm) >= 0.2) // ignore jitter
     {
         mLastClockBpm = bpm;

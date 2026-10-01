@@ -1077,7 +1077,8 @@ void Tone3000Panel::loadList(bool useCache) {
                                              : "Nothing here right now.");
             } else if (paged) {
                 showListStatus(QString("%1 tones · page %2 of %3")
-                                   .arg(r.object().value("total").toInt(tones.size()))
+                                   .arg(r.object().value("total").toInt(
+                                       static_cast<int>(tones.size()))) // JSON ints are int
                                    .arg(mPage)
                                    .arg(mTotalPages));
             } else {
@@ -1256,7 +1257,7 @@ void Tone3000Panel::loadDetailModels() {
                 return;
             }
             mModelsModel->setModels(models, tone, mIndex);
-            const int pending = mModelsModel->pending().size();
+            const qsizetype pending = mModelsModel->pending().size();
             mDetailStatus->setText(
                 models.isEmpty() ? QStringLiteral("This tone has no downloadable models.")
                 : pending == 0   ? QStringLiteral("All models are in your library.")
@@ -1299,7 +1300,7 @@ void Tone3000Panel::startDownload(int row) {
                                ok ? path : err);
         if (ok) {
             mIndex.rescan(); // a new folder isn't watched until scanned once
-            const int pending = mModelsModel->pending().size();
+            const qsizetype pending = mModelsModel->pending().size();
             mDownloadAll->setEnabled(pending > 0);
             mDetailStatus->setText(pending == 0 ? QStringLiteral("All models are in your library.")
                                                 : QString("%1 left to download").arg(pending));
