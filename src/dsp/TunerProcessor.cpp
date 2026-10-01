@@ -204,10 +204,10 @@ float TunerProcessor::detectPitch()
     return fs / static_cast<float>(pickLag);
 }
 
-int TunerProcessor::freqToMidi(float freq)
+int TunerProcessor::freqToMidi(float freq, float refHz)
 {
     if (freq <= 0.0f) return -1;
-    return static_cast<int>(std::round(69.0f + 12.0f * std::log2(freq / 440.0f)));
+    return static_cast<int>(std::round(69.0f + 12.0f * std::log2(freq / refHz)));
 }
 
 std::string TunerProcessor::midiToName(int midiNote)
@@ -218,10 +218,10 @@ std::string TunerProcessor::midiToName(int midiNote)
     return std::string(names[midiNote % 12]) + std::to_string(octave);
 }
 
-float TunerProcessor::centsOffset(float freq)
+float TunerProcessor::centsOffset(float freq, float refHz)
 {
     if (freq <= 0.0f) return 0.0f;
-    int   midi     = freqToMidi(freq);
-    float noteFreq = 440.0f * std::pow(2.0f, (midi - 69) / 12.0f);
+    int   midi     = freqToMidi(freq, refHz);
+    float noteFreq = refHz * std::pow(2.0f, (midi - 69) / 12.0f);
     return std::max(-50.0f, std::min(50.0f, 1200.0f * std::log2(freq / noteFreq)));
 }

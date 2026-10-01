@@ -51,15 +51,31 @@ TunerDisplay::TunerDisplay(QWidget* parent)
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 }
 
-void TunerDisplay::setReading(const QString& note, float cents, bool valid)
+void TunerDisplay::setReading(const QString& note, float cents, bool valid, float hz)
 {
     const bool sameCents =
         std::lround(cents) == std::lround(mCents);
-    if (valid == mValid && note == mNote && (sameCents || !valid))
+    const bool sameHz = !mShowHz || std::lround(hz * 10.0f) == std::lround(mHz * 10.0f);
+    if (valid == mValid && note == mNote && ((sameCents && sameHz) || !valid))
         return;
     mNote  = note;
     mCents = cents;
     mValid = valid;
+    mHz    = hz;
+    update();
+}
+
+void TunerDisplay::setShowHz(bool on)
+{
+    if (on == mShowHz) return;
+    mShowHz = on;
+    update();
+}
+
+void TunerDisplay::setReference(int hz)
+{
+    if (hz == mReference) return;
+    mReference = hz;
     update();
 }
 
@@ -189,5 +205,25 @@ void TunerDisplay::paintEvent(QPaintEvent*)
             : QString("%1%2¢").arg(c > 0 ? "+" : "").arg(c);
         const QRectF textRect(panel.center().x() + 24.0, digitY, 90.0, H);
         p.drawText(textRect, Qt::AlignLeft | Qt::AlignVCenter, text);
+    }
+
+    // ---- Left of the digit: detected Hz, or the reference when that's off ----
+    {
+        QFont f = font();
+        f.setPointSizeF(mShowHz ? 10.0 : 8.5);
+        f.setBold(mShowHz);
+        p.setFont(f);
+        const QRectF textRect(panel.center().x() - 24.0 - 12.0 - 100.0, digitY, 100.0, H);
+        if (mShowHz)
+        {
+            p.setPen(digitColor);
+            p.drawText(textRect, Qt::AlignRight | Qt::AlignVCenter,
+                       mValid ? QString("%1 Hz").arg(mHz, 0, 'f', 1) : QStringLiteral("-- Hz"));
+        }
+        else
+        {
+            p.setPen(Theme::track().lighter(170));
+            p.drawText(textRect, Qt::AlignRight | Qt::AlignVCenter, QString("A4 = %1").arg(mReference));
+        }
     }
 }

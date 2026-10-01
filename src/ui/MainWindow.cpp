@@ -41,6 +41,7 @@
 #include <QPushButton>
 #include <QScrollArea>
 #include <QSettings>
+#include <QSpinBox>
 #include <QStandardPaths>
 #include <QStatusBar>
 #include <QStyle>
@@ -365,7 +366,45 @@ void MainWindow::setupUI()
 
         mTunerDisplay = new TunerDisplay;
         mTunerDisplay->setMaximumWidth(560); // one compact instrument, not a strip
-        lay->addWidget(mTunerDisplay, 1, Qt::AlignLeft | Qt::AlignVCenter);
+        lay->addWidget(mTunerDisplay, 1, Qt::AlignVCenter);
+
+        // Reference pitch + Hz readout: machine settings (QSettings tuner/*),
+        // not part of presets or the registry.
+        QSettings s;
+        mTunerRefHz = std::clamp(s.value("tuner/reference", 440).toInt(), 420, 460);
+        auto* ref = new QSpinBox;
+        ref->setObjectName("tunerRef");
+        ref->setRange(420, 460);
+        ref->setPrefix("A4 = ");
+        ref->setSuffix(" Hz");
+        ref->setValue(mTunerRefHz);
+        ref->setFocusPolicy(Qt::ClickFocus); // keep digit keys for effect shortcuts
+        ref->setToolTip("Reference pitch (concert pitch is 440 Hz)");
+        connect(ref, &QSpinBox::valueChanged, this, [this](int hz) {
+            mTunerRefHz = hz;
+            mTunerDisplay->setReference(hz);
+            QSettings().setValue("tuner/reference", hz);
+        });
+        mTunerDisplay->setReference(mTunerRefHz);
+
+        auto* hz = new QToolButton;
+        hz->setObjectName("tunerOption");
+        hz->setText("Hz");
+        hz->setCheckable(true);
+        hz->setFocusPolicy(Qt::NoFocus);
+        hz->setToolTip("Show the detected frequency");
+        hz->setChecked(s.value("tuner/showHz", false).toBool());
+        mTunerDisplay->setShowHz(hz->isChecked());
+        connect(hz, &QToolButton::toggled, this, [this](bool on) {
+            mTunerDisplay->setShowHz(on);
+            QSettings().setValue("tuner/showHz", on);
+        });
+
+        ref->setFixedWidth(112);
+        lay->addSpacing(8);
+        lay->addWidget(ref, 0, Qt::AlignVCenter);
+        lay->addWidget(hz, 0, Qt::AlignVCenter);
+        lay->addStretch();
 
         Theme::tagCard(col, "tuner"); // after children — pushes accents to them
         mFxCols[&mEngine->tuner()] = col;
@@ -1462,10 +1501,11 @@ void MainWindow::updateTuner()
         return;
     }
 
-    const int   midi  = TunerProcessor::freqToMidi(freq);
-    const float cents = TunerProcessor::centsOffset(freq);
+    const float ref   = static_cast<float>(mTunerRefHz);
+    const int   midi  = TunerProcessor::freqToMidi(freq, ref);
+    const float cents = TunerProcessor::centsOffset(freq, ref);
     mTunerDisplay->setReading(QString::fromStdString(TunerProcessor::midiToName(midi)),
-                              cents, true);
+                              cents, true, freq);
 }
 
 // ---------------------------------------------------------------------------

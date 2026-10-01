@@ -218,6 +218,7 @@ private:
     GainReductionMeter* mGrComp = nullptr;
 
     TunerDisplay* mTunerDisplay = nullptr;
+    int           mTunerRefHz   = 440;
 
     KnobWidget* mKnobInputGain  = nullptr;
     KnobWidget* mKnobOutputGain = nullptr;

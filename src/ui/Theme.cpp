@@ -366,6 +366,34 @@ QToolButton#presetAb:checked {
     border-color: #5cc8a8;
 }
 
+/* === Tuner row: reference pitch + Hz toggle === */
+QSpinBox#tunerRef {
+    background-color: #15171c;
+    color: #d8dee9;
+    border: 1px solid #2a2f38;
+    border-radius: 4px;
+    padding: 3px 4px;
+}
+QSpinBox#tunerRef:focus {
+    border-color: #424b5c;
+}
+QToolButton#tunerOption {
+    color: #9aa1ad;
+    background: transparent;
+    border: 1px solid #353c4a;
+    border-radius: 4px;
+    padding: 3px 8px;
+    font-weight: 600;
+}
+QToolButton#tunerOption:hover {
+    background-color: #2f3744;
+}
+QToolButton#tunerOption:checked {
+    color: #15171c;
+    background-color: #5cc8a8;
+    border-color: #5cc8a8;
+}
+
 /* === Library dock === */
 QDockWidget {
     color: #9aa1ad;

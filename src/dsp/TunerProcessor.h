@@ -31,9 +31,11 @@ public:
     /// Latest pitch computed by the worker thread, in Hz (0.0 = no pitch).
     float lastPitch() const { return mLastPitch.load(); }
 
-    static int         freqToMidi(float freq);
+    /// `refHz` = the A4 reference (concert pitch 440; 420–460 for bands
+    /// and records tuned off it).
+    static int         freqToMidi(float freq, float refHz = 440.0f);
     static std::string midiToName(int midiNote);
-    static float       centsOffset(float freq);
+    static float       centsOffset(float freq, float refHz = 440.0f);
 
 protected:
     void onSampleRateChanged(double sr) override { mFs.store(static_cast<float>(sr)); }
