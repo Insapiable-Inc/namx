@@ -29,6 +29,7 @@
 #include "DoublerProcessor.h"
 #include "VolumeProcessor.h"
 #include "OutputLimiter.h"
+#include "TransposeProcessor.h"
 
 /// Platform-agnostic audio engine. Owns the signal chain and all DSP
 /// processors. Delegates I/O to an IAudioBackend (JACK on Linux, WASAPI on
@@ -104,6 +105,7 @@ public:
     DoublerProcessor&    doubler() { return mDoubler; }
     VolumeProcessor&     volume()  { return mVolume;  }
     OutputLimiter&       limiter() { return mLimiter; }
+    TransposeProcessor&  transpose() { return mTranspose; }
 
     /// Mixed in after the output gain — outside the chain, not metered.
     Metronome&           metronome() { return mMetronome; }
@@ -184,6 +186,7 @@ private:
     DoublerProcessor    mDoubler;
     VolumeProcessor     mVolume;
     OutputLimiter       mLimiter;
+    TransposeProcessor  mTranspose;
     Metronome           mMetronome;
 
     // Gain

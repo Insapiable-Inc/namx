@@ -809,9 +809,21 @@
 			null
 		],
 		[
+			"/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/PitchShifter.h",
+			"MU",
+			"M336FWOGQD/moc_PitchShifter.cpp",
+			null
+		],
+		[
 			"/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/ReverbProcessor.h",
 			"MU",
 			"M336FWOGQD/moc_ReverbProcessor.cpp",
+			null
+		],
+		[
+			"/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/TransposeProcessor.h",
+			"MU",
+			"M336FWOGQD/moc_TransposeProcessor.cpp",
 			null
 		],
 		[

@@ -26,8 +26,9 @@ void ReverbProcessor::allocate()
     }
 }
 
-void ReverbProcessor::onSampleRateChanged(double /*sr*/)
+void ReverbProcessor::onSampleRateChanged(double sr)
 {
+    for (auto& s : mShift) { s.prepare(sr, 80.0f); s.setSemitones(12.0f); }
     allocate();
     reset();
 }
@@ -43,6 +44,8 @@ void ReverbProcessor::reset()
         std::fill(mPre[b].begin(), mPre[b].end(), 0.0f);
         mPreWrite[b] = 0;
         mHpX[b] = mHpY[b] = mLp[b] = 0.0f;
+        mShift[b].reset();
+        mShimFb[b] = 0.0f;
     }
 }
 
@@ -95,9 +98,12 @@ void ReverbProcessor::processBlockStereoOut(float* L, float* R, int nframes)
     const Cuts  cut      = cutsFor(mSampleRate, mLowCutHz.load(), mHighCutHz.load(),
                                    mPreDelayMs.load(), kMaxPreDelayMs);
 
+    // Shimmer loop gain stays well under 1 — the comb feedback adds its own.
+    const float shim = std::clamp(mShimmer.load(), 0.0f, 100.0f) / 100.0f * 0.45f;
+
     for (int i = 0; i < nframes; ++i)
     {
-        float inMono = preDelay(0, (L[i] + R[i]) * 0.015f, cut.pre);
+        float inMono = preDelay(0, (L[i] + R[i]) * 0.015f, cut.pre) + shim * mShimFb[0];
 
         float outL = 0.0f, outR = 0.0f;
         for (int c = 0; c < kNumCombs; ++c)
@@ -113,6 +119,7 @@ void ReverbProcessor::processBlockStereoOut(float* L, float* R, int nframes)
 
         outL = wetFilter(0, outL, cut.hpA, cut.lpK);
         outR = wetFilter(1, outR, cut.hpA, cut.lpK);
+        if (shim > 0.0f) mShimFb[0] = mShift[0].process(0.5f * (outL + outR) * 0.015f);
 
         float wet1 = width * 0.5f + 0.5f;
         float wet2 = (1.0f - width) * 0.5f;
@@ -133,15 +140,18 @@ void ReverbProcessor::processMonoBank(float* buf, int nframes, int bank,
     const Cuts  cut      = cutsFor(mSampleRate, mLowCutHz.load(), mHighCutHz.load(),
                                    mPreDelayMs.load(), kMaxPreDelayMs);
 
+    const float shim = std::clamp(mShimmer.load(), 0.0f, 100.0f) / 100.0f * 0.45f;
+
     for (int i = 0; i < nframes; ++i)
     {
-        float inSig = preDelay(bank, buf[i] * 0.015f, cut.pre);
+        float inSig = preDelay(bank, buf[i] * 0.015f, cut.pre) + shim * mShimFb[bank];
         float out   = 0.0f;
         for (int c = 0; c < kNumCombs; ++c)
             out += combs[c].process(inSig, feedback, damp);
         for (int a = 0; a < kNumAllPasses; ++a)
             out = aps[a].process(out);
         out = wetFilter(bank, out, cut.hpA, cut.lpK);
+        if (shim > 0.0f) mShimFb[bank] = mShift[bank].process(out * 0.015f);
         buf[i] = buf[i] * (1.0f - mix) + out * mix;
     }
 }

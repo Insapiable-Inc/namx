@@ -530,6 +530,24 @@ void MainWindow::setupUI()
         mFxCols[&mEngine->tuner()] = col;
     }
 
+    // ---- Transpose ----
+    {
+        auto* semis = lateKnob("transpose", "semitones", new KnobWidget("Semitones", -12.0, 12.0, 0.0),
+                               [this](double v) { mEngine->transpose().setSemitones(static_cast<float>(v)); });
+        semis->setSnap(1.0);
+        semis->setValueFormatter([](double v) {
+            const int s = static_cast<int>(std::lround(v));
+            return s == 0 ? QString("0 st") : QString("%1%2 st").arg(s > 0 ? "+" : "").arg(s);
+        });
+        semis->setToolTip("Pitch shift in semitones: −1 / −2 for drop tunings, ±12 for octaves (adds ~25 ms latency when not 0)");
+        auto* mix = lateKnob("transpose", "mix", new KnobWidget("Mix", 0.0, 100.0, 100.0, "%"),
+                             [this](double v) { mEngine->transpose().setMix(static_cast<float>(v)); });
+        mix->setScrollStep(1.0);
+        auto* col = makeEffectRow("Transpose", mSwTransposeEnable, {semis, mix});
+        Theme::tagCard(col, "transpose");
+        mFxCols[&mEngine->transpose()] = col;
+    }
+
     // ---- Noise Gate ----
     {
         using namespace NAMConstants;
@@ -831,6 +849,9 @@ void MainWindow::setupUI()
             pct("modulation", "Modulation", kDelayModMin, kDelayModMax, kDelayModDefault,
                 [this](double v) { mEngine->delay().setModulation(static_cast<float>(v)); },
                 "Wobble on the repeats (tape flutter / chorused echoes)"),
+            pct("crystals", "Crystals", 0.0, 100.0, 0.0,
+                [this](double v) { mEngine->delay().setCrystals(static_cast<float>(v)); },
+                "Octave-up repeats: each echo climbs higher"),
         });
         mSwDelayStereo->setChecked(true);
         Theme::tagCard(col, "delay");
@@ -865,7 +886,11 @@ void MainWindow::setupUI()
                                  [this](double v) { mEngine->reverb().setHighCut(static_cast<float>(v)); });
         highCut->setLogTaper(true);
         highCut->setValueFormatter(hzLabel(-(kHighCutMax - 1.0)));
-        addDetailRow(col, {pre, lowCut, highCut});
+        auto* shimmer = lateKnob("reverb", "shimmer", new KnobWidget("Shimmer", 0.0, 100.0, 0.0, "%"),
+                                 [this](double v) { mEngine->reverb().setShimmer(static_cast<float>(v)); });
+        shimmer->setScrollStep(1.0);
+        shimmer->setToolTip("Octave-up feedback into the tail — the shimmer reverb");
+        addDetailRow(col, {pre, lowCut, highCut, shimmer});
         Theme::tagCard(col, "reverb");
 
         mFxCols[&mEngine->reverb()] = col;
@@ -1045,6 +1070,7 @@ void MainWindow::setupUI()
         {&mEngine->drive(),   {mSwDriveEnable,   nullptr}},
         {&mEngine->doubler(), {mSwDoublerEnable, nullptr}},
         {&mEngine->volume(),  {mSwVolumeEnable,  nullptr}},
+        {&mEngine->transpose(), {mSwTransposeEnable, nullptr}},
     };
 
     for (const auto& [fx, toggles] : mFxToggles)
@@ -2037,6 +2063,8 @@ void MainWindow::registerParameters()
 
     toggleParam("tuner", "enabled", mSwTunerEnable, [e](bool b) { e->tuner().setEnabled(b); });
     mParams.back().inPreset = false; // a practice tool, not part of the sound
+
+    toggleParam("transpose", "enabled", mSwTransposeEnable, [e](bool b) { e->transpose().setEnabled(b); });
 
     toggleParam("noiseGate", "enabled", mSwGateEnable,    [e](bool b)   { e->gate().setEnabled(b); });
     knobParam("noiseGate", "threshold", mKnobGateThresh,  [e](double v) { e->gate().setThreshold(static_cast<float>(v)); });

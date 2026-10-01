@@ -31,6 +31,7 @@ AudioEngine::AudioEngine()
     // reordering and for session/preset persistence. Never rename an ID.
     mEffectTable = {
         {"tuner",   &mTuner},
+        {"transpose", &mTranspose}, // after the tuner: it reads the real string
         {"gate",    &mGate},
         {"comp",    &mComp},
         {"wah",     &mWah},

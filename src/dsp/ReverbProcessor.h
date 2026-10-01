@@ -4,6 +4,7 @@
 #include <array>
 #include <vector>
 #include "EffectBase.h"
+#include "PitchShifter.h"
 
 /// Freeverb-based stereo reverb (8 comb + 4 all-pass filters).
 class ReverbProcessor : public EffectBase
@@ -21,6 +22,8 @@ public:
     void setPreDelay(float ms)  { mPreDelayMs.store(ms); }  // 0–250 ms before the tail
     void setLowCut(float hz)    { mLowCutHz.store(hz);   }  // on the wet signal
     void setHighCut(float hz)   { mHighCutHz.store(hz);  }
+    /// Octave-up feedback into the tail (0–100 %): the shimmer reverb.
+    void setShimmer(float pct)  { mShimmer.store(pct);   }
 
     float roomSize() const { return mRoomSize.load(); }
     float damping()  const { return mDamping.load();  }
@@ -41,6 +44,9 @@ private:
     std::atomic<float> mPreDelayMs{0.0f};
     std::atomic<float> mLowCutHz  {20.0f};
     std::atomic<float> mHighCutHz {20000.0f};
+    std::atomic<float> mShimmer   {0.0f};
+    PitchShifter mShift[2];   // per bank, +12 st
+    float        mShimFb[2]{}; // shifted wet fed into the next input sample
 
     static constexpr float kMaxPreDelayMs = 250.0f;
     // Pre-delay line per input bank ([0] mono/L/sum, [1] R) + wet filters per output.

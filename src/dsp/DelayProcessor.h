@@ -3,6 +3,7 @@
 #include <atomic>
 #include <vector>
 #include "EffectBase.h"
+#include "PitchShifter.h"
 
 /// Stereo delay.
 /// Mono in + mono mode: one delay line.
@@ -28,6 +29,8 @@ public:
     void setHighCut(float hz)     { mHighCutHz.store(hz);   }
     void setSaturation(float pct) { mSatPct.store(pct);     }
     void setModulation(float pct) { mModPct.store(pct);     }
+    /// Octave-up repeats (0–100 %): each pass through the loop climbs.
+    void setCrystals(float pct)   { mCrystalsPct.store(pct); }
 
     float time()     const { return mTimeMS.load();    }
     float feedback() const { return mFeedback.load();  }
@@ -54,9 +57,11 @@ private:
     {
         float fb, mix, cross, hpA, lpK, satDrive /* 0–1 */, modDepth, phInc;
         float delL, delR; // samples
+        float crystals;   // 0–1
     };
     Params params() const;
     float  tone(Line& l, float x, const Params& p) const;   // feedback-loop cuts
+    float  loop(int line, float d, const Params& p);         // what re-enters the line (crystals)
     static float saturate(float x, float amount);
 
     std::atomic<float> mTimeMS   {250.0f};
@@ -68,6 +73,8 @@ private:
     std::atomic<float> mHighCutHz{20000.0f};
     std::atomic<float> mSatPct   {0.0f};
     std::atomic<float> mModPct   {0.0f};
+    std::atomic<float> mCrystalsPct{0.0f};
+    PitchShifter mShift[2];
 
     Line  mLine[2];
     float mModPhase = 0.0f;

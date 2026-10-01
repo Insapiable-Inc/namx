@@ -33,6 +33,7 @@ static constexpr FxColor kFxColors[] = {
     {"drive",   "#d65a5a"},
     {"doubler", "#e0a3c2"},
     {"volume",  "#9fb4c7"},
+    {"transpose", "#c9a6f2"},
     {"neutral", "#7d8590"},
 };
 

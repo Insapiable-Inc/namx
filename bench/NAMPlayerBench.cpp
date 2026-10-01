@@ -45,6 +45,7 @@
 #include "TremoloProcessor.h"
 #include "TunerProcessor.h"
 #include "VolumeProcessor.h"
+#include "TransposeProcessor.h"
 #include "OutputLimiter.h"
 
 namespace {
@@ -133,6 +134,8 @@ int main(int argc, char** argv)
     DoublerProcessor    doubler;
     VolumeProcessor     volume;
     OutputLimiter       limiter;
+    TransposeProcessor  transpose;
+    transpose.setSemitones(-2.0f); // a drop tuning: the shifter's real cost
 
     // Same defaults as AudioEngine's constructor.
     chorus.setStereoMode(true);
@@ -141,7 +144,7 @@ int main(int argc, char** argv)
     reverb.setStereoMode(true);
 
     std::vector<Stage> chain = {
-        {"Tuner", &tuner, {}},     {"Gate", &gate, {}},       {"Compressor", &comp, {}},
+        {"Tuner", &tuner, {}},     {"Transpose", &transpose, {}}, {"Gate", &gate, {}},       {"Compressor", &comp, {}},
         {"Wah", &wah, {}},         {"Flanger", &flanger, {}}, {"Phaser", &phaser, {}},
         {"Drive", &drive, {}},     {"Amp", &nam, {}},         {"EQ", &eq, {}},
         {"Doubler", &doubler, {}}, {"Chorus", &chorus, {}},   {"Tremolo", &tremolo, {}},

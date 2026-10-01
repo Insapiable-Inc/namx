@@ -332,6 +332,7 @@ private:
     KnobWidget*   mKnobRevWidth   = nullptr;
     KnobWidget*   mKnobRevMix     = nullptr;
 
+    ToggleSwitch* mSwTransposeEnable = nullptr;
     ToggleSwitch* mSwDriveEnable = nullptr;
     KnobWidget*   mKnobDrive     = nullptr;
     KnobWidget*   mKnobDriveTone = nullptr;

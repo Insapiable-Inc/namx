@@ -9,6 +9,7 @@ void DelayProcessor::onSampleRateChanged(double sr)
 {
     const size_t n = static_cast<size_t>(kMaxDelayMs * sr / 1000.0) + 4;
     for (auto& l : mLine) l.buf.assign(n, 0.0f);
+    for (auto& s : mShift) { s.prepare(sr, 60.0f); s.setSemitones(12.0f); }
     reset();
 }
 
@@ -21,6 +22,13 @@ void DelayProcessor::reset()
         l.hpX = l.hpY = l.lp = 0.0f;
     }
     mModPhase = 0.0f;
+    for (auto& s : mShift) s.reset();
+}
+
+float DelayProcessor::loop(int line, float d, const Params& p)
+{
+    if (p.crystals <= 0.0f) return d;
+    return d + p.crystals * (mShift[line].process(d) - d);
 }
 
 float DelayProcessor::Line::read(float d) const
@@ -47,6 +55,7 @@ DelayProcessor::Params DelayProcessor::params() const
     p.satDrive = std::clamp(mSatPct.load(), 0.0f, 100.0f) / 100.0f;
     p.modDepth = 0.003f * fs * std::clamp(mModPct.load(), 0.0f, 100.0f) / 100.0f; // up to ±3 ms
     p.phInc    = 0.55f / fs;                                                       // 0.55 Hz wobble
+    p.crystals = std::clamp(mCrystalsPct.load(), 0.0f, 100.0f) / 100.0f;
     const float maxD = static_cast<float>(mLine[0].buf.size()) - 2.0f - p.modDepth;
     p.delL = std::clamp(mTimeMS.load() * fs / 1000.0f, 1.0f + p.modDepth, maxD);
     p.delR = std::clamp(p.delL * std::clamp(mRightPct.load(), 25.0f, 200.0f) / 100.0f, 1.0f + p.modDepth, maxD);
@@ -84,7 +93,7 @@ void DelayProcessor::processBlockMono(float* buf, int nframes)
         if (mModPhase >= 1.0f) mModPhase -= 1.0f;
 
         const float d = tone(l, l.read(p.delL + mod), p);
-        l.push(saturate(buf[i] + p.fb * d, p.satDrive));
+        l.push(saturate(buf[i] + p.fb * loop(0, d, p), p.satDrive));
         buf[i] = buf[i] * (1.0f - p.mix) + d * p.mix;
     }
 }
@@ -102,8 +111,8 @@ void DelayProcessor::processBlockDual(float* L, float* R, int nframes)
 
         const float dL = tone(mLine[0], mLine[0].read(p.delL + mod), p);
         const float dR = tone(mLine[1], mLine[1].read(p.delR - mod), p);
-        mLine[0].push(saturate(L[i] + p.fb * dL, p.satDrive));
-        mLine[1].push(saturate(R[i] + p.fb * dR, p.satDrive));
+        mLine[0].push(saturate(L[i] + p.fb * loop(0, dL, p), p.satDrive));
+        mLine[1].push(saturate(R[i] + p.fb * loop(1, dR, p), p.satDrive));
         L[i] = L[i] * (1.0f - p.mix) + dL * p.mix;
         R[i] = R[i] * (1.0f - p.mix) + dR * p.mix;
     }
@@ -125,8 +134,9 @@ void DelayProcessor::processBlockStereoOut(float* L, float* R, int nframes)
         const float x  = L[i];
         const float dL = tone(mLine[0], mLine[0].read(p.delL + mod), p);
         const float dR = tone(mLine[1], mLine[1].read(p.delR - mod), p);
-        mLine[0].push(saturate(x + p.fb * ((1.0f - c) * dL + c * dR), p.satDrive));
-        mLine[1].push(saturate((1.0f - c) * x + p.fb * ((1.0f - c) * dR + c * dL), p.satDrive));
+        const float fL = loop(0, dL, p), fR = loop(1, dR, p);
+        mLine[0].push(saturate(x + p.fb * ((1.0f - c) * fL + c * fR), p.satDrive));
+        mLine[1].push(saturate((1.0f - c) * x + p.fb * ((1.0f - c) * fR + c * fL), p.satDrive));
         L[i] = x * (1.0f - p.mix) + dL * p.mix;
         R[i] = R[i] * (1.0f - p.mix) + dR * p.mix;
     }
