@@ -375,8 +375,8 @@ dropout.
 
 - **Initialization:**
   - `=` for simple values: `int count = 0;`, `string name = "Drive";`.
-  - Braces for aggregates and containers, with a space before the brace:
-    `vector<int> v {1, 2, 3};`, `ParamSpec spec {…};`.
+  - Braces for aggregates and containers, with no space before the brace:
+    `vector<int> v{1, 2, 3};`, `ParamSpec spec{…};`.
   - Default member values go in the class (`float gain = 1.0f;`). Constructors don't
     repeat them.
 - **`using`, never `typedef`:** `using SampleBuffer = vector<float>;`.

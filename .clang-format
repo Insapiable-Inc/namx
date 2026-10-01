@@ -68,7 +68,6 @@ BreakTemplateDeclarations: Yes
 EmptyLineBeforeAccessModifier: LogicalBlock
 SpaceBeforeParens: ControlStatements
 Cpp11BracedListStyle: true
-SpaceBeforeCpp11BracedList: true # `vector<int> v {1, 2, 3}`
 
 # Includes (Google order): own header, std, third-party <…>, project "…"; sorted per block.
 SortIncludes: CaseSensitive
