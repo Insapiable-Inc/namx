@@ -65,6 +65,8 @@ cmake -S gui -B gui/build-test -DCMAKE_BUILD_TYPE=Debug -DNAM_BUILD_TESTS=ON
 cmake --build gui/build-test --target Tone3000ClientTest && gui/build-test/Tone3000ClientTest
 ```
 
+`-DNAM_BUILD_BENCH=ON` adds `NAMPlayerBench` (`gui/bench/`): the DSP chain timed per stage against the block budget (`--model`, `--ir`, `--frames`, `--rate`, `--no-fast-tanh`, `--only`). The Phase 14 efficiency budget and reference numbers are in `gui/BUILD.md` → High CPU usage; re-run the bench after DSP changes. `--self-test-and-exit` also prints cold-start time and peak RSS.
+
 ## Running
 
 ```bash
@@ -139,7 +141,8 @@ All effects inherit `EffectBase` (`src/dsp/EffectBase.h` — the header comment 
 | `LibraryDock` | `src/ui/LibraryDock.h/cpp` | Dock content: Library / TONE3000 tab switch over `LibraryPanel` + `Tone3000Panel` |
 | `Tone3000Client` | `src/net/Tone3000Client.h/cpp` | TONE3000 API: OAuth 2.0 + PKCE via system browser + loopback `QTcpServer` (`http://localhost:51731/callback`), Bearer requests with pre-emptive/401 refresh, 5-min listing cache, 429 back-off, model download → `downloadDir()/<creator>/<tone>/` + `.t3k.json` sidecar, disk-cached images. Env: `NAM_TONE3000_API_BASE`, `NAM_TONE3000_NO_BROWSER` |
 | `Tone3000Panel` | `src/ui/Tone3000Panel.h/cpp` | TONE3000 tab: setup (no key) → splash (signed out) → bounded lists (Trending/Latest/Favorites/Downloads/Mine) + "Browse TONE3000" (select_tone flow) → tone detail with per-model download/load; emits `loadRequested(kind, path)` |
-| `VUMeter` | `src/ui/VUMeter.h/cpp` | Vertical peak bar; `setPeak(linear)` on a 60 dB scale |
+| `VUMeter` | `src/ui/VUMeter.h/cpp` | Vertical peak bar; `setPeak(linear)` on a 66 dB scale, time-based ballistics, repaints only on movement (fed at ~60 fps, paused while minimized) |
+| `GainReductionMeter` | `src/ui/GainReductionMeter.h/cpp` | Compressor/Gate reduction readout in the rows' stereo slot; fed from `takeGainReductionDb()` |
 | `Log.h` | `src/dsp/` | `nam.audio` logging category — use `qCWarning(lcAudio, …)`, never `std::cerr` (invisible on Windows) |
 | `KnobWidget` | `src/ui/KnobWidget.h/cpp` | `QDial` wrapper: float range, scroll step, label |
 | `ToggleSwitch` | `src/ui/ToggleSwitch.h/cpp` | Custom-painted on/off switch |
