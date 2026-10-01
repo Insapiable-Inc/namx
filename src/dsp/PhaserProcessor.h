@@ -31,16 +31,16 @@ public:
         m_mix.store(pct);
     }
 
-    float rate() const {
+    float get_rate() const {
         return m_rate.load();
     }
-    float depth() const {
+    float get_depth() const {
         return m_depth.load();
     }
-    float feedback() const {
+    float get_feedback() const {
         return m_feedback.load();
     }
-    float mix() const {
+    float get_mix() const {
         return m_mix.load();
     }
 

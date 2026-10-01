@@ -187,7 +187,7 @@ int main(int argc, char** argv) {
     }
     nam.prepare_buffer(frames);
     if (!model.empty() && !nam.load_model(model)) {
-        std::fprintf(stderr, "model: %s\n", nam.last_error().c_str());
+        std::fprintf(stderr, "model: %s\n", nam.get_last_error().c_str());
         return 1;
     }
     if (!ir.empty() && !cab.load(ir)) {

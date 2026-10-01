@@ -52,17 +52,17 @@ public:
         m_bpm.store(bpm);
     }
     void set_meter(int beats, int unit);
-    int beats() const {
+    int get_beats() const {
         return m_beats.load();
     }
-    int unit() const {
+    int get_unit() const {
         return m_unit.load();
     }
     /// 2 bits per beat (Accent), beat 0 in the low bits.
     void set_accents(uint32_t packed) {
         m_accents.store(packed);
     }
-    uint32_t accents() const {
+    uint32_t get_accents() const {
         return m_accents.load();
     }
     static Accent accent_of(uint32_t packed, int beat) {

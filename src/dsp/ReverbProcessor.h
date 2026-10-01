@@ -44,16 +44,16 @@ public:
         m_shimmer.store(pct);
     }
 
-    float room_size() const {
+    float get_room_size() const {
         return m_room_size.load();
     }
-    float damping() const {
+    float get_damping() const {
         return m_damping.load();
     }
-    float width() const {
+    float get_width() const {
         return m_width.load();
     }
-    float mix() const {
+    float get_mix() const {
         return m_mix.load();
     }
 

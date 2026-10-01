@@ -23,10 +23,10 @@ public:
         m_depth.store(pct);
     }
 
-    float rate() const {
+    float get_rate() const {
         return m_rate.load();
     }
-    float depth() const {
+    float get_depth() const {
         return m_depth.load();
     }
 

@@ -266,7 +266,7 @@ void AudioEngine::on_buffer_size_changed(int new_size) {
 
     // Backends call this before activating the stream, and with processing
     // suspended on later changes — the one safe point to reconfigure effects.
-    const double sr = m_backend ? m_backend->sample_rate() : 0.0;
+    const double sr = m_backend ? m_backend->get_sample_rate() : 0.0;
     if (sr > 0.0 && sr != m_chain_sample_rate) {
         m_chain_sample_rate = sr;
         for (const auto& [id, fx] : m_effect_table) {
@@ -279,7 +279,7 @@ void AudioEngine::on_buffer_size_changed(int new_size) {
     }
 
     // After SR propagation, so a re-Reset() picks up the new rate.
-    m_nam.prepare_buffer(std::max(n, m_nam.max_buf()));
+    m_nam.prepare_buffer(std::max(n, m_nam.get_max_buf()));
 }
 
 void AudioEngine::on_audio(const float* in, float* out_l, float* out_r, size_t n) {

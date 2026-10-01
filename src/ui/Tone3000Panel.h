@@ -216,7 +216,7 @@ private:
     QLabel* m_detail_status = nullptr;
     ToneModelsModel* m_models_model = nullptr;
     QListView* m_models_view = nullptr;
-    QPushButton* m_download_all = nullptr;
+    QPushButton* m_download_all_button = nullptr;
     int m_detail_request = 0; // ignore stale replies
     bool m_notice_busy = false;
 };

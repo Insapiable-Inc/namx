@@ -142,7 +142,7 @@ int main(int argc, char** argv) {
     CHECK(auth_ok, qPrintable("auth ok: " + auth_err));
     CHECK(picked_tone == 1, "tone_id from select flow");
     CHECK(client.is_signed_in(), "signed in");
-    CHECK(client.user().username == "tester", "current user fetched");
+    CHECK(client.get_user().username == "tester", "current user fetched");
     CHECK(QSettings().value("tone3000/accessToken").toString() == "tok-1", "tokens persisted");
 
     std::printf("lists\n");

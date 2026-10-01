@@ -265,14 +265,14 @@ TempoBar::TempoBar(Metronome& metronome, QWidget* parent)
     });
     lay->addWidget(m_bpm);
 
-    m_tap = new QToolButton(this);
-    m_tap->setObjectName("presetTool");
-    m_tap->setText("Tap");
-    m_tap->setToolTip("Tap the tempo: four taps or more average out");
-    m_tap->setFocusPolicy(Qt::NoFocus);
-    connect(m_tap, &QToolButton::pressed, this, &TempoBar::tap); // on press: tighter timing
-    learn_menu_for(m_tap, "action:tap");
-    lay->addWidget(m_tap);
+    m_tap_button = new QToolButton(this);
+    m_tap_button->setObjectName("presetTool");
+    m_tap_button->setText("Tap");
+    m_tap_button->setToolTip("Tap the tempo: four taps or more average out");
+    m_tap_button->setFocusPolicy(Qt::NoFocus);
+    connect(m_tap_button, &QToolButton::pressed, this, &TempoBar::tap); // on press: tighter timing
+    learn_menu_for(m_tap_button, "action:tap");
+    lay->addWidget(m_tap_button);
     lay->addSpacing(18);
 
     // ---- Metronome ----
@@ -311,7 +311,7 @@ TempoBar::TempoBar(Metronome& metronome, QWidget* parent)
         for (const auto& mp : K_METERS) {
             QAction* a = m->addAction(QString("%1/%2").arg(mp.beats).arg(mp.unit));
             a->setCheckable(true);
-            a->setChecked(mp.beats == m_metro.beats() && mp.unit == m_metro.unit());
+            a->setChecked(mp.beats == m_metro.get_beats() && mp.unit == m_metro.get_unit());
             connect(a, &QAction::triggered, this, [this, mp] {
                 set_meter(mp.beats, mp.unit, true);
             });
@@ -320,15 +320,15 @@ TempoBar::TempoBar(Metronome& metronome, QWidget* parent)
         connect(m->addAction("Custom…"), &QAction::triggered, this, [this] {
             bool ok = false;
             const int beats =
-                QInputDialog::getInt(this, "Time Signature", "Beats per bar:", m_metro.beats(), 1,
-                                     Metronome::K_MAX_BEATS, 1, &ok);
+                QInputDialog::getInt(this, "Time Signature", "Beats per bar:", m_metro.get_beats(),
+                                     1, Metronome::K_MAX_BEATS, 1, &ok);
             if (!ok) {
                 return;
             }
             const QString unit =
                 QInputDialog::getItem(this, "Time Signature", "Beat unit:", {"2", "4", "8", "16"},
                                       static_cast<int>(QStringList{"2", "4", "8", "16"}.indexOf(
-                                          QString::number(m_metro.unit()))),
+                                          QString::number(m_metro.get_unit()))),
                                       false, &ok);
             if (ok) {
                 set_meter(beats, unit.toInt(), true);
@@ -427,12 +427,12 @@ TempoBar::TempoBar(Metronome& metronome, QWidget* parent)
     if (s.contains("metronome/accents")) {
         const uint32_t acc = s.value("metronome/accents").toUInt();
         m_metro.set_accents(acc);
-        m_leds->set_pattern(m_metro.beats(), acc);
+        m_leds->set_pattern(m_metro.get_beats(), acc);
     }
     update_labels();
 }
 
-double TempoBar::bpm() const {
+double TempoBar::get_bpm() const {
     return m_bpm->value();
 }
 
@@ -449,7 +449,7 @@ QWidget* TempoBar::action_widget(const QString& id) const {
         return m_play;
     }
     if (id == "action:tap") {
-        return m_tap;
+        return m_tap_button;
     }
     return nullptr;
 }
@@ -475,20 +475,20 @@ void TempoBar::poll() {
 void TempoBar::set_meter(int beats, int unit, bool reset_accents) {
     m_metro.set_meter(beats, unit);
     QSettings s;
-    s.setValue("metronome/beats", m_metro.beats());
-    s.setValue("metronome/unit", m_metro.unit());
+    s.setValue("metronome/beats", m_metro.get_beats());
+    s.setValue("metronome/unit", m_metro.get_unit());
     if (reset_accents) {
-        const uint32_t acc = Metronome::default_accents(m_metro.beats(), m_metro.unit());
+        const uint32_t acc = Metronome::default_accents(m_metro.get_beats(), m_metro.get_unit());
         m_metro.set_accents(acc);
         s.setValue("metronome/accents", acc);
     }
-    m_leds->set_pattern(m_metro.beats(), m_metro.accents());
+    m_leds->set_pattern(m_metro.get_beats(), m_metro.get_accents());
     update_labels();
 }
 
 void TempoBar::update_labels() {
     QSettings s;
-    m_meter_btn->setText(QString("%1/%2").arg(m_metro.beats()).arg(m_metro.unit()));
+    m_meter_btn->setText(QString("%1/%2").arg(m_metro.get_beats()).arg(m_metro.get_unit()));
     const int sub = std::clamp(s.value("metronome/subdivision", 1).toInt(), 1, 4);
     m_subdiv_btn->setText(k_subdiv_short[sub - 1]);
     m_subdiv_btn->setToolTip(QString("Subdivision: %1").arg(k_subdiv_names[sub - 1]));

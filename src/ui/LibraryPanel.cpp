@@ -643,7 +643,7 @@ void LibraryPanel::focus_search() {
 
 void LibraryPanel::on_entries_changed() {
     m_syncing = true;
-    m_model->set_entries(m_index.entries());
+    m_model->set_entries(m_index.get_entries());
     m_syncing = false;
     restore_current_from_loaded();
     update_counts();
@@ -652,7 +652,7 @@ void LibraryPanel::on_entries_changed() {
 void LibraryPanel::restore_current_from_loaded() {
     // Selection follows the loaded file; never fires a load.
     const auto kind = static_cast<LibraryEntry::Kind>(m_section);
-    const int src_row = m_model->row_of(m_model->loaded(kind));
+    const int src_row = m_model->row_of(m_model->get_loaded(kind));
     m_syncing = true;
     if (src_row >= 0) {
         const QModelIndex pi = m_proxies[m_section]->mapFromSource(m_model->index(src_row));
@@ -728,7 +728,7 @@ void LibraryPanel::set_loaded_path(LibraryEntry::Kind kind, const QString& path)
 }
 
 QString LibraryPanel::loaded_path(LibraryEntry::Kind kind) const {
-    return m_model->loaded(kind);
+    return m_model->get_loaded(kind);
 }
 
 QString LibraryPanel::neighbour(LibraryEntry::Kind kind, const QString& from_path, int step) const {
@@ -752,7 +752,7 @@ QString LibraryPanel::neighbour(LibraryEntry::Kind kind, const QString& from_pat
 void LibraryPanel::update_counts() {
     // Section buttons show the unfiltered totals; the footer the visible count.
     int total[3] = {0, 0, 0};
-    for (const auto& e : m_index.entries()) {
+    for (const auto& e : m_index.get_entries()) {
         ++total[static_cast<int>(e.kind)];
     }
     for (int i = 0; i < 3; ++i) {
@@ -777,7 +777,7 @@ void LibraryPanel::update_counts() {
 }
 
 void LibraryPanel::edit_folders() {
-    FoldersDialog dlg(m_index.roots(), window());
+    FoldersDialog dlg(m_index.get_roots(), window());
     if (dlg.exec() == QDialog::Accepted) {
         m_index.set_roots(dlg.roots());
     }

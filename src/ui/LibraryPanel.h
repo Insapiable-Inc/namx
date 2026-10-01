@@ -51,7 +51,7 @@ public:
         return m_favorites.contains(path);
     }
     int row_of(const QString& path) const;
-    QString loaded(LibraryEntry::Kind kind) const {
+    QString get_loaded(LibraryEntry::Kind kind) const {
         return m_loaded[static_cast<int>(kind)];
     }
 

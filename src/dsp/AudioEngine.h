@@ -49,10 +49,10 @@ public:
         return m_backend && m_backend->is_running();
     }
     double sample_rate() const {
-        return m_backend ? m_backend->sample_rate() : 44100.0;
+        return m_backend ? m_backend->get_sample_rate() : 44100.0;
     }
     int buffer_size() const {
-        return m_backend ? m_backend->buffer_size() : 0;
+        return m_backend ? m_backend->get_buffer_size() : 0;
     }
 
     /// Human-readable status, e.g. "JACK ● 48000 Hz ● stereo out".
@@ -76,10 +76,10 @@ public:
         return m_nam.is_model_loaded();
     }
     std::string model_path() const {
-        return m_nam.model_path();
+        return m_nam.get_model_path();
     }
     std::string model_load_error() const {
-        return m_nam.last_error();
+        return m_nam.get_last_error();
     }
 
     bool load_ir(const std::string& path);
@@ -122,70 +122,70 @@ public:
     }
 
     // ---- Effect accessors (MainWindow calls setters directly on the effects) ----
-    TunerProcessor& tuner() {
+    TunerProcessor& get_tuner() {
         return m_tuner;
     }
-    NoiseGateProcessor& gate() {
+    NoiseGateProcessor& get_gate() {
         return m_gate;
     }
-    CompressorProcessor& comp() {
+    CompressorProcessor& get_comp() {
         return m_comp;
     }
-    DynamicWahProcessor& wah() {
+    DynamicWahProcessor& get_wah() {
         return m_wah;
     }
-    FlangerProcessor& flanger() {
+    FlangerProcessor& get_flanger() {
         return m_flanger;
     }
-    PhaserProcessor& phaser() {
+    PhaserProcessor& get_phaser() {
         return m_phaser;
     }
-    NamProcessor& nam() {
+    NamProcessor& get_nam() {
         return m_nam;
     }
-    EQProcessor& eq() {
+    EQProcessor& get_eq() {
         return m_eq;
     }
-    ChorusProcessor& chorus() {
+    ChorusProcessor& get_chorus() {
         return m_chorus;
     }
-    TremoloProcessor& tremolo() {
+    TremoloProcessor& get_tremolo() {
         return m_tremolo;
     }
-    DelayProcessor& delay() {
+    DelayProcessor& get_delay() {
         return m_delay;
     }
-    ReverbProcessor& reverb() {
+    ReverbProcessor& get_reverb() {
         return m_reverb;
     }
-    IRProcessor& ir() {
+    IRProcessor& get_ir() {
         return m_ir;
     }
-    DriveProcessor& drive() {
+    DriveProcessor& get_drive() {
         return m_drive;
     }
-    DoublerProcessor& doubler() {
+    DoublerProcessor& get_doubler() {
         return m_doubler;
     }
-    VolumeProcessor& volume() {
+    VolumeProcessor& get_volume() {
         return m_volume;
     }
-    OutputLimiter& limiter() {
+    OutputLimiter& get_limiter() {
         return m_limiter;
     }
-    TransposeProcessor& transpose() {
+    TransposeProcessor& get_transpose() {
         return m_transpose;
     }
 
     /// Mixed in after the output gain — outside the chain, not metered.
-    Metronome& metronome() {
+    Metronome& get_metronome() {
         return m_metronome;
     }
 
     // ---- Signal chain (processing order = UI order) ----
     // GUI-thread snapshot of the active chain. Reordering goes through
     // setChainOrder().
-    std::vector<EffectBase*> chain() const {
+    std::vector<EffectBase*> get_chain() const {
         return *m_chain.current();
     }
 

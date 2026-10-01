@@ -40,10 +40,10 @@ public:
     bool is_running() const override {
         return m_running.load();
     }
-    double sample_rate() const override {
+    double get_sample_rate() const override {
         return m_sample_rate;
     }
-    int buffer_size() const override {
+    int get_buffer_size() const override {
         return m_buffer_size;
     }
     std::string status_string() const override;

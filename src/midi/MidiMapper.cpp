@@ -224,22 +224,22 @@ bool MidiMapper::load_file(const QString& path, QString* error) {
 
 void MidiMapper::learn(const QString& target_id) {
     m_learn_target = target_id;
-    m_learn_row = -1;
+    m_pending_learn_row = -1;
     emit learn_changed();
 }
 
 void MidiMapper::learn_row(qsizetype row) {
     m_learn_target.clear();
-    m_learn_row = row;
+    m_pending_learn_row = row;
     emit learn_changed();
 }
 
 void MidiMapper::cancel_learn() {
-    if (m_learn_target.isEmpty() && m_learn_row < 0) {
+    if (m_learn_target.isEmpty() && m_pending_learn_row < 0) {
         return;
     }
     m_learn_target.clear();
-    m_learn_row = -1;
+    m_pending_learn_row = -1;
     emit learn_changed();
 }
 
@@ -264,10 +264,10 @@ void MidiMapper::handle(const MidiMessage& m) {
     const bool learnable = m.type == MidiMessage::PROGRAM_CHANGE ||
                            m.type == MidiMessage::NOTE_ON ||
                            (m.type == MidiMessage::CONTROL_CHANGE && m.value > 0);
-    if (learnable && (!m_learn_target.isEmpty() || m_learn_row >= 0)) {
+    if (learnable && (!m_learn_target.isEmpty() || m_pending_learn_row >= 0)) {
         MidiMapping mp;
-        if (m_learn_row >= 0 && m_learn_row < m_mappings.size()) {
-            mp = m_mappings[m_learn_row];
+        if (m_pending_learn_row >= 0 && m_pending_learn_row < m_mappings.size()) {
+            mp = m_mappings[m_pending_learn_row];
         }
         mp.source = m.type == MidiMessage::CONTROL_CHANGE   ? MidiMapping::CC
                     : m.type == MidiMessage::PROGRAM_CHANGE ? MidiMapping::PROGRAM
@@ -275,8 +275,8 @@ void MidiMapper::handle(const MidiMessage& m) {
         mp.channel = m.channel;
         mp.number = m.number;
         QList<MidiMapping> list = m_mappings;
-        if (m_learn_row >= 0 && m_learn_row < list.size()) {
-            list[m_learn_row] = mp;
+        if (m_pending_learn_row >= 0 && m_pending_learn_row < list.size()) {
+            list[m_pending_learn_row] = mp;
         } else {
             mp.target = m_learn_target;
             const MidiTarget* t = target(m_learn_target);
@@ -292,7 +292,7 @@ void MidiMapper::handle(const MidiMessage& m) {
             list << mp;
         }
         m_learn_target.clear();
-        m_learn_row = -1;
+        m_pending_learn_row = -1;
         set_mappings(list);
         emit learn_changed();
         return;

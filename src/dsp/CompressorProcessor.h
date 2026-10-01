@@ -29,7 +29,7 @@ public:
     float threshold() const {
         return m_threshold_db.load();
     }
-    float ratio() const {
+    float get_ratio() const {
         return m_ratio.load();
     }
     float attack() const {

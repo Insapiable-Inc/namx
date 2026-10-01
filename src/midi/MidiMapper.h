@@ -74,14 +74,14 @@ public:
     void add_toggle(const QString& id, const QString& group, const QString& label, ToggleSwitch* t);
     void add_action(const QString& id, const QString& group, const QString& label,
                     std::function<void()> fn);
-    const std::vector<MidiTarget>& targets() const {
+    const std::vector<MidiTarget>& get_targets() const {
         return m_targets;
     }
     const MidiTarget* target(const QString& id) const;
     /// Target driven by this widget (knob or toggle), or null.
     const MidiTarget* target_for(const QWidget* w) const;
 
-    const QList<MidiMapping>& mappings() const {
+    const QList<MidiMapping>& get_mappings() const {
         return m_mappings;
     }
     void set_mappings(const QList<MidiMapping>& m); // persists, emits mappingsChanged
@@ -103,10 +103,10 @@ public:
         return m_learn_target;
     }
     qsizetype learning_row() const {
-        return m_learn_row;
+        return m_pending_learn_row;
     }
 
-    bool follow_clock() const {
+    bool get_follow_clock() const {
         return m_follow_clock;
     }
     void set_follow_clock(bool on);
@@ -129,7 +129,7 @@ private:
     QList<MidiMapping> m_mappings;
     QHash<int, int> m_last_value; // mapping index → last CC value (edge detection)
     QString m_learn_target;
-    qsizetype m_learn_row = -1;
+    qsizetype m_pending_learn_row = -1;
 
     bool m_follow_clock = false;
     QElapsedTimer m_clock;

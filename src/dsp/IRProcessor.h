@@ -34,7 +34,7 @@ public:
         return m_a.get_file_path();
     }
     std::string last_error() const {
-        return m_a.last_error();
+        return m_a.get_last_error();
     }
 
     // Slot B.
@@ -51,7 +51,7 @@ public:
         return m_b.get_file_path();
     }
     std::string last_error_b() const {
-        return m_b.last_error();
+        return m_b.get_last_error();
     }
 
     void reclaim_retired(bool audio_stopped) {

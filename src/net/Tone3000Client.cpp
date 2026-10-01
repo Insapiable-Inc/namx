@@ -519,10 +519,10 @@ void Tone3000Client::ensure_fresh_token(std::function<void(bool)> then) {
         then(true);
         return;
     }
-    refresh_token(std::move(then));
+    refresh_access_token(std::move(then));
 }
 
-void Tone3000Client::refresh_token(std::function<void(bool)> then) {
+void Tone3000Client::refresh_access_token(std::function<void(bool)> then) {
     if (m_refresh_token.isEmpty()) {
         then(false);
         return;
@@ -664,7 +664,7 @@ void Tone3000Client::on_reply_finished(QNetworkReply* reply, Request req) {
         // Expiry race between the pre-check and the request: refresh and retry once.
         req.retried401 = true;
         Request again = req;
-        refresh_token([this, again](bool ok) mutable {
+        refresh_access_token([this, again](bool ok) mutable {
             if (ok) {
                 send(std::move(again));
                 return;

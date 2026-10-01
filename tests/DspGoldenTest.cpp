@@ -449,7 +449,7 @@ void DspGoldenTest::tuner_detects_pitch() {
             tuner.process(block.data(), block.data(), block.size(), false);
         }
         QTest::qWait(10);
-        pitch = tuner.last_pitch();
+        pitch = tuner.get_last_pitch();
     }
     QVERIFY2(std::abs(pitch - 110.0f) <= 0.2f, qPrintable(QString::number(pitch)));
 }

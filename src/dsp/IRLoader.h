@@ -35,7 +35,7 @@ public:
     }
 
     /// Human-readable reason the last load() returned false (GUI thread only).
-    std::string last_error() const {
+    std::string get_last_error() const {
         return m_last_error;
     }
 

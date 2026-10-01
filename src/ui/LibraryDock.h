@@ -23,7 +23,7 @@ public:
 
     LibraryDock(LibraryIndex& index, Tone3000Client& client, QWidget* parent = nullptr);
 
-    LibraryPanel* local() const {
+    LibraryPanel* get_local() const {
         return m_local;
     }
     Tone3000Panel* tone3000() const {

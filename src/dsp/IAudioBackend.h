@@ -57,8 +57,8 @@ public:
     virtual void stop() = 0;
 
     virtual bool is_running() const = 0;
-    virtual double sample_rate() const = 0;
-    virtual int buffer_size() const = 0;
+    virtual double get_sample_rate() const = 0;
+    virtual int get_buffer_size() const = 0;
 
     /// Short human-readable status string for the GUI pill,
     /// e.g. "JACK ● 48000 Hz ● stereo out" or "WASAPI ● Speakers ● 48000 Hz".

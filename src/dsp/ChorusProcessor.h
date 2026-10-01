@@ -37,13 +37,13 @@ public:
         m_mode.store(m);
     }
 
-    float rate() const {
+    float get_rate() const {
         return m_rate.load();
     }
-    float depth() const {
+    float get_depth() const {
         return m_depth.load();
     }
-    float mix() const {
+    float get_mix() const {
         return m_mix.load();
     }
 

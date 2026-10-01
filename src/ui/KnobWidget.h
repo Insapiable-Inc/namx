@@ -42,7 +42,7 @@ public:
     double maximum() const {
         return m_max;
     }
-    QString label() const {
+    QString get_label() const {
         return m_label;
     }
 

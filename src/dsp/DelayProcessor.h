@@ -58,10 +58,10 @@ public:
     float time() const {
         return m_time_ms.load();
     }
-    float feedback() const {
+    float get_feedback() const {
         return m_feedback.load();
     }
-    float mix() const {
+    float get_mix() const {
         return m_mix.load();
     }
 

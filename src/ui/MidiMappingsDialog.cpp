@@ -57,7 +57,7 @@ MidiMappingsDialog::MidiMappingsDialog(MidiMapper& mapper, MidiInput* input, QWi
     m_device_box = new QVBoxLayout;
     dev_lay->addLayout(m_device_box);
     auto* clock = new QCheckBox("Follow MIDI clock (set the tempo from incoming clock)");
-    clock->setChecked(m_mapper.follow_clock());
+    clock->setChecked(m_mapper.get_follow_clock());
     connect(clock, &QCheckBox::toggled, this, [this](bool on) {
         m_mapper.set_follow_clock(on);
     });
@@ -97,10 +97,10 @@ MidiMappingsDialog::MidiMappingsDialog(MidiMapper& mapper, MidiInput* input, QWi
     auto* row = new QHBoxLayout;
     auto* add = new QPushButton("Add");
     connect(add, &QPushButton::clicked, this, [this] {
-        QList<MidiMapping> list = m_mapper.mappings();
+        QList<MidiMapping> list = m_mapper.get_mappings();
         MidiMapping m;
-        if (!m_mapper.targets().empty()) {
-            m.target = m_mapper.targets().front().id;
+        if (!m_mapper.get_targets().empty()) {
+            m.target = m_mapper.get_targets().front().id;
         }
         list << m;
         m_mapper.set_mappings(list);
@@ -184,7 +184,7 @@ void MidiMappingsDialog::rebuild_devices() {
 
 void MidiMappingsDialog::rebuild_table() {
     m_rebuilding = true;
-    const auto& list = m_mapper.mappings();
+    const auto& list = m_mapper.get_mappings();
     m_table->setRowCount(static_cast<int>(list.size())); // Qt widgets count rows in int
     for (int r = 0; r < list.size(); ++r) {
         const MidiMapping& m = list[r];
@@ -223,7 +223,7 @@ void MidiMappingsDialog::rebuild_table() {
         m_table->setCellWidget(r, COL_NUMBER, num);
 
         auto* tgt = new QComboBox;
-        for (const auto& t : m_mapper.targets()) {
+        for (const auto& t : m_mapper.get_targets()) {
             tgt->addItem(t.group.isEmpty() ? t.label : t.group + " · " + t.label, t.id);
         }
         int idx = tgt->findData(m.target);
@@ -273,7 +273,7 @@ void MidiMappingsDialog::rebuild_table() {
         del->setText("×");
         del->setToolTip("Delete this mapping");
         connect(del, &QToolButton::clicked, this, [this, r] {
-            QList<MidiMapping> list = m_mapper.mappings();
+            QList<MidiMapping> list = m_mapper.get_mappings();
             if (r < list.size()) {
                 list.removeAt(r);
             }
@@ -291,7 +291,7 @@ void MidiMappingsDialog::commit_row(int row) {
     if (m_rebuilding) {
         return;
     }
-    QList<MidiMapping> list = m_mapper.mappings();
+    QList<MidiMapping> list = m_mapper.get_mappings();
     if (row >= list.size()) {
         return;
     }

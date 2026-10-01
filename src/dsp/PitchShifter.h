@@ -27,7 +27,7 @@ public:
                       m_corr_len + 8);
         for (size_t i = 0; i < K_TABLE; ++i) {
             const double s = std::sin(3.14159265358979323846 * static_cast<double>(i) / K_TABLE);
-            m_hann[i] = static_cast<float>(s * s); // sin²: tap A + tap B (½ period apart) = 1
+            m_hann_table[i] = static_cast<float>(s * s); // sin²: tap A + tap B (½ period apart) = 1
         }
         reset();
     }
@@ -75,7 +75,7 @@ private:
     static constexpr size_t K_TABLE = 1024;
 
     float hann(float p) const {
-        return m_hann[static_cast<size_t>(p * K_TABLE) & (K_TABLE - 1)];
+        return m_hann_table[static_cast<size_t>(p * K_TABLE) & (K_TABLE - 1)];
     }
 
     float delay_of(float p, float off) const {
@@ -133,7 +133,7 @@ private:
     }
 
     DelayLine m_line;
-    std::array<float, K_TABLE> m_hann{};
+    std::array<float, K_TABLE> m_hann_table{};
     float m_phase = 0.0f;
     float m_window = 2400.0f;
     float m_ratio = 1.0f;

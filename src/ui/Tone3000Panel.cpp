@@ -595,7 +595,7 @@ void Tone3000Panel::build_header() {
     m_user_btn->setFocusPolicy(Qt::NoFocus);
     auto* menu = new QMenu(m_user_btn);
     connect(menu->addAction("Open my TONE3000 profile"), &QAction::triggered, this, [this] {
-        const QString u = m_client.user().url;
+        const QString u = m_client.get_user().url;
         QDesktopServices::openUrl(QUrl(u.isEmpty() ? QString(Tone3000Client::K_SITE_URL) : u));
     });
     connect(menu->addAction("Change download folder…"), &QAction::triggered, this, [this] {
@@ -651,7 +651,7 @@ bool Tone3000Panel::eventFilter(QObject* obj, QEvent* ev) {
 }
 
 void Tone3000Panel::update_user_header() {
-    const T3kUser& u = m_client.user();
+    const T3kUser& u = m_client.get_user();
     const bool in = m_client.is_signed_in();
     m_user_btn->setVisible(in);
     if (!in) {
@@ -663,7 +663,7 @@ void Tone3000Panel::update_user_header() {
     if (!u.avatar_url.isEmpty()) {
         const QString url = u.avatar_url;
         m_client.fetch_image(url, QSize(64, 64), [this, url](QPixmap px) {
-            if (px.isNull() || m_client.user().avatar_url != url) {
+            if (px.isNull() || m_client.get_user().avatar_url != url) {
                 return;
             }
             m_user_btn->setIcon(QIcon(rounded_thumb(px, 18, true)));
@@ -967,10 +967,10 @@ void Tone3000Panel::build_detail_page() {
     });
     lay->addWidget(m_models_view);
 
-    m_download_all = new QPushButton("Download all");
-    m_download_all->setFocusPolicy(Qt::NoFocus);
-    connect(m_download_all, &QPushButton::clicked, this, &Tone3000Panel::download_all);
-    lay->addWidget(m_download_all, 0, Qt::AlignLeft);
+    m_download_all_button = new QPushButton("Download all");
+    m_download_all_button->setFocusPolicy(Qt::NoFocus);
+    connect(m_download_all_button, &QPushButton::clicked, this, &Tone3000Panel::download_all);
+    lay->addWidget(m_download_all_button, 0, Qt::AlignLeft);
 
     auto* license = new QLabel;
     license->setObjectName("t3kFinePrint");
@@ -1180,7 +1180,7 @@ void Tone3000Panel::open_detail(const T3kTone& tone) {
     m_detail_fav->setChecked(tone.is_favorite);
     m_detail_fav->setText(tone.is_favorite ? "★" : "☆");
     m_detail_status->setText("Loading models…");
-    m_download_all->setEnabled(false);
+    m_download_all_button->setEnabled(false);
 
     set_thumbnail(m_detail_image, tone.image_url(), QSize(600, 400), false);
     set_thumbnail(m_detail_creator_avatar, tone.user.avatar_url, QSize(20, 20), true);
@@ -1264,10 +1264,10 @@ void Tone3000Panel::load_detail_models() {
                 models.isEmpty() ? QStringLiteral("This tone has no downloadable models.")
                 : pending == 0   ? QStringLiteral("All models are in your library.")
                                  : QString("%1 models · click one to download").arg(models.size()));
-            m_download_all->setEnabled(pending > 0);
-            m_download_all->setText(pending > 0 && pending < models.size()
-                                        ? QString("Download the other %1").arg(pending)
-                                        : QStringLiteral("Download all"));
+            m_download_all_button->setEnabled(pending > 0);
+            m_download_all_button->setText(pending > 0 && pending < models.size()
+                                               ? QString("Download the other %1").arg(pending)
+                                               : QStringLiteral("Download all"));
         });
 }
 
@@ -1303,7 +1303,7 @@ void Tone3000Panel::start_download(int row) {
         if (ok) {
             m_index.rescan(); // a new folder isn't watched until scanned once
             const qsizetype pending = m_models_model->pending().size();
-            m_download_all->setEnabled(pending > 0);
+            m_download_all_button->setEnabled(pending > 0);
             m_detail_status->setText(pending == 0
                                          ? QStringLiteral("All models are in your library.")
                                          : QString("%1 left to download").arg(pending));
@@ -1321,5 +1321,5 @@ void Tone3000Panel::download_all() {
             start_download(i);
         }
     }
-    m_download_all->setEnabled(false);
+    m_download_all_button->setEnabled(false);
 }

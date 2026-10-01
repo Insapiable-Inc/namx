@@ -67,7 +67,7 @@ int main(int argc, char** argv) {
     }
 
     std::printf("defaults\n");
-    CHECK(mapper.mappings().size() == 8, "first run: 8 default mappings");
+    CHECK(mapper.get_mappings().size() == 8, "first run: 8 default mappings");
     mapper.handle(program(3, 2));
     CHECK(slot_fired[2] == 1, "program 2 (any channel) recalls slot 3");
 
@@ -90,7 +90,7 @@ int main(int argc, char** argv) {
 
     std::printf("range + relative\n");
     {
-        auto list = mapper.mappings();
+        auto list = mapper.get_mappings();
         list.last().min = 0.2;
         list.last().max = 0.6;
         mapper.set_mappings(list);
@@ -122,7 +122,7 @@ int main(int argc, char** argv) {
 
     std::printf("momentary + notes\n");
     {
-        auto list = mapper.mappings();
+        auto list = mapper.get_mappings();
         for (auto& m : list) {
             if (m.target == "param:delay/enabled") {
                 m.mode = MidiMapping::MOMENTARY;
@@ -139,7 +139,7 @@ int main(int argc, char** argv) {
 
     std::printf("disabled mapping + forget\n");
     {
-        auto list = mapper.mappings();
+        auto list = mapper.get_mappings();
         for (auto& m : list) {
             if (m.target == "action:slot1") {
                 m.enabled = false;
@@ -156,13 +156,13 @@ int main(int argc, char** argv) {
     {
         const QString path = tmp.path() + "/test.nammidi";
         CHECK(mapper.save_file(path), "save .nammidi");
-        const qsizetype n = mapper.mappings().size();
+        const qsizetype n = mapper.get_mappings().size();
         mapper.set_mappings(MidiMapper::default_mappings());
         QString err;
         CHECK(mapper.load_file(path, &err), "load .nammidi");
-        CHECK(mapper.mappings().size() == n, "same number of mappings after load");
+        CHECK(mapper.get_mappings().size() == n, "same number of mappings after load");
         MidiMapper second; // reads QSettings midi/mappings
-        CHECK(second.mappings().size() == n, "mappings persist in QSettings");
+        CHECK(second.get_mappings().size() == n, "mappings persist in QSettings");
     }
 
     std::printf("MIDI clock → tempo\n");

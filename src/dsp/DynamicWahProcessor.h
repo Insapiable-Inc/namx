@@ -27,13 +27,13 @@ public:
         m_position.store(pct);
     } // 0 heel … 100 toe
 
-    float sensitivity() const {
+    float get_sensitivity() const {
         return m_sensitivity.load();
     }
-    float resonance() const {
+    float get_resonance() const {
         return m_resonance.load();
     }
-    float mix() const {
+    float get_mix() const {
         return m_mix.load();
     }
 

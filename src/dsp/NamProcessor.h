@@ -29,12 +29,12 @@ public:
     bool is_model_loaded() const {
         return m_slot.current() != nullptr;
     }
-    std::string model_path() const {
+    std::string get_model_path() const {
         return m_model_path;
     }
 
     /// Human-readable reason the last loadModel() returned false (GUI thread only).
-    std::string last_error() const {
+    std::string get_last_error() const {
         return m_last_error;
     }
 
@@ -48,7 +48,7 @@ public:
     /// Must be called whenever the backend reports a (new) buffer size, before
     /// the next process callback. Re-Reset()s the live models if the size grew.
     void prepare_buffer(size_t max_buf);
-    size_t max_buf() const {
+    size_t get_max_buf() const {
         return m_max_buf.load();
     }
 

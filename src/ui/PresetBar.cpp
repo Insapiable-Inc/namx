@@ -197,7 +197,7 @@ void PresetBar::populate_preset_menu(QMenu* menu) {
     menu->clear();
 
     QList<const LibraryEntry*> presets;
-    for (const auto& e : m_index.entries()) {
+    for (const auto& e : m_index.get_entries()) {
         if (e.kind == LibraryEntry::Kind::PRESET) {
             presets << &e;
         }

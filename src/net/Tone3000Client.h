@@ -96,7 +96,7 @@ public:
     bool is_signed_in() const {
         return !m_access_token.isEmpty();
     }
-    const T3kUser& user() const {
+    const T3kUser& get_user() const {
         return m_user;
     }
 
@@ -193,7 +193,7 @@ private:
     void send(Request req);
     void on_reply_finished(QNetworkReply* reply, Request req);
     void ensure_fresh_token(std::function<void(bool)> then);
-    void refresh_token(std::function<void(bool)> then);
+    void refresh_access_token(std::function<void(bool)> then);
     void apply_token_response(const QJsonObject& o);
     void load_tokens();
     void save_tokens();

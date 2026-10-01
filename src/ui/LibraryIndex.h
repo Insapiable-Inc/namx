@@ -66,7 +66,7 @@ public:
     ~LibraryIndex() override;
 
     void set_roots(const LibraryRoots& roots); // persists + rescans
-    const LibraryRoots& roots() const {
+    const LibraryRoots& get_roots() const {
         return m_roots;
     }
 
@@ -75,7 +75,7 @@ public:
         return m_scanning;
     }
 
-    const QList<LibraryEntry>& entries() const {
+    const QList<LibraryEntry>& get_entries() const {
         return m_entries;
     }
     const LibraryEntry* find(const QString& path) const;

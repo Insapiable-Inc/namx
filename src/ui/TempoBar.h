@@ -93,7 +93,7 @@ class TempoBar : public QFrame
 public:
     explicit TempoBar(Metronome& metronome, QWidget* parent = nullptr);
 
-    double bpm() const;
+    double get_bpm() const;
     void set_bpm(double bpm); // MIDI clock follow
     void toggle_play();
     void tap_tempo() {
@@ -118,7 +118,7 @@ private:
 
     Metronome& m_metro;
     BpmField* m_bpm = nullptr;
-    QToolButton* m_tap = nullptr;
+    QToolButton* m_tap_button = nullptr;
     QToolButton* m_play = nullptr;
     BeatLeds* m_leds = nullptr;
     QToolButton* m_meter_btn = nullptr;

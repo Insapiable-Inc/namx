@@ -28,12 +28,12 @@ public:
     void set_mute(bool m) {
         m_mute.store(m);
     }
-    bool mute() const {
+    bool get_mute() const {
         return m_mute.load();
     }
 
     /// Latest pitch computed by the worker thread, in Hz (0.0 = no pitch).
-    float last_pitch() const {
+    float get_last_pitch() const {
         return m_last_pitch.load();
     }
 
