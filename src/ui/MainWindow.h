@@ -32,6 +32,10 @@ class GainReductionMeter;
 class LibraryDock;
 class LibraryPanel;
 class PresetBar;
+class MidiInput;
+class MidiMapper;
+class QMenu;
+class QShortcut;
 class TempoBar;
 class Tone3000Client;
 class Tone3000Panel;
@@ -188,6 +192,16 @@ private:
     void restorePresetState();
     static void seedStarterPresets();
 
+    // --- MIDI (Phase 16) ----------------------------------------------------
+    // Every registry knob/toggle is a target (registered by knobParam /
+    // toggleParam), plus the actions added here.
+    void setupMidi(QMenu* midiMenu);
+    QString targetLabelFor(QWidget* w, const QString& group, const QString& key) const;
+    void addLearnEntries(const QString& targetId, QMenu* menu);
+    void startLearn(const QString& targetId);
+    void onLearnChanged();
+    QWidget* widgetForTarget(const QString& targetId) const;
+
     // Session persistence: same table, QSettings instead of a preset file.
     void saveSessionState();
     void restoreSessionState();
@@ -325,4 +339,14 @@ private:
     QJsonObject mAb[2];             // A/B snapshots; empty = not taken yet
     int         mAbActive = 0;
     QTimer*     mPresetStateTimer = nullptr;
+
+    std::unique_ptr<MidiInput> mMidi;
+    MidiMapper* mMidiMapper   = nullptr;
+    bool        mMidiOk       = false;
+    QShortcut*  mLearnEsc     = nullptr;
+    QWidget*    mLearnWidget  = nullptr; // highlighted while learning
+    QString     mLearnTarget;
+    QLabel*     mLblMidi      = nullptr; // status bar activity light
+    QMenu*      mMidiMenu     = nullptr;
+    QTimer*     mMidiBlink    = nullptr;
 };

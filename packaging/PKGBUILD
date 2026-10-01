@@ -8,7 +8,7 @@ pkgdesc="Standalone Neural Amp Modeler player: models, IRs, effects chain, libra
 arch=('x86_64')
 url="https://github.com/silvercobraa/NeuralAmpModelerGUI"
 license=('MIT')
-depends=('qt6-base' 'jack')          # jack = jack2 or pipewire-jack (both provide it)
+depends=('qt6-base' 'jack' 'alsa-lib') # jack = jack2 or pipewire-jack; alsa-lib = MIDI input
 optdepends=('pipewire-jack: run without a JACK daemon'
             'qpwgraph: patch the JACK ports graphically')
 makedepends=('cmake' 'ninja' 'git')

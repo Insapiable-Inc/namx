@@ -34,7 +34,7 @@ sudo apt update
 sudo apt install \
     git cmake ninja-build \
     qt6-base-dev \
-    libjack-jackd2-dev jackd2 qjackctl
+    libjack-jackd2-dev libasound2-dev jackd2 qjackctl
 ```
 
 > **PipeWire users:** PipeWire ships a JACK compatibility layer.
@@ -49,13 +49,13 @@ sudo apt install \
 ### Arch / Manjaro
 
 ```bash
-sudo pacman -S git cmake ninja qt6-base jack2 qjackctl
+sudo pacman -S git cmake ninja qt6-base jack2 alsa-lib qjackctl
 ```
 
 ### Fedora / RHEL
 
 ```bash
-sudo dnf install git cmake ninja-build qt6-qtbase-devel jack-audio-connection-kit-devel qjackctl
+sudo dnf install git cmake ninja-build qt6-qtbase-devel jack-audio-connection-kit-devel alsa-lib-devel qjackctl
 ```
 
 ### Windows (MSVC)
@@ -329,8 +329,8 @@ the TONE3000 ids when they came from there).
 | **⋯** (same as the **Preset** menu) | Open…, Import… (copies files into the presets folder), Export… (writes a copy elsewhere), Show in Folder, Delete… (to the trash), Reset All to Defaults… |
 
 **Not part of a preset:** audio devices and port connections, the tuner (on/off,
-reference pitch), the tempo and the metronome, the library and TONE3000 state, window
-layout, and the quick-slot assignments. These
+reference pitch), the tempo and the metronome, MIDI mappings and devices, the library and TONE3000 state,
+window layout, and the quick-slot assignments. These
 belong to the machine or the session, so loading a preset never changes them.
 
 **Starter presets.** On first run eight starter presets are copied to
@@ -361,6 +361,30 @@ triplets) instead of ms / Hz, and follows the tempo. Delay times are capped at 1
 
 The tempo and every metronome setting belong to the session, not to presets: a preset
 stores *note values*, so it fits whatever tempo you're playing at.
+
+### MIDI
+
+Any class-compliant MIDI device works: USB controllers, DIN through an interface, and
+anything PipeWire/JACK expose on the ALSA sequencer (Linux) or WinMM (Windows). Devices
+connect automatically, including ones plugged in later. The status bar's **MIDI** light
+blinks on every incoming message.
+
+| How | What |
+|-----|------|
+| Right-click a knob or switch → **MIDI Learn** | The control glows. Move a knob, press a footswitch or send a program change on your device to bind it. `Esc` cancels. **Forget MIDI** removes the binding |
+| Right-click a slot, ‹ ›, A/B, ▶ (metronome) or Tap → **MIDI Learn** | The same for those actions |
+| **MIDI → Mappings…** | Every mapping in a table: on/off, source (CC / note / program), channel (or any), number, target, mode, range, per-row **Learn**, delete. **Save… / Load…** store whole setups as `.nammidi` files (one per controller, say). **Defaults** resets to program 0–7 → slots 1–8 |
+| **MIDI → Devices** | Enable or disable each input device |
+| **MIDI → Follow MIDI Clock** | Incoming clock sets the tempo (averaged over four beats) |
+
+Modes: **Absolute** (the CC sets the value; *Min/Max %* limit the sweep, e.g. an
+expression pedal over part of a knob), **Relative** (endless encoders: 1–63 up,
+65–127 down), **Toggle** (each press flips a switch or fires an action; the default for
+footswitches), **Momentary** (on while held). Learn picks Absolute for a knob moved by a
+CC and Toggle for everything else.
+
+Out of the box, program changes 0–7 recall quick slots 1–8. The mappings are
+machine settings (QSettings `midi/*`), not part of presets.
 
 ### Library
 

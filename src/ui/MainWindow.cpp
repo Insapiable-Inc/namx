@@ -5,6 +5,9 @@
 #include "GainReductionMeter.h"
 #include "LibraryDock.h"
 #include "LibraryPanel.h"
+#include "MidiInput.h"
+#include "MidiMapper.h"
+#include "MidiMappingsDialog.h"
 #include "PresetBar.h"
 #include "PresetSerializer.h"
 #include "TempoBar.h"
@@ -29,6 +32,7 @@
 #include <QFileInfo>
 #include <QFont>
 #include <QFrame>
+#include <QGraphicsDropShadowEffect>
 #include <QGraphicsOpacityEffect>
 #include <QHBoxLayout>
 #include <QJsonDocument>
@@ -42,6 +46,7 @@
 #include <QMouseEvent>
 #include <QPushButton>
 #include <QScrollArea>
+#include <QShortcut>
 #include <QSettings>
 #include <QSpinBox>
 #include <QStandardPaths>
@@ -150,9 +155,11 @@ MainWindow::MainWindow(QWidget* parent)
     // created in setupUI picks the entries up when they land.
     mLibraryIndex = new LibraryIndex(this);
     mTone3000     = new Tone3000Client(this);
+    mMidiMapper   = new MidiMapper(this); // targets fill in as parameters register
 
     setupUI();
     registerParameters();
+    setupMidi(mMidiMenu);
 
     // Debounced session save — every registry widget change restarts it, so
     // the session survives a crash without a write per knob tick. Created
@@ -278,6 +285,7 @@ void MainWindow::setupUI()
     // ---- Menu bar ----
     QMenu* libraryMenu = nullptr;
     QMenu* presetMenu  = nullptr;
+    QMenu* midiMenu    = nullptr;
     {
         auto* mb         = menuBar();
         presetMenu = mb->addMenu("Preset"); // also behind ⋯ on the preset bar
@@ -300,6 +308,7 @@ void MainWindow::setupUI()
         connect(presetMenu->addAction("Reset All to Defaults…"), &QAction::triggered, this, &MainWindow::onResetAll);
 
         libraryMenu = mb->addMenu("Library"); // filled once the dock exists (below)
+        midiMenu    = mb->addMenu("MIDI");    // filled by setupMidi
 
         auto* helpMenu = mb->addMenu("Help");
         connect(helpMenu->addAction("About NAM Player"), &QAction::triggered, this, [this] {
@@ -696,6 +705,7 @@ void MainWindow::setupUI()
     mStrip->installEventFilter(this);
 
     rebuildEffectStrip();
+    mMidiMenu = midiMenu;
 
     scroll->setWidget(mStrip);
 
@@ -1062,6 +1072,17 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* ev)
             }
 
             QAction* act = menu.addAction("Reset " + name + " to defaults");
+
+            // A right-click on a switch: MIDI Learn for that switch.
+            for (QWidget* w = card->childAt(card->mapFromGlobal(ce->globalPos())); w && w != card;
+                 w = w->parentWidget())
+                if (const MidiTarget* t = mMidiMapper->targetFor(w); t && t->toggle)
+                {
+                    menu.addSeparator();
+                    addLearnEntries(t->id, &menu);
+                    break;
+                }
+
             if (menu.exec(ce->globalPos()) == act)
                 resetCardToDefaults(card);
             return true;
@@ -1321,6 +1342,9 @@ void MainWindow::knobParam(const QString& group, const QString& key,
     connect(knob, &KnobWidget::valueChanged, this,
             [this, apply](double v) { apply(v); scheduleSessionSave(); });
     mParams.push_back({group, key, knob, nullptr, knob->defaultValue(), false});
+    const QString card = targetLabelFor(knob, group, key);
+    mMidiMapper->addKnob("param:" + (group.isEmpty() ? key : group + "/" + key), card,
+                         key == "syncNote" ? knob->label() + " (note)" : knob->label(), knob);
 }
 
 void MainWindow::toggleParam(const QString& group, const QString& key,
@@ -1329,6 +1353,175 @@ void MainWindow::toggleParam(const QString& group, const QString& key,
     connect(sw, &ToggleSwitch::toggled, this,
             [this, apply](bool b) { apply(b); scheduleSessionSave(); });
     mParams.push_back({group, key, nullptr, sw, 0.0, sw->isChecked()});
+    const QString label = key == "stereo" ? "Stereo" : key == "sync" ? "Sync" : "On / Off";
+    mMidiMapper->addToggle("param:" + (group.isEmpty() ? key : group + "/" + key),
+                           targetLabelFor(sw, group, key), label, sw);
+}
+
+// ---------------------------------------------------------------------------
+// MIDI
+// ---------------------------------------------------------------------------
+
+QString MainWindow::targetLabelFor(QWidget* w, const QString& group, const QString& key) const
+{
+    // The card's display name ("Delay", "Input") groups the target.
+    for (QWidget* p = w; p; p = p->parentWidget())
+        if (p->property("displayName").isValid())
+            return p->property("displayName").toString();
+    return group.isEmpty() ? key : group;
+}
+
+void MainWindow::setupMidi(QMenu* midiMenu)
+{
+    // ---- Actions ----
+    for (int i = 0; i < PresetBar::kSlotCount; ++i)
+        mMidiMapper->addAction(QString("action:slot%1").arg(i + 1), "Presets", QString("Slot %1").arg(i + 1),
+                               [this, i] { mPresetBar->recallSlot(i); });
+    mMidiMapper->addAction("action:presetNext", "Presets", "Next preset", [this] { stepPreset(+1); });
+    mMidiMapper->addAction("action:presetPrev", "Presets", "Previous preset", [this] { stepPreset(-1); });
+    mMidiMapper->addAction("action:abToggle", "Presets", "Switch A / B", [this] { switchAb(1 - mAbActive); });
+    mMidiMapper->addAction("action:metronome", "Metronome", "Start / stop", [this] { mTempoBar->togglePlay(); });
+    mMidiMapper->addAction("action:tap", "Tempo", "Tap", [this] { mTempoBar->tapTempo(); });
+
+    // ---- Learn entries in every context menu ----
+    KnobWidget::setMenuHook([this](KnobWidget* k, QMenu* menu) {
+        if (const MidiTarget* t = mMidiMapper->targetFor(k))
+        {
+            menu->addSeparator();
+            addLearnEntries(t->id, menu);
+        }
+    });
+    auto hook = [this](const QString& id, QMenu* menu) { addLearnEntries(id, menu); };
+    mPresetBar->setLearnMenuHook(hook);
+    mTempoBar->setLearnMenuHook(hook);
+
+    mLearnEsc = new QShortcut(QKeySequence(Qt::Key_Escape), this);
+    mLearnEsc->setEnabled(false);
+    connect(mLearnEsc, &QShortcut::activated, mMidiMapper, &MidiMapper::cancelLearn);
+    connect(mMidiMapper, &MidiMapper::learnChanged, this, &MainWindow::onLearnChanged);
+
+    // ---- Input ----
+    mMidi = MidiInput::create(this);
+    connect(mMidi.get(), &MidiInput::messageReceived, mMidiMapper, &MidiMapper::handle);
+    mMidiOk = mMidi->start();
+    connect(mMidiMapper, &MidiMapper::tempoFromClock, mTempoBar, &TempoBar::setBpm);
+
+    // Status bar: a light that blinks on incoming MIDI.
+    mLblMidi = new QLabel;
+    mLblMidi->setObjectName("statusItem");
+    mLblMidi->setTextFormat(Qt::RichText);
+    statusBar()->addWidget(mLblMidi);
+    mMidiBlink = new QTimer(this);
+    mMidiBlink->setSingleShot(true);
+    mMidiBlink->setInterval(120);
+    auto showLight = [this](bool lit) {
+        const QColor c = !mMidiOk ? Theme::track() : lit ? Theme::meterMid() : Theme::meterLow();
+        mLblMidi->setText(QString("<span style=\"color:%1\">●</span> MIDI").arg(c.name()));
+    };
+    connect(mMidiBlink, &QTimer::timeout, this, [showLight] { showLight(false); });
+    connect(mMidiMapper, &MidiMapper::activity, this, [this, showLight](const QString& what) {
+        showLight(true);
+        mMidiBlink->start();
+        mLblMidi->setToolTip("Last MIDI message: " + what);
+    });
+    showLight(false);
+    mLblMidi->setToolTip(mMidiOk ? QString("MIDI input (%1) — MIDI → Mappings…").arg(mMidi->backendName())
+                                 : QString("MIDI is not available on this system"));
+
+    // ---- Menu ----
+    connect(midiMenu->addAction("Mappings…"), &QAction::triggered, this, [this] {
+        MidiMappingsDialog dlg(*mMidiMapper, mMidiOk ? mMidi.get() : nullptr, this);
+        dlg.exec();
+    });
+    QMenu* devices = midiMenu->addMenu("Devices");
+    connect(devices, &QMenu::aboutToShow, this, [this, devices] {
+        devices->clear();
+        const QStringList list = mMidiOk ? mMidi->devices() : QStringList();
+        if (list.isEmpty())
+            devices->addAction(mMidiOk ? "No MIDI devices found" : "MIDI not available")->setEnabled(false);
+        for (const QString& d : list)
+        {
+            QAction* a = devices->addAction(d);
+            a->setCheckable(true);
+            a->setChecked(mMidi->isEnabled(d));
+            connect(a, &QAction::toggled, this, [this, d](bool on) { mMidi->setEnabled(d, on); });
+        }
+    });
+    QAction* clock = midiMenu->addAction("Follow MIDI Clock");
+    clock->setCheckable(true);
+    connect(midiMenu, &QMenu::aboutToShow, clock, [this, clock] { clock->setChecked(mMidiMapper->followClock()); });
+    connect(clock, &QAction::toggled, mMidiMapper, &MidiMapper::setFollowClock);
+}
+
+void MainWindow::addLearnEntries(const QString& targetId, QMenu* menu)
+{
+    const MidiTarget* t = mMidiMapper->target(targetId);
+    if (!t) return;
+    connect(menu->addAction("MIDI Learn"), &QAction::triggered, this,
+            [this, targetId] { startLearn(targetId); });
+    if (mMidiMapper->hasMapping(targetId))
+        connect(menu->addAction("Forget MIDI (" + mMidiMapper->mappingSummary(targetId) + ")"),
+                &QAction::triggered, this, [this, targetId] { mMidiMapper->forget(targetId); });
+}
+
+QWidget* MainWindow::widgetForTarget(const QString& targetId) const
+{
+    if (const MidiTarget* t = mMidiMapper->target(targetId))
+    {
+        if (t->knob)   return t->knob;
+        if (t->toggle) return t->toggle;
+    }
+    if (QWidget* w = mPresetBar->actionWidget(targetId)) return w;
+    return mTempoBar->actionWidget(targetId);
+}
+
+void MainWindow::startLearn(const QString& targetId)
+{
+    if (!mMidiOk)
+    {
+        QMessageBox::information(this, "MIDI Learn", "MIDI input is not available on this system.");
+        return;
+    }
+    mMidiMapper->learn(targetId);
+}
+
+void MainWindow::onLearnChanged()
+{
+    // Drop the previous highlight.
+    if (mLearnWidget)
+    {
+        mLearnWidget->setGraphicsEffect(nullptr);
+        mLearnWidget = nullptr;
+    }
+    const QString target = mMidiMapper->learning();
+    mLearnEsc->setEnabled(!target.isEmpty());
+    if (target.isEmpty())
+    {
+        if (!mLearnTarget.isEmpty())
+        {
+            const MidiTarget* t = mMidiMapper->target(mLearnTarget);
+            const QString summary = mMidiMapper->mappingSummary(mLearnTarget);
+            statusBar()->showMessage(summary.isEmpty() || !t
+                                         ? QString("MIDI Learn cancelled")
+                                         : QString("MIDI: %1 → %2 · %3").arg(summary, t->group, t->label),
+                                     4000);
+        }
+        mLearnTarget.clear();
+        return;
+    }
+    mLearnTarget = target;
+    const MidiTarget* t = mMidiMapper->target(target);
+    statusBar()->showMessage(QString("MIDI Learn: move a control on your MIDI device for %1 · %2 — Esc cancels")
+                                 .arg(t ? t->group : QString(), t ? t->label : target));
+    if (QWidget* w = widgetForTarget(target))
+    {
+        auto* glow = new QGraphicsDropShadowEffect(w);
+        glow->setColor(Theme::meterMid());
+        glow->setBlurRadius(22);
+        glow->setOffset(0, 0);
+        w->setGraphicsEffect(glow);
+        mLearnWidget = w;
+    }
 }
 
 // ---------------------------------------------------------------------------

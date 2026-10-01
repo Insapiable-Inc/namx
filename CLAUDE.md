@@ -22,6 +22,7 @@ nam-linux-gui/
         ├── main.cpp       # QApplication setup (org/app name → QSettings path), Theme::apply
         ├── ui/            # Qt widgets
         ├── net/           # Tone3000Client (Qt Network; no widgets)
+        ├── midi/          # MidiInput (ALSA / WinMM), MidiMapper (no widgets beyond the target pointers)
         └── dsp/           # AudioEngine, backends, effect processors (no Qt dependencies)
     ├── resources/         # resources.qrc, app icon (icons/), starter presets (presets/), TONE3000 brand assets (see its README)
     ├── packaging/         # desktop file, AppStream, mime, PKGBUILD, Windows .rc (no AppImage/Flatpak — decision 2026-09-17)
@@ -51,8 +52,8 @@ cmake -S gui -B gui/build-release -DCMAKE_BUILD_TYPE=Release
 cmake --build gui/build-release --parallel $(nproc)
 ```
 
-**Required packages (Arch):** `qt6-base jack2 cmake ninja`
-**Required packages (Ubuntu 22.04+):** `qt6-base-dev libjack-jackd2-dev cmake ninja-build`
+**Required packages (Arch):** `qt6-base jack2 alsa-lib cmake ninja`
+**Required packages (Ubuntu 22.04+):** `qt6-base-dev libjack-jackd2-dev libasound2-dev cmake ninja-build`
 
 Release builds default to `-march=native` via the `NAM_NATIVE_OPT` CMake option (ON). **CI/release builds must configure with `-DNAM_NATIVE_OPT=OFF`** → portable `-mavx2 -mfma`.
 
@@ -144,6 +145,9 @@ All effects inherit `EffectBase` (`src/dsp/EffectBase.h` — the header comment 
 | `TempoBar` | `src/ui/TempoBar.h/cpp` | Tempo + metronome strip: `BpmField`, Tap, play (Space), `BeatLeds` accent editor, meter/subdivision/sound/count-in menus, level/pan; emits `bpmChanged`; `poll()` from the meter timer |
 | `TempoSync.h` | `src/ui/` | Note-value table (index order is a preset contract — append only) + ms/Hz conversions; `MainWindow::addTempoSync`/`pushSynced` wire the Sync switches |
 | `Metronome` | `src/dsp/Metronome.h/cpp` | RT click generator mixed after the output gain (not an effect, not metered); samples synthesized in `setSampleRate`; settings are atomics |
+| `MidiInput` | `src/midi/MidiInput.h/cpp` + `AlsaMidiInput.cpp` (Linux) / `WinMidiInput.cpp` (Windows) | Platform MIDI input; backend thread → queued `messageReceived(MidiMessage)`; devices by name, hot-plug, enable set in `midi/disabledDevices` |
+| `MidiMapper` | `src/midi/MidiMapper.h/cpp` | Mappings (CC/note/program × absolute/relative/toggle/momentary, range) → registry knobs/toggles (registered automatically by `knobParam`/`toggleParam`) and actions; Learn; `.nammidi` files; clock → tempo. Tested by `tests/MidiMapperTest` |
+| `MidiMappingsDialog` | `src/ui/MidiMappingsDialog.h/cpp` | MIDI → Mappings… window (devices, table, per-row learn, load/save/defaults) |
 | `VUMeter` | `src/ui/VUMeter.h/cpp` | Vertical peak bar; `setPeak(linear)` on a 66 dB scale, time-based ballistics, repaints only on movement (fed at ~60 fps, paused while minimized) |
 | `GainReductionMeter` | `src/ui/GainReductionMeter.h/cpp` | Compressor/Gate reduction readout in the rows' stereo slot; fed from `takeGainReductionDb()` |
 | `Log.h` | `src/dsp/` | `nam.audio` logging category — use `qCWarning(lcAudio, …)`, never `std::cerr` (invisible on Windows) |

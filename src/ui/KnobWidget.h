@@ -8,6 +8,7 @@
 
 class QContextMenuEvent;
 class QLabel;
+class QMenu;
 class VerticalDial;
 
 /// Knob widget wrapping a VerticalDial (responds to vertical mouse drag).
@@ -30,6 +31,13 @@ public:
 
     double value() const;
     double defaultValue() const { return mDefault; }
+    double minimum() const { return mMin; }
+    double maximum() const { return mMax; }
+    QString label() const { return mLabel; }
+
+    /// Extra entries for every knob's context menu (MIDI Learn). Set once by
+    /// the owner of the parameter registry.
+    static void setMenuHook(std::function<void(KnobWidget*, QMenu*)> hook);
 
     /// Explicit accent color for the value arc, indicator tick, and value
     /// label (the knob body stays neutral). Pushed by Theme::tagCard — the
@@ -71,6 +79,7 @@ private:
     QColor mAccent;
     double mMin, mMax, mDefault;
     QString mUnit;
+    QString mLabel;
     bool    mIntDisplay{false};
     double  mScrollStep{0.0};
     double  mSnap{0.0};

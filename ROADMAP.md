@@ -691,26 +691,41 @@ click eighths at 2 × BPM.
 - [ ] Delay Sync at 1/8. and 120 BPM ≈ 375 ms; changing the tempo moves the echoes;
       a preset saved with sync reloads synced; tremolo sync at 1/8 pulses in time.
 
-## Phase 16 — MIDI
+## Phase 16 — MIDI ✅ (completed 2026-10-01, code; manual verification below)
 
 Petrucci parity: CC / PC / NOTE, MIDI Learn from a right-click, a Mappings window,
 absolute vs relative CC, mapping presets saved/loaded, device enable checkboxes.
 The parameter registry (Phase 2) was built for this: every `ParamDesc` is mappable.
 
-- [ ] **Backends:** Linux — ALSA sequencer (covers USB, DIN via interfaces, and
-      PipeWire/JACK bridges); Windows — WinMM (or WinRT MIDI). Device list with
-      enable checkboxes in Settings. Hot-plug.
-- [ ] **MIDI Learn** on every knob/toggle (context menu → "Learn", widget highlighted
-      while armed), plus quick slots / prev-next preset / tuner / metronome play-stop
-      as learnable actions.
-- [ ] **Mappings window:** bypass, type (CC/PC/NOTE), target, channel, number, value /
-      absolute-relative, delete; **save/load mapping presets**; default mapping.
-- [ ] **Delivery:** MIDI thread → lock-free queue → applied on the GUI thread through
-      the registry (widgets and engine can't drift; keyboard shortcuts already go this
-      way) — latency is one event-loop hop, fine for stomps and pedals.
-- [ ] **Expression pedal** targets: wah position (Phase 17 manual wah), volume pedal,
-      any knob.
-- [ ] MIDI clock → global tempo (Phase 15) as a follow-up.
+- [x] **Backends** (`src/midi/`): Linux — ALSA sequencer client "NAM Player" with one
+      input port, every readable port auto-subscribed unless disabled, hot-plug via the
+      system announce port; Windows — WinMM, device list polled every 2 s (compiled but
+      not yet built on Windows). Device enable checkboxes in MIDI → Devices and the
+      Mappings window (QSettings `midi/disabledDevices`). New Linux dependency: alsa-lib.
+- [x] **MIDI Learn** on every registry knob/toggle (knob context menu hook, card menu
+      for switches) and on actions: slots 1–8, next/previous preset, A/B, metronome
+      start/stop, tap. The target glows while armed; Esc cancels; "Forget MIDI" unbinds.
+- [x] **Mappings window** (`MidiMappingsDialog`): on, source CC/PC/NOTE, channel (any or
+      1–16), number, target, mode (absolute / relative / toggle / momentary), min/max
+      range, per-row Learn, delete; **Save/Load `.nammidi`**; **Defaults** = program
+      0–7 → slots 1–8 (also the first-run mapping).
+- [x] **Delivery:** backend thread → queued Qt signal → `MidiMapper::handle` on the GUI
+      thread → widgets (registry wiring updates engine, session, preset `*`).
+      `tests/MidiMapperTest` covers learn, modes, edges, channels, files, clock.
+- [x] **Expression pedal** targets: any knob, with min/max range (wah position and the
+      volume pedal arrive with Phase 17).
+- [x] MIDI clock → global tempo (MIDI → Follow MIDI Clock; 4-beat average).
+
+### Phase 16 — manual verification pending
+
+- [ ] With the Scarlett's DIN MIDI or a USB controller: Learn a knob from a CC, a
+      switch from a footswitch (toggle per press), a slot from a program change.
+- [ ] Unplug/replug a USB controller: it reconnects by itself; disabling it in
+      MIDI → Devices stops its messages.
+- [ ] Relative encoder mode; min/max range on an expression pedal.
+- [ ] Save a `.nammidi`, Defaults, Load it back.
+- [ ] Follow MIDI Clock from a DAW or drum machine; tempo settles within a few beats.
+- [ ] Windows build: WinMM backend compiles and receives.
 
 ## Phase 17 — DSP parity with Petrucci X (the "at least everything it does" gap)
 

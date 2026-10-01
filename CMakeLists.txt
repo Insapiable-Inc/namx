@@ -26,6 +26,8 @@ set(NAM_TONE3000_CLIENT_ID "" CACHE STRING "TONE3000 publishable key baked into 
 if(NOT WIN32)
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(JACK REQUIRED jack)
+    # MIDI input: the ALSA sequencer (Phase 16).
+    pkg_check_modules(ALSA REQUIRED alsa)
 endif()
 
 # NAM core sources
@@ -76,6 +78,13 @@ set(GUI_SOURCES
     src/ui/TempoBar.cpp
     src/ui/TempoBar.h
     src/ui/TempoSync.h
+    src/ui/MidiMappingsDialog.cpp
+    src/ui/MidiMappingsDialog.h
+    src/midi/MidiMessage.h
+    src/midi/MidiInput.cpp
+    src/midi/MidiInput.h
+    src/midi/MidiMapper.cpp
+    src/midi/MidiMapper.h
     src/ui/VUMeter.cpp
     src/ui/VUMeter.h
     src/ui/GainReductionMeter.cpp
@@ -129,11 +138,13 @@ if(WIN32)
         src/dsp/WasapiBackend.cpp
         src/dsp/WasapiBackend.h
         packaging/NAMPlayer.rc   # exe icon + version block
+        src/midi/WinMidiInput.cpp
     )
 else()
     list(APPEND GUI_SOURCES
         src/dsp/JackBackend.cpp
         src/dsp/JackBackend.h
+        src/midi/AlsaMidiInput.cpp
     )
 endif()
 
@@ -154,10 +165,11 @@ target_include_directories(NAMPlayer PRIVATE
     src/dsp
     src/ui
     src/net
+    src/midi
 )
 
 if(NOT WIN32)
-    target_include_directories(NAMPlayer PRIVATE ${JACK_INCLUDE_DIRS})
+    target_include_directories(NAMPlayer PRIVATE ${JACK_INCLUDE_DIRS} ${ALSA_INCLUDE_DIRS})
 endif()
 
 target_compile_definitions(NAMPlayer PRIVATE
@@ -175,10 +187,10 @@ target_link_libraries(NAMPlayer PRIVATE
 
 if(WIN32)
     # WASAPI lives in these system DLLs.
-    target_link_libraries(NAMPlayer PRIVATE ole32 mmdevapi avrt)
+    target_link_libraries(NAMPlayer PRIVATE ole32 mmdevapi avrt winmm)
     target_compile_definitions(NAMPlayer PRIVATE NOMINMAX WIN32_LEAN_AND_MEAN)
 else()
-    target_link_libraries(NAMPlayer PRIVATE ${JACK_LIBRARIES})
+    target_link_libraries(NAMPlayer PRIVATE ${JACK_LIBRARIES} ${ALSA_LIBRARIES})
 endif()
 
 # ---------------------------------------------------------------------------
@@ -265,6 +277,20 @@ if(NAM_BUILD_TESTS)
         MOCK_SERVER_PY="${CMAKE_CURRENT_SOURCE_DIR}/tests/mock_tone3000.py")
     target_link_libraries(Tone3000ClientTest PRIVATE Qt6::Core Qt6::Gui Qt6::Network)
     add_test(NAME Tone3000ClientTest COMMAND Tone3000ClientTest)
+
+    add_executable(MidiMapperTest
+        tests/MidiMapperTest.cpp
+        src/midi/MidiMapper.cpp
+        src/midi/MidiMapper.h
+        src/ui/KnobWidget.cpp
+        src/ui/KnobWidget.h
+        src/ui/ToggleSwitch.cpp
+        src/ui/ToggleSwitch.h
+        src/ui/Theme.cpp
+    )
+    target_include_directories(MidiMapperTest PRIVATE src/midi src/ui src/dsp)
+    target_link_libraries(MidiMapperTest PRIVATE Qt6::Core Qt6::Gui Qt6::Widgets)
+    add_test(NAME MidiMapperTest COMMAND MidiMapperTest)
 endif()
 
 # ---------------------------------------------------------------------------

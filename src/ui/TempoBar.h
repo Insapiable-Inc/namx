@@ -5,6 +5,7 @@
 #include <QVector>
 
 #include <cstdint>
+#include <functional>
 
 class KnobWidget;
 class Metronome;
@@ -89,8 +90,14 @@ public:
     explicit TempoBar(Metronome& metronome, QWidget* parent = nullptr);
 
     double bpm() const;
+    void   setBpm(double bpm); // MIDI clock follow
+    void   togglePlay();
+    void   tapTempo() { tap(); }
     /// Beat LEDs follow the audio thread — call at display rate.
     void poll();
+
+    QWidget* actionWidget(const QString& id) const;
+    void setLearnMenuHook(std::function<void(const QString& actionId, QMenu* menu)> hook) { mLearnHook = std::move(hook); }
 
 signals:
     void bpmChanged(double bpm);
@@ -114,4 +121,6 @@ private:
     KnobWidget*    mPan = nullptr;
     QElapsedTimer  mTapClock;
     QVector<qint64> mTaps; // ms timestamps of the recent taps
+    std::function<void(const QString&, QMenu*)> mLearnHook;
+    void learnMenuFor(QWidget* w, const QString& actionId);
 };

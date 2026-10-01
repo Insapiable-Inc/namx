@@ -1,8 +1,11 @@
 #pragma once
 
 #include <QFrame>
+#include <QHash>
 #include <QString>
 #include <QStringList>
+
+#include <functional>
 
 class LibraryIndex;
 class QLabel;
@@ -31,6 +34,14 @@ public:
     /// Active A/B side (0 = A, 1 = B).
     void setAbState(int active);
 
+    /// Load slot i's preset if it has one (MIDI; never stores).
+    void recallSlot(int i);
+    /// Widget for an action id ("action:slot3", "action:presetNext", …), for
+    /// the MIDI Learn highlight.
+    QWidget* actionWidget(const QString& id) const { return mActionWidgets.value(id); }
+    /// Adds MIDI Learn entries to the context menus of the bar's buttons.
+    void setLearnMenuHook(std::function<void(const QString& actionId, QMenu* menu)> hook) { mLearnHook = std::move(hook); }
+
 signals:
     void presetChosen(const QString& path); // name menu or a quick slot
     void stepRequested(int step);           // ‹ ›
@@ -54,4 +65,7 @@ private:
     QToolButton* mAb[2]{};
     QToolButton* mAbCopy = nullptr;
     int          mAbActive = 0;
+    QHash<QString, QWidget*> mActionWidgets;
+    std::function<void(const QString&, QMenu*)> mLearnHook;
+    void learnMenuFor(QWidget* w, const QString& actionId);
 };

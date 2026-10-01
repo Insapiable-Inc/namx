@@ -256,6 +256,7 @@ TempoBar::TempoBar(Metronome& metronome, QWidget* parent)
     mTap->setToolTip("Tap the tempo: four taps or more average out");
     mTap->setFocusPolicy(Qt::NoFocus);
     connect(mTap, &QToolButton::pressed, this, &TempoBar::tap); // on press: tighter timing
+    learnMenuFor(mTap, "action:tap");
     lay->addWidget(mTap);
     lay->addSpacing(18);
 
@@ -277,6 +278,7 @@ TempoBar::TempoBar(Metronome& metronome, QWidget* parent)
     auto* space = new QShortcut(QKeySequence(Qt::Key_Space), this);
     space->setContext(Qt::WindowShortcut);
     connect(space, &QShortcut::activated, mPlay, &QToolButton::toggle);
+    learnMenuFor(mPlay, "action:metronome");
     lay->addWidget(mPlay);
 
     mLeds = new BeatLeds(this);
@@ -401,6 +403,28 @@ TempoBar::TempoBar(Metronome& metronome, QWidget* parent)
 }
 
 double TempoBar::bpm() const { return mBpm->value(); }
+
+void TempoBar::setBpm(double bpm) { mBpm->setValue(bpm); }
+
+void TempoBar::togglePlay() { mPlay->toggle(); }
+
+QWidget* TempoBar::actionWidget(const QString& id) const
+{
+    if (id == "action:metronome") return mPlay;
+    if (id == "action:tap")       return mTap;
+    return nullptr;
+}
+
+void TempoBar::learnMenuFor(QWidget* w, const QString& actionId)
+{
+    w->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(w, &QWidget::customContextMenuRequested, this, [this, w, actionId](const QPoint& p) {
+        if (!mLearnHook) return;
+        QMenu menu(this);
+        mLearnHook(actionId, &menu);
+        if (!menu.isEmpty()) menu.exec(w->mapToGlobal(p));
+    });
+}
 
 void TempoBar::poll()
 {

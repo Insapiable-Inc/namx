@@ -163,6 +163,7 @@ KnobWidget::KnobWidget(const QString& label, double minVal, double maxVal,
     , mMax(maxVal)
     , mDefault(defaultVal)
     , mUnit(unit)
+    , mLabel(label)
 {
     setAttribute(Qt::WA_StyledBackground, false);
 
@@ -293,10 +294,22 @@ void KnobWidget::updateLabel()
     mLabelValue->setText(txt);
 }
 
+static std::function<void(KnobWidget*, QMenu*)>& menuHook()
+{
+    static std::function<void(KnobWidget*, QMenu*)> hook;
+    return hook;
+}
+
+void KnobWidget::setMenuHook(std::function<void(KnobWidget*, QMenu*)> hook)
+{
+    menuHook() = std::move(hook);
+}
+
 void KnobWidget::contextMenuEvent(QContextMenuEvent* event)
 {
     QMenu menu(this);
     auto* resetAction = menu.addAction("Reset to Default");
+    if (menuHook()) menuHook()(this, &menu);
     if (menu.exec(event->globalPos()) == resetAction)
         resetToDefault();
 }

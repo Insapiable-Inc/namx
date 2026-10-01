@@ -64,6 +64,8 @@ PresetBar::PresetBar(const LibraryIndex& index, QMenu* presetMenu, QWidget* pare
     mModified->setObjectName("presetModified");
     mModified->setToolTip("Modified since the preset was loaded or saved");
 
+    learnMenuFor(prev, "action:presetPrev");
+    learnMenuFor(next, "action:presetNext");
     lay->addWidget(prev);
     lay->addWidget(mName);
     lay->addWidget(mModified);
@@ -95,6 +97,7 @@ PresetBar::PresetBar(const LibraryIndex& index, QMenu* presetMenu, QWidget* pare
         sc->setContext(Qt::WindowShortcut);
         connect(sc, &QShortcut::activated, this, [this, i] { activateSlot(i); });
         mSlots[i] = b;
+        mActionWidgets.insert(QString("action:slot%1").arg(i + 1), b);
         lay->addWidget(b);
     }
     lay->addSpacing(12);
@@ -110,6 +113,8 @@ PresetBar::PresetBar(const LibraryIndex& index, QMenu* presetMenu, QWidget* pare
         });
         lay->addWidget(mAb[i]);
     }
+    learnMenuFor(mAb[0], "action:abToggle");
+    learnMenuFor(mAb[1], "action:abToggle");
     mAbCopy = tool({}, {}, "presetTool");
     connect(mAbCopy, &QToolButton::clicked, this, &PresetBar::abCopyRequested);
     lay->addWidget(mAbCopy);
@@ -122,6 +127,25 @@ PresetBar::PresetBar(const LibraryIndex& index, QMenu* presetMenu, QWidget* pare
 
     setPreset({}, false);
     setAbState(0);
+}
+
+void PresetBar::learnMenuFor(QWidget* w, const QString& actionId)
+{
+    if (!mActionWidgets.contains(actionId)) mActionWidgets.insert(actionId, w);
+    w->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(w, &QWidget::customContextMenuRequested, this, [this, w, actionId](const QPoint& p) {
+        if (!mLearnHook) return;
+        QMenu menu(this);
+        mLearnHook(actionId, &menu);
+        if (!menu.isEmpty()) menu.exec(w->mapToGlobal(p));
+    });
+}
+
+void PresetBar::recallSlot(int i)
+{
+    if (i < 0 || i >= kSlotCount) return;
+    const QString& p = mSlotPaths[i];
+    if (!p.isEmpty() && QFile::exists(p)) emit presetChosen(p);
 }
 
 void PresetBar::setPreset(const QString& path, bool modified)
@@ -227,9 +251,14 @@ void PresetBar::showSlotMenu(int i, const QPoint& globalPos)
     store->setEnabled(!mPath.isEmpty());
     QAction* clear = menu.addAction(QString("Clear slot %1").arg(i + 1));
     clear->setEnabled(!mSlotPaths[i].isEmpty());
+    if (mLearnHook)
+    {
+        menu.addSeparator();
+        mLearnHook(QString("action:slot%1").arg(i + 1), &menu);
+    }
 
     QAction* picked = menu.exec(globalPos);
-    if (!picked) return;
+    if (!picked || (picked != store && picked != clear)) return;
     mSlotPaths[i] = picked == store ? mPath : QString();
     QSettings().setValue("presets/slots", mSlotPaths);
     updateSlots();
