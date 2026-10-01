@@ -25,6 +25,7 @@ QJsonObject toJson(const ParamRegistry& params, AudioEngine& engine)
 
     for (const auto& p : params)
     {
+        if (!p.inPreset) continue;
         const QJsonValue v = p.knob ? QJsonValue(p.knob->value())
                                     : QJsonValue(p.toggle->isChecked());
         if (p.group.isEmpty()) {
@@ -45,6 +46,7 @@ Applied apply(const QJsonObject& obj, const ParamRegistry& params)
     // fall back to the registered defaults.
     for (const auto& p : params)
     {
+        if (!p.inPreset) continue;
         QJsonObject src = obj;
         if (!p.group.isEmpty())
         {

@@ -18,6 +18,8 @@ struct ParamDesc
     ToggleSwitch* toggle = nullptr;
     double knobDefault   = 0.0;       // applied when the key is absent from a present group
     bool   toggleDefault = false;
+    bool   inPreset      = true;      // false = session only (tuner): not saved
+                                      // to presets, ignored when one loads
 };
 
 using ParamRegistry = std::vector<ParamDesc>;

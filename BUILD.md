@@ -309,6 +309,32 @@ jack_connect NAMPlayer:output_R  system:playback_2
 
 Gain changes are sample-accurate smoothed (no clicks or zipper noise).
 
+### Presets
+
+The bar above the rack holds the current preset. A preset recalls every effect
+setting, the effect order, the input/output gains, and the model and IR (by path, plus
+the TONE3000 ids when they came from there).
+
+| Control | Action |
+|---------|--------|
+| Name (click) | Pick a preset from the library; folders show as submenus |
+| **‹ ›** | Previous / next preset in the library's Presets order |
+| `*` after the name | The sound differs from the saved file. It goes away when you save, or when you turn everything back |
+| **Save** (`Ctrl+S`) / **Save As…** (`Ctrl+Shift+S`) | Overwrite the current file / write a new one (an untitled state always asks) |
+| **Slots 1–8** (`Ctrl+1…8`) | Load the preset stored in a slot. Clicking an empty slot stores the current preset there; right-click to store or clear |
+| **A / B**, **A→B** | Two working states of the current preset: switch between them to compare, or copy the active one over the other. Loading a preset clears both |
+| **⋯** (same as the **Preset** menu) | Open…, Import… (copies files into the presets folder), Export… (writes a copy elsewhere), Show in Folder, Delete… (to the trash), Reset All to Defaults… |
+
+**Not part of a preset:** audio devices and port connections, the tuner on/off,
+the library and TONE3000 state, window layout, and the quick-slot assignments. These
+belong to the machine or the session, so loading a preset never changes them.
+
+**Starter presets.** On first run eight starter presets are copied to
+`<Documents>/NAM Player/Presets/Starter` (Clean Chorus, Tight Rhythm, Lead Delay,
+Ambient Swell, Surf Tremolo, Funk Wah, Jet Flanger, Vibe Phaser). They contain no
+model or IR, so they apply over whatever amp and cab are loaded. If you delete them
+they stay deleted.
+
 ### Library
 
 The **Library** dock (left of the rack; `Ctrl+L` shows/hides it) lists every `.nam`
@@ -392,6 +418,7 @@ If the IR is disabled or not loaded, that stage is skipped.
 |--------|---------|
 | `.nam`  | Neural Amp Modeler model file. Supported architectures: WaveNet, LSTM, ConvNet, Linear. Version 0.5–0.7 supported. |
 | `.wav`  | Impulse response / cab simulation. Mono or stereo (first channel used). Any sample rate. Truncated to 4096 taps (~93 ms at 44.1 kHz). |
+| `.nampreset` | Preset, JSON (schema v2): `version`, every effect group (`noiseGate`, `compressor`, …) with its parameters, `effectOrder` (stable effect IDs), `namPath` / `irPath`, optional `tone3000` linkage. A group missing from the file leaves that effect untouched; a missing key inside a group takes its default. |
 | `.t3k.json` | Sidecar written next to a TONE3000 download: tone/model ids, title, creator, license, URL. Read by the library; safe to delete (the file just loses its origin). |
 
 NAM models are available from the [NAM community model library](https://www.neuralampmodeler.com).

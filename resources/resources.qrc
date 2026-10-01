@@ -4,5 +4,13 @@
         <file>tone3000/tone3000-logo.png</file>
         <file>tone3000/t3k-mark.png</file>
         <file>icons/NAMPlayer-256.png</file>
+        <file>presets/Clean Chorus.nampreset</file>
+        <file>presets/Tight Rhythm.nampreset</file>
+        <file>presets/Lead Delay.nampreset</file>
+        <file>presets/Ambient Swell.nampreset</file>
+        <file>presets/Surf Tremolo.nampreset</file>
+        <file>presets/Funk Wah.nampreset</file>
+        <file>presets/Jet Flanger.nampreset</file>
+        <file>presets/Vibe Phaser.nampreset</file>
     </qresource>
 </RCC>

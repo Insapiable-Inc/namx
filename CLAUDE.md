@@ -23,7 +23,7 @@ nam-linux-gui/
         ├── ui/            # Qt widgets
         ├── net/           # Tone3000Client (Qt Network; no widgets)
         └── dsp/           # AudioEngine, backends, effect processors (no Qt dependencies)
-    ├── resources/         # resources.qrc, app icon (icons/), TONE3000 brand assets (see its README)
+    ├── resources/         # resources.qrc, app icon (icons/), starter presets (presets/), TONE3000 brand assets (see its README)
     ├── packaging/         # desktop file, AppStream, mime, PKGBUILD, Windows .rc (no AppImage/Flatpak — decision 2026-09-17)
     └── tests/             # Tone3000ClientTest + mock_tone3000.py (-DNAM_BUILD_TESTS=ON)
 ```
@@ -131,6 +131,7 @@ All effects inherit `EffectBase` (`src/dsp/EffectBase.h` — the header comment 
 | `ReverbProcessor` | `src/dsp/ReverbProcessor.h/cpp` | Freeverb (8 comb + 4 all-pass, stereo) |
 | `MainWindow` | `src/ui/MainWindow.h/cpp` | Window assembly, parameter registry, effect strip + DnD reorder, session state |
 | `ParamRegistry.h` | `src/ui/` | `ParamDesc` — one entry per user-facing parameter (shared by MainWindow + PresetSerializer) |
+| `PresetBar` | `src/ui/PresetBar.h/cpp` | Bar above the rack: preset name menu, ‹ ›, `*`, Save/Save As, quick slots 1–8 (owns `presets/slots`), A/B buttons; MainWindow owns the preset state (`mPresetPath` + baseline) |
 | `PresetSerializer` | `src/ui/PresetSerializer.h/cpp` | Preset schema v2 JSON ↔ registry/engine (v1 files load too) |
 | `AudioStatusBar` | `src/ui/AudioStatusBar.h/cpp` | Bottom status bar: backend state, rate/buffer/latency, device pickers; persists IDs, emits `deviceSelectionChanged` |
 | `LibraryIndex` | `src/ui/LibraryIndex.h/cpp` | Library scan: worker thread over the root folders, metadata cache (`AppDataLocation/library-index.json`), `QFileSystemWatcher` rescans; `LibraryEntry` carries a pre-built `summary`/`details` per file |
@@ -155,6 +156,8 @@ engine via a lambda connect. Preset save/load are single loops over this table; 
 session persistence and future MIDI mapping consume it too. **When adding an effect
 parameter, register it here — never add hand-written connects, slots, or preset keys.**
 `group`+`key` mirror the preset JSON schema (empty group = top-level key).
+`inPreset = false` keeps a parameter session-only (the tuner): presets neither save nor
+apply it, and it doesn't count toward the preset `*`.
 
 ### Loading files
 
@@ -181,7 +184,7 @@ caller writes into the preset's `tone3000` object for cross-machine resolution
 ### Persistence
 
 - **QSettings** (org `pichulero.cl`, app name set in `main.cpp` — drives the config path): last model/IR/preset paths, audio device IDs, JACK port connections, window geometry + dock state (`window/state`), the library (`library/{model,ir,preset}Roots`, `favorites`, `recents`, `section`, `mode`, `sort`, `tab`, `tone3000Dir`), TONE3000 (`tone3000/clientId`, `accessToken`, `refreshToken`, `expiresAt`, `user/*`, `list`), and the full registry state plus `session/effectOrder` under `session/` (saved on exit + debounced 1 s after any widget change; restored on launch through the widgets). First run auto-connects `system:capture_1`/`playback_{1,2}`.
-- **Presets** are `.nampreset` JSON files via `QJsonDocument`, schema v2: all registry parameters plus `version`, `namEnabled`, `effectOrder` (stable-ID list), embedded `namPath`/`irPath` (applied on load when the file exists; otherwise a warning, current model/IR kept), and an optional `tone3000` object (`model`/`ir` → `toneId`, `modelId`, `title`, `creator`) used to find or fetch a missing file. v1 files (no `version`) still load. Loading applies values through the widgets, so the UI and engine can't drift.
+- **Presets** (8 starters in `gui/resources/presets/`, seeded once into `<presets>/Starter`) are `.nampreset` JSON files via `QJsonDocument`, schema v2: all registry parameters plus `version`, `namEnabled`, `effectOrder` (stable-ID list), embedded `namPath`/`irPath` (applied on load when the file exists; otherwise a warning, current model/IR kept), and an optional `tone3000` object (`model`/`ir` → `toneId`, `modelId`, `title`, `creator`) used to find or fetch a missing file. v1 files (no `version`) still load. Loading applies values through the widgets, so the UI and engine can't drift.
 
 ## NAM core library
 

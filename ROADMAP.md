@@ -580,21 +580,37 @@ Manual verification (2026-09-17 — needs the real key and a human):
 - [ ] Pull the network: lists say offline, the local library works; reconnect and ↻.
 - [ ] Sign out, sign in again; wait > 1 h and use a list (refresh path).
 
-## Phase 13 — Presets as the live unit
+## Phase 13 — Presets as the live unit ✅ (completed 2026-10-01, code; manual verification below)
 
 Petrucci parity: preset combo box, ‹ ›, Save, Save As…, Delete, Import, Reset, Locate
 file, `*` on unsaved changes, folders/subfolders, and a defined set of things presets
 *don't* recall (audio device, tuner, metronome, MIDI map).
 
-- [ ] **Preset name in the top bar** (replaces the redundant "NAM Player" title),
-      with `*` when modified; ‹ › cycle the preset list; Save / Save As / Delete /
-      Import / Export / Locate folder.
-- [ ] **Quick slots 1–8** (`Ctrl+1…8`, MIDI PC later) and **A/B compare**.
-- [ ] Presets organised in folders (the library already shows the tree).
-- [ ] **Excluded from presets** (documented): audio devices/connections, tuner
-      settings, metronome, MIDI map, window state.
-- [ ] A handful of **starter presets** shipped with *no model baked in* (or linked to
-      permissively-licensed TONE3000 tones via Phase 12) so first run isn't empty.
+- [x] **Preset bar above the rack** (`PresetBar`): ‹ [name ▾] › with `*` when the live
+      state differs from the file (compared against a baseline snapshot, so turning a
+      knob back clears it); Save / Save As; ⋯ = the Preset menu (Open, Import, Export,
+      Show in Folder, Delete → trash, Reset). Window title = `Name* — NAM Player`.
+      Current preset + baseline persist in the session.
+- [x] **Quick slots 1–8** (`Ctrl+1…8`; QSettings `presets/slots`; MIDI PC later) and
+      **A/B compare** (two in-memory states per preset; A→B copies; a preset load clears them).
+- [x] Presets organised in folders: the name button's menu mirrors the folder tree.
+- [x] **Excluded from presets** (documented in BUILD.md → Presets): audio
+      devices/connections, tuner (`ParamDesc::inPreset = false`), library/TONE3000
+      state, window state, slot assignments; metronome and MIDI map join the list
+      when they exist.
+- [x] Eight **starter presets** (`resources/presets/`, no model baked in), copied once
+      into `<presets>/Starter` on first run (`presets/starterSeeded`).
+
+### Phase 13 — manual verification pending
+
+- [ ] Twist a knob → `*` appears; twist it back → gone. Ctrl+S clears it; relaunch:
+      same name, same `*` state.
+- [ ] ‹ › and the name menu walk the presets; Starter shows as a submenu.
+- [ ] Empty slot click stores the preset; Ctrl+N recalls it; right-click → Clear.
+- [ ] A/B: tweak on B, switch to A and back — both states survive; A→B copies.
+- [ ] Import a file from Downloads → copied into the presets folder and loaded;
+      Export doesn't change the current name; Delete moves to the trash → Untitled.
+- [ ] Tuner state survives loading any preset.
 
 ## Phase 14 — Cockpit: status bar, meters, tuner, efficiency
 

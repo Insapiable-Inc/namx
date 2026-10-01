@@ -131,6 +131,8 @@ MainWindow::MainWindow(QWidget* parent)
     resize(1800, 1000);
     setAcceptDrops(true);
 
+    seedStarterPresets(); // before the first scan, so they are in it
+
     // The index starts its first scan immediately (worker thread); the panel
     // created in setupUI picks the entries up when they land.
     mLibraryIndex = new LibraryIndex(this);
@@ -1309,6 +1311,7 @@ void MainWindow::registerParameters()
     knobParam("", "outputGain", mKnobOutputGain, [e](double v) { e->setOutputGain(static_cast<float>(v)); });
 
     toggleParam("tuner", "enabled", mSwTunerEnable, [e](bool b) { e->tuner().setEnabled(b); });
+    mParams.back().inPreset = false; // a practice tool, not part of the sound
 
     toggleParam("noiseGate", "enabled", mSwGateEnable,    [e](bool b)   { e->gate().setEnabled(b); });
     knobParam("noiseGate", "threshold", mKnobGateThresh,  [e](double v) { e->gate().setThreshold(static_cast<float>(v)); });
@@ -1525,6 +1528,25 @@ void MainWindow::updateHeroCards()
 // ---------------------------------------------------------------------------
 // Preset save / load
 // ---------------------------------------------------------------------------
+
+void MainWindow::seedStarterPresets()
+{
+    // Once per config: copy the bundled starters into <presets>/Starter so a
+    // first run isn't empty. They carry no model/IR — loading one keeps the
+    // current rig. Deleting them sticks: the flag stops a re-seed.
+    QSettings s;
+    if (s.value("presets/starterSeeded").toBool()) return;
+    const QString dir = LibraryRoots::defaultPresetDir() + "/Starter";
+    QDir().mkpath(dir);
+    for (const QFileInfo& fi : QDir(":/presets").entryInfoList({"*.nampreset"}, QDir::Files))
+    {
+        const QString dest = dir + "/" + fi.fileName();
+        if (QFile::exists(dest) || !QFile::copy(fi.filePath(), dest)) continue;
+        // Resource files copy read-only.
+        QFile::setPermissions(dest, QFile::permissions(dest) | QFile::WriteOwner);
+    }
+    s.setValue("presets/starterSeeded", true);
+}
 
 QJsonObject MainWindow::currentPresetJson() const
 {

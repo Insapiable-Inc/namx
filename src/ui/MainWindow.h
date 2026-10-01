@@ -157,6 +157,7 @@ private:
     void switchAb(int side);
     void copyAb();
     void restorePresetState();
+    static void seedStarterPresets();
 
     // Session persistence: same table, QSettings instead of a preset file.
     void saveSessionState();

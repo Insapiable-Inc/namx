@@ -1,0 +1,58 @@
+{
+    "version": 2,
+    "effectOrder": [
+        "tuner",
+        "gate",
+        "comp",
+        "wah",
+        "flanger",
+        "phaser",
+        "nam",
+        "eq",
+        "chorus",
+        "tremolo",
+        "delay",
+        "reverb",
+        "ir"
+    ],
+    "noiseGate": {
+        "enabled": false
+    },
+    "compressor": {
+        "enabled": false
+    },
+    "dynamicWah": {
+        "enabled": false
+    },
+    "flanger": {
+        "enabled": false
+    },
+    "phaser": {
+        "enabled": false
+    },
+    "eq": {
+        "enabled": true,
+        "low": 0,
+        "mid": 0,
+        "treble": 2
+    },
+    "chorus": {
+        "enabled": false
+    },
+    "tremolo": {
+        "enabled": true,
+        "stereo": false,
+        "rate": 6.5,
+        "depth": 65
+    },
+    "delay": {
+        "enabled": false
+    },
+    "reverb": {
+        "enabled": true,
+        "roomSize": 70,
+        "damping": 20,
+        "width": 100,
+        "mix": 35
+    }
+}
