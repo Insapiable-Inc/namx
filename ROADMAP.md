@@ -801,10 +801,9 @@ acoustic models. UI: cards gained ▾ detail rows for advanced knobs (`addDetail
       presets for third-party apps.
 - [ ] Courtesy/credits screen: NAM core, TONE3000, contributors.
 
-## Phase 20 — Code to the C++ guidelines (added 2026-10-01; runs before Phase 18)
+## Phase 20 — Code to the C++ guidelines ✅ (completed 2026-10-01; runs before Phase 18)
 
-Bring `gui/` in line with `gui/CPP_GUIDELINES.md` (agreed 2026-10-01; the guidelines
-discussion is still open: references vs pointers, audio backend shape, further topics).
+Bring `gui/` in line with `gui/CPP_GUIDELINES.md` (agreed 2026-10-01).
 No behavior changes: every step builds, passes the tests and the bench, and is its own
 commit.
 
@@ -841,21 +840,28 @@ commit.
       setup) become named functions the lambda forwards to.
 - [x] **Ownership:** `MidiInput::create(parent)` returns a Qt-owned plain pointer
       (no `unique_ptr` around a QObject).
-- [ ] **Effect interface:** `EffectBase` → pure virtual `Effect` interface; the
-      enabled/stereo/reset flags move into an `EffectState` member and the
-      mono/dual/stereo routing into a free function. Instances owned by `unique_ptr`.
-- [ ] **Generic parameters (design first):** `ParamSpec { id, name, unit, min, max,
-      default, taper, kind }` + `Param { spec, atomic value, get, set }` declared by
-      each effect and exposed as `std::span<Param>`. The effect becomes the single
-      source of truth for its knobs: `Constants.h` ranges, the per-knob
-      `registerParameters` lines and hand-placed card widgets give way to generic
-      code over `params()` (presets, session, MIDI, possibly generated cards). Open:
-      bool/choice kinds, a cheap "changed" flag for derived state (EQ coefficients),
-      how custom widgets (tuner, BeatLeds, wah pedal) fit in.
-- [ ] *(Later, enabled by the two above)* **Multiple instances of an effect**
-      (e.g. two EQs): per-instance IDs for presets/session/MIDI/cards, preset schema
-      v3 with v2 still loading, instances created on the GUI thread and published
-      through `RtSlot`.
+- [~] **Effect interface + generic parameters → deferred** to the optional milestone
+      below (decided 2026-10-01). Effects keep `EffectBase` and their atomics for now.
+
+### Optional milestone — parameter model (not scheduled)
+
+Goal: one definition per parameter driving presets, session, MIDI and the knob
+widgets; prerequisite for **multiple instances of an effect** (today `AudioEngine`
+holds exactly one of each, addressed by fixed IDs). `Constants.h` stays the single
+place where the numbers are edited. Options weighed on 2026-10-01:
+- **Small:** each effect gets a knob table (key, label, unit, range from
+  `Constants.h`, setter); the registry loops over the tables. ≈ −150 lines, no
+  multiple instances.
+- **OO:** pure `Effect` interface + shared routing; `Param` objects as effect members
+  (`threshold.get()`), listed for generic code (hand list, or self-registering via a
+  `ParamList`). Spec syntax not settled — designated initializers, builder and
+  spelled-out constructors were all rejected or unconvincing.
+- **Data-oriented:** spec tables in `Constants.h`, one flat `ParamStore` with a slice
+  per instance, per-type value/state structs and `process_*` free functions, chain of
+  `{type, instance}`. Best fit for multiple instances; biggest refactor; snapshot
+  filled by position (struct order = spec order, guarded by a test).
+- Whichever is picked: golden test bit-identical at every step, plus a test that the
+  8 starter presets load to the same values.
 
 ## Phase 21 — ASIO on Windows (added 2026-10-01; last — no Windows machine to test on yet)
 
