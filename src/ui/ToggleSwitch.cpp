@@ -1,5 +1,4 @@
 #include "ToggleSwitch.h"
-#include "Theme.h"
 
 #include <QApplication>
 #include <QLinearGradient>
@@ -8,33 +7,32 @@
 #include <QPalette>
 #include <QRadialGradient>
 
+#include "Theme.h"
+
 ToggleSwitch::ToggleSwitch(QWidget* parent)
     : QAbstractButton(parent)
-    , mAccent(Theme::genericAccent())
-{
+    , mAccent(Theme::genericAccent()) {
     setCheckable(true);
     setCursor(Qt::PointingHandCursor);
     setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 }
 
-void ToggleSwitch::setAccent(const QColor& c)
-{
+void ToggleSwitch::setAccent(const QColor& c) {
     mAccent = c;
     update();
 }
 
-void ToggleSwitch::paintEvent(QPaintEvent*)
-{
+void ToggleSwitch::paintEvent(QPaintEvent*) {
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing);
 
-    const QRectF r  = rect();
-    const qreal  h  = r.height();
-    const qreal  w  = r.width();
-    const qreal  rx = h / 2.0;
+    const QRectF r = rect();
+    const qreal h = r.height();
+    const qreal w = r.width();
+    const qreal rx = h / 2.0;
 
     // ---- Track ----
-    const QColor accent   = mAccent;
+    const QColor accent = mAccent;
     const QColor trackOff = mHovered ? Theme::trackHover() : Theme::track();
 
     if (isChecked()) {
@@ -56,9 +54,9 @@ void ToggleSwitch::paintEvent(QPaintEvent*)
 
     // LED glow when on: small bright dot inside the off-side of the track.
     if (isChecked()) {
-        const qreal ledD  = h * 0.32;
-        const qreal ledX  = 5.0;
-        const qreal ledY  = (h - ledD) / 2.0;
+        const qreal ledD = h * 0.32;
+        const qreal ledX = 5.0;
+        const qreal ledY = (h - ledD) / 2.0;
         QRadialGradient g(QPointF(ledX + ledD / 2.0, ledY + ledD / 2.0), ledD);
         g.setColorAt(0.0, QColor(255, 255, 255, 230));
         g.setColorAt(0.5, QColor(255, 255, 255, 80));
@@ -87,23 +85,21 @@ void ToggleSwitch::paintEvent(QPaintEvent*)
     p.drawEllipse(thumbRect);
 }
 
-void ToggleSwitch::mouseReleaseEvent(QMouseEvent* e)
-{
+void ToggleSwitch::mouseReleaseEvent(QMouseEvent* e) {
     // click() toggles a checkable button and emits toggled/clicked exactly once.
-    if (e->button() == Qt::LeftButton && rect().contains(e->pos()))
+    if (e->button() == Qt::LeftButton && rect().contains(e->pos())) {
         click();
+    }
     e->accept();
 }
 
-void ToggleSwitch::enterEvent(QEnterEvent* e)
-{
+void ToggleSwitch::enterEvent(QEnterEvent* e) {
     mHovered = true;
     update();
     QAbstractButton::enterEvent(e);
 }
 
-void ToggleSwitch::leaveEvent(QEvent* e)
-{
+void ToggleSwitch::leaveEvent(QEvent* e) {
     mHovered = false;
     update();
     QAbstractButton::leaveEvent(e);

@@ -29,14 +29,15 @@ public:
         /// Notification that the audio buffer size has changed. Called on a
         /// non-RT thread, serialised with onAudio. Implementations should
         /// resize their work buffers here.
-        virtual void onBufferSizeChanged(int /*newSize*/) {}
+        virtual void onBufferSizeChanged(int /*newSize*/) {
+        }
     };
 
     /// Device info for device enumeration/selection.
     struct DeviceInfo
     {
-        std::string id;    // Stable device identifier (WASAPI endpoint ID, or "default")
-        std::string name;  // Human-readable name for the dropdown
+        std::string id; // Stable device identifier (WASAPI endpoint ID, or "default")
+        std::string name; // Human-readable name for the dropdown
     };
 
     /// JACK-only port routing data. Empty on backends without a graph.
@@ -55,9 +56,9 @@ public:
     virtual bool start(const std::string& clientName, Callback* cb) = 0;
     virtual void stop() = 0;
 
-    virtual bool   isRunning()  const = 0;
+    virtual bool isRunning() const = 0;
     virtual double sampleRate() const = 0;
-    virtual int    bufferSize() const = 0;
+    virtual int bufferSize() const = 0;
 
     /// Short human-readable status string for the GUI pill,
     /// e.g. "JACK ● 48000 Hz ● stereo out" or "WASAPI ● Speakers ● 48000 Hz".
@@ -65,39 +66,53 @@ public:
 
     /// Buffer over/underruns since start or the last reset; -1 = the backend
     /// doesn't report them. Safe to call from the GUI thread.
-    virtual int  xrunCount() const { return -1; }
-    virtual void resetXruns() {}
+    virtual int xrunCount() const {
+        return -1;
+    }
+    virtual void resetXruns() {
+    }
 
     /// Capture + playback latency around our ports, in frames, as reported
     /// by the backend (round trip = this; our own processing adds nothing
     /// beyond the cycle it already includes). -1 = unknown.
-    virtual int ioLatencyFrames() const { return -1; }
+    virtual int ioLatencyFrames() const {
+        return -1;
+    }
 
     /// Return available capture (input) devices. Empty on JACK.
-    virtual std::vector<DeviceInfo> enumerateInputDevices() const { return {}; }
+    virtual std::vector<DeviceInfo> enumerateInputDevices() const {
+        return {};
+    }
 
     /// Return available render (output) devices. Empty on JACK.
-    virtual std::vector<DeviceInfo> enumerateOutputDevices() const { return {}; }
+    virtual std::vector<DeviceInfo> enumerateOutputDevices() const {
+        return {};
+    }
 
     /// Start audio using explicitly selected devices.
     /// Empty or "default" ids fall back to system defaults.
     virtual bool startWithDevices(const std::string& clientName, Callback* cb,
                                   const std::string& inputDeviceId,
-                                  const std::string& outputDeviceId)
-    {
+                                  const std::string& outputDeviceId) {
         // Default implementation ignores device ids.
-        (void)inputDeviceId; (void)outputDeviceId;
+        (void)inputDeviceId;
+        (void)outputDeviceId;
         return start(clientName, cb);
     }
 
     /// True if the backend exposes inter-app port routing (JACK only).
-    virtual bool supportsPortRouting() const { return false; }
+    virtual bool supportsPortRouting() const {
+        return false;
+    }
 
     /// Query the current port wiring. Empty if !supportsPortRouting().
-    virtual PortConnections currentConnections() const { return {}; }
+    virtual PortConnections currentConnections() const {
+        return {};
+    }
 
     /// Apply a saved wiring. No-op if !supportsPortRouting().
-    virtual void applyConnections(const PortConnections& /*c*/) {}
+    virtual void applyConnections(const PortConnections& /*c*/) {
+    }
 
     /// Factory: returns the right backend for this build's target platform.
     /// Defined in JackBackend.cpp (Linux) or WasapiBackend.cpp (Windows).

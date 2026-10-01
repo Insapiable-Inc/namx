@@ -16,7 +16,8 @@ class QWidget;
 /// choosing the palette values, not by code. tagCard pushes the accent to
 /// the card's knobs/toggles explicitly because the app stylesheet disables
 /// parent→child palette propagation.
-namespace Theme {
+namespace Theme
+{
 
 /// Accent for an effect ID ("gate", "nam", … or "neutral").
 QColor accent(const QString& fxId);
@@ -24,15 +25,15 @@ QColor accent(const QString& fxId);
 QColor genericAccent();
 
 // Neutral chrome tones for custom-painted widgets (knobs, switches).
-QColor track();        // recessed track / switch off state
-QColor trackHover();   // hovered track
-QColor knobBodyTop();  // knob body gradient, light end
-QColor knobBodyBot();  // knob body gradient, dark end
-QColor bezel();        // outline around the knob body
-QColor well();         // recessed dial well
-QColor dimText();      // secondary labels (knob names, "Stereo", cents)
-QColor thumbTop();     // switch thumb gradient, light end
-QColor thumbBot();     // switch thumb gradient, dark end
+QColor track(); // recessed track / switch off state
+QColor trackHover(); // hovered track
+QColor knobBodyTop(); // knob body gradient, light end
+QColor knobBodyBot(); // knob body gradient, dark end
+QColor bezel(); // outline around the knob body
+QColor well(); // recessed dial well
+QColor dimText(); // secondary labels (knob names, "Stereo", cents)
+QColor thumbTop(); // switch thumb gradient, light end
+QColor thumbBot(); // switch thumb gradient, dark end
 
 // VU meter level gradient, low → clip. The gradient is anchored to the full
 // bar (not the filled chunk), so a color means an absolute level.
@@ -42,8 +43,8 @@ QColor meterHigh();
 QColor meterClip();
 
 // Tuner display (LED ladder + seven-segment note).
-QColor ledGreen();  // in tune
-QColor ledRed();    // off pitch
+QColor ledGreen(); // in tune
+QColor ledRed(); // off pitch
 QColor displayBg(); // near-black LED panel
 
 /// Tags a card with its effect ID: sets the `fx` dynamic property (drives the

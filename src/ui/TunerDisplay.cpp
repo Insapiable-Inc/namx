@@ -1,36 +1,52 @@
 #include "TunerDisplay.h"
-#include "Theme.h"
-
-#include <QFont>
-#include <QPainter>
 
 #include <algorithm>
 #include <cmath>
 
-namespace {
+#include <QFont>
+#include <QPainter>
+
+#include "Theme.h"
+
+namespace
+{
 
 // Seven-segment bits: A top, B top-right, C bottom-right, D bottom,
 // E bottom-left, F top-left, G middle.
-enum Seg { SA = 1, SB = 2, SC = 4, SD = 8, SE = 16, SF = 32, SG = 64 };
-
-int segmentsFor(QChar letter)
+enum Seg
 {
-    switch (letter.toUpper().unicode())
-    {
-    case 'A': return SA | SB | SC | SE | SF | SG;
-    case 'B': return SC | SD | SE | SF | SG;      // lowercase b
-    case 'C': return SA | SD | SE | SF;
-    case 'D': return SB | SC | SD | SE | SG;      // lowercase d
-    case 'E': return SA | SD | SE | SF | SG;
-    case 'F': return SA | SE | SF | SG;
-    case 'G': return SA | SC | SD | SE | SF;
-    default:  return SG;                          // "-" placeholder
+    SA = 1,
+    SB = 2,
+    SC = 4,
+    SD = 8,
+    SE = 16,
+    SF = 32,
+    SG = 64
+};
+
+int segmentsFor(QChar letter) {
+    switch (letter.toUpper().unicode()) {
+        case 'A':
+            return SA | SB | SC | SE | SF | SG;
+        case 'B':
+            return SC | SD | SE | SF | SG; // lowercase b
+        case 'C':
+            return SA | SD | SE | SF;
+        case 'D':
+            return SB | SC | SD | SE | SG; // lowercase d
+        case 'E':
+            return SA | SD | SE | SF | SG;
+        case 'F':
+            return SA | SE | SF | SG;
+        case 'G':
+            return SA | SC | SD | SE | SF;
+        default:
+            return SG; // "-" placeholder
     }
 }
 
 // One bloom-styled rounded rect: soft halo passes, then the solid core.
-void drawGlowRect(QPainter& p, const QRectF& r, const QColor& c, qreal radius)
-{
+void drawGlowRect(QPainter& p, const QRectF& r, const QColor& c, qreal radius) {
     QColor halo = c;
     p.setPen(Qt::NoPen);
     halo.setAlpha(28);
@@ -46,41 +62,40 @@ void drawGlowRect(QPainter& p, const QRectF& r, const QColor& c, qreal radius)
 } // namespace
 
 TunerDisplay::TunerDisplay(QWidget* parent)
-    : QWidget(parent)
-{
+    : QWidget(parent) {
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 }
 
-void TunerDisplay::setReading(const QString& note, float cents, bool valid, float hz)
-{
-    const bool sameCents =
-        std::lround(cents) == std::lround(mCents);
+void TunerDisplay::setReading(const QString& note, float cents, bool valid, float hz) {
+    const bool sameCents = std::lround(cents) == std::lround(mCents);
     const bool sameHz = !mShowHz || std::lround(hz * 10.0f) == std::lround(mHz * 10.0f);
-    if (valid == mValid && note == mNote && ((sameCents && sameHz) || !valid))
+    if (valid == mValid && note == mNote && ((sameCents && sameHz) || !valid)) {
         return;
-    mNote  = note;
+    }
+    mNote = note;
     mCents = cents;
     mValid = valid;
-    mHz    = hz;
+    mHz = hz;
     update();
 }
 
-void TunerDisplay::setShowHz(bool on)
-{
-    if (on == mShowHz) return;
+void TunerDisplay::setShowHz(bool on) {
+    if (on == mShowHz) {
+        return;
+    }
     mShowHz = on;
     update();
 }
 
-void TunerDisplay::setReference(int hz)
-{
-    if (hz == mReference) return;
+void TunerDisplay::setReference(int hz) {
+    if (hz == mReference) {
+        return;
+    }
     mReference = hz;
     update();
 }
 
-void TunerDisplay::paintEvent(QPaintEvent*)
-{
+void TunerDisplay::paintEvent(QPaintEvent*) {
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing);
 
@@ -92,44 +107,44 @@ void TunerDisplay::paintEvent(QPaintEvent*)
 
     const bool inTune = mValid && std::abs(mCents) <= kInTuneCents;
     const QColor green = Theme::ledGreen();
-    const QColor red   = Theme::ledRed();
+    const QColor red = Theme::ledRed();
 
     // ---- LED ladder across the top ----
     {
         const qreal margin = 14.0;
-        const qreal ledD   = 6.0;
-        const qreal y      = panel.top() + 5.0;
-        const qreal step   = (panel.width() - 2 * margin - ledD) / (kLedCount - 1);
-        const int   center = kLedCount / 2;
+        const qreal ledD = 6.0;
+        const qreal y = panel.top() + 5.0;
+        const qreal step = (panel.width() - 2 * margin - ledD) / (kLedCount - 1);
+        const int center = kLedCount / 2;
 
         // Offset LED index for the current detune (at least one step off
         // center when audibly out of tune).
         int target = center;
-        if (mValid && !inTune)
-        {
+        if (mValid && !inTune) {
             const float span = std::clamp(mCents, -50.0f, 50.0f) / 50.0f;
             int off = static_cast<int>(std::lround(span * center));
-            if (off == 0) off = mCents < 0 ? -1 : 1;
+            if (off == 0) {
+                off = mCents < 0 ? -1 : 1;
+            }
             target = center + off;
         }
 
-        for (int i = 0; i < kLedCount; ++i)
-        {
+        for (int i = 0; i < kLedCount; ++i) {
             const QRectF r(panel.left() + margin + i * step, y, ledD, ledD);
             const QColor base = (i == center) ? green : red;
             bool lit = false;
-            if (mValid)
-            {
-                if (inTune)          lit = (i == center);
-                else if (mCents < 0) lit = (i >= target && i < center);
-                else                 lit = (i > center && i <= target);
+            if (mValid) {
+                if (inTune) {
+                    lit = (i == center);
+                } else if (mCents < 0) {
+                    lit = (i >= target && i < center);
+                } else {
+                    lit = (i > center && i <= target);
+                }
             }
-            if (lit)
-            {
+            if (lit) {
                 drawGlowRect(p, r, base, ledD / 2.0);
-            }
-            else
-            {
+            } else {
                 QColor ghost = base;
                 ghost.setAlpha(30);
                 p.setPen(Qt::NoPen);
@@ -140,15 +155,17 @@ void TunerDisplay::paintEvent(QPaintEvent*)
     }
 
     // ---- Seven-segment note in the center ----
-    const QColor digitColor = !mValid ? Theme::track().lighter(150)
-                            : inTune  ? green
-                                      : red;
+    const QColor digitColor = !mValid ? Theme::track().lighter(150) : inTune ? green : red;
     const qreal W = 18.0, H = 26.0, t = 3.5;
-    const qreal half   = (H - 3 * t) / 2.0;
+    const qreal half = (H - 3 * t) / 2.0;
     const qreal digitX = panel.center().x() - W / 2.0 - 12.0;
     const qreal digitY = panel.top() + 15.0;
 
-    const struct { Seg seg; QRectF r; } segs[] = {
+    const struct
+    {
+        Seg seg;
+        QRectF r;
+    } segs[] = {
         {SA, {digitX + t, digitY, W - 2 * t, t}},
         {SG, {digitX + t, digitY + t + half, W - 2 * t, t}},
         {SD, {digitX + t, digitY + 2 * (t + half), W - 2 * t, t}},
@@ -159,14 +176,10 @@ void TunerDisplay::paintEvent(QPaintEvent*)
     };
 
     const int lit = segmentsFor(mNote.isEmpty() ? QChar('-') : mNote.at(0));
-    for (const auto& s : segs)
-    {
-        if (lit & s.seg)
-        {
+    for (const auto& s : segs) {
+        if (lit & s.seg) {
             drawGlowRect(p, s.r, digitColor, t / 2.0);
-        }
-        else
-        {
+        } else {
             QColor ghost = digitColor;
             ghost.setAlpha(22);
             p.setPen(Qt::NoPen);
@@ -176,8 +189,7 @@ void TunerDisplay::paintEvent(QPaintEvent*)
     }
 
     // Sharp marker at the digit's top right.
-    if (mValid && mNote.contains('#'))
-    {
+    if (mValid && mNote.contains('#')) {
         QFont f = font();
         f.setPixelSize(12);
         f.setBold(true);
@@ -186,8 +198,9 @@ void TunerDisplay::paintEvent(QPaintEvent*)
         QColor halo = digitColor;
         halo.setAlpha(60);
         p.setPen(halo);
-        for (const QPointF d : {QPointF(1, 0), QPointF(-1, 0), QPointF(0, 1), QPointF(0, -1)})
+        for (const QPointF d : {QPointF(1, 0), QPointF(-1, 0), QPointF(0, 1), QPointF(0, -1)}) {
             p.drawText(sharpRect.translated(d), Qt::AlignCenter, "#");
+        }
         p.setPen(digitColor);
         p.drawText(sharpRect, Qt::AlignCenter, "#");
     }
@@ -200,9 +213,8 @@ void TunerDisplay::paintEvent(QPaintEvent*)
         p.setFont(f);
         p.setPen(digitColor);
         const int c = static_cast<int>(std::lround(mCents));
-        const QString text = !mValid
-            ? QStringLiteral("--")
-            : QString("%1%2¢").arg(c > 0 ? "+" : "").arg(c);
+        const QString text =
+            !mValid ? QStringLiteral("--") : QString("%1%2¢").arg(c > 0 ? "+" : "").arg(c);
         const QRectF textRect(panel.center().x() + 24.0, digitY, 90.0, H);
         p.drawText(textRect, Qt::AlignLeft | Qt::AlignVCenter, text);
     }
@@ -214,16 +226,14 @@ void TunerDisplay::paintEvent(QPaintEvent*)
         f.setBold(mShowHz);
         p.setFont(f);
         const QRectF textRect(panel.center().x() - 24.0 - 12.0 - 100.0, digitY, 100.0, H);
-        if (mShowHz)
-        {
+        if (mShowHz) {
             p.setPen(digitColor);
             p.drawText(textRect, Qt::AlignRight | Qt::AlignVCenter,
                        mValid ? QString("%1 Hz").arg(mHz, 0, 'f', 1) : QStringLiteral("-- Hz"));
-        }
-        else
-        {
+        } else {
             p.setPen(Theme::track().lighter(170));
-            p.drawText(textRect, Qt::AlignRight | Qt::AlignVCenter, QString("A4 = %1").arg(mReference));
+            p.drawText(textRect, Qt::AlignRight | Qt::AlignVCenter,
+                       QString("A4 = %1").arg(mReference));
         }
     }
 }

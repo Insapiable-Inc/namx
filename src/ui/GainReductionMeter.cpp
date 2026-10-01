@@ -1,39 +1,41 @@
 #include "GainReductionMeter.h"
-#include "Theme.h"
-
-#include <QPainter>
 
 #include <algorithm>
 #include <cmath>
 
+#include <QPainter>
+
+#include "Theme.h"
+
 GainReductionMeter::GainReductionMeter(float rangeDb, const QColor& accent, QWidget* parent)
     : QWidget(parent)
     , mRangeDb(rangeDb)
-    , mAccent(accent)
-{
+    , mAccent(accent) {
     setFixedSize(sizeHint());
     setToolTip(QString("Gain reduction (full bar = %1 dB)").arg(rangeDb, 0, 'f', 0));
 }
 
-void GainReductionMeter::setReduction(float dB)
-{
-    if (!mClock.isValid()) mClock.start();
+void GainReductionMeter::setReduction(float dB) {
+    if (!mClock.isValid()) {
+        mClock.start();
+    }
     const qint64 now = mClock.elapsed();
-    const float  dt  = static_cast<float>(now - mLastMs) / 1000.0f;
+    const float dt = static_cast<float>(now - mLastMs) / 1000.0f;
     mLastMs = now;
 
-    dB  = std::clamp(dB, 0.0f, mRangeDb);
+    dB = std::clamp(dB, 0.0f, mRangeDb);
     mDb = dB >= mDb ? dB : std::max(dB, mDb - kReleaseDbPerSec * dt);
 
     // Repaint on a visible change only: a tenth of a dB in the caption or a
     // fraction of a pixel on the bar.
-    if (std::abs(mDb - mShownDb) < 0.05f) return;
+    if (std::abs(mDb - mShownDb) < 0.05f) {
+        return;
+    }
     mShownDb = mDb;
     update();
 }
 
-void GainReductionMeter::paintEvent(QPaintEvent*)
-{
+void GainReductionMeter::paintEvent(QPaintEvent*) {
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing);
 
@@ -57,10 +59,9 @@ void GainReductionMeter::paintEvent(QPaintEvent*)
     p.drawRoundedRect(groove, 3, 3);
 
     const qreal frac = mDb / mRangeDb;
-    if (frac > 0.0)
-    {
+    if (frac > 0.0) {
         const QRectF inner = groove.adjusted(1.5, 1.5, -1.5, -1.5);
-        const qreal  w     = inner.width() * frac;
+        const qreal w = inner.width() * frac;
         p.setPen(Qt::NoPen);
         p.setBrush(mAccent);
         p.drawRoundedRect(QRectF(inner.right() - w, inner.top(), w, inner.height()), 1.5, 1.5);

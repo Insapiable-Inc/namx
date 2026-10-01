@@ -26,8 +26,12 @@ public:
     /// PipeWire can change the quantum while running).
     void updateMetrics();
 
-    QString inputDeviceId()  const { return mInputId; }
-    QString outputDeviceId() const { return mOutputId; }
+    QString inputDeviceId() const {
+        return mInputId;
+    }
+    QString outputDeviceId() const {
+        return mOutputId;
+    }
 
 signals:
     /// A device was picked from a menu and persisted — owner restarts audio.
@@ -44,13 +48,13 @@ private:
 
     AudioEngine& mEngine;
     QLabel* mLblBackend = nullptr;
-    QLabel* mLblRate    = nullptr;
-    QLabel* mLblBuffer  = nullptr;
+    QLabel* mLblRate = nullptr;
+    QLabel* mLblBuffer = nullptr;
     QLabel* mLblLatency = nullptr;
-    QLabel* mLblLoad    = nullptr;
-    QLabel* mLblXruns   = nullptr;
-    QLabel* mLblInput   = nullptr;
-    QLabel* mLblOutput  = nullptr;
+    QLabel* mLblLoad = nullptr;
+    QLabel* mLblXruns = nullptr;
+    QLabel* mLblInput = nullptr;
+    QLabel* mLblOutput = nullptr;
     QString mInputId, mOutputId;
     bool mConnected = false;
 
@@ -58,7 +62,7 @@ private:
     // ~0.5 s window (readable, still catches spikes); the all-time max since
     // the last reset goes in the tooltip.
     float mLoadWindow = 0.0f;
-    int   mLoadTicks  = 0;
-    float mLoadMax    = 0.0f;
-    int   mShownXruns = -2;
+    int mLoadTicks = 0;
+    float mLoadMax = 0.0f;
+    int mShownXruns = -2;
 };

@@ -16,8 +16,12 @@ public:
 
     void setAccent(const QColor& c);
 
-    QSize sizeHint()        const override { return {42, 22}; }
-    QSize minimumSizeHint() const override { return {42, 22}; }
+    QSize sizeHint() const override {
+        return {42, 22};
+    }
+    QSize minimumSizeHint() const override {
+        return {42, 22};
+    }
 
 protected:
     void paintEvent(QPaintEvent*) override;
@@ -27,5 +31,5 @@ protected:
 
 private:
     QColor mAccent;
-    bool   mHovered{false};
+    bool mHovered{false};
 };

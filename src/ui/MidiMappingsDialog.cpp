@@ -1,8 +1,5 @@
 #include "MidiMappingsDialog.h"
 
-#include "MidiInput.h"
-#include "MidiMapper.h"
-
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDir>
@@ -20,11 +17,27 @@
 #include <QToolButton>
 #include <QVBoxLayout>
 
-namespace {
-enum Col { ColOn, ColSource, ColChannel, ColNumber, ColTarget, ColMode, ColMin, ColMax, ColLearn, ColDelete, ColCount };
+#include "MidiInput.h"
+#include "MidiMapper.h"
 
-QString mappingDir()
+namespace
 {
+enum Col
+{
+    ColOn,
+    ColSource,
+    ColChannel,
+    ColNumber,
+    ColTarget,
+    ColMode,
+    ColMin,
+    ColMax,
+    ColLearn,
+    ColDelete,
+    ColCount
+};
+
+QString mappingDir() {
     return QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/NAM Player/MIDI";
 }
 } // namespace
@@ -32,8 +45,7 @@ QString mappingDir()
 MidiMappingsDialog::MidiMappingsDialog(MidiMapper& mapper, MidiInput* input, QWidget* parent)
     : QDialog(parent)
     , mMapper(mapper)
-    , mInput(input)
-{
+    , mInput(input) {
     setObjectName("midiMappings"); // scoped dark-table rules in Theme
     setWindowTitle("MIDI Mappings");
     resize(980, 560);
@@ -41,20 +53,25 @@ MidiMappingsDialog::MidiMappingsDialog(MidiMapper& mapper, MidiInput* input, QWi
 
     // ---- Devices ----
     auto* devices = new QGroupBox("Devices");
-    auto* devLay  = new QVBoxLayout(devices);
-    mDeviceBox    = new QVBoxLayout;
+    auto* devLay = new QVBoxLayout(devices);
+    mDeviceBox = new QVBoxLayout;
     devLay->addLayout(mDeviceBox);
     auto* clock = new QCheckBox("Follow MIDI clock (set the tempo from incoming clock)");
     clock->setChecked(mMapper.followClock());
-    connect(clock, &QCheckBox::toggled, this, [this](bool on) { mMapper.setFollowClock(on); });
+    connect(clock, &QCheckBox::toggled, this, [this](bool on) {
+        mMapper.setFollowClock(on);
+    });
     devLay->addWidget(clock);
     root->addWidget(devices);
     rebuildDevices();
-    if (mInput) connect(mInput, &MidiInput::devicesChanged, this, &MidiMappingsDialog::rebuildDevices);
+    if (mInput) {
+        connect(mInput, &MidiInput::devicesChanged, this, &MidiMappingsDialog::rebuildDevices);
+    }
 
     // ---- Mappings ----
     mTable = new QTableWidget(0, ColCount);
-    mTable->setHorizontalHeaderLabels({"On", "Source", "Channel", "#", "Target", "Mode", "Min %", "Max %", "", ""});
+    mTable->setHorizontalHeaderLabels(
+        {"On", "Source", "Channel", "#", "Target", "Mode", "Min %", "Max %", "", ""});
     mTable->verticalHeader()->hide();
     mTable->setSelectionMode(QAbstractItemView::NoSelection);
     mTable->horizontalHeader()->setSectionResizeMode(ColTarget, QHeaderView::Stretch);
@@ -62,12 +79,16 @@ MidiMappingsDialog::MidiMappingsDialog(MidiMapper& mapper, MidiInput* input, QWi
 
     mActivity = new QLabel("Last message: —");
     mActivity->setObjectName("libraryStatus");
-    connect(&mMapper, &MidiMapper::activity, mActivity,
-            [this](const QString& what) { mActivity->setText("Last message: " + what); });
+    connect(&mMapper, &MidiMapper::activity, mActivity, [this](const QString& what) {
+        mActivity->setText("Last message: " + what);
+    });
     // Rebuild on the next event-loop pass: a change usually comes from a
     // button inside the table, which must not be deleted mid-click.
     auto later = [this] {
-        if (!mRebuilding) QMetaObject::invokeMethod(this, &MidiMappingsDialog::rebuildTable, Qt::QueuedConnection);
+        if (!mRebuilding) {
+            QMetaObject::invokeMethod(this, &MidiMappingsDialog::rebuildTable,
+                                      Qt::QueuedConnection);
+        }
     };
     connect(&mMapper, &MidiMapper::mappingsChanged, this, later);
     connect(&mMapper, &MidiMapper::learnChanged, this, later);
@@ -78,35 +99,47 @@ MidiMappingsDialog::MidiMappingsDialog(MidiMapper& mapper, MidiInput* input, QWi
     connect(add, &QPushButton::clicked, this, [this] {
         QList<MidiMapping> list = mMapper.mappings();
         MidiMapping m;
-        if (!mMapper.targets().empty()) m.target = mMapper.targets().front().id;
+        if (!mMapper.targets().empty()) {
+            m.target = mMapper.targets().front().id;
+        }
         list << m;
         mMapper.setMappings(list);
         mMapper.learnRow(list.size() - 1); // most people add by playing the control
     });
     auto* load = new QPushButton("Load…");
     connect(load, &QPushButton::clicked, this, [this] {
-        const QString path = QFileDialog::getOpenFileName(this, "Load MIDI Mappings", mappingDir(),
-                                                          "NAM MIDI mappings (*.nammidi);;All Files (*)");
+        const QString path =
+            QFileDialog::getOpenFileName(this, "Load MIDI Mappings", mappingDir(),
+                                         "NAM MIDI mappings (*.nammidi);;All Files (*)");
         QString err;
-        if (!path.isEmpty() && !mMapper.loadFile(path, &err))
+        if (!path.isEmpty() && !mMapper.loadFile(path, &err)) {
             QMessageBox::warning(this, "MIDI Mappings", "Cannot load " + path + ":\n" + err);
+        }
     });
     auto* save = new QPushButton("Save…");
     connect(save, &QPushButton::clicked, this, [this] {
         QDir().mkpath(mappingDir());
-        QString path = QFileDialog::getSaveFileName(this, "Save MIDI Mappings", mappingDir() + "/Controller.nammidi",
+        QString path = QFileDialog::getSaveFileName(this, "Save MIDI Mappings",
+                                                    mappingDir() + "/Controller.nammidi",
                                                     "NAM MIDI mappings (*.nammidi);;All Files (*)");
-        if (path.isEmpty()) return;
-        if (QFileInfo(path).suffix().isEmpty()) path += ".nammidi";
-        if (!mMapper.saveFile(path))
+        if (path.isEmpty()) {
+            return;
+        }
+        if (QFileInfo(path).suffix().isEmpty()) {
+            path += ".nammidi";
+        }
+        if (!mMapper.saveFile(path)) {
             QMessageBox::warning(this, "MIDI Mappings", "Cannot write " + path);
+        }
     });
     auto* defaults = new QPushButton("Defaults");
     defaults->setToolTip("Program changes 0–7 → slots 1–8; everything else unmapped");
     connect(defaults, &QPushButton::clicked, this, [this] {
-        if (QMessageBox::question(this, "MIDI Mappings", "Replace all mappings with the default set?")
-            == QMessageBox::Yes)
+        if (QMessageBox::question(this, "MIDI Mappings",
+                                  "Replace all mappings with the default set?") ==
+            QMessageBox::Yes) {
             mMapper.setMappings(MidiMapper::defaultMappings());
+        }
     });
     auto* close = new QPushButton("Close");
     connect(close, &QPushButton::clicked, this, &QDialog::accept);
@@ -119,50 +152,51 @@ MidiMappingsDialog::MidiMappingsDialog(MidiMapper& mapper, MidiInput* input, QWi
     row->addWidget(close);
     root->addLayout(row);
 
-    connect(this, &QDialog::finished, this, [this] { mMapper.cancelLearn(); });
+    connect(this, &QDialog::finished, this, [this] {
+        mMapper.cancelLearn();
+    });
     rebuildTable();
 }
 
-void MidiMappingsDialog::rebuildDevices()
-{
-    while (QLayoutItem* it = mDeviceBox->takeAt(0))
-    {
+void MidiMappingsDialog::rebuildDevices() {
+    while (QLayoutItem* it = mDeviceBox->takeAt(0)) {
         delete it->widget();
         delete it;
     }
     const QStringList devs = mInput ? mInput->devices() : QStringList();
-    if (devs.isEmpty())
-    {
-        auto* none = new QLabel(mInput ? "No MIDI devices found. Plug one in — it connects automatically."
-                                       : "MIDI is not available on this system.");
+    if (devs.isEmpty()) {
+        auto* none =
+            new QLabel(mInput ? "No MIDI devices found. Plug one in — it connects automatically."
+                              : "MIDI is not available on this system.");
         none->setObjectName("libraryStatus");
         mDeviceBox->addWidget(none);
         return;
     }
-    for (const QString& d : devs)
-    {
+    for (const QString& d : devs) {
         auto* cb = new QCheckBox(d);
         cb->setChecked(mInput->isEnabled(d));
-        connect(cb, &QCheckBox::toggled, this, [this, d](bool on) { mInput->setEnabled(d, on); });
+        connect(cb, &QCheckBox::toggled, this, [this, d](bool on) {
+            mInput->setEnabled(d, on);
+        });
         mDeviceBox->addWidget(cb);
     }
 }
 
-void MidiMappingsDialog::rebuildTable()
-{
+void MidiMappingsDialog::rebuildTable() {
     mRebuilding = true;
     const auto& list = mMapper.mappings();
     mTable->setRowCount(list.size());
-    for (int r = 0; r < list.size(); ++r)
-    {
+    for (int r = 0; r < list.size(); ++r) {
         const MidiMapping& m = list[r];
-        auto commit = [this, r] { commitRow(r); };
+        auto commit = [this, r] {
+            commitRow(r);
+        };
 
         auto* on = new QCheckBox;
         on->setChecked(m.enabled);
         connect(on, &QCheckBox::toggled, this, commit);
         auto* onCell = new QWidget;
-        auto* onLay  = new QHBoxLayout(onCell);
+        auto* onLay = new QHBoxLayout(onCell);
         onLay->setContentsMargins(6, 0, 0, 0);
         onLay->addWidget(on);
         mTable->setCellWidget(r, ColOn, onCell);
@@ -175,7 +209,9 @@ void MidiMappingsDialog::rebuildTable()
 
         auto* ch = new QComboBox;
         ch->addItem("Any");
-        for (int i = 1; i <= 16; ++i) ch->addItem(QString::number(i));
+        for (int i = 1; i <= 16; ++i) {
+            ch->addItem(QString::number(i));
+        }
         ch->setCurrentIndex(m.channel + 1);
         connect(ch, &QComboBox::currentIndexChanged, this, commit);
         mTable->setCellWidget(r, ColChannel, ch);
@@ -187,10 +223,14 @@ void MidiMappingsDialog::rebuildTable()
         mTable->setCellWidget(r, ColNumber, num);
 
         auto* tgt = new QComboBox;
-        for (const auto& t : mMapper.targets())
+        for (const auto& t : mMapper.targets()) {
             tgt->addItem(t.group.isEmpty() ? t.label : t.group + " · " + t.label, t.id);
+        }
         int idx = tgt->findData(m.target);
-        if (idx < 0) { tgt->addItem("(unknown) " + m.target, m.target); idx = tgt->count() - 1; }
+        if (idx < 0) {
+            tgt->addItem("(unknown) " + m.target, m.target);
+            idx = tgt->count() - 1;
+        }
         tgt->setCurrentIndex(idx);
         tgt->setMaxVisibleItems(24);
         connect(tgt, &QComboBox::currentIndexChanged, this, commit);
@@ -199,7 +239,8 @@ void MidiMappingsDialog::rebuildTable()
         auto* mode = new QComboBox;
         mode->addItems({"Absolute", "Relative", "Toggle", "Momentary"});
         mode->setCurrentIndex(m.mode);
-        mode->setToolTip("Absolute: the control sets the value · Relative: endless encoder (1–63 up, 65–127 down)\n"
+        mode->setToolTip("Absolute: the control sets the value · Relative: endless encoder (1–63 "
+                         "up, 65–127 down)\n"
                          "Toggle: each press flips / fires · Momentary: on while held");
         connect(mode, &QComboBox::currentIndexChanged, this, commit);
         mTable->setCellWidget(r, ColMode, mode);
@@ -220,8 +261,11 @@ void MidiMappingsDialog::rebuildTable()
         learn->setText(learning ? "Listening…" : "Learn");
         learn->setToolTip("Bind this row to the next control you move");
         connect(learn, &QToolButton::clicked, this, [this, r, learning] {
-            if (learning) mMapper.cancelLearn();
-            else          mMapper.learnRow(r);
+            if (learning) {
+                mMapper.cancelLearn();
+            } else {
+                mMapper.learnRow(r);
+            }
         });
         mTable->setCellWidget(r, ColLearn, learn);
 
@@ -230,7 +274,9 @@ void MidiMappingsDialog::rebuildTable()
         del->setToolTip("Delete this mapping");
         connect(del, &QToolButton::clicked, this, [this, r] {
             QList<MidiMapping> list = mMapper.mappings();
-            if (r < list.size()) list.removeAt(r);
+            if (r < list.size()) {
+                list.removeAt(r);
+            }
             mMapper.cancelLearn();
             mMapper.setMappings(list);
         });
@@ -241,21 +287,27 @@ void MidiMappingsDialog::rebuildTable()
     mRebuilding = false;
 }
 
-void MidiMappingsDialog::commitRow(int row)
-{
-    if (mRebuilding) return;
+void MidiMappingsDialog::commitRow(int row) {
+    if (mRebuilding) {
+        return;
+    }
     QList<MidiMapping> list = mMapper.mappings();
-    if (row >= list.size()) return;
+    if (row >= list.size()) {
+        return;
+    }
     MidiMapping& m = list[row];
     auto* onCell = mTable->cellWidget(row, ColOn);
     m.enabled = onCell->findChild<QCheckBox*>()->isChecked();
-    m.source  = MidiMapping::Source(static_cast<QComboBox*>(mTable->cellWidget(row, ColSource))->currentIndex());
+    m.source = MidiMapping::Source(
+        static_cast<QComboBox*>(mTable->cellWidget(row, ColSource))->currentIndex());
     m.channel = static_cast<QComboBox*>(mTable->cellWidget(row, ColChannel))->currentIndex() - 1;
-    m.number  = static_cast<QSpinBox*>(mTable->cellWidget(row, ColNumber))->value();
-    m.target  = static_cast<QComboBox*>(mTable->cellWidget(row, ColTarget))->currentData().toString();
-    m.mode    = MidiMapping::Mode(static_cast<QComboBox*>(mTable->cellWidget(row, ColMode))->currentIndex());
-    m.min     = static_cast<QSpinBox*>(mTable->cellWidget(row, ColMin))->value() / 100.0;
-    m.max     = static_cast<QSpinBox*>(mTable->cellWidget(row, ColMax))->value() / 100.0;
+    m.number = static_cast<QSpinBox*>(mTable->cellWidget(row, ColNumber))->value();
+    m.target =
+        static_cast<QComboBox*>(mTable->cellWidget(row, ColTarget))->currentData().toString();
+    m.mode = MidiMapping::Mode(
+        static_cast<QComboBox*>(mTable->cellWidget(row, ColMode))->currentIndex());
+    m.min = static_cast<QSpinBox*>(mTable->cellWidget(row, ColMin))->value() / 100.0;
+    m.max = static_cast<QSpinBox*>(mTable->cellWidget(row, ColMax))->value() / 100.0;
     mRebuilding = true; // our own edit: the widgets already show it
     mMapper.setMappings(list);
     mRebuilding = false;

@@ -1,13 +1,14 @@
 #pragma once
 
-#include <QJsonObject>
-#include <QMainWindow>
-#include <QPoint>
-#include <QTimer>
 #include <functional>
 #include <memory>
 #include <unordered_map>
 #include <vector>
+
+#include <QJsonObject>
+#include <QMainWindow>
+#include <QPoint>
+#include <QTimer>
 
 #include "AudioEngine.h"
 #include "EffectShortcuts.h"
@@ -74,11 +75,11 @@ private slots:
     void onImportIR();
     void onUnloadIR();
 
-    void onSavePreset();   // overwrite the current file; Save As when untitled
+    void onSavePreset(); // overwrite the current file; Save As when untitled
     void onSavePresetAs();
     void onLoadPreset();
     void onImportPresets(); // copy files into the presets folder, load the last
-    void onExportPreset();  // write a copy elsewhere; the current file is unchanged
+    void onExportPreset(); // write a copy elsewhere; the current file is unchanged
     void onDeletePreset();
     void onLocatePreset();
     void onResetAll();
@@ -112,8 +113,8 @@ private:
     // ‹ › on the hero rows: next/previous entry in the library's visible order.
     void stepLibrary(LibraryEntry::Kind kind, int step);
     // Hero row scaffold: ‹ › Browse + origin mark + name + metadata labels.
-    void makeHeroControls(QWidget* card, LibraryEntry::Kind kind,
-                          QLabel*& nameOut, QLabel*& metaOut, QLabel*& originOut);
+    void makeHeroControls(QWidget* card, LibraryEntry::Kind kind, QLabel*& nameOut,
+                          QLabel*& metaOut, QLabel*& originOut);
     // Preset references a TONE3000 model that isn't on disk: find it in the
     // library by model id, else offer to download it. Calls `then(path)`
     // with an empty path when nothing could be resolved.
@@ -124,8 +125,7 @@ private:
     // controls to the card's QHBoxLayout.
     QFrame* makeRowCard(const QString& title);
     // Full effect row: scaffold + enable toggle + stereo slot + knobs.
-    QWidget* makeEffectRow(const QString& title,
-                           ToggleSwitch*& toggleOut,
+    QWidget* makeEffectRow(const QString& title, ToggleSwitch*& toggleOut,
                            const std::initializer_list<KnobWidget*>& knobs,
                            ToggleSwitch** stereoToggleOut = nullptr);
 
@@ -136,11 +136,11 @@ private:
     // as does a tempo change.
     struct SyncedParam
     {
-        KnobWidget*   freeKnob;
-        KnobWidget*   noteKnob;
+        KnobWidget* freeKnob;
+        KnobWidget* noteKnob;
         ToggleSwitch* sync;
-        bool          isTime;     // ms (delay) vs Hz (LFO)
-        double        min, max;   // engine range; synced values are clamped
+        bool isTime; // ms (delay) vs Hz (LFO)
+        double min, max; // engine range; synced values are clamped
         std::function<void(double)> push;
     };
     void addTempoSync(QWidget* card, KnobWidget* freeKnob, const QString& label, bool isTime,
@@ -223,159 +223,162 @@ private:
     std::unique_ptr<AudioEngine> mEngine;
 
     // Effect strip state
-    struct CardToggles { ToggleSwitch* enable; ToggleSwitch* stereo; };
-    std::unordered_map<EffectBase*, QWidget*>    mFxCols;
+    struct CardToggles
+    {
+        ToggleSwitch* enable;
+        ToggleSwitch* stereo;
+    };
+    std::unordered_map<EffectBase*, QWidget*> mFxCols;
     std::unordered_map<EffectBase*, CardToggles> mFxToggles;
-    std::unordered_map<QWidget*, QWidget*>       mCardGrips; // card → ≡ drag handle
-    QWidget*     mStrip      = nullptr;
-    QVBoxLayout* mStripLay   = nullptr;
-    QWidget*     mInputCard  = nullptr;
-    QWidget*     mOutputCard = nullptr;
+    std::unordered_map<QWidget*, QWidget*> mCardGrips; // card → ≡ drag handle
+    QWidget* mStrip = nullptr;
+    QVBoxLayout* mStripLay = nullptr;
+    QWidget* mInputCard = nullptr;
+    QWidget* mOutputCard = nullptr;
     EffectShortcuts mShortcuts{this};
 
     // Drag state for card reordering
     QWidget* mDragCard = nullptr;
-    QPoint   mDragStartPos;
-    std::string              mDragId;      // effect ID being dragged; empty = no drag
-    std::vector<std::string> mPreviewIds;  // strip order currently shown while dragging
+    QPoint mDragStartPos;
+    std::string mDragId; // effect ID being dragged; empty = no drag
+    std::vector<std::string> mPreviewIds; // strip order currently shown while dragging
 
-    QLabel*      mLblNAMStatus  = nullptr; // file name (accent when loaded)
-    QLabel*      mLblNAMMeta    = nullptr; // architecture · rate · gear
-    QLabel*      mLblIRStatus   = nullptr;
-    QLabel*      mLblIRMeta     = nullptr;
-    QLabel*      mLblIRBStatus  = nullptr; // Cabinet slot B (detail row)
+    QLabel* mLblNAMStatus = nullptr; // file name (accent when loaded)
+    QLabel* mLblNAMMeta = nullptr; // architecture · rate · gear
+    QLabel* mLblIRStatus = nullptr;
+    QLabel* mLblIRMeta = nullptr;
+    QLabel* mLblIRBStatus = nullptr; // Cabinet slot B (detail row)
 
-    LibraryIndex*   mLibraryIndex = nullptr;
-    Tone3000Client* mTone3000     = nullptr;
-    LibraryDock*    mLibraryTabs  = nullptr;
-    LibraryPanel*   mLibrary      = nullptr; // local tab (owned by mLibraryTabs)
-    Tone3000Panel*  mT3kPanel     = nullptr; // community tab
-    QDockWidget*    mLibraryDock  = nullptr;
-    QLabel*         mLblNAMOrigin = nullptr; // T3K mark when the model came from TONE3000
-    QLabel*         mLblIROrigin  = nullptr;
+    LibraryIndex* mLibraryIndex = nullptr;
+    Tone3000Client* mTone3000 = nullptr;
+    LibraryDock* mLibraryTabs = nullptr;
+    LibraryPanel* mLibrary = nullptr; // local tab (owned by mLibraryTabs)
+    Tone3000Panel* mT3kPanel = nullptr; // community tab
+    QDockWidget* mLibraryDock = nullptr;
+    QLabel* mLblNAMOrigin = nullptr; // T3K mark when the model came from TONE3000
+    QLabel* mLblIROrigin = nullptr;
 
     AudioStatusBar* mAudioBar = nullptr;
-    QLabel*         mLblRigStatus = nullptr;
-    bool            mAudioOk  = false; // last known backend state (drives the
-                                       // disconnect watchdog in updateMeters)
+    QLabel* mLblRigStatus = nullptr;
+    bool mAudioOk = false; // last known backend state (drives the
+                           // disconnect watchdog in updateMeters)
 
-    VUMeter* mMeterIn  = nullptr;
+    VUMeter* mMeterIn = nullptr;
     VUMeter* mMeterOut = nullptr;
     GainReductionMeter* mGrGate = nullptr;
     GainReductionMeter* mGrComp = nullptr;
 
     TunerDisplay* mTunerDisplay = nullptr;
-    int           mTunerRefHz   = 440;
+    int mTunerRefHz = 440;
 
-    KnobWidget* mKnobInputGain  = nullptr;
+    KnobWidget* mKnobInputGain = nullptr;
     KnobWidget* mKnobOutputGain = nullptr;
 
     ToggleSwitch* mSwEQEnable = nullptr;
-    KnobWidget*   mKnobLow    = nullptr;
-    KnobWidget*   mKnobMid    = nullptr;
-    KnobWidget*   mKnobTreble = nullptr;
+    KnobWidget* mKnobLow = nullptr;
+    KnobWidget* mKnobMid = nullptr;
+    KnobWidget* mKnobTreble = nullptr;
 
     ToggleSwitch* mSwTunerEnable = nullptr;
 
-    ToggleSwitch* mSwGateEnable   = nullptr;
-    KnobWidget*   mKnobGateThresh  = nullptr;
-    KnobWidget*   mKnobGateAttack  = nullptr;
-    KnobWidget*   mKnobGateRelease = nullptr;
+    ToggleSwitch* mSwGateEnable = nullptr;
+    KnobWidget* mKnobGateThresh = nullptr;
+    KnobWidget* mKnobGateAttack = nullptr;
+    KnobWidget* mKnobGateRelease = nullptr;
 
-    ToggleSwitch* mSwCompEnable   = nullptr;
-    KnobWidget*   mKnobCompThresh  = nullptr;
-    KnobWidget*   mKnobCompRatio   = nullptr;
-    KnobWidget*   mKnobCompAttack  = nullptr;
-    KnobWidget*   mKnobCompRelease = nullptr;
-    KnobWidget*   mKnobCompMakeup  = nullptr;
+    ToggleSwitch* mSwCompEnable = nullptr;
+    KnobWidget* mKnobCompThresh = nullptr;
+    KnobWidget* mKnobCompRatio = nullptr;
+    KnobWidget* mKnobCompAttack = nullptr;
+    KnobWidget* mKnobCompRelease = nullptr;
+    KnobWidget* mKnobCompMakeup = nullptr;
 
-    ToggleSwitch* mSwWahEnable  = nullptr;
-    KnobWidget*   mKnobWahSens  = nullptr;
-    KnobWidget*   mKnobWahRes   = nullptr;
-    KnobWidget*   mKnobWahMix   = nullptr;
-
+    ToggleSwitch* mSwWahEnable = nullptr;
+    KnobWidget* mKnobWahSens = nullptr;
+    KnobWidget* mKnobWahRes = nullptr;
+    KnobWidget* mKnobWahMix = nullptr;
 
     ToggleSwitch* mSwFlangerEnable = nullptr;
     ToggleSwitch* mSwFlangerStereo = nullptr;
-    KnobWidget*   mKnobFlRate      = nullptr;
-    KnobWidget*   mKnobFlDepth     = nullptr;
-    KnobWidget*   mKnobFlFeedback  = nullptr;
-    KnobWidget*   mKnobFlMix       = nullptr;
+    KnobWidget* mKnobFlRate = nullptr;
+    KnobWidget* mKnobFlDepth = nullptr;
+    KnobWidget* mKnobFlFeedback = nullptr;
+    KnobWidget* mKnobFlMix = nullptr;
 
     ToggleSwitch* mSwPhaserEnable = nullptr;
     ToggleSwitch* mSwPhaserStereo = nullptr;
-    KnobWidget*   mKnobPhRate     = nullptr;
-    KnobWidget*   mKnobPhDepth    = nullptr;
-    KnobWidget*   mKnobPhFeedback = nullptr;
-    KnobWidget*   mKnobPhMix      = nullptr;
+    KnobWidget* mKnobPhRate = nullptr;
+    KnobWidget* mKnobPhDepth = nullptr;
+    KnobWidget* mKnobPhFeedback = nullptr;
+    KnobWidget* mKnobPhMix = nullptr;
 
     ToggleSwitch* mSwChorusEnable = nullptr;
     ToggleSwitch* mSwChorusStereo = nullptr;
-    KnobWidget*   mKnobChRate    = nullptr;
-    KnobWidget*   mKnobChDepth   = nullptr;
-    KnobWidget*   mKnobChMix     = nullptr;
+    KnobWidget* mKnobChRate = nullptr;
+    KnobWidget* mKnobChDepth = nullptr;
+    KnobWidget* mKnobChMix = nullptr;
 
     ToggleSwitch* mSwTremoloEnable = nullptr;
     ToggleSwitch* mSwTremoloStereo = nullptr;
-    KnobWidget*   mKnobTrRate     = nullptr;
-    KnobWidget*   mKnobTrDepth    = nullptr;
+    KnobWidget* mKnobTrRate = nullptr;
+    KnobWidget* mKnobTrDepth = nullptr;
 
     ToggleSwitch* mSwDelayEnable = nullptr;
     ToggleSwitch* mSwDelayStereo = nullptr;
-    KnobWidget*   mKnobDelTime     = nullptr;
-    KnobWidget*   mKnobDelFeedback = nullptr;
-    KnobWidget*   mKnobDelMix      = nullptr;
+    KnobWidget* mKnobDelTime = nullptr;
+    KnobWidget* mKnobDelFeedback = nullptr;
+    KnobWidget* mKnobDelMix = nullptr;
 
     ToggleSwitch* mSwReverbEnable = nullptr;
-    KnobWidget*   mKnobRevRoom    = nullptr;
-    KnobWidget*   mKnobRevDamping = nullptr;
-    KnobWidget*   mKnobRevWidth   = nullptr;
-    KnobWidget*   mKnobRevMix     = nullptr;
+    KnobWidget* mKnobRevRoom = nullptr;
+    KnobWidget* mKnobRevDamping = nullptr;
+    KnobWidget* mKnobRevWidth = nullptr;
+    KnobWidget* mKnobRevMix = nullptr;
 
     ToggleSwitch* mSwTransposeEnable = nullptr;
     ToggleSwitch* mSwDriveEnable = nullptr;
-    KnobWidget*   mKnobDrive     = nullptr;
-    KnobWidget*   mKnobDriveTone = nullptr;
-    KnobWidget*   mKnobDriveLevel = nullptr;
+    KnobWidget* mKnobDrive = nullptr;
+    KnobWidget* mKnobDriveTone = nullptr;
+    KnobWidget* mKnobDriveLevel = nullptr;
 
     ToggleSwitch* mSwDoublerEnable = nullptr;
-    KnobWidget*   mKnobDblSpread  = nullptr;
-    KnobWidget*   mKnobDblMix     = nullptr;
+    KnobWidget* mKnobDblSpread = nullptr;
+    KnobWidget* mKnobDblMix = nullptr;
 
     ToggleSwitch* mSwVolumeEnable = nullptr;
-    KnobWidget*   mKnobVolPos     = nullptr;
-    KnobWidget*   mKnobVolMid     = nullptr;
+    KnobWidget* mKnobVolPos = nullptr;
+    KnobWidget* mKnobVolMid = nullptr;
 
-    ToggleSwitch* mSwLimiter   = nullptr; // Output card
+    ToggleSwitch* mSwLimiter = nullptr; // Output card
     ToggleSwitch* mSwNAMStereo = nullptr; // Amplifier row: per-channel amp
 
     ToggleSwitch* mSwNAMEnable = nullptr;
-    ToggleSwitch* mSwIREnable  = nullptr;
+    ToggleSwitch* mSwIREnable = nullptr;
 
     void updateMeterTimer();
 
-    QTimer* mMeterTimer  = nullptr; // ~60 fps, paused while minimized/hidden
+    QTimer* mMeterTimer = nullptr; // ~60 fps, paused while minimized/hidden
     QTimer* mStatusTimer = nullptr; // 50 ms, always
     QTimer* mTunerTimer = nullptr;
     QTimer* mSessionSaveTimer = nullptr;
 
-    TempoBar*   mTempoBar  = nullptr;
-    double      mBpm       = 120.0;
+    TempoBar* mTempoBar = nullptr;
+    double mBpm = 120.0;
     std::vector<SyncedParam> mSynced;
-    PresetBar*  mPresetBar = nullptr;
-    QString     mPresetPath;        // current preset file; empty = untitled
-    QJsonObject mPresetBaseline;    // toJson() when it was loaded/saved
-    QJsonObject mAb[2];             // A/B snapshots; empty = not taken yet
-    int         mAbActive = 0;
-    QTimer*     mPresetStateTimer = nullptr;
+    PresetBar* mPresetBar = nullptr;
+    QString mPresetPath; // current preset file; empty = untitled
+    QJsonObject mPresetBaseline; // toJson() when it was loaded/saved
+    QJsonObject mAb[2]; // A/B snapshots; empty = not taken yet
+    int mAbActive = 0;
+    QTimer* mPresetStateTimer = nullptr;
 
     std::unique_ptr<MidiInput> mMidi;
-    MidiMapper* mMidiMapper   = nullptr;
-    bool        mMidiOk       = false;
-    QShortcut*  mLearnEsc     = nullptr;
-    QWidget*    mLearnWidget  = nullptr; // highlighted while learning
-    QString     mLearnTarget;
-    QLabel*     mLblMidi      = nullptr; // status bar activity light
-    QMenu*      mMidiMenu     = nullptr;
-    QTimer*     mMidiBlink    = nullptr;
+    MidiMapper* mMidiMapper = nullptr;
+    bool mMidiOk = false;
+    QShortcut* mLearnEsc = nullptr;
+    QWidget* mLearnWidget = nullptr; // highlighted while learning
+    QString mLearnTarget;
+    QLabel* mLblMidi = nullptr; // status bar activity light
+    QMenu* mMidiMenu = nullptr;
+    QTimer* mMidiBlink = nullptr;
 };

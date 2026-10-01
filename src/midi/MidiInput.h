@@ -1,10 +1,11 @@
 #pragma once
 
+#include <memory>
+
 #include <QObject>
 #include <QSet>
 #include <QString>
 #include <QStringList>
-#include <memory>
 
 #include "MidiMessage.h"
 
@@ -32,7 +33,9 @@ public:
     /// Currently present source devices, sorted.
     virtual QStringList devices() const = 0;
 
-    bool isEnabled(const QString& device) const { return !mDisabled.contains(device); }
+    bool isEnabled(const QString& device) const {
+        return !mDisabled.contains(device);
+    }
     void setEnabled(const QString& device, bool on);
 
 signals:

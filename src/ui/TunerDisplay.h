@@ -21,20 +21,24 @@ public:
     void setShowHz(bool on);
     void setReference(int hz);
 
-    QSize sizeHint()        const override { return {380, 48}; }
-    QSize minimumSizeHint() const override { return {260, 48}; }
+    QSize sizeHint() const override {
+        return {380, 48};
+    }
+    QSize minimumSizeHint() const override {
+        return {260, 48};
+    }
 
 protected:
     void paintEvent(QPaintEvent* event) override;
 
 private:
     QString mNote{"-"};
-    float   mCents{0.0f};
-    bool    mValid{false};
-    float   mHz{0.0f};
-    bool    mShowHz{false};
-    int     mReference{440};
+    float mCents{0.0f};
+    bool mValid{false};
+    float mHz{0.0f};
+    bool mShowHz{false};
+    int mReference{440};
 
-    static constexpr int   kLedCount    = 21;   // odd, so one LED is dead center
+    static constexpr int kLedCount = 21; // odd, so one LED is dead center
     static constexpr float kInTuneCents = 3.0f; // |cents| at or below: green
 };

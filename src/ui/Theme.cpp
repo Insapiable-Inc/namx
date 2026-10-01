@@ -1,13 +1,15 @@
 #include "Theme.h"
-#include "KnobWidget.h"
-#include "ToggleSwitch.h"
 
 #include <QApplication>
 #include <QPalette>
 #include <QStyle>
 #include <QWidget>
 
-namespace Theme {
+#include "KnobWidget.h"
+#include "ToggleSwitch.h"
+
+namespace Theme
+{
 
 // ---------------------------------------------------------------------------
 // Palette
@@ -15,71 +17,100 @@ namespace Theme {
 
 // Per-effect accents (user-chosen, 2026-08-10). IDs match
 // AudioEngine::mEffectTable; "neutral" covers Input/Output and fallbacks.
-struct FxColor { const char* id; const char* accent; };
+struct FxColor
+{
+    const char* id;
+    const char* accent;
+};
 static constexpr FxColor kFxColors[] = {
-    {"tuner",   "#b6aa8d"},
-    {"gate",    "#8f969e"},
-    {"comp",    "#4f78bd"},
-    {"wah",     "#d4c19a"},
-    {"flanger", "#93477b"},
-    {"phaser",  "#4bba5b"},
-    {"nam",     "#e4b954"},
-    {"eq",      "#a5a38f"},
-    {"chorus",  "#8dccf3"},
-    {"tremolo", "#19848e"},
-    {"delay",   "#aaa6a0"},
-    {"reverb",  "#8f7d99"},
-    {"ir",      "#ef661a"},
-    {"drive",   "#d65a5a"},
-    {"doubler", "#e0a3c2"},
-    {"volume",  "#9fb4c7"},
-    {"transpose", "#c9a6f2"},
-    {"neutral", "#7d8590"},
+    {"tuner", "#b6aa8d"},     {"gate", "#8f969e"},    {"comp", "#4f78bd"},    {"wah", "#d4c19a"},
+    {"flanger", "#93477b"},   {"phaser", "#4bba5b"},  {"nam", "#e4b954"},     {"eq", "#a5a38f"},
+    {"chorus", "#8dccf3"},    {"tremolo", "#19848e"}, {"delay", "#aaa6a0"},   {"reverb", "#8f7d99"},
+    {"ir", "#ef661a"},        {"drive", "#d65a5a"},   {"doubler", "#e0a3c2"}, {"volume", "#9fb4c7"},
+    {"transpose", "#c9a6f2"}, {"neutral", "#7d8590"},
 };
 
-QColor accent(const QString& fxId)
-{
-    for (const auto& fc : kFxColors)
-        if (fxId == QLatin1String(fc.id))
+QColor accent(const QString& fxId) {
+    for (const auto& fc : kFxColors) {
+        if (fxId == QLatin1String(fc.id)) {
             return QColor(fc.accent);
+        }
+    }
     return QColor("#7d8590");
 }
 
-QColor genericAccent() { return QColor("#5cc8a8"); }
+QColor genericAccent() {
+    return QColor("#5cc8a8");
+}
 
 // Neutral chrome tones (keep in sync with the stylesheet below).
-QColor track()       { return QColor("#2a2f38"); }
-QColor trackHover()  { return QColor("#353c4a"); }
-QColor knobBodyTop() { return QColor("#2e3441"); }
-QColor knobBodyBot() { return QColor("#1c2028"); }
-QColor bezel()       { return QColor("#0e1015"); }
-QColor well()        { return QColor("#181b22"); }
-QColor dimText()     { return QColor("#aab0bc"); }
-QColor thumbTop()    { return QColor("#ffffff"); }
-QColor thumbBot()    { return QColor("#d8dee9"); }
+QColor track() {
+    return QColor("#2a2f38");
+}
+QColor trackHover() {
+    return QColor("#353c4a");
+}
+QColor knobBodyTop() {
+    return QColor("#2e3441");
+}
+QColor knobBodyBot() {
+    return QColor("#1c2028");
+}
+QColor bezel() {
+    return QColor("#0e1015");
+}
+QColor well() {
+    return QColor("#181b22");
+}
+QColor dimText() {
+    return QColor("#aab0bc");
+}
+QColor thumbTop() {
+    return QColor("#ffffff");
+}
+QColor thumbBot() {
+    return QColor("#d8dee9");
+}
 
-QColor meterLow()    { return QColor("#5cc8a8"); }
-QColor meterMid()    { return QColor("#f0c850"); }
-QColor meterHigh()   { return QColor("#e85a4f"); }
-QColor meterClip()   { return QColor("#ff5252"); }
+QColor meterLow() {
+    return QColor("#5cc8a8");
+}
+QColor meterMid() {
+    return QColor("#f0c850");
+}
+QColor meterHigh() {
+    return QColor("#e85a4f");
+}
+QColor meterClip() {
+    return QColor("#ff5252");
+}
 
-QColor ledGreen()    { return QColor("#42e86c"); }
-QColor ledRed()      { return QColor("#ff453a"); }
-QColor displayBg()   { return QColor("#07080c"); }
+QColor ledGreen() {
+    return QColor("#42e86c");
+}
+QColor ledRed() {
+    return QColor("#ff453a");
+}
+QColor displayBg() {
+    return QColor("#07080c");
+}
 
-void tagCard(QWidget* card, const QString& fxId)
-{
-    if (!card) return;
+void tagCard(QWidget* card, const QString& fxId) {
+    if (!card) {
+        return;
+    }
     card->setProperty("fx", fxId);
 
     // The app stylesheet disables parent→child palette propagation, so the
     // accents are pushed to the interactive descendants explicitly. Call
     // tagCard AFTER the card's knobs/toggles have been created.
     const QColor a = accent(fxId);
-    for (auto* k : card->findChildren<KnobWidget*>())
+    for (auto* k : card->findChildren<KnobWidget*>()) {
         k->setAccent(a);
-    for (auto* t : card->findChildren<ToggleSwitch*>())
+    }
+    for (auto* t : card->findChildren<ToggleSwitch*>()) {
         t->setAccent(a);
+    }
 
     if (card->style()) {
         card->style()->unpolish(card);
@@ -754,32 +785,30 @@ QToolTip {
 }
 )";
 
-void apply(QApplication& app)
-{
+void apply(QApplication& app) {
     app.setStyle("Fusion");
     app.setStyleSheet(QString::fromUtf8(kAppStyleSheet));
 }
 
-void applyTo(QWidget& root)
-{
+void applyTo(QWidget& root) {
     QPalette p;
-    p.setColor(QPalette::Window,          QColor("#15171c"));
-    p.setColor(QPalette::WindowText,      QColor("#d8dee9"));
-    p.setColor(QPalette::Base,            QColor("#1a1d24"));
-    p.setColor(QPalette::AlternateBase,   QColor("#1f242c"));
-    p.setColor(QPalette::ToolTipBase,     QColor("#232830"));
-    p.setColor(QPalette::ToolTipText,     QColor("#d8dee9"));
-    p.setColor(QPalette::Text,            QColor("#d8dee9"));
-    p.setColor(QPalette::Button,          QColor("#2a2f38"));
-    p.setColor(QPalette::ButtonText,      QColor("#d8dee9"));
-    p.setColor(QPalette::BrightText,      QColor("#ffffff"));
-    p.setColor(QPalette::Mid,             QColor("#353c4a"));
-    p.setColor(QPalette::Dark,            QColor("#15171c"));
-    p.setColor(QPalette::Shadow,          QColor("#0a0c10"));
-    p.setColor(QPalette::Highlight,       QColor("#5cc8a8"));
+    p.setColor(QPalette::Window, QColor("#15171c"));
+    p.setColor(QPalette::WindowText, QColor("#d8dee9"));
+    p.setColor(QPalette::Base, QColor("#1a1d24"));
+    p.setColor(QPalette::AlternateBase, QColor("#1f242c"));
+    p.setColor(QPalette::ToolTipBase, QColor("#232830"));
+    p.setColor(QPalette::ToolTipText, QColor("#d8dee9"));
+    p.setColor(QPalette::Text, QColor("#d8dee9"));
+    p.setColor(QPalette::Button, QColor("#2a2f38"));
+    p.setColor(QPalette::ButtonText, QColor("#d8dee9"));
+    p.setColor(QPalette::BrightText, QColor("#ffffff"));
+    p.setColor(QPalette::Mid, QColor("#353c4a"));
+    p.setColor(QPalette::Dark, QColor("#15171c"));
+    p.setColor(QPalette::Shadow, QColor("#0a0c10"));
+    p.setColor(QPalette::Highlight, QColor("#5cc8a8"));
     p.setColor(QPalette::HighlightedText, QColor("#15171c"));
 
-    p.setColor(QPalette::Disabled, QPalette::Text,       QColor("#555c6b"));
+    p.setColor(QPalette::Disabled, QPalette::Text, QColor("#555c6b"));
     p.setColor(QPalette::Disabled, QPalette::WindowText, QColor("#555c6b"));
     p.setColor(QPalette::Disabled, QPalette::ButtonText, QColor("#555c6b"));
 
@@ -789,11 +818,9 @@ void applyTo(QWidget& root)
     // and the loaded-file label on the Amplifier/Cabinet rows (knob rings and
     // toggles get theirs pushed by tagCard).
     QString qss = QString::fromUtf8(kStyleSheet);
-    for (const auto& fc : kFxColors)
-    {
-        qss += QString::fromUtf8(
-                   "QFrame[fx=\"%1\"] QLabel#fxName { color: %2; }\n"
-                   "QFrame[fx=\"%1\"] QLabel#fileStatusOk { color: %2; }\n")
+    for (const auto& fc : kFxColors) {
+        qss += QString::fromUtf8("QFrame[fx=\"%1\"] QLabel#fxName { color: %2; }\n"
+                                 "QFrame[fx=\"%1\"] QLabel#fileStatusOk { color: %2; }\n")
                    .arg(QLatin1String(fc.id), QLatin1String(fc.accent));
     }
     root.setStyleSheet(qss);

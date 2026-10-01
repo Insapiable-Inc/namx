@@ -27,7 +27,7 @@
 #include <xmmintrin.h>
 #endif
 
-#include "NAM/activations.h"
+#include <NAM/activations.h>
 
 #include "ChorusProcessor.h"
 #include "CompressorProcessor.h"
@@ -40,101 +40,126 @@
 #include "IRProcessor.h"
 #include "NamProcessor.h"
 #include "NoiseGateProcessor.h"
+#include "OutputLimiter.h"
 #include "PhaserProcessor.h"
 #include "ReverbProcessor.h"
+#include "TransposeProcessor.h"
 #include "TremoloProcessor.h"
 #include "TunerProcessor.h"
 #include "VolumeProcessor.h"
-#include "TransposeProcessor.h"
-#include "OutputLimiter.h"
 
-namespace {
+namespace
+{
 
 struct Stage
 {
-    const char*         name;
-    EffectBase*         fx;
+    const char* name;
+    EffectBase* fx;
     std::vector<double> us; // per-block time
 };
 
-void usage()
-{
-    std::puts("usage: NAMPlayerBench [--model file.nam] [--ir file.wav] [--ir-b file.wav] [--frames N] [--rate HZ]\n"
+void usage() {
+    std::puts("usage: NAMPlayerBench [--model file.nam] [--ir file.wav] [--ir-b file.wav] "
+              "[--frames N] [--rate HZ]\n"
               "                      [--blocks N] [--no-fast-tanh] [--only NAME[,NAME…]]\n"
               "Without --model/--ir the amp/cab stages are skipped. --only limits the\n"
               "enabled stages (names as printed, case-insensitive).");
 }
 
-double percentile(std::vector<double> v, double p)
-{
-    if (v.empty()) return 0.0;
+double percentile(std::vector<double> v, double p) {
+    if (v.empty()) {
+        return 0.0;
+    }
     std::sort(v.begin(), v.end());
     const size_t i = std::min(v.size() - 1, static_cast<size_t>(p * (v.size() - 1) + 0.5));
     return v[i];
 }
 
-bool listed(const std::string& only, const char* name)
-{
-    if (only.empty()) return true;
+bool listed(const std::string& only, const char* name) {
+    if (only.empty()) {
+        return true;
+    }
     std::string hay = "," + only + ",", needle = std::string(",") + name + ",";
-    auto lower = [](std::string s) { for (auto& c : s) c = static_cast<char>(std::tolower(c)); return s; };
+    auto lower = [](std::string s) {
+        for (auto& c : s) {
+            c = static_cast<char>(std::tolower(c));
+        }
+        return s;
+    };
     return lower(hay).find(lower(needle)) != std::string::npos;
 }
 
 } // namespace
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv) {
     std::string model, ir, irB, only;
-    int    frames   = 128;
-    double rate     = 48000.0;
-    int    blocks   = 4000;
-    bool   fastTanh = true;
+    int frames = 128;
+    double rate = 48000.0;
+    int blocks = 4000;
+    bool fastTanh = true;
 
-    for (int i = 1; i < argc; ++i)
-    {
+    for (int i = 1; i < argc; ++i) {
         const std::string a = argv[i];
         auto next = [&]() -> const char* {
-            if (i + 1 >= argc) { usage(); std::exit(2); }
+            if (i + 1 >= argc) {
+                usage();
+                std::exit(2);
+            }
             return argv[++i];
         };
-        if      (a == "--model")        model    = next();
-        else if (a == "--ir")           ir       = next();
-        else if (a == "--ir-b")         irB      = next();
-        else if (a == "--frames")       frames   = std::atoi(next());
-        else if (a == "--rate")         rate     = std::atof(next());
-        else if (a == "--blocks")       blocks   = std::atoi(next());
-        else if (a == "--only")         only     = next();
-        else if (a == "--no-fast-tanh") fastTanh = false;
-        else { usage(); return a == "--help" || a == "-h" ? 0 : 2; }
+        if (a == "--model") {
+            model = next();
+        } else if (a == "--ir") {
+            ir = next();
+        } else if (a == "--ir-b") {
+            irB = next();
+        } else if (a == "--frames") {
+            frames = std::atoi(next());
+        } else if (a == "--rate") {
+            rate = std::atof(next());
+        } else if (a == "--blocks") {
+            blocks = std::atoi(next());
+        } else if (a == "--only") {
+            only = next();
+        } else if (a == "--no-fast-tanh") {
+            fastTanh = false;
+        } else {
+            usage();
+            return a == "--help" || a == "-h" ? 0 : 2;
+        }
     }
-    if (frames <= 0 || rate <= 0.0 || blocks <= 0) { usage(); return 2; }
+    if (frames <= 0 || rate <= 0.0 || blocks <= 0) {
+        usage();
+        return 2;
+    }
 
-    if (fastTanh) nam::activations::Activation::enable_fast_tanh();
+    if (fastTanh) {
+        nam::activations::Activation::enable_fast_tanh();
+    }
 #if defined(__x86_64__) || defined(__i386__) || defined(_M_X64)
     // Same MXCSR as the backends' audio threads: denormals flushed to zero.
     _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
     _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
 #endif
 
-    TunerProcessor      tuner;
-    NoiseGateProcessor  gate;
+    TunerProcessor tuner;
+    NoiseGateProcessor gate;
     CompressorProcessor comp;
     DynamicWahProcessor wah;
-    FlangerProcessor    flanger;
-    PhaserProcessor     phaser;
-    NamProcessor        nam;
-    EQProcessor         eq;
-    ChorusProcessor     chorus;
-    TremoloProcessor    tremolo;
-    DelayProcessor      delay;
-    ReverbProcessor     reverb;
-    IRProcessor         cab;
-    DriveProcessor      drive;
-    DoublerProcessor    doubler;
-    VolumeProcessor     volume;
-    OutputLimiter       limiter;
-    TransposeProcessor  transpose;
+    FlangerProcessor flanger;
+    PhaserProcessor phaser;
+    NamProcessor nam;
+    EQProcessor eq;
+    ChorusProcessor chorus;
+    TremoloProcessor tremolo;
+    DelayProcessor delay;
+    ReverbProcessor reverb;
+    IRProcessor cab;
+    DriveProcessor drive;
+    DoublerProcessor doubler;
+    VolumeProcessor volume;
+    OutputLimiter limiter;
+    TransposeProcessor transpose;
     transpose.setSemitones(-2.0f); // a drop tuning: the shifter's real cost
 
     // Same defaults as AudioEngine's constructor.
@@ -144,39 +169,42 @@ int main(int argc, char** argv)
     reverb.setStereoMode(true);
 
     std::vector<Stage> chain = {
-        {"Tuner", &tuner, {}},     {"Transpose", &transpose, {}}, {"Gate", &gate, {}},       {"Compressor", &comp, {}},
-        {"Wah", &wah, {}},         {"Flanger", &flanger, {}}, {"Phaser", &phaser, {}},
-        {"Drive", &drive, {}},     {"Amp", &nam, {}},         {"EQ", &eq, {}},
-        {"Doubler", &doubler, {}}, {"Chorus", &chorus, {}},   {"Tremolo", &tremolo, {}},
-        {"Delay", &delay, {}},     {"Reverb", &reverb, {}},   {"Cab", &cab, {}},
+        {"Tuner", &tuner, {}},     {"Transpose", &transpose, {}},
+        {"Gate", &gate, {}},       {"Compressor", &comp, {}},
+        {"Wah", &wah, {}},         {"Flanger", &flanger, {}},
+        {"Phaser", &phaser, {}},   {"Drive", &drive, {}},
+        {"Amp", &nam, {}},         {"EQ", &eq, {}},
+        {"Doubler", &doubler, {}}, {"Chorus", &chorus, {}},
+        {"Tremolo", &tremolo, {}}, {"Delay", &delay, {}},
+        {"Reverb", &reverb, {}},   {"Cab", &cab, {}},
         {"Volume", &volume, {}},
     };
 
-    for (auto& s : chain)
-    {
+    for (auto& s : chain) {
         s.fx->setSampleRate(rate);
         s.fx->setEnabled(listed(only, s.name));
     }
     nam.prepareBuffer(frames);
-    if (!model.empty() && !nam.loadModel(model))
-    {
+    if (!model.empty() && !nam.loadModel(model)) {
         std::fprintf(stderr, "model: %s\n", nam.lastError().c_str());
         return 1;
     }
-    if (!ir.empty() && !cab.load(ir))
-    {
+    if (!ir.empty() && !cab.load(ir)) {
         std::fprintf(stderr, "ir: %s\n", cab.lastError().c_str());
         return 1;
     }
-    if (!irB.empty() && !cab.loadB(irB))
-    {
+    if (!irB.empty() && !cab.loadB(irB)) {
         std::fprintf(stderr, "ir-b: %s\n", cab.lastErrorB().c_str());
         return 1;
     }
     nam.reclaimRetired(true);
     cab.reclaimRetired(true);
-    if (model.empty()) nam.setEnabled(false);
-    if (ir.empty())    cab.setEnabled(false);
+    if (model.empty()) {
+        nam.setEnabled(false);
+    }
+    if (ir.empty()) {
+        cab.setEnabled(false);
+    }
 
     std::vector<float> L(frames), R(frames);
     std::mt19937 rng(1234);
@@ -190,61 +218,86 @@ int main(int argc, char** argv)
     bool finite = true;
     std::vector<double> total;
     total.reserve(blocks);
-    for (auto& s : chain) s.us.reserve(blocks);
+    for (auto& s : chain) {
+        s.us.reserve(blocks);
+    }
 
     using clock = std::chrono::steady_clock;
-    for (int b = 0; b < warmup + blocks; ++b)
-    {
-        for (int i = 0; i < frames; ++i) L[i] = R[i] = noise(rng);
+    for (int b = 0; b < warmup + blocks; ++b) {
+        for (int i = 0; i < frames; ++i) {
+            L[i] = R[i] = noise(rng);
+        }
         bool stereo = false;
         double blockUs = 0.0;
-        for (auto& s : chain)
-        {
+        for (auto& s : chain) {
             const auto t0 = clock::now();
             stereo = s.fx->process(L.data(), R.data(), frames, stereo);
             const double us = std::chrono::duration<double, std::micro>(clock::now() - t0).count();
             blockUs += us;
-            if (b >= warmup) s.us.push_back(us);
+            if (b >= warmup) {
+                s.us.push_back(us);
+            }
         }
         {
             const auto t0 = clock::now();
             limiter.process(L.data(), R.data(), frames);
             const double us = std::chrono::duration<double, std::micro>(clock::now() - t0).count();
             blockUs += us;
-            if (b >= warmup) limiterUs.push_back(us);
+            if (b >= warmup) {
+                limiterUs.push_back(us);
+            }
         }
-        for (int i = 0; i < frames; ++i)
-            if (!std::isfinite(L[i]) || !std::isfinite(R[i])) finite = false;
-        if (b >= warmup) total.push_back(blockUs);
+        for (int i = 0; i < frames; ++i) {
+            if (!std::isfinite(L[i]) || !std::isfinite(R[i])) {
+                finite = false;
+            }
+        }
+        if (b >= warmup) {
+            total.push_back(blockUs);
+        }
     }
 
     const double budgetUs = frames / rate * 1e6;
-    std::printf("NAMPlayerBench  %d frames @ %.0f Hz  budget %.1f µs/block  %d blocks  fast tanh %s\n",
-                frames, rate, budgetUs, blocks, fastTanh ? "on" : "off");
-    if (!model.empty()) std::printf("model  %s\n", model.c_str());
-    if (!ir.empty())    std::printf("ir     %s\n", ir.c_str());
+    std::printf(
+        "NAMPlayerBench  %d frames @ %.0f Hz  budget %.1f µs/block  %d blocks  fast tanh %s\n",
+        frames, rate, budgetUs, blocks, fastTanh ? "on" : "off");
+    if (!model.empty()) {
+        std::printf("model  %s\n", model.c_str());
+    }
+    if (!ir.empty()) {
+        std::printf("ir     %s\n", ir.c_str());
+    }
     std::printf("\n%-12s %10s %10s %10s %8s\n", "stage", "mean µs", "p99 µs", "max µs", "% budget");
-    for (const auto& s : chain)
-    {
-        if (!s.fx->isEnabled()) continue;
+    for (const auto& s : chain) {
+        if (!s.fx->isEnabled()) {
+            continue;
+        }
         double sum = 0.0;
-        for (double v : s.us) sum += v;
+        for (double v : s.us) {
+            sum += v;
+        }
         const double mean = sum / s.us.size();
         std::printf("%-12s %10.2f %10.2f %10.2f %7.2f%%\n", s.name, mean, percentile(s.us, 0.99),
                     percentile(s.us, 1.0), mean / budgetUs * 100.0);
     }
-    if (limiter.isEnabled())
-    {
+    if (limiter.isEnabled()) {
         double s = 0.0;
-        for (double v : limiterUs) s += v;
+        for (double v : limiterUs) {
+            s += v;
+        }
         std::printf("%-12s %10.2f %10.2f %10.2f %7.2f%%\n", "Limiter", s / limiterUs.size(),
-                    percentile(limiterUs, 0.99), percentile(limiterUs, 1.0), s / limiterUs.size() / budgetUs * 100.0);
+                    percentile(limiterUs, 0.99), percentile(limiterUs, 1.0),
+                    s / limiterUs.size() / budgetUs * 100.0);
     }
     double sum = 0.0;
-    for (double v : total) sum += v;
+    for (double v : total) {
+        sum += v;
+    }
     const double mean = sum / total.size();
     std::printf("%-12s %10.2f %10.2f %10.2f %7.2f%%\n", "TOTAL", mean, percentile(total, 0.99),
                 percentile(total, 1.0), mean / budgetUs * 100.0);
-    if (!finite) std::printf("\nWARNING: non-finite samples in the output\n");
+    if (!finite) {
+        std::printf("\nWARNING: non-finite samples in the output\n");
+    }
     return finite ? 0 : 1;
 }

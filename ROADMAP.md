@@ -811,7 +811,7 @@ commit.
 - [x] **C++23:** `CMAKE_CXX_STANDARD 23`; CI (`gui-linux.yml`, `release.yml`) from
       `ubuntu-22.04` to `ubuntu-24.04` with GCC 14; `BUILD.md` minimums (GCC 14 /
       Clang 18 / MSVC 17.10, Ubuntu 24.04+).
-- [ ] **Format:** one `clang-format -i` commit over `gui/src`, `gui/tests`, `gui/bench`
+- [x] **Format:** one `clang-format -i` commit over `gui/src`, `gui/tests`, `gui/bench`
       with `gui/.clang-format` (4 spaces, 100 cols, braces on own line for types and
       namespaces only, always braces, no one-line functions, no column alignment).
       Include regrouping sorts the Win32 headers in `WasapiBackend.cpp` /

@@ -19,7 +19,16 @@
 class EQProcessor : public EffectBase
 {
 public:
-    enum Band { LowCut = 0, Bass, Middle, HighMid, Treble, HighCut, kBands };
+    enum Band
+    {
+        LowCut = 0,
+        Bass,
+        Middle,
+        HighMid,
+        Treble,
+        HighCut,
+        kBands
+    };
 
     EQProcessor();
 
@@ -30,9 +39,15 @@ public:
     void setFreq(Band b, double hz);
 
     // Back-compat names (3-band era).
-    void setLowGain(double dB)    { setGain(Bass, dB); }
-    void setMidGain(double dB)    { setGain(Middle, dB); }
-    void setTrebleGain(double dB) { setGain(Treble, dB); }
+    void setLowGain(double dB) {
+        setGain(Bass, dB);
+    }
+    void setMidGain(double dB) {
+        setGain(Middle, dB);
+    }
+    void setTrebleGain(double dB) {
+        setGain(Treble, dB);
+    }
 
 protected:
     void onSampleRateChanged(double sr) override;
@@ -43,26 +58,35 @@ private:
         double b0 = 1, b1 = 0, b2 = 0, a1 = 0, a2 = 0;
         double x1 = 0, x2 = 0, y1 = 0, y2 = 0;
 
-        float process(float in)
-        {
+        float process(float in) {
             double x0 = in;
-            double y0 = b0*x0 + b1*x1 + b2*x2 - a1*y1 - a2*y2;
-            x2 = x1; x1 = x0;
-            y2 = y1; y1 = y0;
+            double y0 = b0 * x0 + b1 * x1 + b2 * x2 - a1 * y1 - a2 * y2;
+            x2 = x1;
+            x1 = x0;
+            y2 = y1;
+            y1 = y0;
             return static_cast<float>(y0);
         }
-        void reset() { x1 = x2 = y1 = y2 = 0.0; }
-        void setCoeffs(const Biquad& s) { b0 = s.b0; b1 = s.b1; b2 = s.b2; a1 = s.a1; a2 = s.a2; }
+        void reset() {
+            x1 = x2 = y1 = y2 = 0.0;
+        }
+        void setCoeffs(const Biquad& s) {
+            b0 = s.b0;
+            b1 = s.b1;
+            b2 = s.b2;
+            a1 = s.a1;
+            a2 = s.a2;
+        }
     };
 
     Biquad design(Band b) const;
-    void   rebuild(Band b);   // caller holds mMutex
-    bool   active(Band b) const;
+    void rebuild(Band b); // caller holds mMutex
+    bool active(Band b) const;
 
-    std::array<double, kBands> mGain{};   // dB (shelf/peak bands)
+    std::array<double, kBands> mGain{}; // dB (shelf/peak bands)
     std::array<double, kBands> mFreq{20.0, 250.0, 1000.0, 3000.0, 4000.0, 20000.0};
     std::array<Biquad, kBands> mL, mR;
-    std::array<bool, kBands>   mOn{};     // band changes the signal (skip flat ones)
+    std::array<bool, kBands> mOn{}; // band changes the signal (skip flat ones)
 
     std::mutex mMutex; // GUI writes coefficients; audio thread uses try_lock
 };

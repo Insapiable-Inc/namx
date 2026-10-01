@@ -3,6 +3,7 @@
 #include <atomic>
 #include <cstdint>
 #include <vector>
+
 #include "EffectBase.h"
 
 /// Double-tracking: from a mono signal, the right channel becomes a second
@@ -12,11 +13,17 @@
 class DoublerProcessor : public EffectBase
 {
 public:
-    bool supportsStereoOut() const override { return true; }
+    bool supportsStereoOut() const override {
+        return true;
+    }
     void reset() override;
 
-    void setSpread(float ms) { mSpreadMs.store(ms); }
-    void setMix(float pct)   { mMix.store(pct); }
+    void setSpread(float ms) {
+        mSpreadMs.store(ms);
+    }
+    void setMix(float pct) {
+        mMix.store(pct);
+    }
 
     bool process(float* L, float* R, int n, bool inputIsStereo) override;
 
@@ -28,8 +35,8 @@ private:
     std::atomic<float> mMix{100.0f};
 
     std::vector<float> mBuf;
-    int      mWrite = 0;
-    float    mDrift = 0.0f, mDriftTarget = 0.0f; // −1 … 1
-    int      mUntilNewTarget = 0;
+    int mWrite = 0;
+    float mDrift = 0.0f, mDriftTarget = 0.0f; // −1 … 1
+    int mUntilNewTarget = 0;
     uint32_t mSeed = 0x9e3779b9u;
 };

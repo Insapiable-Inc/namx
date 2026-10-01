@@ -23,30 +23,43 @@ class LibraryListModel : public QAbstractListModel
 {
     Q_OBJECT
 public:
-    enum Role {
-        PathRole = Qt::UserRole + 1, KindRole, NameRole, FolderRole, SummaryRole, DetailsRole,
-        FavoriteRole, RecentRankRole, MtimeRole, LoadedRole,
+    enum Role
+    {
+        PathRole = Qt::UserRole + 1,
+        KindRole,
+        NameRole,
+        FolderRole,
+        SummaryRole,
+        DetailsRole,
+        FavoriteRole,
+        RecentRankRole,
+        MtimeRole,
+        LoadedRole,
     };
 
     explicit LibraryListModel(QObject* parent = nullptr);
 
-    int      rowCount(const QModelIndex& parent = {}) const override;
+    int rowCount(const QModelIndex& parent = {}) const override;
     QVariant data(const QModelIndex& index, int role) const override;
 
     void setEntries(const QList<LibraryEntry>& entries);
     void setFavorites(const QSet<QString>& favs);
-    void setRecents(const QStringList& recents);           // most recent first
+    void setRecents(const QStringList& recents); // most recent first
     void setLoaded(LibraryEntry::Kind kind, const QString& path);
 
-    bool    isFavorite(const QString& path) const { return mFavorites.contains(path); }
-    int     rowOf(const QString& path) const;
-    QString loaded(LibraryEntry::Kind kind) const { return mLoaded[static_cast<int>(kind)]; }
+    bool isFavorite(const QString& path) const {
+        return mFavorites.contains(path);
+    }
+    int rowOf(const QString& path) const;
+    QString loaded(LibraryEntry::Kind kind) const {
+        return mLoaded[static_cast<int>(kind)];
+    }
 
 private:
     QList<LibraryEntry> mEntries;
-    QSet<QString>       mFavorites;
-    QStringList         mRecents;
-    QString             mLoaded[3];
+    QSet<QString> mFavorites;
+    QStringList mRecents;
+    QString mLoaded[3];
 };
 
 /// One proxy per kind: kind filter, search words, All / Favorites / Recent
@@ -55,8 +68,17 @@ class LibraryFilterProxy : public QSortFilterProxyModel
 {
     Q_OBJECT
 public:
-    enum class Mode { All, Favorites, Recent };
-    enum class Sort { Name, Newest };
+    enum class Mode
+    {
+        All,
+        Favorites,
+        Recent
+    };
+    enum class Sort
+    {
+        Name,
+        Newest
+    };
 
     explicit LibraryFilterProxy(LibraryEntry::Kind kind, QObject* parent = nullptr);
 
@@ -70,9 +92,9 @@ protected:
 
 private:
     LibraryEntry::Kind mKind;
-    QStringList        mWords;
-    Mode               mMode{Mode::All};
-    Sort               mSort{Sort::Name};
+    QStringList mWords;
+    Mode mMode{Mode::All};
+    Sort mSort{Sort::Name};
 };
 
 /// Two-line rows (name / summary), a ★ toggle at the right edge, and an
@@ -82,7 +104,7 @@ class LibraryItemDelegate : public QStyledItemDelegate
     Q_OBJECT
 public:
     using QStyledItemDelegate::QStyledItemDelegate;
-    void  paint(QPainter* p, const QStyleOptionViewItem& opt, const QModelIndex& idx) const override;
+    void paint(QPainter* p, const QStyleOptionViewItem& opt, const QModelIndex& idx) const override;
     QSize sizeHint(const QStyleOptionViewItem& opt, const QModelIndex& idx) const override;
     static QRect starRect(const QRect& row);
 };
@@ -96,13 +118,15 @@ public:
     using QListView::QListView;
 signals:
     void favoriteToggled(const QString& path);
+
 protected:
     void mousePressEvent(QMouseEvent* ev) override;
     void mouseDoubleClickEvent(QMouseEvent* ev) override;
     void keyPressEvent(QKeyEvent* ev) override;
     // Typed letters/digits are effect shortcuts window-wide; the search field
     // is the way to search, so type-ahead in the list is off.
-    void keyboardSearch(const QString&) override {}
+    void keyboardSearch(const QString&) override {
+    }
 };
 
 /// The Library dock content: Models / IRs / Presets sections, search,
@@ -120,7 +144,7 @@ public:
     void focusSearch();
 
     /// Mark the loaded file of a kind (empty = nothing loaded).
-    void    setLoadedPath(LibraryEntry::Kind kind, const QString& path);
+    void setLoadedPath(LibraryEntry::Kind kind, const QString& path);
     QString loadedPath(LibraryEntry::Kind kind) const;
     /// Push a path to the top of the recents list (any load, any source).
     void noteUsed(const QString& path);
@@ -144,20 +168,22 @@ private:
     void toggleFavorite(const QString& path);
     void updateCounts();
     void restoreCurrentFromLoaded();
-    LibraryFilterProxy* proxy(LibraryEntry::Kind kind) const { return mProxies[static_cast<int>(kind)]; }
+    LibraryFilterProxy* proxy(LibraryEntry::Kind kind) const {
+        return mProxies[static_cast<int>(kind)];
+    }
 
-    LibraryIndex&       mIndex;
-    LibraryListModel*   mModel = nullptr;
+    LibraryIndex& mIndex;
+    LibraryListModel* mModel = nullptr;
     LibraryFilterProxy* mProxies[3]{};
-    QToolButton*        mSectionBtn[3]{};
-    QToolButton*        mModeBtn[3]{};
-    QComboBox*          mSortBox = nullptr;
-    QLineEdit*          mSearch  = nullptr;
-    LibraryListView*    mView    = nullptr;
-    QLabel*             mStatus  = nullptr;
-    QTimer*             mActivateTimer = nullptr; // debounces arrow-key browsing
-    int                 mSection = 0;
-    bool                mSyncing = false;         // programmatic selection changes
-    QSet<QString>       mFavorites;
-    QStringList         mRecents;
+    QToolButton* mSectionBtn[3]{};
+    QToolButton* mModeBtn[3]{};
+    QComboBox* mSortBox = nullptr;
+    QLineEdit* mSearch = nullptr;
+    LibraryListView* mView = nullptr;
+    QLabel* mStatus = nullptr;
+    QTimer* mActivateTimer = nullptr; // debounces arrow-key browsing
+    int mSection = 0;
+    bool mSyncing = false; // programmatic selection changes
+    QSet<QString> mFavorites;
+    QStringList mRecents;
 };

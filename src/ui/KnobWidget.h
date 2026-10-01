@@ -1,10 +1,10 @@
 #pragma once
 
-#include <QColor>
-#include <QWidget>
-#include <QString>
-
 #include <functional>
+
+#include <QColor>
+#include <QString>
+#include <QWidget>
 
 class QContextMenuEvent;
 class QLabel;
@@ -22,18 +22,29 @@ public:
     /// Compact: dial left, name over value right (effect rows, ~46px tall).
     /// Stacked: name over a large dial over the value, all centred — the
     /// prominent form for the Input/Output gain columns.
-    enum class Form { Compact, Stacked };
+    enum class Form
+    {
+        Compact,
+        Stacked
+    };
 
-    explicit KnobWidget(const QString& label, double minVal, double maxVal,
-                        double defaultVal, const QString& unit = "",
-                        Form form = Form::Compact,
+    explicit KnobWidget(const QString& label, double minVal, double maxVal, double defaultVal,
+                        const QString& unit = "", Form form = Form::Compact,
                         QWidget* parent = nullptr);
 
     double value() const;
-    double defaultValue() const { return mDefault; }
-    double minimum() const { return mMin; }
-    double maximum() const { return mMax; }
-    QString label() const { return mLabel; }
+    double defaultValue() const {
+        return mDefault;
+    }
+    double minimum() const {
+        return mMin;
+    }
+    double maximum() const {
+        return mMax;
+    }
+    QString label() const {
+        return mLabel;
+    }
 
     /// Extra entries for every knob's context menu (MIDI Learn). Set once by
     /// the owner of the parameter registry.
@@ -46,14 +57,23 @@ public:
     void setAccent(const QColor& accent);
 
     /// When true, the value label shows a rounded integer.
-    void setIntegerDisplay(bool on) { mIntDisplay = on; updateLabel(); }
+    void setIntegerDisplay(bool on) {
+        mIntDisplay = on;
+        updateLabel();
+    }
 
     /// Discrete knob: value() and valueChanged snap to multiples of `step`
     /// (e.g. 1.0 for a list index); 0 = continuous.
-    void setSnap(double step) { mSnap = step; updateLabel(); }
+    void setSnap(double step) {
+        mSnap = step;
+        updateLabel();
+    }
     /// Custom value label (e.g. note names for a sync knob); replaces the
     /// number + unit text. Pass {} to restore the default.
-    void setValueFormatter(std::function<QString(double)> f) { mFormatter = std::move(f); updateLabel(); }
+    void setValueFormatter(std::function<QString(double)> f) {
+        mFormatter = std::move(f);
+        updateLabel();
+    }
 
     /// Logarithmic dial (frequencies, times, rates): equal travel = equal
     /// ratio, so 100 Hz–1 kHz gets as much of the sweep as 1–10 kHz. Values
@@ -63,7 +83,9 @@ public:
 
     /// Set the scroll-wheel increment in value units (e.g. 0.1 for 0.1 dB).
     /// Pass 0 to use the default (1% of range).
-    void setScrollStep(double step) { mScrollStep = step; }
+    void setScrollStep(double step) {
+        mScrollStep = step;
+    }
 
 public slots:
     void setValue(double v);
@@ -81,21 +103,22 @@ protected:
 
 private:
     VerticalDial* mDial;
-    QLabel*       mLabelValue;
+    QLabel* mLabelValue;
     QColor mAccent;
     double mMin, mMax, mDefault;
     QString mUnit;
     QString mLabel;
-    bool    mIntDisplay{false};
-    double  mScrollStep{0.0};
-    double  mSnap{0.0};
-    bool    mLogTaper{false};
-    double  mLastEmitted{0.0}; // snapped knobs emit only on a step change
+    bool mIntDisplay{false};
+    double mScrollStep{0.0};
+    double mSnap{0.0};
+    bool mLogTaper{false};
+    double mLastEmitted{0.0}; // snapped knobs emit only on a step change
     std::function<QString(double)> mFormatter;
 
-    static constexpr int kSteps = 100000; // fine enough that log-taper round trips stay exact at 0.1
+    static constexpr int kSteps =
+        100000; // fine enough that log-taper round trips stay exact at 0.1
 
     double dialToValue(int d) const;
-    int    valueToDial(double v) const;
-    void   updateLabel();
+    int valueToDial(double v) const;
+    void updateLabel();
 };

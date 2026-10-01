@@ -1,6 +1,7 @@
 #pragma once
 
 #include <atomic>
+
 #include "EffectBase.h"
 
 /// Volume pedal: Position 0–100 % (heel = silence, toe = unity) on a curve
@@ -10,10 +11,16 @@
 class VolumeProcessor : public EffectBase
 {
 public:
-    void reset() override { mGain = targetGain(); }
+    void reset() override {
+        mGain = targetGain();
+    }
 
-    void setPosition(float pct) { mPosition.store(pct); }
-    void setMid(float dB)       { mMidDb.store(dB); }
+    void setPosition(float pct) {
+        mPosition.store(pct);
+    }
+    void setMid(float dB) {
+        mMidDb.store(dB);
+    }
 
     bool process(float* L, float* R, int n, bool inputIsStereo) override;
 

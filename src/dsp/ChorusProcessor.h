@@ -2,6 +2,7 @@
 
 #include <atomic>
 #include <vector>
+
 #include "EffectBase.h"
 
 /// Chorus: LFO-modulated delay. Modes: Normal (one voice), Tri (three voices
@@ -11,18 +12,40 @@
 class ChorusProcessor : public EffectBase
 {
 public:
-    bool supportsStereoOut() const override { return true; }
+    bool supportsStereoOut() const override {
+        return true;
+    }
     void reset() override;
 
-    void setRate(float hz)   { mRate.store(hz);   }
-    void setDepth(float pct) { mDepth.store(pct); }
-    void setMix(float pct)   { mMix.store(pct);   }
-    enum Mode { Normal = 0, Tri, Vintage, Spatial };
-    void setMode(int m)      { mMode.store(m);    }
+    void setRate(float hz) {
+        mRate.store(hz);
+    }
+    void setDepth(float pct) {
+        mDepth.store(pct);
+    }
+    void setMix(float pct) {
+        mMix.store(pct);
+    }
+    enum Mode
+    {
+        Normal = 0,
+        Tri,
+        Vintage,
+        Spatial
+    };
+    void setMode(int m) {
+        mMode.store(m);
+    }
 
-    float rate()  const { return mRate.load();  }
-    float depth() const { return mDepth.load(); }
-    float mix()   const { return mMix.load();   }
+    float rate() const {
+        return mRate.load();
+    }
+    float depth() const {
+        return mDepth.load();
+    }
+    float mix() const {
+        return mMix.load();
+    }
 
 protected:
     void onSampleRateChanged(double sr) override;
@@ -31,22 +54,23 @@ protected:
     void processBlockStereoOut(float* L, float* R, int nframes) override;
 
 private:
-    std::atomic<float> mRate { 1.0f};
+    std::atomic<float> mRate{1.0f};
     std::atomic<float> mDepth{50.0f};
-    std::atomic<float> mMix  {50.0f};
+    std::atomic<float> mMix{50.0f};
 
     float mPhase{0.0f};
     std::atomic<int> mMode{Normal};
     float mVintLp[2]{}; // Vintage wet low-pass per channel
 
     // Wet sample for one channel at an LFO phase (all modes).
-    float wet(const std::vector<float>& buf, int write, float phase, float depth, float fs, int mode);
+    float wet(const std::vector<float>& buf, int write, float phase, float depth, float fs,
+              int mode);
 
     std::vector<float> mBufL, mBufR;
     int mWriteL{0}, mWriteR{0};
 
-    static constexpr float kBaseMs    = 20.0f;
-    static constexpr float kMaxDepthMs =  5.0f;
+    static constexpr float kBaseMs = 20.0f;
+    static constexpr float kMaxDepthMs = 5.0f;
 
     float readInterp(const std::vector<float>& buf, int writePos, float delaySamples) const;
 };

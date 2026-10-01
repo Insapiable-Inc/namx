@@ -19,7 +19,9 @@ class ToggleSwitch;
 class EffectShortcuts
 {
 public:
-    explicit EffectShortcuts(QWidget* window) : mWindow(window) {}
+    explicit EffectShortcuts(QWidget* window)
+        : mWindow(window) {
+    }
 
     /// Register one effect card. `stereo` is null for cards without a stereo toggle.
     void addEffect(ToggleSwitch* enable, ToggleSwitch* stereo = nullptr);

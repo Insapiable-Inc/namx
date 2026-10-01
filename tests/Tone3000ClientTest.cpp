@@ -10,6 +10,9 @@
 
 #include "Tone3000Client.h"
 
+#include <cstdio>
+#include <cstdlib>
+
 #include <QCoreApplication>
 #include <QDir>
 #include <QEventLoop>
@@ -25,41 +28,46 @@
 #include <QTemporaryDir>
 #include <QTimer>
 
-#include <cstdio>
-#include <cstdlib>
-
 #ifndef MOCK_SERVER_PY
 #define MOCK_SERVER_PY "mock_tone3000.py"
 #endif
 
 static int gFailures = 0;
-#define CHECK(cond, msg)                                                                  \
-    do {                                                                                  \
-        if (cond) std::printf("  ok   %s\n", msg);                                        \
-        else { std::printf("  FAIL %s  (%s:%d)\n", msg, __FILE__, __LINE__); ++gFailures; } \
+#define CHECK(cond, msg) \
+    do { \
+        if (cond) \
+            std::printf("  ok   %s\n", msg); \
+        else { \
+            std::printf("  FAIL %s  (%s:%d)\n", msg, __FILE__, __LINE__); \
+            ++gFailures; \
+        } \
     } while (0)
 
 static const int kPort = 8765;
 
 // Runs the event loop until `done` is set or the timeout hits.
 template <typename F>
-static bool waitFor(F&& start, int timeoutMs = 8000)
-{
+static bool waitFor(F&& start, int timeoutMs = 8000) {
     QEventLoop loop;
     bool done = false;
     QTimer timeout;
     timeout.setSingleShot(true);
     QObject::connect(&timeout, &QTimer::timeout, &loop, &QEventLoop::quit);
     timeout.start(timeoutMs);
-    start([&] { done = true; loop.quit(); });
-    if (!done) loop.exec();
+    start([&] {
+        done = true;
+        loop.quit();
+    });
+    if (!done) {
+        loop.exec();
+    }
     return done;
 }
 
-static QJsonDocument httpGet(QNetworkAccessManager& nam, const QUrl& url)
-{
+static QJsonDocument httpGet(QNetworkAccessManager& nam, const QUrl& url) {
     QNetworkRequest req(url);
-    req.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
+    req.setAttribute(QNetworkRequest::RedirectPolicyAttribute,
+                     QNetworkRequest::NoLessSafeRedirectPolicy);
     QNetworkReply* r = nam.get(req);
     QEventLoop loop;
     QObject::connect(r, &QNetworkReply::finished, &loop, &QEventLoop::quit);
@@ -70,16 +78,16 @@ static QJsonDocument httpGet(QNetworkAccessManager& nam, const QUrl& url)
 }
 
 static QString gAuthorizeUrl;
-static void messageHandler(QtMsgType, const QMessageLogContext&, const QString& msg)
-{
+static void messageHandler(QtMsgType, const QMessageLogContext&, const QString& msg) {
     static const QRegularExpression re("TONE3000 authorize URL: \"?(\\S+?)\"?$");
     const auto m = re.match(msg);
-    if (m.hasMatch()) gAuthorizeUrl = m.captured(1);
+    if (m.hasMatch()) {
+        gAuthorizeUrl = m.captured(1);
+    }
     std::fprintf(stderr, "%s\n", qPrintable(msg));
 }
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv) {
     qputenv("QT_QPA_PLATFORM", "offscreen");
     qputenv("NAM_TONE3000_API_BASE", QString("http://127.0.0.1:%1/api/v1").arg(kPort).toUtf8());
     qputenv("NAM_TONE3000_NO_BROWSER", "1");
@@ -98,7 +106,10 @@ int main(int argc, char** argv)
     QProcess mock;
     mock.setProcessChannelMode(QProcess::ForwardedErrorChannel);
     mock.start("python3", {QString::fromUtf8(MOCK_SERVER_PY), QString::number(kPort)});
-    if (!mock.waitForStarted(5000)) { std::printf("cannot start python3 mock\n"); return 2; }
+    if (!mock.waitForStarted(5000)) {
+        std::printf("cannot start python3 mock\n");
+        return 2;
+    }
     mock.waitForReadyRead(5000); // "mock tone3000 on …"
 
     qInstallMessageHandler(messageHandler);
@@ -107,11 +118,16 @@ int main(int argc, char** argv)
 
     std::printf("sign-in (select flow)\n");
     CHECK(!client.isSignedIn(), "starts signed out");
-    bool authOk = false; int pickedTone = 0; QString authErr;
+    bool authOk = false;
+    int pickedTone = 0;
+    QString authErr;
     const bool finished = waitFor([&](auto done) {
         QObject::connect(&client, &Tone3000Client::authFinished, &client,
                          [&, done](bool ok, const QString& err, int toneId) {
-                             authOk = ok; authErr = err; pickedTone = toneId; done();
+                             authOk = ok;
+                             authErr = err;
+                             pickedTone = toneId;
+                             done();
                          });
         client.startAuth(Tone3000Client::Flow::SelectTone);
         // "Browser": GET the authorize URL; the mock redirects to our loopback.
@@ -133,43 +149,64 @@ int main(int argc, char** argv)
     {
         QList<T3kTone> tones;
         waitFor([&](auto done) {
-            client.listTones(Tone3000Client::ListKind::Trending, 1, [&, done](const Tone3000Client::Result& r) {
-                CHECK(r.ok, "trending ok");
-                for (const QJsonValue v : r.object().value("data").toArray())
-                    tones << Tone3000Client::parseTone(v.toObject());
-                done();
-            });
+            client.listTones(Tone3000Client::ListKind::Trending, 1,
+                             [&, done](const Tone3000Client::Result& r) {
+                                 CHECK(r.ok, "trending ok");
+                                 for (const QJsonValue v : r.object().value("data").toArray()) {
+                                     tones << Tone3000Client::parseTone(v.toObject());
+                                 }
+                                 done();
+                             });
         });
         CHECK(tones.size() == 3, "3 trending tones");
         CHECK(tones[0].gearLabel() == "Amp + Cab" && tones[0].formatLabel() == "NAM", "labels");
         CHECK(tones[2].format == "ir", "IR tone parsed");
         // Cached: a second call must not hit the server.
-        const int before = httpGet(nam, QUrl(QString("http://127.0.0.1:%1/control").arg(kPort))).object().value("requests").toInt();
+        const int before = httpGet(nam, QUrl(QString("http://127.0.0.1:%1/control").arg(kPort)))
+                               .object()
+                               .value("requests")
+                               .toInt();
         waitFor([&](auto done) {
-            client.listTones(Tone3000Client::ListKind::Trending, 1, [done](const Tone3000Client::Result& r) {
-                CHECK(r.ok, "trending (cached) ok"); done();
-            });
+            client.listTones(Tone3000Client::ListKind::Trending, 1,
+                             [done](const Tone3000Client::Result& r) {
+                                 CHECK(r.ok, "trending (cached) ok");
+                                 done();
+                             });
         });
-        const int after = httpGet(nam, QUrl(QString("http://127.0.0.1:%1/control").arg(kPort))).object().value("requests").toInt();
-        CHECK(after == before + 1, "listing cache: no API request for the repeat"); // +1 = the /control GET itself
+        const int after = httpGet(nam, QUrl(QString("http://127.0.0.1:%1/control").arg(kPort)))
+                              .object()
+                              .value("requests")
+                              .toInt();
+        CHECK(after == before + 1,
+              "listing cache: no API request for the repeat"); // +1 = the /control GET itself
     }
 
     std::printf("favorites\n");
     waitFor([&](auto done) {
-        client.setFavorite(2, true, [done](const Tone3000Client::Result& r) { CHECK(r.ok, "PUT favorite"); done(); });
+        client.setFavorite(2, true, [done](const Tone3000Client::Result& r) {
+            CHECK(r.ok, "PUT favorite");
+            done();
+        });
     });
     {
         QList<T3kTone> favs;
         waitFor([&](auto done) {
-            client.listTones(Tone3000Client::ListKind::Favorited, 1, [&, done](const Tone3000Client::Result& r) {
-                for (const QJsonValue v : r.object().value("data").toArray()) favs << Tone3000Client::parseTone(v.toObject());
-                done();
-            });
+            client.listTones(Tone3000Client::ListKind::Favorited, 1,
+                             [&, done](const Tone3000Client::Result& r) {
+                                 for (const QJsonValue v : r.object().value("data").toArray()) {
+                                     favs << Tone3000Client::parseTone(v.toObject());
+                                 }
+                                 done();
+                             });
         });
-        CHECK(favs.size() == 1 && favs[0].id == 2 && favs[0].isFavorite, "favorited list reflects PUT");
+        CHECK(favs.size() == 1 && favs[0].id == 2 && favs[0].isFavorite,
+              "favorited list reflects PUT");
     }
     waitFor([&](auto done) {
-        client.setFavorite(2, false, [done](const Tone3000Client::Result& r) { CHECK(r.ok, "DELETE favorite"); done(); });
+        client.setFavorite(2, false, [done](const Tone3000Client::Result& r) {
+            CHECK(r.ok, "DELETE favorite");
+            done();
+        });
     });
 
     std::printf("token refresh (401 → refresh → retry)\n");
@@ -184,16 +221,22 @@ int main(int argc, char** argv)
             });
         });
         CHECK(t.id == 1 && t.a2Count == 2 && t.a1Count == 1, "tone parsed");
-        CHECK(QSettings().value("tone3000/accessToken").toString() == "tok-2", "rotated token persisted");
+        CHECK(QSettings().value("tone3000/accessToken").toString() == "tok-2",
+              "rotated token persisted");
     }
 
     std::printf("rate limit (429 + Retry-After → one retry)\n");
     httpGet(nam, QUrl(QString("http://127.0.0.1:%1/control?ratelimit=1").arg(kPort)));
     {
         bool statusSeen = false;
-        QObject::connect(&client, &Tone3000Client::status, &client, [&](const QString&) { statusSeen = true; });
+        QObject::connect(&client, &Tone3000Client::status, &client, [&](const QString&) {
+            statusSeen = true;
+        });
         waitFor([&](auto done) {
-            client.fetchTone(2, [done](const Tone3000Client::Result& r) { CHECK(r.ok, "fetchTone after 429"); done(); });
+            client.fetchTone(2, [done](const Tone3000Client::Result& r) {
+                CHECK(r.ok, "fetchTone after 429");
+                done();
+            });
         });
         CHECK(statusSeen, "status notice emitted for the back-off");
     }
@@ -202,41 +245,66 @@ int main(int argc, char** argv)
     {
         T3kTone tone;
         waitFor([&](auto done) {
-            client.fetchTone(1, [&, done](const Tone3000Client::Result& r) { tone = Tone3000Client::parseTone(r.object()); done(); });
+            client.fetchTone(1, [&, done](const Tone3000Client::Result& r) {
+                tone = Tone3000Client::parseTone(r.object());
+                done();
+            });
         });
         QList<T3kModel> models;
         waitFor([&](auto done) {
             client.listModels(tone, [&, done](const Tone3000Client::Result& r, QList<T3kModel> m) {
-                CHECK(r.ok, "listModels ok"); models = m; done();
+                CHECK(r.ok, "listModels ok");
+                models = m;
+                done();
             });
         });
         CHECK(models.size() == 3, "A2 + A1 sets merged (3 models)");
 
-        bool ok = false; QString path, err; bool progress = false;
-        QObject::connect(&client, &Tone3000Client::downloadProgress, &client, [&](int, qint64, qint64) { progress = true; });
+        bool ok = false;
+        QString path, err;
+        bool progress = false;
+        QObject::connect(&client, &Tone3000Client::downloadProgress, &client,
+                         [&](int, qint64, qint64) {
+                             progress = true;
+                         });
         waitFor([&](auto done) {
-            client.downloadModel(models[0], tone, [&, done](bool o, QString p, QString e) { ok = o; path = p; err = e; done(); });
+            client.downloadModel(models[0], tone, [&, done](bool o, QString p, QString e) {
+                ok = o;
+                path = p;
+                err = e;
+                done();
+            });
         });
         CHECK(ok, qPrintable("download ok: " + err));
         CHECK(QFile::exists(path), "model file written");
-        CHECK(path.startsWith(tmp.path() + "/dl/ripper/Dual Rec Rhythm/"), "creator/tone folder layout");
+        CHECK(path.startsWith(tmp.path() + "/dl/ripper/Dual Rec Rhythm/"),
+              "creator/tone folder layout");
         CHECK(QFile::exists(Tone3000Client::sidecarPath(path)), "sidecar written");
         {
             QFile f(Tone3000Client::sidecarPath(path));
             const QJsonObject side = f.open(QIODevice::ReadOnly)
-                                         ? QJsonDocument::fromJson(f.readAll()).object() : QJsonObject();
-            CHECK(side.value("tone_id").toInt() == 1 && side.value("model_id").toInt() == models[0].id, "sidecar ids");
-            CHECK(side.value("creator").toString() == "ripper" && side.value("license").toString() == "cc-by", "sidecar creator/license");
+                                         ? QJsonDocument::fromJson(f.readAll()).object()
+                                         : QJsonObject();
+            CHECK(side.value("tone_id").toInt() == 1 &&
+                      side.value("model_id").toInt() == models[0].id,
+                  "sidecar ids");
+            CHECK(side.value("creator").toString() == "ripper" &&
+                      side.value("license").toString() == "cc-by",
+                  "sidecar creator/license");
         }
         CHECK(Tone3000Client::localPathFor(models[0], tone) == path, "localPathFor matches");
         // The storage hop must not carry Authorization (the mock rejects it).
-        const QJsonArray reqs = httpGet(nam, QUrl(QString("http://127.0.0.1:%1/requests").arg(kPort))).array();
+        const QJsonArray reqs =
+            httpGet(nam, QUrl(QString("http://127.0.0.1:%1/requests").arg(kPort))).array();
         bool storageClean = false, apiAuthed = false;
-        for (const QJsonValue v : reqs)
-        {
+        for (const QJsonValue v : reqs) {
             const QJsonObject o = v.toObject();
-            if (o.value("p").toString().startsWith("/storage/")) storageClean = o.value("auth").toString().isEmpty();
-            if (o.value("p").toString() == "/api/v1/files/model0.nam") apiAuthed = o.value("auth").toString().startsWith("Bearer ");
+            if (o.value("p").toString().startsWith("/storage/")) {
+                storageClean = o.value("auth").toString().isEmpty();
+            }
+            if (o.value("p").toString() == "/api/v1/files/model0.nam") {
+                apiAuthed = o.value("auth").toString().startsWith("Bearer ");
+            }
         }
         CHECK(apiAuthed, "model_url fetched with Bearer");
         CHECK(storageClean, "redirect target fetched without Bearer");
@@ -247,19 +315,26 @@ int main(int argc, char** argv)
     {
         QPixmap px;
         waitFor([&](auto done) {
-            client.fetchImage(QString("http://127.0.0.1:%1/img/tone1.png").arg(kPort), QSize(48, 48),
-                              [&, done](QPixmap p) { px = p; done(); });
+            client.fetchImage(QString("http://127.0.0.1:%1/img/tone1.png").arg(kPort),
+                              QSize(48, 48), [&, done](QPixmap p) {
+                                  px = p;
+                                  done();
+                              });
         });
         CHECK(!px.isNull() && px.width() <= 48, "image fetched and scaled");
     }
 
     std::printf("sign out\n");
     client.signOut();
-    CHECK(!client.isSignedIn() && QSettings().value("tone3000/accessToken").toString().isEmpty(), "tokens cleared");
+    CHECK(!client.isSignedIn() && QSettings().value("tone3000/accessToken").toString().isEmpty(),
+          "tokens cleared");
     {
         bool authRequired = false;
         waitFor([&](auto done) {
-            client.fetchTone(1, [&, done](const Tone3000Client::Result& r) { authRequired = r.authRequired; done(); });
+            client.fetchTone(1, [&, done](const Tone3000Client::Result& r) {
+                authRequired = r.authRequired;
+                done();
+            });
         });
         CHECK(authRequired, "requests report authRequired when signed out");
     }

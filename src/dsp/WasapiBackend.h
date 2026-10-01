@@ -37,20 +37,30 @@ public:
     bool start(const std::string& clientName, Callback* cb) override;
     void stop() override;
 
-    bool   isRunning()  const override { return mRunning.load(); }
-    double sampleRate() const override { return mSampleRate; }
-    int    bufferSize() const override { return mBufferSize; }
+    bool isRunning() const override {
+        return mRunning.load();
+    }
+    double sampleRate() const override {
+        return mSampleRate;
+    }
+    int bufferSize() const override {
+        return mBufferSize;
+    }
     std::string statusString() const override;
 
-    std::vector<DeviceInfo> enumerateInputDevices()  const override;
+    std::vector<DeviceInfo> enumerateInputDevices() const override;
     std::vector<DeviceInfo> enumerateOutputDevices() const override;
     bool startWithDevices(const std::string& clientName, Callback* cb,
                           const std::string& inputDeviceId,
                           const std::string& outputDeviceId) override;
 
     // Capture packets flagged DATA_DISCONTINUITY (the engine dropped input).
-    int  xrunCount() const override { return mXruns.load(std::memory_order_relaxed); }
-    void resetXruns() override      { mXruns.store(0, std::memory_order_relaxed); }
+    int xrunCount() const override {
+        return mXruns.load(std::memory_order_relaxed);
+    }
+    void resetXruns() override {
+        mXruns.store(0, std::memory_order_relaxed);
+    }
 
     // WASAPI has no port graph — defaults from base (supportsPortRouting=false)
     // and empty currentConnections/applyConnections apply.
@@ -64,29 +74,29 @@ private:
 
     IMMDevice* openDeviceById(const std::string& deviceId) const;
 
-    IMMDeviceEnumerator* mEnumerator     = nullptr;
-    IMMDevice*           mCaptureDevice  = nullptr;
-    IMMDevice*           mRenderDevice   = nullptr;
-    IAudioClient*        mCaptureClient  = nullptr;
-    IAudioClient*        mRenderClient   = nullptr;
-    IAudioCaptureClient* mCapture        = nullptr;
-    IAudioRenderClient*  mRender         = nullptr;
+    IMMDeviceEnumerator* mEnumerator = nullptr;
+    IMMDevice* mCaptureDevice = nullptr;
+    IMMDevice* mRenderDevice = nullptr;
+    IAudioClient* mCaptureClient = nullptr;
+    IAudioClient* mRenderClient = nullptr;
+    IAudioCaptureClient* mCapture = nullptr;
+    IAudioRenderClient* mRender = nullptr;
 
     // HANDLEs from <synchapi.h>; void* keeps the header windows.h-free.
     void* mCaptureEvent = nullptr;
-    void* mRenderEvent  = nullptr;
-    void* mStopEvent    = nullptr;
+    void* mRenderEvent = nullptr;
+    void* mStopEvent = nullptr;
 
     std::thread mAudioThread;
     std::string mDeviceName;
-    bool        mComInitialized = false;
+    bool mComInitialized = false;
 #endif
 
-    Callback*         mCallback = nullptr;
+    Callback* mCallback = nullptr;
     std::atomic<bool> mRunning{false};
-    std::atomic<int>  mXruns{0};
-    double            mSampleRate = 48000.0;
-    int               mBufferSize = 0;
-    int               mCaptureChannels = 0;
-    int               mRenderChannels  = 0;
+    std::atomic<int> mXruns{0};
+    double mSampleRate = 48000.0;
+    int mBufferSize = 0;
+    int mCaptureChannels = 0;
+    int mRenderChannels = 0;
 };

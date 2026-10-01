@@ -1,11 +1,11 @@
 #pragma once
 
+#include <functional>
+
 #include <QFrame>
 #include <QHash>
 #include <QString>
 #include <QStringList>
-
-#include <functional>
 
 class LibraryIndex;
 class QLabel;
@@ -38,17 +38,21 @@ public:
     void recallSlot(int i);
     /// Widget for an action id ("action:slot3", "action:presetNext", …), for
     /// the MIDI Learn highlight.
-    QWidget* actionWidget(const QString& id) const { return mActionWidgets.value(id); }
+    QWidget* actionWidget(const QString& id) const {
+        return mActionWidgets.value(id);
+    }
     /// Adds MIDI Learn entries to the context menus of the bar's buttons.
-    void setLearnMenuHook(std::function<void(const QString& actionId, QMenu* menu)> hook) { mLearnHook = std::move(hook); }
+    void setLearnMenuHook(std::function<void(const QString& actionId, QMenu* menu)> hook) {
+        mLearnHook = std::move(hook);
+    }
 
 signals:
     void presetChosen(const QString& path); // name menu or a quick slot
-    void stepRequested(int step);           // ‹ ›
+    void stepRequested(int step); // ‹ ›
     void saveRequested();
     void saveAsRequested();
     void abSwitchRequested(int side);
-    void abCopyRequested();                 // active side → the other one
+    void abCopyRequested(); // active side → the other one
 
 private:
     void populatePresetMenu(QMenu* menu);
@@ -57,14 +61,14 @@ private:
     void updateSlots();
 
     const LibraryIndex& mIndex;
-    QString      mPath;
-    QToolButton* mName     = nullptr;
-    QLabel*      mModified = nullptr;
+    QString mPath;
+    QToolButton* mName = nullptr;
+    QLabel* mModified = nullptr;
     QToolButton* mSlots[kSlotCount]{};
-    QStringList  mSlotPaths;   // kSlotCount entries, "" = empty slot
+    QStringList mSlotPaths; // kSlotCount entries, "" = empty slot
     QToolButton* mAb[2]{};
     QToolButton* mAbCopy = nullptr;
-    int          mAbActive = 0;
+    int mAbActive = 0;
     QHash<QString, QWidget*> mActionWidgets;
     std::function<void(const QString&, QMenu*)> mLearnHook;
     void learnMenuFor(QWidget* w, const QString& actionId);

@@ -34,6 +34,13 @@ jobs:
             libgl1-mesa-dev \
             desktop-file-utils appstream python3
 
+      - name: Check formatting (gui/.clang-format)
+        run: |
+          # Pinned to the major version the code is formatted with; others differ slightly.
+          pipx install 'clang-format==22.*'
+          find gui/src gui/tests gui/bench \( -name '*.cpp' -o -name '*.h' \) -print0 \
+            | xargs -0 clang-format --dry-run --Werror
+
       - name: Configure (Release)
         working-directory: gui
         env:

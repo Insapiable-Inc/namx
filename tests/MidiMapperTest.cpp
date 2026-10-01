@@ -6,9 +6,10 @@
 //
 // Runs with a temporary QSettings scope — never touches the user's config.
 
-#include "KnobWidget.h"
 #include "MidiMapper.h"
-#include "ToggleSwitch.h"
+
+#include <cmath>
+#include <cstdio>
 
 #include <QApplication>
 #include <QElapsedTimer>
@@ -16,23 +17,34 @@
 #include <QTemporaryDir>
 #include <QThread>
 
-#include <cmath>
-#include <cstdio>
+#include "KnobWidget.h"
+#include "ToggleSwitch.h"
 
 static int gFailures = 0;
-#define CHECK(cond, msg)                                                                  \
-    do {                                                                                  \
-        if (cond) std::printf("  ok   %s\n", msg);                                        \
-        else { std::printf("  FAIL %s  (%s:%d)\n", msg, __FILE__, __LINE__); ++gFailures; } \
+#define CHECK(cond, msg) \
+    do { \
+        if (cond) \
+            std::printf("  ok   %s\n", msg); \
+        else { \
+            std::printf("  FAIL %s  (%s:%d)\n", msg, __FILE__, __LINE__); \
+            ++gFailures; \
+        } \
     } while (0)
 
-static MidiMessage cc(int ch, int num, int val)  { return {MidiMessage::ControlChange, ch, num, val}; }
-static MidiMessage noteOn(int ch, int num)        { return {MidiMessage::NoteOn, ch, num, 100}; }
-static MidiMessage noteOff(int ch, int num)       { return {MidiMessage::NoteOff, ch, num, 0}; }
-static MidiMessage program(int ch, int num)       { return {MidiMessage::ProgramChange, ch, num, 0}; }
+static MidiMessage cc(int ch, int num, int val) {
+    return {MidiMessage::ControlChange, ch, num, val};
+}
+static MidiMessage noteOn(int ch, int num) {
+    return {MidiMessage::NoteOn, ch, num, 100};
+}
+static MidiMessage noteOff(int ch, int num) {
+    return {MidiMessage::NoteOff, ch, num, 0};
+}
+static MidiMessage program(int ch, int num) {
+    return {MidiMessage::ProgramChange, ch, num, 0};
+}
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv) {
     qputenv("QT_QPA_PLATFORM", "offscreen");
     QApplication app(argc, argv); // widgets (knob/toggle targets)
     app.setOrganizationName("pichulero.cl");
@@ -42,14 +54,17 @@ int main(int argc, char** argv)
     QSettings().clear();
 
     MidiMapper mapper;
-    KnobWidget   mix("Mix", 0.0, 100.0, 30.0, "%");
+    KnobWidget mix("Mix", 0.0, 100.0, 30.0, "%");
     ToggleSwitch delayOn;
     delayOn.setCheckable(true);
     int slotFired[8] = {};
     mapper.addKnob("param:delay/mix", "Delay", "Mix", &mix);
     mapper.addToggle("param:delay/enabled", "Delay", "On / Off", &delayOn);
-    for (int i = 0; i < 8; ++i)
-        mapper.addAction(QString("action:slot%1").arg(i + 1), "Presets", "Slot", [&slotFired, i] { ++slotFired[i]; });
+    for (int i = 0; i < 8; ++i) {
+        mapper.addAction(QString("action:slot%1").arg(i + 1), "Presets", "Slot", [&slotFired, i] {
+            ++slotFired[i];
+        });
+    }
 
     std::printf("defaults\n");
     CHECK(mapper.mappings().size() == 8, "first run: 8 default mappings");
@@ -76,8 +91,8 @@ int main(int argc, char** argv)
     std::printf("range + relative\n");
     {
         auto list = mapper.mappings();
-        list.last().min  = 0.2;
-        list.last().max  = 0.6;
+        list.last().min = 0.2;
+        list.last().max = 0.6;
         mapper.setMappings(list);
         mapper.handle(cc(0, 11, 127));
         CHECK(std::abs(mix.value() - 60.0) < 0.05, "max 60 % of the range");
@@ -101,15 +116,20 @@ int main(int argc, char** argv)
     CHECK(delayOn.isChecked(), "press → on");
     mapper.handle(cc(0, 80, 127)); // held/repeated without release: no flip
     CHECK(delayOn.isChecked(), "no flip without a release in between");
-    mapper.handle(cc(0, 80, 0));   // release
+    mapper.handle(cc(0, 80, 0)); // release
     mapper.handle(cc(0, 80, 127)); // press
     CHECK(!delayOn.isChecked(), "second press → off");
 
     std::printf("momentary + notes\n");
     {
         auto list = mapper.mappings();
-        for (auto& m : list)
-            if (m.target == "param:delay/enabled") { m.mode = MidiMapping::Momentary; m.source = MidiMapping::Note; m.number = 60; }
+        for (auto& m : list) {
+            if (m.target == "param:delay/enabled") {
+                m.mode = MidiMapping::Momentary;
+                m.source = MidiMapping::Note;
+                m.number = 60;
+            }
+        }
         mapper.setMappings(list);
         mapper.handle(noteOn(0, 60));
         CHECK(delayOn.isChecked(), "note on → on (momentary)");
@@ -120,7 +140,11 @@ int main(int argc, char** argv)
     std::printf("disabled mapping + forget\n");
     {
         auto list = mapper.mappings();
-        for (auto& m : list) if (m.target == "action:slot1") m.enabled = false;
+        for (auto& m : list) {
+            if (m.target == "action:slot1") {
+                m.enabled = false;
+            }
+        }
         mapper.setMappings(list);
         mapper.handle(program(0, 0));
         CHECK(slotFired[0] == 0, "disabled mapping does nothing");
@@ -144,14 +168,17 @@ int main(int argc, char** argv)
     std::printf("MIDI clock → tempo\n");
     {
         double bpm = 0.0;
-        QObject::connect(&mapper, &MidiMapper::tempoFromClock, [&bpm](double b) { bpm = b; });
+        QObject::connect(&mapper, &MidiMapper::tempoFromClock, [&bpm](double b) {
+            bpm = b;
+        });
         mapper.setFollowClock(true);
         // 125 BPM: a quarter = 480 ms, a clock tick = 20 ms.
         QElapsedTimer t;
         t.start();
-        for (int i = 0; i < 24 * 3 + 1; ++i)
-        {
-            while (t.elapsed() < i * 20) QThread::usleep(200);
+        for (int i = 0; i < 24 * 3 + 1; ++i) {
+            while (t.elapsed() < i * 20) {
+                QThread::usleep(200);
+            }
             mapper.handle({MidiMessage::Clock, 0, 0, 0});
         }
         CHECK(std::abs(bpm - 125.0) < 1.5, qPrintable(QString("clock at 125 BPM → %1").arg(bpm)));

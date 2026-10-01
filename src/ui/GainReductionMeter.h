@@ -18,7 +18,9 @@ public:
     /// Deepest reduction since the last call (dB, ≥ 0).
     void setReduction(float dB);
 
-    QSize sizeHint() const override { return {90, 34}; } // fits the stereo slot
+    QSize sizeHint() const override {
+        return {90, 34};
+    } // fits the stereo slot
 
 protected:
     void paintEvent(QPaintEvent* ev) override;
@@ -26,10 +28,10 @@ protected:
 private:
     static constexpr float kReleaseDbPerSec = 40.0f;
 
-    float  mRangeDb;
+    float mRangeDb;
     QColor mAccent;
-    float  mDb{0.0f};      // after ballistics
-    float  mShownDb{-1.0f};
+    float mDb{0.0f}; // after ballistics
+    float mShownDb{-1.0f};
     qint64 mLastMs{0};
     QElapsedTimer mClock;
 };

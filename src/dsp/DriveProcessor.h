@@ -1,6 +1,7 @@
 #pragma once
 
 #include <atomic>
+
 #include "EffectBase.h"
 
 /// Overdrive / boost in front of the amp, Tube-Screamer style: only the
@@ -12,15 +13,24 @@ class DriveProcessor : public EffectBase
 public:
     void reset() override;
 
-    void setDrive(float pct)  { mDrive.store(pct); }  // 0–100
-    void setTone(float pct)   { mTone.store(pct); }   // 0–100: dark → bright
-    void setLevel(float dB)   { mLevelDb.store(dB); }
+    void setDrive(float pct) {
+        mDrive.store(pct);
+    } // 0–100
+    void setTone(float pct) {
+        mTone.store(pct);
+    } // 0–100: dark → bright
+    void setLevel(float dB) {
+        mLevelDb.store(dB);
+    }
 
 protected:
-    void onSampleRateChanged(double) override { reset(); }
-    void processBlockMono(float* buf, int n) override { processChannel(buf, n, 0); }
-    void processBlockDual(float* L, float* R, int n) override
-    {
+    void onSampleRateChanged(double) override {
+        reset();
+    }
+    void processBlockMono(float* buf, int n) override {
+        processChannel(buf, n, 0);
+    }
+    void processBlockDual(float* L, float* R, int n) override {
         processChannel(L, n, 0);
         processChannel(R, n, 1);
     }

@@ -1,11 +1,14 @@
 #include "WasapiBackend.h"
 
 #include <algorithm>
-#include "Log.h"
 #include <sstream>
+
+#include "Log.h"
 
 #ifdef _WIN32
 
+// clang-format off
+// Win32 headers are order-sensitive: <windows.h> must come before the rest.
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <mmdeviceapi.h>
@@ -15,33 +18,42 @@
 
 #include <ks.h>
 #include <ksmedia.h>  // KSDATAFORMAT_SUBTYPE_IEEE_FLOAT
+// clang-format on
 
-#include <immintrin.h>  // _MM_SET_FLUSH_ZERO_MODE / _MM_SET_DENORMALS_ZERO_MODE
+#include <immintrin.h> // _MM_SET_FLUSH_ZERO_MODE / _MM_SET_DENORMALS_ZERO_MODE
 
 #pragma comment(lib, "ole32.lib")
 #pragma comment(lib, "mmdevapi.lib")
 #pragma comment(lib, "avrt.lib")
 
-namespace {
+namespace
+{
 
-constexpr int kStopEventIndex    = 0;
+constexpr int kStopEventIndex = 0;
 constexpr int kCaptureEventIndex = 1;
-constexpr int kRenderEventIndex  = 2;
+constexpr int kRenderEventIndex = 2;
 
-constexpr REFERENCE_TIME kRefTimesPerSec = 10000000LL;  // 100-ns units
+constexpr REFERENCE_TIME kRefTimesPerSec = 10000000LL; // 100-ns units
 
 // CoTaskMemFree helper — WAVEFORMATEX returned by GetMixFormat is
 // COM-allocated and must be freed by the caller.
-struct CoMemFree {
-    void operator()(void* p) const { if (p) CoTaskMemFree(p); }
+struct CoMemFree
+{
+    void operator()(void* p) const {
+        if (p) {
+            CoTaskMemFree(p);
+        }
+    }
 };
 
 // Inspect a WAVEFORMATEX and return true iff it's 32-bit float PCM.
-bool isFloat32(const WAVEFORMATEX* wfx)
-{
-    if (!wfx) return false;
-    if (wfx->wFormatTag == WAVE_FORMAT_IEEE_FLOAT && wfx->wBitsPerSample == 32)
+bool isFloat32(const WAVEFORMATEX* wfx) {
+    if (!wfx) {
+        return false;
+    }
+    if (wfx->wFormatTag == WAVE_FORMAT_IEEE_FLOAT && wfx->wBitsPerSample == 32) {
         return true;
+    }
     if (wfx->wFormatTag == WAVE_FORMAT_EXTENSIBLE && wfx->wBitsPerSample == 32) {
         auto* ext = reinterpret_cast<const WAVEFORMATEXTENSIBLE*>(wfx);
         return IsEqualGUID(ext->SubFormat, KSDATAFORMAT_SUBTYPE_IEEE_FLOAT);
@@ -49,47 +61,57 @@ bool isFloat32(const WAVEFORMATEX* wfx)
     return false;
 }
 
-std::string friendlyDeviceName(IMMDevice* dev)
-{
-    if (!dev) return {};
+std::string friendlyDeviceName(IMMDevice* dev) {
+    if (!dev) {
+        return {};
+    }
     IPropertyStore* props = nullptr;
-    if (FAILED(dev->OpenPropertyStore(STGM_READ, &props)) || !props) return {};
+    if (FAILED(dev->OpenPropertyStore(STGM_READ, &props)) || !props) {
+        return {};
+    }
 
     PROPVARIANT pv;
     PropVariantInit(&pv);
     std::string name;
-    if (SUCCEEDED(props->GetValue(PKEY_Device_FriendlyName, &pv)) && pv.vt == VT_LPWSTR && pv.pwszVal) {
+    if (SUCCEEDED(props->GetValue(PKEY_Device_FriendlyName, &pv)) && pv.vt == VT_LPWSTR &&
+        pv.pwszVal) {
         // Narrow the wide string for the status pill; ASCII-fold non-ASCII.
-        for (const wchar_t* p = pv.pwszVal; *p; ++p)
+        for (const wchar_t* p = pv.pwszVal; *p; ++p) {
             name += (*p < 128) ? static_cast<char>(*p) : '?';
+        }
     }
     PropVariantClear(&pv);
     props->Release();
     return name;
 }
 
-std::string wideToUtf8(LPCWSTR wstr)
-{
-    if (!wstr) return {};
+std::string wideToUtf8(LPCWSTR wstr) {
+    if (!wstr) {
+        return {};
+    }
     int len = WideCharToMultiByte(CP_UTF8, 0, wstr, -1, nullptr, 0, nullptr, nullptr);
-    if (len <= 0) return {};
+    if (len <= 0) {
+        return {};
+    }
     std::string result(len - 1, '\0');
     WideCharToMultiByte(CP_UTF8, 0, wstr, -1, result.data(), len, nullptr, nullptr);
     return result;
 }
 
-std::wstring utf8ToWide(const std::string& str)
-{
-    if (str.empty()) return {};
+std::wstring utf8ToWide(const std::string& str) {
+    if (str.empty()) {
+        return {};
+    }
     int len = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, nullptr, 0);
-    if (len <= 0) return {};
+    if (len <= 0) {
+        return {};
+    }
     std::wstring result(len - 1, L'\0');
     MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, result.data(), len);
     return result;
 }
 
-std::vector<IAudioBackend::DeviceInfo> enumerateWASAPIDevices(EDataFlow direction)
-{
+std::vector<IAudioBackend::DeviceInfo> enumerateWASAPIDevices(EDataFlow direction) {
     std::vector<IAudioBackend::DeviceInfo> result;
     result.push_back({"default", "Default"});
 
@@ -99,10 +121,11 @@ std::vector<IAudioBackend::DeviceInfo> enumerateWASAPIDevices(EDataFlow directio
 
     IMMDeviceEnumerator* enumerator = nullptr;
     hr = CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr, CLSCTX_ALL,
-                          __uuidof(IMMDeviceEnumerator),
-                          reinterpret_cast<void**>(&enumerator));
+                          __uuidof(IMMDeviceEnumerator), reinterpret_cast<void**>(&enumerator));
     if (FAILED(hr) || !enumerator) {
-        if (comInit) CoUninitialize();
+        if (comInit) {
+            CoUninitialize();
+        }
         return result;
     }
 
@@ -121,15 +144,18 @@ std::vector<IAudioBackend::DeviceInfo> enumerateWASAPIDevices(EDataFlow directio
                     CoTaskMemFree(idStr);
                 }
                 info.name = friendlyDeviceName(dev);
-                if (!info.name.empty() && !info.id.empty())
+                if (!info.name.empty() && !info.id.empty()) {
                     result.push_back(info);
+                }
                 dev->Release();
             }
         }
         collection->Release();
     }
     enumerator->Release();
-    if (comInit) CoUninitialize();
+    if (comInit) {
+        CoUninitialize();
+    }
     return result;
 }
 
@@ -141,15 +167,13 @@ std::vector<IAudioBackend::DeviceInfo> enumerateWASAPIDevices(EDataFlow directio
 // Factory (Windows side; the Linux factory lives in JackBackend.cpp).
 // ---------------------------------------------------------------------------
 
-std::unique_ptr<IAudioBackend> IAudioBackend::create()
-{
+std::unique_ptr<IAudioBackend> IAudioBackend::create() {
     return std::make_unique<WasapiBackend>();
 }
 
 WasapiBackend::WasapiBackend() = default;
 
-WasapiBackend::~WasapiBackend()
-{
+WasapiBackend::~WasapiBackend() {
     stop();
 }
 
@@ -158,14 +182,16 @@ WasapiBackend::~WasapiBackend()
 // file is not compiled) is unaffected. The body is conditionally compiled.
 // ---------------------------------------------------------------------------
 
-std::string WasapiBackend::statusString() const
-{
+std::string WasapiBackend::statusString() const {
 #ifdef _WIN32
-    if (!mRunning.load())
+    if (!mRunning.load()) {
         return "WASAPI  \xe2\x97\x8f  not started";
+    }
     std::ostringstream o;
     o << "WASAPI  \xe2\x97\x8f  ";
-    if (!mDeviceName.empty()) o << mDeviceName << "  \xe2\x97\x8f  ";
+    if (!mDeviceName.empty()) {
+        o << mDeviceName << "  \xe2\x97\x8f  ";
+    }
     o << static_cast<int>(mSampleRate) << " Hz  \xe2\x97\x8f  stereo out";
     return o.str();
 #else
@@ -177,8 +203,7 @@ std::string WasapiBackend::statusString() const
 // Device enumeration (works before start() is called)
 // ---------------------------------------------------------------------------
 
-std::vector<IAudioBackend::DeviceInfo> WasapiBackend::enumerateInputDevices() const
-{
+std::vector<IAudioBackend::DeviceInfo> WasapiBackend::enumerateInputDevices() const {
 #ifdef _WIN32
     return enumerateWASAPIDevices(eCapture);
 #else
@@ -186,8 +211,7 @@ std::vector<IAudioBackend::DeviceInfo> WasapiBackend::enumerateInputDevices() co
 #endif
 }
 
-std::vector<IAudioBackend::DeviceInfo> WasapiBackend::enumerateOutputDevices() const
-{
+std::vector<IAudioBackend::DeviceInfo> WasapiBackend::enumerateOutputDevices() const {
 #ifdef _WIN32
     return enumerateWASAPIDevices(eRender);
 #else
@@ -201,17 +225,17 @@ std::vector<IAudioBackend::DeviceInfo> WasapiBackend::enumerateOutputDevices() c
 // Device selection helper
 // ---------------------------------------------------------------------------
 
-IMMDevice* WasapiBackend::openDeviceById(const std::string& deviceId) const
-{
-    if (deviceId.empty() || deviceId == "default")
-        return nullptr;  // Caller falls back to GetDefaultAudioEndpoint
+IMMDevice* WasapiBackend::openDeviceById(const std::string& deviceId) const {
+    if (deviceId.empty() || deviceId == "default") {
+        return nullptr; // Caller falls back to GetDefaultAudioEndpoint
+    }
 
     std::wstring wId = utf8ToWide(deviceId);
     IMMDevice* dev = nullptr;
     HRESULT hr = mEnumerator->GetDevice(wId.c_str(), &dev);
     if (FAILED(hr) || !dev) {
-        qCWarning(lcAudio, "[WasapiBackend] GetDevice failed for id=%s: 0x%08lx",
-                  deviceId.c_str(), static_cast<unsigned long>(hr));
+        qCWarning(lcAudio, "[WasapiBackend] GetDevice failed for id=%s: 0x%08lx", deviceId.c_str(),
+                  static_cast<unsigned long>(hr));
         return nullptr;
     }
     return dev;
@@ -221,16 +245,16 @@ IMMDevice* WasapiBackend::openDeviceById(const std::string& deviceId) const
 // start / stop / startWithDevices
 // ---------------------------------------------------------------------------
 
-bool WasapiBackend::start(const std::string& clientName, Callback* cb)
-{
+bool WasapiBackend::start(const std::string& clientName, Callback* cb) {
     return startWithDevices(clientName, cb, "default", "default");
 }
 
 bool WasapiBackend::startWithDevices(const std::string& /*clientName*/, Callback* cb,
                                      const std::string& inputDeviceId,
-                                     const std::string& outputDeviceId)
-{
-    if (mRunning.load()) return true;
+                                     const std::string& outputDeviceId) {
+    if (mRunning.load()) {
+        return true;
+    }
     mCallback = cb;
 
     HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
@@ -242,8 +266,7 @@ bool WasapiBackend::startWithDevices(const std::string& /*clientName*/, Callback
     mComInitialized = (hr == S_OK || hr == S_FALSE);
 
     hr = CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr, CLSCTX_ALL,
-                          __uuidof(IMMDeviceEnumerator),
-                          reinterpret_cast<void**>(&mEnumerator));
+                          __uuidof(IMMDeviceEnumerator), reinterpret_cast<void**>(&mEnumerator));
     if (FAILED(hr) || !mEnumerator) {
         qCWarning(lcAudio, "[WasapiBackend] MMDeviceEnumerator failed: 0x%08lx",
                   static_cast<unsigned long>(hr));
@@ -276,7 +299,8 @@ bool WasapiBackend::startWithDevices(const std::string& /*clientName*/, Callback
         }
     }
 
-    qCInfo(lcAudio, "[WasapiBackend] Capture device: %s", friendlyDeviceName(mCaptureDevice).c_str());
+    qCInfo(lcAudio, "[WasapiBackend] Capture device: %s",
+           friendlyDeviceName(mCaptureDevice).c_str());
     qCInfo(lcAudio, "[WasapiBackend] Render device: %s", friendlyDeviceName(mRenderDevice).c_str());
 
     if (!initCapture() || !initRender()) {
@@ -294,9 +318,9 @@ bool WasapiBackend::startWithDevices(const std::string& /*clientName*/, Callback
 
     mDeviceName = friendlyDeviceName(mRenderDevice);
 
-    mStopEvent    = CreateEventW(nullptr, FALSE, FALSE, nullptr);
+    mStopEvent = CreateEventW(nullptr, FALSE, FALSE, nullptr);
     mCaptureEvent = CreateEventW(nullptr, FALSE, FALSE, nullptr);
-    mRenderEvent  = CreateEventW(nullptr, FALSE, FALSE, nullptr);
+    mRenderEvent = CreateEventW(nullptr, FALSE, FALSE, nullptr);
     if (!mStopEvent || !mCaptureEvent || !mRenderEvent) {
         qCWarning(lcAudio, "[WasapiBackend] CreateEventW failed");
         teardown();
@@ -304,14 +328,15 @@ bool WasapiBackend::startWithDevices(const std::string& /*clientName*/, Callback
     }
 
     if (FAILED(mCaptureClient->SetEventHandle(mCaptureEvent)) ||
-        FAILED(mRenderClient ->SetEventHandle(mRenderEvent)))
-    {
+        FAILED(mRenderClient->SetEventHandle(mRenderEvent))) {
         qCWarning(lcAudio, "[WasapiBackend] SetEventHandle failed");
         teardown();
         return false;
     }
 
-    if (mCallback) mCallback->onBufferSizeChanged(mBufferSize);
+    if (mCallback) {
+        mCallback->onBufferSizeChanged(mBufferSize);
+    }
 
     // Pre-fill render buffer with silence so the first audio-thread cycle has
     // something to push without waiting for input to arrive.
@@ -319,8 +344,7 @@ bool WasapiBackend::startWithDevices(const std::string& /*clientName*/, Callback
         BYTE* buf = nullptr;
         UINT32 frames = 0;
         if (SUCCEEDED(mRenderClient->GetBufferSize(&frames)) &&
-            SUCCEEDED(mRender->GetBuffer(frames, &buf)) && buf)
-        {
+            SUCCEEDED(mRender->GetBuffer(frames, &buf)) && buf) {
             const size_t bytes = static_cast<size_t>(frames) * mRenderChannels * sizeof(float);
             std::fill_n(buf, bytes, 0);
             mRender->ReleaseBuffer(frames, AUDCLNT_BUFFERFLAGS_SILENT);
@@ -335,26 +359,32 @@ bool WasapiBackend::startWithDevices(const std::string& /*clientName*/, Callback
 
     mRunning.store(true);
     mAudioThread = std::thread(&WasapiBackend::audioThreadMain, this);
-    qCInfo(lcAudio, "[WasapiBackend] WASAPI started at %.0f Hz, buffer %d frames",
-           mSampleRate, static_cast<int>(mBufferSize));
+    qCInfo(lcAudio, "[WasapiBackend] WASAPI started at %.0f Hz, buffer %d frames", mSampleRate,
+           static_cast<int>(mBufferSize));
     return true;
 }
 
-void WasapiBackend::stop()
-{
+void WasapiBackend::stop() {
     if (!mRunning.load() && !mAudioThread.joinable()) {
         teardown();
         return;
     }
 
     mRunning.store(false);
-    if (mStopEvent) SetEvent(mStopEvent);
+    if (mStopEvent) {
+        SetEvent(mStopEvent);
+    }
 
-    if (mAudioThread.joinable())
+    if (mAudioThread.joinable()) {
         mAudioThread.join();
+    }
 
-    if (mCaptureClient) mCaptureClient->Stop();
-    if (mRenderClient)  mRenderClient->Stop();
+    if (mCaptureClient) {
+        mCaptureClient->Stop();
+    }
+    if (mRenderClient) {
+        mRenderClient->Stop();
+    }
 
     teardown();
     mCallback = nullptr;
@@ -364,8 +394,7 @@ void WasapiBackend::stop()
 // Per-side init helpers
 // ---------------------------------------------------------------------------
 
-bool WasapiBackend::initCapture()
-{
+bool WasapiBackend::initCapture() {
     HRESULT hr = mCaptureDevice->Activate(__uuidof(IAudioClient), CLSCTX_ALL, nullptr,
                                           reinterpret_cast<void**>(&mCaptureClient));
     if (FAILED(hr) || !mCaptureClient) {
@@ -385,20 +414,18 @@ bool WasapiBackend::initCapture()
         qCWarning(lcAudio,
                   "[WasapiBackend] Capture mix format not float32 (tag=%u, bits=%u). "
                   "PCM conversion not yet implemented.",
-                  static_cast<unsigned>(wfx->wFormatTag), static_cast<unsigned>(wfx->wBitsPerSample));
+                  static_cast<unsigned>(wfx->wFormatTag),
+                  static_cast<unsigned>(wfx->wBitsPerSample));
         return false;
     }
 
-    mSampleRate      = wfx->nSamplesPerSec;
+    mSampleRate = wfx->nSamplesPerSec;
     mCaptureChannels = wfx->nChannels;
 
-    hr = mCaptureClient->Initialize(
-        AUDCLNT_SHAREMODE_SHARED,
-        AUDCLNT_STREAMFLAGS_EVENTCALLBACK,
-        0,        // hnsBufferDuration — system default for shared mode
-        0,        // periodicity must be 0 in shared mode
-        wfx.get(),
-        nullptr);
+    hr = mCaptureClient->Initialize(AUDCLNT_SHAREMODE_SHARED, AUDCLNT_STREAMFLAGS_EVENTCALLBACK,
+                                    0, // hnsBufferDuration — system default for shared mode
+                                    0, // periodicity must be 0 in shared mode
+                                    wfx.get(), nullptr);
     if (FAILED(hr)) {
         qCWarning(lcAudio, "[WasapiBackend] Capture Initialize: 0x%08lx",
                   static_cast<unsigned long>(hr));
@@ -413,16 +440,14 @@ bool WasapiBackend::initCapture()
     mBufferSize = static_cast<int>(bufFrames);
 
     if (FAILED(mCaptureClient->GetService(__uuidof(IAudioCaptureClient),
-                                          reinterpret_cast<void**>(&mCapture))))
-    {
+                                          reinterpret_cast<void**>(&mCapture)))) {
         qCWarning(lcAudio, "[WasapiBackend] GetService IAudioCaptureClient failed");
         return false;
     }
     return true;
 }
 
-bool WasapiBackend::initRender()
-{
+bool WasapiBackend::initRender() {
     HRESULT hr = mRenderDevice->Activate(__uuidof(IAudioClient), CLSCTX_ALL, nullptr,
                                          reinterpret_cast<void**>(&mRenderClient));
     if (FAILED(hr) || !mRenderClient) {
@@ -442,7 +467,8 @@ bool WasapiBackend::initRender()
         qCWarning(lcAudio,
                   "[WasapiBackend] Render mix format not float32 (tag=%u, bits=%u). "
                   "PCM conversion not yet implemented.",
-                  static_cast<unsigned>(wfx->wFormatTag), static_cast<unsigned>(wfx->wBitsPerSample));
+                  static_cast<unsigned>(wfx->wFormatTag),
+                  static_cast<unsigned>(wfx->wBitsPerSample));
         return false;
     }
 
@@ -455,12 +481,8 @@ bool WasapiBackend::initRender()
     }
     mRenderChannels = wfx->nChannels;
 
-    hr = mRenderClient->Initialize(
-        AUDCLNT_SHAREMODE_SHARED,
-        AUDCLNT_STREAMFLAGS_EVENTCALLBACK,
-        0, 0,
-        wfx.get(),
-        nullptr);
+    hr = mRenderClient->Initialize(AUDCLNT_SHAREMODE_SHARED, AUDCLNT_STREAMFLAGS_EVENTCALLBACK, 0,
+                                   0, wfx.get(), nullptr);
     if (FAILED(hr)) {
         qCWarning(lcAudio, "[WasapiBackend] Render Initialize: 0x%08lx",
                   static_cast<unsigned long>(hr));
@@ -468,8 +490,7 @@ bool WasapiBackend::initRender()
     }
 
     if (FAILED(mRenderClient->GetService(__uuidof(IAudioRenderClient),
-                                         reinterpret_cast<void**>(&mRender))))
-    {
+                                         reinterpret_cast<void**>(&mRender)))) {
         qCWarning(lcAudio, "[WasapiBackend] GetService IAudioRenderClient failed");
         return false;
     }
@@ -480,8 +501,7 @@ bool WasapiBackend::initRender()
 // Audio thread
 // ---------------------------------------------------------------------------
 
-void WasapiBackend::audioThreadMain()
-{
+void WasapiBackend::audioThreadMain() {
     // Pro Audio thread characteristics — bumps priority, registers with the
     // scheduler so we get a slice every audio quantum.
     DWORD taskIndex = 0;
@@ -498,8 +518,8 @@ void WasapiBackend::audioThreadMain()
 
     // Scratch buffers — reused across cycles, sized to whatever the device gave us.
     std::vector<float> monoIn(mBufferSize, 0.0f);
-    std::vector<float> outL  (mBufferSize, 0.0f);
-    std::vector<float> outR  (mBufferSize, 0.0f);
+    std::vector<float> outL(mBufferSize, 0.0f);
+    std::vector<float> outR(mBufferSize, 0.0f);
 
     // Pending-output FIFO. Capture and render run on their own periods, so a
     // processed block does not always fit the render endpoint right away.
@@ -509,89 +529,113 @@ void WasapiBackend::audioThreadMain()
     // few capture blocks; if render stalls beyond that the oldest frames are
     // dropped — a discontinuity, but a bounded one.
     UINT32 renderBufSize = 0;
-    if (FAILED(mRenderClient->GetBufferSize(&renderBufSize)))
+    if (FAILED(mRenderClient->GetBufferSize(&renderBufSize))) {
         renderBufSize = static_cast<UINT32>(mBufferSize);
+    }
     std::vector<float> fifoL, fifoR;
     size_t fifoCap = 0, fifoHead = 0, fifoCount = 0;
     auto resizeFifo = [&](size_t blockFrames) {
-        fifoCap   = static_cast<size_t>(renderBufSize) + 4 * blockFrames;
+        fifoCap = static_cast<size_t>(renderBufSize) + 4 * blockFrames;
         fifoL.assign(fifoCap, 0.0f);
         fifoR.assign(fifoCap, 0.0f);
-        fifoHead  = 0;
+        fifoHead = 0;
         fifoCount = 0;
     };
     resizeFifo(static_cast<size_t>(mBufferSize));
 
     auto fifoPush = [&](const float* l, const float* r, size_t n) {
-        if (n > fifoCap) { l += n - fifoCap; r += n - fifoCap; n = fifoCap; }
+        if (n > fifoCap) {
+            l += n - fifoCap;
+            r += n - fifoCap;
+            n = fifoCap;
+        }
         // Make room by dropping the oldest frames if the render side stalled.
         const size_t overflow = (fifoCount + n > fifoCap) ? fifoCount + n - fifoCap : 0;
-        fifoHead   = (fifoHead + overflow) % fifoCap;
+        fifoHead = (fifoHead + overflow) % fifoCap;
         fifoCount -= overflow;
         size_t tail = (fifoHead + fifoCount) % fifoCap;
         for (size_t i = 0; i < n; ++i) {
             fifoL[tail] = l[i];
             fifoR[tail] = r[i];
-            if (++tail == fifoCap) tail = 0;
+            if (++tail == fifoCap) {
+                tail = 0;
+            }
         }
         fifoCount += n;
     };
 
     // Write as many pending frames as the render endpoint has room for.
     auto drainToRender = [&]() {
-        if (fifoCount == 0) return;
+        if (fifoCount == 0) {
+            return;
+        }
         UINT32 padding = 0;
-        if (FAILED(mRenderClient->GetCurrentPadding(&padding))) return;
+        if (FAILED(mRenderClient->GetCurrentPadding(&padding))) {
+            return;
+        }
         const UINT32 available = renderBufSize > padding ? renderBufSize - padding : 0;
-        const UINT32 toWrite   = static_cast<UINT32>(std::min<size_t>(available, fifoCount));
-        if (toWrite == 0) return;
+        const UINT32 toWrite = static_cast<UINT32>(std::min<size_t>(available, fifoCount));
+        if (toWrite == 0) {
+            return;
+        }
 
         BYTE* dst = nullptr;
-        if (FAILED(mRender->GetBuffer(toWrite, &dst)) || !dst) return;
+        if (FAILED(mRender->GetBuffer(toWrite, &dst)) || !dst) {
+            return;
+        }
 
-        float*    fdst = reinterpret_cast<float*>(dst);
-        const int rc   = mRenderChannels;
-        size_t    src  = fifoHead;
+        float* fdst = reinterpret_cast<float*>(dst);
+        const int rc = mRenderChannels;
+        size_t src = fifoHead;
         for (UINT32 i = 0; i < toWrite; ++i) {
             const float l = fifoL[src], r = fifoR[src];
-            if (++src == fifoCap) src = 0;
+            if (++src == fifoCap) {
+                src = 0;
+            }
             if (rc == 2) {
-                fdst[i*2 + 0] = l;
-                fdst[i*2 + 1] = r;
+                fdst[i * 2 + 0] = l;
+                fdst[i * 2 + 1] = r;
             } else if (rc == 1) {
                 fdst[i] = 0.5f * (l + r);
             } else {
                 // 5.1/7.1: fill L,R, zero the rest. Lazy but valid.
-                for (int c = 0; c < rc; ++c)
-                    fdst[i*rc + c] = (c == 0) ? l : (c == 1) ? r : 0.0f;
+                for (int c = 0; c < rc; ++c) {
+                    fdst[i * rc + c] = (c == 0) ? l : (c == 1) ? r : 0.0f;
+                }
             }
         }
         mRender->ReleaseBuffer(toWrite, 0);
-        fifoHead   = src;
+        fifoHead = src;
         fifoCount -= toWrite;
     };
 
-    HANDLE waitHandles[3] = { mStopEvent, mCaptureEvent, mRenderEvent };
+    HANDLE waitHandles[3] = {mStopEvent, mCaptureEvent, mRenderEvent};
 
-    while (mRunning.load())
-    {
+    while (mRunning.load()) {
         // Wake on capture data (the normal case) or on render space freeing
         // up while output is still pending.
         const DWORD nHandles = fifoCount > 0 ? 3 : 2;
         DWORD wait = WaitForMultipleObjects(nHandles, waitHandles, FALSE, 2000);
-        if (wait == WAIT_OBJECT_0 + kStopEventIndex) break;
-        if (wait == WAIT_OBJECT_0 + kRenderEventIndex) { drainToRender(); continue; }
-        if (wait != WAIT_OBJECT_0 + kCaptureEventIndex) continue; // timeout or error → retry
+        if (wait == WAIT_OBJECT_0 + kStopEventIndex) {
+            break;
+        }
+        if (wait == WAIT_OBJECT_0 + kRenderEventIndex) {
+            drainToRender();
+            continue;
+        }
+        if (wait != WAIT_OBJECT_0 + kCaptureEventIndex) {
+            continue; // timeout or error → retry
+        }
 
         // Drain all available capture packets this cycle (usually one).
         UINT32 packetFrames = 0;
-        while (SUCCEEDED(mCapture->GetNextPacketSize(&packetFrames)) && packetFrames > 0)
-        {
-            BYTE*  data   = nullptr;
+        while (SUCCEEDED(mCapture->GetNextPacketSize(&packetFrames)) && packetFrames > 0) {
+            BYTE* data = nullptr;
             UINT32 frames = 0;
-            DWORD  flags  = 0;
-            if (FAILED(mCapture->GetBuffer(&data, &frames, &flags, nullptr, nullptr)))
+            DWORD flags = 0;
+            if (FAILED(mCapture->GetBuffer(&data, &frames, &flags, nullptr, nullptr))) {
                 break;
+            }
 
             if (frames > monoIn.size()) {
                 // Rare mid-stream growth (device period change). This runs on
@@ -600,14 +644,17 @@ void WasapiBackend::audioThreadMain()
                 // model re-Reset it triggers are not RT-safe: one audible
                 // glitch beats a buffer overrun.
                 monoIn.assign(frames, 0.0f);
-                outL  .assign(frames, 0.0f);
-                outR  .assign(frames, 0.0f);
+                outL.assign(frames, 0.0f);
+                outR.assign(frames, 0.0f);
                 resizeFifo(frames);
-                if (mCallback) mCallback->onBufferSizeChanged(static_cast<int>(frames));
+                if (mCallback) {
+                    mCallback->onBufferSizeChanged(static_cast<int>(frames));
+                }
             }
 
-            if (flags & AUDCLNT_BUFFERFLAGS_DATA_DISCONTINUITY)
+            if (flags & AUDCLNT_BUFFERFLAGS_DATA_DISCONTINUITY) {
                 mXruns.fetch_add(1, std::memory_order_relaxed);
+            }
 
             // Down-mix capture to mono float.
             if (flags & AUDCLNT_BUFFERFLAGS_SILENT) {
@@ -621,15 +668,19 @@ void WasapiBackend::audioThreadMain()
                     const float invCh = 1.0f / static_cast<float>(ch);
                     for (UINT32 i = 0; i < frames; ++i) {
                         float s = 0.0f;
-                        for (int c = 0; c < ch; ++c) s += src[i * ch + c];
+                        for (int c = 0; c < ch; ++c) {
+                            s += src[i * ch + c];
+                        }
                         monoIn[i] = s * invCh;
                     }
                 }
             }
             mCapture->ReleaseBuffer(frames);
 
-            if (mCallback) mCallback->onAudio(monoIn.data(), outL.data(), outR.data(),
-                                              static_cast<int>(frames));
+            if (mCallback) {
+                mCallback->onAudio(monoIn.data(), outL.data(), outR.data(),
+                                   static_cast<int>(frames));
+            }
 
             // Queue the whole processed block, then push whatever fits. The
             // remainder stays pending and drains on the next capture or
@@ -639,26 +690,57 @@ void WasapiBackend::audioThreadMain()
         }
     }
 
-    if (avrtHandle) AvRevertMmThreadCharacteristics(avrtHandle);
+    if (avrtHandle) {
+        AvRevertMmThreadCharacteristics(avrtHandle);
+    }
 }
 
 // ---------------------------------------------------------------------------
 // Teardown
 // ---------------------------------------------------------------------------
 
-void WasapiBackend::teardown()
-{
-    if (mCapture)        { mCapture->Release();        mCapture = nullptr; }
-    if (mRender)         { mRender->Release();         mRender = nullptr; }
-    if (mCaptureClient)  { mCaptureClient->Release();  mCaptureClient = nullptr; }
-    if (mRenderClient)   { mRenderClient->Release();   mRenderClient = nullptr; }
-    if (mCaptureDevice)  { mCaptureDevice->Release();  mCaptureDevice = nullptr; }
-    if (mRenderDevice)   { mRenderDevice->Release();   mRenderDevice = nullptr; }
-    if (mEnumerator)     { mEnumerator->Release();     mEnumerator = nullptr; }
+void WasapiBackend::teardown() {
+    if (mCapture) {
+        mCapture->Release();
+        mCapture = nullptr;
+    }
+    if (mRender) {
+        mRender->Release();
+        mRender = nullptr;
+    }
+    if (mCaptureClient) {
+        mCaptureClient->Release();
+        mCaptureClient = nullptr;
+    }
+    if (mRenderClient) {
+        mRenderClient->Release();
+        mRenderClient = nullptr;
+    }
+    if (mCaptureDevice) {
+        mCaptureDevice->Release();
+        mCaptureDevice = nullptr;
+    }
+    if (mRenderDevice) {
+        mRenderDevice->Release();
+        mRenderDevice = nullptr;
+    }
+    if (mEnumerator) {
+        mEnumerator->Release();
+        mEnumerator = nullptr;
+    }
 
-    if (mCaptureEvent)   { CloseHandle(mCaptureEvent); mCaptureEvent = nullptr; }
-    if (mRenderEvent)    { CloseHandle(mRenderEvent);  mRenderEvent = nullptr; }
-    if (mStopEvent)      { CloseHandle(mStopEvent);    mStopEvent = nullptr; }
+    if (mCaptureEvent) {
+        CloseHandle(mCaptureEvent);
+        mCaptureEvent = nullptr;
+    }
+    if (mRenderEvent) {
+        CloseHandle(mRenderEvent);
+        mRenderEvent = nullptr;
+    }
+    if (mStopEvent) {
+        CloseHandle(mStopEvent);
+        mStopEvent = nullptr;
+    }
 
     if (mComInitialized) {
         CoUninitialize();
@@ -666,13 +748,22 @@ void WasapiBackend::teardown()
     }
 }
 
-#else  // !_WIN32 — stub bodies so the file builds (it shouldn't on Linux, but JIC).
+#else // !_WIN32 — stub bodies so the file builds (it shouldn't on Linux, but JIC).
 
-bool WasapiBackend::start(const std::string&, Callback*) { return false; }
-void WasapiBackend::stop() {}
-std::vector<IAudioBackend::DeviceInfo> WasapiBackend::enumerateInputDevices()  const { return {}; }
-std::vector<IAudioBackend::DeviceInfo> WasapiBackend::enumerateOutputDevices() const { return {}; }
-bool WasapiBackend::startWithDevices(const std::string&, Callback*,
-                                     const std::string&, const std::string&) { return false; }
+bool WasapiBackend::start(const std::string&, Callback*) {
+    return false;
+}
+void WasapiBackend::stop() {
+}
+std::vector<IAudioBackend::DeviceInfo> WasapiBackend::enumerateInputDevices() const {
+    return {};
+}
+std::vector<IAudioBackend::DeviceInfo> WasapiBackend::enumerateOutputDevices() const {
+    return {};
+}
+bool WasapiBackend::startWithDevices(const std::string&, Callback*, const std::string&,
+                                     const std::string&) {
+    return false;
+}
 
 #endif // _WIN32

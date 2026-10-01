@@ -17,8 +17,7 @@ class VUMeter : public QProgressBar
 {
     Q_OBJECT
 public:
-    explicit VUMeter(Qt::Orientation orientation = Qt::Vertical,
-                     QWidget* parent = nullptr);
+    explicit VUMeter(Qt::Orientation orientation = Qt::Vertical, QWidget* parent = nullptr);
 
     /// Linear peak (0..1+); 1.0 reaches the 0 dBFS mark.
     void setPeak(float peak);
@@ -27,23 +26,25 @@ protected:
     void paintEvent(QPaintEvent* event) override;
 
 private:
-    static float toValue(float dB) { return (dB - kMinDb) / (kMaxDb - kMinDb) * 100.0f; }
+    static float toValue(float dB) {
+        return (dB - kMinDb) / (kMaxDb - kMinDb) * 100.0f;
+    }
 
     static constexpr float kMinDb = -60.0f;
-    static constexpr float kMaxDb =   6.0f; // headroom above the clip point
+    static constexpr float kMaxDb = 6.0f; // headroom above the clip point
     static constexpr float kReleaseDbPerSec = 24.0f; // bar fall (digital peak meter)
-    static constexpr qint64 kHoldMs         = 1000;  // hold line waits…
+    static constexpr qint64 kHoldMs = 1000; // hold line waits…
     static constexpr float kHoldFallDbPerSec = 12.0f; // …then falls
 
-    float  mLevelDb{kMinDb};
-    float  mHoldDb{kMinDb};
+    float mLevelDb{kMinDb};
+    float mHoldDb{kMinDb};
     qint64 mLastMs{0};
     qint64 mHoldSinceMs{0};
     QElapsedTimer mClock;
-    float  mLevel{0.0f}; // painted positions, 0..100 value scale
-    float  mHold{0.0f};
+    float mLevel{0.0f}; // painted positions, 0..100 value scale
+    float mHold{0.0f};
 
     // Zone boundaries on the 0..100 value scale ((dB - min) / span * 100).
-    static constexpr float kHotValue  = (-6.0f - kMinDb) / (kMaxDb - kMinDb) * 100.0f;
-    static constexpr float kClipValue = ( 0.0f - kMinDb) / (kMaxDb - kMinDb) * 100.0f;
+    static constexpr float kHotValue = (-6.0f - kMinDb) / (kMaxDb - kMinDb) * 100.0f;
+    static constexpr float kClipValue = (0.0f - kMinDb) / (kMaxDb - kMinDb) * 100.0f;
 };
