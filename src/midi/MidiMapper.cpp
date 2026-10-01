@@ -15,17 +15,17 @@
 namespace npl
 {
 
-static const char* k_source_names[] = {"cc", "note", "program"};
-static const char* k_mode_names[] = {"absolute", "relative", "toggle", "momentary"};
+static const char* const SOURCE_NAMES[] = {"cc", "note", "program"};
+static const char* const MODE_NAMES[] = {"absolute", "relative", "toggle", "momentary"};
 
 QJsonObject MidiMapping::to_json() const {
     QJsonObject o;
     o["enabled"] = enabled;
-    o["source"] = k_source_names[source];
+    o["source"] = SOURCE_NAMES[source];
     o["channel"] = channel < 0 ? 0 : channel + 1; // 0 = any, 1–16
     o["number"] = number;
     o["target"] = target;
-    o["mode"] = k_mode_names[mode];
+    o["mode"] = MODE_NAMES[mode];
     o["min"] = min;
     o["max"] = max;
     return o;
@@ -36,7 +36,7 @@ MidiMapping MidiMapping::from_json(const QJsonObject& o) {
     m.enabled = o.value("enabled").toBool(true);
     const QString src = o.value("source").toString();
     for (int i = 0; i < 3; ++i) {
-        if (src == k_source_names[i]) {
+        if (src == SOURCE_NAMES[i]) {
             m.source = Source(i);
         }
     }
@@ -45,7 +45,7 @@ MidiMapping MidiMapping::from_json(const QJsonObject& o) {
     m.target = o.value("target").toString();
     const QString mode = o.value("mode").toString();
     for (int i = 0; i < 4; ++i) {
-        if (mode == k_mode_names[i]) {
+        if (mode == MODE_NAMES[i]) {
             m.mode = Mode(i);
         }
     }

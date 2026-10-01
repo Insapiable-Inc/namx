@@ -212,9 +212,9 @@ void BeatLeds::mousePressEvent(QMouseEvent* ev) {
     emit accents_changed(accents);
 }
 
-static const char* k_sound_names[] = {"Click", "Wood", "Beep", "Cowbell"};
-static const char* k_subdiv_names[] = {"Beats", "Eighths", "Triplets", "Sixteenths"};
-static const char* k_subdiv_short[] = {"♩", "♪♪", "3", "♬"};
+static const char* const SOUND_NAMES[] = {"Click", "Wood", "Beep", "Cowbell"};
+static const char* const SUBDIV_NAMES[] = {"Beats", "Eighths", "Triplets", "Sixteenths"};
+static const char* const SUBDIV_SHORT[] = {"♩", "♪♪", "3", "♬"};
 struct MeterPreset
 {
     int beats, unit;
@@ -330,7 +330,7 @@ TempoBar::TempoBar(Metronome& metronome, QWidget* parent)
     // Subdivision.
     subdiv_btn = menu_button("Subdivision: extra clicks between beats");
     for (int i = 0; i < 4; ++i) {
-        connect(subdiv_btn->menu()->addAction(k_subdiv_names[i]), &QAction::triggered, this,
+        connect(subdiv_btn->menu()->addAction(SUBDIV_NAMES[i]), &QAction::triggered, this,
                 [this, i] {
                     metro.set_subdivision(i + 1);
                     QSettings().setValue("metronome/subdivision", i + 1);
@@ -342,12 +342,11 @@ TempoBar::TempoBar(Metronome& metronome, QWidget* parent)
     // Sound.
     sound_btn = menu_button("Click sound");
     for (int i = 0; i < Metronome::SOUND_COUNT; ++i) {
-        connect(sound_btn->menu()->addAction(k_sound_names[i]), &QAction::triggered, this,
-                [this, i] {
-                    metro.set_sound(i);
-                    QSettings().setValue("metronome/sound", i);
-                    update_labels();
-                });
+        connect(sound_btn->menu()->addAction(SOUND_NAMES[i]), &QAction::triggered, this, [this, i] {
+            metro.set_sound(i);
+            QSettings().setValue("metronome/sound", i);
+            update_labels();
+        });
     }
     lay->addWidget(sound_btn);
 
@@ -480,10 +479,10 @@ void TempoBar::update_labels() {
     QSettings s;
     meter_btn->setText(QString("%1/%2").arg(metro.get_beats()).arg(metro.get_unit()));
     const int sub = std::clamp(s.value("metronome/subdivision", 1).toInt(), 1, 4);
-    subdiv_btn->setText(k_subdiv_short[sub - 1]);
-    subdiv_btn->setToolTip(QString("Subdivision: %1").arg(k_subdiv_names[sub - 1]));
-    sound_btn->setText(k_sound_names[std::clamp(s.value("metronome/sound", 0).toInt(), 0,
-                                                Metronome::SOUND_COUNT - 1)]);
+    subdiv_btn->setText(SUBDIV_SHORT[sub - 1]);
+    subdiv_btn->setToolTip(QString("Subdivision: %1").arg(SUBDIV_NAMES[sub - 1]));
+    sound_btn->setText(SOUND_NAMES[std::clamp(s.value("metronome/sound", 0).toInt(), 0,
+                                              Metronome::SOUND_COUNT - 1)]);
     const int ci = s.value("metronome/countIn", 0).toInt();
     const bool silent = s.value("metronome/silentAfter", false).toBool();
     count_in_btn->setText(ci == 0

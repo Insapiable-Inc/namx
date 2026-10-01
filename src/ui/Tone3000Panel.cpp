@@ -35,7 +35,7 @@ constexpr int ROW_HEIGHT = 58;
 constexpr int STAR_WIDTH = 26;
 constexpr int MODEL_ROW_H = 34;
 
-static const char* k_list_names[5] = {"Trending", "Latest", "Favorites", "Downloads", "Mine"};
+static const char* const LIST_NAMES[5] = {"Trending", "Latest", "Favorites", "Downloads", "Mine"};
 static const Tone3000Client::ListKind LIST_KINDS[5] = {
     Tone3000Client::ListKind::TRENDING,  Tone3000Client::ListKind::LATEST,
     Tone3000Client::ListKind::FAVORITED, Tone3000Client::ListKind::DOWNLOADED,
@@ -760,7 +760,7 @@ void Tone3000Panel::build_browse_page() {
         for (int i = 0; i < 5; ++i) {
             auto* b = new QToolButton;
             b->setObjectName("librarySection");
-            b->setText(k_list_names[i]);
+            b->setText(LIST_NAMES[i]);
             b->setCheckable(true);
             b->setAutoRaise(true);
             b->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);

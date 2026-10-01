@@ -118,7 +118,7 @@ void tag_card(QWidget* card, const QString& fx_id) {
     }
 }
 
-static const char* k_style_sheet = R"(
+static const char* const STYLE_SHEET = R"(
 /* === Window / base === */
 QMainWindow, QDialog {
     background-color: #15171c;
@@ -771,7 +771,7 @@ QComboBox QAbstractItemView::item:hover {
 // applyTo() — file dialogs are in-process Qt widgets even when "native" on
 // KDE, and an app-wide stylesheet/palette would drag them into the dark
 // theme; scoping to the window keeps them looking like the OS.
-static const char* k_app_style_sheet = R"(
+static const char* const APP_STYLE_SHEET = R"(
 QToolTip {
     background-color: #232830;
     color: #d8dee9;
@@ -783,7 +783,7 @@ QToolTip {
 
 void apply(QApplication& app) {
     app.setStyle("Fusion");
-    app.setStyleSheet(QString::fromUtf8(k_app_style_sheet));
+    app.setStyleSheet(QString::fromUtf8(APP_STYLE_SHEET));
 }
 
 void apply_to(QWidget& root) {
@@ -813,7 +813,7 @@ void apply_to(QWidget& root) {
     // Per-effect accent rules — the palette hex verbatim for the name label
     // and the loaded-file label on the Amplifier/Cabinet rows (knob rings and
     // toggles get theirs pushed by tagCard).
-    QString qss = QString::fromUtf8(k_style_sheet);
+    QString qss = QString::fromUtf8(STYLE_SHEET);
     for (const auto& fc : FX_COLORS) {
         qss += QString::fromUtf8("QFrame[fx=\"%1\"] QLabel#fxName { color: %2; }\n"
                                  "QFrame[fx=\"%1\"] QLabel#fileStatusOk { color: %2; }\n")

@@ -36,8 +36,8 @@ constexpr int STAR_WIDTH = 26;
 constexpr int ACCENT_BAR = 3;
 constexpr int MAX_RECENTS = 30;
 
-static const char* k_section_names[3] = {"Models", "IRs", "Presets"};
-static const char* k_section_single[3] = {"model", "IR", "preset"};
+static const char* const SECTION_NAMES[3] = {"Models", "IRs", "Presets"};
+static const char* const SECTION_SINGLE[3] = {"model", "IR", "preset"};
 
 static QColor kind_accent(LibraryEntry::Kind kind) {
     switch (kind) {
@@ -386,7 +386,7 @@ public:
                 const QString start =
                     lw->count() ? lw->item(lw->count() - 1)->text() : QDir::homePath();
                 const QString dir = QFileDialog::getExistingDirectory(
-                    this, QString("Add %1 folder").arg(k_section_names[i]), start);
+                    this, QString("Add %1 folder").arg(SECTION_NAMES[i]), start);
                 if (dir.isEmpty()) {
                     return;
                 }
@@ -401,7 +401,7 @@ public:
             connect(rm, &QPushButton::clicked, this, [lw] {
                 delete lw->currentItem();
             });
-            tabs->addTab(page, k_section_names[i]);
+            tabs->addTab(page, SECTION_NAMES[i]);
         }
         lay->addWidget(tabs, 1);
 
@@ -464,7 +464,7 @@ LibraryPanel::LibraryPanel(LibraryIndex& new_index, QWidget* parent)
         for (int i = 0; i < 3; ++i) {
             auto* b = new QToolButton;
             b->setObjectName("librarySection");
-            b->setText(k_section_names[i]);
+            b->setText(SECTION_NAMES[i]);
             b->setCheckable(true);
             b->setAutoRaise(true);
             b->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
@@ -751,7 +751,7 @@ void LibraryPanel::update_counts() {
         ++total[static_cast<int>(e.kind)];
     }
     for (int i = 0; i < 3; ++i) {
-        section_btn[i]->setText(QString("%1  %2").arg(k_section_names[i]).arg(total[i]));
+        section_btn[i]->setText(QString("%1  %2").arg(SECTION_NAMES[i]).arg(total[i]));
     }
 
     const int visible = proxies[section]->rowCount();
@@ -759,13 +759,13 @@ void LibraryPanel::update_counts() {
     if (library_index.is_scanning()) {
         text = "Scanning…";
     } else if (total[section] == 0) {
-        text = QString("No %1s found. Add folders below.").arg(k_section_single[section]);
+        text = QString("No %1s found. Add folders below.").arg(SECTION_SINGLE[section]);
     } else if (visible != total[section]) {
         text = QString("%1 of %2").arg(visible).arg(total[section]);
     } else {
         text = QString("%1 %2%3")
                    .arg(visible)
-                   .arg(k_section_single[section])
+                   .arg(SECTION_SINGLE[section])
                    .arg(visible == 1 ? "" : "s");
     }
     status->setText(text);
