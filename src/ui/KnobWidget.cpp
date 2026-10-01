@@ -243,7 +243,11 @@ void KnobWidget::setAccent(const QColor& accent)
     updateLabel();
 }
 
-double KnobWidget::value() const { return dialToValue(mDial->value()); }
+double KnobWidget::value() const
+{
+    const double v = dialToValue(mDial->value());
+    return mSnap > 0.0 ? qBound(mMin, std::round(v / mSnap) * mSnap, mMax) : v;
+}
 
 void KnobWidget::setValue(double v)
 {
@@ -254,7 +258,8 @@ void KnobWidget::setValue(double v)
     updateLabel();
     // Programmatic writes must reach the engine too; the dial's own signal is
     // blocked above, so emit the (dial-quantized) value ourselves.
-    emit valueChanged(value());
+    mLastEmitted = value();
+    emit valueChanged(mLastEmitted);
 }
 
 void KnobWidget::resetToDefault()
@@ -262,10 +267,13 @@ void KnobWidget::resetToDefault()
     setValue(mDefault);
 }
 
-void KnobWidget::onDialChanged(int dialVal)
+void KnobWidget::onDialChanged(int)
 {
+    const double v = value();
+    if (mSnap > 0.0 && v == mLastEmitted) return; // still inside the same step
+    mLastEmitted = v;
     updateLabel();
-    emit valueChanged(dialToValue(dialVal));
+    emit valueChanged(v);
 }
 
 void KnobWidget::updateLabel()
@@ -276,6 +284,8 @@ void KnobWidget::updateLabel()
         : QString::number(v, 'f', 1);
     if (!mUnit.isEmpty())
         txt += " " + mUnit;
+    if (mFormatter)
+        txt = mFormatter(v);
 
     QPalette p = mLabelValue->palette();
     p.setColor(QPalette::WindowText, mAccent);
@@ -303,6 +313,11 @@ bool KnobWidget::eventFilter(QObject* obj, QEvent* event)
         auto* we = static_cast<QWheelEvent*>(event);
         int delta = we->angleDelta().y();
         if (delta == 0) return true;
+        if (mSnap > 0.0)
+        {
+            setValue(value() + (delta > 0 ? mSnap : -mSnap)); // one step per notch
+            return true;
+        }
         int dialStep;
         if (mScrollStep > 0.0)
             dialStep = qMax(1, static_cast<int>(mScrollStep / (mMax - mMin) * kSteps + 0.5));

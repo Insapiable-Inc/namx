@@ -7,6 +7,8 @@
 #include "LibraryPanel.h"
 #include "PresetBar.h"
 #include "PresetSerializer.h"
+#include "TempoBar.h"
+#include "TempoSync.h"
 #include "Tone3000Client.h"
 #include "Tone3000Panel.h"
 #include "Theme.h"
@@ -321,6 +323,12 @@ void MainWindow::setupUI()
     connect(mPresetBar, &PresetBar::abSwitchRequested, this, &MainWindow::switchAb);
     connect(mPresetBar, &PresetBar::abCopyRequested,   this, &MainWindow::copyAb);
 
+    // ---- Tempo bar: global tempo (session setting) + metronome.
+    mTempoBar = new TempoBar;
+    mBpm = mTempoBar->bpm();
+    rootLayout->addWidget(mTempoBar);
+    connect(mTempoBar, &TempoBar::bpmChanged, this, &MainWindow::setTempo);
+
     // ---- Status bar (bottom right): backend, rate, buffer, latency, devices.
     mAudioBar = new AudioStatusBar(*mEngine);
     statusBar()->setSizeGripEnabled(false);
@@ -509,6 +517,8 @@ void MainWindow::setupUI()
 
         auto* col = makeEffectRow("Flanger", mSwFlangerEnable,
             {mKnobFlMix, mKnobFlRate, mKnobFlDepth, mKnobFlFeedback}, &mSwFlangerStereo);
+        addTempoSync(col, mKnobFlRate, "Rate", false, 1 /* 2 bars */, kFlangerRateMin, kFlangerRateMax,
+                     [this](double v) { mEngine->flanger().setRate(static_cast<float>(v)); });
         Theme::tagCard(col, "flanger");
 
         mFxCols[&mEngine->flanger()] = col;
@@ -528,6 +538,8 @@ void MainWindow::setupUI()
 
         auto* col = makeEffectRow("Phaser", mSwPhaserEnable,
             {mKnobPhMix, mKnobPhRate, mKnobPhDepth, mKnobPhFeedback}, &mSwPhaserStereo);
+        addTempoSync(col, mKnobPhRate, "Rate", false, 4 /* 1/2 */, kPhaserRateMin, kPhaserRateMax,
+                     [this](double v) { mEngine->phaser().setRate(static_cast<float>(v)); });
         Theme::tagCard(col, "phaser");
 
         mFxCols[&mEngine->phaser()] = col;
@@ -545,6 +557,8 @@ void MainWindow::setupUI()
 
         auto* col = makeEffectRow("Chorus", mSwChorusEnable,
             {mKnobChMix, mKnobChRate, mKnobChDepth}, &mSwChorusStereo);
+        addTempoSync(col, mKnobChRate, "Rate", false, 2 /* 1/1 */, kChorusRateMin, kChorusRateMax,
+                     [this](double v) { mEngine->chorus().setRate(static_cast<float>(v)); });
         Theme::tagCard(col, "chorus");
 
         mFxCols[&mEngine->chorus()] = col;
@@ -560,6 +574,8 @@ void MainWindow::setupUI()
 
         auto* col = makeEffectRow("Tremolo", mSwTremoloEnable,
             {mKnobTrRate, mKnobTrDepth}, &mSwTremoloStereo);
+        addTempoSync(col, mKnobTrRate, "Rate", false, 10 /* 1/8 */, kTremoloRateMin, kTremoloRateMax,
+                     [this](double v) { mEngine->tremolo().setRate(static_cast<float>(v)); });
         Theme::tagCard(col, "tremolo");
 
         mFxCols[&mEngine->tremolo()] = col;
@@ -577,6 +593,8 @@ void MainWindow::setupUI()
 
         auto* col = makeEffectRow("Delay", mSwDelayEnable,
             {mKnobDelMix, mKnobDelTime, mKnobDelFeedback}, &mSwDelayStereo);
+        addTempoSync(col, mKnobDelTime, "Time", true, 8 /* 1/8. */, kDelayTimeMin, kDelayTimeMax,
+                     [this](double v) { mEngine->delay().setTime(static_cast<float>(v)); });
         mSwDelayStereo->setChecked(true);
         Theme::tagCard(col, "delay");
 
@@ -1314,6 +1332,72 @@ void MainWindow::toggleParam(const QString& group, const QString& key,
 }
 
 // ---------------------------------------------------------------------------
+// Tempo sync
+// ---------------------------------------------------------------------------
+
+void MainWindow::addTempoSync(QWidget* card, KnobWidget* freeKnob, const QString& label, bool isTime,
+                              int defaultNote, double min, double max, std::function<void(double)> push)
+{
+    auto* lay = static_cast<QHBoxLayout*>(card->layout());
+
+    // Note knob in the free knob's place, shown while synced.
+    auto* note = new KnobWidget(label, 0, static_cast<double>(TempoSync::kNotes.size() - 1), defaultNote);
+    note->setSnap(1.0);
+    note->setValueFormatter([](double v) { return TempoSync::label(v); });
+    note->setToolTip(isTime ? QString("%1 as a note value at the global tempo (capped at %2 ms)").arg(label).arg(max)
+                            : QString("%1: one LFO cycle per note value at the global tempo").arg(label));
+    note->hide();
+    lay->insertWidget(lay->indexOf(freeKnob) + 1, note, 0, Qt::AlignVCenter);
+
+    // Sync switch at the end of the row (knob columns stay aligned).
+    auto* sw = new ToggleSwitch;
+    sw->setCheckable(true);
+    sw->setToolTip("Sync to the global tempo");
+    auto* slot = new QWidget;
+    auto* sl = new QHBoxLayout(slot);
+    sl->setContentsMargins(0, 0, 0, 0);
+    sl->setSpacing(6);
+    auto* cap = new QLabel("Sync");
+    cap->setObjectName("toggleCaption");
+    sl->addWidget(sw, 0, Qt::AlignVCenter);
+    sl->addWidget(cap, 0, Qt::AlignVCenter);
+    lay->insertWidget(lay->count() - 1, slot, 0, Qt::AlignVCenter); // before the stretch
+
+    connect(sw, &ToggleSwitch::toggled, this, [freeKnob, note](bool on) {
+        freeKnob->setVisible(!on);
+        note->setVisible(on);
+    });
+    mSynced.push_back({freeKnob, note, sw, isTime, min, max, std::move(push)});
+}
+
+MainWindow::SyncedParam& MainWindow::syncOf(KnobWidget* freeKnob)
+{
+    for (auto& s : mSynced)
+        if (s.freeKnob == freeKnob) return s;
+    Q_UNREACHABLE();
+}
+
+void MainWindow::pushSynced(KnobWidget* freeKnob)
+{
+    const SyncedParam& s = syncOf(freeKnob);
+    if (!s.sync->isChecked())
+    {
+        s.push(s.freeKnob->value());
+        return;
+    }
+    const double idx = s.noteKnob->value();
+    const double v   = s.isTime ? TempoSync::noteMs(mBpm, idx) : TempoSync::noteHz(mBpm, idx);
+    s.push(std::clamp(v, s.min, s.max));
+}
+
+void MainWindow::setTempo(double bpm)
+{
+    mBpm = bpm;
+    for (auto& s : mSynced)
+        if (s.sync->isChecked()) pushSynced(s.freeKnob);
+}
+
+// ---------------------------------------------------------------------------
 // Session state — the registry serialized to QSettings under "session/"
 // ---------------------------------------------------------------------------
 
@@ -1372,6 +1456,9 @@ void MainWindow::restoreSessionState()
 void MainWindow::registerParameters()
 {
     auto* e = mEngine.get();
+    // Time-based knobs: every change of free value, sync toggle or note value
+    // re-pushes the effective value (see pushSynced).
+    auto synced = [this](KnobWidget* k) { return [this, k](double) { pushSynced(k); }; };
 
     knobParam("", "inputGain",  mKnobInputGain,  [e](double v) { e->setInputGain (static_cast<float>(v)); });
     knobParam("", "outputGain", mKnobOutputGain, [e](double v) { e->setOutputGain(static_cast<float>(v)); });
@@ -1398,14 +1485,18 @@ void MainWindow::registerParameters()
 
     toggleParam("flanger", "enabled", mSwFlangerEnable, [e](bool b)   { e->flanger().setEnabled   (b); });
     toggleParam("flanger", "stereo",  mSwFlangerStereo, [e](bool b)   { e->flanger().setStereoMode(b); });
-    knobParam("flanger", "rate",      mKnobFlRate,      [e](double v) { e->flanger().setRate    (static_cast<float>(v)); });
+    knobParam("flanger", "rate",      mKnobFlRate,      synced(mKnobFlRate));
+    toggleParam("flanger", "sync",    syncOf(mKnobFlRate).sync,     synced(mKnobFlRate));
+    knobParam("flanger", "syncNote",  syncOf(mKnobFlRate).noteKnob, synced(mKnobFlRate));
     knobParam("flanger", "depth",     mKnobFlDepth,     [e](double v) { e->flanger().setDepth   (static_cast<float>(v)); });
     knobParam("flanger", "feedback",  mKnobFlFeedback,  [e](double v) { e->flanger().setFeedback(static_cast<float>(v)); });
     knobParam("flanger", "mix",       mKnobFlMix,       [e](double v) { e->flanger().setMix     (static_cast<float>(v)); });
 
     toggleParam("phaser", "enabled", mSwPhaserEnable, [e](bool b)   { e->phaser().setEnabled   (b); });
     toggleParam("phaser", "stereo",  mSwPhaserStereo, [e](bool b)   { e->phaser().setStereoMode(b); });
-    knobParam("phaser", "rate",      mKnobPhRate,     [e](double v) { e->phaser().setRate    (static_cast<float>(v)); });
+    knobParam("phaser", "rate",      mKnobPhRate,     synced(mKnobPhRate));
+    toggleParam("phaser", "sync",    syncOf(mKnobPhRate).sync,     synced(mKnobPhRate));
+    knobParam("phaser", "syncNote",  syncOf(mKnobPhRate).noteKnob, synced(mKnobPhRate));
     knobParam("phaser", "depth",     mKnobPhDepth,    [e](double v) { e->phaser().setDepth   (static_cast<float>(v)); });
     knobParam("phaser", "feedback",  mKnobPhFeedback, [e](double v) { e->phaser().setFeedback(static_cast<float>(v)); });
     knobParam("phaser", "mix",       mKnobPhMix,      [e](double v) { e->phaser().setMix     (static_cast<float>(v)); });
@@ -1419,18 +1510,24 @@ void MainWindow::registerParameters()
 
     toggleParam("chorus", "enabled", mSwChorusEnable, [e](bool b)   { e->chorus().setEnabled(b); });
     toggleParam("chorus", "stereo",  mSwChorusStereo, [e](bool b)   { e->chorus().setStereoMode(b); });
-    knobParam("chorus", "rate",      mKnobChRate,     [e](double v) { e->chorus().setRate (static_cast<float>(v)); });
+    knobParam("chorus", "rate",      mKnobChRate,     synced(mKnobChRate));
+    toggleParam("chorus", "sync",    syncOf(mKnobChRate).sync,     synced(mKnobChRate));
+    knobParam("chorus", "syncNote",  syncOf(mKnobChRate).noteKnob, synced(mKnobChRate));
     knobParam("chorus", "depth",     mKnobChDepth,    [e](double v) { e->chorus().setDepth(static_cast<float>(v)); });
     knobParam("chorus", "mix",       mKnobChMix,      [e](double v) { e->chorus().setMix  (static_cast<float>(v)); });
 
     toggleParam("tremolo", "enabled", mSwTremoloEnable, [e](bool b)   { e->tremolo().setEnabled(b); });
     toggleParam("tremolo", "stereo",  mSwTremoloStereo, [e](bool b)   { e->tremolo().setStereoMode(b); });
-    knobParam("tremolo", "rate",      mKnobTrRate,      [e](double v) { e->tremolo().setRate (static_cast<float>(v)); });
+    knobParam("tremolo", "rate",      mKnobTrRate,      synced(mKnobTrRate));
+    toggleParam("tremolo", "sync",    syncOf(mKnobTrRate).sync,     synced(mKnobTrRate));
+    knobParam("tremolo", "syncNote",  syncOf(mKnobTrRate).noteKnob, synced(mKnobTrRate));
     knobParam("tremolo", "depth",     mKnobTrDepth,     [e](double v) { e->tremolo().setDepth(static_cast<float>(v)); });
 
     toggleParam("delay", "enabled", mSwDelayEnable,   [e](bool b)   { e->delay().setEnabled   (b); });
     toggleParam("delay", "stereo",  mSwDelayStereo,   [e](bool b)   { e->delay().setStereoMode(b); });
-    knobParam("delay", "time",      mKnobDelTime,     [e](double v) { e->delay().setTime    (static_cast<float>(v)); });
+    knobParam("delay", "time",      mKnobDelTime,     synced(mKnobDelTime));
+    toggleParam("delay", "sync",    syncOf(mKnobDelTime).sync,     synced(mKnobDelTime));
+    knobParam("delay", "syncNote",  syncOf(mKnobDelTime).noteKnob, synced(mKnobDelTime));
     knobParam("delay", "feedback",  mKnobDelFeedback, [e](double v) { e->delay().setFeedback(static_cast<float>(v)); });
     knobParam("delay", "mix",       mKnobDelMix,      [e](double v) { e->delay().setMix     (static_cast<float>(v)); });
 

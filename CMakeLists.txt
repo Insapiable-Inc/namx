@@ -73,6 +73,9 @@ set(GUI_SOURCES
     src/ui/PresetSerializer.h
     src/ui/PresetBar.cpp
     src/ui/PresetBar.h
+    src/ui/TempoBar.cpp
+    src/ui/TempoBar.h
+    src/ui/TempoSync.h
     src/ui/VUMeter.cpp
     src/ui/VUMeter.h
     src/ui/GainReductionMeter.cpp

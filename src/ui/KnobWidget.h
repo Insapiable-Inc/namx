@@ -4,6 +4,8 @@
 #include <QWidget>
 #include <QString>
 
+#include <functional>
+
 class QContextMenuEvent;
 class QLabel;
 class VerticalDial;
@@ -38,6 +40,13 @@ public:
     /// When true, the value label shows a rounded integer.
     void setIntegerDisplay(bool on) { mIntDisplay = on; updateLabel(); }
 
+    /// Discrete knob: value() and valueChanged snap to multiples of `step`
+    /// (e.g. 1.0 for a list index); 0 = continuous.
+    void setSnap(double step) { mSnap = step; updateLabel(); }
+    /// Custom value label (e.g. note names for a sync knob); replaces the
+    /// number + unit text. Pass {} to restore the default.
+    void setValueFormatter(std::function<QString(double)> f) { mFormatter = std::move(f); updateLabel(); }
+
     /// Set the scroll-wheel increment in value units (e.g. 0.1 for 0.1 dB).
     /// Pass 0 to use the default (1% of range).
     void setScrollStep(double step) { mScrollStep = step; }
@@ -64,6 +73,9 @@ private:
     QString mUnit;
     bool    mIntDisplay{false};
     double  mScrollStep{0.0};
+    double  mSnap{0.0};
+    double  mLastEmitted{0.0}; // snapped knobs emit only on a step change
+    std::function<QString(double)> mFormatter;
 
     static constexpr int kSteps = 10000;
 

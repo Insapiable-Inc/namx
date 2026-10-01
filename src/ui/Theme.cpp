@@ -366,6 +366,23 @@ QToolButton#presetAb:checked {
     border-color: #5cc8a8;
 }
 
+/* === Tempo bar (under the preset bar) === */
+QFrame#tempoBar {
+    background-color: #1a1d24;
+    border: 1px solid #2a2f38;
+    border-radius: 6px;
+}
+QLineEdit#bpmEdit {
+    background-color: #15171c;
+    color: #5cc8a8;
+    border: 1px solid #424b5c;
+    border-radius: 4px;
+    font-size: 12pt;
+    font-weight: 700;
+    selection-background-color: #5cc8a8;
+    selection-color: #15171c;
+}
+
 /* === Tuner row: reference pitch + Hz toggle === */
 QSpinBox#tunerRef {
     background-color: #15171c;

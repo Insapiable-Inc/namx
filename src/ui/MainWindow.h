@@ -32,6 +32,7 @@ class GainReductionMeter;
 class LibraryDock;
 class LibraryPanel;
 class PresetBar;
+class TempoBar;
 class Tone3000Client;
 class Tone3000Panel;
 class TunerDisplay;
@@ -122,6 +123,26 @@ private:
                            ToggleSwitch*& toggleOut,
                            const std::initializer_list<KnobWidget*>& knobs,
                            ToggleSwitch** stereoToggleOut = nullptr);
+
+    // --- Tempo sync (Phase 15) ---------------------------------------------
+    // A time-based knob (delay time, LFO rate) gets a Sync toggle and a
+    // note-value knob shown in its place while synced. All three are registry
+    // parameters; each change re-pushes the effective value through `push`,
+    // as does a tempo change.
+    struct SyncedParam
+    {
+        KnobWidget*   freeKnob;
+        KnobWidget*   noteKnob;
+        ToggleSwitch* sync;
+        bool          isTime;     // ms (delay) vs Hz (LFO)
+        double        min, max;   // engine range; synced values are clamped
+        std::function<void(double)> push;
+    };
+    void addTempoSync(QWidget* card, KnobWidget* freeKnob, const QString& label, bool isTime,
+                      int defaultNote, double min, double max, std::function<void(double)> push);
+    SyncedParam& syncOf(KnobWidget* freeKnob);
+    void pushSynced(KnobWidget* freeKnob);
+    void setTempo(double bpm);
 
     // --- Effect strip / chain reordering ---
     // Lays the cards out in the given order: dividers follow NAM/EQ.
@@ -295,6 +316,9 @@ private:
     QTimer* mTunerTimer = nullptr;
     QTimer* mSessionSaveTimer = nullptr;
 
+    TempoBar*   mTempoBar  = nullptr;
+    double      mBpm       = 120.0;
+    std::vector<SyncedParam> mSynced;
     PresetBar*  mPresetBar = nullptr;
     QString     mPresetPath;        // current preset file; empty = untitled
     QJsonObject mPresetBaseline;    // toJson() when it was loaded/saved
