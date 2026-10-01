@@ -27,16 +27,16 @@ protected:
     void onSampleRateChanged(double) override {
         reset();
     }
-    void processBlockMono(float* buf, int n) override {
+    void processBlockMono(float* buf, size_t n) override {
         processChannel(buf, n, 0);
     }
-    void processBlockDual(float* L, float* R, int n) override {
+    void processBlockDual(float* L, float* R, size_t n) override {
         processChannel(L, n, 0);
         processChannel(R, n, 1);
     }
 
 private:
-    void processChannel(float* buf, int n, int ch);
+    void processChannel(float* buf, size_t n, int ch);
 
     std::atomic<float> mDrive{30.0f};
     std::atomic<float> mTone{50.0f};

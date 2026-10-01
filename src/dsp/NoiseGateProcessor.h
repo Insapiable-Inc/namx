@@ -41,11 +41,11 @@ protected:
     void onSampleRateChanged(double /*sr*/) override {
         reset();
     }
-    void processBlockMono(float* buf, int nframes) override;
-    void processBlockDual(float* L, float* R, int nframes) override;
+    void processBlockMono(float* buf, size_t nframes) override;
+    void processBlockDual(float* L, float* R, size_t nframes) override;
 
 private:
-    void processChannel(float* buf, int nframes, int ch);
+    void processChannel(float* buf, size_t nframes, int ch);
 
     // Defaults must match the knob defaults in Constants.h — the UI does not
     // push initial knob values to the engine at startup.

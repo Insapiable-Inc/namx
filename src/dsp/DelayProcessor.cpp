@@ -73,13 +73,13 @@ float DelayProcessor::saturate(float x, float amount) {
     return x + amount * (t - x);
 }
 
-void DelayProcessor::processBlockMono(float* buf, int nframes) {
+void DelayProcessor::processBlockMono(float* buf, size_t nframes) {
     if (mLine[0].samples.empty()) {
         return;
     }
     const Params p = params();
     Line& l = mLine[0];
-    for (int i = 0; i < nframes; ++i) {
+    for (size_t i = 0; i < nframes; ++i) {
         const float mod = p.modDepth * std::sin(kTwoPi * mModPhase);
         mModPhase += p.phInc;
         if (mModPhase >= 1.0f) {
@@ -92,13 +92,13 @@ void DelayProcessor::processBlockMono(float* buf, int nframes) {
     }
 }
 
-void DelayProcessor::processBlockDual(float* L, float* R, int nframes) {
+void DelayProcessor::processBlockDual(float* L, float* R, size_t nframes) {
     // Stereo input: independent line per channel (no cross-feedback).
     if (mLine[0].samples.empty()) {
         return;
     }
     const Params p = params();
-    for (int i = 0; i < nframes; ++i) {
+    for (size_t i = 0; i < nframes; ++i) {
         const float mod = p.modDepth * std::sin(kTwoPi * mModPhase);
         mModPhase += p.phInc;
         if (mModPhase >= 1.0f) {
@@ -114,7 +114,7 @@ void DelayProcessor::processBlockDual(float* L, float* R, int nframes) {
     }
 }
 
-void DelayProcessor::processBlockStereoOut(float* L, float* R, int nframes) {
+void DelayProcessor::processBlockStereoOut(float* L, float* R, size_t nframes) {
     // Cross-feed c: 1 = ping-pong (input → left only, repeats alternate),
     // 0 = two independent lines (input into both, L/R times).
     if (mLine[0].samples.empty()) {
@@ -122,7 +122,7 @@ void DelayProcessor::processBlockStereoOut(float* L, float* R, int nframes) {
     }
     const Params p = params();
     const float c = p.cross;
-    for (int i = 0; i < nframes; ++i) {
+    for (size_t i = 0; i < nframes; ++i) {
         const float mod = p.modDepth * std::sin(kTwoPi * mModPhase);
         mModPhase += p.phInc;
         if (mModPhase >= 1.0f) {

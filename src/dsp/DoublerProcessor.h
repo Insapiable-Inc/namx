@@ -25,7 +25,7 @@ public:
         mMix.store(pct);
     }
 
-    bool process(float* L, float* R, int n, bool inputIsStereo) override;
+    bool process(float* L, float* R, size_t n, bool inputIsStereo) override;
 
 protected:
     void onSampleRateChanged(double sr) override;

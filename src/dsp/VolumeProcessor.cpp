@@ -17,13 +17,13 @@ float VolumeProcessor::targetGain() const {
                : std::pow(10.0f, dB / 20.0f);
 }
 
-bool VolumeProcessor::process(float* L, float* R, int n, bool inputIsStereo) {
+bool VolumeProcessor::process(float* L, float* R, size_t n, bool inputIsStereo) {
     if (!mEnabled.load()) {
         return inputIsStereo;
     }
     const float target = targetGain();
     const float k = 1.0f - std::exp(-1.0f / (0.010f * static_cast<float>(mSampleRate)));
-    for (int i = 0; i < n; ++i) {
+    for (size_t i = 0; i < n; ++i) {
         mGain += k * (target - mGain);
         L[i] *= mGain;
         if (inputIsStereo) {

@@ -92,7 +92,7 @@ Cuts cutsFor(double sr, float lowHz, float highHz, float preMs, float maxPreMs) 
 }
 } // namespace
 
-void ReverbProcessor::processBlockStereoOut(float* L, float* R, int nframes) {
+void ReverbProcessor::processBlockStereoOut(float* L, float* R, size_t nframes) {
     const float roomSize = mRoomSize.load() / 100.0f;
     const float damping = mDamping.load() / 100.0f;
     const float width = mWidth.load() / 100.0f;
@@ -105,7 +105,7 @@ void ReverbProcessor::processBlockStereoOut(float* L, float* R, int nframes) {
     // Shimmer loop gain stays well under 1 — the comb feedback adds its own.
     const float shim = std::clamp(mShimmer.load(), 0.0f, 100.0f) / 100.0f * 0.45f;
 
-    for (int i = 0; i < nframes; ++i) {
+    for (size_t i = 0; i < nframes; ++i) {
         float inMono = preDelay(0, (L[i] + R[i]) * 0.015f, cut.pre) + shim * mShimFb[0];
 
         float outL = 0.0f, outR = 0.0f;
@@ -131,7 +131,7 @@ void ReverbProcessor::processBlockStereoOut(float* L, float* R, int nframes) {
     }
 }
 
-void ReverbProcessor::processMonoBank(float* buf, int nframes, int bank,
+void ReverbProcessor::processMonoBank(float* buf, size_t nframes, int bank,
                                       std::array<CombFilter, kNumCombs>& combs,
                                       std::array<AllPassFilter, kNumAllPasses>& aps) {
     const float roomSize = mRoomSize.load() / 100.0f;
@@ -144,7 +144,7 @@ void ReverbProcessor::processMonoBank(float* buf, int nframes, int bank,
 
     const float shim = std::clamp(mShimmer.load(), 0.0f, 100.0f) / 100.0f * 0.45f;
 
-    for (int i = 0; i < nframes; ++i) {
+    for (size_t i = 0; i < nframes; ++i) {
         float inSig = preDelay(bank, buf[i] * 0.015f, cut.pre) + shim * mShimFb[bank];
         float out = 0.0f;
         for (int c = 0; c < kNumCombs; ++c) {
@@ -161,11 +161,11 @@ void ReverbProcessor::processMonoBank(float* buf, int nframes, int bank,
     }
 }
 
-void ReverbProcessor::processBlockMono(float* buf, int nframes) {
+void ReverbProcessor::processBlockMono(float* buf, size_t nframes) {
     processMonoBank(buf, nframes, 0, mCombL, mApL);
 }
 
-void ReverbProcessor::processBlockDual(float* L, float* R, int nframes) {
+void ReverbProcessor::processBlockDual(float* L, float* R, size_t nframes) {
     // Stereo input: independent mono reverb per channel, each on its own
     // comb/all-pass bank so the tails don't share state.
     processMonoBank(L, nframes, 0, mCombL, mApL);

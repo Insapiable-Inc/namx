@@ -23,7 +23,7 @@ public:
         return mGrPeakDb.exchange(0.0f);
     }
 
-    void process(float* L, float* R, int n);
+    void process(float* L, float* R, size_t n);
 
 private:
     std::atomic<bool> mEnabled{false};

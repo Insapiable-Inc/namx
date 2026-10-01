@@ -107,7 +107,7 @@ public:
 
     // ---- Audio thread ----
     /// Adds the click into L/R (after the output stage).
-    void process(float* L, float* R, int n);
+    void process(float* L, float* R, size_t n);
 
 private:
     struct Voice

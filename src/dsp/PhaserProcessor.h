@@ -48,9 +48,9 @@ protected:
     void onSampleRateChanged(double /*sr*/) override {
         reset();
     }
-    void processBlockMono(float* buf, int nframes) override;
-    void processBlockDual(float* L, float* R, int nframes) override;
-    void processBlockStereoOut(float* L, float* R, int nframes) override;
+    void processBlockMono(float* buf, size_t nframes) override;
+    void processBlockDual(float* L, float* R, size_t nframes) override;
+    void processBlockStereoOut(float* L, float* R, size_t nframes) override;
 
 private:
     std::atomic<float> mRate{1.0f};

@@ -51,11 +51,11 @@ protected:
     void onSampleRateChanged(double /*sr*/) override {
         reset();
     }
-    void processBlockMono(float* buf, int nframes) override;
-    void processBlockDual(float* L, float* R, int nframes) override;
+    void processBlockMono(float* buf, size_t nframes) override;
+    void processBlockDual(float* L, float* R, size_t nframes) override;
 
 private:
-    void processChannel(float* buf, int nframes, int ch);
+    void processChannel(float* buf, size_t nframes, int ch);
 
     std::atomic<float> mThresholdDB{-20.0f};
     std::atomic<float> mRatio{4.0f};

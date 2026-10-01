@@ -36,13 +36,13 @@ void FlangerProcessor::processSample(float in, float phase, DelayLine& line, flo
     out = in * (1.0f - mix) + wet * mix;
 }
 
-void FlangerProcessor::processBlockMono(float* buf, int nframes) {
+void FlangerProcessor::processBlockMono(float* buf, size_t nframes) {
     const float depth = mDepth.load() / 100.0f;
     const float fbAmt = mFeedback.load() / 100.0f;
     const float mix = mMix.load() / 100.0f;
     const float phInc = mRate.load() / static_cast<float>(mSampleRate);
 
-    for (int i = 0; i < nframes; ++i) {
+    for (size_t i = 0; i < nframes; ++i) {
         float out;
         processSample(buf[i], mPhase, mLineL, mFbL, depth, fbAmt, mix, out);
         buf[i] = out;
@@ -54,13 +54,13 @@ void FlangerProcessor::processBlockMono(float* buf, int nframes) {
     }
 }
 
-void FlangerProcessor::processBlockDual(float* L, float* R, int nframes) {
+void FlangerProcessor::processBlockDual(float* L, float* R, size_t nframes) {
     const float depth = mDepth.load() / 100.0f;
     const float fbAmt = mFeedback.load() / 100.0f;
     const float mix = mMix.load() / 100.0f;
     const float phInc = mRate.load() / static_cast<float>(mSampleRate);
 
-    for (int i = 0; i < nframes; ++i) {
+    for (size_t i = 0; i < nframes; ++i) {
         // Same LFO phase for both channels: identical mono effect per channel.
         float outL, outR;
         processSample(L[i], mPhase, mLineL, mFbL, depth, fbAmt, mix, outL);
@@ -75,13 +75,13 @@ void FlangerProcessor::processBlockDual(float* L, float* R, int nframes) {
     }
 }
 
-void FlangerProcessor::processBlockStereoOut(float* L, float* R, int nframes) {
+void FlangerProcessor::processBlockStereoOut(float* L, float* R, size_t nframes) {
     const float depth = mDepth.load() / 100.0f;
     const float fbAmt = mFeedback.load() / 100.0f;
     const float mix = mMix.load() / 100.0f;
     const float phInc = mRate.load() / static_cast<float>(mSampleRate);
 
-    for (int i = 0; i < nframes; ++i) {
+    for (size_t i = 0; i < nframes; ++i) {
         float outL, outR;
         processSample(L[i], mPhase, mLineL, mFbL, depth, fbAmt, mix, outL);
         processSample(R[i], mPhase + 0.5f, mLineR, mFbR, depth, fbAmt, mix, outR);

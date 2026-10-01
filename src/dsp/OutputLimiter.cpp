@@ -17,7 +17,7 @@ void OutputLimiter::setSampleRate(double sr) {
     mAttack = 1.0f - std::exp(-5.0f / mLook);
 }
 
-void OutputLimiter::process(float* L, float* R, int n) {
+void OutputLimiter::process(float* L, float* R, size_t n) {
     const bool on = mEnabled.load(std::memory_order_relaxed);
     if (!on) {
         if (mWasEnabled) // flush the look-ahead so re-enabling doesn't replay old audio
@@ -36,7 +36,7 @@ void OutputLimiter::process(float* L, float* R, int n) {
     }
 
     float minGain = 1.0f;
-    for (int i = 0; i < n; ++i) {
+    for (size_t i = 0; i < n; ++i) {
         const float peak = std::max(std::abs(L[i]), std::abs(R[i]));
         const float need = peak > kCeiling ? kCeiling / peak : 1.0f;
 

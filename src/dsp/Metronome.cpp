@@ -160,7 +160,7 @@ void Metronome::render(float* L, float* R, int from, int to, float gL, float gR)
     }
 }
 
-void Metronome::process(float* L, float* R, int n) {
+void Metronome::process(float* L, float* R, size_t n) {
     const bool run = mRunning.load(std::memory_order_relaxed);
     if (run && !mWasRunning) {
         mUntilNext = 0.0; // first click on the first sample

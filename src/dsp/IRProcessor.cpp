@@ -50,16 +50,16 @@ void IRProcessor::designCuts(float lowHz, float highHz) {
     mDesignedHigh = highHz;
 }
 
-bool IRProcessor::process(float* L, float* R, int n, bool inputIsStereo) {
+bool IRProcessor::process(float* L, float* R, size_t n, bool inputIsStereo) {
     // Long blocks in chunks so the scratch never grows on the audio thread.
     bool stereo = inputIsStereo;
-    for (int off = 0; off < n; off += kChunk) {
+    for (size_t off = 0; off < n; off += kChunk) {
         stereo = processChunk(L + off, R + off, std::min(kChunk, n - off), inputIsStereo);
     }
     return stereo;
 }
 
-bool IRProcessor::processChunk(float* L, float* R, int n, bool inputIsStereo) {
+bool IRProcessor::processChunk(float* L, float* R, size_t n, bool inputIsStereo) {
     const bool on = mEnabled.load();
     const bool hasA = mA.isLoaded();
     const bool hasB = mB.isLoaded();
@@ -105,7 +105,7 @@ bool IRProcessor::processChunk(float* L, float* R, int n, bool inputIsStereo) {
     }
     const bool doLo = lo > 20.5f, doHi = hi < 19999.0f;
 
-    for (int i = 0; i < n; ++i) {
+    for (size_t i = 0; i < n; ++i) {
         float l = gL[0] * mAL[i] + gL[1] * mBL[i];
         float r =
             gR[0] * (inputIsStereo ? mAR[i] : mAL[i]) + gR[1] * (inputIsStereo ? mBR[i] : mBL[i]);

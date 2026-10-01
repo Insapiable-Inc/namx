@@ -63,7 +63,7 @@ float PhaserProcessor::processChannel(float in, float d, std::array<float, kStag
     return in * (1.0f - mix) + sig * mix;
 }
 
-void PhaserProcessor::processBlockMono(float* buf, int nframes) {
+void PhaserProcessor::processBlockMono(float* buf, size_t nframes) {
     const float depth = mDepth.load() / 100.0f;
     const float fbAmt = mFeedback.load() / 100.0f;
     const float mix = mMix.load() / 100.0f;
@@ -72,7 +72,7 @@ void PhaserProcessor::processBlockMono(float* buf, int nframes) {
     const bool vibe = mVibe.load(std::memory_order_relaxed);
     float d = 0.0f;
     std::array<float, kStages> dv{};
-    for (int i = 0; i < nframes; ++i) {
+    for (size_t i = 0; i < nframes; ++i) {
         if (i % kCtrlInterval == 0) {
             if (vibe) {
                 vibeCoeffs(mPhase, depth, dv);
@@ -89,7 +89,7 @@ void PhaserProcessor::processBlockMono(float* buf, int nframes) {
     }
 }
 
-void PhaserProcessor::processBlockDual(float* L, float* R, int nframes) {
+void PhaserProcessor::processBlockDual(float* L, float* R, size_t nframes) {
     const float depth = mDepth.load() / 100.0f;
     const float fbAmt = mFeedback.load() / 100.0f;
     const float mix = mMix.load() / 100.0f;
@@ -98,7 +98,7 @@ void PhaserProcessor::processBlockDual(float* L, float* R, int nframes) {
     const bool vibe = mVibe.load(std::memory_order_relaxed);
     float d = 0.0f;
     std::array<float, kStages> dv{};
-    for (int i = 0; i < nframes; ++i) {
+    for (size_t i = 0; i < nframes; ++i) {
         // Same LFO phase for both channels: identical mono effect per channel.
         if (i % kCtrlInterval == 0) {
             if (vibe) {
@@ -118,7 +118,7 @@ void PhaserProcessor::processBlockDual(float* L, float* R, int nframes) {
     }
 }
 
-void PhaserProcessor::processBlockStereoOut(float* L, float* R, int nframes) {
+void PhaserProcessor::processBlockStereoOut(float* L, float* R, size_t nframes) {
     const float depth = mDepth.load() / 100.0f;
     const float fbAmt = mFeedback.load() / 100.0f;
     const float mix = mMix.load() / 100.0f;
@@ -127,7 +127,7 @@ void PhaserProcessor::processBlockStereoOut(float* L, float* R, int nframes) {
     const bool vibe = mVibe.load(std::memory_order_relaxed);
     float dL = 0.0f, dR = 0.0f;
     std::array<float, kStages> dvL{}, dvR{};
-    for (int i = 0; i < nframes; ++i) {
+    for (size_t i = 0; i < nframes; ++i) {
         if (i % kCtrlInterval == 0) {
             if (vibe) {
                 vibeCoeffs(mPhase, depth, dvL);

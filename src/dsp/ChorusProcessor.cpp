@@ -44,7 +44,7 @@ static inline float vintageTone(float x, float& lp, float k) {
     return lp;
 }
 
-void ChorusProcessor::processBlockMono(float* buf, int nframes) {
+void ChorusProcessor::processBlockMono(float* buf, size_t nframes) {
     const float depth = mDepth.load() / 100.0f;
     const float mix = mMix.load() / 100.0f;
     const float fs = static_cast<float>(mSampleRate);
@@ -52,7 +52,7 @@ void ChorusProcessor::processBlockMono(float* buf, int nframes) {
     const int mode = mMode.load(std::memory_order_relaxed);
     const float lpK = 1.0f - std::exp(-2.0f * kPi * 3200.0f / fs);
 
-    for (int i = 0; i < nframes; ++i) {
+    for (size_t i = 0; i < nframes; ++i) {
         mLineL.push(buf[i]);
         float w = wet(mLineL, mPhase, depth, fs, mode);
         if (mode == Vintage) {
@@ -66,7 +66,7 @@ void ChorusProcessor::processBlockMono(float* buf, int nframes) {
     }
 }
 
-void ChorusProcessor::processBlockDual(float* L, float* R, int nframes) {
+void ChorusProcessor::processBlockDual(float* L, float* R, size_t nframes) {
     const float depth = mDepth.load() / 100.0f;
     const float mix = mMix.load() / 100.0f;
     const float fs = static_cast<float>(mSampleRate);
@@ -74,7 +74,7 @@ void ChorusProcessor::processBlockDual(float* L, float* R, int nframes) {
     const int mode = mMode.load(std::memory_order_relaxed);
     const float lpK = 1.0f - std::exp(-2.0f * kPi * 3200.0f / fs);
 
-    for (int i = 0; i < nframes; ++i) {
+    for (size_t i = 0; i < nframes; ++i) {
         // Same LFO for both channels: identical mono effect applied per channel.
         mLineL.push(L[i]);
         mLineR.push(R[i]);
@@ -93,7 +93,7 @@ void ChorusProcessor::processBlockDual(float* L, float* R, int nframes) {
     }
 }
 
-void ChorusProcessor::processBlockStereoOut(float* L, float* R, int nframes) {
+void ChorusProcessor::processBlockStereoOut(float* L, float* R, size_t nframes) {
     const float depth = mDepth.load() / 100.0f;
     const float mix = mMix.load() / 100.0f;
     const float fs = static_cast<float>(mSampleRate);
@@ -103,7 +103,7 @@ void ChorusProcessor::processBlockStereoOut(float* L, float* R, int nframes) {
     const float off = mode == Spatial ? 0.25f : 0.5f; // LFO offset
     const float rSign = mode == Spatial ? -1.0f : 1.0f; // Spatial: inverted right wet
 
-    for (int i = 0; i < nframes; ++i) {
+    for (size_t i = 0; i < nframes; ++i) {
         mLineL.push(L[i]);
         mLineR.push(R[i]);
         float wL = wet(mLineL, mPhase, depth, fs, mode);

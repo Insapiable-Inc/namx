@@ -8,7 +8,7 @@ void NoiseGateProcessor::reset() {
     mGain[0] = mGain[1] = 0.0f;
 }
 
-void NoiseGateProcessor::processChannel(float* buf, int nframes, int ch) {
+void NoiseGateProcessor::processChannel(float* buf, size_t nframes, int ch) {
     const float threshLin = std::pow(10.0f, mThresholdDB.load() / 20.0f);
     const float fs = static_cast<float>(mSampleRate);
     const float atMS = mAttackMS.load();
@@ -21,7 +21,7 @@ void NoiseGateProcessor::processChannel(float* buf, int nframes, int ch) {
     float& gain = mGain[ch];
     float minGain = 1.0f;
 
-    for (int i = 0; i < nframes; ++i) {
+    for (size_t i = 0; i < nframes; ++i) {
         float level = std::abs(buf[i]);
         if (level > env) {
             env = atCoeff * env + (1.0f - atCoeff) * level;
@@ -47,11 +47,11 @@ void NoiseGateProcessor::processChannel(float* buf, int nframes, int ch) {
     }
 }
 
-void NoiseGateProcessor::processBlockMono(float* buf, int nframes) {
+void NoiseGateProcessor::processBlockMono(float* buf, size_t nframes) {
     processChannel(buf, nframes, 0);
 }
 
-void NoiseGateProcessor::processBlockDual(float* L, float* R, int nframes) {
+void NoiseGateProcessor::processBlockDual(float* L, float* R, size_t nframes) {
     processChannel(L, nframes, 0);
     processChannel(R, nframes, 1);
 }

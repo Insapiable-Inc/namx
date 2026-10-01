@@ -59,9 +59,9 @@ public:
 
 protected:
     void onSampleRateChanged(double sr) override;
-    void processBlockMono(float* buf, int nframes) override;
-    void processBlockDual(float* L, float* R, int nframes) override;
-    void processBlockStereoOut(float* L, float* R, int nframes) override;
+    void processBlockMono(float* buf, size_t nframes) override;
+    void processBlockDual(float* L, float* R, size_t nframes) override;
+    void processBlockStereoOut(float* L, float* R, size_t nframes) override;
 
 private:
     std::atomic<float> mRoomSize{50.0f};
@@ -134,7 +134,7 @@ private:
     static constexpr int kStereoOffset = 23;
 
     void allocate();
-    void processMonoBank(float* buf, int nframes, int bank,
+    void processMonoBank(float* buf, size_t nframes, int bank,
                          std::array<CombFilter, kNumCombs>& combs,
                          std::array<AllPassFilter, kNumAllPasses>& aps);
 };

@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <atomic>
+#include <cstddef>
 
 /// Abstract base for all audio effect processors.
 ///
@@ -70,7 +71,7 @@ public:
     /// Unified dispatch entry point. L and R are always valid float buffers of length n.
     /// inputIsStereo: caller signals whether L and R already contain different content.
     /// Returns: true if L and R now contain different content.
-    virtual bool process(float* L, float* R, int n, bool inputIsStereo) {
+    virtual bool process(float* L, float* R, size_t n, bool inputIsStereo) {
         if (!mEnabled.load()) {
             return inputIsStereo;
         }
@@ -100,14 +101,14 @@ protected:
     }
 
     /// Mono in-place processing. Called only with mono input (single channel).
-    virtual void processBlockMono(float* /*buf*/, int /*n*/) {
+    virtual void processBlockMono(float* /*buf*/, size_t /*n*/) {
     }
 
     /// Stereo input → the mono effect applied to each channel independently.
     /// Stateful effects (delay lines, filters, LFOs) MUST override this with
     /// separate per-channel state; the default of calling processBlockMono
     /// twice is only correct for effects that never see stereo input.
-    virtual void processBlockDual(float* L, float* R, int n) {
+    virtual void processBlockDual(float* L, float* R, size_t n) {
         processBlockMono(L, n);
         processBlockMono(R, n);
     }
@@ -115,7 +116,7 @@ protected:
     /// True stereo output from mono input.
     /// Called only when supportsStereoOut() == true && !inputIsStereo.
     /// Default falls back to calling processBlockMono on each channel independently.
-    virtual void processBlockStereoOut(float* L, float* R, int n) {
+    virtual void processBlockStereoOut(float* L, float* R, size_t n) {
         processBlockMono(L, n);
         processBlockMono(R, n);
     }

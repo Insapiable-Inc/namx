@@ -79,7 +79,7 @@ public:
     }
 
     void reset() override;
-    bool process(float* L, float* R, int n, bool inputIsStereo) override;
+    bool process(float* L, float* R, size_t n, bool inputIsStereo) override;
 
 protected:
     void onSampleRateChanged(double sr) override;
@@ -99,7 +99,7 @@ private:
         }
     };
     void designCuts(float lowHz, float highHz);
-    bool processChunk(float* L, float* R, int n, bool inputIsStereo);
+    bool processChunk(float* L, float* R, size_t n, bool inputIsStereo);
 
     IRLoader mA, mB;
 
@@ -110,7 +110,7 @@ private:
     std::atomic<float> mLowCutHz{20.0f};
     std::atomic<float> mHighCutHz{20000.0f};
 
-    static constexpr int kChunk = 2048;
+    static constexpr size_t kChunk = 2048;
     std::vector<float> mAL, mAR, mBL, mBR; // per-slot scratch (kChunk)
     Biquad mHp[2], mLp[2];
     float mDesignedLow = -1.0f, mDesignedHigh = -1.0f;

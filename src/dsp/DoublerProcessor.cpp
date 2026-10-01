@@ -14,7 +14,7 @@ void DoublerProcessor::reset() {
     mUntilNewTarget = 0;
 }
 
-bool DoublerProcessor::process(float* L, float* R, int n, bool inputIsStereo) {
+bool DoublerProcessor::process(float* L, float* R, size_t n, bool inputIsStereo) {
     if (!mEnabled.load() || inputIsStereo || mLine.empty()) {
         return inputIsStereo;
     }
@@ -27,7 +27,7 @@ bool DoublerProcessor::process(float* L, float* R, int n, bool inputIsStereo) {
     const int hold = static_cast<int>(0.12f * fs);
     const float glide = 1.0f - std::exp(-1.0f / (0.25f * fs));
 
-    for (int i = 0; i < n; ++i) {
+    for (size_t i = 0; i < n; ++i) {
         if (--mUntilNewTarget <= 0) {
             mSeed = mSeed * 1664525u + 1013904223u;
             mDriftTarget = static_cast<float>(mSeed >> 8) / 8388608.0f - 1.0f;

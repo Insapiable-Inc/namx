@@ -28,16 +28,16 @@ protected:
         mShift[0].prepare(sr);
         mShift[1].prepare(sr);
     }
-    void processBlockMono(float* buf, int n) override {
+    void processBlockMono(float* buf, size_t n) override {
         processChannel(buf, n, 0);
     }
-    void processBlockDual(float* L, float* R, int n) override {
+    void processBlockDual(float* L, float* R, size_t n) override {
         processChannel(L, n, 0);
         processChannel(R, n, 1);
     }
 
 private:
-    void processChannel(float* buf, int n, int ch) {
+    void processChannel(float* buf, size_t n, int ch) {
         const float st = mSemis.load(std::memory_order_relaxed);
         if (std::abs(st) < 0.01f) {
             return;
@@ -45,7 +45,7 @@ private:
         const float mix = mMix.load(std::memory_order_relaxed) / 100.0f;
         PitchShifter& s = mShift[ch];
         s.setSemitones(st);
-        for (int i = 0; i < n; ++i) {
+        for (size_t i = 0; i < n; ++i) {
             buf[i] = buf[i] * (1.0f - mix) + s.process(buf[i]) * mix;
         }
     }

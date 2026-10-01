@@ -130,7 +130,7 @@ void NamProcessor::onSampleRateChanged(double sr) {
     mModelRate = sr;
 }
 
-/*static*/ void NamProcessor::runModel(nam::DSP* model, float* buf, int n,
+/*static*/ void NamProcessor::runModel(nam::DSP* model, float* buf, size_t n,
                                        std::vector<float>& scratch) {
     // Sized by prepareBuffer(); process() bypasses oversized blocks, so this
     // must never allocate on the audio thread.
@@ -144,7 +144,7 @@ void NamProcessor::onSampleRateChanged(double sr) {
     std::copy(scratch.data(), scratch.data() + n, buf);
 }
 
-bool NamProcessor::process(float* L, float* R, int n, bool inputIsStereo) {
+bool NamProcessor::process(float* L, float* R, size_t n, bool inputIsStereo) {
     // Every exit path must count the block so retired pairs get reclaimed.
     struct BlockGuard
     {
@@ -160,7 +160,7 @@ bool NamProcessor::process(float* L, float* R, int n, bool inputIsStereo) {
 
     // A stereo pre-effect feeding a mono amp: sum, run one model.
     if (inputIsStereo && !mStereoAmp.load(std::memory_order_relaxed)) {
-        for (int i = 0; i < n; ++i) {
+        for (size_t i = 0; i < n; ++i) {
             L[i] = 0.5f * (L[i] + R[i]);
         }
         inputIsStereo = false;

@@ -168,7 +168,8 @@ void IRLoader::setTargetSampleRate(double sr) {
     }
 }
 
-void IRLoader::processBlock(float* L, float* R, int numFrames, bool inputIsStereo, bool enabled) {
+void IRLoader::processBlock(float* L, float* R, size_t numFrames, bool inputIsStereo,
+                            bool enabled) {
     struct BlockGuard
     {
         RtSlot<Kernel>& s;
@@ -185,7 +186,7 @@ void IRLoader::processBlock(float* L, float* R, int numFrames, bool inputIsStere
     Kernel& k = *kp;
 
     if (inputIsStereo) {
-        for (int i = 0; i < numFrames; ++i) {
+        for (size_t i = 0; i < numFrames; ++i) {
             pushSample(k, 0, L[i]);
             pushSample(k, 1, R[i]);
             L[i] = convolveAt(k, 0);
@@ -199,7 +200,7 @@ void IRLoader::processBlock(float* L, float* R, int numFrames, bool inputIsStere
     // Mono: L == R, so the two delay lines hold identical history. Feed both
     // (a few stores) but run the 4096-tap dot product only once — the R line
     // stays valid for the moment an upstream effect goes stereo.
-    for (int i = 0; i < numFrames; ++i) {
+    for (size_t i = 0; i < numFrames; ++i) {
         const float in = L[i];
         pushSample(k, 0, in);
         pushSample(k, 1, in);

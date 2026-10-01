@@ -56,7 +56,7 @@ public:
     /// each channel with its own state. `enabled=false` only counts the
     /// block (needed so retired kernels can be reclaimed) and leaves the
     /// audio untouched. Audio thread only.
-    void processBlock(float* L, float* R, int numFrames, bool inputIsStereo, bool enabled);
+    void processBlock(float* L, float* R, size_t numFrames, bool inputIsStereo, bool enabled);
 
     /// Reset convolution state of the active kernel. Audio thread only.
     void reset();

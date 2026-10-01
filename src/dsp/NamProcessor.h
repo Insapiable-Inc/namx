@@ -64,7 +64,7 @@ public:
     /// Overrides the default EffectBase dispatch so that stereo input is
     /// processed through independent L and R model instances rather than
     /// calling the single-state processBlockMono twice per block.
-    bool process(float* L, float* R, int n, bool inputIsStereo) override;
+    bool process(float* L, float* R, size_t n, bool inputIsStereo) override;
 
 protected:
     void onSampleRateChanged(double sr) override;
@@ -96,5 +96,5 @@ private:
     int mFadeTotal{1}; // audio thread only
     int mFadeRemaining{0}; // audio thread only
 
-    static void runModel(nam::DSP* model, float* buf, int n, std::vector<float>& scratch);
+    static void runModel(nam::DSP* model, float* buf, size_t n, std::vector<float>& scratch);
 };

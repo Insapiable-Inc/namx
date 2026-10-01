@@ -32,7 +32,7 @@ public:
 
     EQProcessor();
 
-    bool process(float* L, float* R, int n, bool inputIsStereo) override;
+    bool process(float* L, float* R, size_t n, bool inputIsStereo) override;
     void reset() override;
 
     void setGain(Band b, double dB);

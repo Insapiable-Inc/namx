@@ -130,7 +130,7 @@ EQProcessor::Biquad EQProcessor::design(Band band) const {
     return bq;
 }
 
-bool EQProcessor::process(float* L, float* R, int n, bool inputIsStereo) {
+bool EQProcessor::process(float* L, float* R, size_t n, bool inputIsStereo) {
     if (!mEnabled.load()) {
         return inputIsStereo;
     }
@@ -145,12 +145,12 @@ bool EQProcessor::process(float* L, float* R, int n, bool inputIsStereo) {
             continue;
         }
         Biquad& l = mL[b];
-        for (int i = 0; i < n; ++i) {
+        for (size_t i = 0; i < n; ++i) {
             L[i] = l.process(L[i]);
         }
         if (inputIsStereo) {
             Biquad& r = mR[b];
-            for (int i = 0; i < n; ++i) {
+            for (size_t i = 0; i < n; ++i) {
                 R[i] = r.process(R[i]);
             }
         }

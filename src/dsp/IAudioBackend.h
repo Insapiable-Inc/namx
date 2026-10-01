@@ -24,7 +24,7 @@ public:
 
         /// Process one block. `in` is the mono input buffer, `outL`/`outR` the
         /// stereo output buffers. All are `nframes` long.
-        virtual void onAudio(const float* in, float* outL, float* outR, int nframes) = 0;
+        virtual void onAudio(const float* in, float* outL, float* outR, size_t nframes) = 0;
 
         /// Notification that the audio buffer size has changed. Called on a
         /// non-RT thread, serialised with onAudio. Implementations should

@@ -18,7 +18,7 @@
 class TunerProcessor : public EffectBase
 {
 public:
-    static constexpr int kBufSize = 4096;
+    static constexpr size_t kBufSize = 4096;
 
     TunerProcessor();
     ~TunerProcessor() override;
@@ -49,11 +49,11 @@ protected:
     }
 
     // Accumulates samples into ring buffer; applies mute if set.
-    void processBlockMono(float* buf, int nframes) override;
+    void processBlockMono(float* buf, size_t nframes) override;
 
     // Stereo input (tuner placed after a stereo effect): detector reads the
     // L/R average, mute silences both channels.
-    void processBlockDual(float* L, float* R, int nframes) override;
+    void processBlockDual(float* L, float* R, size_t nframes) override;
 
 private:
     // Worker loop: computes pitch ~10x/s while the tuner is enabled.
@@ -65,7 +65,7 @@ private:
     // Ring buffer filled by audio thread, consumed by the worker thread.
     // Protected by mBufMutex; audio uses try_lock (non-blocking).
     std::array<float, kBufSize> mRingBuf{};
-    int mWritePos{0};
+    size_t mWritePos{0};
     bool mBufferReady{false};
     std::mutex mBufMutex;
 

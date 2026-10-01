@@ -17,7 +17,7 @@ void DynamicWahProcessor::reset() {
     mSVF_BP[0] = mSVF_BP[1] = 0.0f;
 }
 
-void DynamicWahProcessor::processChannel(float* buf, int nframes, int ch) {
+void DynamicWahProcessor::processChannel(float* buf, size_t nframes, int ch) {
     const float sens = mSensitivity.load() / 100.0f;
     const float res = mResonance.load() / 100.0f;
     const float mix = mMix.load() / 100.0f;
@@ -34,7 +34,7 @@ void DynamicWahProcessor::processChannel(float* buf, int nframes, int ch) {
     float& lp = mSVF_LP[ch];
     float& bp = mSVF_BP[ch];
 
-    for (int i = 0; i < nframes; ++i) {
+    for (size_t i = 0; i < nframes; ++i) {
         const float dry = buf[i];
         float level = std::abs(dry);
         float coeff = (level > env) ? mEnvAttack : mEnvRelease;
@@ -59,11 +59,11 @@ void DynamicWahProcessor::processChannel(float* buf, int nframes, int ch) {
     }
 }
 
-void DynamicWahProcessor::processBlockMono(float* buf, int nframes) {
+void DynamicWahProcessor::processBlockMono(float* buf, size_t nframes) {
     processChannel(buf, nframes, 0);
 }
 
-void DynamicWahProcessor::processBlockDual(float* L, float* R, int nframes) {
+void DynamicWahProcessor::processBlockDual(float* L, float* R, size_t nframes) {
     processChannel(L, nframes, 0);
     processChannel(R, nframes, 1);
 }

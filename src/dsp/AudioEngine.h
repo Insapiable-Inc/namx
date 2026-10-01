@@ -244,7 +244,7 @@ public:
     }
 
     // ---- IAudioBackend::Callback ----
-    void onAudio(const float* in, float* outL, float* outR, int nframes) override;
+    void onAudio(const float* in, float* outL, float* outR, size_t nframes) override;
     void onBufferSizeChanged(int newSize) override;
 
 private:
@@ -295,7 +295,7 @@ private:
     std::atomic<float> mDspLoadPeak{0.0f};
 
     // onAudio = timing around this.
-    void processBlock(const float* in, float* outL, float* outR, int nframes);
+    void processBlock(const float* in, float* outL, float* outR, size_t nframes);
 
     std::vector<float> mWorkBufL;
     std::vector<float> mWorkBufR;

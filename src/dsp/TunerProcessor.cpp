@@ -50,11 +50,11 @@ void TunerProcessor::reset() {
     }
 }
 
-void TunerProcessor::processBlockMono(float* buf, int nframes) {
+void TunerProcessor::processBlockMono(float* buf, size_t nframes) {
     // try_lock: if the GUI thread is currently snapshotting, skip the write for this
     // block. A ~5 ms gap in ring-buffer data is completely unnoticeable in a tuner display.
     if (mBufMutex.try_lock()) {
-        for (int i = 0; i < nframes; ++i) {
+        for (size_t i = 0; i < nframes; ++i) {
             mRingBuf[mWritePos] = buf[i];
             mWritePos = (mWritePos + 1) % kBufSize;
         }
@@ -67,9 +67,9 @@ void TunerProcessor::processBlockMono(float* buf, int nframes) {
     }
 }
 
-void TunerProcessor::processBlockDual(float* L, float* R, int nframes) {
+void TunerProcessor::processBlockDual(float* L, float* R, size_t nframes) {
     if (mBufMutex.try_lock()) {
-        for (int i = 0; i < nframes; ++i) {
+        for (size_t i = 0; i < nframes; ++i) {
             mRingBuf[mWritePos] = 0.5f * (L[i] + R[i]);
             mWritePos = (mWritePos + 1) % kBufSize;
         }
@@ -90,24 +90,25 @@ float TunerProcessor::detectPitch() {
             return 0.0f;
         }
 
-        for (int i = 0; i < kBufSize; ++i) {
+        for (size_t i = 0; i < kBufSize; ++i) {
             mSnapBuf[i] = mRingBuf[(mWritePos + i) % kBufSize];
         }
     }
 
     double rmsSum = 0.0;
-    for (int i = 0; i < kBufSize; ++i) {
-        rmsSum += mSnapBuf[i] * mSnapBuf[i];
+    for (const float sample : mSnapBuf) {
+        rmsSum += sample * sample;
     }
-    if (std::sqrt(rmsSum / kBufSize) < 5e-4) {
+    if (std::sqrt(rmsSum / static_cast<double>(kBufSize)) < 5e-4) {
         return 0.0f;
     }
 
     const float fs = mFs.load();
-    const int N = kBufSize;
-    const int winLen = std::min(N, 1024);
-    const int minLag = std::max(2, static_cast<int>(fs / 1400.0f)); // ~1400 Hz ceiling
-    const int maxLag = std::min(static_cast<int>(fs / 50.0f), N - winLen - 1); // ~50 Hz floor
+    const size_t winLen = std::min<size_t>(kBufSize, 1024);
+    const size_t minLag =
+        std::max<size_t>(2, static_cast<size_t>(fs / 1400.0f)); // ~1400 Hz ceiling
+    const size_t maxLag =
+        std::min(static_cast<size_t>(fs / 50.0f), kBufSize - winLen - 1); // ~50 Hz floor
     if (maxLag <= minLag) {
         return 0.0f;
     }
@@ -116,15 +117,15 @@ float TunerProcessor::detectPitch() {
     // 1024-sample window, evaluated for every lag from 1 so the first
     // positive lobe (around τ = 0) can be skipped explicitly below.
     double r0 = 0.0;
-    for (int i = 0; i < winLen; ++i) {
+    for (size_t i = 0; i < winLen; ++i) {
         r0 += mSnapBuf[i] * mSnapBuf[i];
     }
 
     mNsdf.assign(maxLag + 2, 0.0f);
     mNsdf[0] = 1.0f;
-    for (int lag = 1; lag <= maxLag + 1; ++lag) {
+    for (size_t lag = 1; lag <= maxLag + 1; ++lag) {
         double r = 0.0, mk = 0.0;
-        for (int i = 0; i < winLen; ++i) {
+        for (size_t i = 0; i < winLen; ++i) {
             r += mSnapBuf[i] * mSnapBuf[i + lag];
             mk += mSnapBuf[i + lag] * mSnapBuf[i + lag];
         }
@@ -140,21 +141,21 @@ float TunerProcessor::detectPitch() {
     // a fraction k of the tallest — that is the fundamental period.
     constexpr float kKeyMaxRatio = 0.8f;
 
-    int lag = 1;
+    size_t lag = 1;
     while (lag <= maxLag && mNsdf[lag] > 0.0f) {
         ++lag; // skip the τ≈0 lobe
     }
 
     float bestVal = -1.0f;
-    int pickLag = 0;
+    size_t pickLag = 0;
     float pickVal = -1.0f;
     struct Key
     {
-        int lag;
+        size_t lag;
         float val;
     };
     Key keys[64];
-    int nKeys = 0;
+    size_t nKeys = 0;
 
     while (lag <= maxLag && nKeys < 64) {
         while (lag <= maxLag && mNsdf[lag] <= 0.0f) {
@@ -163,7 +164,7 @@ float TunerProcessor::detectPitch() {
         if (lag > maxLag) {
             break;
         }
-        int peakLag = lag;
+        size_t peakLag = lag;
         float peakVal = mNsdf[lag];
         while (lag <= maxLag && mNsdf[lag] > 0.0f) {
             if (mNsdf[lag] > peakVal) {
@@ -184,14 +185,14 @@ float TunerProcessor::detectPitch() {
     }
 
     const float threshold = kKeyMaxRatio * bestVal;
-    for (int i = 0; i < nKeys; ++i) {
+    for (size_t i = 0; i < nKeys; ++i) {
         if (keys[i].val >= threshold) {
             pickLag = keys[i].lag;
             pickVal = keys[i].val;
             break;
         }
     }
-    if (pickLag <= 0) {
+    if (pickLag == 0) {
         return 0.0f;
     }
 
@@ -233,6 +234,6 @@ float TunerProcessor::centsOffset(float freq, float refHz) {
         return 0.0f;
     }
     int midi = freqToMidi(freq, refHz);
-    float noteFreq = refHz * std::pow(2.0f, (midi - 69) / 12.0f);
+    float noteFreq = refHz * std::pow(2.0f, static_cast<float>(midi - 69) / 12.0f);
     return std::max(-50.0f, std::min(50.0f, 1200.0f * std::log2(freq / noteFreq)));
 }

@@ -10,7 +10,7 @@ void CompressorProcessor::reset() {
     mGainDB[0] = mGainDB[1] = 0.0f;
 }
 
-void CompressorProcessor::processChannel(float* buf, int nframes, int ch) {
+void CompressorProcessor::processChannel(float* buf, size_t nframes, int ch) {
     const float threshold = mThresholdDB.load();
     const float ratio = mRatio.load();
     const float makeup = mMakeupDB.load();
@@ -23,7 +23,7 @@ void CompressorProcessor::processChannel(float* buf, int nframes, int ch) {
     float& gainDB = mGainDB[ch];
     float minGainDB = 0.0f;
 
-    for (int i = 0; i < nframes; ++i) {
+    for (size_t i = 0; i < nframes; ++i) {
         // 20·log10(x) = (20·log10 2)·log2(x); log2/exp2 are much cheaper
         // than log10/pow per sample.
         float level = std::abs(buf[i]);
@@ -54,11 +54,11 @@ void CompressorProcessor::processChannel(float* buf, int nframes, int ch) {
     }
 }
 
-void CompressorProcessor::processBlockMono(float* buf, int nframes) {
+void CompressorProcessor::processBlockMono(float* buf, size_t nframes) {
     processChannel(buf, nframes, 0);
 }
 
-void CompressorProcessor::processBlockDual(float* L, float* R, int nframes) {
+void CompressorProcessor::processBlockDual(float* L, float* R, size_t nframes) {
     processChannel(L, nframes, 0);
     processChannel(R, nframes, 1);
 }

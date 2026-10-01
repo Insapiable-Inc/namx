@@ -279,7 +279,7 @@ void AudioEngine::onBufferSizeChanged(int n) {
     mNam.prepareBuffer(std::max(n, mNam.maxBuf()));
 }
 
-void AudioEngine::onAudio(const float* in, float* outL, float* outR, int n) {
+void AudioEngine::onAudio(const float* in, float* outL, float* outR, size_t n) {
     // DSP load: wall time of the block vs its real-time duration. steady_clock
     // is a vDSO read — no syscall, RT-safe.
     const auto t0 = std::chrono::steady_clock::now();
@@ -294,7 +294,7 @@ void AudioEngine::onAudio(const float* in, float* outL, float* outR, int n) {
     }
 }
 
-void AudioEngine::processBlock(const float* in, float* outL, float* outR, int n) {
+void AudioEngine::processBlock(const float* in, float* outL, float* outR, size_t n) {
     // Reorder fence: every exit counts the block so setChainOrder() knows
     // when a retired chain vector is safe to free.
     struct BlockGuard
@@ -316,7 +316,7 @@ void AudioEngine::processBlock(const float* in, float* outL, float* outR, int n)
     // 1. Input gain (smoothed) → both work buffers (identical at this point)
     const float targetInGain = dbToLinear(mInputGainDB.load());
     float inPeak = 0.0f;
-    for (int i = 0; i < n; ++i) {
+    for (size_t i = 0; i < n; ++i) {
         mInputGainSmooth = mSmoothCoeff * mInputGainSmooth + (1.0f - mSmoothCoeff) * targetInGain;
         float s = in[i] * mInputGainSmooth;
         mWorkBufL[i] = s;
@@ -342,7 +342,7 @@ void AudioEngine::processBlock(const float* in, float* outL, float* outR, int n)
 
     // 3. Output gain (smoothed) + write to output buffers
     const float targetOutGain = dbToLinear(mOutputGainDB.load());
-    for (int i = 0; i < n; ++i) {
+    for (size_t i = 0; i < n; ++i) {
         mOutputGainSmooth =
             mSmoothCoeff * mOutputGainSmooth + (1.0f - mSmoothCoeff) * targetOutGain;
         outL[i] = mWorkBufL[i] * mOutputGainSmooth;
@@ -353,7 +353,7 @@ void AudioEngine::processBlock(const float* in, float* outL, float* outR, int n)
     //    it shows what actually leaves the app.
     mLimiter.process(outL, outR, n);
     float outPeak = 0.0f;
-    for (int i = 0; i < n; ++i) {
+    for (size_t i = 0; i < n; ++i) {
         outPeak = std::max(outPeak, std::max(std::abs(outL[i]), std::abs(outR[i])));
     }
     if (outPeak > mOutputPeak.load(std::memory_order_relaxed)) {

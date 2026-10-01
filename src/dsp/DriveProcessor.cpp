@@ -17,7 +17,7 @@ static inline float softClip(float x) {
     return x * (27.0f + x * x) / (27.0f + 9.0f * x * x);
 }
 
-void DriveProcessor::processChannel(float* buf, int n, int ch) {
+void DriveProcessor::processChannel(float* buf, size_t n, int ch) {
     const float fs = static_cast<float>(mSampleRate);
     const float drive = std::clamp(mDrive.load(), 0.0f, 100.0f) / 100.0f;
     // 0 → +6 dB, 100 % → +46 dB on the clipping path (the TS's 51k–551k range).
@@ -32,7 +32,7 @@ void DriveProcessor::processChannel(float* buf, int n, int ch) {
     const float hpA = std::exp(-2.0f * kPi * 720.0f / fs);
 
     float x1 = mHpX1[ch], y1 = mHpY1[ch], lp = mLp[ch];
-    for (int i = 0; i < n; ++i) {
+    for (size_t i = 0; i < n; ++i) {
         const float x = buf[i];
         const float hp = hpA * (y1 + x - x1);
         x1 = x;
