@@ -56,6 +56,10 @@ protected:
     void dragEnterEvent(QDragEnterEvent* ev) override;
     void dropEvent(QDropEvent* ev) override;
     static bool hasLoadableUrls(const QMimeData* mime);
+    // Meters run at display rate only while the window can be seen.
+    void changeEvent(QEvent* ev) override;
+    void showEvent(QShowEvent* ev) override;
+    void hideEvent(QHideEvent* ev) override;
 
 private slots:
     // File dialogs — the one-off path; the Library is the primary one.
@@ -76,6 +80,7 @@ private slots:
     void restartAudioWithCurrentDevices();
 
     void updateMeters();
+    void updateStatus(); // status bar metrics + disconnect watchdog
     void updateTuner();
 
 private:
@@ -279,7 +284,10 @@ private:
     ToggleSwitch* mSwNAMEnable = nullptr;
     ToggleSwitch* mSwIREnable  = nullptr;
 
-    QTimer* mMeterTimer = nullptr;
+    void updateMeterTimer();
+
+    QTimer* mMeterTimer  = nullptr; // ~60 fps, paused while minimized/hidden
+    QTimer* mStatusTimer = nullptr; // 50 ms, always
     QTimer* mTunerTimer = nullptr;
     QTimer* mSessionSaveTimer = nullptr;
 

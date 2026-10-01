@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QElapsedTimer>
 #include <QProgressBar>
 
 /// Peak meter (vertical fills bottom→top, horizontal fills left→right),
@@ -9,8 +10,9 @@
 /// point (float audio can exceed full scale). A peak-hold line marks the
 /// recent maximum and falls after a moment; it takes its zone's color, so a
 /// red hold line means the signal clipped within the last second.
-/// setPeak() feeds a linear peak sample and drives the hold timing, so call
-/// it at a steady rate (the 50 ms meter timer).
+/// Ballistics are time-based (instant attack, steady dB/s release, 1 s hold),
+/// so the look doesn't depend on how often setPeak() is called; it only
+/// repaints when the bar or the hold line actually moves.
 class VUMeter : public QProgressBar
 {
     Q_OBJECT
@@ -25,13 +27,21 @@ protected:
     void paintEvent(QPaintEvent* event) override;
 
 private:
-    float mHold{0.0f}; // peak-hold position, 0..100 (value scale)
-    int   mHoldAge{0}; // ticks since the hold was last raised
+    static float toValue(float dB) { return (dB - kMinDb) / (kMaxDb - kMinDb) * 100.0f; }
 
     static constexpr float kMinDb = -60.0f;
     static constexpr float kMaxDb =   6.0f; // headroom above the clip point
-    static constexpr int   kHoldTicks = 20;   // ~1 s before the hold falls
-    static constexpr float kHoldFall  = 2.5f; // fall speed per tick
+    static constexpr float kReleaseDbPerSec = 24.0f; // bar fall (digital peak meter)
+    static constexpr qint64 kHoldMs         = 1000;  // hold line waits…
+    static constexpr float kHoldFallDbPerSec = 12.0f; // …then falls
+
+    float  mLevelDb{kMinDb};
+    float  mHoldDb{kMinDb};
+    qint64 mLastMs{0};
+    qint64 mHoldSinceMs{0};
+    QElapsedTimer mClock;
+    float  mLevel{0.0f}; // painted positions, 0..100 value scale
+    float  mHold{0.0f};
 
     // Zone boundaries on the 0..100 value scale ((dB - min) / span * 100).
     static constexpr float kHotValue  = (-6.0f - kMinDb) / (kMaxDb - kMinDb) * 100.0f;

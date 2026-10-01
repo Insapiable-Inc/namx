@@ -169,8 +169,14 @@ MainWindow::MainWindow(QWidget* parent)
     restorePresetState();
 
     mMeterTimer = new QTimer(this);
+    mMeterTimer->setTimerType(Qt::PreciseTimer);
+    mMeterTimer->setInterval(16);
     connect(mMeterTimer, &QTimer::timeout, this, &MainWindow::updateMeters);
-    mMeterTimer->start(50);
+    updateMeterTimer();
+
+    mStatusTimer = new QTimer(this);
+    connect(mStatusTimer, &QTimer::timeout, this, &MainWindow::updateStatus);
+    mStatusTimer->start(50);
 
     mTunerTimer = new QTimer(this);
     connect(mTunerTimer, &QTimer::timeout, this, &MainWindow::updateTuner);
@@ -180,6 +186,7 @@ MainWindow::MainWindow(QWidget* parent)
 MainWindow::~MainWindow()
 {
     mMeterTimer->stop();
+    mStatusTimer->stop();
     mTunerTimer->stop();
     mSessionSaveTimer->stop();
     mPresetStateTimer->stop();
@@ -1391,7 +1398,36 @@ void MainWindow::updateMeters()
 {
     mMeterIn ->setPeak(mEngine->takeInputPeak());
     mMeterOut->setPeak(mEngine->takeOutputPeak());
+}
 
+void MainWindow::updateMeterTimer()
+{
+    if (!mMeterTimer) return;
+    const bool visible = isVisible() && !isMinimized();
+    if (visible && !mMeterTimer->isActive()) mMeterTimer->start();
+    else if (!visible)                       mMeterTimer->stop();
+}
+
+void MainWindow::changeEvent(QEvent* ev)
+{
+    QMainWindow::changeEvent(ev);
+    if (ev->type() == QEvent::WindowStateChange) updateMeterTimer();
+}
+
+void MainWindow::showEvent(QShowEvent* ev)
+{
+    QMainWindow::showEvent(ev);
+    updateMeterTimer();
+}
+
+void MainWindow::hideEvent(QHideEvent* ev)
+{
+    QMainWindow::hideEvent(ev);
+    updateMeterTimer();
+}
+
+void MainWindow::updateStatus()
+{
     mAudioBar->updateMetrics(); // PipeWire can change the quantum while running
     if (mAudioOk && !mEngine->isRunning())
     {

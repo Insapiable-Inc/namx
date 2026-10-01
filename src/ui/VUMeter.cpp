@@ -28,27 +28,35 @@ VUMeter::VUMeter(Qt::Orientation orientation, QWidget* parent)
 
 void VUMeter::setPeak(float peak)
 {
-    int v = 0;
-    if (peak > 0.0f)
+    if (!mClock.isValid()) mClock.start();
+    const qint64 now = mClock.elapsed();
+    const float  dt  = static_cast<float>(now - mLastMs) / 1000.0f;
+    mLastMs = now;
+
+    const float inDb = peak > 0.0f ? std::clamp(20.0f * std::log10(peak), kMinDb, kMaxDb)
+                                   : kMinDb;
+
+    // Instant attack, linear-in-dB release.
+    mLevelDb = inDb >= mLevelDb ? inDb : std::max(inDb, mLevelDb - kReleaseDbPerSec * dt);
+
+    // Peak hold: track the recent maximum, wait, then fall (never below the bar).
+    if (inDb >= mHoldDb)
     {
-        const float dB = 20.0f * std::log10(peak);
-        v = static_cast<int>(std::lround(
-            std::clamp((dB - kMinDb) / (kMaxDb - kMinDb) * 100.0f, 0.0f, 100.0f)));
+        mHoldDb      = inDb;
+        mHoldSinceMs = now;
+    }
+    else if (now - mHoldSinceMs > kHoldMs)
+    {
+        mHoldDb = std::max(mLevelDb, mHoldDb - kHoldFallDbPerSec * dt);
     }
 
-    // Peak hold: track the recent maximum, then let it fall.
-    if (static_cast<float>(v) >= mHold)
-    {
-        mHold    = static_cast<float>(v);
-        mHoldAge = 0;
-    }
-    else if (++mHoldAge > kHoldTicks)
-    {
-        mHold = std::max(static_cast<float>(v), mHold - kHoldFall);
-    }
-
-    setValue(v);
-    update(); // the hold line moves even when the level value doesn't
+    // Repaint only on visible movement — a silent input costs nothing.
+    const float level = toValue(mLevelDb);
+    const float hold  = toValue(mHoldDb);
+    if (std::abs(level - mLevel) < 0.05f && std::abs(hold - mHold) < 0.05f) return;
+    mLevel = level;
+    mHold  = hold;
+    update();
 }
 
 void VUMeter::paintEvent(QPaintEvent*)
@@ -79,7 +87,7 @@ void VUMeter::paintEvent(QPaintEvent*)
 
     // Zone fill: one rect per zone the level reaches — color by absolute
     // level, red strictly above the 0 dBFS mark.
-    const float t = static_cast<float>(value());
+    const float t = mLevel;
     auto zoneRect = [&](float from, float to) -> QRectF {
         const qreal a = pos(from), b = pos(to);
         return vert ? QRectF(inner.left(), inner.bottom() - b,
