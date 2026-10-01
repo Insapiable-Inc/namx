@@ -164,7 +164,8 @@ jobs:
           foreach ($d in 'platforms','styles','imageformats','iconengines','tls','networkinformation') {
             if (Test-Path "build-release\$d") { Copy-Item -Recurse "build-release\$d" "dist\NAMPlayer\$d" }
           }
-          Copy-Item ..\LICENSE dist\NAMPlayer\LICENSE.txt
+          Copy-Item LICENSE dist\NAMPlayer\LICENSE.txt
+          Copy-Item ..\LICENSE dist\NAMPlayer\LICENSE-MIT.txt
           $v = "${env:GITHUB_REF_NAME}" -replace '^v',''
           Compress-Archive -Path dist\NAMPlayer -DestinationPath "dist\NAMPlayer-$v-windows-x64.zip"
           Get-FileHash "dist\NAMPlayer-$v-windows-x64.zip" -Algorithm SHA256 | ForEach-Object { "$($_.Hash.ToLower())  NAMPlayer-$v-windows-x64.zip" } | Set-Content "dist\NAMPlayer-$v-windows-x64.zip.sha256"

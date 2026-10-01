@@ -7,7 +7,7 @@
     <name>silvercobraa</name>
   </developer>
   <metadata_license>CC0-1.0</metadata_license>
-  <project_license>MIT</project_license>
+  <project_license>GPL-3.0-or-later AND MIT</project_license>
   <description>
     <p>
       NAM Player is a standalone guitar rig for Linux and Windows built on Neural Amp

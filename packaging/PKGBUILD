@@ -7,7 +7,7 @@ pkgrel=1
 pkgdesc="Standalone Neural Amp Modeler player: models, IRs, effects chain, library, TONE3000"
 arch=('x86_64')
 url="https://github.com/silvercobraa/NeuralAmpModelerGUI"
-license=('MIT')
+license=('GPL-3.0-or-later' 'MIT') # app GPL; bundled NAM core MIT
 depends=('qt6-base' 'jack' 'alsa-lib') # jack = jack2 or pipewire-jack; alsa-lib = MIDI input
 optdepends=('pipewire-jack: run without a JACK daemon'
             'qpwgraph: patch the JACK ports graphically')
@@ -29,5 +29,6 @@ build() {
 package() {
     cd "$srcdir/nam-player-$pkgver"
     DESTDIR="$pkgdir" cmake --install build
-    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+    install -Dm644 gui/LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE-MIT"
 }

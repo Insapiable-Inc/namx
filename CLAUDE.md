@@ -11,6 +11,7 @@ nam-linux-gui/
 ├── NAM/           # Core DSP library: neural net inference (WaveNet, LSTM, ConvNet, Linear)
 ├── Dependencies/  # Git submodules: Eigen (linear algebra), AudioDSPTools (WAV I/O), nlohmann (JSON)
 ├── tools/         # Upstream CLI tools: loadmodel, benchmodel, run_tests
+├── LICENSE        # Upstream MIT (NAM core) — the app itself is GPL-3.0-or-later, see gui/LICENSE
 ├── ROADMAP.md     # Public-release plan — phased checklist, worked one phase at a time
 └── gui/           # Qt6 standalone player (all GUI work happens here)
     ├── build.sh           # One-shot Linux build script
