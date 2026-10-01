@@ -6,6 +6,10 @@ Coding preferences for the GUI code under `gui/`. The upstream library (`NAM/`,
 These rules apply to new and touched code. Existing code is brought in line
 separately; a guideline landing here does not by itself mean a refactor.
 
+**Readability comes first.** If following a rule would make a piece of code more
+convoluted, stop and raise it instead of forcing it through. A wall of casts is a sign
+of a design problem, not something to apply mechanically.
+
 ## Standard
 
 **C++23** (decided 2026-10-01). C++26 was left out because no LTS distro or MSVC
@@ -242,15 +246,21 @@ It overrides the upstream root `.clang-format`, which `NAM/` and `tools/` keep.
 - **`enum class` always**, never a plain `enum`. Give it an explicit underlying type
   when the value is stored or serialized: `enum class NoteValue : std::uint8_t`.
 - **Integer types:**
-  - `int` for counts, frames and indices in our own code.
-  - `std::size_t` only where the standard library demands it (`.size()`, container
-    indexing). `std::ssize(v)` gives a signed size.
+  - **Sizes, counts and indices are `size_t`**, frame counts in our own APIs
+    included (`process(float* buf, size_t frames)`). Indexing then needs no casts.
+  - **`int` is for values that can be negative** (semitones, offsets, MIDI values) or
+    that an external API dictates. Convert once at that boundary (Qt's `qsizetype`,
+    JACK's `jack_nframes_t`), not at every use.
+  - **Subtracting indices:** write it so it can't go below zero
+    (`(write + size - delay) % size`), or keep it inside a small abstraction such as
+    `DelayLine`, not spread through calling code.
   - Fixed-width types (`std::uint64_t`, `std::int16_t`) when the exact size matters:
     file formats, atomics shared across threads, MIDI bytes.
   - No implicit mixing of signed and unsigned: convert explicitly.
   - Spell them with `std::` and include `<cstdint>` / `<cstddef>`. The bare names
     (`uint64_t`) are the same types, but they're only guaranteed to exist through the
-    C headers.
+    C headers. `size_t` is the exception: it is in the `npl` using-list (see
+    Namespaces), so it is written bare.
 - **Casts:**
   - No C-style casts (`(int)x`). Use the named casts, so each one says what it does.
   - `qobject_cast` for QObject downcasts. `dynamic_cast` only outside Qt, and rarely.
@@ -269,7 +279,7 @@ It overrides the upstream root `.clang-format`, which `NAM/` and `tools/` keep.
   ```cpp
   namespace npl
   {
-  using std::array, std::atomic, std::expected, std::make_unique, std::span,
+  using std::array, std::atomic, std::expected, std::make_unique, std::size_t, std::span,
       std::string, std::string_view, std::unique_ptr, std::vector;
   }
   ```
