@@ -266,8 +266,8 @@ private:
 
     AudioStatusBar* audio_bar = nullptr;
     QLabel* lbl_rig_status = nullptr;
-    bool audio_ok = false; // last known backend state (drives the
-                           // disconnect watchdog in updateMeters)
+    // Last known backend state (drives the disconnect watchdog in update_meters).
+    bool audio_ok = false;
 
     VUMeter* meter_in = nullptr;
     VUMeter* meter_out = nullptr;

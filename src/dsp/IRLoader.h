@@ -69,9 +69,10 @@ private:
     struct Kernel
     {
         vector<float> ir; // stored REVERSED so the convolution is a forward dot product
-        vector<float> buffers[2]; // per-channel delay line, 2*MAX_IR_LENGTH: each sample is
-                                  // written twice (writePos and writePos+irLen) so the last
-                                  // irLen samples are always contiguous — no wrap in the loop
+        // Per-channel delay line, 2 * MAX_IR_LENGTH: each sample is written twice
+        // (write_pos and write_pos + ir_len) so the last ir_len samples are always
+        // contiguous — no wrap in the loop.
+        vector<float> buffers[2];
         int write_pos[2] = {0, 0};
         int ir_len = 0;
         double built_rate = 0.0; // engine rate this kernel was resampled to
