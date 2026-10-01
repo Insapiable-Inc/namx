@@ -17,6 +17,8 @@ nam-linux-gui/
     ├── build.sh           # One-shot Linux build script
     ├── build.ps1          # One-shot Windows build script (UTF-8 BOM, CRLF — keep it that way)
     ├── BUILD.md           # The real build/usage manual (per-distro deps, Windows, troubleshooting)
+    ├── CPP_GUIDELINES.md  # C++ style for gui/ (naming, auto, ownership, errors, formatting…) — follow it in new/touched code
+    ├── .clang-format      # Formatting for gui/ (overrides the upstream root one)
     ├── CMakeLists.txt     # CMake build definition
     ├── presets/           # Personal .nampreset files — untracked on purpose, do not add to git
     └── src/

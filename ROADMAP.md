@@ -29,8 +29,14 @@ Decisions:
   `v1.0` tag is back at the end of Phase 8.
 - **No AppImage, Flatpak or other bundle** (2026-09-17). Linux users are assumed to
   have Qt 6 and JACK installed; distribution is source + distro packages (PKGBUILD).
+- **The app is GPL** (2026-10-01). MIT had only been inherited from upstream's root
+  `LICENSE`, never chosen. `gui/` becomes GPLv3 with the user's copyright; the
+  upstream NAM core keeps its MIT notice (MIT code may be included in GPL code). This
+  also clears the way for the GPLv3 ASIO SDK on Windows. **GPL-3.0-or-later**; applied
+  the same day: `gui/LICENSE`, PKGBUILD, AppStream, Windows zip, README.
 - **Execution order:** 7 → 11 → 12 → 8 (packaging) → **tag v1.0** → 13 → 14 →
-  15 (absorbs Phase 10 tempo) → 16 → 17 → 18 → 19; Phase 9 (knob tapers) slots in
+  15 (absorbs Phase 10 tempo) → 16 → 17 → 20 (C++ guidelines, decided 2026-10-01)
+  → 18 → 19 → 21 (ASIO, last: needs a Windows machine); Phase 9 (knob tapers) slots in
   wherever a knob-heavy phase touches the widgets (17 at the latest).
 
 ---
@@ -795,7 +801,71 @@ acoustic models. UI: cards gained ▾ detail rows for advanced knobs (`addDetail
       presets for third-party apps.
 - [ ] Courtesy/credits screen: NAM core, TONE3000, contributors.
 
+## Phase 20 — Code to the C++ guidelines (added 2026-10-01; runs before Phase 18)
+
+Bring `gui/` in line with `gui/CPP_GUIDELINES.md` (agreed 2026-10-01; the guidelines
+discussion is still open: references vs pointers, audio backend shape, further topics).
+No behavior changes: every step builds, passes the tests and the bench, and is its own
+commit.
+
+- [ ] **C++23:** `CMAKE_CXX_STANDARD 23`; CI (`gui-linux.yml`, `release.yml`) from
+      `ubuntu-22.04` to `ubuntu-24.04` with GCC 14; `BUILD.md` minimums (GCC 14 /
+      Clang 18 / MSVC 17.10, Ubuntu 24.04+).
+- [ ] **Format:** one `clang-format -i` commit over `gui/src`, `gui/tests`, `gui/bench`
+      with `gui/.clang-format` (4 spaces, 100 cols, braces on own line for types and
+      namespaces only, always braces, no one-line functions, no column alignment).
+      Include regrouping sorts the Win32 headers in `WasapiBackend.cpp` /
+      `WinMidiInput.cpp`: put order-sensitive ones in `// clang-format off` first
+      (`<windows.h>` before the rest) and get a Windows build checked by CI.
+      Add a CI step that fails on unformatted files.
+- [ ] **Warnings:** `-Wall -Wextra -Wconversion -Wsign-conversion -Wsuggest-override` (`/W4` on MSVC);
+      clear them (named casts, `enum class`, explicit signed/unsigned conversions),
+      then turn on `-Werror` (`/WX`).
+- [ ] **Namespace:** wrap `gui/` in `namespace npl` (placeholder — renamed along with
+      the app once it has a final name) with the shared `using std::…` header.
+- [ ] **Naming:** `snake_case` methods/locals/members, `SCREAMING_SNAKE_CASE`
+      constants, no `m`/`k`/`s` prefixes; unit suffixes `_ms`/`_db`/`_hz`. Accessors:
+      public members on plain containers, `get_`/`set_` on classes with an invariant.
+      Mechanical, one directory per commit (`dsp/`, `midi/`, `net/`, `ui/`).
+- [ ] **`auto`:** spell out built-in types and function results; keep it for class
+      casts, iterators, lambdas, range-for.
+- [ ] **Lambdas:** one-statement bodies; the ~110 multi-line ones (32 over 10 lines,
+      mostly `Tone3000Client` reply handlers, `Tone3000Panel`, `MainWindow` row
+      setup) become named functions the lambda forwards to.
+- [ ] **Ownership:** `MidiInput::create(parent)` returns a Qt-owned plain pointer
+      (no `unique_ptr` around a QObject).
+- [ ] **Effect interface:** `EffectBase` → pure virtual `Effect` interface; the
+      enabled/stereo/reset flags move into an `EffectState` member and the
+      mono/dual/stereo routing into a free function. Instances owned by `unique_ptr`.
+- [ ] **Generic parameters (design first):** `ParamSpec { id, name, unit, min, max,
+      default, taper, kind }` + `Param { spec, atomic value, get, set }` declared by
+      each effect and exposed as `std::span<Param>`. The effect becomes the single
+      source of truth for its knobs: `Constants.h` ranges, the per-knob
+      `registerParameters` lines and hand-placed card widgets give way to generic
+      code over `params()` (presets, session, MIDI, possibly generated cards). Open:
+      bool/choice kinds, a cheap "changed" flag for derived state (EQ coefficients),
+      how custom widgets (tuner, BeatLeds, wah pedal) fit in.
+- [ ] *(Later, enabled by the two above)* **Multiple instances of an effect**
+      (e.g. two EQs): per-instance IDs for presets/session/MIDI/cards, preset schema
+      v3 with v2 still loading, instances created on the GUI thread and published
+      through `RtSlot`.
+
+## Phase 21 — ASIO on Windows (added 2026-10-01; last — no Windows machine to test on yet)
+
+- [ ] **Verify the license first:** Steinberg's ASIO SDK is believed to be dual-licensed
+      (proprietary / GPLv3) since late 2025. Confirm the terms and the trademark/logo
+      rules before writing code. GPLv3 matches the app's GPL-3.0-or-later.
+- [ ] `AsioBackend` behind `IAudioBackend`, opt-in via `-DNAM_WITH_ASIO=ON` (SDK fetched,
+      not vendored, unless the license allows it); WASAPI stays the default.
+- [ ] Runtime backend choice on Windows (WASAPI shared / exclusive / ASIO) in the status
+      bar and Settings; persisted like the device IDs.
+- [ ] Release workflow: decide whether the official Windows zip ships with ASIO.
+
 ## Ideas parking lot (not committed)
+
+- **A catchy name for the app** (2026-10-01): "NAM Player" is a placeholder. The C++
+  namespace (`npl`), the app id `cl.pichulero.NAMPlayer`, the binary and the packaging
+  follow whatever name is chosen.
 
 - Song mode: cue list of preset changes on a song timeline, clock from an external
   player (MPRIS / SMTC) or an in-app file player with A/B loop, slow-down, pitch.

@@ -1,0 +1,84 @@
+# Formatting for gui/ — see CPP_GUIDELINES.md. Overrides the upstream root .clang-format.
+---
+Language: Cpp
+BasedOnStyle: LLVM
+Standard: Latest
+
+IndentWidth: 4
+ContinuationIndentWidth: 4
+AccessModifierOffset: -4
+IndentCaseLabels: true
+NamespaceIndentation: None
+UseTab: Never
+ColumnLimit: 100
+LineEnding: LF
+InsertNewlineAtEOF: true
+MaxEmptyLinesToKeep: 1
+KeepEmptyLines:
+  AtStartOfBlock: false
+  AtStartOfFile: false
+
+# Braces on their own line for namespaces and types only; attached everywhere else.
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterNamespace: true
+  AfterClass: true
+  AfterStruct: true
+  AfterUnion: true
+  AfterEnum: true
+  AfterFunction: false
+  AfterControlStatement: Never
+  AfterCaseLabel: false
+  AfterExternBlock: false
+  BeforeElse: false
+  BeforeCatch: false
+  BeforeLambdaBody: false
+  BeforeWhile: false
+  SplitEmptyFunction: true
+  SplitEmptyRecord: true
+  SplitEmptyNamespace: true
+FixNamespaceComments: true
+
+# Always braces, never one-line bodies or functions.
+InsertBraces: true
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+AllowShortBlocksOnASingleLine: Never
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortEnumsOnASingleLine: false
+AllowShortLambdasOnASingleLine: Empty
+
+# `T* p`, `T& r`: pointer and reference go with the type.
+PointerAlignment: Left
+ReferenceAlignment: Pointer
+DerivePointerAlignment: false
+
+# No column alignment.
+AlignConsecutiveAssignments: None
+AlignConsecutiveDeclarations: None
+AlignConsecutiveBitFields: None
+AlignConsecutiveMacros: None
+AlignTrailingComments:
+  Kind: Never
+AlignEscapedNewlines: DontAlign
+
+BreakConstructorInitializers: BeforeComma
+BreakTemplateDeclarations: Yes
+EmptyLineBeforeAccessModifier: LogicalBlock
+SpaceBeforeParens: ControlStatements
+Cpp11BracedListStyle: true
+SpaceBeforeCpp11BracedList: true # `vector<int> v {1, 2, 3}`
+
+# Includes (Google order): own header, std, third-party <…>, project "…"; sorted per block.
+SortIncludes: CaseSensitive
+IncludeBlocks: Regroup
+IncludeCategories:
+  - Regex: '^<[a-z_0-9]+>$'
+    Priority: 1
+    CaseSensitive: true # else <QWidget> counts as std
+  - Regex: '^<.*>$'
+    Priority: 2
+  - Regex: '^".*"$'
+    Priority: 3
+...
