@@ -35,6 +35,7 @@
 #include <QGraphicsDropShadowEffect>
 #include <QGraphicsOpacityEffect>
 #include <QHBoxLayout>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QLabel>
@@ -290,29 +291,50 @@ KnobWidget* MainWindow::lateKnob(const QString& group, const QString& key, KnobW
 
 void MainWindow::addDetailRow(QWidget* card, const QList<QWidget*>& widgets)
 {
-    auto* detail = new QWidget;
-    detail->setObjectName("cardDetail");
-    detail->setFixedHeight(kDetailRowHeight);
-    auto* lay = new QHBoxLayout(detail);
+    // All detail rows of a card live in one container behind one ▾ toggle;
+    // a second call adds a second row.
+    auto* container = card->findChild<QWidget*>("cardDetail", Qt::FindDirectChildrenOnly);
+    const bool first = !container;
+    if (first)
+    {
+        container = new QWidget;
+        container->setObjectName("cardDetail");
+        auto* v = new QVBoxLayout(container);
+        v->setContentsMargins(0, 0, 0, 0);
+        v->setSpacing(0);
+        container->hide();
+        static_cast<QVBoxLayout*>(card->layout())->insertWidget(1, container);
+    }
+    auto* row = new QWidget;
+    row->setFixedHeight(kDetailRowHeight);
+    auto* lay = new QHBoxLayout(row);
     // Indent to the knob column: margin + grip + name + enable + stereo slots.
     const int indent = 10 + kGripColumnWidth + kNameColumnWidth + kEnableSlotWidth + kStereoSlotWidth + 4 * 10;
     lay->setContentsMargins(indent, 0, 10, 8);
     lay->setSpacing(10);
     for (QWidget* w : widgets) lay->addWidget(w, 0, Qt::AlignVCenter);
     lay->addStretch();
-    detail->hide();
-    static_cast<QVBoxLayout*>(card->layout())->insertWidget(1, detail);
+    container->layout()->addWidget(row);
+    const int rows = container->layout()->count();
+
+    QToolButton* more = card->findChild<QToolButton*>("cardMore");
+    if (!first)
+    {
+        // Re-apply the current state with the new height.
+        if (more && more->isChecked()) card->setFixedHeight(kRowCardHeight + rows * kDetailRowHeight);
+        return;
+    }
 
     const QString name = card->property("displayName").toString();
-    auto* more = new QToolButton;
+    more = new QToolButton;
     more->setObjectName("cardMore");
     more->setCheckable(true);
     more->setFocusPolicy(Qt::NoFocus);
     more->setAutoRaise(true);
     rowLayout(card)->addWidget(more, 0, Qt::AlignVCenter); // after the stretch: right edge
-    auto apply = [card, detail, more](bool open) {
-        detail->setVisible(open);
-        card->setFixedHeight(kRowCardHeight + (open ? kDetailRowHeight : 0));
+    auto apply = [card, container, more](bool open) {
+        container->setVisible(open);
+        card->setFixedHeight(kRowCardHeight + (open ? container->layout()->count() * kDetailRowHeight : 0));
         more->setText(open ? "▴" : "▾");
         more->setToolTip(open ? "Fewer controls" : "More controls");
     };
@@ -854,6 +876,104 @@ void MainWindow::setupUI()
         auto* col = makeEffectRow("Cabinet", mSwIREnable, {});
         mSwIREnable->setChecked(true);
         makeHeroControls(col, LibraryEntry::Kind::IR, mLblIRStatus, mLblIRMeta, mLblIROrigin);
+
+        // Dual cab (Phase 17): A/B mixer + cuts, then slot B's picker.
+        using namespace NAMConstants;
+        auto level = [&](int slot) {
+            auto* k = lateKnob("ir", slot ? "levelB" : "levelA",
+                               new KnobWidget(slot ? "Level B" : "Level A", -24.0, 6.0, 0.0, "dB"),
+                               [this, slot](double v) { mEngine->ir().setLevel(slot, static_cast<float>(v)); });
+            k->setScrollStep(0.5);
+            return static_cast<QWidget*>(k);
+        };
+        auto pan = [&](int slot) {
+            auto* k = lateKnob("ir", slot ? "panB" : "panA",
+                               new KnobWidget(slot ? "Pan B" : "Pan A", -100.0, 100.0, 0.0, "%"),
+                               [this, slot](double v) { mEngine->ir().setPan(slot, static_cast<float>(v)); });
+            k->setScrollStep(10.0);
+            k->setValueFormatter([](double v) {
+                const int p = static_cast<int>(std::lround(v));
+                return p == 0 ? QString("Center") : QString("%1 %2").arg(std::abs(p)).arg(p < 0 ? "L" : "R");
+            });
+            return static_cast<QWidget*>(k);
+        };
+        auto phase = [&](int slot) {
+            auto* sw = new ToggleSwitch;
+            sw->setCheckable(true);
+            sw->setToolTip("Invert this slot's polarity (fix phase cancellation between two mics)");
+            mLateParams.push_back([this, sw, slot] {
+                toggleParam("ir", slot ? "invertB" : "invertA", sw,
+                            [this, slot](bool b) { mEngine->ir().setPhase(slot, b); });
+            });
+            auto* w = new QWidget;
+            auto* l = new QHBoxLayout(w);
+            l->setContentsMargins(0, 0, 8, 0);
+            l->setSpacing(6);
+            auto* cap = new QLabel(slot ? "Ø B" : "Ø A");
+            cap->setObjectName("toggleCaption");
+            l->addWidget(sw, 0, Qt::AlignVCenter);
+            l->addWidget(cap, 0, Qt::AlignVCenter);
+            return w;
+        };
+        auto* blend = lateKnob("ir", "blend", new KnobWidget("Blend", 0.0, 100.0, 50.0, "%"),
+                               [this](double v) { mEngine->ir().setBlend(static_cast<float>(v)); });
+        blend->setScrollStep(1.0);
+        blend->setValueFormatter([](double v) {
+            const int b = static_cast<int>(std::lround(v));
+            return b == 50 ? QString("A = B") : b < 50 ? QString("A %1").arg(100 - b) : QString("B %1").arg(b);
+        });
+        blend->setToolTip("Crossfade between the two IRs (only when both slots are loaded)");
+        auto* lowCut = lateKnob("ir", "lowCut", new KnobWidget("Low Cut", kLowCutMin, kLowCutMax, kLowCutDefault, "Hz"),
+                                [this](double v) { mEngine->ir().setLowCut(static_cast<float>(v)); });
+        lowCut->setLogTaper(true);
+        lowCut->setValueFormatter(hzLabel(kLowCutMin + 0.5));
+        auto* highCut = lateKnob("ir", "highCut", new KnobWidget("High Cut", kHighCutMin, kHighCutMax, kHighCutDefault, "Hz"),
+                                 [this](double v) { mEngine->ir().setHighCut(static_cast<float>(v)); });
+        highCut->setLogTaper(true);
+        highCut->setValueFormatter(hzLabel(-(kHighCutMax - 1.0)));
+        addDetailRow(col, {level(0), pan(0), phase(0), blend, lowCut, highCut});
+
+        // Slot B: ‹ › through the library's IRs, Choose… (file dialog), ×.
+        auto* bTitle = new QLabel("IR B");
+        bTitle->setObjectName("fxName");
+        auto arrow = [this](const QString& glyph, int step) {
+            auto* b = new QToolButton;
+            b->setObjectName("heroArrow");
+            b->setText(glyph);
+            b->setAutoRaise(true);
+            b->setFocusPolicy(Qt::NoFocus);
+            b->setToolTip(step < 0 ? "Previous IR in the library (slot B)" : "Next IR in the library (slot B)");
+            connect(b, &QToolButton::clicked, this, [this, step] {
+                const QString next = mLibrary->neighbour(LibraryEntry::Kind::IR,
+                                                         QString::fromStdString(mEngine->irPathB()), step);
+                if (!next.isEmpty()) loadIRBFile(next);
+            });
+            return b;
+        };
+        auto* choose = new QPushButton("Choose…");
+        choose->setFocusPolicy(Qt::NoFocus);
+        connect(choose, &QPushButton::clicked, this, [this] {
+            QString start = QString::fromStdString(mEngine->irPathB());
+            if (start.isEmpty()) start = QString::fromStdString(mEngine->irPath());
+            const QString p = QFileDialog::getOpenFileName(nullptr, "Impulse Response for Slot B", start,
+                                                           "WAV Files (*.wav);;All Files (*)");
+            if (!p.isEmpty()) loadIRBFile(p);
+        });
+        auto* clear = new QToolButton;
+        clear->setObjectName("heroArrow");
+        clear->setText("×");
+        clear->setAutoRaise(true);
+        clear->setFocusPolicy(Qt::NoFocus);
+        clear->setToolTip("Empty slot B");
+        connect(clear, &QToolButton::clicked, this, [this] {
+            mEngine->unloadIRB();
+            QSettings().remove("files/lastIRB");
+            updateHeroCards();
+        });
+        mLblIRBStatus = new QLabel;
+        mLblIRBStatus->setObjectName("fileStatus");
+        addDetailRow(col, {bTitle, arrow("‹", -1), arrow("›", +1), choose, clear, mLblIRBStatus,
+                           level(1), pan(1), phase(1)});
 
         Theme::tagCard(col, "ir");
         mFxCols[&mEngine->ir()] = col;
@@ -1503,6 +1623,25 @@ bool MainWindow::loadIRFile(const QString& path, bool quiet)
     return true;
 }
 
+bool MainWindow::loadIRBFile(const QString& path, bool quiet)
+{
+    const QString clean = QDir::cleanPath(path);
+    if (!(mEngine->isIRBLoaded() && QString::fromStdString(mEngine->irPathB()) == clean))
+    {
+        if (!mEngine->loadIRB(clean.toStdString()))
+        {
+            if (!quiet)
+                QMessageBox::critical(this, "Impulse Response", "Failed to load IR (slot B):\n" + clean + "\n\n"
+                                      + QString::fromStdString(mEngine->irBLoadError()));
+            return false;
+        }
+    }
+    QSettings().setValue("files/lastIRB", clean);
+    mLibrary->noteUsed(clean);
+    updateHeroCards();
+    return true;
+}
+
 void MainWindow::loadLibraryEntry(LibraryEntry::Kind kind, const QString& path)
 {
     switch (kind)
@@ -2074,6 +2213,10 @@ void MainWindow::restoreLastFiles()
     if (!ir.isEmpty() && QFile::exists(ir))
         loadIRFile(ir, /*quiet=*/true);
 
+    const QString irB = s.value("files/lastIRB").toString();
+    if (!irB.isEmpty() && QFile::exists(irB))
+        loadIRBFile(irB, /*quiet=*/true);
+
     updateHeroCards();
 }
 
@@ -2169,6 +2312,18 @@ void MainWindow::updateHeroCards()
               QString::fromStdString(mEngine->modelPath()), "No model loaded");
     setStatus(mLblIRStatus, mLblIRMeta, mLblIROrigin, mEngine->isIRLoaded(),
               QString::fromStdString(mEngine->irPath()), "No impulse response loaded");
+    if (mLblIRBStatus)
+    {
+        const bool b = mEngine->isIRBLoaded();
+        const QString p = QString::fromStdString(mEngine->irPathB());
+        mLblIRBStatus->setText(b ? mLblIRBStatus->fontMetrics().elidedText(QFileInfo(p).completeBaseName(),
+                                                                         Qt::ElideMiddle, 300)
+                                 : QString("Empty — Choose… or ‹ ›"));
+        mLblIRBStatus->setToolTip(b ? QDir::toNativeSeparators(p) : QString());
+        mLblIRBStatus->setObjectName(b ? "fileStatusOk" : "fileStatus");
+        mLblIRBStatus->style()->unpolish(mLblIRBStatus);
+        mLblIRBStatus->style()->polish(mLblIRBStatus);
+    }
     // Every model/IR change lands here — it counts toward the preset `*`.
     if (mPresetStateTimer) mPresetStateTimer->start();
     updateRigStatus();
@@ -2368,10 +2523,40 @@ void MainWindow::setCurrentPreset(const QString& path)
     scheduleSessionSave();
 }
 
+// Preset state equality with a tolerance on numbers: a knob's dial
+// quantizes values (and tapers/resolutions change between versions), so a
+// value can come back a hair off what the file says without anyone
+// touching it. 1e-3 relative is far below anything audible or displayed.
+static bool sameState(const QJsonValue& a, const QJsonValue& b)
+{
+    if (a.isDouble() && b.isDouble())
+    {
+        const double x = a.toDouble(), y = b.toDouble();
+        return std::abs(x - y) <= 1e-3 * std::max({1.0, std::abs(x), std::abs(y)});
+    }
+    if (a.isObject() && b.isObject())
+    {
+        const QJsonObject oa = a.toObject(), ob = b.toObject();
+        if (oa.size() != ob.size()) return false;
+        for (auto it = oa.begin(); it != oa.end(); ++it)
+            if (!ob.contains(it.key()) || !sameState(it.value(), ob.value(it.key()))) return false;
+        return true;
+    }
+    if (a.isArray() && b.isArray())
+    {
+        const QJsonArray xa = a.toArray(), xb = b.toArray();
+        if (xa.size() != xb.size()) return false;
+        for (int i = 0; i < xa.size(); ++i)
+            if (!sameState(xa[i], xb[i])) return false;
+        return true;
+    }
+    return a == b;
+}
+
 void MainWindow::updatePresetState()
 {
     const bool modified = !mPresetPath.isEmpty()
-                          && PresetSerializer::toJson(mParams, *mEngine) != mPresetBaseline;
+                          && !sameState(PresetSerializer::toJson(mParams, *mEngine), mPresetBaseline);
     mPresetBar->setPreset(mPresetPath, modified);
     setWindowTitle(mPresetPath.isEmpty()
                        ? QString("NAM Player")
@@ -2394,6 +2579,17 @@ void MainWindow::restorePresetState()
             {
                 if (!base.contains(it.key()))
                     base.insert(it.key(), it.value());
+                else if (it.key() == "effectOrder" && it.value().isArray())
+                {
+                    // Effects added since (new IDs) sit in the live order at
+                    // their default slots: if the live order is the saved one
+                    // plus new IDs, adopt it.
+                    const QJsonArray saved = base.value(it.key()).toArray();
+                    QJsonArray known;
+                    for (const auto& id : it.value().toArray())
+                        if (saved.contains(id)) known.append(id);
+                    if (known == saved) base.insert(it.key(), it.value());
+                }
                 else if (it.value().isObject() && base.value(it.key()).isObject())
                     base.insert(it.key(), fill(base.value(it.key()).toObject(), it.value().toObject()));
             }
@@ -2545,6 +2741,20 @@ bool MainWindow::loadPresetFile(const QString& pathIn)
         else
         {
             failed << applied.irPath;
+        }
+    }
+    // Slot B: presets made before the dual cab don't mention it (left alone);
+    // newer ones say exactly what slot B holds, empty included.
+    if (applied.hasIrPathB)
+    {
+        if (applied.irPathB.isEmpty())
+        {
+            mEngine->unloadIRB();
+            QSettings().remove("files/lastIRB");
+        }
+        else if (!(QFile::exists(applied.irPathB) && loadIRBFile(applied.irPathB, true)))
+        {
+            failed << applied.irPathB;
         }
     }
     updateHeroCards();

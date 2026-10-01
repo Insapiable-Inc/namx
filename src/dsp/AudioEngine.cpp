@@ -94,6 +94,19 @@ void AudioEngine::unloadIR()
     reclaimRetired();
 }
 
+bool AudioEngine::loadIRB(const std::string& path)
+{
+    const bool ok = mIR.loadB(path);
+    reclaimRetired();
+    return ok;
+}
+
+void AudioEngine::unloadIRB()
+{
+    mIR.unloadB();
+    reclaimRetired();
+}
+
 // ---------------------------------------------------------------------------
 // Chain order
 // ---------------------------------------------------------------------------

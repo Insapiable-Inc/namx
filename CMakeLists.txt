@@ -102,6 +102,7 @@ set(GUI_SOURCES
     src/dsp/EffectBase.h
     src/dsp/IRLoader.cpp
     src/dsp/IRLoader.h
+    src/dsp/IRProcessor.cpp
     src/dsp/IRProcessor.h
     src/dsp/NamProcessor.cpp
     src/dsp/NamProcessor.h

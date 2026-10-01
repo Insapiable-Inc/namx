@@ -50,6 +50,8 @@ NAMPlayerBench_autogen/timestamp: \
 	/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/FlangerProcessor.h \
 	/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/IRLoader.cpp \
 	/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/IRLoader.h \
+	/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/IRProcessor.cpp \
+	/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/IRProcessor.h \
 	/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/Log.cpp \
 	/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/Log.h \
 	/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/Metronome.cpp \

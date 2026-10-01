@@ -1138,6 +1138,11 @@
 			null
 		],
 		[
+			"/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/IRProcessor.cpp",
+			"MU",
+			null
+		],
+		[
 			"/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/JackBackend.cpp",
 			"MU",
 			null

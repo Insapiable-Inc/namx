@@ -58,7 +58,7 @@ struct Stage
 
 void usage()
 {
-    std::puts("usage: NAMPlayerBench [--model file.nam] [--ir file.wav] [--frames N] [--rate HZ]\n"
+    std::puts("usage: NAMPlayerBench [--model file.nam] [--ir file.wav] [--ir-b file.wav] [--frames N] [--rate HZ]\n"
               "                      [--blocks N] [--no-fast-tanh] [--only NAME[,NAME…]]\n"
               "Without --model/--ir the amp/cab stages are skipped. --only limits the\n"
               "enabled stages (names as printed, case-insensitive).");
@@ -84,7 +84,7 @@ bool listed(const std::string& only, const char* name)
 
 int main(int argc, char** argv)
 {
-    std::string model, ir, only;
+    std::string model, ir, irB, only;
     int    frames   = 128;
     double rate     = 48000.0;
     int    blocks   = 4000;
@@ -99,6 +99,7 @@ int main(int argc, char** argv)
         };
         if      (a == "--model")        model    = next();
         else if (a == "--ir")           ir       = next();
+        else if (a == "--ir-b")         irB      = next();
         else if (a == "--frames")       frames   = std::atoi(next());
         else if (a == "--rate")         rate     = std::atof(next());
         else if (a == "--blocks")       blocks   = std::atoi(next());
@@ -162,6 +163,11 @@ int main(int argc, char** argv)
     if (!ir.empty() && !cab.load(ir))
     {
         std::fprintf(stderr, "ir: %s\n", cab.lastError().c_str());
+        return 1;
+    }
+    if (!irB.empty() && !cab.loadB(irB))
+    {
+        std::fprintf(stderr, "ir-b: %s\n", cab.lastErrorB().c_str());
         return 1;
     }
     nam.reclaimRetired(true);

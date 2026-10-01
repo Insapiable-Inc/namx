@@ -73,6 +73,13 @@ public:
     std::string irPath()        const           { return mIR.filePath(); }
     std::string irLoadError()   const           { return mIR.lastError(); }
 
+    // Second cab slot (Phase 17 dual IR).
+    bool        loadIRB(const std::string& path);
+    void        unloadIRB();
+    bool        isIRBLoaded()   const           { return mIR.isLoadedB(); }
+    std::string irPathB()       const           { return mIR.filePathB(); }
+    std::string irBLoadError()  const           { return mIR.lastErrorB(); }
+
     // ---- Gain ----
     void  setInputGain(float dB)  { mInputGainDB.store(dB);  }
     void  setOutputGain(float dB) { mOutputGainDB.store(dB); }

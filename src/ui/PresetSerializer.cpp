@@ -17,6 +17,7 @@ QJsonObject toJson(const ParamRegistry& params, AudioEngine& engine)
     obj["version"] = 2;
     obj["namPath"] = QString::fromStdString(engine.modelPath());
     obj["irPath"]  = QString::fromStdString(engine.irPath());
+    obj["irPathB"] = QString::fromStdString(engine.irPathB()); // "" = slot B empty
 
     QJsonArray orderArr;
     for (const auto& id : engine.chainIds())
@@ -67,6 +68,8 @@ Applied apply(const QJsonObject& obj, const ParamRegistry& params)
             out.effectOrder << v.toString();
     out.namPath = obj["namPath"].toString();
     out.irPath  = obj["irPath"].toString();
+    out.hasIrPathB = obj.contains("irPathB");
+    out.irPathB    = obj["irPathB"].toString();
     return out;
 }
 

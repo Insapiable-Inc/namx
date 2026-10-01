@@ -104,6 +104,7 @@ private:
     // Return false on failure; `quiet` suppresses the error dialog.
     bool loadModelFile(const QString& path, bool quiet = false);
     bool loadIRFile(const QString& path, bool quiet = false);
+    bool loadIRBFile(const QString& path, bool quiet = false); // Cabinet slot B
     bool loadPresetFile(const QString& path);
     // Registry values + chain order from a preset object (no files).
     PresetSerializer::Applied applyPresetParams(const QJsonObject& obj);
@@ -242,6 +243,7 @@ private:
     QLabel*      mLblNAMMeta    = nullptr; // architecture · rate · gear
     QLabel*      mLblIRStatus   = nullptr;
     QLabel*      mLblIRMeta     = nullptr;
+    QLabel*      mLblIRBStatus  = nullptr; // Cabinet slot B (detail row)
 
     LibraryIndex*   mLibraryIndex = nullptr;
     Tone3000Client* mTone3000     = nullptr;

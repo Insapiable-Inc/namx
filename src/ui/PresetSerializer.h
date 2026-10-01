@@ -24,6 +24,8 @@ struct Applied
     QStringList effectOrder; // empty = key absent from the file
     QString     namPath;     // empty = absent or saved with no model
     QString     irPath;
+    bool        hasIrPathB = false; // presets before the dual cab leave slot B alone
+    QString     irPathB;            // "" with hasIrPathB = slot B empty in the preset
 };
 
 /// Applies all registry parameters to their widgets (the engine follows via

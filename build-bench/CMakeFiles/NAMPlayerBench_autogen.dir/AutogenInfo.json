@@ -737,6 +737,12 @@
 			null
 		],
 		[
+			"/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/IRProcessor.h",
+			"MU",
+			"M336FWOGQD/moc_IRProcessor.cpp",
+			null
+		],
+		[
 			"/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/Log.h",
 			"MU",
 			"M336FWOGQD/moc_Log.cpp",
@@ -953,6 +959,11 @@
 		],
 		[
 			"/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/IRLoader.cpp",
+			"MU",
+			null
+		],
+		[
+			"/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/IRProcessor.cpp",
 			"MU",
 			null
 		],
