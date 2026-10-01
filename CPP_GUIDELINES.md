@@ -285,7 +285,11 @@ It overrides the upstream root `.clang-format`, which `NAM/` and `tools/` keep.
 
 ## Namespaces
 
-- **All of `gui/` lives in one flat namespace, `npl`**, with no nested namespaces.
+- **All of `gui/` lives in one namespace, `npl`.** No nesting to mirror directories
+  (`npl::dsp::`, `npl::ui::`). A small named group of free functions and constants
+  that has no state is a nested namespace, not a class: `Theme::track()`,
+  `TempoSync::note_ms()`, `PresetSerializer::save()`, `NAMConstants::…`
+  (decided 2026-10-01). When it gains state, it becomes a class.
   `npl` is a placeholder until the app gets its final name; the namespace is renamed
   with it. It can't be `nam`: the NAM core uses `nam::`.
 - **Common std names are imported once, inside `npl`,** in a shared header, so our
