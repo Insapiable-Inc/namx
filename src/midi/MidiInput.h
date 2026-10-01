@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 
 #include <QObject>
 #include <QSet>
@@ -22,7 +21,8 @@ class MidiInput : public QObject
 {
     Q_OBJECT
 public:
-    static std::unique_ptr<MidiInput> create(QObject* parent = nullptr);
+    // Owned by `parent` (Qt ownership).
+    static MidiInput* create(QObject* parent);
     ~MidiInput() override = default;
 
     /// Open the backend and connect the enabled devices. False when MIDI is

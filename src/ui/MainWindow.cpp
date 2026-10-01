@@ -251,6 +251,7 @@ MainWindow::~MainWindow() {
     save_session_state();
     save_connections();
     engine->stop();
+    delete midi; // stop MIDI input before the rest of the window is torn down
 }
 
 // ---------------------------------------------------------------------------
@@ -2054,7 +2055,7 @@ void MainWindow::setup_midi(QMenu* top_menu) {
 
     // ---- Input ----
     midi = MidiInput::create(this);
-    connect(midi.get(), &MidiInput::message_received, midi_mapper, &MidiMapper::handle);
+    connect(midi, &MidiInput::message_received, midi_mapper, &MidiMapper::handle);
     midi_ok = midi->start();
     connect(midi_mapper, &MidiMapper::tempo_from_clock, tempo_bar, &TempoBar::set_bpm);
 
@@ -2085,7 +2086,7 @@ void MainWindow::setup_midi(QMenu* top_menu) {
 
     // ---- Menu ----
     connect(top_menu->addAction("Mappings…"), &QAction::triggered, this, [this] {
-        MidiMappingsDialog dlg(*midi_mapper, midi_ok ? midi.get() : nullptr, this);
+        MidiMappingsDialog dlg(*midi_mapper, midi_ok ? midi : nullptr, this);
         dlg.exec();
     });
     QMenu* devices = top_menu->addMenu("Devices");

@@ -372,7 +372,7 @@ private:
     int ab_active = 0;
     QTimer* preset_state_timer = nullptr;
 
-    std::unique_ptr<MidiInput> midi;
+    MidiInput* midi = nullptr; // child of this window
     MidiMapper* midi_mapper = nullptr;
     bool midi_ok = false;
     QShortcut* learn_esc = nullptr;

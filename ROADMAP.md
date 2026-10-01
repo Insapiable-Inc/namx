@@ -839,7 +839,7 @@ commit.
 - [ ] **Lambdas:** one-statement bodies; the ~110 multi-line ones (32 over 10 lines,
       mostly `Tone3000Client` reply handlers, `Tone3000Panel`, `MainWindow` row
       setup) become named functions the lambda forwards to.
-- [ ] **Ownership:** `MidiInput::create(parent)` returns a Qt-owned plain pointer
+- [x] **Ownership:** `MidiInput::create(parent)` returns a Qt-owned plain pointer
       (no `unique_ptr` around a QObject).
 - [ ] **Effect interface:** `EffectBase` → pure virtual `Effect` interface; the
       enabled/stereo/reset flags move into an `EffectState` member and the

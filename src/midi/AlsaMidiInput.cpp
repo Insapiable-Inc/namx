@@ -276,6 +276,6 @@ private:
 
 } // namespace
 
-std::unique_ptr<MidiInput> MidiInput::create(QObject* parent) {
-    return std::make_unique<AlsaMidiInput>(parent);
+MidiInput* MidiInput::create(QObject* parent) {
+    return new AlsaMidiInput(parent);
 }

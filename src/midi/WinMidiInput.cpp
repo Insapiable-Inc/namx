@@ -151,6 +151,6 @@ private:
 
 } // namespace
 
-std::unique_ptr<MidiInput> MidiInput::create(QObject* parent) {
-    return std::make_unique<WinMidiInput>(parent);
+MidiInput* MidiInput::create(QObject* parent) {
+    return new WinMidiInput(parent);
 }
