@@ -26,11 +26,11 @@ class RtSlot
 {
 public:
     RtSlot() {
-        mRetired.reserve(4);
+        m_retired.reserve(4);
     }
     ~RtSlot() {
         // No audio thread may be running.
-        delete mActive.exchange(nullptr, std::memory_order_acq_rel);
+        delete m_active.exchange(nullptr, std::memory_order_acq_rel);
     }
 
     RtSlot(const RtSlot&) = delete;
@@ -38,26 +38,26 @@ public:
 
     // ---- audio thread ----
     T* acquire() const {
-        return mActive.load(std::memory_order_acquire);
+        return m_active.load(std::memory_order_acquire);
     }
-    void endBlock() {
-        mBlocks.fetch_add(1, std::memory_order_release);
+    void end_block() {
+        m_blocks.fetch_add(1, std::memory_order_release);
     }
 
     // ---- owner thread ----
     /// Owner-side view of what is currently published (may be nullptr).
     T* current() const {
-        return mActive.load(std::memory_order_acquire);
+        return m_active.load(std::memory_order_acquire);
     }
 
     /// Install `next` (or nullptr) and retire whatever was there before.
     void publish(std::unique_ptr<T> next) {
-        T* prev = mActive.exchange(next.release(), std::memory_order_acq_rel);
+        T* prev = m_active.exchange(next.release(), std::memory_order_acq_rel);
         // Tag read AFTER the swap: any block that saw `prev` either completed
         // before this read or was in flight and will bump the count past it.
-        const uint64_t tag = mBlocks.load(std::memory_order_acquire);
+        const uint64_t tag = m_blocks.load(std::memory_order_acquire);
         if (prev) {
-            mRetired.push_back({tag, std::unique_ptr<T>(prev)});
+            m_retired.push_back({tag, std::unique_ptr<T>(prev)});
         }
         reclaim(false);
     }
@@ -65,18 +65,18 @@ public:
     /// Free retired objects the audio thread has left behind. `force` frees
     /// everything and is only valid when no audio thread can be running.
     void reclaim(bool force) {
-        const uint64_t done = mBlocks.load(std::memory_order_acquire);
+        const uint64_t done = m_blocks.load(std::memory_order_acquire);
         size_t keep = 0;
-        for (size_t i = 0; i < mRetired.size(); ++i) {
-            if (!force && done <= mRetired[i].tag) {
-                mRetired[keep++] = std::move(mRetired[i]);
+        for (size_t i = 0; i < m_retired.size(); ++i) {
+            if (!force && done <= m_retired[i].tag) {
+                m_retired[keep++] = std::move(m_retired[i]);
             }
         }
-        mRetired.resize(keep);
+        m_retired.resize(keep);
     }
 
-    size_t retiredCount() const {
-        return mRetired.size();
+    size_t retired_count() const {
+        return m_retired.size();
     }
 
 private:
@@ -86,7 +86,7 @@ private:
         std::unique_ptr<T> obj;
     };
 
-    std::atomic<T*> mActive{nullptr};
-    std::atomic<uint64_t> mBlocks{0};
-    std::vector<Retired> mRetired; // owner thread only
+    std::atomic<T*> m_active{nullptr};
+    std::atomic<uint64_t> m_blocks{0};
+    std::vector<Retired> m_retired; // owner thread only
 };

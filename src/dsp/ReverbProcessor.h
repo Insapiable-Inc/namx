@@ -13,93 +13,93 @@ class ReverbProcessor : public EffectBase
 public:
     ReverbProcessor();
 
-    bool supportsStereoOut() const override {
+    bool supports_stereo_out() const override {
         return true;
     }
     void reset() override;
 
-    void setRoomSize(float pct) {
-        mRoomSize.store(pct);
+    void set_room_size(float pct) {
+        m_room_size.store(pct);
     }
-    void setDamping(float pct) {
-        mDamping.store(pct);
+    void set_damping(float pct) {
+        m_damping.store(pct);
     }
-    void setWidth(float pct) {
-        mWidth.store(pct);
+    void set_width(float pct) {
+        m_width.store(pct);
     }
-    void setMix(float pct) {
-        mMix.store(pct);
+    void set_mix(float pct) {
+        m_mix.store(pct);
     }
-    void setPreDelay(float ms) {
-        mPreDelayMs.store(ms);
+    void set_pre_delay(float ms) {
+        m_pre_delay_ms.store(ms);
     } // 0–250 ms before the tail
-    void setLowCut(float hz) {
-        mLowCutHz.store(hz);
+    void set_low_cut(float hz) {
+        m_low_cut_hz.store(hz);
     } // on the wet signal
-    void setHighCut(float hz) {
-        mHighCutHz.store(hz);
+    void set_high_cut(float hz) {
+        m_high_cut_hz.store(hz);
     }
     /// Octave-up feedback into the tail (0–100 %): the shimmer reverb.
-    void setShimmer(float pct) {
-        mShimmer.store(pct);
+    void set_shimmer(float pct) {
+        m_shimmer.store(pct);
     }
 
-    float roomSize() const {
-        return mRoomSize.load();
+    float room_size() const {
+        return m_room_size.load();
     }
     float damping() const {
-        return mDamping.load();
+        return m_damping.load();
     }
     float width() const {
-        return mWidth.load();
+        return m_width.load();
     }
     float mix() const {
-        return mMix.load();
+        return m_mix.load();
     }
 
 protected:
-    void onSampleRateChanged(double sr) override;
-    void processBlockMono(float* buf, size_t nframes) override;
-    void processBlockDual(float* L, float* R, size_t nframes) override;
-    void processBlockStereoOut(float* L, float* R, size_t nframes) override;
+    void on_sample_rate_changed(double sr) override;
+    void process_block_mono(float* buf, size_t nframes) override;
+    void process_block_dual(float* l, float* r, size_t nframes) override;
+    void process_block_stereo_out(float* l, float* r, size_t nframes) override;
 
 private:
-    std::atomic<float> mRoomSize{50.0f};
-    std::atomic<float> mDamping{50.0f};
-    std::atomic<float> mWidth{100.0f};
-    std::atomic<float> mMix{30.0f};
-    std::atomic<float> mPreDelayMs{0.0f};
-    std::atomic<float> mLowCutHz{20.0f};
-    std::atomic<float> mHighCutHz{20000.0f};
-    std::atomic<float> mShimmer{0.0f};
-    PitchShifter mShift[2]; // per bank, +12 st
-    float mShimFb[2]{}; // shifted wet fed into the next input sample
+    std::atomic<float> m_room_size{50.0f};
+    std::atomic<float> m_damping{50.0f};
+    std::atomic<float> m_width{100.0f};
+    std::atomic<float> m_mix{30.0f};
+    std::atomic<float> m_pre_delay_ms{0.0f};
+    std::atomic<float> m_low_cut_hz{20.0f};
+    std::atomic<float> m_high_cut_hz{20000.0f};
+    std::atomic<float> m_shimmer{0.0f};
+    PitchShifter m_shift[2]; // per bank, +12 st
+    float m_shim_fb[2]{}; // shifted wet fed into the next input sample
 
-    static constexpr float kMaxPreDelayMs = 250.0f;
+    static constexpr float K_MAX_PRE_DELAY_MS = 250.0f;
     // Pre-delay line per input bank ([0] mono/L/sum, [1] R) + wet filters per output.
-    DelayLine mPre[2];
-    float mHpX[2]{}, mHpY[2]{}, mLp[2]{};
+    DelayLine m_pre[2];
+    float m_hp_x[2]{}, m_hp_y[2]{}, m_lp[2]{};
 
-    float preDelay(int bank, float x, size_t delaySamples);
-    float wetFilter(int ch, float x, float hpA, float lpK);
+    float pre_delay(int bank, float x, size_t delay_samples);
+    float wet_filter(int ch, float x, float hp_a, float lp_k);
 
     struct CombFilter
     {
         DelayLine line;
-        float filterStore{0.0f};
+        float filter_store{0.0f};
 
         void resize(size_t n) {
             line.resize(n);
         }
         void reset() {
             line.clear();
-            filterStore = 0.0f;
+            filter_store = 0.0f;
         }
 
         float process(float in, float feedback, float damp) {
             const float out = line.oldest();
-            filterStore = out * (1.0f - damp) + filterStore * damp;
-            line.push(in + filterStore * feedback);
+            filter_store = out * (1.0f - damp) + filter_store * damp;
+            line.push(in + filter_store * feedback);
             return out;
         }
     };
@@ -107,7 +107,7 @@ private:
     struct AllPassFilter
     {
         DelayLine line;
-        static constexpr float kFeedback = 0.5f;
+        static constexpr float K_FEEDBACK = 0.5f;
 
         void resize(size_t n) {
             line.resize(n);
@@ -117,24 +117,25 @@ private:
         }
 
         float process(float in) {
-            const float bufOut = line.oldest();
-            line.push(in + bufOut * kFeedback);
-            return -in + bufOut;
+            const float buf_out = line.oldest();
+            line.push(in + buf_out * K_FEEDBACK);
+            return -in + buf_out;
         }
     };
 
-    static constexpr size_t kNumCombs = 8;
-    static constexpr size_t kNumAllPasses = 4;
+    static constexpr size_t K_NUM_COMBS = 8;
+    static constexpr size_t K_NUM_ALL_PASSES = 4;
 
-    std::array<CombFilter, kNumCombs> mCombL, mCombR;
-    std::array<AllPassFilter, kNumAllPasses> mApL, mApR;
+    std::array<CombFilter, K_NUM_COMBS> m_comb_l, m_comb_r;
+    std::array<AllPassFilter, K_NUM_ALL_PASSES> m_ap_l, m_ap_r;
 
-    static constexpr int kCombLengths[kNumCombs] = {1116, 1188, 1277, 1356, 1422, 1491, 1557, 1617};
-    static constexpr int kApLengths[kNumAllPasses] = {556, 441, 341, 225};
-    static constexpr int kStereoOffset = 23;
+    static constexpr int K_COMB_LENGTHS[K_NUM_COMBS] = {1116, 1188, 1277, 1356,
+                                                        1422, 1491, 1557, 1617};
+    static constexpr int K_AP_LENGTHS[K_NUM_ALL_PASSES] = {556, 441, 341, 225};
+    static constexpr int K_STEREO_OFFSET = 23;
 
     void allocate();
-    void processMonoBank(float* buf, size_t nframes, int bank,
-                         std::array<CombFilter, kNumCombs>& combs,
-                         std::array<AllPassFilter, kNumAllPasses>& aps);
+    void process_mono_bank(float* buf, size_t nframes, int bank,
+                           std::array<CombFilter, K_NUM_COMBS>& combs,
+                           std::array<AllPassFilter, K_NUM_ALL_PASSES>& aps);
 };

@@ -21,14 +21,14 @@ public:
     MidiMappingsDialog(MidiMapper& mapper, MidiInput* input, QWidget* parent = nullptr);
 
 private:
-    void rebuildDevices();
-    void rebuildTable();
-    void commitRow(int row);
+    void rebuild_devices();
+    void rebuild_table();
+    void commit_row(int row);
 
-    MidiMapper& mMapper;
-    MidiInput* mInput;
-    QVBoxLayout* mDeviceBox = nullptr;
-    QTableWidget* mTable = nullptr;
-    QLabel* mActivity = nullptr;
-    bool mRebuilding = false;
+    MidiMapper& m_mapper;
+    MidiInput* m_input;
+    QVBoxLayout* m_device_box = nullptr;
+    QTableWidget* m_table = nullptr;
+    QLabel* m_activity = nullptr;
+    bool m_rebuilding = false;
 };

@@ -9,34 +9,34 @@
 
 #include "Log.h"
 
-static void clearKernelBuffers(std::vector<float> buffers[2], int writePos[2]) {
+static void clear_kernel_buffers(std::vector<float> buffers[2], int write_pos[2]) {
     for (int ch = 0; ch < 2; ++ch) {
         std::fill(buffers[ch].begin(), buffers[ch].end(), 0.0f);
-        writePos[ch] = 0;
+        write_pos[ch] = 0;
     }
 }
 
 /// Windowed-sinc resampler. Produces at most maxOut output samples at fsOut
 /// from `in` at fsIn, band-limited to the lower of the two Nyquist rates.
-static std::vector<float> resampleSinc(const std::vector<float>& in, double fsIn, double fsOut,
-                                       size_t maxOut) {
+static std::vector<float> resample_sinc(const std::vector<float>& in, double fs_in, double fs_out,
+                                        size_t max_out) {
     if (in.empty()) {
         return {};
     }
-    const double step = fsIn / fsOut; // input samples per output sample
+    const double step = fs_in / fs_out; // input samples per output sample
     const double cutoff = 0.5 * std::min(1.0, 1.0 / step); // cycles per input sample
     const double half = std::ceil(32.0 * std::max(1.0, step)); // kernel half-width, samples
     // Positions are fractional (t), sample indices whole: the casts below convert between them.
-    const size_t outLen =
-        std::min(maxOut, static_cast<size_t>(std::ceil(static_cast<double>(in.size()) / step)));
+    const size_t out_len =
+        std::min(max_out, static_cast<size_t>(std::ceil(static_cast<double>(in.size()) / step)));
 
-    std::vector<float> out(outLen);
-    for (size_t i = 0; i < outLen; ++i) {
+    std::vector<float> out(out_len);
+    for (size_t i = 0; i < out_len; ++i) {
         const double t = static_cast<double>(i) * step;
-        const size_t kMin = static_cast<size_t>(std::max(0.0, std::ceil(t - half)));
-        const size_t kMax = std::min(in.size() - 1, static_cast<size_t>(std::floor(t + half)));
+        const size_t k_min = static_cast<size_t>(std::max(0.0, std::ceil(t - half)));
+        const size_t k_max = std::min(in.size() - 1, static_cast<size_t>(std::floor(t + half)));
         double acc = 0.0;
-        for (size_t k = kMin; k <= kMax; ++k) {
+        for (size_t k = k_min; k <= k_max; ++k) {
             const double u = t - static_cast<double>(k);
             const double x = 2.0 * cutoff * u;
             const double sinc = (std::abs(x) < 1e-9) ? 1.0 : std::sin(M_PI * x) / (M_PI * x);
@@ -55,24 +55,24 @@ IRLoader::IRLoader() {
 
 IRLoader::~IRLoader() {
     // Audio thread must be stopped before this is called.
-    mSlot.publish(nullptr);
-    mSlot.reclaim(true);
+    m_slot.publish(nullptr);
+    m_slot.reclaim(true);
 }
 
-std::unique_ptr<IRLoader::Kernel> IRLoader::buildKernel() const {
+std::unique_ptr<IRLoader::Kernel> IRLoader::build_kernel() const {
     auto k = std::make_unique<Kernel>();
 
     std::vector<float> samples;
-    const bool resample = mTargetRate > 0.0 && mRawRate > 0.0 && mTargetRate != mRawRate;
+    const bool resample = m_target_rate > 0.0 && m_raw_rate > 0.0 && m_target_rate != m_raw_rate;
     if (resample) {
-        samples = resampleSinc(mRaw, mRawRate, mTargetRate, kMaxIRLength);
+        samples = resample_sinc(m_raw, m_raw_rate, m_target_rate, K_MAX_IR_LENGTH);
     } else {
-        samples = mRaw;
-        samples.resize(std::min(samples.size(), kMaxIRLength));
+        samples = m_raw;
+        samples.resize(std::min(samples.size(), K_MAX_IR_LENGTH));
     }
 
-    k->irLen = static_cast<int>(samples.size());
-    k->builtRate = resample ? mTargetRate : mRawRate;
+    k->ir_len = static_cast<int>(samples.size());
+    k->built_rate = resample ? m_target_rate : m_raw_rate;
     k->ir = std::move(samples);
 
     // Normalize energy (L2) to 1.0 so the convolution is roughly unity-gain;
@@ -93,109 +93,109 @@ std::unique_ptr<IRLoader::Kernel> IRLoader::buildKernel() const {
     std::reverse(k->ir.begin(), k->ir.end());
 
     for (int ch = 0; ch < 2; ++ch) {
-        k->buffers[ch].assign(2 * kMaxIRLength, 0.0f);
+        k->buffers[ch].assign(2 * K_MAX_IR_LENGTH, 0.0f);
     }
     return k;
 }
 
 bool IRLoader::load(const std::string& path) {
-    std::vector<float> rawSamples;
-    double sampleRate = 0.0;
+    std::vector<float> raw_samples;
+    double sample_rate = 0.0;
 
-    auto result = dsp::wav::Load(path.c_str(), rawSamples, sampleRate);
-    std::lock_guard<std::mutex> lock(mLoadMutex);
+    auto result = dsp::wav::Load(path.c_str(), raw_samples, sample_rate);
+    std::lock_guard<std::mutex> lock(m_load_mutex);
     if (result != dsp::wav::LoadReturnCode::SUCCESS) {
-        mLastError = dsp::wav::GetMsgForLoadReturnCode(result);
+        m_last_error = dsp::wav::GetMsgForLoadReturnCode(result);
         if (result == dsp::wav::LoadReturnCode::ERROR_NOT_MONO) {
-            mLastError += " Stereo IRs are not supported; convert the file to mono.";
+            m_last_error += " Stereo IRs are not supported; convert the file to mono.";
         }
         return false;
     }
 
-    if (rawSamples.empty()) {
-        mLastError = "IR file contains no samples.";
+    if (raw_samples.empty()) {
+        m_last_error = "IR file contains no samples.";
         return false;
     }
-    mLastError.clear();
+    m_last_error.clear();
 
-    mRaw = std::move(rawSamples);
-    mRawRate = sampleRate;
-    if (mTargetRate > 0.0 && sampleRate > 0.0 && sampleRate != mTargetRate) {
-        qCInfo(lcAudio, "[IRLoader] Resampling IR from %.0f Hz to %.0f Hz", sampleRate,
-               mTargetRate);
+    m_raw = std::move(raw_samples);
+    m_raw_rate = sample_rate;
+    if (m_target_rate > 0.0 && sample_rate > 0.0 && sample_rate != m_target_rate) {
+        qCInfo(lc_audio, "[IRLoader] Resampling IR from %.0f Hz to %.0f Hz", sample_rate,
+               m_target_rate);
     }
 
-    mSlot.publish(buildKernel());
-    mFilePath = path;
+    m_slot.publish(build_kernel());
+    m_file_path = path;
     return true;
 }
 
 void IRLoader::unload() {
-    std::lock_guard<std::mutex> lock(mLoadMutex);
-    mSlot.publish(nullptr);
-    mFilePath = "";
-    mRaw.clear();
-    mRawRate = 0.0;
+    std::lock_guard<std::mutex> lock(m_load_mutex);
+    m_slot.publish(nullptr);
+    m_file_path = "";
+    m_raw.clear();
+    m_raw_rate = 0.0;
 }
 
-void IRLoader::setTargetSampleRate(double sr) {
-    std::lock_guard<std::mutex> lock(mLoadMutex);
-    mTargetRate = sr;
-    Kernel* k = mSlot.current();
-    if (!k || mRaw.empty() || sr <= 0.0 || k->builtRate == sr) {
+void IRLoader::set_target_sample_rate(double sr) {
+    std::lock_guard<std::mutex> lock(m_load_mutex);
+    m_target_rate = sr;
+    Kernel* k = m_slot.current();
+    if (!k || m_raw.empty() || sr <= 0.0 || k->built_rate == sr) {
         return;
     }
-    qCInfo(lcAudio, "[IRLoader] Engine rate changed to %.0f Hz — rebuilding IR kernel", sr);
-    mSlot.publish(buildKernel());
+    qCInfo(lc_audio, "[IRLoader] Engine rate changed to %.0f Hz — rebuilding IR kernel", sr);
+    m_slot.publish(build_kernel());
 }
 
-/*static*/ void IRLoader::pushSample(Kernel& k, int ch, float in) {
+/*static*/ void IRLoader::push_sample(Kernel& k, int ch, float in) {
     float* buf = k.buffers[ch].data();
-    const int wp = k.writePos[ch];
+    const int wp = k.write_pos[ch];
     buf[wp] = in;
-    buf[wp + k.irLen] = in; // mirror write keeps the window below contiguous
+    buf[wp + k.ir_len] = in; // mirror write keeps the window below contiguous
 }
 
-/*static*/ float IRLoader::convolveAt(const Kernel& k, int ch) {
+/*static*/ float IRLoader::convolve_at(const Kernel& k, int ch) {
     const float* buf = k.buffers[ch].data();
-    const int wp = k.writePos[ch];
+    const int wp = k.write_pos[ch];
 
     // buf[wp+1 .. wp+irLen] is the last irLen samples, oldest→newest;
     // k.ir is reversed, so this dot product is the convolution sum.
-    Eigen::Map<const Eigen::VectorXf> ir(k.ir.data(), k.irLen);
-    Eigen::Map<const Eigen::VectorXf> sig(buf + wp + 1, k.irLen);
+    Eigen::Map<const Eigen::VectorXf> ir(k.ir.data(), k.ir_len);
+    Eigen::Map<const Eigen::VectorXf> sig(buf + wp + 1, k.ir_len);
     return ir.dot(sig);
 }
 
 /*static*/ void IRLoader::advance(Kernel& k, int ch) {
-    if (++k.writePos[ch] >= k.irLen) {
-        k.writePos[ch] = 0;
+    if (++k.write_pos[ch] >= k.ir_len) {
+        k.write_pos[ch] = 0;
     }
 }
 
-void IRLoader::processBlock(float* L, float* R, size_t numFrames, bool inputIsStereo,
-                            bool enabled) {
+void IRLoader::process_block(float* l, float* r, size_t num_frames, bool input_is_stereo,
+                             bool enabled) {
     struct BlockGuard
     {
         RtSlot<Kernel>& s;
         ~BlockGuard() {
-            s.endBlock();
+            s.end_block();
         }
-    } guard{mSlot};
+    } guard{m_slot};
 
     // One snapshot per block; the kernel stays alive until endBlock() runs.
-    Kernel* kp = mSlot.acquire();
-    if (!enabled || !kp || kp->irLen <= 0) {
+    Kernel* kp = m_slot.acquire();
+    if (!enabled || !kp || kp->ir_len <= 0) {
         return;
     }
     Kernel& k = *kp;
 
-    if (inputIsStereo) {
-        for (size_t i = 0; i < numFrames; ++i) {
-            pushSample(k, 0, L[i]);
-            pushSample(k, 1, R[i]);
-            L[i] = convolveAt(k, 0);
-            R[i] = convolveAt(k, 1);
+    if (input_is_stereo) {
+        for (size_t i = 0; i < num_frames; ++i) {
+            push_sample(k, 0, l[i]);
+            push_sample(k, 1, r[i]);
+            l[i] = convolve_at(k, 0);
+            r[i] = convolve_at(k, 1);
             advance(k, 0);
             advance(k, 1);
         }
@@ -205,13 +205,13 @@ void IRLoader::processBlock(float* L, float* R, size_t numFrames, bool inputIsSt
     // Mono: L == R, so the two delay lines hold identical history. Feed both
     // (a few stores) but run the 4096-tap dot product only once — the R line
     // stays valid for the moment an upstream effect goes stereo.
-    for (size_t i = 0; i < numFrames; ++i) {
-        const float in = L[i];
-        pushSample(k, 0, in);
-        pushSample(k, 1, in);
-        const float out = convolveAt(k, 0);
-        L[i] = out;
-        R[i] = out;
+    for (size_t i = 0; i < num_frames; ++i) {
+        const float in = l[i];
+        push_sample(k, 0, in);
+        push_sample(k, 1, in);
+        const float out = convolve_at(k, 0);
+        l[i] = out;
+        r[i] = out;
         advance(k, 0);
         advance(k, 1);
     }
@@ -220,7 +220,7 @@ void IRLoader::processBlock(float* L, float* R, size_t numFrames, bool inputIsSt
 void IRLoader::reset() {
     // Audio thread (chain reorder): clear the delay lines of whatever kernel
     // is live. std::fill only — no allocation.
-    if (Kernel* k = mSlot.acquire()) {
-        clearKernelBuffers(k->buffers, k->writePos);
+    if (Kernel* k = m_slot.acquire()) {
+        clear_kernel_buffers(k->buffers, k->write_pos);
     }
 }

@@ -9,62 +9,62 @@
 class FlangerProcessor : public EffectBase
 {
 public:
-    bool supportsStereoOut() const override {
+    bool supports_stereo_out() const override {
         return true;
     }
     void reset() override;
 
-    void setRate(float hz) {
-        mRate.store(hz);
+    void set_rate(float hz) {
+        m_rate.store(hz);
     }
-    void setDepth(float pct) {
-        mDepth.store(pct);
+    void set_depth(float pct) {
+        m_depth.store(pct);
     }
-    void setFeedback(float pct) {
-        mFeedback.store(pct);
+    void set_feedback(float pct) {
+        m_feedback.store(pct);
     }
-    void setMix(float pct) {
-        mMix.store(pct);
+    void set_mix(float pct) {
+        m_mix.store(pct);
     }
     /// 0 = short, metallic sweep (≈0–3 ms) … 100 = long jet sweep (0–14 ms).
-    void setRange(float pct) {
-        mRange.store(pct);
+    void set_range(float pct) {
+        m_range.store(pct);
     }
 
     float rate() const {
-        return mRate.load();
+        return m_rate.load();
     }
     float depth() const {
-        return mDepth.load();
+        return m_depth.load();
     }
     float feedback() const {
-        return mFeedback.load();
+        return m_feedback.load();
     }
     float mix() const {
-        return mMix.load();
+        return m_mix.load();
     }
 
 protected:
-    void onSampleRateChanged(double sr) override;
-    void processBlockMono(float* buf, size_t nframes) override;
-    void processBlockDual(float* L, float* R, size_t nframes) override;
-    void processBlockStereoOut(float* L, float* R, size_t nframes) override;
+    void on_sample_rate_changed(double sr) override;
+    void process_block_mono(float* buf, size_t nframes) override;
+    void process_block_dual(float* l, float* r, size_t nframes) override;
+    void process_block_stereo_out(float* l, float* r, size_t nframes) override;
 
 private:
-    std::atomic<float> mRate{0.3f}; // matches kFlangerRateDefault
-    std::atomic<float> mDepth{50.0f};
-    std::atomic<float> mFeedback{0.0f};
-    std::atomic<float> mMix{50.0f};
-    std::atomic<float> mRange{100.0f};
+    std::atomic<float> m_rate{0.3f}; // matches kFlangerRateDefault
+    std::atomic<float> m_depth{50.0f};
+    std::atomic<float> m_feedback{0.0f};
+    std::atomic<float> m_mix{50.0f};
+    std::atomic<float> m_range{100.0f};
 
-    float mPhase{0.0f};
+    float m_phase{0.0f};
 
-    DelayLine mLineL, mLineR;
-    float mFbL{0.0f}, mFbR{0.0f};
+    DelayLine m_line_l, m_line_r;
+    float m_fb_l{0.0f}, m_fb_r{0.0f};
 
-    static constexpr float kBaseMs = 7.0f;
-    static constexpr float kDepthMs = 7.0f;
+    static constexpr float K_BASE_MS = 7.0f;
+    static constexpr float K_DEPTH_MS = 7.0f;
 
-    void processSample(float in, float phase, DelayLine& line, float& fb, float depth, float fbAmt,
-                       float mix, float& out) const;
+    void process_sample(float in, float phase, DelayLine& line, float& fb, float depth,
+                        float fb_amt, float mix, float& out) const;
 };

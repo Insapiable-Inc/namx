@@ -32,16 +32,16 @@ static int gFailures = 0;
     } while (0)
 
 static MidiMessage cc(int ch, int num, int val) {
-    return {MidiMessage::ControlChange, ch, num, val};
+    return {MidiMessage::CONTROL_CHANGE, ch, num, val};
 }
-static MidiMessage noteOn(int ch, int num) {
-    return {MidiMessage::NoteOn, ch, num, 100};
+static MidiMessage note_on(int ch, int num) {
+    return {MidiMessage::NOTE_ON, ch, num, 100};
 }
-static MidiMessage noteOff(int ch, int num) {
-    return {MidiMessage::NoteOff, ch, num, 0};
+static MidiMessage note_off(int ch, int num) {
+    return {MidiMessage::NOTE_OFF, ch, num, 0};
 }
 static MidiMessage program(int ch, int num) {
-    return {MidiMessage::ProgramChange, ch, num, 0};
+    return {MidiMessage::PROGRAM_CHANGE, ch, num, 0};
 }
 
 int main(int argc, char** argv) {
@@ -55,21 +55,21 @@ int main(int argc, char** argv) {
 
     MidiMapper mapper;
     KnobWidget mix("Mix", 0.0, 100.0, 30.0, "%");
-    ToggleSwitch delayOn;
-    delayOn.setCheckable(true);
-    int slotFired[8] = {};
-    mapper.addKnob("param:delay/mix", "Delay", "Mix", &mix);
-    mapper.addToggle("param:delay/enabled", "Delay", "On / Off", &delayOn);
+    ToggleSwitch delay_on;
+    delay_on.setCheckable(true);
+    int slot_fired[8] = {};
+    mapper.add_knob("param:delay/mix", "Delay", "Mix", &mix);
+    mapper.add_toggle("param:delay/enabled", "Delay", "On / Off", &delay_on);
     for (int i = 0; i < 8; ++i) {
-        mapper.addAction(QString("action:slot%1").arg(i + 1), "Presets", "Slot", [&slotFired, i] {
-            ++slotFired[i];
+        mapper.add_action(QString("action:slot%1").arg(i + 1), "Presets", "Slot", [&slot_fired, i] {
+            ++slot_fired[i];
         });
     }
 
     std::printf("defaults\n");
     CHECK(mapper.mappings().size() == 8, "first run: 8 default mappings");
     mapper.handle(program(3, 2));
-    CHECK(slotFired[2] == 1, "program 2 (any channel) recalls slot 3");
+    CHECK(slot_fired[2] == 1, "program 2 (any channel) recalls slot 3");
 
     std::printf("learn\n");
     mapper.learn("param:delay/mix");
@@ -77,8 +77,8 @@ int main(int argc, char** argv) {
     CHECK(mapper.learning() == "param:delay/mix", "CC value 0 doesn't complete learn");
     mapper.handle(cc(0, 11, 64));
     CHECK(mapper.learning().isEmpty(), "CC 11 completes learn");
-    CHECK(mapper.hasMapping("param:delay/mix"), "mapping created");
-    CHECK(mapper.mappingSummary("param:delay/mix") == "CC 11 ch 1", "summary text");
+    CHECK(mapper.has_mapping("param:delay/mix"), "mapping created");
+    CHECK(mapper.mapping_summary("param:delay/mix") == "CC 11 ch 1", "summary text");
 
     std::printf("absolute CC\n");
     mapper.handle(cc(0, 11, 127));
@@ -93,12 +93,12 @@ int main(int argc, char** argv) {
         auto list = mapper.mappings();
         list.last().min = 0.2;
         list.last().max = 0.6;
-        mapper.setMappings(list);
+        mapper.set_mappings(list);
         mapper.handle(cc(0, 11, 127));
         CHECK(std::abs(mix.value() - 60.0) < 0.05, "max 60 % of the range");
-        list.last().mode = MidiMapping::Relative;
-        mapper.setMappings(list);
-        mix.setValue(40.0);
+        list.last().mode = MidiMapping::RELATIVE;
+        mapper.set_mappings(list);
+        mix.set_value(40.0);
         mapper.handle(cc(0, 11, 1));
         mapper.handle(cc(0, 11, 1));
         CHECK(mix.value() > 40.0, "relative +1 twice moves up");
@@ -110,31 +110,31 @@ int main(int argc, char** argv) {
     std::printf("footswitch toggle\n");
     mapper.learn("param:delay/enabled");
     mapper.handle(cc(0, 80, 127));
-    CHECK(mapper.hasMapping("param:delay/enabled"), "switch learned");
-    CHECK(!delayOn.isChecked(), "learning press doesn't also toggle");
+    CHECK(mapper.has_mapping("param:delay/enabled"), "switch learned");
+    CHECK(!delay_on.isChecked(), "learning press doesn't also toggle");
     mapper.handle(cc(0, 80, 127)); // press
-    CHECK(delayOn.isChecked(), "press → on");
+    CHECK(delay_on.isChecked(), "press → on");
     mapper.handle(cc(0, 80, 127)); // held/repeated without release: no flip
-    CHECK(delayOn.isChecked(), "no flip without a release in between");
+    CHECK(delay_on.isChecked(), "no flip without a release in between");
     mapper.handle(cc(0, 80, 0)); // release
     mapper.handle(cc(0, 80, 127)); // press
-    CHECK(!delayOn.isChecked(), "second press → off");
+    CHECK(!delay_on.isChecked(), "second press → off");
 
     std::printf("momentary + notes\n");
     {
         auto list = mapper.mappings();
         for (auto& m : list) {
             if (m.target == "param:delay/enabled") {
-                m.mode = MidiMapping::Momentary;
-                m.source = MidiMapping::Note;
+                m.mode = MidiMapping::MOMENTARY;
+                m.source = MidiMapping::NOTE;
                 m.number = 60;
             }
         }
-        mapper.setMappings(list);
-        mapper.handle(noteOn(0, 60));
-        CHECK(delayOn.isChecked(), "note on → on (momentary)");
-        mapper.handle(noteOff(0, 60));
-        CHECK(!delayOn.isChecked(), "note off → off (momentary)");
+        mapper.set_mappings(list);
+        mapper.handle(note_on(0, 60));
+        CHECK(delay_on.isChecked(), "note on → on (momentary)");
+        mapper.handle(note_off(0, 60));
+        CHECK(!delay_on.isChecked(), "note off → off (momentary)");
     }
 
     std::printf("disabled mapping + forget\n");
@@ -145,21 +145,21 @@ int main(int argc, char** argv) {
                 m.enabled = false;
             }
         }
-        mapper.setMappings(list);
+        mapper.set_mappings(list);
         mapper.handle(program(0, 0));
-        CHECK(slotFired[0] == 0, "disabled mapping does nothing");
+        CHECK(slot_fired[0] == 0, "disabled mapping does nothing");
         mapper.forget("param:delay/mix");
-        CHECK(!mapper.hasMapping("param:delay/mix"), "forget removes the mapping");
+        CHECK(!mapper.has_mapping("param:delay/mix"), "forget removes the mapping");
     }
 
     std::printf("file round trip + persistence\n");
     {
         const QString path = tmp.path() + "/test.nammidi";
-        CHECK(mapper.saveFile(path), "save .nammidi");
+        CHECK(mapper.save_file(path), "save .nammidi");
         const qsizetype n = mapper.mappings().size();
-        mapper.setMappings(MidiMapper::defaultMappings());
+        mapper.set_mappings(MidiMapper::default_mappings());
         QString err;
-        CHECK(mapper.loadFile(path, &err), "load .nammidi");
+        CHECK(mapper.load_file(path, &err), "load .nammidi");
         CHECK(mapper.mappings().size() == n, "same number of mappings after load");
         MidiMapper second; // reads QSettings midi/mappings
         CHECK(second.mappings().size() == n, "mappings persist in QSettings");
@@ -168,10 +168,10 @@ int main(int argc, char** argv) {
     std::printf("MIDI clock → tempo\n");
     {
         double bpm = 0.0;
-        QObject::connect(&mapper, &MidiMapper::tempoFromClock, [&bpm](double b) {
+        QObject::connect(&mapper, &MidiMapper::tempo_from_clock, [&bpm](double b) {
             bpm = b;
         });
-        mapper.setFollowClock(true);
+        mapper.set_follow_clock(true);
         // 125 BPM: a quarter = 480 ms, a clock tick = 20 ms.
         QElapsedTimer t;
         t.start();
@@ -179,7 +179,7 @@ int main(int argc, char** argv) {
             while (t.elapsed() < i * 20) {
                 QThread::usleep(200);
             }
-            mapper.handle({MidiMessage::Clock, 0, 0, 0});
+            mapper.handle({MidiMessage::CLOCK, 0, 0, 0});
         }
         CHECK(std::abs(bpm - 125.0) < 1.5, qPrintable(QString("clock at 125 BPM → %1").arg(bpm)));
     }

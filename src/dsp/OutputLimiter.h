@@ -10,29 +10,29 @@
 class OutputLimiter
 {
 public:
-    void setSampleRate(double sr); // non-RT
-    void setEnabled(bool on) {
-        mEnabled.store(on);
+    void set_sample_rate(double sr); // non-RT
+    void set_enabled(bool on) {
+        m_enabled.store(on);
     }
-    bool isEnabled() const {
-        return mEnabled.load();
+    bool is_enabled() const {
+        return m_enabled.load();
     }
 
     /// Deepest reduction since the last take (dB ≥ 0), for a meter.
-    float takeReductionDb() {
-        return mGrPeakDb.exchange(0.0f);
+    float take_reduction_db() {
+        return m_gr_peak_db.exchange(0.0f);
     }
 
-    void process(float* L, float* R, size_t n);
+    void process(float* l, float* r, size_t n);
 
 private:
-    std::atomic<bool> mEnabled{false};
-    std::atomic<float> mGrPeakDb{0.0f};
-    std::vector<float> mDelayL, mDelayR, mNeed; // look-ahead lines + required gain per slot
-    size_t mPos = 0;
-    size_t mLook = 48; // look-ahead, samples
-    float mGain = 1.0f;
-    float mRelease = 0.9997f;
-    float mAttack = 0.2f;
-    bool mWasEnabled = false;
+    std::atomic<bool> m_enabled{false};
+    std::atomic<float> m_gr_peak_db{0.0f};
+    std::vector<float> m_delay_l, m_delay_r, m_need; // look-ahead lines + required gain per slot
+    size_t m_pos = 0;
+    size_t m_look = 48; // look-ahead, samples
+    float m_gain = 1.0f;
+    float m_release = 0.9997f;
+    float m_attack = 0.2f;
+    bool m_was_enabled = false;
 };

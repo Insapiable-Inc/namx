@@ -20,31 +20,31 @@ public:
     explicit VUMeter(Qt::Orientation orientation = Qt::Vertical, QWidget* parent = nullptr);
 
     /// Linear peak (0..1+); 1.0 reaches the 0 dBFS mark.
-    void setPeak(float peak);
+    void set_peak(float peak);
 
 protected:
     void paintEvent(QPaintEvent* event) override;
 
 private:
-    static float toValue(float dB) {
-        return (dB - kMinDb) / (kMaxDb - kMinDb) * 100.0f;
+    static float to_value(float d_b) {
+        return (d_b - K_MIN_DB) / (K_MAX_DB - K_MIN_DB) * 100.0f;
     }
 
-    static constexpr float kMinDb = -60.0f;
-    static constexpr float kMaxDb = 6.0f; // headroom above the clip point
-    static constexpr float kReleaseDbPerSec = 24.0f; // bar fall (digital peak meter)
-    static constexpr qint64 kHoldMs = 1000; // hold line waits…
-    static constexpr float kHoldFallDbPerSec = 12.0f; // …then falls
+    static constexpr float K_MIN_DB = -60.0f;
+    static constexpr float K_MAX_DB = 6.0f; // headroom above the clip point
+    static constexpr float K_RELEASE_DB_PER_SEC = 24.0f; // bar fall (digital peak meter)
+    static constexpr qint64 K_HOLD_MS = 1000; // hold line waits…
+    static constexpr float K_HOLD_FALL_DB_PER_SEC = 12.0f; // …then falls
 
-    float mLevelDb{kMinDb};
-    float mHoldDb{kMinDb};
-    qint64 mLastMs{0};
-    qint64 mHoldSinceMs{0};
-    QElapsedTimer mClock;
-    float mLevel{0.0f}; // painted positions, 0..100 value scale
-    float mHold{0.0f};
+    float m_level_db{K_MIN_DB};
+    float m_hold_db{K_MIN_DB};
+    qint64 m_last_ms{0};
+    qint64 m_hold_since_ms{0};
+    QElapsedTimer m_clock;
+    float m_level{0.0f}; // painted positions, 0..100 value scale
+    float m_hold{0.0f};
 
     // Zone boundaries on the 0..100 value scale ((dB - min) / span * 100).
-    static constexpr float kHotValue = (-6.0f - kMinDb) / (kMaxDb - kMinDb) * 100.0f;
-    static constexpr float kClipValue = (0.0f - kMinDb) / (kMaxDb - kMinDb) * 100.0f;
+    static constexpr float K_HOT_VALUE = (-6.0f - K_MIN_DB) / (K_MAX_DB - K_MIN_DB) * 100.0f;
+    static constexpr float K_CLIP_VALUE = (0.0f - K_MIN_DB) / (K_MAX_DB - K_MIN_DB) * 100.0f;
 };

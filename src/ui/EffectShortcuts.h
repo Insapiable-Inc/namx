@@ -20,11 +20,11 @@ class EffectShortcuts
 {
 public:
     explicit EffectShortcuts(QWidget* window)
-        : mWindow(window) {
+        : m_window(window) {
     }
 
     /// Register one effect card. `stereo` is null for cards without a stereo toggle.
-    void addEffect(ToggleSwitch* enable, ToggleSwitch* stereo = nullptr);
+    void add_effect(ToggleSwitch* enable, ToggleSwitch* stereo = nullptr);
 
     /// Delete all created shortcuts and restart key assignment (chain reorder).
     void clear();
@@ -32,8 +32,8 @@ public:
 private:
     void bind(ToggleSwitch* toggle, int key, const char* action);
 
-    QWidget* mWindow;
-    int mEnableIndex{0};
-    int mStereoIndex{0};
-    std::vector<QShortcut*> mShortcuts;
+    QWidget* m_window;
+    int m_enable_index{0};
+    int m_stereo_index{0};
+    std::vector<QShortcut*> m_shortcuts;
 };

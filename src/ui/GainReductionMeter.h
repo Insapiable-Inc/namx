@@ -13,10 +13,10 @@ class GainReductionMeter : public QWidget
     Q_OBJECT
 public:
     /// `rangeDb` = reduction at full bar; `accent` = the card's color.
-    GainReductionMeter(float rangeDb, const QColor& accent, QWidget* parent = nullptr);
+    GainReductionMeter(float range_db, const QColor& accent, QWidget* parent = nullptr);
 
     /// Deepest reduction since the last call (dB, ≥ 0).
-    void setReduction(float dB);
+    void set_reduction(float d_b);
 
     QSize sizeHint() const override {
         return {90, 34};
@@ -26,12 +26,12 @@ protected:
     void paintEvent(QPaintEvent* ev) override;
 
 private:
-    static constexpr float kReleaseDbPerSec = 40.0f;
+    static constexpr float K_RELEASE_DB_PER_SEC = 40.0f;
 
-    float mRangeDb;
-    QColor mAccent;
-    float mDb{0.0f}; // after ballistics
-    float mShownDb{-1.0f};
-    qint64 mLastMs{0};
-    QElapsedTimer mClock;
+    float m_range_db;
+    QColor m_accent;
+    float m_db{0.0f}; // after ballistics
+    float m_shown_db{-1.0f};
+    qint64 m_last_ms{0};
+    QElapsedTimer m_clock;
 };

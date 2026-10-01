@@ -9,38 +9,38 @@
 class TremoloProcessor : public EffectBase
 {
 public:
-    bool supportsStereoOut() const override {
+    bool supports_stereo_out() const override {
         return true;
     }
     void reset() override {
-        mPhase = 0.0f;
+        m_phase = 0.0f;
     }
 
-    void setRate(float hz) {
-        mRate.store(hz);
+    void set_rate(float hz) {
+        m_rate.store(hz);
     }
-    void setDepth(float pct) {
-        mDepth.store(pct);
+    void set_depth(float pct) {
+        m_depth.store(pct);
     }
 
     float rate() const {
-        return mRate.load();
+        return m_rate.load();
     }
     float depth() const {
-        return mDepth.load();
+        return m_depth.load();
     }
 
 protected:
-    void onSampleRateChanged(double /*sr*/) override {
+    void on_sample_rate_changed(double /*sr*/) override {
         reset();
     }
-    void processBlockMono(float* buf, size_t nframes) override;
-    void processBlockDual(float* L, float* R, size_t nframes) override;
-    void processBlockStereoOut(float* L, float* R, size_t nframes) override;
+    void process_block_mono(float* buf, size_t nframes) override;
+    void process_block_dual(float* l, float* r, size_t nframes) override;
+    void process_block_stereo_out(float* l, float* r, size_t nframes) override;
 
 private:
-    std::atomic<float> mRate{5.0f};
-    std::atomic<float> mDepth{50.0f};
+    std::atomic<float> m_rate{5.0f};
+    std::atomic<float> m_depth{50.0f};
 
-    float mPhase{0.0f};
+    float m_phase{0.0f};
 };

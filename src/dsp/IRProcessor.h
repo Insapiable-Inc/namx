@@ -22,67 +22,67 @@ public:
 
     // Slot A (the hero row / library / presets' irPath).
     bool load(const std::string& path) {
-        return mA.load(path);
+        return m_a.load(path);
     }
     void unload() {
-        mA.unload();
+        m_a.unload();
     }
-    bool isLoaded() const {
-        return mA.isLoaded();
+    bool is_loaded() const {
+        return m_a.is_loaded();
     }
-    std::string filePath() const {
-        return mA.getFilePath();
+    std::string file_path() const {
+        return m_a.get_file_path();
     }
-    std::string lastError() const {
-        return mA.lastError();
+    std::string last_error() const {
+        return m_a.last_error();
     }
 
     // Slot B.
-    bool loadB(const std::string& path) {
-        return mB.load(path);
+    bool load_b(const std::string& path) {
+        return m_b.load(path);
     }
-    void unloadB() {
-        mB.unload();
+    void unload_b() {
+        m_b.unload();
     }
-    bool isLoadedB() const {
-        return mB.isLoaded();
+    bool is_loaded_b() const {
+        return m_b.is_loaded();
     }
-    std::string filePathB() const {
-        return mB.getFilePath();
+    std::string file_path_b() const {
+        return m_b.get_file_path();
     }
-    std::string lastErrorB() const {
-        return mB.lastError();
-    }
-
-    void reclaimRetired(bool audioStopped) {
-        mA.reclaimRetired(audioStopped);
-        mB.reclaimRetired(audioStopped);
+    std::string last_error_b() const {
+        return m_b.last_error();
     }
 
-    void setLevel(int slot, float dB) {
-        mLevelDb[slot & 1].store(dB);
+    void reclaim_retired(bool audio_stopped) {
+        m_a.reclaim_retired(audio_stopped);
+        m_b.reclaim_retired(audio_stopped);
     }
-    void setPan(int slot, float pct) {
-        mPan[slot & 1].store(pct);
+
+    void set_level(int slot, float d_b) {
+        m_level_db[slot & 1].store(d_b);
+    }
+    void set_pan(int slot, float pct) {
+        m_pan[slot & 1].store(pct);
     } // −100 … 100
-    void setPhase(int slot, bool inv) {
-        mInvert[slot & 1].store(inv);
+    void set_phase(int slot, bool inv) {
+        m_invert[slot & 1].store(inv);
     }
-    void setBlend(float pct) {
-        mBlend.store(pct);
+    void set_blend(float pct) {
+        m_blend.store(pct);
     } // 0 = A … 100 = B
-    void setLowCut(float hz) {
-        mLowCutHz.store(hz);
+    void set_low_cut(float hz) {
+        m_low_cut_hz.store(hz);
     }
-    void setHighCut(float hz) {
-        mHighCutHz.store(hz);
+    void set_high_cut(float hz) {
+        m_high_cut_hz.store(hz);
     }
 
     void reset() override;
-    bool process(float* L, float* R, size_t n, bool inputIsStereo) override;
+    bool process(float* l, float* r, size_t n, bool input_is_stereo) override;
 
 protected:
-    void onSampleRateChanged(double sr) override;
+    void on_sample_rate_changed(double sr) override;
 
 private:
     struct Biquad
@@ -98,20 +98,20 @@ private:
             z1 = z2 = 0.0f;
         }
     };
-    void designCuts(float lowHz, float highHz);
-    bool processChunk(float* L, float* R, size_t n, bool inputIsStereo);
+    void design_cuts(float low_hz, float high_hz);
+    bool process_chunk(float* l, float* r, size_t n, bool input_is_stereo);
 
-    IRLoader mA, mB;
+    IRLoader m_a, m_b;
 
-    std::atomic<float> mLevelDb[2]{{0.0f}, {0.0f}};
-    std::atomic<float> mPan[2]{{0.0f}, {0.0f}};
-    std::atomic<bool> mInvert[2]{{false}, {false}};
-    std::atomic<float> mBlend{50.0f};
-    std::atomic<float> mLowCutHz{20.0f};
-    std::atomic<float> mHighCutHz{20000.0f};
+    std::atomic<float> m_level_db[2]{{0.0f}, {0.0f}};
+    std::atomic<float> m_pan[2]{{0.0f}, {0.0f}};
+    std::atomic<bool> m_invert[2]{{false}, {false}};
+    std::atomic<float> m_blend{50.0f};
+    std::atomic<float> m_low_cut_hz{20.0f};
+    std::atomic<float> m_high_cut_hz{20000.0f};
 
-    static constexpr size_t kChunk = 2048;
-    std::vector<float> mAL, mAR, mBL, mBR; // per-slot scratch (kChunk)
-    Biquad mHp[2], mLp[2];
-    float mDesignedLow = -1.0f, mDesignedHigh = -1.0f;
+    static constexpr size_t K_CHUNK = 2048;
+    std::vector<float> m_al, m_ar, m_bl, m_br; // per-slot scratch (kChunk)
+    Biquad m_hp[2], m_lp[2];
+    float m_designed_low = -1.0f, m_designed_high = -1.0f;
 };

@@ -12,61 +12,61 @@
 class ChorusProcessor : public EffectBase
 {
 public:
-    bool supportsStereoOut() const override {
+    bool supports_stereo_out() const override {
         return true;
     }
     void reset() override;
 
-    void setRate(float hz) {
-        mRate.store(hz);
+    void set_rate(float hz) {
+        m_rate.store(hz);
     }
-    void setDepth(float pct) {
-        mDepth.store(pct);
+    void set_depth(float pct) {
+        m_depth.store(pct);
     }
-    void setMix(float pct) {
-        mMix.store(pct);
+    void set_mix(float pct) {
+        m_mix.store(pct);
     }
     enum Mode
     {
-        Normal = 0,
-        Tri,
-        Vintage,
-        Spatial
+        NORMAL = 0,
+        TRI,
+        VINTAGE,
+        SPATIAL
     };
-    void setMode(int m) {
-        mMode.store(m);
+    void set_mode(int m) {
+        m_mode.store(m);
     }
 
     float rate() const {
-        return mRate.load();
+        return m_rate.load();
     }
     float depth() const {
-        return mDepth.load();
+        return m_depth.load();
     }
     float mix() const {
-        return mMix.load();
+        return m_mix.load();
     }
 
 protected:
-    void onSampleRateChanged(double sr) override;
-    void processBlockMono(float* buf, size_t nframes) override;
-    void processBlockDual(float* L, float* R, size_t nframes) override;
-    void processBlockStereoOut(float* L, float* R, size_t nframes) override;
+    void on_sample_rate_changed(double sr) override;
+    void process_block_mono(float* buf, size_t nframes) override;
+    void process_block_dual(float* l, float* r, size_t nframes) override;
+    void process_block_stereo_out(float* l, float* r, size_t nframes) override;
 
 private:
-    std::atomic<float> mRate{1.0f};
-    std::atomic<float> mDepth{50.0f};
-    std::atomic<float> mMix{50.0f};
+    std::atomic<float> m_rate{1.0f};
+    std::atomic<float> m_depth{50.0f};
+    std::atomic<float> m_mix{50.0f};
 
-    float mPhase{0.0f};
-    std::atomic<int> mMode{Normal};
-    float mVintLp[2]{}; // Vintage wet low-pass per channel
+    float m_phase{0.0f};
+    std::atomic<int> m_mode{NORMAL};
+    float m_vint_lp[2]{}; // Vintage wet low-pass per channel
 
     // Wet sample for one channel at an LFO phase (all modes).
     float wet(const DelayLine& line, float phase, float depth, float fs, int mode);
 
-    DelayLine mLineL, mLineR;
+    DelayLine m_line_l, m_line_r;
 
-    static constexpr float kBaseMs = 20.0f;
-    static constexpr float kMaxDepthMs = 5.0f;
+    static constexpr float K_BASE_MS = 20.0f;
+    static constexpr float K_MAX_DEPTH_MS = 5.0f;
 };

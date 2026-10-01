@@ -21,36 +21,36 @@ class EQProcessor : public EffectBase
 public:
     enum Band
     {
-        LowCut = 0,
-        Bass,
-        Middle,
-        HighMid,
-        Treble,
-        HighCut,
-        kBands
+        LOW_CUT = 0,
+        BASS,
+        MIDDLE,
+        HIGH_MID,
+        TREBLE,
+        HIGH_CUT,
+        K_BANDS
     };
 
     EQProcessor();
 
-    bool process(float* L, float* R, size_t n, bool inputIsStereo) override;
+    bool process(float* l, float* r, size_t n, bool input_is_stereo) override;
     void reset() override;
 
-    void setGain(Band b, double dB);
-    void setFreq(Band b, double hz);
+    void set_gain(Band b, double d_b);
+    void set_freq(Band b, double hz);
 
     // Back-compat names (3-band era).
-    void setLowGain(double dB) {
-        setGain(Bass, dB);
+    void set_low_gain(double d_b) {
+        set_gain(BASS, d_b);
     }
-    void setMidGain(double dB) {
-        setGain(Middle, dB);
+    void set_mid_gain(double d_b) {
+        set_gain(MIDDLE, d_b);
     }
-    void setTrebleGain(double dB) {
-        setGain(Treble, dB);
+    void set_treble_gain(double d_b) {
+        set_gain(TREBLE, d_b);
     }
 
 protected:
-    void onSampleRateChanged(double sr) override;
+    void on_sample_rate_changed(double sr) override;
 
 private:
     struct Biquad
@@ -70,7 +70,7 @@ private:
         void reset() {
             x1 = x2 = y1 = y2 = 0.0;
         }
-        void setCoeffs(const Biquad& s) {
+        void set_coeffs(const Biquad& s) {
             b0 = s.b0;
             b1 = s.b1;
             b2 = s.b2;
@@ -83,10 +83,10 @@ private:
     void rebuild(Band b); // caller holds mMutex
     bool active(Band b) const;
 
-    std::array<double, kBands> mGain{}; // dB (shelf/peak bands)
-    std::array<double, kBands> mFreq{20.0, 250.0, 1000.0, 3000.0, 4000.0, 20000.0};
-    std::array<Biquad, kBands> mL, mR;
-    std::array<bool, kBands> mOn{}; // band changes the signal (skip flat ones)
+    std::array<double, K_BANDS> m_gain{}; // dB (shelf/peak bands)
+    std::array<double, K_BANDS> m_freq{20.0, 250.0, 1000.0, 3000.0, 4000.0, 20000.0};
+    std::array<Biquad, K_BANDS> m_l, m_r;
+    std::array<bool, K_BANDS> m_on{}; // band changes the signal (skip flat ones)
 
-    std::mutex mMutex; // GUI writes coefficients; audio thread uses try_lock
+    std::mutex m_mutex; // GUI writes coefficients; audio thread uses try_lock
 };

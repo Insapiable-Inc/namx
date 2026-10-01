@@ -6,208 +6,214 @@ namespace NAMConstants
 {
 
 // ---- Input / Output gain ------------------------------------------------
-constexpr double kGainMin = -20.0;
-constexpr double kGainMax = 20.0;
-constexpr double kGainDefault = 0.0;
+constexpr double K_GAIN_MIN = -20.0;
+constexpr double K_GAIN_MAX = 20.0;
+constexpr double K_GAIN_DEFAULT = 0.0;
 
 // ---- EQ bands -----------------------------------------------------------
-constexpr double kEQBandMin = -12.0;
-constexpr double kEQBandMax = 12.0;
-constexpr double kEQBandDefault = 0.0;
+constexpr double K_EQ_BAND_MIN = -12.0;
+constexpr double K_EQ_BAND_MAX = 12.0;
+constexpr double K_EQ_BAND_DEFAULT = 0.0;
 
 // ---- Noise Gate ---------------------------------------------------------
 // Threshold reaches down to -100 dB so the knob's minimum is effectively
 // "gate never closes"; -70 dB suits typical interface noise floors.
-constexpr double kGateThreshMin = -100.0;
-constexpr double kGateThreshMax = -20.0;
-constexpr double kGateThreshDefault = -70.0;
+constexpr double K_GATE_THRESH_MIN = -100.0;
+constexpr double K_GATE_THRESH_MAX = -20.0;
+constexpr double K_GATE_THRESH_DEFAULT = -70.0;
 
 // Fast attack so pick transients aren't clipped while the gate opens.
-constexpr double kGateAttackMin = 0.1;
-constexpr double kGateAttackMax = 50.0;
-constexpr double kGateAttackDefault = 1.0;
+constexpr double K_GATE_ATTACK_MIN = 0.1;
+constexpr double K_GATE_ATTACK_MAX = 50.0;
+constexpr double K_GATE_ATTACK_DEFAULT = 1.0;
 
-constexpr double kGateReleaseMin = 10.0;
-constexpr double kGateReleaseMax = 1000.0;
-constexpr double kGateReleaseDefault = 100.0;
+constexpr double K_GATE_RELEASE_MIN = 10.0;
+constexpr double K_GATE_RELEASE_MAX = 1000.0;
+constexpr double K_GATE_RELEASE_DEFAULT = 100.0;
 
 // ---- Compressor ---------------------------------------------------------
-constexpr double kCompThreshMin = -60.0;
-constexpr double kCompThreshMax = 0.0;
-constexpr double kCompThreshDefault = -20.0;
+constexpr double K_COMP_THRESH_MIN = -60.0;
+constexpr double K_COMP_THRESH_MAX = 0.0;
+constexpr double K_COMP_THRESH_DEFAULT = -20.0;
 
-constexpr double kCompRatioMin = 1.0;
-constexpr double kCompRatioMax = 20.0;
-constexpr double kCompRatioDefault = 4.0;
+constexpr double K_COMP_RATIO_MIN = 1.0;
+constexpr double K_COMP_RATIO_MAX = 20.0;
+constexpr double K_COMP_RATIO_DEFAULT = 4.0;
 
-constexpr double kCompAttackMin = 0.1;
-constexpr double kCompAttackMax = 100.0;
-constexpr double kCompAttackDefault = 10.0;
+constexpr double K_COMP_ATTACK_MIN = 0.1;
+constexpr double K_COMP_ATTACK_MAX = 100.0;
+constexpr double K_COMP_ATTACK_DEFAULT = 10.0;
 
-constexpr double kCompReleaseMin = 10.0;
-constexpr double kCompReleaseMax = 1000.0;
-constexpr double kCompReleaseDefault = 100.0;
+constexpr double K_COMP_RELEASE_MIN = 10.0;
+constexpr double K_COMP_RELEASE_MAX = 1000.0;
+constexpr double K_COMP_RELEASE_DEFAULT = 100.0;
 
-constexpr double kCompMakeupMin = 0.0;
-constexpr double kCompMakeupMax = 24.0;
-constexpr double kCompMakeupDefault = 0.0;
+constexpr double K_COMP_MAKEUP_MIN = 0.0;
+constexpr double K_COMP_MAKEUP_MAX = 24.0;
+constexpr double K_COMP_MAKEUP_DEFAULT = 0.0;
 
 // ---- Chorus -------------------------------------------------------------
-constexpr double kChorusRateMin = 0.1;
-constexpr double kChorusRateMax = 5.0;
-constexpr double kChorusRateDefault = 1.0;
+constexpr double K_CHORUS_RATE_MIN = 0.1;
+constexpr double K_CHORUS_RATE_MAX = 5.0;
+constexpr double K_CHORUS_RATE_DEFAULT = 1.0;
 
-constexpr double kChorusDepthMin = 0.0;
-constexpr double kChorusDepthMax = 100.0;
-constexpr double kChorusDepthDefault = 50.0;
+constexpr double K_CHORUS_DEPTH_MIN = 0.0;
+constexpr double K_CHORUS_DEPTH_MAX = 100.0;
+constexpr double K_CHORUS_DEPTH_DEFAULT = 50.0;
 
-constexpr double kChorusMixMin = 0.0;
-constexpr double kChorusMixMax = 100.0;
-constexpr double kChorusMixDefault = 50.0;
+constexpr double K_CHORUS_MIX_MIN = 0.0;
+constexpr double K_CHORUS_MIX_MAX = 100.0;
+constexpr double K_CHORUS_MIX_DEFAULT = 50.0;
 
 // ---- Flanger ------------------------------------------------------------
 // Flanging is a slow sweep; beyond ~2 Hz it turns into warbly vibrato.
-constexpr double kFlangerRateMin = 0.05;
-constexpr double kFlangerRateMax = 2.0;
-constexpr double kFlangerRateDefault = 0.3;
+constexpr double K_FLANGER_RATE_MIN = 0.05;
+constexpr double K_FLANGER_RATE_MAX = 2.0;
+constexpr double K_FLANGER_RATE_DEFAULT = 0.3;
 
-constexpr double kFlangerDepthMin = 0.0;
-constexpr double kFlangerDepthMax = 100.0;
-constexpr double kFlangerDepthDefault = 50.0;
+constexpr double K_FLANGER_DEPTH_MIN = 0.0;
+constexpr double K_FLANGER_DEPTH_MAX = 100.0;
+constexpr double K_FLANGER_DEPTH_DEFAULT = 50.0;
 
-constexpr double kFlangerFeedbackMin = -99.0;
-constexpr double kFlangerFeedbackMax = 99.0;
-constexpr double kFlangerFeedbackDefault = 0.0;
+constexpr double K_FLANGER_FEEDBACK_MIN = -99.0;
+constexpr double K_FLANGER_FEEDBACK_MAX = 99.0;
+constexpr double K_FLANGER_FEEDBACK_DEFAULT = 0.0;
 
-constexpr double kFlangerMixMin = 0.0;
-constexpr double kFlangerMixMax = 100.0;
-constexpr double kFlangerMixDefault = 50.0;
+constexpr double K_FLANGER_MIX_MIN = 0.0;
+constexpr double K_FLANGER_MIX_MAX = 100.0;
+constexpr double K_FLANGER_MIX_DEFAULT = 50.0;
 
 // ---- Phaser -------------------------------------------------------------
-constexpr double kPhaserRateMin = 0.1;
-constexpr double kPhaserRateMax = 5.0;
-constexpr double kPhaserRateDefault = 1.0;
+constexpr double K_PHASER_RATE_MIN = 0.1;
+constexpr double K_PHASER_RATE_MAX = 5.0;
+constexpr double K_PHASER_RATE_DEFAULT = 1.0;
 
-constexpr double kPhaserDepthMin = 0.0;
-constexpr double kPhaserDepthMax = 100.0;
-constexpr double kPhaserDepthDefault = 50.0;
+constexpr double K_PHASER_DEPTH_MIN = 0.0;
+constexpr double K_PHASER_DEPTH_MAX = 100.0;
+constexpr double K_PHASER_DEPTH_DEFAULT = 50.0;
 
-constexpr double kPhaserFeedbackMin = 0.0;
-constexpr double kPhaserFeedbackMax = 99.0;
-constexpr double kPhaserFeedbackDefault = 50.0;
+constexpr double K_PHASER_FEEDBACK_MIN = 0.0;
+constexpr double K_PHASER_FEEDBACK_MAX = 99.0;
+constexpr double K_PHASER_FEEDBACK_DEFAULT = 50.0;
 
-constexpr double kPhaserMixMin = 0.0;
-constexpr double kPhaserMixMax = 100.0;
-constexpr double kPhaserMixDefault = 50.0;
+constexpr double K_PHASER_MIX_MIN = 0.0;
+constexpr double K_PHASER_MIX_MAX = 100.0;
+constexpr double K_PHASER_MIX_DEFAULT = 50.0;
 
 // ---- Tremolo ------------------------------------------------------------
-constexpr double kTremoloRateMin = 0.5;
-constexpr double kTremoloRateMax = 15.0;
-constexpr double kTremoloRateDefault = 5.0;
+constexpr double K_TREMOLO_RATE_MIN = 0.5;
+constexpr double K_TREMOLO_RATE_MAX = 15.0;
+constexpr double K_TREMOLO_RATE_DEFAULT = 5.0;
 
-constexpr double kTremoloDepthMin = 0.0;
-constexpr double kTremoloDepthMax = 100.0;
-constexpr double kTremoloDepthDefault = 50.0;
+constexpr double K_TREMOLO_DEPTH_MIN = 0.0;
+constexpr double K_TREMOLO_DEPTH_MAX = 100.0;
+constexpr double K_TREMOLO_DEPTH_DEFAULT = 50.0;
 
 // ---- Delay --------------------------------------------------------------
 // 20 ms floor keeps the delay line at least one sample long; 1 s covers
 // musical delay times without drifting into looper territory.
-constexpr double kDelayTimeMin = 20.0;
-constexpr double kDelayTimeMax = 1000.0;
-constexpr double kDelayTimeDefault = 250.0;
+constexpr double K_DELAY_TIME_MIN = 20.0;
+constexpr double K_DELAY_TIME_MAX = 1000.0;
+constexpr double K_DELAY_TIME_DEFAULT = 250.0;
 
-constexpr double kDelayFeedbackMin = 0.0;
-constexpr double kDelayFeedbackMax = 90.0;
-constexpr double kDelayFeedbackDefault = 40.0;
+constexpr double K_DELAY_FEEDBACK_MIN = 0.0;
+constexpr double K_DELAY_FEEDBACK_MAX = 90.0;
+constexpr double K_DELAY_FEEDBACK_DEFAULT = 40.0;
 
-constexpr double kDelayMixMin = 0.0;
-constexpr double kDelayMixMax = 100.0;
-constexpr double kDelayMixDefault = 30.0;
+constexpr double K_DELAY_MIX_MIN = 0.0;
+constexpr double K_DELAY_MIX_MAX = 100.0;
+constexpr double K_DELAY_MIX_DEFAULT = 30.0;
 
 // ---- Reverb -------------------------------------------------------------
-constexpr double kReverbRoomMin = 0.0;
-constexpr double kReverbRoomMax = 100.0;
-constexpr double kReverbRoomDefault = 50.0;
+constexpr double K_REVERB_ROOM_MIN = 0.0;
+constexpr double K_REVERB_ROOM_MAX = 100.0;
+constexpr double K_REVERB_ROOM_DEFAULT = 50.0;
 
-constexpr double kReverbDampingMin = 0.0;
-constexpr double kReverbDampingMax = 100.0;
-constexpr double kReverbDampingDefault = 50.0;
+constexpr double K_REVERB_DAMPING_MIN = 0.0;
+constexpr double K_REVERB_DAMPING_MAX = 100.0;
+constexpr double K_REVERB_DAMPING_DEFAULT = 50.0;
 
-constexpr double kReverbWidthMin = 0.0;
-constexpr double kReverbWidthMax = 100.0;
-constexpr double kReverbWidthDefault = 100.0;
+constexpr double K_REVERB_WIDTH_MIN = 0.0;
+constexpr double K_REVERB_WIDTH_MAX = 100.0;
+constexpr double K_REVERB_WIDTH_DEFAULT = 100.0;
 
-constexpr double kReverbMixMin = 0.0;
-constexpr double kReverbMixMax = 100.0;
-constexpr double kReverbMixDefault = 30.0;
+constexpr double K_REVERB_MIX_MIN = 0.0;
+constexpr double K_REVERB_MIX_MAX = 100.0;
+constexpr double K_REVERB_MIX_DEFAULT = 30.0;
 
 // ---- Dynamic Wah --------------------------------------------------------
-constexpr double kWahSensMin = 0.0;
-constexpr double kWahSensMax = 100.0;
-constexpr double kWahSensDefault = 70.0;
+constexpr double K_WAH_SENS_MIN = 0.0;
+constexpr double K_WAH_SENS_MAX = 100.0;
+constexpr double K_WAH_SENS_DEFAULT = 70.0;
 
-constexpr double kWahResMin = 0.0;
-constexpr double kWahResMax = 100.0;
-constexpr double kWahResDefault = 60.0;
+constexpr double K_WAH_RES_MIN = 0.0;
+constexpr double K_WAH_RES_MAX = 100.0;
+constexpr double K_WAH_RES_DEFAULT = 60.0;
 
-constexpr double kWahMixMin = 0.0;
-constexpr double kWahMixMax = 100.0;
-constexpr double kWahMixDefault = 100.0;
+constexpr double K_WAH_MIX_MIN = 0.0;
+constexpr double K_WAH_MIX_MAX = 100.0;
+constexpr double K_WAH_MIX_DEFAULT = 100.0;
 
 // ---- Drive (Phase 17) ---------------------------------------------------
-constexpr double kDriveMin = 0.0;
-constexpr double kDriveMax = 100.0;
-constexpr double kDriveDefault = 30.0;
-constexpr double kDriveToneMin = 0.0;
-constexpr double kDriveToneMax = 100.0;
-constexpr double kDriveToneDefault = 50.0;
-constexpr double kDriveLevelMin = -20.0;
-constexpr double kDriveLevelMax = 20.0;
-constexpr double kDriveLevelDefault = 0.0;
+constexpr double K_DRIVE_MIN = 0.0;
+constexpr double K_DRIVE_MAX = 100.0;
+constexpr double K_DRIVE_DEFAULT = 30.0;
+constexpr double K_DRIVE_TONE_MIN = 0.0;
+constexpr double K_DRIVE_TONE_MAX = 100.0;
+constexpr double K_DRIVE_TONE_DEFAULT = 50.0;
+constexpr double K_DRIVE_LEVEL_MIN = -20.0;
+constexpr double K_DRIVE_LEVEL_MAX = 20.0;
+constexpr double K_DRIVE_LEVEL_DEFAULT = 0.0;
 
 // ---- Doubler ------------------------------------------------------------
-constexpr double kDoublerSpreadMin = 3.0;
-constexpr double kDoublerSpreadMax = 20.0;
-constexpr double kDoublerSpreadDefault = 10.0;
-constexpr double kDoublerMixMin = 0.0;
-constexpr double kDoublerMixMax = 100.0;
-constexpr double kDoublerMixDefault = 100.0;
+constexpr double K_DOUBLER_SPREAD_MIN = 3.0;
+constexpr double K_DOUBLER_SPREAD_MAX = 20.0;
+constexpr double K_DOUBLER_SPREAD_DEFAULT = 10.0;
+constexpr double K_DOUBLER_MIX_MIN = 0.0;
+constexpr double K_DOUBLER_MIX_MAX = 100.0;
+constexpr double K_DOUBLER_MIX_DEFAULT = 100.0;
 
 // ---- Volume pedal -------------------------------------------------------
-constexpr double kVolumePosMin = 0.0;
-constexpr double kVolumePosMax = 100.0;
-constexpr double kVolumePosDefault = 100.0;
-constexpr double kVolumeMidMin = -40.0;
-constexpr double kVolumeMidMax = 0.0;
-constexpr double kVolumeMidDefault = -12.0;
+constexpr double K_VOLUME_POS_MIN = 0.0;
+constexpr double K_VOLUME_POS_MAX = 100.0;
+constexpr double K_VOLUME_POS_DEFAULT = 100.0;
+constexpr double K_VOLUME_MID_MIN = -40.0;
+constexpr double K_VOLUME_MID_MAX = 0.0;
+constexpr double K_VOLUME_MID_DEFAULT = -12.0;
 
 // ---- Phase 17: EQ frequencies + cuts ------------------------------------
-constexpr double kEQBassFreqMin = 40.0, kEQBassFreqMax = 500.0, kEQBassFreqDefault = 250.0;
-constexpr double kEQMidFreqMin = 200.0, kEQMidFreqMax = 2500.0, kEQMidFreqDefault = 1000.0;
-constexpr double kEQHiMidFreqMin = 800.0, kEQHiMidFreqMax = 8000.0, kEQHiMidFreqDefault = 3000.0;
-constexpr double kEQTrebleFreqMin = 1500.0, kEQTrebleFreqMax = 12000.0,
-                 kEQTrebleFreqDefault = 4000.0;
-constexpr double kLowCutMin = 20.0, kLowCutMax = 500.0, kLowCutDefault = 20.0; // 20 = off
-constexpr double kHighCutMin = 2000.0, kHighCutMax = 20000.0,
-                 kHighCutDefault = 20000.0; // 20k = off
+constexpr double K_EQ_BASS_FREQ_MIN = 40.0, K_EQ_BASS_FREQ_MAX = 500.0,
+                 K_EQ_BASS_FREQ_DEFAULT = 250.0;
+constexpr double K_EQ_MID_FREQ_MIN = 200.0, K_EQ_MID_FREQ_MAX = 2500.0,
+                 K_EQ_MID_FREQ_DEFAULT = 1000.0;
+constexpr double K_EQ_HI_MID_FREQ_MIN = 800.0, K_EQ_HI_MID_FREQ_MAX = 8000.0,
+                 K_EQ_HI_MID_FREQ_DEFAULT = 3000.0;
+constexpr double K_EQ_TREBLE_FREQ_MIN = 1500.0, K_EQ_TREBLE_FREQ_MAX = 12000.0,
+                 K_EQ_TREBLE_FREQ_DEFAULT = 4000.0;
+constexpr double K_LOW_CUT_MIN = 20.0, K_LOW_CUT_MAX = 500.0, K_LOW_CUT_DEFAULT = 20.0; // 20 = off
+constexpr double K_HIGH_CUT_MIN = 2000.0, K_HIGH_CUT_MAX = 20000.0,
+                 K_HIGH_CUT_DEFAULT = 20000.0; // 20k = off
 
 // ---- Phase 17: Delay ----------------------------------------------------
-constexpr double kDelayRightMin = 25.0, kDelayRightMax = 200.0,
-                 kDelayRightDefault = 100.0; // % of Time
-constexpr double kDelayCrossMin = 0.0, kDelayCrossMax = 100.0,
-                 kDelayCrossDefault = 100.0; // 100 = ping-pong
-constexpr double kDelayLowCutMax = 1000.0;
-constexpr double kDelayHighCutMin = 1000.0;
-constexpr double kDelaySatMin = 0.0, kDelaySatMax = 100.0, kDelaySatDefault = 0.0;
-constexpr double kDelayModMin = 0.0, kDelayModMax = 100.0, kDelayModDefault = 0.0;
+constexpr double K_DELAY_RIGHT_MIN = 25.0, K_DELAY_RIGHT_MAX = 200.0,
+                 K_DELAY_RIGHT_DEFAULT = 100.0; // % of Time
+constexpr double K_DELAY_CROSS_MIN = 0.0, K_DELAY_CROSS_MAX = 100.0,
+                 K_DELAY_CROSS_DEFAULT = 100.0; // 100 = ping-pong
+constexpr double K_DELAY_LOW_CUT_MAX = 1000.0;
+constexpr double K_DELAY_HIGH_CUT_MIN = 1000.0;
+constexpr double K_DELAY_SAT_MIN = 0.0, K_DELAY_SAT_MAX = 100.0, K_DELAY_SAT_DEFAULT = 0.0;
+constexpr double K_DELAY_MOD_MIN = 0.0, K_DELAY_MOD_MAX = 100.0, K_DELAY_MOD_DEFAULT = 0.0;
 
 // ---- Phase 17: Reverb ---------------------------------------------------
-constexpr double kReverbPreDelayMin = 0.0, kReverbPreDelayMax = 250.0, kReverbPreDelayDefault = 0.0;
-constexpr double kReverbLowCutMax = 1000.0;
-constexpr double kReverbHighCutMin = 1000.0;
+constexpr double K_REVERB_PRE_DELAY_MIN = 0.0, K_REVERB_PRE_DELAY_MAX = 250.0,
+                 K_REVERB_PRE_DELAY_DEFAULT = 0.0;
+constexpr double K_REVERB_LOW_CUT_MAX = 1000.0;
+constexpr double K_REVERB_HIGH_CUT_MIN = 1000.0;
 
 // ---- Phase 17: modulation modes / ranges ---------------------------------
-constexpr double kFlangerRangeMin = 0.0, kFlangerRangeMax = 100.0, kFlangerRangeDefault = 100.0;
-constexpr double kWahPositionMin = 0.0, kWahPositionMax = 100.0, kWahPositionDefault = 50.0;
+constexpr double K_FLANGER_RANGE_MIN = 0.0, K_FLANGER_RANGE_MAX = 100.0,
+                 K_FLANGER_RANGE_DEFAULT = 100.0;
+constexpr double K_WAH_POSITION_MIN = 0.0, K_WAH_POSITION_MAX = 100.0,
+                 K_WAH_POSITION_DEFAULT = 50.0;
 
 } // namespace NAMConstants

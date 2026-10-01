@@ -18,68 +18,68 @@
 class DelayProcessor : public EffectBase
 {
 public:
-    bool supportsStereoOut() const override {
+    bool supports_stereo_out() const override {
         return true;
     }
     void reset() override;
 
-    void setTime(float ms) {
-        mTimeMS.store(ms);
+    void set_time(float ms) {
+        m_time_ms.store(ms);
     }
-    void setFeedback(float pct) {
-        mFeedback.store(pct);
+    void set_feedback(float pct) {
+        m_feedback.store(pct);
     }
-    void setMix(float pct) {
-        mMix.store(pct);
+    void set_mix(float pct) {
+        m_mix.store(pct);
     }
-    void setRightRatio(float pct) {
-        mRightPct.store(pct);
+    void set_right_ratio(float pct) {
+        m_right_pct.store(pct);
     } // 25–200 % of Time
-    void setCrossFeed(float pct) {
-        mCrossPct.store(pct);
+    void set_cross_feed(float pct) {
+        m_cross_pct.store(pct);
     }
-    void setLowCut(float hz) {
-        mLowCutHz.store(hz);
+    void set_low_cut(float hz) {
+        m_low_cut_hz.store(hz);
     }
-    void setHighCut(float hz) {
-        mHighCutHz.store(hz);
+    void set_high_cut(float hz) {
+        m_high_cut_hz.store(hz);
     }
-    void setSaturation(float pct) {
-        mSatPct.store(pct);
+    void set_saturation(float pct) {
+        m_sat_pct.store(pct);
     }
-    void setModulation(float pct) {
-        mModPct.store(pct);
+    void set_modulation(float pct) {
+        m_mod_pct.store(pct);
     }
     /// Octave-up repeats (0–100 %): each pass through the loop climbs.
-    void setCrystals(float pct) {
-        mCrystalsPct.store(pct);
+    void set_crystals(float pct) {
+        m_crystals_pct.store(pct);
     }
 
     float time() const {
-        return mTimeMS.load();
+        return m_time_ms.load();
     }
     float feedback() const {
-        return mFeedback.load();
+        return m_feedback.load();
     }
     float mix() const {
-        return mMix.load();
+        return m_mix.load();
     }
 
 protected:
-    void onSampleRateChanged(double sr) override;
-    void processBlockMono(float* buf, size_t nframes) override;
-    void processBlockDual(float* L, float* R, size_t nframes) override;
-    void processBlockStereoOut(float* L, float* R, size_t nframes) override;
+    void on_sample_rate_changed(double sr) override;
+    void process_block_mono(float* buf, size_t nframes) override;
+    void process_block_dual(float* l, float* r, size_t nframes) override;
+    void process_block_stereo_out(float* l, float* r, size_t nframes) override;
 
 private:
     struct Line
     {
         DelayLine samples;
-        float hpX = 0.0f, hpY = 0.0f, lp = 0.0f;
+        float hp_x = 0.0f, hp_y = 0.0f, lp = 0.0f;
         // Read before this sample's push(), so "d samples ago" is d - 1 behind the
         // newest sample in the line.
-        float read(float delaySamples) const {
-            return samples.interpolate(delaySamples - 1.0f);
+        float read(float delay_samples) const {
+            return samples.interpolate(delay_samples - 1.0f);
         }
         void push(float x) {
             samples.push(x);
@@ -89,8 +89,8 @@ private:
     // Per-block derived values.
     struct Params
     {
-        float fb, mix, cross, hpA, lpK, satDrive /* 0–1 */, modDepth, phInc;
-        float delL, delR; // samples
+        float fb, mix, cross, hp_a, lp_k, sat_drive /* 0–1 */, mod_depth, ph_inc;
+        float del_l, del_r; // samples
         float crystals; // 0–1
     };
     Params params() const;
@@ -98,20 +98,20 @@ private:
     float loop(int line, float d, const Params& p); // what re-enters the line (crystals)
     static float saturate(float x, float amount);
 
-    std::atomic<float> mTimeMS{250.0f};
-    std::atomic<float> mFeedback{40.0f};
-    std::atomic<float> mMix{30.0f};
-    std::atomic<float> mRightPct{100.0f};
-    std::atomic<float> mCrossPct{100.0f};
-    std::atomic<float> mLowCutHz{20.0f};
-    std::atomic<float> mHighCutHz{20000.0f};
-    std::atomic<float> mSatPct{0.0f};
-    std::atomic<float> mModPct{0.0f};
-    std::atomic<float> mCrystalsPct{0.0f};
-    PitchShifter mShift[2];
+    std::atomic<float> m_time_ms{250.0f};
+    std::atomic<float> m_feedback{40.0f};
+    std::atomic<float> m_mix{30.0f};
+    std::atomic<float> m_right_pct{100.0f};
+    std::atomic<float> m_cross_pct{100.0f};
+    std::atomic<float> m_low_cut_hz{20.0f};
+    std::atomic<float> m_high_cut_hz{20000.0f};
+    std::atomic<float> m_sat_pct{0.0f};
+    std::atomic<float> m_mod_pct{0.0f};
+    std::atomic<float> m_crystals_pct{0.0f};
+    PitchShifter m_shift[2];
 
-    Line mLine[2];
-    float mModPhase = 0.0f;
+    Line m_line[2];
+    float m_mod_phase = 0.0f;
 
-    static constexpr float kMaxDelayMs = 2100.0f; // 1000 ms × 200 % + modulation
+    static constexpr float K_MAX_DELAY_MS = 2100.0f; // 1000 ms × 200 % + modulation
 };

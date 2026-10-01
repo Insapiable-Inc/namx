@@ -21,7 +21,7 @@
 // the "NAM Player" one exactly once, so upgrading keeps saved port connections,
 // device IDs, session state and window geometry. The legacy store is left in
 // place (harmless, and a downgrade still finds it).
-static void migrateLegacySettings() {
+static void migrate_legacy_settings() {
     QSettings current; // org/app from QCoreApplication → the new location
     if (!current.allKeys().isEmpty()) {
         return;
@@ -46,7 +46,7 @@ int main(int argc, char* argv[]) {
     startup.start();
     // --version / --help answer before any GUI is created, so they work on a
     // headless box (and in the CI smoke test) without a display.
-    bool selfTest = false;
+    bool self_test = false;
     QStringList files;
     for (int i = 1; i < argc; ++i) {
         if (!std::strcmp(argv[i], "--version") || !std::strcmp(argv[i], "-v")) {
@@ -64,7 +64,7 @@ int main(int argc, char* argv[]) {
             return 0;
         }
         if (!std::strcmp(argv[i], "--self-test-and-exit")) {
-            selfTest = true;
+            self_test = true;
             continue;
         }
         files << QString::fromLocal8Bit(argv[i]);
@@ -92,16 +92,16 @@ int main(int argc, char* argv[]) {
     app.setDesktopFileName("cl.pichulero.NAMPlayer");
     app.setWindowIcon(QIcon(":/icons/NAMPlayer-256.png"));
 
-    migrateLegacySettings();
+    migrate_legacy_settings();
     Theme::apply(app);
 
     MainWindow w;
-    Theme::applyTo(w); // window-scoped so OS dialogs keep the system look
+    Theme::apply_to(w); // window-scoped so OS dialogs keep the system look
     w.show();
     if (!files.isEmpty()) {
-        w.openPaths(files);
+        w.open_paths(files);
     }
-    if (selfTest) {
+    if (self_test) {
         // First event-loop pass after show(): the window has been laid out
         // and its first frame requested — what the user perceives as "up".
         QTimer::singleShot(0, &app, [&startup] {

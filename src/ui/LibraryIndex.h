@@ -18,25 +18,25 @@ struct LibraryEntry
 {
     enum class Kind
     {
-        Model,
+        MODEL,
         IR,
-        Preset
+        PRESET
     };
 
-    Kind kind{Kind::Model};
+    Kind kind{Kind::MODEL};
     QString path; // absolute, QDir::cleanPath'd — the identity of the entry
     QString name; // file name without extension
     QString folder; // directory relative to its root; "" = the root itself
     qint64 size{0};
-    qint64 mtimeMs{0};
+    qint64 mtime_ms{0};
     QString summary; // metadata line: "WaveNet · 48 kHz · Mesa Boogie"
     QString details; // multi-line, everything the file says about itself
     // TONE3000 origin from the `.t3k.json` sidecar written on download.
-    int t3kToneId = 0;
-    int t3kModelId = 0;
-    QString t3kTitle, t3kCreator;
-    bool fromTone3000() const {
-        return t3kModelId != 0;
+    int t3k_tone_id = 0;
+    int t3k_model_id = 0;
+    QString t3k_title, t3k_creator;
+    bool from_tone3000() const {
+        return t3k_model_id != 0;
     }
 };
 
@@ -48,10 +48,10 @@ struct LibraryRoots
     /// ~/NAM for models and IRs, ~/Music/IRs, and the app's own presets dir.
     static LibraryRoots defaults();
     /// The folder presets are written to by default (first presets root).
-    static QString defaultPresetDir();
+    static QString default_preset_dir();
     /// Roots with the TONE3000 download folder added to models and IRs — the
     /// scanner always covers it, the Folders dialog shows the configured ones.
-    LibraryRoots withTone3000Dir() const;
+    LibraryRoots with_tone3000_dir() const;
 };
 
 /// The library index: a recursive scan of the roots on a worker thread, a
@@ -65,44 +65,44 @@ public:
     explicit LibraryIndex(QObject* parent = nullptr);
     ~LibraryIndex() override;
 
-    void setRoots(const LibraryRoots& roots); // persists + rescans
+    void set_roots(const LibraryRoots& roots); // persists + rescans
     const LibraryRoots& roots() const {
-        return mRoots;
+        return m_roots;
     }
 
     void rescan();
-    bool isScanning() const {
-        return mScanning;
+    bool is_scanning() const {
+        return m_scanning;
     }
 
     const QList<LibraryEntry>& entries() const {
-        return mEntries;
+        return m_entries;
     }
     const LibraryEntry* find(const QString& path) const;
     /// Library file downloaded from TONE3000 with this model id, or null.
-    const LibraryEntry* findTone3000Model(int modelId) const;
-    bool hasTone3000Tone(int toneId) const;
+    const LibraryEntry* find_tone3000_model(int model_id) const;
+    bool has_tone3000_tone(int tone_id) const;
 
-    static LibraryEntry::Kind kindForPath(const QString& path, bool* ok = nullptr);
+    static LibraryEntry::Kind kind_for_path(const QString& path, bool* ok = nullptr);
     /// Synchronous one-file description (files outside the library: imports,
     /// drops). Reads the file — a model parse is a few ms per MB.
     static LibraryEntry describe(const QString& path);
 
 signals:
-    void scanStarted();
-    void entriesChanged();
+    void scan_started();
+    void entries_changed();
 
 private:
-    void requestScan();
-    void onScanFinished(QList<LibraryEntry> entries, QStringList dirs);
+    void request_scan();
+    void on_scan_finished(QList<LibraryEntry> entries, QStringList dirs);
 
-    LibraryRoots mRoots;
-    QList<LibraryEntry> mEntries;
-    QThread* mThread = nullptr;
-    LibraryScanWorker* mWorker = nullptr;
-    QFileSystemWatcher* mWatcher = nullptr;
-    QTimer* mDebounce = nullptr; // coalesces watcher bursts
-    bool mScanning = false;
-    bool mRescanQueued = false;
-    QString mCachePath;
+    LibraryRoots m_roots;
+    QList<LibraryEntry> m_entries;
+    QThread* m_thread = nullptr;
+    LibraryScanWorker* m_worker = nullptr;
+    QFileSystemWatcher* m_watcher = nullptr;
+    QTimer* m_debounce = nullptr; // coalesces watcher bursts
+    bool m_scanning = false;
+    bool m_rescan_queued = false;
+    QString m_cache_path;
 };

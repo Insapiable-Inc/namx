@@ -25,16 +25,16 @@ class LibraryListModel : public QAbstractListModel
 public:
     enum Role
     {
-        PathRole = Qt::UserRole + 1,
-        KindRole,
-        NameRole,
-        FolderRole,
-        SummaryRole,
-        DetailsRole,
-        FavoriteRole,
-        RecentRankRole,
-        MtimeRole,
-        LoadedRole,
+        PATH_ROLE = Qt::UserRole + 1,
+        KIND_ROLE,
+        NAME_ROLE,
+        FOLDER_ROLE,
+        SUMMARY_ROLE,
+        DETAILS_ROLE,
+        FAVORITE_ROLE,
+        RECENT_RANK_ROLE,
+        MTIME_ROLE,
+        LOADED_ROLE,
     };
 
     explicit LibraryListModel(QObject* parent = nullptr);
@@ -42,24 +42,24 @@ public:
     int rowCount(const QModelIndex& parent = {}) const override;
     QVariant data(const QModelIndex& index, int role) const override;
 
-    void setEntries(const QList<LibraryEntry>& entries);
-    void setFavorites(const QSet<QString>& favs);
-    void setRecents(const QStringList& recents); // most recent first
-    void setLoaded(LibraryEntry::Kind kind, const QString& path);
+    void set_entries(const QList<LibraryEntry>& entries);
+    void set_favorites(const QSet<QString>& favs);
+    void set_recents(const QStringList& recents); // most recent first
+    void set_loaded(LibraryEntry::Kind kind, const QString& path);
 
-    bool isFavorite(const QString& path) const {
-        return mFavorites.contains(path);
+    bool is_favorite(const QString& path) const {
+        return m_favorites.contains(path);
     }
-    int rowOf(const QString& path) const;
+    int row_of(const QString& path) const;
     QString loaded(LibraryEntry::Kind kind) const {
-        return mLoaded[static_cast<int>(kind)];
+        return m_loaded[static_cast<int>(kind)];
     }
 
 private:
-    QList<LibraryEntry> mEntries;
-    QSet<QString> mFavorites;
-    QStringList mRecents;
-    QString mLoaded[3];
+    QList<LibraryEntry> m_entries;
+    QSet<QString> m_favorites;
+    QStringList m_recents;
+    QString m_loaded[3];
 };
 
 /// One proxy per kind: kind filter, search words, All / Favorites / Recent
@@ -70,31 +70,31 @@ class LibraryFilterProxy : public QSortFilterProxyModel
 public:
     enum class Mode
     {
-        All,
-        Favorites,
-        Recent
+        ALL,
+        FAVORITES,
+        RECENT
     };
     enum class Sort
     {
-        Name,
-        Newest
+        NAME,
+        NEWEST
     };
 
     explicit LibraryFilterProxy(LibraryEntry::Kind kind, QObject* parent = nullptr);
 
-    void setSearch(const QString& text);
-    void setMode(Mode m);
-    void setSortKey(Sort s);
+    void set_search(const QString& text);
+    void set_mode(Mode m);
+    void set_sort_key(Sort s);
 
 protected:
     bool filterAcceptsRow(int row, const QModelIndex& parent) const override;
     bool lessThan(const QModelIndex& a, const QModelIndex& b) const override;
 
 private:
-    LibraryEntry::Kind mKind;
-    QStringList mWords;
-    Mode mMode{Mode::All};
-    Sort mSort{Sort::Name};
+    LibraryEntry::Kind m_kind;
+    QStringList m_words;
+    Mode m_mode{Mode::ALL};
+    Sort m_sort{Sort::NAME};
 };
 
 /// Two-line rows (name / summary), a ★ toggle at the right edge, and an
@@ -106,7 +106,7 @@ public:
     using QStyledItemDelegate::QStyledItemDelegate;
     void paint(QPainter* p, const QStyleOptionViewItem& opt, const QModelIndex& idx) const override;
     QSize sizeHint(const QStyleOptionViewItem& opt, const QModelIndex& idx) const override;
-    static QRect starRect(const QRect& row);
+    static QRect star_rect(const QRect& row);
 };
 
 /// QListView that routes a click on the ★ to favoriteToggled instead of
@@ -117,7 +117,7 @@ class LibraryListView : public QListView
 public:
     using QListView::QListView;
 signals:
-    void favoriteToggled(const QString& path);
+    void favorite_toggled(const QString& path);
 
 protected:
     void mousePressEvent(QMouseEvent* ev) override;
@@ -140,50 +140,50 @@ public:
     explicit LibraryPanel(LibraryIndex& index, QWidget* parent = nullptr);
 
     /// Switch to a section and give the list keyboard focus.
-    void showSection(LibraryEntry::Kind kind);
-    void focusSearch();
+    void show_section(LibraryEntry::Kind kind);
+    void focus_search();
 
     /// Mark the loaded file of a kind (empty = nothing loaded).
-    void setLoadedPath(LibraryEntry::Kind kind, const QString& path);
-    QString loadedPath(LibraryEntry::Kind kind) const;
+    void set_loaded_path(LibraryEntry::Kind kind, const QString& path);
+    QString loaded_path(LibraryEntry::Kind kind) const;
     /// Push a path to the top of the recents list (any load, any source).
-    void noteUsed(const QString& path);
+    void note_used(const QString& path);
 
     /// Path `step` rows away from `fromPath` in the section's current visible
     /// order (wraps around); empty when the section is empty.
-    QString neighbour(LibraryEntry::Kind kind, const QString& fromPath, int step) const;
+    QString neighbour(LibraryEntry::Kind kind, const QString& from_path, int step) const;
 
     /// Root-folder editor dialog; applies to the index on OK.
-    void editFolders();
+    void edit_folders();
 
 signals:
     /// The user picked a file in the list.
     void activated(LibraryEntry::Kind kind, const QString& path);
 
 private:
-    void setSection(int section, bool focusList);
-    void onEntriesChanged();
-    void onCurrentChanged();
-    void activateCurrent();
-    void toggleFavorite(const QString& path);
-    void updateCounts();
-    void restoreCurrentFromLoaded();
+    void set_section(int section, bool focus_list);
+    void on_entries_changed();
+    void on_current_changed();
+    void activate_current();
+    void toggle_favorite(const QString& path);
+    void update_counts();
+    void restore_current_from_loaded();
     LibraryFilterProxy* proxy(LibraryEntry::Kind kind) const {
-        return mProxies[static_cast<int>(kind)];
+        return m_proxies[static_cast<int>(kind)];
     }
 
-    LibraryIndex& mIndex;
-    LibraryListModel* mModel = nullptr;
-    LibraryFilterProxy* mProxies[3]{};
-    QToolButton* mSectionBtn[3]{};
-    QToolButton* mModeBtn[3]{};
-    QComboBox* mSortBox = nullptr;
-    QLineEdit* mSearch = nullptr;
-    LibraryListView* mView = nullptr;
-    QLabel* mStatus = nullptr;
-    QTimer* mActivateTimer = nullptr; // debounces arrow-key browsing
-    int mSection = 0;
-    bool mSyncing = false; // programmatic selection changes
-    QSet<QString> mFavorites;
-    QStringList mRecents;
+    LibraryIndex& m_index;
+    LibraryListModel* m_model = nullptr;
+    LibraryFilterProxy* m_proxies[3]{};
+    QToolButton* m_section_btn[3]{};
+    QToolButton* m_mode_btn[3]{};
+    QComboBox* m_sort_box = nullptr;
+    QLineEdit* m_search = nullptr;
+    LibraryListView* m_view = nullptr;
+    QLabel* m_status = nullptr;
+    QTimer* m_activate_timer = nullptr; // debounces arrow-key browsing
+    int m_section = 0;
+    bool m_syncing = false; // programmatic selection changes
+    QSet<QString> m_favorites;
+    QStringList m_recents;
 };

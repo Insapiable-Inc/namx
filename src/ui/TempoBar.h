@@ -22,16 +22,16 @@ public:
     explicit BpmField(QWidget* parent = nullptr);
 
     double value() const {
-        return mBpm;
+        return m_bpm;
     }
-    void setValue(double bpm); // clamps + rounds to 0.1; emits on change
+    void set_value(double bpm); // clamps + rounds to 0.1; emits on change
 
     QSize sizeHint() const override {
         return {86, 30};
     }
 
 signals:
-    void valueChanged(double bpm);
+    void value_changed(double bpm);
 
 protected:
     void paintEvent(QPaintEvent* ev) override;
@@ -41,15 +41,15 @@ protected:
     void wheelEvent(QWheelEvent* ev) override;
 
 private:
-    void beginEdit();
-    void endEdit(bool commit);
+    void begin_edit();
+    void end_edit(bool commit);
 
-    double mBpm = 120.0;
-    QLineEdit* mEdit = nullptr;
-    bool mDragging = false;
-    bool mPressed = false;
-    int mPressY = 0;
-    double mPressBpm = 0.0;
+    double m_bpm = 120.0;
+    QLineEdit* m_edit = nullptr;
+    bool m_dragging = false;
+    bool m_pressed = false;
+    int m_press_y = 0;
+    double m_press_bpm = 0.0;
 };
 
 /// One column per beat: height = accent (strong / normal / soft / mute
@@ -60,25 +60,25 @@ class BeatLeds : public QWidget
 public:
     explicit BeatLeds(QWidget* parent = nullptr);
 
-    void setPattern(int beats, uint32_t accents);
+    void set_pattern(int beats, uint32_t accents);
     /// Current beat (-1 = stopped); `countIn` lights it amber.
-    void setBeat(int beat, bool countIn);
+    void set_beat(int beat, bool count_in);
 
     QSize sizeHint() const override;
 
 signals:
-    void accentsChanged(uint32_t accents);
+    void accents_changed(uint32_t accents);
 
 protected:
     void paintEvent(QPaintEvent* ev) override;
     void mousePressEvent(QMouseEvent* ev) override;
 
 private:
-    static constexpr int kW = 12, kGap = 4, kH = 26;
-    int mBeats = 4;
-    uint32_t mAccents = 0;
-    int mBeat = -1;
-    bool mCountIn = false;
+    static constexpr int K_W = 12, K_GAP = 4, K_H = 26;
+    int m_beats = 4;
+    uint32_t m_accents = 0;
+    int m_beat = -1;
+    bool m_count_in = false;
 };
 
 /// Global tempo + metronome strip under the preset bar.
@@ -94,41 +94,41 @@ public:
     explicit TempoBar(Metronome& metronome, QWidget* parent = nullptr);
 
     double bpm() const;
-    void setBpm(double bpm); // MIDI clock follow
-    void togglePlay();
-    void tapTempo() {
+    void set_bpm(double bpm); // MIDI clock follow
+    void toggle_play();
+    void tap_tempo() {
         tap();
     }
     /// Beat LEDs follow the audio thread — call at display rate.
     void poll();
 
-    QWidget* actionWidget(const QString& id) const;
-    void setLearnMenuHook(std::function<void(const QString& actionId, QMenu* menu)> hook) {
-        mLearnHook = std::move(hook);
+    QWidget* action_widget(const QString& id) const;
+    void set_learn_menu_hook(std::function<void(const QString& action_id, QMenu* menu)> hook) {
+        m_learn_hook = std::move(hook);
     }
 
 signals:
-    void bpmChanged(double bpm);
+    void bpm_changed(double bpm);
 
 private:
     void tap();
-    void setMeter(int beats, int unit, bool resetAccents);
-    void updateLabels();
-    QToolButton* menuButton(const QString& tip);
+    void set_meter(int beats, int unit, bool reset_accents);
+    void update_labels();
+    QToolButton* menu_button(const QString& tip);
 
-    Metronome& mMetro;
-    BpmField* mBpm = nullptr;
-    QToolButton* mTap = nullptr;
-    QToolButton* mPlay = nullptr;
-    BeatLeds* mLeds = nullptr;
-    QToolButton* mMeterBtn = nullptr;
-    QToolButton* mSubdivBtn = nullptr;
-    QToolButton* mSoundBtn = nullptr;
-    QToolButton* mCountInBtn = nullptr;
-    KnobWidget* mVolume = nullptr;
-    KnobWidget* mPan = nullptr;
-    QElapsedTimer mTapClock;
-    QVector<qint64> mTaps; // ms timestamps of the recent taps
-    std::function<void(const QString&, QMenu*)> mLearnHook;
-    void learnMenuFor(QWidget* w, const QString& actionId);
+    Metronome& m_metro;
+    BpmField* m_bpm = nullptr;
+    QToolButton* m_tap = nullptr;
+    QToolButton* m_play = nullptr;
+    BeatLeds* m_leds = nullptr;
+    QToolButton* m_meter_btn = nullptr;
+    QToolButton* m_subdiv_btn = nullptr;
+    QToolButton* m_sound_btn = nullptr;
+    QToolButton* m_count_in_btn = nullptr;
+    KnobWidget* m_volume = nullptr;
+    KnobWidget* m_pan = nullptr;
+    QElapsedTimer m_tap_clock;
+    QVector<qint64> m_taps; // ms timestamps of the recent taps
+    std::function<void(const QString&, QMenu*)> m_learn_hook;
+    void learn_menu_for(QWidget* w, const QString& action_id);
 };

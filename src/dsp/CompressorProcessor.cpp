@@ -3,62 +3,62 @@
 #include <algorithm>
 #include <cmath>
 
-static constexpr float kDbPerOctave = 6.0205999f; // 20·log10(2)
+static constexpr float K_DB_PER_OCTAVE = 6.0205999f; // 20·log10(2)
 
 void CompressorProcessor::reset() {
-    mEnvDB[0] = mEnvDB[1] = -120.0f;
-    mGainDB[0] = mGainDB[1] = 0.0f;
+    m_env_db[0] = m_env_db[1] = -120.0f;
+    m_gain_db[0] = m_gain_db[1] = 0.0f;
 }
 
-void CompressorProcessor::processChannel(float* buf, size_t nframes, int ch) {
-    const float threshold = mThresholdDB.load();
-    const float ratio = mRatio.load();
-    const float makeup = mMakeupDB.load();
-    const float fs = static_cast<float>(mSampleRate);
+void CompressorProcessor::process_channel(float* buf, size_t nframes, int ch) {
+    const float threshold = m_threshold_db.load();
+    const float ratio = m_ratio.load();
+    const float makeup = m_makeup_db.load();
+    const float fs = static_cast<float>(m_sample_rate);
 
-    const float atCoeff = std::exp(-1.0f / (fs * mAttackMS.load() * 0.001f));
-    const float relCoeff = std::exp(-1.0f / (fs * mReleaseMS.load() * 0.001f));
+    const float at_coeff = std::exp(-1.0f / (fs * m_attack_ms.load() * 0.001f));
+    const float rel_coeff = std::exp(-1.0f / (fs * m_release_ms.load() * 0.001f));
 
-    float& envDB = mEnvDB[ch];
-    float& gainDB = mGainDB[ch];
-    float minGainDB = 0.0f;
+    float& env_db = m_env_db[ch];
+    float& gain_db = m_gain_db[ch];
+    float min_gain_db = 0.0f;
 
     for (size_t i = 0; i < nframes; ++i) {
         // 20·log10(x) = (20·log10 2)·log2(x); log2/exp2 are much cheaper
         // than log10/pow per sample.
         float level = std::abs(buf[i]);
-        float levelDB = (level > 1e-9f) ? kDbPerOctave * std::log2(level) : -120.0f;
+        float level_db = (level > 1e-9f) ? K_DB_PER_OCTAVE * std::log2(level) : -120.0f;
 
-        if (levelDB > envDB) {
-            envDB = atCoeff * envDB + (1.0f - atCoeff) * levelDB;
+        if (level_db > env_db) {
+            env_db = at_coeff * env_db + (1.0f - at_coeff) * level_db;
         } else {
-            envDB = relCoeff * envDB + (1.0f - relCoeff) * levelDB;
+            env_db = rel_coeff * env_db + (1.0f - rel_coeff) * level_db;
         }
 
-        float targetGR = 0.0f;
-        if (envDB > threshold) {
-            targetGR = (threshold - envDB) * (1.0f - 1.0f / ratio);
+        float target_gr = 0.0f;
+        if (env_db > threshold) {
+            target_gr = (threshold - env_db) * (1.0f - 1.0f / ratio);
         }
 
-        if (targetGR < gainDB) {
-            gainDB = atCoeff * gainDB + (1.0f - atCoeff) * targetGR;
+        if (target_gr < gain_db) {
+            gain_db = at_coeff * gain_db + (1.0f - at_coeff) * target_gr;
         } else {
-            gainDB = relCoeff * gainDB + (1.0f - relCoeff) * targetGR;
+            gain_db = rel_coeff * gain_db + (1.0f - rel_coeff) * target_gr;
         }
 
-        minGainDB = std::min(minGainDB, gainDB);
-        buf[i] *= std::exp2((gainDB + makeup) * (1.0f / kDbPerOctave));
+        min_gain_db = std::min(min_gain_db, gain_db);
+        buf[i] *= std::exp2((gain_db + makeup) * (1.0f / K_DB_PER_OCTAVE));
     }
-    if (-minGainDB > mGrPeakDB.load(std::memory_order_relaxed)) {
-        mGrPeakDB.store(-minGainDB, std::memory_order_relaxed);
+    if (-min_gain_db > m_gr_peak_db.load(std::memory_order_relaxed)) {
+        m_gr_peak_db.store(-min_gain_db, std::memory_order_relaxed);
     }
 }
 
-void CompressorProcessor::processBlockMono(float* buf, size_t nframes) {
-    processChannel(buf, nframes, 0);
+void CompressorProcessor::process_block_mono(float* buf, size_t nframes) {
+    process_channel(buf, nframes, 0);
 }
 
-void CompressorProcessor::processBlockDual(float* L, float* R, size_t nframes) {
-    processChannel(L, nframes, 0);
-    processChannel(R, nframes, 1);
+void CompressorProcessor::process_block_dual(float* l, float* r, size_t nframes) {
+    process_channel(l, nframes, 0);
+    process_channel(r, nframes, 1);
 }

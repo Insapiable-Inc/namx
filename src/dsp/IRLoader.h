@@ -14,7 +14,7 @@
 class IRLoader
 {
 public:
-    static constexpr size_t kMaxIRLength = 4096;
+    static constexpr size_t K_MAX_IR_LENGTH = 4096;
 
     IRLoader();
     ~IRLoader();
@@ -27,26 +27,26 @@ public:
     /// Unload the current IR (bypass mode)
     void unload();
 
-    bool isLoaded() const {
-        return mSlot.current() != nullptr;
+    bool is_loaded() const {
+        return m_slot.current() != nullptr;
     }
-    std::string getFilePath() const {
-        return mFilePath;
+    std::string get_file_path() const {
+        return m_file_path;
     }
 
     /// Human-readable reason the last load() returned false (GUI thread only).
-    std::string lastError() const {
-        return mLastError;
+    std::string last_error() const {
+        return m_last_error;
     }
 
     /// Engine sample rate. If an IR is loaded whose kernel was built for a
     /// different rate, it is rebuilt (resampled) and republished. Called
     /// with no audio callback in flight (backend buffer-size hook).
-    void setTargetSampleRate(double sr);
+    void set_target_sample_rate(double sr);
 
     /// Free retired kernels; `audioStopped` frees unconditionally.
-    void reclaimRetired(bool audioStopped) {
-        mSlot.reclaim(audioStopped);
+    void reclaim_retired(bool audio_stopped) {
+        m_slot.reclaim(audio_stopped);
     }
 
     /// Process a block in-place. inputIsStereo=false means L and R hold the
@@ -56,7 +56,7 @@ public:
     /// each channel with its own state. `enabled=false` only counts the
     /// block (needed so retired kernels can be reclaimed) and leaves the
     /// audio untouched. Audio thread only.
-    void processBlock(float* L, float* R, size_t numFrames, bool inputIsStereo, bool enabled);
+    void process_block(float* l, float* r, size_t num_frames, bool input_is_stereo, bool enabled);
 
     /// Reset convolution state of the active kernel. Audio thread only.
     void reset();
@@ -68,26 +68,26 @@ private:
         std::vector<float> buffers[2]; // per-channel delay line, 2*kMaxIRLength: each sample is
                                        // written twice (writePos and writePos+irLen) so the last
                                        // irLen samples are always contiguous — no wrap in the loop
-        int writePos[2] = {0, 0};
-        int irLen = 0;
-        double builtRate = 0.0; // engine rate this kernel was resampled to
+        int write_pos[2] = {0, 0};
+        int ir_len = 0;
+        double built_rate = 0.0; // engine rate this kernel was resampled to
     };
 
-    RtSlot<Kernel> mSlot;
-    std::mutex mLoadMutex; // load/unload (GUI) vs. setTargetSampleRate (backend thread)
+    RtSlot<Kernel> m_slot;
+    std::mutex m_load_mutex; // load/unload (GUI) vs. setTargetSampleRate (backend thread)
 
     // Owner-side state (guarded by mLoadMutex)
-    std::string mFilePath;
-    std::string mLastError;
-    std::vector<float> mRaw; // native samples of the loaded file
-    double mRawRate{0.0}; // their sample rate
-    double mTargetRate{0.0};
+    std::string m_file_path;
+    std::string m_last_error;
+    std::vector<float> m_raw; // native samples of the loaded file
+    double m_raw_rate{0.0}; // their sample rate
+    double m_target_rate{0.0};
 
-    std::unique_ptr<Kernel> buildKernel() const;
+    std::unique_ptr<Kernel> build_kernel() const;
 
     // Per-sample steps for one channel: push the input into the delay line,
     // dot it with the (reversed) IR, advance the write position.
-    static void pushSample(Kernel& k, int ch, float in);
-    static float convolveAt(const Kernel& k, int ch);
+    static void push_sample(Kernel& k, int ch, float in);
+    static float convolve_at(const Kernel& k, int ch);
     static void advance(Kernel& k, int ch);
 };

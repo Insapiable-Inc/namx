@@ -3,36 +3,36 @@
 #include <algorithm>
 #include <cmath>
 
-static constexpr float kPi = 3.14159265358979323846f;
+static constexpr float K_PI = 3.14159265358979323846f;
 
 IRProcessor::IRProcessor()
-    : mAL(kChunk)
-    , mAR(kChunk)
-    , mBL(kChunk)
-    , mBR(kChunk) {
+    : m_al(K_CHUNK)
+    , m_ar(K_CHUNK)
+    , m_bl(K_CHUNK)
+    , m_br(K_CHUNK) {
 }
 
-void IRProcessor::onSampleRateChanged(double sr) {
-    mA.setTargetSampleRate(sr);
-    mB.setTargetSampleRate(sr);
-    mDesignedLow = mDesignedHigh = -1.0f; // redesign at the new rate
+void IRProcessor::on_sample_rate_changed(double sr) {
+    m_a.set_target_sample_rate(sr);
+    m_b.set_target_sample_rate(sr);
+    m_designed_low = m_designed_high = -1.0f; // redesign at the new rate
 }
 
 void IRProcessor::reset() {
-    mA.reset();
-    mB.reset();
+    m_a.reset();
+    m_b.reset();
     for (int c = 0; c < 2; ++c) {
-        mHp[c].clear();
-        mLp[c].clear();
+        m_hp[c].clear();
+        m_lp[c].clear();
     }
 }
 
-void IRProcessor::designCuts(float lowHz, float highHz) {
+void IRProcessor::design_cuts(float low_hz, float high_hz) {
     // RBJ Butterworth high-pass / low-pass (Q = 0.707).
-    const float fs = static_cast<float>(mSampleRate);
+    const float fs = static_cast<float>(m_sample_rate);
     auto design = [fs](float f, bool high, Biquad& b) {
         f = std::clamp(f, 10.0f, 0.45f * fs);
-        const float w = 2.0f * kPi * f / fs, cw = std::cos(w),
+        const float w = 2.0f * K_PI * f / fs, cw = std::cos(w),
                     alpha = std::sin(w) / (2.0f * 0.7071f);
         const float a0 = 1.0f + alpha;
         const float k = high ? (1.0f + cw) / 2.0f : (1.0f - cw) / 2.0f;
@@ -43,89 +43,89 @@ void IRProcessor::designCuts(float lowHz, float highHz) {
         b.a2 = (1.0f - alpha) / a0;
     };
     for (int c = 0; c < 2; ++c) {
-        design(lowHz, true, mHp[c]);
-        design(highHz, false, mLp[c]);
+        design(low_hz, true, m_hp[c]);
+        design(high_hz, false, m_lp[c]);
     }
-    mDesignedLow = lowHz;
-    mDesignedHigh = highHz;
+    m_designed_low = low_hz;
+    m_designed_high = high_hz;
 }
 
-bool IRProcessor::process(float* L, float* R, size_t n, bool inputIsStereo) {
+bool IRProcessor::process(float* l, float* r, size_t n, bool input_is_stereo) {
     // Long blocks in chunks so the scratch never grows on the audio thread.
-    bool stereo = inputIsStereo;
-    for (size_t off = 0; off < n; off += kChunk) {
-        stereo = processChunk(L + off, R + off, std::min(kChunk, n - off), inputIsStereo);
+    bool stereo = input_is_stereo;
+    for (size_t off = 0; off < n; off += K_CHUNK) {
+        stereo = process_chunk(l + off, r + off, std::min(K_CHUNK, n - off), input_is_stereo);
     }
     return stereo;
 }
 
-bool IRProcessor::processChunk(float* L, float* R, size_t n, bool inputIsStereo) {
-    const bool on = mEnabled.load();
-    const bool hasA = mA.isLoaded();
-    const bool hasB = mB.isLoaded();
+bool IRProcessor::process_chunk(float* l, float* r, size_t n, bool input_is_stereo) {
+    const bool on = m_enabled.load();
+    const bool has_a = m_a.is_loaded();
+    const bool has_b = m_b.is_loaded();
 
     // Both loaders run every block (counting blocks for RtSlot reclaim);
     // a bypassed cab or an empty slot leaves the scratch untouched.
-    std::copy(L, L + n, mAL.data());
-    std::copy(R, R + n, mAR.data());
-    std::copy(L, L + n, mBL.data());
-    std::copy(R, R + n, mBR.data());
-    mA.processBlock(mAL.data(), mAR.data(), n, inputIsStereo, on && hasA);
-    mB.processBlock(mBL.data(), mBR.data(), n, inputIsStereo, on && hasB);
-    if (!on || (!hasA && !hasB)) {
-        return inputIsStereo;
+    std::copy(l, l + n, m_al.data());
+    std::copy(r, r + n, m_ar.data());
+    std::copy(l, l + n, m_bl.data());
+    std::copy(r, r + n, m_br.data());
+    m_a.process_block(m_al.data(), m_ar.data(), n, input_is_stereo, on && has_a);
+    m_b.process_block(m_bl.data(), m_br.data(), n, input_is_stereo, on && has_b);
+    if (!on || (!has_a && !has_b)) {
+        return input_is_stereo;
     }
 
     // Per-slot gains: level × blend share × pan (constant power, unity at
     // centre) × phase. A single loaded slot plays at its own level only.
-    const float blend = std::clamp(mBlend.load(), 0.0f, 100.0f) / 100.0f;
-    float gL[2], gR[2];
+    const float blend = std::clamp(m_blend.load(), 0.0f, 100.0f) / 100.0f;
+    float g_l[2], g_r[2];
     bool panned = false;
     for (int s = 0; s < 2; ++s) {
-        const bool loaded = s == 0 ? hasA : hasB;
+        const bool loaded = s == 0 ? has_a : has_b;
         // Linear crossfade: two similar cabs at 50 % sum to the same level.
-        const float share = !loaded           ? 0.0f
-                            : !(hasA && hasB) ? 1.0f
-                                              : (s == 0 ? 1.0f - blend : blend);
-        const float lvl = std::pow(10.0f, mLevelDb[s].load() / 20.0f) * share *
-                          (mInvert[s].load() ? -1.0f : 1.0f);
-        const float pan = std::clamp(mPan[s].load(), -100.0f, 100.0f) / 100.0f;
-        const float ang = (pan + 1.0f) * 0.25f * kPi;
-        gL[s] = lvl * std::cos(ang) * std::sqrt(2.0f);
-        gR[s] = lvl * std::sin(ang) * std::sqrt(2.0f);
+        const float share = !loaded             ? 0.0f
+                            : !(has_a && has_b) ? 1.0f
+                                                : (s == 0 ? 1.0f - blend : blend);
+        const float lvl = std::pow(10.0f, m_level_db[s].load() / 20.0f) * share *
+                          (m_invert[s].load() ? -1.0f : 1.0f);
+        const float pan = std::clamp(m_pan[s].load(), -100.0f, 100.0f) / 100.0f;
+        const float ang = (pan + 1.0f) * 0.25f * K_PI;
+        g_l[s] = lvl * std::cos(ang) * std::sqrt(2.0f);
+        g_r[s] = lvl * std::sin(ang) * std::sqrt(2.0f);
         if (loaded && std::abs(pan) > 0.001f) {
             panned = true;
         }
     }
-    const bool stereo = inputIsStereo || panned;
+    const bool stereo = input_is_stereo || panned;
 
-    const float lo = mLowCutHz.load(), hi = mHighCutHz.load();
-    if (lo != mDesignedLow || hi != mDesignedHigh) {
-        designCuts(lo, hi);
+    const float lo = m_low_cut_hz.load(), hi = m_high_cut_hz.load();
+    if (lo != m_designed_low || hi != m_designed_high) {
+        design_cuts(lo, hi);
     }
-    const bool doLo = lo > 20.5f, doHi = hi < 19999.0f;
+    const bool do_lo = lo > 20.5f, do_hi = hi < 19999.0f;
 
     for (size_t i = 0; i < n; ++i) {
-        float l = gL[0] * mAL[i] + gL[1] * mBL[i];
-        float r =
-            gR[0] * (inputIsStereo ? mAR[i] : mAL[i]) + gR[1] * (inputIsStereo ? mBR[i] : mBL[i]);
+        float sample_l = g_l[0] * m_al[i] + g_l[1] * m_bl[i];
+        float sample_r = g_r[0] * (input_is_stereo ? m_ar[i] : m_al[i]) +
+                         g_r[1] * (input_is_stereo ? m_br[i] : m_bl[i]);
         if (!stereo) {
-            r = l;
+            sample_r = sample_l;
         }
-        if (doLo) {
-            l = mHp[0].process(l);
+        if (do_lo) {
+            sample_l = m_hp[0].process(sample_l);
             if (stereo) {
-                r = mHp[1].process(r);
+                sample_r = m_hp[1].process(sample_r);
             }
         }
-        if (doHi) {
-            l = mLp[0].process(l);
+        if (do_hi) {
+            sample_l = m_lp[0].process(sample_l);
             if (stereo) {
-                r = mLp[1].process(r);
+                sample_r = m_lp[1].process(sample_r);
             }
         }
-        L[i] = l;
-        R[i] = stereo ? r : l;
+        l[i] = sample_l;
+        r[i] = stereo ? sample_r : sample_l;
     }
     return stereo;
 }

@@ -17,29 +17,29 @@ class LibraryDock : public QWidget
 public:
     enum Tab
     {
-        Local = 0,
-        Tone3000 = 1
+        LOCAL = 0,
+        TONE3000 = 1
     };
 
     LibraryDock(LibraryIndex& index, Tone3000Client& client, QWidget* parent = nullptr);
 
     LibraryPanel* local() const {
-        return mLocal;
+        return m_local;
     }
     Tone3000Panel* tone3000() const {
-        return mT3k;
+        return m_t3k;
     }
 
-    void setTab(Tab tab);
+    void set_tab(Tab tab);
     Tab tab() const {
-        return static_cast<Tab>(mStack ? currentIndex() : 0);
+        return static_cast<Tab>(m_stack ? current_index() : 0);
     }
 
 private:
-    int currentIndex() const;
+    int current_index() const;
 
-    QToolButton* mTabBtn[2]{};
-    QStackedWidget* mStack = nullptr;
-    LibraryPanel* mLocal = nullptr;
-    Tone3000Panel* mT3k = nullptr;
+    QToolButton* m_tab_btn[2]{};
+    QStackedWidget* m_stack = nullptr;
+    LibraryPanel* m_local = nullptr;
+    Tone3000Panel* m_t3k = nullptr;
 };

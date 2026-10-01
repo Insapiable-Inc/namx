@@ -32,18 +32,18 @@ LibraryRoots LibraryRoots::defaults() {
     LibraryRoots r;
     r.models = {home + "/NAM"};
     r.irs = {home + "/NAM", music + "/IRs"};
-    r.presets = {defaultPresetDir()};
+    r.presets = {default_preset_dir()};
     return r;
 }
 
-QString LibraryRoots::defaultPresetDir() {
+QString LibraryRoots::default_preset_dir() {
     return QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) +
            "/NAM Player/Presets";
 }
 
-LibraryRoots LibraryRoots::withTone3000Dir() const {
+LibraryRoots LibraryRoots::with_tone3000_dir() const {
     LibraryRoots r = *this;
-    const QString t3k = Tone3000Client::downloadDir();
+    const QString t3k = Tone3000Client::download_dir();
     if (!r.models.contains(t3k)) {
         r.models << t3k;
     }
@@ -53,7 +53,7 @@ LibraryRoots LibraryRoots::withTone3000Dir() const {
     return r;
 }
 
-static LibraryRoots loadRoots() {
+static LibraryRoots load_roots() {
     QSettings s;
     if (!s.contains("library/modelRoots")) {
         return LibraryRoots::defaults();
@@ -65,7 +65,7 @@ static LibraryRoots loadRoots() {
     return r;
 }
 
-static void saveRoots(const LibraryRoots& r) {
+static void save_roots(const LibraryRoots& r) {
     QSettings s;
     s.setValue("library/modelRoots", r.models);
     s.setValue("library/irRoots", r.irs);
@@ -85,35 +85,36 @@ static QString khz(double sr) {
 
 // TONE3000 sidecar next to a downloaded model/IR: origin for the list, the
 // hero row marker and preset linkage.
-static void readSidecar(const QString& path, LibraryEntry& e) {
-    QFile f(Tone3000Client::sidecarPath(path));
+static void read_sidecar(const QString& path, LibraryEntry& e) {
+    QFile f(Tone3000Client::sidecar_path(path));
     if (!f.open(QIODevice::ReadOnly)) {
         return;
     }
     const QJsonObject o = QJsonDocument::fromJson(f.readAll()).object();
-    e.t3kToneId = o.value("tone_id").toInt();
-    e.t3kModelId = o.value("model_id").toInt();
-    e.t3kTitle = o.value("tone_title").toString();
-    e.t3kCreator = o.value("creator").toString();
+    e.t3k_tone_id = o.value("tone_id").toInt();
+    e.t3k_model_id = o.value("model_id").toInt();
+    e.t3k_title = o.value("tone_title").toString();
+    e.t3k_creator = o.value("creator").toString();
 }
 
-static void appendSidecarInfo(LibraryEntry& e) {
-    if (!e.fromTone3000()) {
+static void append_sidecar_info(LibraryEntry& e) {
+    if (!e.from_tone3000()) {
         return;
     }
     QString who =
-        e.t3kCreator.isEmpty() ? QStringLiteral("TONE3000") : "TONE3000 · @" + e.t3kCreator;
+        e.t3k_creator.isEmpty() ? QStringLiteral("TONE3000") : "TONE3000 · @" + e.t3k_creator;
     e.summary = e.summary.isEmpty() ? who : e.summary + " · " + who;
-    QString line = "From TONE3000: " + (e.t3kTitle.isEmpty() ? QStringLiteral("tone") : e.t3kTitle);
-    if (!e.t3kCreator.isEmpty()) {
-        line += " by @" + e.t3kCreator;
+    QString line =
+        "From TONE3000: " + (e.t3k_title.isEmpty() ? QStringLiteral("tone") : e.t3k_title);
+    if (!e.t3k_creator.isEmpty()) {
+        line += " by @" + e.t3k_creator;
     }
     e.details = e.details.isEmpty() ? line : e.details + "\n" + line;
 }
 
 // Model metadata from the .nam JSON. Files carry the full weight array, so
 // this is the one expensive step of a scan — the cache keeps it one-time.
-static void describeModel(const QString& path, LibraryEntry& e) {
+static void describe_model(const QString& path, LibraryEntry& e) {
     QFile f(path);
     if (!f.open(QIODevice::ReadOnly)) {
         return;
@@ -142,9 +143,9 @@ static void describeModel(const QString& path, LibraryEntry& e) {
         return v.startsWith("tz-") ? QString() : v;
     };
     const QString make = field("gear_make");
-    const QString modelName = field("gear_model");
+    const QString model_name = field("gear_model");
     const QString gear =
-        (modelName.startsWith(make, Qt::CaseInsensitive) ? modelName : (make + " " + modelName))
+        (model_name.startsWith(make, Qt::CaseInsensitive) ? model_name : (make + " " + model_name))
             .trimmed();
     if (!gear.isEmpty()) {
         sum << gear;
@@ -163,14 +164,14 @@ static void describeModel(const QString& path, LibraryEntry& e) {
     if (!gear.isEmpty()) {
         det << "Gear: " + gear;
     }
-    const QString gearType = field("gear_type");
-    const QString toneType = field("tone_type");
+    const QString gear_type = field("gear_type");
+    const QString tone_type = field("tone_type");
     QStringList types;
-    if (!gearType.isEmpty()) {
-        types << gearType;
+    if (!gear_type.isEmpty()) {
+        types << gear_type;
     }
-    if (!toneType.isEmpty()) {
-        types << toneType;
+    if (!tone_type.isEmpty()) {
+        types << tone_type;
     }
     if (!types.isEmpty()) {
         det << "Type: " + types.join(" / ");
@@ -202,7 +203,7 @@ static void describeModel(const QString& path, LibraryEntry& e) {
 }
 
 // RIFF/WAVE header: channels, rate, bit depth, data length. No decoding.
-static void describeIR(const QString& path, LibraryEntry& e) {
+static void describe_ir(const QString& path, LibraryEntry& e) {
     QFile f(path);
     if (!f.open(QIODevice::ReadOnly)) {
         return;
@@ -214,7 +215,7 @@ static void describeIR(const QString& path, LibraryEntry& e) {
     }
     int channels = 0, bits = 0;
     quint32 rate = 0;
-    qint64 dataBytes = -1;
+    qint64 data_bytes = -1;
     qsizetype pos = 12;
     while (pos + 8 <= head.size()) {
         const QByteArray id = head.mid(pos, 4);
@@ -226,7 +227,7 @@ static void describeIR(const QString& path, LibraryEntry& e) {
             rate = qFromLittleEndian<quint32>(p + 4);
             bits = qFromLittleEndian<quint16>(p + 14);
         } else if (id == "data") {
-            dataBytes = len;
+            data_bytes = len;
             break;
         }
         pos += 8 + static_cast<qsizetype>(len) + (len & 1);
@@ -239,8 +240,8 @@ static void describeIR(const QString& path, LibraryEntry& e) {
     if (channels > 0) {
         sum << (channels == 1 ? "mono" : channels == 2 ? "stereo" : QString("%1 ch").arg(channels));
     }
-    if (dataBytes > 0 && channels > 0 && bits > 0 && rate > 0) {
-        const qint64 frames = dataBytes / (channels * bits / 8);
+    if (data_bytes > 0 && channels > 0 && bits > 0 && rate > 0) {
+        const qint64 frames = data_bytes / (channels * bits / 8);
         const double ms = 1000.0 * static_cast<double>(frames) / static_cast<double>(rate);
         sum << QString("%1 ms").arg(ms, 0, 'f', ms < 10 ? 1 : 0);
         det << QString("Length: %1 ms").arg(ms, 0, 'f', 1);
@@ -258,7 +259,7 @@ static void describeIR(const QString& path, LibraryEntry& e) {
     e.details = det.join('\n');
 }
 
-static void describePreset(const QString& path, LibraryEntry& e) {
+static void describe_preset(const QString& path, LibraryEntry& e) {
     QFile f(path);
     if (!f.open(QIODevice::ReadOnly)) {
         return;
@@ -299,23 +300,23 @@ class LibraryScanWorker : public QObject
 {
     Q_OBJECT
 public slots:
-    void scan(LibraryRoots roots, QString cachePath) {
+    void scan(LibraryRoots roots, QString cache_path) {
         // dir → kinds it feeds. One walk per unique directory tree.
-        QHash<QString, QSet<int>> rootKinds;
+        QHash<QString, QSet<int>> root_kinds;
         auto add = [&](const QStringList& list, LibraryEntry::Kind k) {
             for (const QString& r : list) {
                 const QString c = QDir::cleanPath(r);
                 if (!c.isEmpty()) {
-                    rootKinds[c].insert(static_cast<int>(k));
+                    root_kinds[c].insert(static_cast<int>(k));
                 }
             }
         };
-        add(roots.models, LibraryEntry::Kind::Model);
+        add(roots.models, LibraryEntry::Kind::MODEL);
         add(roots.irs, LibraryEntry::Kind::IR);
-        add(roots.presets, LibraryEntry::Kind::Preset);
+        add(roots.presets, LibraryEntry::Kind::PRESET);
 
-        const QHash<QString, LibraryEntry> cache = readCache(cachePath);
-        bool cacheDirty = false;
+        const QHash<QString, LibraryEntry> cache = read_cache(cache_path);
+        bool cache_dirty = false;
 
         QList<LibraryEntry> out;
         QSet<QString> seen; // a file under two overlapping roots lists once
@@ -323,18 +324,18 @@ public slots:
 
         // Longest roots first so a nested root claims its own files and the
         // outer root skips them (both list the same path otherwise).
-        QStringList roots_ = rootKinds.keys();
-        std::sort(roots_.begin(), roots_.end(), [](const QString& a, const QString& b) {
+        QStringList sorted_roots = root_kinds.keys();
+        std::sort(sorted_roots.begin(), sorted_roots.end(), [](const QString& a, const QString& b) {
             return a.size() > b.size();
         });
 
-        for (const QString& root : roots_) {
+        for (const QString& root : sorted_roots) {
             QDir rd(root);
             if (!rd.exists()) {
                 continue;
             }
             dirs << root;
-            const QSet<int>& kinds = rootKinds[root];
+            const QSet<int>& kinds = root_kinds[root];
 
             QDirIterator it(root, QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot | QDir::Readable,
                             QDirIterator::Subdirectories | QDirIterator::FollowSymlinks);
@@ -347,7 +348,7 @@ public slots:
                 }
 
                 bool ok = false;
-                const auto kind = LibraryIndex::kindForPath(p, &ok);
+                const auto kind = LibraryIndex::kind_for_path(p, &ok);
                 if (!ok || !kinds.contains(static_cast<int>(kind))) {
                     continue;
                 }
@@ -365,39 +366,39 @@ public slots:
                     e.folder.clear();
                 }
                 e.size = fi.size();
-                e.mtimeMs = fi.lastModified().toMSecsSinceEpoch();
+                e.mtime_ms = fi.lastModified().toMSecsSinceEpoch();
 
                 const auto c = cache.constFind(p);
-                if (c != cache.constEnd() && c->size == e.size && c->mtimeMs == e.mtimeMs &&
+                if (c != cache.constEnd() && c->size == e.size && c->mtime_ms == e.mtime_ms &&
                     c->kind == kind) {
                     e.summary = c->summary;
                     e.details = c->details;
-                    e.t3kToneId = c->t3kToneId;
-                    e.t3kModelId = c->t3kModelId;
-                    e.t3kTitle = c->t3kTitle;
-                    e.t3kCreator = c->t3kCreator;
+                    e.t3k_tone_id = c->t3k_tone_id;
+                    e.t3k_model_id = c->t3k_model_id;
+                    e.t3k_title = c->t3k_title;
+                    e.t3k_creator = c->t3k_creator;
                 } else {
                     switch (kind) {
-                        case LibraryEntry::Kind::Model:
-                            describeModel(p, e);
+                        case LibraryEntry::Kind::MODEL:
+                            describe_model(p, e);
                             break;
                         case LibraryEntry::Kind::IR:
-                            describeIR(p, e);
+                            describe_ir(p, e);
                             break;
-                        case LibraryEntry::Kind::Preset:
-                            describePreset(p, e);
+                        case LibraryEntry::Kind::PRESET:
+                            describe_preset(p, e);
                             break;
                     }
-                    readSidecar(p, e);
-                    appendSidecarInfo(e);
-                    cacheDirty = true;
+                    read_sidecar(p, e);
+                    append_sidecar_info(e);
+                    cache_dirty = true;
                 }
                 out << e;
             }
         }
 
-        if (cacheDirty || cache.size() != out.size()) {
-            writeCache(cachePath, out);
+        if (cache_dirty || cache.size() != out.size()) {
+            write_cache(cache_path, out);
         }
         dirs.removeDuplicates();
         emit finished(out, dirs);
@@ -407,7 +408,7 @@ signals:
     void finished(QList<LibraryEntry> entries, QStringList dirs);
 
 private:
-    static QHash<QString, LibraryEntry> readCache(const QString& path) {
+    static QHash<QString, LibraryEntry> read_cache(const QString& path) {
         QHash<QString, LibraryEntry> h;
         QFile f(path);
         if (!f.open(QIODevice::ReadOnly)) {
@@ -423,13 +424,13 @@ private:
             e.kind = static_cast<LibraryEntry::Kind>(o.value("kind").toInt());
             e.path = o.value("path").toString();
             e.size = static_cast<qint64>(o.value("size").toDouble());
-            e.mtimeMs = static_cast<qint64>(o.value("mtime").toDouble());
+            e.mtime_ms = static_cast<qint64>(o.value("mtime").toDouble());
             e.summary = o.value("summary").toString();
             e.details = o.value("details").toString();
-            e.t3kToneId = o.value("t3kTone").toInt();
-            e.t3kModelId = o.value("t3kModel").toInt();
-            e.t3kTitle = o.value("t3kTitle").toString();
-            e.t3kCreator = o.value("t3kCreator").toString();
+            e.t3k_tone_id = o.value("t3kTone").toInt();
+            e.t3k_model_id = o.value("t3kModel").toInt();
+            e.t3k_title = o.value("t3kTitle").toString();
+            e.t3k_creator = o.value("t3kCreator").toString();
             if (!e.path.isEmpty()) {
                 h.insert(e.path, e);
             }
@@ -437,21 +438,21 @@ private:
         return h;
     }
 
-    static void writeCache(const QString& path, const QList<LibraryEntry>& entries) {
+    static void write_cache(const QString& path, const QList<LibraryEntry>& entries) {
         QJsonArray arr;
         for (const auto& e : entries) {
             QJsonObject o;
             o["kind"] = static_cast<int>(e.kind);
             o["path"] = e.path;
             o["size"] = static_cast<double>(e.size);
-            o["mtime"] = static_cast<double>(e.mtimeMs);
+            o["mtime"] = static_cast<double>(e.mtime_ms);
             o["summary"] = e.summary;
             o["details"] = e.details;
-            if (e.fromTone3000()) {
-                o["t3kTone"] = e.t3kToneId;
-                o["t3kModel"] = e.t3kModelId;
-                o["t3kTitle"] = e.t3kTitle;
-                o["t3kCreator"] = e.t3kCreator;
+            if (e.from_tone3000()) {
+                o["t3kTone"] = e.t3k_tone_id;
+                o["t3kModel"] = e.t3k_model_id;
+                o["t3kTitle"] = e.t3k_title;
+                o["t3kCreator"] = e.t3k_creator;
             }
             arr.append(o);
         }
@@ -472,84 +473,84 @@ private:
 
 LibraryIndex::LibraryIndex(QObject* parent)
     : QObject(parent)
-    , mRoots(loadRoots()) {
-    mCachePath =
+    , m_roots(load_roots()) {
+    m_cache_path =
         QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/library-index.json";
 
-    mThread = new QThread(this);
-    mThread->setObjectName("LibraryScan");
-    mWorker = new LibraryScanWorker;
-    mWorker->moveToThread(mThread);
-    connect(mThread, &QThread::finished, mWorker, &QObject::deleteLater);
-    connect(mWorker, &LibraryScanWorker::finished, this, &LibraryIndex::onScanFinished);
-    mThread->start(QThread::LowPriority);
+    m_thread = new QThread(this);
+    m_thread->setObjectName("LibraryScan");
+    m_worker = new LibraryScanWorker;
+    m_worker->moveToThread(m_thread);
+    connect(m_thread, &QThread::finished, m_worker, &QObject::deleteLater);
+    connect(m_worker, &LibraryScanWorker::finished, this, &LibraryIndex::on_scan_finished);
+    m_thread->start(QThread::LowPriority);
 
-    mWatcher = new QFileSystemWatcher(this);
-    mDebounce = new QTimer(this);
-    mDebounce->setSingleShot(true);
-    mDebounce->setInterval(600);
-    connect(mDebounce, &QTimer::timeout, this, &LibraryIndex::requestScan);
-    connect(mWatcher, &QFileSystemWatcher::directoryChanged, mDebounce,
+    m_watcher = new QFileSystemWatcher(this);
+    m_debounce = new QTimer(this);
+    m_debounce->setSingleShot(true);
+    m_debounce->setInterval(600);
+    connect(m_debounce, &QTimer::timeout, this, &LibraryIndex::request_scan);
+    connect(m_watcher, &QFileSystemWatcher::directoryChanged, m_debounce,
             qOverload<>(&QTimer::start));
 
-    requestScan();
+    request_scan();
 }
 
 LibraryIndex::~LibraryIndex() {
-    mThread->quit();
-    mThread->wait();
+    m_thread->quit();
+    m_thread->wait();
 }
 
-void LibraryIndex::setRoots(const LibraryRoots& roots) {
-    mRoots = roots;
-    saveRoots(roots);
-    requestScan();
+void LibraryIndex::set_roots(const LibraryRoots& roots) {
+    m_roots = roots;
+    save_roots(roots);
+    request_scan();
 }
 
 void LibraryIndex::rescan() {
-    requestScan();
+    request_scan();
 }
 
-void LibraryIndex::requestScan() {
-    if (mScanning) {
-        mRescanQueued = true;
+void LibraryIndex::request_scan() {
+    if (m_scanning) {
+        m_rescan_queued = true;
         return;
     }
-    mScanning = true;
-    emit scanStarted();
+    m_scanning = true;
+    emit scan_started();
     QMetaObject::invokeMethod(
-        mWorker,
-        [w = mWorker, roots = mRoots.withTone3000Dir(), cache = mCachePath] {
+        m_worker,
+        [w = m_worker, roots = m_roots.with_tone3000_dir(), cache = m_cache_path] {
             w->scan(roots, cache);
         },
         Qt::QueuedConnection);
 }
 
-void LibraryIndex::onScanFinished(QList<LibraryEntry> entries, QStringList dirs) {
-    mEntries = std::move(entries);
-    mScanning = false;
+void LibraryIndex::on_scan_finished(QList<LibraryEntry> entries, QStringList dirs) {
+    m_entries = std::move(entries);
+    m_scanning = false;
 
     // Watch every scanned directory (new files, deletions, new subfolders);
     // a burst of changes collapses into one rescan through the debounce.
-    const QStringList old = mWatcher->directories();
+    const QStringList old = m_watcher->directories();
     if (!old.isEmpty()) {
-        mWatcher->removePaths(old);
+        m_watcher->removePaths(old);
     }
     if (!dirs.isEmpty()) {
-        mWatcher->addPaths(dirs);
+        m_watcher->addPaths(dirs);
     }
 
-    emit entriesChanged();
+    emit entries_changed();
 
-    if (mRescanQueued) {
-        mRescanQueued = false;
-        requestScan();
+    if (m_rescan_queued) {
+        m_rescan_queued = false;
+        request_scan();
     }
 }
 
 const LibraryEntry* LibraryIndex::find(const QString& path) const {
     const QString c = QDir::cleanPath(path);
-    for (const auto& e : mEntries) {
+    for (const auto& e : m_entries) {
         if (e.path == c) {
             return &e;
         }
@@ -561,72 +562,72 @@ LibraryEntry LibraryIndex::describe(const QString& path) {
     LibraryEntry e;
     const QFileInfo fi(path);
     bool ok = false;
-    e.kind = kindForPath(path, &ok);
+    e.kind = kind_for_path(path, &ok);
     e.path = QDir::cleanPath(fi.absoluteFilePath());
     e.name = fi.completeBaseName();
     e.size = fi.size();
-    e.mtimeMs = fi.lastModified().toMSecsSinceEpoch();
+    e.mtime_ms = fi.lastModified().toMSecsSinceEpoch();
     if (!ok || !fi.exists()) {
         return e;
     }
     switch (e.kind) {
-        case LibraryEntry::Kind::Model:
-            describeModel(e.path, e);
+        case LibraryEntry::Kind::MODEL:
+            describe_model(e.path, e);
             break;
         case LibraryEntry::Kind::IR:
-            describeIR(e.path, e);
+            describe_ir(e.path, e);
             break;
-        case LibraryEntry::Kind::Preset:
-            describePreset(e.path, e);
+        case LibraryEntry::Kind::PRESET:
+            describe_preset(e.path, e);
             break;
     }
-    readSidecar(e.path, e);
-    appendSidecarInfo(e);
+    read_sidecar(e.path, e);
+    append_sidecar_info(e);
     return e;
 }
 
-const LibraryEntry* LibraryIndex::findTone3000Model(int modelId) const {
-    if (modelId == 0) {
+const LibraryEntry* LibraryIndex::find_tone3000_model(int model_id) const {
+    if (model_id == 0) {
         return nullptr;
     }
-    for (const auto& e : mEntries) {
-        if (e.t3kModelId == modelId) {
+    for (const auto& e : m_entries) {
+        if (e.t3k_model_id == model_id) {
             return &e;
         }
     }
     return nullptr;
 }
 
-bool LibraryIndex::hasTone3000Tone(int toneId) const {
-    if (toneId == 0) {
+bool LibraryIndex::has_tone3000_tone(int tone_id) const {
+    if (tone_id == 0) {
         return false;
     }
-    for (const auto& e : mEntries) {
-        if (e.t3kToneId == toneId) {
+    for (const auto& e : m_entries) {
+        if (e.t3k_tone_id == tone_id) {
             return true;
         }
     }
     return false;
 }
 
-LibraryEntry::Kind LibraryIndex::kindForPath(const QString& path, bool* ok) {
+LibraryEntry::Kind LibraryIndex::kind_for_path(const QString& path, bool* ok) {
     const QString ext = QFileInfo(path).suffix().toLower();
     if (ok) {
         *ok = true;
     }
     if (ext == "nam") {
-        return LibraryEntry::Kind::Model;
+        return LibraryEntry::Kind::MODEL;
     }
     if (ext == "wav") {
         return LibraryEntry::Kind::IR;
     }
     if (ext == "nampreset") {
-        return LibraryEntry::Kind::Preset;
+        return LibraryEntry::Kind::PRESET;
     }
     if (ok) {
         *ok = false;
     }
-    return LibraryEntry::Kind::Model;
+    return LibraryEntry::Kind::MODEL;
 }
 
 #include "LibraryIndex.moc"

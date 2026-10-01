@@ -22,7 +22,7 @@ struct Note
     double wholes; // length in whole notes
 };
 
-inline constexpr std::array<Note, 16> kNotes = {{
+inline constexpr std::array<Note, 16> K_NOTES = {{
     {"4 bars", 4.0},
     {"2 bars", 2.0},
     {"1/1", 1.0},
@@ -41,28 +41,28 @@ inline constexpr std::array<Note, 16> kNotes = {{
     {"1/32", 0.03125},
 }};
 
-inline constexpr double kMinBpm = 40.0;
-inline constexpr double kMaxBpm = 240.0;
-inline constexpr double kDefaultBpm = 120.0;
+inline constexpr double K_MIN_BPM = 40.0;
+inline constexpr double K_MAX_BPM = 240.0;
+inline constexpr double K_DEFAULT_BPM = 120.0;
 
 // The knob's value (a double) rounded to a valid kNotes index.
-inline size_t clampIndex(double v) {
-    const long last = static_cast<long>(kNotes.size()) - 1;
+inline size_t clamp_index(double v) {
+    const long last = static_cast<long>(K_NOTES.size()) - 1;
     return static_cast<size_t>(std::clamp(std::lround(v), 0L, last));
 }
 
 inline QString label(double index) {
-    return QString::fromLatin1(kNotes[clampIndex(index)].label);
+    return QString::fromLatin1(K_NOTES[clamp_index(index)].label);
 }
 
 /// Note length in milliseconds at `bpm` quarter notes per minute.
-inline double noteMs(double bpm, double index) {
-    return kNotes[clampIndex(index)].wholes * 4.0 * 60000.0 / bpm;
+inline double note_ms(double bpm, double index) {
+    return K_NOTES[clamp_index(index)].wholes * 4.0 * 60000.0 / bpm;
 }
 
 /// LFO rate whose period is one note.
-inline double noteHz(double bpm, double index) {
-    return 1000.0 / noteMs(bpm, index);
+inline double note_hz(double bpm, double index) {
+    return 1000.0 / note_ms(bpm, index);
 }
 
 } // namespace TempoSync

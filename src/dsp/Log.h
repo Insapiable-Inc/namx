@@ -7,4 +7,4 @@
 // controlled at runtime, e.g. QT_LOGGING_RULES="nam.audio.info=false".
 #include <QLoggingCategory>
 
-Q_DECLARE_LOGGING_CATEGORY(lcAudio)
+Q_DECLARE_LOGGING_CATEGORY(lc_audio)

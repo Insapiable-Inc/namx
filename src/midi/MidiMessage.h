@@ -9,67 +9,68 @@ struct MidiMessage
 {
     enum Type
     {
-        None,
-        ControlChange,
-        NoteOn,
-        NoteOff,
-        ProgramChange,
-        Clock,
-        Start,
-        Stop,
-        Continue
+        NONE,
+        CONTROL_CHANGE,
+        NOTE_ON,
+        NOTE_OFF,
+        PROGRAM_CHANGE,
+        CLOCK,
+        START,
+        STOP,
+        CONTINUE
     };
 
-    Type type = None;
+    Type type = NONE;
     int channel = 0; // 0–15 (voice messages)
     int number = 0; // CC#, note, program
     int value = 0; // CC value, velocity (NoteOn with velocity 0 arrives as NoteOff)
 
-    bool isVoice() const {
-        return type == ControlChange || type == NoteOn || type == NoteOff || type == ProgramChange;
+    bool is_voice() const {
+        return type == CONTROL_CHANGE || type == NOTE_ON || type == NOTE_OFF ||
+               type == PROGRAM_CHANGE;
     }
 
     /// "CC 11 · ch 1 · 64" — for the Mappings window and Learn feedback.
     QString describe() const {
         const QString ch = QString("ch %1").arg(channel + 1);
         switch (type) {
-            case ControlChange:
+            case CONTROL_CHANGE:
                 return QString("CC %1 · %2 · %3").arg(number).arg(ch).arg(value);
-            case NoteOn:
+            case NOTE_ON:
                 return QString("Note %1 on · %2 · vel %3").arg(number).arg(ch).arg(value);
-            case NoteOff:
+            case NOTE_OFF:
                 return QString("Note %1 off · %2").arg(number).arg(ch);
-            case ProgramChange:
+            case PROGRAM_CHANGE:
                 return QString("Program %1 · %2").arg(number).arg(ch);
-            case Clock:
+            case CLOCK:
                 return "Clock";
-            case Start:
+            case START:
                 return "Start";
-            case Stop:
+            case STOP:
                 return "Stop";
-            case Continue:
+            case CONTINUE:
                 return "Continue";
-            case None:
+            case NONE:
                 break;
         }
         return {};
     }
 
     /// Parses a raw 1–3 byte message (WinMM delivers these packed).
-    static MidiMessage fromBytes(unsigned char status, unsigned char d1, unsigned char d2) {
+    static MidiMessage from_bytes(unsigned char status, unsigned char d1, unsigned char d2) {
         MidiMessage m;
         switch (status) {
             case 0xF8:
-                m.type = Clock;
+                m.type = CLOCK;
                 return m;
             case 0xFA:
-                m.type = Start;
+                m.type = START;
                 return m;
             case 0xFB:
-                m.type = Continue;
+                m.type = CONTINUE;
                 return m;
             case 0xFC:
-                m.type = Stop;
+                m.type = STOP;
                 return m;
             default:
                 break;
@@ -79,20 +80,20 @@ struct MidiMessage
         m.value = d2 & 0x7F;
         switch (status & 0xF0) {
             case 0x80:
-                m.type = NoteOff;
+                m.type = NOTE_OFF;
                 break;
             case 0x90:
-                m.type = m.value ? NoteOn : NoteOff;
+                m.type = m.value ? NOTE_ON : NOTE_OFF;
                 break;
             case 0xB0:
-                m.type = ControlChange;
+                m.type = CONTROL_CHANGE;
                 break;
             case 0xC0:
-                m.type = ProgramChange;
+                m.type = PROGRAM_CHANGE;
                 m.value = 0;
                 break;
             default:
-                m.type = None;
+                m.type = NONE;
                 break;
         }
         return m;

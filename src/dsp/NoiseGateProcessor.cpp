@@ -4,54 +4,54 @@
 #include <cmath>
 
 void NoiseGateProcessor::reset() {
-    mEnvelope[0] = mEnvelope[1] = 0.0f;
-    mGain[0] = mGain[1] = 0.0f;
+    m_envelope[0] = m_envelope[1] = 0.0f;
+    m_gain[0] = m_gain[1] = 0.0f;
 }
 
-void NoiseGateProcessor::processChannel(float* buf, size_t nframes, int ch) {
-    const float threshLin = std::pow(10.0f, mThresholdDB.load() / 20.0f);
-    const float fs = static_cast<float>(mSampleRate);
-    const float atMS = mAttackMS.load();
-    const float relMS = mReleaseMS.load();
+void NoiseGateProcessor::process_channel(float* buf, size_t nframes, int ch) {
+    const float thresh_lin = std::pow(10.0f, m_threshold_db.load() / 20.0f);
+    const float fs = static_cast<float>(m_sample_rate);
+    const float at_ms = m_attack_ms.load();
+    const float rel_ms = m_release_ms.load();
 
-    const float atCoeff = std::exp(-1.0f / (fs * atMS * 0.001f));
-    const float relCoeff = std::exp(-1.0f / (fs * relMS * 0.001f));
+    const float at_coeff = std::exp(-1.0f / (fs * at_ms * 0.001f));
+    const float rel_coeff = std::exp(-1.0f / (fs * rel_ms * 0.001f));
 
-    float& env = mEnvelope[ch];
-    float& gain = mGain[ch];
-    float minGain = 1.0f;
+    float& env = m_envelope[ch];
+    float& gain = m_gain[ch];
+    float min_gain = 1.0f;
 
     for (size_t i = 0; i < nframes; ++i) {
         float level = std::abs(buf[i]);
         if (level > env) {
-            env = atCoeff * env + (1.0f - atCoeff) * level;
+            env = at_coeff * env + (1.0f - at_coeff) * level;
         } else {
-            env = relCoeff * env + (1.0f - relCoeff) * level;
+            env = rel_coeff * env + (1.0f - rel_coeff) * level;
         }
 
-        float target = (env >= threshLin) ? 1.0f : 0.0f;
+        float target = (env >= thresh_lin) ? 1.0f : 0.0f;
 
         if (target > gain) {
-            gain = atCoeff * gain + (1.0f - atCoeff) * target;
+            gain = at_coeff * gain + (1.0f - at_coeff) * target;
         } else {
-            gain = relCoeff * gain + (1.0f - relCoeff) * target;
+            gain = rel_coeff * gain + (1.0f - rel_coeff) * target;
         }
 
-        minGain = std::min(minGain, gain);
+        min_gain = std::min(min_gain, gain);
         buf[i] *= gain;
     }
     // One log per block, not per sample.
-    const float grDB = minGain > 1e-3f ? -20.0f * std::log10(minGain) : kMaxGrDb;
-    if (grDB > mGrPeakDB.load(std::memory_order_relaxed)) {
-        mGrPeakDB.store(std::min(grDB, kMaxGrDb), std::memory_order_relaxed);
+    const float gr_db = min_gain > 1e-3f ? -20.0f * std::log10(min_gain) : K_MAX_GR_DB;
+    if (gr_db > m_gr_peak_db.load(std::memory_order_relaxed)) {
+        m_gr_peak_db.store(std::min(gr_db, K_MAX_GR_DB), std::memory_order_relaxed);
     }
 }
 
-void NoiseGateProcessor::processBlockMono(float* buf, size_t nframes) {
-    processChannel(buf, nframes, 0);
+void NoiseGateProcessor::process_block_mono(float* buf, size_t nframes) {
+    process_channel(buf, nframes, 0);
 }
 
-void NoiseGateProcessor::processBlockDual(float* L, float* R, size_t nframes) {
-    processChannel(L, nframes, 0);
-    processChannel(R, nframes, 1);
+void NoiseGateProcessor::process_block_dual(float* l, float* r, size_t nframes) {
+    process_channel(l, nframes, 0);
+    process_channel(r, nframes, 1);
 }

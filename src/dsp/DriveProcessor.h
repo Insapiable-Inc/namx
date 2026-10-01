@@ -13,35 +13,35 @@ class DriveProcessor : public EffectBase
 public:
     void reset() override;
 
-    void setDrive(float pct) {
-        mDrive.store(pct);
+    void set_drive(float pct) {
+        m_drive.store(pct);
     } // 0–100
-    void setTone(float pct) {
-        mTone.store(pct);
+    void set_tone(float pct) {
+        m_tone.store(pct);
     } // 0–100: dark → bright
-    void setLevel(float dB) {
-        mLevelDb.store(dB);
+    void set_level(float d_b) {
+        m_level_db.store(d_b);
     }
 
 protected:
-    void onSampleRateChanged(double) override {
+    void on_sample_rate_changed(double) override {
         reset();
     }
-    void processBlockMono(float* buf, size_t n) override {
-        processChannel(buf, n, 0);
+    void process_block_mono(float* buf, size_t n) override {
+        process_channel(buf, n, 0);
     }
-    void processBlockDual(float* L, float* R, size_t n) override {
-        processChannel(L, n, 0);
-        processChannel(R, n, 1);
+    void process_block_dual(float* l, float* r, size_t n) override {
+        process_channel(l, n, 0);
+        process_channel(r, n, 1);
     }
 
 private:
-    void processChannel(float* buf, size_t n, int ch);
+    void process_channel(float* buf, size_t n, int ch);
 
-    std::atomic<float> mDrive{30.0f};
-    std::atomic<float> mTone{50.0f};
-    std::atomic<float> mLevelDb{0.0f};
+    std::atomic<float> m_drive{30.0f};
+    std::atomic<float> m_tone{50.0f};
+    std::atomic<float> m_level_db{0.0f};
 
     // Per-channel state: input high-pass, tone low-pass.
-    float mHpX1[2]{}, mHpY1[2]{}, mLp[2]{};
+    float m_hp_x1[2]{}, m_hp_y1[2]{}, m_lp[2]{};
 };

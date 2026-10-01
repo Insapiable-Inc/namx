@@ -10,7 +10,7 @@
 /// running across preset loads and never goes through the chain.
 ///
 /// RT-safety: click samples for every sound set are synthesized in
-/// setSampleRate() (non-RT — called from onBufferSizeChanged); process()
+/// setSampleRate() (non-RT — called from on_buffer_size_changed); process()
 /// only reads them. All settings are atomics read once per block.
 ///
 /// Timing: BPM counts quarter notes (the same tempo the sync knobs use);
@@ -20,94 +20,94 @@
 class Metronome
 {
 public:
-    static constexpr int kMaxBeats = 16;
+    static constexpr int K_MAX_BEATS = 16;
     enum Accent : uint32_t
     {
-        Mute = 0,
-        Soft = 1,
-        Normal = 2,
-        Strong = 3
+        MUTE = 0,
+        SOFT = 1,
+        NORMAL = 2,
+        STRONG = 3
     };
     enum Sound
     {
-        Click = 0,
-        Wood,
-        Beep,
-        Cowbell,
-        kSoundCount
+        CLICK = 0,
+        WOOD,
+        BEEP,
+        COWBELL,
+        K_SOUND_COUNT
     };
 
     Metronome();
 
-    void setSampleRate(double sr); // non-RT: rebuilds the click samples
+    void set_sample_rate(double sr); // non-RT: rebuilds the click samples
 
     // ---- Settings (any thread) ----
-    void setRunning(bool on) {
-        mRunning.store(on);
+    void set_running(bool on) {
+        m_running.store(on);
     }
-    bool isRunning() const {
-        return mRunning.load();
+    bool is_running() const {
+        return m_running.load();
     }
-    void setBpm(double bpm) {
-        mBpm.store(bpm);
+    void set_bpm(double bpm) {
+        m_bpm.store(bpm);
     }
-    void setMeter(int beats, int unit);
+    void set_meter(int beats, int unit);
     int beats() const {
-        return mBeats.load();
+        return m_beats.load();
     }
     int unit() const {
-        return mUnit.load();
+        return m_unit.load();
     }
     /// 2 bits per beat (Accent), beat 0 in the low bits.
-    void setAccents(uint32_t packed) {
-        mAccents.store(packed);
+    void set_accents(uint32_t packed) {
+        m_accents.store(packed);
     }
     uint32_t accents() const {
-        return mAccents.load();
+        return m_accents.load();
     }
-    static Accent accentOf(uint32_t packed, int beat) {
+    static Accent accent_of(uint32_t packed, int beat) {
         return Accent((packed >> (2 * beat)) & 3u);
     }
-    static uint32_t withAccent(uint32_t packed, int beat, Accent a) {
+    static uint32_t with_accent(uint32_t packed, int beat, Accent a) {
         return (packed & ~(3u << (2 * beat))) | (uint32_t(a) << (2 * beat));
     }
     /// Default pattern: strong downbeat; compound meters (6/8, 9/8, 12/8 …)
     /// stress each group of three; everything else Normal.
-    static uint32_t defaultAccents(int beats, int unit);
+    static uint32_t default_accents(int beats, int unit);
 
-    void setSubdivision(int n) {
-        mSubdiv.store(n < 1 ? 1 : n > 4 ? 4 : n);
+    void set_subdivision(int n) {
+        m_subdiv.store(n < 1 ? 1 : n > 4 ? 4 : n);
     }
-    void setSound(int s) {
-        mSound.store(s < 0 || s >= kSoundCount ? 0 : static_cast<size_t>(s));
+    void set_sound(int s) {
+        m_sound.store(s < 0 || s >= K_SOUND_COUNT ? 0 : static_cast<size_t>(s));
     }
-    void setVolumeDb(float dB) {
-        mVolumeDb.store(dB);
+    void set_volume_db(float d_b) {
+        m_volume_db.store(d_b);
     }
-    void setPan(float pan) {
-        mPan.store(pan);
+    void set_pan(float pan) {
+        m_pan.store(pan);
     } // -1 … +1
     /// Bars counted in (all beats audible, downbeat strong) when starting.
-    void setCountInBars(int bars) {
-        mCountInBars.store(bars < 0 ? 0 : bars > 4 ? 4 : bars);
+    void set_count_in_bars(int bars) {
+        m_count_in_bars.store(bars < 0 ? 0 : bars > 4 ? 4 : bars);
     }
     /// Silent after the count-in: the beat LEDs keep time, the click stops.
-    void setSilentAfterCountIn(bool s) {
-        mSilentAfter.store(s);
+    void set_silent_after_count_in(bool s) {
+        m_silent_after.store(s);
     }
 
     // ---- GUI polling ----
     /// Beat within the bar for the LEDs; -1 when stopped.
-    int currentBeat() const {
-        return mBeatNow.load(std::memory_order_relaxed);
+    int current_beat() const {
+        return m_beat_now.load(std::memory_order_relaxed);
     }
-    bool inCountIn() const {
-        return mCountInNow.load(std::memory_order_relaxed);
+    bool in_count_in() const {
+        return m_count_in_now.load(std::memory_order_relaxed);
     }
 
     // ---- Audio thread ----
     /// Adds the click into L/R (after the output stage).
-    void process(float* L, float* R, size_t n);
+    void process(float* l, float* r, size_t n);
 
 private:
     struct Voice
@@ -119,33 +119,33 @@ private:
     };
 
     void trigger(const std::vector<float>& sample, float gain);
-    void render(float* L, float* R, size_t from, size_t to, float gL, float gR);
-    void buildSounds(double sr);
+    void render(float* l, float* r, size_t from, size_t to, float g_l, float g_r);
+    void build_sounds(double sr);
 
     // Click samples: [sound][0 = accent, 1 = beat, 2 = subdivision].
-    std::array<std::array<std::vector<float>, 3>, kSoundCount> mSamples;
-    double mSr = 48000.0;
+    std::array<std::array<std::vector<float>, 3>, K_SOUND_COUNT> m_samples;
+    double m_sr = 48000.0;
 
-    std::atomic<bool> mRunning{false};
-    std::atomic<double> mBpm{120.0};
-    std::atomic<int> mBeats{4};
-    std::atomic<int> mUnit{4};
-    std::atomic<uint32_t> mAccents;
-    std::atomic<int> mSubdiv{1};
-    std::atomic<size_t> mSound{Click};
-    std::atomic<float> mVolumeDb{-6.0f};
-    std::atomic<float> mPan{0.0f};
-    std::atomic<int> mCountInBars{0};
-    std::atomic<bool> mSilentAfter{false};
+    std::atomic<bool> m_running{false};
+    std::atomic<double> m_bpm{120.0};
+    std::atomic<int> m_beats{4};
+    std::atomic<int> m_unit{4};
+    std::atomic<uint32_t> m_accents;
+    std::atomic<int> m_subdiv{1};
+    std::atomic<size_t> m_sound{CLICK};
+    std::atomic<float> m_volume_db{-6.0f};
+    std::atomic<float> m_pan{0.0f};
+    std::atomic<int> m_count_in_bars{0};
+    std::atomic<bool> m_silent_after{false};
 
-    std::atomic<int> mBeatNow{-1};
-    std::atomic<bool> mCountInNow{false};
+    std::atomic<int> m_beat_now{-1};
+    std::atomic<bool> m_count_in_now{false};
 
     // Audio-thread state.
-    bool mWasRunning = false;
-    double mUntilNext = 0.0; // samples from block start to the next tick
-    int mTick = 0; // subdivision index within the beat
-    int mBeat = 0; // beat within the bar
-    int mCountInLeft = 0; // bars of count-in still to play
-    std::array<Voice, 2> mVoices{};
+    bool m_was_running = false;
+    double m_until_next = 0.0; // samples from block start to the next tick
+    int m_tick = 0; // subdivision index within the beat
+    int m_beat = 0; // beat within the bar
+    int m_count_in_left = 0; // bars of count-in still to play
+    std::array<Voice, 2> m_voices{};
 };

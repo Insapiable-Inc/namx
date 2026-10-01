@@ -16,10 +16,10 @@ public:
     /// note is the full name from the tuner ("A#2" — only the letter and the
     /// sharp are shown); cents is -50..+50; hz is the detected frequency;
     /// valid=false blanks the display.
-    void setReading(const QString& note, float cents, bool valid, float hz = 0.0f);
+    void set_reading(const QString& note, float cents, bool valid, float hz = 0.0f);
     /// Left of the note: the detected frequency (on) or the A4 reference (off).
-    void setShowHz(bool on);
-    void setReference(int hz);
+    void set_show_hz(bool on);
+    void set_reference(int hz);
 
     QSize sizeHint() const override {
         return {380, 48};
@@ -32,13 +32,13 @@ protected:
     void paintEvent(QPaintEvent* event) override;
 
 private:
-    QString mNote{"-"};
-    float mCents{0.0f};
-    bool mValid{false};
-    float mHz{0.0f};
-    bool mShowHz{false};
-    int mReference{440};
+    QString m_note{"-"};
+    float m_cents{0.0f};
+    bool m_valid{false};
+    float m_hz{0.0f};
+    bool m_show_hz{false};
+    int m_reference{440};
 
-    static constexpr int kLedCount = 21; // odd, so one LED is dead center
-    static constexpr float kInTuneCents = 3.0f; // |cents| at or below: green
+    static constexpr int K_LED_COUNT = 21; // odd, so one LED is dead center
+    static constexpr float K_IN_TUNE_CENTS = 3.0f; // |cents| at or below: green
 };

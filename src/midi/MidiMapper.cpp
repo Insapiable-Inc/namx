@@ -15,28 +15,28 @@
 // MidiMapping
 // ---------------------------------------------------------------------------
 
-static const char* kSourceNames[] = {"cc", "note", "program"};
-static const char* kModeNames[] = {"absolute", "relative", "toggle", "momentary"};
+static const char* k_source_names[] = {"cc", "note", "program"};
+static const char* k_mode_names[] = {"absolute", "relative", "toggle", "momentary"};
 
-QJsonObject MidiMapping::toJson() const {
+QJsonObject MidiMapping::to_json() const {
     QJsonObject o;
     o["enabled"] = enabled;
-    o["source"] = kSourceNames[source];
+    o["source"] = k_source_names[source];
     o["channel"] = channel < 0 ? 0 : channel + 1; // 0 = any, 1–16
     o["number"] = number;
     o["target"] = target;
-    o["mode"] = kModeNames[mode];
+    o["mode"] = k_mode_names[mode];
     o["min"] = min;
     o["max"] = max;
     return o;
 }
 
-MidiMapping MidiMapping::fromJson(const QJsonObject& o) {
+MidiMapping MidiMapping::from_json(const QJsonObject& o) {
     MidiMapping m;
     m.enabled = o.value("enabled").toBool(true);
     const QString src = o.value("source").toString();
     for (int i = 0; i < 3; ++i) {
-        if (src == kSourceNames[i]) {
+        if (src == k_source_names[i]) {
             m.source = Source(i);
         }
     }
@@ -45,7 +45,7 @@ MidiMapping MidiMapping::fromJson(const QJsonObject& o) {
     m.target = o.value("target").toString();
     const QString mode = o.value("mode").toString();
     for (int i = 0; i < 4; ++i) {
-        if (mode == kModeNames[i]) {
+        if (mode == k_mode_names[i]) {
             m.mode = Mode(i);
         }
     }
@@ -60,11 +60,11 @@ bool MidiMapping::matches(const MidiMessage& m) const {
     }
     switch (source) {
         case CC:
-            return m.type == MidiMessage::ControlChange;
-        case Note:
-            return m.type == MidiMessage::NoteOn || m.type == MidiMessage::NoteOff;
-        case Program:
-            return m.type == MidiMessage::ProgramChange;
+            return m.type == MidiMessage::CONTROL_CHANGE;
+        case NOTE:
+            return m.type == MidiMessage::NOTE_ON || m.type == MidiMessage::NOTE_OFF;
+        case PROGRAM:
+            return m.type == MidiMessage::PROGRAM_CHANGE;
     }
     return false;
 }
@@ -80,32 +80,32 @@ MidiMapper::MidiMapper(QObject* parent)
         const QJsonArray arr =
             QJsonDocument::fromJson(s.value("midi/mappings").toByteArray()).array();
         for (const auto& v : arr) {
-            mMappings << MidiMapping::fromJson(v.toObject());
+            m_mappings << MidiMapping::from_json(v.toObject());
         }
     } else {
-        mMappings = defaultMappings();
+        m_mappings = default_mappings();
     }
-    mFollowClock = s.value("midi/followClock", false).toBool();
-    mClock.start();
+    m_follow_clock = s.value("midi/followClock", false).toBool();
+    m_clock.start();
 }
 
-void MidiMapper::addKnob(const QString& id, const QString& group, const QString& label,
-                         KnobWidget* k) {
-    mTargets.push_back({id, label, group, k, nullptr, {}});
+void MidiMapper::add_knob(const QString& id, const QString& group, const QString& label,
+                          KnobWidget* k) {
+    m_targets.push_back({id, label, group, k, nullptr, {}});
 }
 
-void MidiMapper::addToggle(const QString& id, const QString& group, const QString& label,
-                           ToggleSwitch* t) {
-    mTargets.push_back({id, label, group, nullptr, t, {}});
+void MidiMapper::add_toggle(const QString& id, const QString& group, const QString& label,
+                            ToggleSwitch* t) {
+    m_targets.push_back({id, label, group, nullptr, t, {}});
 }
 
-void MidiMapper::addAction(const QString& id, const QString& group, const QString& label,
-                           std::function<void()> fn) {
-    mTargets.push_back({id, label, group, nullptr, nullptr, std::move(fn)});
+void MidiMapper::add_action(const QString& id, const QString& group, const QString& label,
+                            std::function<void()> fn) {
+    m_targets.push_back({id, label, group, nullptr, nullptr, std::move(fn)});
 }
 
 const MidiTarget* MidiMapper::target(const QString& id) const {
-    for (const auto& t : mTargets) {
+    for (const auto& t : m_targets) {
         if (t.id == id) {
             return &t;
         }
@@ -113,8 +113,8 @@ const MidiTarget* MidiMapper::target(const QString& id) const {
     return nullptr;
 }
 
-const MidiTarget* MidiMapper::targetFor(const QWidget* w) const {
-    for (const auto& t : mTargets) {
+const MidiTarget* MidiMapper::target_for(const QWidget* w) const {
+    for (const auto& t : m_targets) {
         if ((t.knob && t.knob == w) || (t.toggle && t.toggle == w)) {
             return &t;
         }
@@ -122,70 +122,70 @@ const MidiTarget* MidiMapper::targetFor(const QWidget* w) const {
     return nullptr;
 }
 
-QList<MidiMapping> MidiMapper::defaultMappings() {
+QList<MidiMapping> MidiMapper::default_mappings() {
     // The common floor-controller setup: program changes 0–7 recall slots 1–8.
     QList<MidiMapping> out;
     for (int i = 0; i < 8; ++i) {
         MidiMapping m;
-        m.source = MidiMapping::Program;
+        m.source = MidiMapping::PROGRAM;
         m.number = i;
         m.target = QString("action:slot%1").arg(i + 1);
-        m.mode = MidiMapping::Toggle;
+        m.mode = MidiMapping::TOGGLE;
         out << m;
     }
     return out;
 }
 
-void MidiMapper::setMappings(const QList<MidiMapping>& m) {
-    mMappings = m;
-    mLastValue.clear();
+void MidiMapper::set_mappings(const QList<MidiMapping>& m) {
+    m_mappings = m;
+    m_last_value.clear();
     save();
-    emit mappingsChanged();
+    emit mappings_changed();
 }
 
 void MidiMapper::save() const {
     QJsonArray arr;
-    for (const auto& m : mMappings) {
-        arr.append(m.toJson());
+    for (const auto& m : m_mappings) {
+        arr.append(m.to_json());
     }
     QSettings().setValue("midi/mappings", QJsonDocument(arr).toJson(QJsonDocument::Compact));
 }
 
-bool MidiMapper::hasMapping(const QString& targetId) const {
-    return std::any_of(mMappings.begin(), mMappings.end(), [&](const MidiMapping& m) {
-        return m.target == targetId;
+bool MidiMapper::has_mapping(const QString& target_id) const {
+    return std::any_of(m_mappings.begin(), m_mappings.end(), [&](const MidiMapping& m) {
+        return m.target == target_id;
     });
 }
 
-QString MidiMapper::mappingSummary(const QString& targetId) const {
+QString MidiMapper::mapping_summary(const QString& target_id) const {
     QStringList parts;
-    for (const auto& m : mMappings) {
-        if (m.target != targetId) {
+    for (const auto& m : m_mappings) {
+        if (m.target != target_id) {
             continue;
         }
         const QString ch = m.channel < 0 ? QString() : QString(" ch %1").arg(m.channel + 1);
         parts << (m.source == MidiMapping::CC     ? QString("CC %1").arg(m.number)
-                  : m.source == MidiMapping::Note ? QString("Note %1").arg(m.number)
+                  : m.source == MidiMapping::NOTE ? QString("Note %1").arg(m.number)
                                                   : QString("Program %1").arg(m.number)) +
                      ch;
     }
     return parts.join(", ");
 }
 
-void MidiMapper::forget(const QString& targetId) {
+void MidiMapper::forget(const QString& target_id) {
     QList<MidiMapping> kept;
-    for (const auto& m : mMappings) {
-        if (m.target != targetId) {
+    for (const auto& m : m_mappings) {
+        if (m.target != target_id) {
             kept << m;
         }
     }
-    setMappings(kept);
+    set_mappings(kept);
 }
 
-bool MidiMapper::saveFile(const QString& path) const {
+bool MidiMapper::save_file(const QString& path) const {
     QJsonArray arr;
-    for (const auto& m : mMappings) {
-        arr.append(m.toJson());
+    for (const auto& m : m_mappings) {
+        arr.append(m.to_json());
     }
     QJsonObject root;
     root["version"] = 1;
@@ -198,7 +198,7 @@ bool MidiMapper::saveFile(const QString& path) const {
     return true;
 }
 
-bool MidiMapper::loadFile(const QString& path, QString* error) {
+bool MidiMapper::load_file(const QString& path, QString* error) {
     QFile f(path);
     if (!f.open(QIODevice::ReadOnly)) {
         if (error) {
@@ -216,90 +216,91 @@ bool MidiMapper::loadFile(const QString& path, QString* error) {
     }
     QList<MidiMapping> list;
     for (const auto& v : doc.object().value("mappings").toArray()) {
-        list << MidiMapping::fromJson(v.toObject());
+        list << MidiMapping::from_json(v.toObject());
     }
-    setMappings(list);
+    set_mappings(list);
     return true;
 }
 
-void MidiMapper::learn(const QString& targetId) {
-    mLearnTarget = targetId;
-    mLearnRow = -1;
-    emit learnChanged();
+void MidiMapper::learn(const QString& target_id) {
+    m_learn_target = target_id;
+    m_learn_row = -1;
+    emit learn_changed();
 }
 
-void MidiMapper::learnRow(qsizetype row) {
-    mLearnTarget.clear();
-    mLearnRow = row;
-    emit learnChanged();
+void MidiMapper::learn_row(qsizetype row) {
+    m_learn_target.clear();
+    m_learn_row = row;
+    emit learn_changed();
 }
 
-void MidiMapper::cancelLearn() {
-    if (mLearnTarget.isEmpty() && mLearnRow < 0) {
+void MidiMapper::cancel_learn() {
+    if (m_learn_target.isEmpty() && m_learn_row < 0) {
         return;
     }
-    mLearnTarget.clear();
-    mLearnRow = -1;
-    emit learnChanged();
+    m_learn_target.clear();
+    m_learn_row = -1;
+    emit learn_changed();
 }
 
-void MidiMapper::setFollowClock(bool on) {
-    mFollowClock = on;
+void MidiMapper::set_follow_clock(bool on) {
+    m_follow_clock = on;
     QSettings().setValue("midi/followClock", on);
 }
 
 void MidiMapper::handle(const MidiMessage& m) {
-    if (m.type == MidiMessage::Clock || m.type == MidiMessage::Start ||
-        m.type == MidiMessage::Stop || m.type == MidiMessage::Continue) {
-        handleClock(m);
+    if (m.type == MidiMessage::CLOCK || m.type == MidiMessage::START ||
+        m.type == MidiMessage::STOP || m.type == MidiMessage::CONTINUE) {
+        handle_clock(m);
         return;
     }
-    if (!m.isVoice()) {
+    if (!m.is_voice()) {
         return;
     }
     emit activity(m.describe());
 
     // Learn: the next CC, note-on or program change binds. Note-offs and
     // CC zeros (a footswitch release) don't start a binding.
-    const bool learnable = m.type == MidiMessage::ProgramChange || m.type == MidiMessage::NoteOn ||
-                           (m.type == MidiMessage::ControlChange && m.value > 0);
-    if (learnable && (!mLearnTarget.isEmpty() || mLearnRow >= 0)) {
+    const bool learnable = m.type == MidiMessage::PROGRAM_CHANGE ||
+                           m.type == MidiMessage::NOTE_ON ||
+                           (m.type == MidiMessage::CONTROL_CHANGE && m.value > 0);
+    if (learnable && (!m_learn_target.isEmpty() || m_learn_row >= 0)) {
         MidiMapping mp;
-        if (mLearnRow >= 0 && mLearnRow < mMappings.size()) {
-            mp = mMappings[mLearnRow];
+        if (m_learn_row >= 0 && m_learn_row < m_mappings.size()) {
+            mp = m_mappings[m_learn_row];
         }
-        mp.source = m.type == MidiMessage::ControlChange   ? MidiMapping::CC
-                    : m.type == MidiMessage::ProgramChange ? MidiMapping::Program
-                                                           : MidiMapping::Note;
+        mp.source = m.type == MidiMessage::CONTROL_CHANGE   ? MidiMapping::CC
+                    : m.type == MidiMessage::PROGRAM_CHANGE ? MidiMapping::PROGRAM
+                                                            : MidiMapping::NOTE;
         mp.channel = m.channel;
         mp.number = m.number;
-        QList<MidiMapping> list = mMappings;
-        if (mLearnRow >= 0 && mLearnRow < list.size()) {
-            list[mLearnRow] = mp;
+        QList<MidiMapping> list = m_mappings;
+        if (m_learn_row >= 0 && m_learn_row < list.size()) {
+            list[m_learn_row] = mp;
         } else {
-            mp.target = mLearnTarget;
-            const MidiTarget* t = target(mLearnTarget);
+            mp.target = m_learn_target;
+            const MidiTarget* t = target(m_learn_target);
             // Sensible default mode: knobs follow a CC; switches and actions
             // flip per press (footswitches), anything driven by notes too.
-            mp.mode = (t && t->knob && mp.source == MidiMapping::CC) ? MidiMapping::Absolute
-                                                                     : MidiMapping::Toggle;
+            mp.mode = (t && t->knob && mp.source == MidiMapping::CC) ? MidiMapping::ABSOLUTE
+                                                                     : MidiMapping::TOGGLE;
             list.erase(std::remove_if(list.begin(), list.end(),
                                       [&](const MidiMapping& x) {
-                                          return x.target == mLearnTarget;
+                                          return x.target == m_learn_target;
                                       }),
                        list.end());
             list << mp;
         }
-        mLearnTarget.clear();
-        mLearnRow = -1;
-        setMappings(list);
-        emit learnChanged();
+        m_learn_target.clear();
+        m_learn_row = -1;
+        set_mappings(list);
+        emit learn_changed();
         return;
     }
 
-    for (int i = 0; i < mMappings.size(); ++i) {
-        if (mMappings[i].matches(m)) {
-            apply(mMappings[i], i, m);
+    for (int i = 0; i < m_mappings.size(); ++i) {
+        if (m_mappings[i].matches(m)) {
+            apply(m_mappings[i], i, m);
         }
     }
 }
@@ -313,24 +314,24 @@ void MidiMapper::apply(MidiMapping& mp, int index, const MidiMessage& m) {
     // Normalize the message to a 0…127 value + "pressed" edge.
     int value = 0;
     switch (m.type) {
-        case MidiMessage::ControlChange:
+        case MidiMessage::CONTROL_CHANGE:
             value = m.value;
             break;
-        case MidiMessage::NoteOn:
+        case MidiMessage::NOTE_ON:
             value = 127;
             break;
-        case MidiMessage::NoteOff:
+        case MidiMessage::NOTE_OFF:
             value = 0;
             break;
-        case MidiMessage::ProgramChange:
+        case MidiMessage::PROGRAM_CHANGE:
             value = 127;
             break;
         default:
             return;
     }
-    const int last = mLastValue.value(index, 0);
-    const bool pressed = value >= 64 && (last < 64 || m.type == MidiMessage::ProgramChange);
-    mLastValue[index] = m.type == MidiMessage::ProgramChange ? 0 : value;
+    const int last = m_last_value.value(index, 0);
+    const bool pressed = value >= 64 && (last < 64 || m.type == MidiMessage::PROGRAM_CHANGE);
+    m_last_value[index] = m.type == MidiMessage::PROGRAM_CHANGE ? 0 : value;
 
     if (t->action) {
         if (pressed) {
@@ -341,15 +342,15 @@ void MidiMapper::apply(MidiMapping& mp, int index, const MidiMessage& m) {
 
     if (t->toggle) {
         switch (mp.mode) {
-            case MidiMapping::Toggle:
-            case MidiMapping::Relative:
+            case MidiMapping::TOGGLE:
+            case MidiMapping::RELATIVE:
                 if (pressed) {
                     t->toggle->setChecked(!t->toggle->isChecked());
                 }
                 break;
-            case MidiMapping::Absolute:
-            case MidiMapping::Momentary:
-                if (m.type != MidiMessage::ProgramChange) {
+            case MidiMapping::ABSOLUTE:
+            case MidiMapping::MOMENTARY:
+                if (m.type != MidiMessage::PROGRAM_CHANGE) {
                     t->toggle->setChecked(value >= 64);
                 } else {
                     t->toggle->setChecked(!t->toggle->isChecked());
@@ -364,68 +365,68 @@ void MidiMapper::apply(MidiMapping& mp, int index, const MidiMessage& m) {
         const double lo = k->minimum() + mp.min * (k->maximum() - k->minimum());
         const double hi = k->minimum() + mp.max * (k->maximum() - k->minimum());
         switch (mp.mode) {
-            case MidiMapping::Absolute:
-                k->setValue(lo + (hi - lo) * value / 127.0);
+            case MidiMapping::ABSOLUTE:
+                k->set_value(lo + (hi - lo) * value / 127.0);
                 break;
-            case MidiMapping::Relative: {
-                if (m.type != MidiMessage::ControlChange) {
+            case MidiMapping::RELATIVE: {
+                if (m.type != MidiMessage::CONTROL_CHANGE) {
                     break;
                 }
                 const int delta = m.value < 64 ? m.value : m.value - 128; // two's complement
                 const double step = (hi - lo) / 127.0;
-                k->setValue(
+                k->set_value(
                     std::clamp(k->value() + delta * step, std::min(lo, hi), std::max(lo, hi)));
                 break;
             }
-            case MidiMapping::Toggle:
+            case MidiMapping::TOGGLE:
                 if (pressed) {
-                    k->setValue(std::abs(k->value() - hi) < 1e-9 ? lo : hi);
+                    k->set_value(std::abs(k->value() - hi) < 1e-9 ? lo : hi);
                 }
                 break;
-            case MidiMapping::Momentary:
-                k->setValue(value >= 64 ? hi : lo);
+            case MidiMapping::MOMENTARY:
+                k->set_value(value >= 64 ? hi : lo);
                 break;
         }
     }
 }
 
-void MidiMapper::handleClock(const MidiMessage& m) {
-    if (m.type != MidiMessage::Clock) {
-        mBeatStartMs = -1; // transport change: restart the measurement
-        mClockTicks = 0;
-        mBeatMs.clear();
+void MidiMapper::handle_clock(const MidiMessage& m) {
+    if (m.type != MidiMessage::CLOCK) {
+        m_beat_start_ms = -1; // transport change: restart the measurement
+        m_clock_ticks = 0;
+        m_beat_ms.clear();
         return;
     }
-    if (!mFollowClock) {
+    if (!m_follow_clock) {
         return;
     }
-    const qint64 now = mClock.elapsed();
-    if (mBeatStartMs < 0 || now - mBeatStartMs > 2000) // first tick / clock resumed
+    const qint64 now = m_clock.elapsed();
+    if (m_beat_start_ms < 0 || now - m_beat_start_ms > 2000) // first tick / clock resumed
     {
-        mBeatStartMs = now;
-        mClockTicks = 0;
-        mBeatMs.clear();
+        m_beat_start_ms = now;
+        m_clock_ticks = 0;
+        m_beat_ms.clear();
         return;
     }
-    if (++mClockTicks < 24) {
+    if (++m_clock_ticks < 24) {
         return; // 24 ticks per quarter note
     }
-    mBeatMs << static_cast<double>(now - mBeatStartMs);
-    if (mBeatMs.size() > 4) {
-        mBeatMs.removeFirst();
+    m_beat_ms << static_cast<double>(now - m_beat_start_ms);
+    if (m_beat_ms.size() > 4) {
+        m_beat_ms.removeFirst();
     }
-    mBeatStartMs = now;
-    mClockTicks = 0;
+    m_beat_start_ms = now;
+    m_clock_ticks = 0;
 
     double sum = 0.0;
-    for (double b : mBeatMs) {
+    for (double b : m_beat_ms) {
         sum += b;
     }
-    const double avgMs = sum / static_cast<double>(mBeatMs.size());
-    const double bpm = std::round(60000.0 / avgMs * 10.0) / 10.0;
-    if (std::abs(bpm - mLastClockBpm) >= 0.2) // ignore jitter
+    const double avg_ms = sum / static_cast<double>(m_beat_ms.size());
+    const double bpm = std::round(60000.0 / avg_ms * 10.0) / 10.0;
+    if (std::abs(bpm - m_last_clock_bpm) >= 0.2) // ignore jitter
     {
-        mLastClockBpm = bpm;
-        emit tempoFromClock(bpm);
+        m_last_clock_bpm = bpm;
+        emit tempo_from_clock(bpm);
     }
 }

@@ -31,31 +31,31 @@ LibraryDock::LibraryDock(LibraryIndex& index, Tone3000Client& client, QWidget* p
         b->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         b->setFocusPolicy(Qt::NoFocus);
         connect(b, &QToolButton::clicked, this, [this, i] {
-            setTab(static_cast<Tab>(i));
+            set_tab(static_cast<Tab>(i));
         });
         row->addWidget(b);
-        mTabBtn[i] = b;
+        m_tab_btn[i] = b;
     }
     lay->addWidget(tabs);
 
-    mStack = new QStackedWidget;
-    mLocal = new LibraryPanel(index);
-    mT3k = new Tone3000Panel(client, index);
-    mStack->addWidget(mLocal);
-    mStack->addWidget(mT3k);
-    lay->addWidget(mStack, 1);
+    m_stack = new QStackedWidget;
+    m_local = new LibraryPanel(index);
+    m_t3k = new Tone3000Panel(client, index);
+    m_stack->addWidget(m_local);
+    m_stack->addWidget(m_t3k);
+    lay->addWidget(m_stack, 1);
 
-    setTab(QSettings().value("library/tab", 0).toInt() == 1 ? Tone3000 : Local);
+    set_tab(QSettings().value("library/tab", 0).toInt() == 1 ? TONE3000 : LOCAL);
 }
 
-int LibraryDock::currentIndex() const {
-    return mStack->currentIndex();
+int LibraryDock::current_index() const {
+    return m_stack->currentIndex();
 }
 
-void LibraryDock::setTab(Tab tab) {
-    mStack->setCurrentIndex(static_cast<int>(tab));
+void LibraryDock::set_tab(Tab tab) {
+    m_stack->setCurrentIndex(static_cast<int>(tab));
     for (int i = 0; i < 2; ++i) {
-        mTabBtn[i]->setChecked(i == static_cast<int>(tab));
+        m_tab_btn[i]->setChecked(i == static_cast<int>(tab));
     }
     QSettings().setValue("library/tab", static_cast<int>(tab));
 }

@@ -6,20 +6,20 @@ MidiInput::MidiInput(QObject* parent)
     : QObject(parent) {
     qRegisterMetaType<MidiMessage>();
     const QStringList off = QSettings().value("midi/disabledDevices").toStringList();
-    mDisabled = QSet<QString>(off.begin(), off.end());
+    m_disabled = QSet<QString>(off.begin(), off.end());
 }
 
-void MidiInput::setEnabled(const QString& device, bool on) {
-    if (on == isEnabled(device)) {
+void MidiInput::set_enabled(const QString& device, bool on) {
+    if (on == is_enabled(device)) {
         return;
     }
     if (on) {
-        mDisabled.remove(device);
+        m_disabled.remove(device);
     } else {
-        mDisabled.insert(device);
+        m_disabled.insert(device);
     }
-    QStringList off(mDisabled.begin(), mDisabled.end());
+    QStringList off(m_disabled.begin(), m_disabled.end());
     off.sort();
     QSettings().setValue("midi/disabledDevices", off);
-    syncConnections();
+    sync_connections();
 }

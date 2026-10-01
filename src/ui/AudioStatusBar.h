@@ -21,48 +21,48 @@ public:
     /// Re-read backend state + device lists. Call after audio (re)starts.
     void refresh();
     /// Show the not-connected state; the backend item becomes click-to-retry.
-    void setError(const QString& text);
+    void set_error(const QString& text);
     /// Keep rate/buffer/latency current (cheap; called from the meter timer —
     /// PipeWire can change the quantum while running).
-    void updateMetrics();
+    void update_metrics();
 
-    QString inputDeviceId() const {
-        return mInputId;
+    QString input_device_id() const {
+        return m_input_id;
     }
-    QString outputDeviceId() const {
-        return mOutputId;
+    QString output_device_id() const {
+        return m_output_id;
     }
 
 signals:
     /// A device was picked from a menu and persisted — owner restarts audio.
-    void deviceSelectionChanged();
+    void device_selection_changed();
     /// The backend item was clicked while disconnected.
-    void reconnectRequested();
+    void reconnect_requested();
 
 private:
-    void pickDevice(bool input);
-    void updateDspLoad();
-    void updateXruns();
-    void resetCounters();
-    void setDeviceLabels();
+    void pick_device(bool input);
+    void update_dsp_load();
+    void update_xruns();
+    void reset_counters();
+    void set_device_labels();
 
-    AudioEngine& mEngine;
-    QLabel* mLblBackend = nullptr;
-    QLabel* mLblRate = nullptr;
-    QLabel* mLblBuffer = nullptr;
-    QLabel* mLblLatency = nullptr;
-    QLabel* mLblLoad = nullptr;
-    QLabel* mLblXruns = nullptr;
-    QLabel* mLblInput = nullptr;
-    QLabel* mLblOutput = nullptr;
-    QString mInputId, mOutputId;
-    bool mConnected = false;
+    AudioEngine& m_engine;
+    QLabel* m_lbl_backend = nullptr;
+    QLabel* m_lbl_rate = nullptr;
+    QLabel* m_lbl_buffer = nullptr;
+    QLabel* m_lbl_latency = nullptr;
+    QLabel* m_lbl_load = nullptr;
+    QLabel* m_lbl_xruns = nullptr;
+    QLabel* m_lbl_input = nullptr;
+    QLabel* m_lbl_output = nullptr;
+    QString m_input_id, m_output_id;
+    bool m_connected = false;
 
     // DSP load: peaks taken every metrics tick, shown as the max over a
     // ~0.5 s window (readable, still catches spikes); the all-time max since
     // the last reset goes in the tooltip.
-    float mLoadWindow = 0.0f;
-    int mLoadTicks = 0;
-    float mLoadMax = 0.0f;
-    int mShownXruns = -2;
+    float m_load_window = 0.0f;
+    int m_load_ticks = 0;
+    float m_load_max = 0.0f;
+    int m_shown_xruns = -2;
 };

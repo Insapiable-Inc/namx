@@ -11,55 +11,55 @@ class DynamicWahProcessor : public EffectBase
 public:
     void reset() override;
 
-    void setSensitivity(float pct) {
-        mSensitivity.store(pct);
+    void set_sensitivity(float pct) {
+        m_sensitivity.store(pct);
     }
-    void setResonance(float pct) {
-        mResonance.store(pct);
+    void set_resonance(float pct) {
+        m_resonance.store(pct);
     }
-    void setMix(float pct) {
-        mMix.store(pct);
+    void set_mix(float pct) {
+        m_mix.store(pct);
     }
-    void setPedalMode(bool on) {
-        mPedal.store(on);
+    void set_pedal_mode(bool on) {
+        m_pedal.store(on);
     }
-    void setPosition(float pct) {
-        mPosition.store(pct);
+    void set_position(float pct) {
+        m_position.store(pct);
     } // 0 heel … 100 toe
 
     float sensitivity() const {
-        return mSensitivity.load();
+        return m_sensitivity.load();
     }
     float resonance() const {
-        return mResonance.load();
+        return m_resonance.load();
     }
     float mix() const {
-        return mMix.load();
+        return m_mix.load();
     }
 
 protected:
-    void onSampleRateChanged(double sr) override;
-    void processBlockMono(float* buf, size_t nframes) override;
-    void processBlockDual(float* L, float* R, size_t nframes) override;
+    void on_sample_rate_changed(double sr) override;
+    void process_block_mono(float* buf, size_t nframes) override;
+    void process_block_dual(float* l, float* r, size_t nframes) override;
 
 private:
-    void processChannel(float* buf, size_t nframes, int ch);
+    void process_channel(float* buf, size_t nframes, int ch);
 
-    static constexpr float kBaseFreq = 400.0f;
-    static constexpr float kPeakFreq = 3000.0f;
+    static constexpr float K_BASE_FREQ = 400.0f;
+    static constexpr float K_PEAK_FREQ = 3000.0f;
 
-    std::atomic<float> mSensitivity{70.0f};
-    std::atomic<float> mResonance{60.0f};
-    std::atomic<float> mMix{100.0f};
-    std::atomic<bool> mPedal{false};
-    std::atomic<float> mPosition{50.0f};
-    float mPosSmooth[2]{0.5f, 0.5f}; // de-zippered pedal position per channel
+    std::atomic<float> m_sensitivity{70.0f};
+    std::atomic<float> m_resonance{60.0f};
+    std::atomic<float> m_mix{100.0f};
+    std::atomic<bool> m_pedal{false};
+    std::atomic<float> m_position{50.0f};
+    float m_pos_smooth[2]{0.5f, 0.5f}; // de-zippered pedal position per channel
 
-    float mEnvAttack{0.0f};
-    float mEnvRelease{0.0f};
+    float m_env_attack{0.0f};
+    float m_env_release{0.0f};
 
     // Per-channel state: [0] = mono/L, [1] = R (stereo input).
-    float mEnv[2]{0.0f, 0.0f};
-    float mSVF_LP[2]{0.0f, 0.0f};
-    float mSVF_BP[2]{0.0f, 0.0f};
+    float m_env[2]{0.0f, 0.0f};
+    float m_svf_lp[2]{0.0f, 0.0f};
+    float m_svf_bp[2]{0.0f, 0.0f};
 };

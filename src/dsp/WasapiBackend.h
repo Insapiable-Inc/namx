@@ -34,69 +34,69 @@ public:
     WasapiBackend();
     ~WasapiBackend() override;
 
-    bool start(const std::string& clientName, Callback* cb) override;
+    bool start(const std::string& client_name, Callback* cb) override;
     void stop() override;
 
-    bool isRunning() const override {
-        return mRunning.load();
+    bool is_running() const override {
+        return m_running.load();
     }
-    double sampleRate() const override {
-        return mSampleRate;
+    double sample_rate() const override {
+        return m_sample_rate;
     }
-    int bufferSize() const override {
-        return mBufferSize;
+    int buffer_size() const override {
+        return m_buffer_size;
     }
-    std::string statusString() const override;
+    std::string status_string() const override;
 
-    std::vector<DeviceInfo> enumerateInputDevices() const override;
-    std::vector<DeviceInfo> enumerateOutputDevices() const override;
-    bool startWithDevices(const std::string& clientName, Callback* cb,
-                          const std::string& inputDeviceId,
-                          const std::string& outputDeviceId) override;
+    std::vector<DeviceInfo> enumerate_input_devices() const override;
+    std::vector<DeviceInfo> enumerate_output_devices() const override;
+    bool start_with_devices(const std::string& client_name, Callback* cb,
+                            const std::string& input_device_id,
+                            const std::string& output_device_id) override;
 
     // Capture packets flagged DATA_DISCONTINUITY (the engine dropped input).
-    int xrunCount() const override {
-        return mXruns.load(std::memory_order_relaxed);
+    int xrun_count() const override {
+        return m_xruns.load(std::memory_order_relaxed);
     }
-    void resetXruns() override {
-        mXruns.store(0, std::memory_order_relaxed);
+    void reset_xruns() override {
+        m_xruns.store(0, std::memory_order_relaxed);
     }
 
-    // WASAPI has no port graph — defaults from base (supportsPortRouting=false)
-    // and empty currentConnections/applyConnections apply.
+    // WASAPI has no port graph — defaults from base (supports_port_routing=false)
+    // and empty current_connections/apply_connections apply.
 
 private:
 #ifdef _WIN32
-    void audioThreadMain();
-    bool initCapture();
-    bool initRender();
+    void audio_thread_main();
+    bool init_capture();
+    bool init_render();
     void teardown();
 
-    IMMDevice* openDeviceById(const std::string& deviceId) const;
+    IMMDevice* open_device_by_id(const std::string& deviceId) const;
 
-    IMMDeviceEnumerator* mEnumerator = nullptr;
-    IMMDevice* mCaptureDevice = nullptr;
-    IMMDevice* mRenderDevice = nullptr;
-    IAudioClient* mCaptureClient = nullptr;
-    IAudioClient* mRenderClient = nullptr;
-    IAudioCaptureClient* mCapture = nullptr;
-    IAudioRenderClient* mRender = nullptr;
+    IMMDeviceEnumerator* m_enumerator = nullptr;
+    IMMDevice* m_capture_device = nullptr;
+    IMMDevice* m_render_device = nullptr;
+    IAudioClient* m_capture_client = nullptr;
+    IAudioClient* m_render_client = nullptr;
+    IAudioCaptureClient* m_capture = nullptr;
+    IAudioRenderClient* m_render = nullptr;
 
     // HANDLEs from <synchapi.h>; void* keeps the header windows.h-free.
-    void* mCaptureEvent = nullptr;
-    void* mRenderEvent = nullptr;
-    void* mStopEvent = nullptr;
+    void* m_capture_event = nullptr;
+    void* m_render_event = nullptr;
+    void* m_stop_event = nullptr;
 
-    std::thread mAudioThread;
-    std::string mDeviceName;
-    bool mComInitialized = false;
+    std::thread m_audio_thread;
+    std::string m_device_name;
+    bool m_com_initialized = false;
 #endif
 
-    Callback* mCallback = nullptr;
-    std::atomic<bool> mRunning{false};
-    std::atomic<int> mXruns{0};
-    double mSampleRate = 48000.0;
-    int mBufferSize = 0;
-    int mCaptureChannels = 0;
-    int mRenderChannels = 0;
+    Callback* m_callback = nullptr;
+    std::atomic<bool> m_running{false};
+    std::atomic<int> m_xruns{0};
+    double m_sample_rate = 48000.0;
+    int m_buffer_size = 0;
+    int m_capture_channels = 0;
+    int m_render_channels = 0;
 };

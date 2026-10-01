@@ -19,100 +19,100 @@
 class PitchShifter
 {
 public:
-    void prepare(double sr, float windowMs = 50.0f) {
-        mWindow = std::max(64.0f, static_cast<float>(sr) * windowMs / 1000.0f);
-        mSearch = std::max(8, static_cast<int>(sr * 0.012));
-        mCorrLen = std::max<size_t>(32, static_cast<size_t>(sr * 0.005));
-        mLine.resize(static_cast<size_t>(mWindow) * 2 + static_cast<size_t>(mSearch) * 2 +
-                     mCorrLen + 8);
-        for (size_t i = 0; i < kTable; ++i) {
-            const double s = std::sin(3.14159265358979323846 * static_cast<double>(i) / kTable);
-            mHann[i] = static_cast<float>(s * s); // sin²: tap A + tap B (½ period apart) = 1
+    void prepare(double sr, float window_ms = 50.0f) {
+        m_window = std::max(64.0f, static_cast<float>(sr) * window_ms / 1000.0f);
+        m_search = std::max(8, static_cast<int>(sr * 0.012));
+        m_corr_len = std::max<size_t>(32, static_cast<size_t>(sr * 0.005));
+        m_line.resize(static_cast<size_t>(m_window) * 2 + static_cast<size_t>(m_search) * 2 +
+                      m_corr_len + 8);
+        for (size_t i = 0; i < K_TABLE; ++i) {
+            const double s = std::sin(3.14159265358979323846 * static_cast<double>(i) / K_TABLE);
+            m_hann[i] = static_cast<float>(s * s); // sin²: tap A + tap B (½ period apart) = 1
         }
         reset();
     }
 
     void reset() {
-        mLine.clear();
-        mPhase = 0.0f;
-        mOff[0] = mOff[1] = 0.0f;
-        mPrev[0] = 0.0f;
-        mPrev[1] = 0.5f;
+        m_line.clear();
+        m_phase = 0.0f;
+        m_off[0] = m_off[1] = 0.0f;
+        m_prev[0] = 0.0f;
+        m_prev[1] = 0.5f;
     }
 
     /// Semitones (fractional allowed); 0 = passthrough delay.
-    void setSemitones(float st) {
-        mRatio = std::pow(2.0f, st / 12.0f);
+    void set_semitones(float st) {
+        m_ratio = std::pow(2.0f, st / 12.0f);
     }
 
     float process(float x) {
-        if (mLine.empty()) {
+        if (m_line.empty()) {
             return x;
         }
-        mLine.push(x);
+        m_line.push(x);
 
         // The delay changes at (1 − ratio) samples per sample: shrinking
         // delay = reading faster = pitch up.
-        mPhase += (1.0f - mRatio) / mWindow;
-        mPhase -= std::floor(mPhase);
-        const float pB = mPhase + 0.5f >= 1.0f ? mPhase - 0.5f : mPhase + 0.5f;
+        m_phase += (1.0f - m_ratio) / m_window;
+        m_phase -= std::floor(m_phase);
+        const float p_b = m_phase + 0.5f >= 1.0f ? m_phase - 0.5f : m_phase + 0.5f;
 
         // A wrap = the tap just jumped to the other end of its sweep (at
         // zero gain): re-align it against the other tap.
-        const float p[2] = {mPhase, pB};
+        const float p[2] = {m_phase, p_b};
         for (int k = 0; k < 2; ++k) {
-            if (std::abs(p[k] - mPrev[k]) > 0.5f) {
-                mOff[k] = align(p[k], p[1 - k], mOff[1 - k]);
+            if (std::abs(p[k] - m_prev[k]) > 0.5f) {
+                m_off[k] = align(p[k], p[1 - k], m_off[1 - k]);
             }
-            mPrev[k] = p[k];
+            m_prev[k] = p[k];
         }
 
-        const float out = tap(p[0], mOff[0]) * hann(p[0]) + tap(p[1], mOff[1]) * hann(p[1]);
+        const float out = tap(p[0], m_off[0]) * hann(p[0]) + tap(p[1], m_off[1]) * hann(p[1]);
         return out;
     }
 
 private:
-    static constexpr size_t kTable = 1024;
+    static constexpr size_t K_TABLE = 1024;
 
     float hann(float p) const {
-        return mHann[static_cast<size_t>(p * kTable) & (kTable - 1)];
+        return m_hann[static_cast<size_t>(p * K_TABLE) & (K_TABLE - 1)];
     }
 
-    float delayOf(float p, float off) const {
-        return 1.0f + p * mWindow + off;
+    float delay_of(float p, float off) const {
+        return 1.0f + p * m_window + off;
     }
 
     // Best offset in [−search, +search] (kept ≥ 0 delay) for a restarting
     // tap: maximise the normalised correlation between the last mCorrLen
     // samples behind its new read point and behind the other tap's.
-    float align(float p, float pOther, float offOther) const {
-        const float dOther = delayOf(pOther, offOther);
-        const float dBase = delayOf(p, 0.0f);
+    float align(float p, float p_other, float off_other) const {
+        const float d_other = delay_of(p_other, off_other);
+        const float d_base = delay_of(p, 0.0f);
         auto at = [&](float d, size_t j) {
-            return mLine.at(static_cast<size_t>(d) + j);
+            return m_line.at(static_cast<size_t>(d) + j);
         };
         auto score = [&](int off) {
-            const float d = dBase + static_cast<float>(off);
+            const float d = d_base + static_cast<float>(off);
             if (d < 1.0f ||
-                d + static_cast<float>(mCorrLen) + 2.0f >= static_cast<float>(mLine.size())) {
+                d + static_cast<float>(m_corr_len) + 2.0f >= static_cast<float>(m_line.size())) {
                 return -1e30f;
             }
             float xy = 0.0f, yy = 1e-9f;
-            for (size_t j = 0; j < mCorrLen; j += 2) // every other sample: plenty for alignment
+            for (size_t j = 0; j < m_corr_len; j += 2) // every other sample: plenty for alignment
             {
-                const float a = at(d, j), b = at(dOther, j);
+                const float a = at(d, j), b = at(d_other, j);
                 xy += a * b;
                 yy += a * a;
             }
             return xy / std::sqrt(yy);
         };
         int best = 0;
-        float bestS = score(0);
-        for (int off = -mSearch; off <= mSearch; off += 4) // coarse
+        float best_s = score(0);
+        for (int off = -m_search; off <= m_search; off += 4) // coarse
         {
             const float sc = score(off);
-            if (sc > bestS) {
-                bestS = sc;
+            if (sc > best_s) {
+                best_s = sc;
                 best = off;
             }
         }
@@ -120,8 +120,8 @@ private:
         for (int off = c - 3; off <= c + 3; ++off) // refine
         {
             const float sc = score(off);
-            if (sc > bestS) {
-                bestS = sc;
+            if (sc > best_s) {
+                best_s = sc;
                 best = off;
             }
         }
@@ -129,16 +129,16 @@ private:
     }
 
     float tap(float p, float off) const {
-        return mLine.interpolate(delayOf(p, off));
+        return m_line.interpolate(delay_of(p, off));
     }
 
-    DelayLine mLine;
-    std::array<float, kTable> mHann{};
-    float mPhase = 0.0f;
-    float mWindow = 2400.0f;
-    float mRatio = 1.0f;
-    int mSearch = 576;
-    size_t mCorrLen = 240;
-    float mOff[2]{}; // per-tap alignment offset (samples)
-    float mPrev[2]{0.0f, 0.5f}; // last phase per tap (wrap detection)
+    DelayLine m_line;
+    std::array<float, K_TABLE> m_hann{};
+    float m_phase = 0.0f;
+    float m_window = 2400.0f;
+    float m_ratio = 1.0f;
+    int m_search = 576;
+    size_t m_corr_len = 240;
+    float m_off[2]{}; // per-tap alignment offset (samples)
+    float m_prev[2]{0.0f, 0.5f}; // last phase per tap (wrap detection)
 };

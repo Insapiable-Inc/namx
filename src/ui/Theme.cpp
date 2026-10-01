@@ -22,7 +22,7 @@ struct FxColor
     const char* id;
     const char* accent;
 };
-static constexpr FxColor kFxColors[] = {
+static constexpr FxColor K_FX_COLORS[] = {
     {"tuner", "#b6aa8d"},     {"gate", "#8f969e"},    {"comp", "#4f78bd"},    {"wah", "#d4c19a"},
     {"flanger", "#93477b"},   {"phaser", "#4bba5b"},  {"nam", "#e4b954"},     {"eq", "#a5a38f"},
     {"chorus", "#8dccf3"},    {"tremolo", "#19848e"}, {"delay", "#aaa6a0"},   {"reverb", "#8f7d99"},
@@ -30,16 +30,16 @@ static constexpr FxColor kFxColors[] = {
     {"transpose", "#c9a6f2"}, {"neutral", "#7d8590"},
 };
 
-QColor accent(const QString& fxId) {
-    for (const auto& fc : kFxColors) {
-        if (fxId == QLatin1String(fc.id)) {
+QColor accent(const QString& fx_id) {
+    for (const auto& fc : K_FX_COLORS) {
+        if (fx_id == QLatin1String(fc.id)) {
             return QColor(fc.accent);
         }
     }
     return QColor("#7d8590");
 }
 
-QColor genericAccent() {
+QColor generic_accent() {
     return QColor("#5cc8a8");
 }
 
@@ -47,13 +47,13 @@ QColor genericAccent() {
 QColor track() {
     return QColor("#2a2f38");
 }
-QColor trackHover() {
+QColor track_hover() {
     return QColor("#353c4a");
 }
-QColor knobBodyTop() {
+QColor knob_body_top() {
     return QColor("#2e3441");
 }
-QColor knobBodyBot() {
+QColor knob_body_bot() {
     return QColor("#1c2028");
 }
 QColor bezel() {
@@ -62,54 +62,54 @@ QColor bezel() {
 QColor well() {
     return QColor("#181b22");
 }
-QColor dimText() {
+QColor dim_text() {
     return QColor("#aab0bc");
 }
-QColor thumbTop() {
+QColor thumb_top() {
     return QColor("#ffffff");
 }
-QColor thumbBot() {
+QColor thumb_bot() {
     return QColor("#d8dee9");
 }
 
-QColor meterLow() {
+QColor meter_low() {
     return QColor("#5cc8a8");
 }
-QColor meterMid() {
+QColor meter_mid() {
     return QColor("#f0c850");
 }
-QColor meterHigh() {
+QColor meter_high() {
     return QColor("#e85a4f");
 }
-QColor meterClip() {
+QColor meter_clip() {
     return QColor("#ff5252");
 }
 
-QColor ledGreen() {
+QColor led_green() {
     return QColor("#42e86c");
 }
-QColor ledRed() {
+QColor led_red() {
     return QColor("#ff453a");
 }
-QColor displayBg() {
+QColor display_bg() {
     return QColor("#07080c");
 }
 
-void tagCard(QWidget* card, const QString& fxId) {
+void tag_card(QWidget* card, const QString& fx_id) {
     if (!card) {
         return;
     }
-    card->setProperty("fx", fxId);
+    card->setProperty("fx", fx_id);
 
     // The app stylesheet disables parent→child palette propagation, so the
     // accents are pushed to the interactive descendants explicitly. Call
     // tagCard AFTER the card's knobs/toggles have been created.
-    const QColor a = accent(fxId);
+    const QColor a = accent(fx_id);
     for (auto* k : card->findChildren<KnobWidget*>()) {
-        k->setAccent(a);
+        k->set_accent(a);
     }
     for (auto* t : card->findChildren<ToggleSwitch*>()) {
-        t->setAccent(a);
+        t->set_accent(a);
     }
 
     if (card->style()) {
@@ -122,7 +122,7 @@ void tagCard(QWidget* card, const QString& fxId) {
 // Stylesheet
 // ---------------------------------------------------------------------------
 
-static const char* kStyleSheet = R"(
+static const char* k_style_sheet = R"(
 /* === Window / base === */
 QMainWindow, QDialog {
     background-color: #15171c;
@@ -775,7 +775,7 @@ QComboBox QAbstractItemView::item:hover {
 // applyTo() — file dialogs are in-process Qt widgets even when "native" on
 // KDE, and an app-wide stylesheet/palette would drag them into the dark
 // theme; scoping to the window keeps them looking like the OS.
-static const char* kAppStyleSheet = R"(
+static const char* k_app_style_sheet = R"(
 QToolTip {
     background-color: #232830;
     color: #d8dee9;
@@ -787,10 +787,10 @@ QToolTip {
 
 void apply(QApplication& app) {
     app.setStyle("Fusion");
-    app.setStyleSheet(QString::fromUtf8(kAppStyleSheet));
+    app.setStyleSheet(QString::fromUtf8(k_app_style_sheet));
 }
 
-void applyTo(QWidget& root) {
+void apply_to(QWidget& root) {
     QPalette p;
     p.setColor(QPalette::Window, QColor("#15171c"));
     p.setColor(QPalette::WindowText, QColor("#d8dee9"));
@@ -817,8 +817,8 @@ void applyTo(QWidget& root) {
     // Per-effect accent rules — the palette hex verbatim for the name label
     // and the loaded-file label on the Amplifier/Cabinet rows (knob rings and
     // toggles get theirs pushed by tagCard).
-    QString qss = QString::fromUtf8(kStyleSheet);
-    for (const auto& fc : kFxColors) {
+    QString qss = QString::fromUtf8(k_style_sheet);
+    for (const auto& fc : K_FX_COLORS) {
         qss += QString::fromUtf8("QFrame[fx=\"%1\"] QLabel#fxName { color: %2; }\n"
                                  "QFrame[fx=\"%1\"] QLabel#fileStatusOk { color: %2; }\n")
                    .arg(QLatin1String(fc.id), QLatin1String(fc.accent));

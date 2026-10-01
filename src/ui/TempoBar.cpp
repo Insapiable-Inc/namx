@@ -34,14 +34,14 @@ BpmField::BpmField(QWidget* parent)
                "(Shift = fine), click to type");
 }
 
-void BpmField::setValue(double bpm) {
-    bpm = std::round(std::clamp(bpm, TempoSync::kMinBpm, TempoSync::kMaxBpm) * 10.0) / 10.0;
-    if (bpm == mBpm) {
+void BpmField::set_value(double bpm) {
+    bpm = std::round(std::clamp(bpm, TempoSync::K_MIN_BPM, TempoSync::K_MAX_BPM) * 10.0) / 10.0;
+    if (bpm == m_bpm) {
         return;
     }
-    mBpm = bpm;
+    m_bpm = bpm;
     update();
-    emit valueChanged(mBpm);
+    emit value_changed(m_bpm);
 }
 
 void BpmField::paintEvent(QPaintEvent*) {
@@ -49,10 +49,10 @@ void BpmField::paintEvent(QPaintEvent*) {
     p.setRenderHint(QPainter::Antialiasing);
     const QRectF r = QRectF(rect()).adjusted(0.5, 0.5, -0.5, -0.5);
     p.setPen(
-        QPen(underMouse() || mDragging ? Theme::trackHover().lighter(130) : Theme::track(), 1.0));
+        QPen(underMouse() || m_dragging ? Theme::track_hover().lighter(130) : Theme::track(), 1.0));
     p.setBrush(Theme::well());
     p.drawRoundedRect(r, 5, 5);
-    if (mEdit) {
+    if (m_edit) {
         return; // the line edit draws the text while typing
     }
 
@@ -60,49 +60,49 @@ void BpmField::paintEvent(QPaintEvent*) {
     f.setPointSizeF(12.0);
     f.setBold(true);
     p.setFont(f);
-    p.setPen(Theme::genericAccent());
-    const QString num =
-        std::fmod(mBpm, 1.0) == 0.0 ? QString::number(mBpm, 'f', 0) : QString::number(mBpm, 'f', 1);
+    p.setPen(Theme::generic_accent());
+    const QString num = std::fmod(m_bpm, 1.0) == 0.0 ? QString::number(m_bpm, 'f', 0)
+                                                     : QString::number(m_bpm, 'f', 1);
     p.drawText(r.adjusted(8, 0, -30, 0), Qt::AlignRight | Qt::AlignVCenter, num);
     f.setPointSizeF(7.5);
     f.setBold(false);
     p.setFont(f);
-    p.setPen(Theme::dimText());
+    p.setPen(Theme::dim_text());
     p.drawText(r.adjusted(0, 0, -6, 0), Qt::AlignRight | Qt::AlignVCenter, "BPM");
 }
 
 void BpmField::mousePressEvent(QMouseEvent* ev) {
-    if (ev->button() != Qt::LeftButton || mEdit) {
+    if (ev->button() != Qt::LeftButton || m_edit) {
         return QWidget::mousePressEvent(ev);
     }
-    mPressed = true;
-    mDragging = false;
-    mPressY = ev->position().toPoint().y();
-    mPressBpm = mBpm;
+    m_pressed = true;
+    m_dragging = false;
+    m_press_y = ev->position().toPoint().y();
+    m_press_bpm = m_bpm;
 }
 
 void BpmField::mouseMoveEvent(QMouseEvent* ev) {
-    if (!mPressed) {
+    if (!m_pressed) {
         return;
     }
-    const int dy = mPressY - ev->position().toPoint().y();
-    if (!mDragging && std::abs(dy) < 3) {
+    const int dy = m_press_y - ev->position().toPoint().y();
+    if (!m_dragging && std::abs(dy) < 3) {
         return;
     }
-    mDragging = true;
-    const double perPx = (ev->modifiers() & Qt::ShiftModifier) ? 0.025 : 0.25;
-    setValue(mPressBpm + dy * perPx);
+    m_dragging = true;
+    const double per_px = (ev->modifiers() & Qt::ShiftModifier) ? 0.025 : 0.25;
+    set_value(m_press_bpm + dy * per_px);
 }
 
 void BpmField::mouseReleaseEvent(QMouseEvent* ev) {
-    if (ev->button() != Qt::LeftButton || !mPressed) {
+    if (ev->button() != Qt::LeftButton || !m_pressed) {
         return;
     }
-    mPressed = false;
-    if (!mDragging) {
-        beginEdit(); // a click without a drag: type a value
+    m_pressed = false;
+    if (!m_dragging) {
+        begin_edit(); // a click without a drag: type a value
     }
-    mDragging = false;
+    m_dragging = false;
     update();
 }
 
@@ -112,37 +112,37 @@ void BpmField::wheelEvent(QWheelEvent* ev) {
         return;
     }
     const double step = (ev->modifiers() & Qt::ShiftModifier) ? 0.1 : 1.0;
-    setValue(mBpm + (d > 0 ? step : -step));
+    set_value(m_bpm + (d > 0 ? step : -step));
 }
 
-void BpmField::beginEdit() {
-    mEdit = new QLineEdit(QString::number(mBpm, 'f', std::fmod(mBpm, 1.0) == 0.0 ? 0 : 1), this);
-    mEdit->setObjectName("bpmEdit");
-    mEdit->setGeometry(rect().adjusted(2, 2, -2, -2));
-    mEdit->setAlignment(Qt::AlignCenter);
-    mEdit->selectAll();
-    mEdit->show();
-    mEdit->setFocus();
-    connect(mEdit, &QLineEdit::returnPressed, this, [this] {
-        endEdit(true);
+void BpmField::begin_edit() {
+    m_edit = new QLineEdit(QString::number(m_bpm, 'f', std::fmod(m_bpm, 1.0) == 0.0 ? 0 : 1), this);
+    m_edit->setObjectName("bpmEdit");
+    m_edit->setGeometry(rect().adjusted(2, 2, -2, -2));
+    m_edit->setAlignment(Qt::AlignCenter);
+    m_edit->selectAll();
+    m_edit->show();
+    m_edit->setFocus();
+    connect(m_edit, &QLineEdit::returnPressed, this, [this] {
+        end_edit(true);
     });
-    connect(mEdit, &QLineEdit::editingFinished, this, [this] {
-        endEdit(true);
+    connect(m_edit, &QLineEdit::editingFinished, this, [this] {
+        end_edit(true);
     });
     update();
 }
 
-void BpmField::endEdit(bool commit) {
-    if (!mEdit) {
+void BpmField::end_edit(bool commit) {
+    if (!m_edit) {
         return;
     }
-    QLineEdit* e = mEdit;
-    mEdit = nullptr;
+    QLineEdit* e = m_edit;
+    m_edit = nullptr;
     bool ok = false;
     const double v = e->text().replace(',', '.').toDouble(&ok);
     e->deleteLater();
     if (commit && ok) {
-        setValue(v);
+        set_value(v);
     }
     update();
 }
@@ -158,41 +158,41 @@ BeatLeds::BeatLeds(QWidget* parent)
 }
 
 QSize BeatLeds::sizeHint() const {
-    return {mBeats * kW + (mBeats - 1) * kGap + 2, kH};
+    return {m_beats * K_W + (m_beats - 1) * K_GAP + 2, K_H};
 }
 
-void BeatLeds::setPattern(int beats, uint32_t accents) {
-    mBeats = std::clamp(beats, 1, Metronome::kMaxBeats);
-    mAccents = accents;
+void BeatLeds::set_pattern(int beats, uint32_t accents) {
+    m_beats = std::clamp(beats, 1, Metronome::K_MAX_BEATS);
+    m_accents = accents;
     setFixedSize(sizeHint());
     update();
 }
 
-void BeatLeds::setBeat(int beat, bool countIn) {
-    if (beat == mBeat && countIn == mCountIn) {
+void BeatLeds::set_beat(int beat, bool count_in) {
+    if (beat == m_beat && count_in == m_count_in) {
         return;
     }
-    mBeat = beat;
-    mCountIn = countIn;
+    m_beat = beat;
+    m_count_in = count_in;
     update();
 }
 
 void BeatLeds::paintEvent(QPaintEvent*) {
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing);
-    for (int b = 0; b < mBeats; ++b) {
-        const auto a = Metronome::accentOf(mAccents, b);
-        const qreal x = 1 + b * (kW + kGap);
-        const qreal h = a == Metronome::Strong   ? kH - 2
-                        : a == Metronome::Normal ? (kH - 2) * 0.66
-                        : a == Metronome::Soft   ? (kH - 2) * 0.36
-                                                 : (kH - 2) * 0.36;
-        const QRectF r(x, kH - 1 - h, kW, h);
-        const bool lit = b == mBeat;
-        QColor c =
-            lit ? (mCountIn ? Theme::meterMid() : Theme::genericAccent()) : Theme::trackHover();
-        if (a == Metronome::Mute) {
-            p.setPen(QPen(lit ? c : Theme::trackHover(), 1.2));
+    for (int b = 0; b < m_beats; ++b) {
+        const auto a = Metronome::accent_of(m_accents, b);
+        const qreal x = 1 + b * (K_W + K_GAP);
+        const qreal h = a == Metronome::STRONG   ? K_H - 2
+                        : a == Metronome::NORMAL ? (K_H - 2) * 0.66
+                        : a == Metronome::SOFT   ? (K_H - 2) * 0.36
+                                                 : (K_H - 2) * 0.36;
+        const QRectF r(x, K_H - 1 - h, K_W, h);
+        const bool lit = b == m_beat;
+        QColor c = lit ? (m_count_in ? Theme::meter_mid() : Theme::generic_accent())
+                       : Theme::track_hover();
+        if (a == Metronome::MUTE) {
+            p.setPen(QPen(lit ? c : Theme::track_hover(), 1.2));
             p.setBrush(Qt::NoBrush);
         } else {
             p.setPen(Qt::NoPen);
@@ -203,16 +203,16 @@ void BeatLeds::paintEvent(QPaintEvent*) {
 }
 
 void BeatLeds::mousePressEvent(QMouseEvent* ev) {
-    const int b = static_cast<int>(ev->position().x()) / (kW + kGap);
-    if (b < 0 || b >= mBeats) {
+    const int b = static_cast<int>(ev->position().x()) / (K_W + K_GAP);
+    if (b < 0 || b >= m_beats) {
         return;
     }
     // strong → normal → soft → mute → strong
-    const auto a = Metronome::accentOf(mAccents, b);
-    const auto next = a == Metronome::Mute ? Metronome::Strong : Metronome::Accent(a - 1);
-    mAccents = Metronome::withAccent(mAccents, b, next);
+    const auto a = Metronome::accent_of(m_accents, b);
+    const auto next = a == Metronome::MUTE ? Metronome::STRONG : Metronome::Accent(a - 1);
+    m_accents = Metronome::with_accent(m_accents, b, next);
     update();
-    emit accentsChanged(mAccents);
+    emit accents_changed(m_accents);
 }
 
 // ---------------------------------------------------------------------------
@@ -221,18 +221,18 @@ void BeatLeds::mousePressEvent(QMouseEvent* ev) {
 
 namespace
 {
-const char* kSoundNames[] = {"Click", "Wood", "Beep", "Cowbell"};
-const char* kSubdivNames[] = {"Beats", "Eighths", "Triplets", "Sixteenths"};
-const char* kSubdivShort[] = {"♩", "♪♪", "3", "♬"};
+const char* k_sound_names[] = {"Click", "Wood", "Beep", "Cowbell"};
+const char* k_subdiv_names[] = {"Beats", "Eighths", "Triplets", "Sixteenths"};
+const char* k_subdiv_short[] = {"♩", "♪♪", "3", "♬"};
 struct MeterPreset
 {
     int beats, unit;
 };
-const MeterPreset kMeters[] = {{2, 4}, {3, 4}, {4, 4}, {5, 4}, {6, 4}, {7, 4},
-                               {3, 8}, {5, 8}, {6, 8}, {7, 8}, {9, 8}, {12, 8}};
+const MeterPreset K_METERS[] = {{2, 4}, {3, 4}, {4, 4}, {5, 4}, {6, 4}, {7, 4},
+                                {3, 8}, {5, 8}, {6, 8}, {7, 8}, {9, 8}, {12, 8}};
 } // namespace
 
-QToolButton* TempoBar::menuButton(const QString& tip) {
+QToolButton* TempoBar::menu_button(const QString& tip) {
     auto* b = new QToolButton(this);
     b->setObjectName("presetTool");
     b->setToolTip(tip);
@@ -244,7 +244,7 @@ QToolButton* TempoBar::menuButton(const QString& tip) {
 
 TempoBar::TempoBar(Metronome& metronome, QWidget* parent)
     : QFrame(parent)
-    , mMetro(metronome) {
+    , m_metro(metronome) {
     setObjectName("tempoBar");
     auto* lay = new QHBoxLayout(this);
     lay->setContentsMargins(8, 2, 8, 2);
@@ -255,124 +255,125 @@ TempoBar::TempoBar(Metronome& metronome, QWidget* parent)
     caption->setObjectName("presetCaption");
     lay->addWidget(caption);
 
-    mBpm = new BpmField(this);
-    mBpm->setValue(s.value("tempo/bpm", TempoSync::kDefaultBpm).toDouble());
-    mMetro.setBpm(mBpm->value());
-    connect(mBpm, &BpmField::valueChanged, this, [this](double bpm) {
+    m_bpm = new BpmField(this);
+    m_bpm->set_value(s.value("tempo/bpm", TempoSync::K_DEFAULT_BPM).toDouble());
+    m_metro.set_bpm(m_bpm->value());
+    connect(m_bpm, &BpmField::value_changed, this, [this](double bpm) {
         QSettings().setValue("tempo/bpm", bpm);
-        mMetro.setBpm(bpm);
-        emit bpmChanged(bpm);
+        m_metro.set_bpm(bpm);
+        emit bpm_changed(bpm);
     });
-    lay->addWidget(mBpm);
+    lay->addWidget(m_bpm);
 
-    mTap = new QToolButton(this);
-    mTap->setObjectName("presetTool");
-    mTap->setText("Tap");
-    mTap->setToolTip("Tap the tempo: four taps or more average out");
-    mTap->setFocusPolicy(Qt::NoFocus);
-    connect(mTap, &QToolButton::pressed, this, &TempoBar::tap); // on press: tighter timing
-    learnMenuFor(mTap, "action:tap");
-    lay->addWidget(mTap);
+    m_tap = new QToolButton(this);
+    m_tap->setObjectName("presetTool");
+    m_tap->setText("Tap");
+    m_tap->setToolTip("Tap the tempo: four taps or more average out");
+    m_tap->setFocusPolicy(Qt::NoFocus);
+    connect(m_tap, &QToolButton::pressed, this, &TempoBar::tap); // on press: tighter timing
+    learn_menu_for(m_tap, "action:tap");
+    lay->addWidget(m_tap);
     lay->addSpacing(18);
 
     // ---- Metronome ----
-    auto* metroCaption = new QLabel("Metronome", this);
-    metroCaption->setObjectName("presetCaption");
-    lay->addWidget(metroCaption);
+    auto* metro_caption = new QLabel("Metronome", this);
+    metro_caption->setObjectName("presetCaption");
+    lay->addWidget(metro_caption);
 
-    mPlay = new QToolButton(this);
-    mPlay->setObjectName("metroPlay");
-    mPlay->setCheckable(true);
-    mPlay->setText("▶");
-    mPlay->setToolTip("Start / stop the metronome (Space)");
-    mPlay->setFocusPolicy(Qt::NoFocus);
-    connect(mPlay, &QToolButton::toggled, this, [this](bool on) {
-        mMetro.setRunning(on);
-        mPlay->setText(on ? "■" : "▶");
+    m_play = new QToolButton(this);
+    m_play->setObjectName("metroPlay");
+    m_play->setCheckable(true);
+    m_play->setText("▶");
+    m_play->setToolTip("Start / stop the metronome (Space)");
+    m_play->setFocusPolicy(Qt::NoFocus);
+    connect(m_play, &QToolButton::toggled, this, [this](bool on) {
+        m_metro.set_running(on);
+        m_play->setText(on ? "■" : "▶");
     });
     auto* space = new QShortcut(QKeySequence(Qt::Key_Space), this);
     space->setContext(Qt::WindowShortcut);
-    connect(space, &QShortcut::activated, mPlay, &QToolButton::toggle);
-    learnMenuFor(mPlay, "action:metronome");
-    lay->addWidget(mPlay);
+    connect(space, &QShortcut::activated, m_play, &QToolButton::toggle);
+    learn_menu_for(m_play, "action:metronome");
+    lay->addWidget(m_play);
 
-    mLeds = new BeatLeds(this);
-    connect(mLeds, &BeatLeds::accentsChanged, this, [this](uint32_t a) {
-        mMetro.setAccents(a);
+    m_leds = new BeatLeds(this);
+    connect(m_leds, &BeatLeds::accents_changed, this, [this](uint32_t a) {
+        m_metro.set_accents(a);
         QSettings().setValue("metronome/accents", a);
     });
-    lay->addWidget(mLeds, 0, Qt::AlignVCenter);
+    lay->addWidget(m_leds, 0, Qt::AlignVCenter);
 
     // Meter.
-    mMeterBtn = menuButton("Time signature");
-    connect(mMeterBtn->menu(), &QMenu::aboutToShow, this, [this] {
-        QMenu* m = mMeterBtn->menu();
+    m_meter_btn = menu_button("Time signature");
+    connect(m_meter_btn->menu(), &QMenu::aboutToShow, this, [this] {
+        QMenu* m = m_meter_btn->menu();
         m->clear();
-        for (const auto& mp : kMeters) {
+        for (const auto& mp : K_METERS) {
             QAction* a = m->addAction(QString("%1/%2").arg(mp.beats).arg(mp.unit));
             a->setCheckable(true);
-            a->setChecked(mp.beats == mMetro.beats() && mp.unit == mMetro.unit());
+            a->setChecked(mp.beats == m_metro.beats() && mp.unit == m_metro.unit());
             connect(a, &QAction::triggered, this, [this, mp] {
-                setMeter(mp.beats, mp.unit, true);
+                set_meter(mp.beats, mp.unit, true);
             });
         }
         m->addSeparator();
         connect(m->addAction("Custom…"), &QAction::triggered, this, [this] {
             bool ok = false;
             const int beats =
-                QInputDialog::getInt(this, "Time Signature", "Beats per bar:", mMetro.beats(), 1,
-                                     Metronome::kMaxBeats, 1, &ok);
+                QInputDialog::getInt(this, "Time Signature", "Beats per bar:", m_metro.beats(), 1,
+                                     Metronome::K_MAX_BEATS, 1, &ok);
             if (!ok) {
                 return;
             }
             const QString unit =
                 QInputDialog::getItem(this, "Time Signature", "Beat unit:", {"2", "4", "8", "16"},
                                       static_cast<int>(QStringList{"2", "4", "8", "16"}.indexOf(
-                                          QString::number(mMetro.unit()))),
+                                          QString::number(m_metro.unit()))),
                                       false, &ok);
             if (ok) {
-                setMeter(beats, unit.toInt(), true);
+                set_meter(beats, unit.toInt(), true);
             }
         });
     });
-    lay->addWidget(mMeterBtn);
+    lay->addWidget(m_meter_btn);
 
     // Subdivision.
-    mSubdivBtn = menuButton("Subdivision: extra clicks between beats");
+    m_subdiv_btn = menu_button("Subdivision: extra clicks between beats");
     for (int i = 0; i < 4; ++i) {
-        connect(mSubdivBtn->menu()->addAction(kSubdivNames[i]), &QAction::triggered, this,
+        connect(m_subdiv_btn->menu()->addAction(k_subdiv_names[i]), &QAction::triggered, this,
                 [this, i] {
-                    mMetro.setSubdivision(i + 1);
+                    m_metro.set_subdivision(i + 1);
                     QSettings().setValue("metronome/subdivision", i + 1);
-                    updateLabels();
+                    update_labels();
                 });
     }
-    lay->addWidget(mSubdivBtn);
+    lay->addWidget(m_subdiv_btn);
 
     // Sound.
-    mSoundBtn = menuButton("Click sound");
-    for (int i = 0; i < Metronome::kSoundCount; ++i) {
-        connect(mSoundBtn->menu()->addAction(kSoundNames[i]), &QAction::triggered, this, [this, i] {
-            mMetro.setSound(i);
-            QSettings().setValue("metronome/sound", i);
-            updateLabels();
-        });
+    m_sound_btn = menu_button("Click sound");
+    for (int i = 0; i < Metronome::K_SOUND_COUNT; ++i) {
+        connect(m_sound_btn->menu()->addAction(k_sound_names[i]), &QAction::triggered, this,
+                [this, i] {
+                    m_metro.set_sound(i);
+                    QSettings().setValue("metronome/sound", i);
+                    update_labels();
+                });
     }
-    lay->addWidget(mSoundBtn);
+    lay->addWidget(m_sound_btn);
 
     // Count-in.
-    mCountInBtn = menuButton("Count-in bars when starting");
+    m_count_in_btn = menu_button("Count-in bars when starting");
     {
-        QMenu* m = mCountInBtn->menu();
+        QMenu* m = m_count_in_btn->menu();
         for (int bars : {0, 1, 2}) {
             connect(
                 m->addAction(bars == 0
                                  ? QString("No count-in")
                                  : QString("Count in %1 bar%2").arg(bars).arg(bars > 1 ? "s" : "")),
                 &QAction::triggered, this, [this, bars] {
-                    mMetro.setCountInBars(bars);
+                    m_metro.set_count_in_bars(bars);
                     QSettings().setValue("metronome/countIn", bars);
-                    updateLabels();
+                    update_labels();
                 });
         }
         m->addSeparator();
@@ -380,87 +381,87 @@ TempoBar::TempoBar(Metronome& metronome, QWidget* parent)
         silent->setCheckable(true);
         silent->setChecked(s.value("metronome/silentAfter", false).toBool());
         connect(silent, &QAction::toggled, this, [this](bool on) {
-            mMetro.setSilentAfterCountIn(on);
+            m_metro.set_silent_after_count_in(on);
             QSettings().setValue("metronome/silentAfter", on);
-            updateLabels();
+            update_labels();
         });
-        mMetro.setSilentAfterCountIn(silent->isChecked());
+        m_metro.set_silent_after_count_in(silent->isChecked());
     }
-    lay->addWidget(mCountInBtn);
+    lay->addWidget(m_count_in_btn);
 
     // Level + pan.
-    mVolume = new KnobWidget("Level", -40.0, 6.0, -6.0, "dB");
-    mVolume->setScrollStep(1.0);
-    mVolume->setAccent(Theme::genericAccent());
-    mVolume->setValue(s.value("metronome/volume", -6.0).toDouble());
-    mMetro.setVolumeDb(static_cast<float>(mVolume->value()));
-    connect(mVolume, &KnobWidget::valueChanged, this, [this](double v) {
-        mMetro.setVolumeDb(static_cast<float>(v));
+    m_volume = new KnobWidget("Level", -40.0, 6.0, -6.0, "dB");
+    m_volume->set_scroll_step(1.0);
+    m_volume->set_accent(Theme::generic_accent());
+    m_volume->set_value(s.value("metronome/volume", -6.0).toDouble());
+    m_metro.set_volume_db(static_cast<float>(m_volume->value()));
+    connect(m_volume, &KnobWidget::value_changed, this, [this](double v) {
+        m_metro.set_volume_db(static_cast<float>(v));
         QSettings().setValue("metronome/volume", v);
     });
-    mPan = new KnobWidget("Pan", -100.0, 100.0, 0.0, "%");
-    mPan->setScrollStep(10.0);
-    mPan->setAccent(Theme::genericAccent());
-    mPan->setValueFormatter([](double v) {
+    m_pan = new KnobWidget("Pan", -100.0, 100.0, 0.0, "%");
+    m_pan->set_scroll_step(10.0);
+    m_pan->set_accent(Theme::generic_accent());
+    m_pan->set_value_formatter([](double v) {
         const int p = static_cast<int>(std::lround(v));
         return p == 0 ? QString("Center")
                       : QString("%1 %2").arg(std::abs(p)).arg(p < 0 ? "L" : "R");
     });
-    mPan->setValue(s.value("metronome/pan", 0.0).toDouble());
-    mMetro.setPan(static_cast<float>(mPan->value() / 100.0));
-    connect(mPan, &KnobWidget::valueChanged, this, [this](double v) {
-        mMetro.setPan(static_cast<float>(v / 100.0));
+    m_pan->set_value(s.value("metronome/pan", 0.0).toDouble());
+    m_metro.set_pan(static_cast<float>(m_pan->value() / 100.0));
+    connect(m_pan, &KnobWidget::value_changed, this, [this](double v) {
+        m_metro.set_pan(static_cast<float>(v / 100.0));
         QSettings().setValue("metronome/pan", v);
     });
-    lay->addWidget(mVolume);
-    lay->addWidget(mPan);
+    lay->addWidget(m_volume);
+    lay->addWidget(m_pan);
     lay->addStretch(1);
 
     // Restore the rest.
-    mMetro.setSubdivision(s.value("metronome/subdivision", 1).toInt());
-    mMetro.setSound(s.value("metronome/sound", 0).toInt());
-    mMetro.setCountInBars(s.value("metronome/countIn", 0).toInt());
+    m_metro.set_subdivision(s.value("metronome/subdivision", 1).toInt());
+    m_metro.set_sound(s.value("metronome/sound", 0).toInt());
+    m_metro.set_count_in_bars(s.value("metronome/countIn", 0).toInt());
     const int beats = s.value("metronome/beats", 4).toInt();
     const int unit = s.value("metronome/unit", 4).toInt();
-    setMeter(beats, unit, !s.contains("metronome/accents"));
+    set_meter(beats, unit, !s.contains("metronome/accents"));
     if (s.contains("metronome/accents")) {
         const uint32_t acc = s.value("metronome/accents").toUInt();
-        mMetro.setAccents(acc);
-        mLeds->setPattern(mMetro.beats(), acc);
+        m_metro.set_accents(acc);
+        m_leds->set_pattern(m_metro.beats(), acc);
     }
-    updateLabels();
+    update_labels();
 }
 
 double TempoBar::bpm() const {
-    return mBpm->value();
+    return m_bpm->value();
 }
 
-void TempoBar::setBpm(double bpm) {
-    mBpm->setValue(bpm);
+void TempoBar::set_bpm(double bpm) {
+    m_bpm->set_value(bpm);
 }
 
-void TempoBar::togglePlay() {
-    mPlay->toggle();
+void TempoBar::toggle_play() {
+    m_play->toggle();
 }
 
-QWidget* TempoBar::actionWidget(const QString& id) const {
+QWidget* TempoBar::action_widget(const QString& id) const {
     if (id == "action:metronome") {
-        return mPlay;
+        return m_play;
     }
     if (id == "action:tap") {
-        return mTap;
+        return m_tap;
     }
     return nullptr;
 }
 
-void TempoBar::learnMenuFor(QWidget* w, const QString& actionId) {
+void TempoBar::learn_menu_for(QWidget* w, const QString& action_id) {
     w->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(w, &QWidget::customContextMenuRequested, this, [this, w, actionId](const QPoint& p) {
-        if (!mLearnHook) {
+    connect(w, &QWidget::customContextMenuRequested, this, [this, w, action_id](const QPoint& p) {
+        if (!m_learn_hook) {
             return;
         }
         QMenu menu(this);
-        mLearnHook(actionId, &menu);
+        m_learn_hook(action_id, &menu);
         if (!menu.isEmpty()) {
             menu.exec(w->mapToGlobal(p));
         }
@@ -468,56 +469,57 @@ void TempoBar::learnMenuFor(QWidget* w, const QString& actionId) {
 }
 
 void TempoBar::poll() {
-    mLeds->setBeat(mMetro.isRunning() ? mMetro.currentBeat() : -1, mMetro.inCountIn());
+    m_leds->set_beat(m_metro.is_running() ? m_metro.current_beat() : -1, m_metro.in_count_in());
 }
 
-void TempoBar::setMeter(int beats, int unit, bool resetAccents) {
-    mMetro.setMeter(beats, unit);
+void TempoBar::set_meter(int beats, int unit, bool reset_accents) {
+    m_metro.set_meter(beats, unit);
     QSettings s;
-    s.setValue("metronome/beats", mMetro.beats());
-    s.setValue("metronome/unit", mMetro.unit());
-    if (resetAccents) {
-        const uint32_t acc = Metronome::defaultAccents(mMetro.beats(), mMetro.unit());
-        mMetro.setAccents(acc);
+    s.setValue("metronome/beats", m_metro.beats());
+    s.setValue("metronome/unit", m_metro.unit());
+    if (reset_accents) {
+        const uint32_t acc = Metronome::default_accents(m_metro.beats(), m_metro.unit());
+        m_metro.set_accents(acc);
         s.setValue("metronome/accents", acc);
     }
-    mLeds->setPattern(mMetro.beats(), mMetro.accents());
-    updateLabels();
+    m_leds->set_pattern(m_metro.beats(), m_metro.accents());
+    update_labels();
 }
 
-void TempoBar::updateLabels() {
+void TempoBar::update_labels() {
     QSettings s;
-    mMeterBtn->setText(QString("%1/%2").arg(mMetro.beats()).arg(mMetro.unit()));
+    m_meter_btn->setText(QString("%1/%2").arg(m_metro.beats()).arg(m_metro.unit()));
     const int sub = std::clamp(s.value("metronome/subdivision", 1).toInt(), 1, 4);
-    mSubdivBtn->setText(kSubdivShort[sub - 1]);
-    mSubdivBtn->setToolTip(QString("Subdivision: %1").arg(kSubdivNames[sub - 1]));
-    mSoundBtn->setText(kSoundNames[std::clamp(s.value("metronome/sound", 0).toInt(), 0,
-                                              Metronome::kSoundCount - 1)]);
+    m_subdiv_btn->setText(k_subdiv_short[sub - 1]);
+    m_subdiv_btn->setToolTip(QString("Subdivision: %1").arg(k_subdiv_names[sub - 1]));
+    m_sound_btn->setText(k_sound_names[std::clamp(s.value("metronome/sound", 0).toInt(), 0,
+                                                  Metronome::K_SOUND_COUNT - 1)]);
     const int ci = s.value("metronome/countIn", 0).toInt();
     const bool silent = s.value("metronome/silentAfter", false).toBool();
-    mCountInBtn->setText(ci == 0 ? QString("No count-in")
-                                 : QString("Count-in %1%2").arg(ci).arg(silent ? " · silent" : ""));
+    m_count_in_btn->setText(ci == 0
+                                ? QString("No count-in")
+                                : QString("Count-in %1%2").arg(ci).arg(silent ? " · silent" : ""));
 }
 
 void TempoBar::tap() {
-    if (!mTapClock.isValid()) {
-        mTapClock.start();
+    if (!m_tap_clock.isValid()) {
+        m_tap_clock.start();
     }
-    const qint64 now = mTapClock.elapsed();
+    const qint64 now = m_tap_clock.elapsed();
     // A pause longer than a 40 BPM beat (plus slack) starts a new measurement.
-    if (!mTaps.isEmpty() && now - mTaps.last() > 2000) {
-        mTaps.clear();
+    if (!m_taps.isEmpty() && now - m_taps.last() > 2000) {
+        m_taps.clear();
     }
-    mTaps.append(now);
-    if (mTaps.size() > 5) {
-        mTaps.removeFirst(); // average the last four intervals
+    m_taps.append(now);
+    if (m_taps.size() > 5) {
+        m_taps.removeFirst(); // average the last four intervals
     }
-    if (mTaps.size() < 2) {
+    if (m_taps.size() < 2) {
         return;
     }
-    const double avgMs =
-        static_cast<double>(mTaps.last() - mTaps.first()) / static_cast<double>(mTaps.size() - 1);
-    if (avgMs > 0.0) {
-        mBpm->setValue(60000.0 / avgMs);
+    const double avg_ms = static_cast<double>(m_taps.last() - m_taps.first()) /
+                          static_cast<double>(m_taps.size() - 1);
+    if (avg_ms > 0.0) {
+        m_bpm->set_value(60000.0 / avg_ms);
     }
 }

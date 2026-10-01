@@ -10,51 +10,51 @@ class NoiseGateProcessor : public EffectBase
 public:
     void reset() override;
 
-    void setThreshold(float dB) {
-        mThresholdDB.store(dB);
+    void set_threshold(float d_b) {
+        m_threshold_db.store(d_b);
     }
-    void setAttack(float ms) {
-        mAttackMS.store(ms);
+    void set_attack(float ms) {
+        m_attack_ms.store(ms);
     }
-    void setRelease(float ms) {
-        mReleaseMS.store(ms);
+    void set_release(float ms) {
+        m_release_ms.store(ms);
     }
 
     float threshold() const {
-        return mThresholdDB.load();
+        return m_threshold_db.load();
     }
     float attack() const {
-        return mAttackMS.load();
+        return m_attack_ms.load();
     }
     float release() const {
-        return mReleaseMS.load();
+        return m_release_ms.load();
     }
 
     /// Deepest attenuation (dB, ≥ 0, capped at kMaxGrDb) since the last
     /// take — GUI meter.
-    float takeGainReductionDb() {
-        return mGrPeakDB.exchange(0.0f);
+    float take_gain_reduction_db() {
+        return m_gr_peak_db.exchange(0.0f);
     }
-    static constexpr float kMaxGrDb = 60.0f;
+    static constexpr float K_MAX_GR_DB = 60.0f;
 
 protected:
-    void onSampleRateChanged(double /*sr*/) override {
+    void on_sample_rate_changed(double /*sr*/) override {
         reset();
     }
-    void processBlockMono(float* buf, size_t nframes) override;
-    void processBlockDual(float* L, float* R, size_t nframes) override;
+    void process_block_mono(float* buf, size_t nframes) override;
+    void process_block_dual(float* l, float* r, size_t nframes) override;
 
 private:
-    void processChannel(float* buf, size_t nframes, int ch);
+    void process_channel(float* buf, size_t nframes, int ch);
 
     // Defaults must match the knob defaults in Constants.h — the UI does not
     // push initial knob values to the engine at startup.
-    std::atomic<float> mThresholdDB{-70.0f};
-    std::atomic<float> mAttackMS{1.0f};
-    std::atomic<float> mReleaseMS{100.0f};
+    std::atomic<float> m_threshold_db{-70.0f};
+    std::atomic<float> m_attack_ms{1.0f};
+    std::atomic<float> m_release_ms{100.0f};
 
     // Per-channel state: [0] = mono/L, [1] = R (stereo input).
-    float mEnvelope[2]{0.0f, 0.0f};
-    float mGain[2]{0.0f, 0.0f};
-    std::atomic<float> mGrPeakDB{0.0f};
+    float m_envelope[2]{0.0f, 0.0f};
+    float m_gain[2]{0.0f, 0.0f};
+    std::atomic<float> m_gr_peak_db{0.0f};
 };

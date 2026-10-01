@@ -23,35 +23,37 @@ VUMeter::VUMeter(Qt::Orientation orientation, QWidget* parent)
     }
 }
 
-void VUMeter::setPeak(float peak) {
-    if (!mClock.isValid()) {
-        mClock.start();
+void VUMeter::set_peak(float peak) {
+    if (!m_clock.isValid()) {
+        m_clock.start();
     }
-    const qint64 now = mClock.elapsed();
-    const float dt = static_cast<float>(now - mLastMs) / 1000.0f;
-    mLastMs = now;
+    const qint64 now = m_clock.elapsed();
+    const float dt = static_cast<float>(now - m_last_ms) / 1000.0f;
+    m_last_ms = now;
 
-    const float inDb = peak > 0.0f ? std::clamp(20.0f * std::log10(peak), kMinDb, kMaxDb) : kMinDb;
+    const float in_db =
+        peak > 0.0f ? std::clamp(20.0f * std::log10(peak), K_MIN_DB, K_MAX_DB) : K_MIN_DB;
 
     // Instant attack, linear-in-dB release.
-    mLevelDb = inDb >= mLevelDb ? inDb : std::max(inDb, mLevelDb - kReleaseDbPerSec * dt);
+    m_level_db =
+        in_db >= m_level_db ? in_db : std::max(in_db, m_level_db - K_RELEASE_DB_PER_SEC * dt);
 
     // Peak hold: track the recent maximum, wait, then fall (never below the bar).
-    if (inDb >= mHoldDb) {
-        mHoldDb = inDb;
-        mHoldSinceMs = now;
-    } else if (now - mHoldSinceMs > kHoldMs) {
-        mHoldDb = std::max(mLevelDb, mHoldDb - kHoldFallDbPerSec * dt);
+    if (in_db >= m_hold_db) {
+        m_hold_db = in_db;
+        m_hold_since_ms = now;
+    } else if (now - m_hold_since_ms > K_HOLD_MS) {
+        m_hold_db = std::max(m_level_db, m_hold_db - K_HOLD_FALL_DB_PER_SEC * dt);
     }
 
     // Repaint only on visible movement — a silent input costs nothing.
-    const float level = toValue(mLevelDb);
-    const float hold = toValue(mHoldDb);
-    if (std::abs(level - mLevel) < 0.05f && std::abs(hold - mHold) < 0.05f) {
+    const float level = to_value(m_level_db);
+    const float hold = to_value(m_hold_db);
+    if (std::abs(level - m_level) < 0.05f && std::abs(hold - m_hold) < 0.05f) {
         return;
     }
-    mLevel = level;
-    mHold = hold;
+    m_level = level;
+    m_hold = hold;
     update();
 }
 
@@ -84,28 +86,28 @@ void VUMeter::paintEvent(QPaintEvent*) {
 
     // Zone fill: one rect per zone the level reaches — color by absolute
     // level, red strictly above the 0 dBFS mark.
-    const float t = mLevel;
-    auto zoneRect = [&](float from, float to) -> QRectF {
+    const float t = m_level;
+    auto zone_rect = [&](float from, float to) -> QRectF {
         const qreal a = pos(from), b = pos(to);
         return vert ? QRectF(inner.left(), inner.bottom() - b, inner.width(), b - a)
                     : QRectF(inner.left() + a, inner.top(), b - a, inner.height());
     };
     if (t > 0.0f) {
-        p.setBrush(Theme::meterLow());
-        p.drawRect(zoneRect(0.0f, std::min(t, kHotValue)));
+        p.setBrush(Theme::meter_low());
+        p.drawRect(zone_rect(0.0f, std::min(t, K_HOT_VALUE)));
     }
-    if (t > kHotValue) {
-        p.setBrush(Theme::meterMid());
-        p.drawRect(zoneRect(kHotValue, std::min(t, kClipValue)));
+    if (t > K_HOT_VALUE) {
+        p.setBrush(Theme::meter_mid());
+        p.drawRect(zone_rect(K_HOT_VALUE, std::min(t, K_CLIP_VALUE)));
     }
-    if (t > kClipValue) {
-        p.setBrush(Theme::meterClip());
-        p.drawRect(zoneRect(kClipValue, t));
+    if (t > K_CLIP_VALUE) {
+        p.setBrush(Theme::meter_clip());
+        p.drawRect(zone_rect(K_CLIP_VALUE, t));
     }
 
     // 0 dBFS mark on the groove.
     {
-        const qreal c = pos(kClipValue);
+        const qreal c = pos(K_CLIP_VALUE);
         p.setBrush(Theme::track());
         if (vert) {
             p.drawRect(QRectF(inner.left(), inner.bottom() - c - 0.5, inner.width(), 1.0));
@@ -115,11 +117,11 @@ void VUMeter::paintEvent(QPaintEvent*) {
     }
 
     // Peak-hold line, colored by the zone it sits in.
-    if (mHold > 0.5f) {
-        p.setBrush(mHold > kClipValue  ? Theme::meterClip()
-                   : mHold > kHotValue ? Theme::meterMid()
-                                       : Theme::meterLow());
-        const qreal hp = pos(mHold);
+    if (m_hold > 0.5f) {
+        p.setBrush(m_hold > K_CLIP_VALUE  ? Theme::meter_clip()
+                   : m_hold > K_HOT_VALUE ? Theme::meter_mid()
+                                          : Theme::meter_low());
+        const qreal hp = pos(m_hold);
         if (vert) {
             p.drawRect(QRectF(inner.left(), inner.bottom() - hp - 1.0, inner.width(), 2.0));
         } else {

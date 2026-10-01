@@ -28,25 +28,25 @@ public:
     /// Open the backend and connect the enabled devices. False when MIDI is
     /// unavailable (no sequencer) — the app runs without it.
     virtual bool start() = 0;
-    virtual QString backendName() const = 0;
+    virtual QString backend_name() const = 0;
 
     /// Currently present source devices, sorted.
     virtual QStringList devices() const = 0;
 
-    bool isEnabled(const QString& device) const {
-        return !mDisabled.contains(device);
+    bool is_enabled(const QString& device) const {
+        return !m_disabled.contains(device);
     }
-    void setEnabled(const QString& device, bool on);
+    void set_enabled(const QString& device, bool on);
 
 signals:
-    void messageReceived(const MidiMessage& msg);
+    void message_received(const MidiMessage& msg);
     /// A device appeared or went away (list changed).
-    void devicesChanged();
+    void devices_changed();
 
 protected:
     explicit MidiInput(QObject* parent);
     /// Re-apply connections after the enabled set or the device list changed.
-    virtual void syncConnections() = 0;
+    virtual void sync_connections() = 0;
 
-    QSet<QString> mDisabled;
+    QSet<QString> m_disabled;
 };

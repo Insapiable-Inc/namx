@@ -33,23 +33,23 @@
 namespace
 {
 
-constexpr qint64 kCacheTtlMs = 5 * 60 * 1000;
-constexpr int kAuthTimeoutMs = 5 * 60 * 1000;
-constexpr int kMaxRetryAfterS = 30;
-constexpr int kPreferredPorts[] = {51731, 51732, 51733, 51734};
+constexpr qint64 K_CACHE_TTL_MS = 5 * 60 * 1000;
+constexpr int K_AUTH_TIMEOUT_MS = 5 * 60 * 1000;
+constexpr int K_MAX_RETRY_AFTER_S = 30;
+constexpr int K_PREFERRED_PORTS[] = {51731, 51732, 51733, 51734};
 
 QString base64url(const QByteArray& bytes) {
     return QString::fromLatin1(
         bytes.toBase64(QByteArray::Base64UrlEncoding | QByteArray::OmitTrailingEquals));
 }
 
-QByteArray randomBytes(int n) {
+QByteArray random_bytes(int n) {
     QByteArray b(n, Qt::Uninitialized);
     QRandomGenerator::system()->fillRange(reinterpret_cast<quint32*>(b.data()), n / 4);
     return b;
 }
 
-QString titleCaseGear(const QString& gear) {
+QString title_case_gear(const QString& gear) {
     if (gear == "amp-cab" || gear == "full-rig") {
         return "Amp + Cab";
     }
@@ -79,10 +79,10 @@ QString titleCaseGear(const QString& gear) {
 
 // File-system safe component: no separators, control chars or Windows
 // reserved punctuation; trimmed; bounded.
-QString sanitizeComponent(QString s) {
-    static const QString bad = QStringLiteral("/\\:*?\"<>|");
+QString sanitize_component(QString s) {
+    static const QString BAD = QStringLiteral("/\\:*?\"<>|");
     for (QChar& c : s) {
-        if (bad.contains(c) || c.unicode() < 32) {
+        if (BAD.contains(c) || c.unicode() < 32) {
             c = QChar('_');
         }
     }
@@ -105,13 +105,13 @@ QString sanitizeComponent(QString s) {
 // Data helpers
 // ---------------------------------------------------------------------------
 
-QString T3kTone::gearLabel() const {
-    return titleCaseGear(gear);
+QString T3kTone::gear_label() const {
+    return title_case_gear(gear);
 }
-QString T3kTone::formatLabel() const {
+QString T3kTone::format_label() const {
     return format.toUpper();
 }
-QString T3kTone::licenseLabel() const {
+QString T3kTone::license_label() const {
     if (license == "t3k") {
         return "TONE3000 license";
     }
@@ -124,17 +124,17 @@ QString T3kTone::licenseLabel() const {
     return license;
 }
 
-T3kUser Tone3000Client::parseUser(const QJsonObject& o) {
+T3kUser Tone3000Client::parse_user(const QJsonObject& o) {
     T3kUser u;
     u.id = o.value("id").toInt();
     u.username = o.value("username").toString();
-    u.displayName = o.value("display_name").toString();
-    u.avatarUrl = o.value("avatar_url").toString();
+    u.display_name = o.value("display_name").toString();
+    u.avatar_url = o.value("avatar_url").toString();
     u.url = o.value("url").toString();
     return u;
 }
 
-T3kTone Tone3000Client::parseTone(const QJsonObject& o) {
+T3kTone Tone3000Client::parse_tone(const QJsonObject& o) {
     T3kTone t;
     t.id = o.value("id").toInt();
     t.title = o.value("title").toString();
@@ -146,30 +146,30 @@ T3kTone Tone3000Client::parseTone(const QJsonObject& o) {
     for (const QJsonValue v : o.value("images").toArray()) {
         t.images << v.toString();
     }
-    t.user = parseUser(o.value("user").toObject());
+    t.user = parse_user(o.value("user").toObject());
     for (const QJsonValue v : o.value("makes").toArray()) {
         t.makes << v.toObject().value("name").toString();
     }
     for (const QJsonValue v : o.value("tags").toArray()) {
         t.tags << v.toObject().value("name").toString();
     }
-    t.modelsCount = o.value("models_count").toInt();
-    t.a1Count = o.value("a1_models_count").toInt();
-    t.a2Count = o.value("a2_models_count").toInt();
-    t.customCount = o.value("custom_models_count").toInt();
-    t.irsCount = o.value("irs_count").toInt();
+    t.models_count = o.value("models_count").toInt();
+    t.a1_count = o.value("a1_models_count").toInt();
+    t.a2_count = o.value("a2_models_count").toInt();
+    t.custom_count = o.value("custom_models_count").toInt();
+    t.irs_count = o.value("irs_count").toInt();
     t.downloads = o.value("downloads_count").toInt();
     t.favorites = o.value("favorites_count").toInt();
-    t.isFavorite = o.value("is_favorite").toBool();
+    t.is_favorite = o.value("is_favorite").toBool();
     return t;
 }
 
-T3kModel Tone3000Client::parseModel(const QJsonObject& o) {
+T3kModel Tone3000Client::parse_model(const QJsonObject& o) {
     T3kModel m;
     m.id = o.value("id").toInt();
-    m.toneId = o.value("tone_id").toInt();
+    m.tone_id = o.value("tone_id").toInt();
     m.name = o.value("name").toString();
-    m.modelUrl = o.value("model_url").toString();
+    m.model_url = o.value("model_url").toString();
     m.size = o.value("size").toString();
     m.architecture = o.value("architecture_version").toString();
     return m;
@@ -179,24 +179,24 @@ T3kModel Tone3000Client::parseModel(const QJsonObject& o) {
 // Configuration
 // ---------------------------------------------------------------------------
 
-QString Tone3000Client::apiBase() {
-    static const QString base = [] {
+QString Tone3000Client::api_base() {
+    static const QString BASE = [] {
         const QByteArray env = qgetenv("NAM_TONE3000_API_BASE");
         return env.isEmpty() ? QStringLiteral("https://www.tone3000.com/api/v1")
                              : QString::fromUtf8(env).trimmed();
     }();
-    return base;
+    return BASE;
 }
 
-QString Tone3000Client::clientId() {
-    const QString fromSettings = QSettings().value("tone3000/clientId").toString().trimmed();
-    if (!fromSettings.isEmpty()) {
-        return fromSettings;
+QString Tone3000Client::client_id() {
+    const QString from_settings = QSettings().value("tone3000/clientId").toString().trimmed();
+    if (!from_settings.isEmpty()) {
+        return from_settings;
     }
     return QString::fromUtf8(NAM_TONE3000_CLIENT_ID).trimmed();
 }
 
-void Tone3000Client::setClientId(const QString& id) {
+void Tone3000Client::set_client_id(const QString& id) {
     QSettings s;
     if (id.trimmed().isEmpty()) {
         s.remove("tone3000/clientId");
@@ -205,7 +205,7 @@ void Tone3000Client::setClientId(const QString& id) {
     }
 }
 
-QString Tone3000Client::downloadDir() {
+QString Tone3000Client::download_dir() {
     const QString v = QSettings().value("library/tone3000Dir").toString();
     if (!v.isEmpty()) {
         return QDir::cleanPath(v);
@@ -220,140 +220,141 @@ QString Tone3000Client::downloadDir() {
 
 Tone3000Client::Tone3000Client(QObject* parent)
     : QObject(parent)
-    , mNam(new QNetworkAccessManager(this)) {
+    , m_nam(new QNetworkAccessManager(this)) {
     // Disk cache for images (the API answers carry no-store; they go through
     // mCache instead).
     auto* disk = new QNetworkDiskCache(this);
     disk->setCacheDirectory(QStandardPaths::writableLocation(QStandardPaths::CacheLocation) +
                             "/tone3000");
     disk->setMaximumCacheSize(64 * 1024 * 1024);
-    mNam->setCache(disk);
-    mNam->setRedirectPolicy(QNetworkRequest::NoLessSafeRedirectPolicy);
-    mNam->setTransferTimeout(30000);
+    m_nam->setCache(disk);
+    m_nam->setRedirectPolicy(QNetworkRequest::NoLessSafeRedirectPolicy);
+    m_nam->setTransferTimeout(30000);
 
-    loadTokens();
-    if (isSignedIn()) {
-        fetchCurrentUser([](const Result&) {});
+    load_tokens();
+    if (is_signed_in()) {
+        fetch_current_user([](const Result&) {});
     }
 }
 
 Tone3000Client::~Tone3000Client() {
-    cancelAuth();
+    cancel_auth();
 }
 
-void Tone3000Client::loadTokens() {
+void Tone3000Client::load_tokens() {
     QSettings s;
-    mAccessToken = s.value("tone3000/accessToken").toString();
-    mRefreshToken = s.value("tone3000/refreshToken").toString();
-    mExpiresAtMs = s.value("tone3000/expiresAt").toLongLong();
-    mUser.id = s.value("tone3000/user/id").toInt();
-    mUser.username = s.value("tone3000/user/username").toString();
-    mUser.displayName = s.value("tone3000/user/displayName").toString();
-    mUser.avatarUrl = s.value("tone3000/user/avatarUrl").toString();
-    mUser.url = s.value("tone3000/user/url").toString();
+    m_access_token = s.value("tone3000/accessToken").toString();
+    m_refresh_token = s.value("tone3000/refreshToken").toString();
+    m_expires_at_ms = s.value("tone3000/expiresAt").toLongLong();
+    m_user.id = s.value("tone3000/user/id").toInt();
+    m_user.username = s.value("tone3000/user/username").toString();
+    m_user.display_name = s.value("tone3000/user/displayName").toString();
+    m_user.avatar_url = s.value("tone3000/user/avatarUrl").toString();
+    m_user.url = s.value("tone3000/user/url").toString();
 }
 
-void Tone3000Client::saveTokens() {
+void Tone3000Client::save_tokens() {
     QSettings s;
-    s.setValue("tone3000/accessToken", mAccessToken);
-    s.setValue("tone3000/refreshToken", mRefreshToken);
-    s.setValue("tone3000/expiresAt", mExpiresAtMs);
-    s.setValue("tone3000/user/id", mUser.id);
-    s.setValue("tone3000/user/username", mUser.username);
-    s.setValue("tone3000/user/displayName", mUser.displayName);
-    s.setValue("tone3000/user/avatarUrl", mUser.avatarUrl);
-    s.setValue("tone3000/user/url", mUser.url);
+    s.setValue("tone3000/accessToken", m_access_token);
+    s.setValue("tone3000/refreshToken", m_refresh_token);
+    s.setValue("tone3000/expiresAt", m_expires_at_ms);
+    s.setValue("tone3000/user/id", m_user.id);
+    s.setValue("tone3000/user/username", m_user.username);
+    s.setValue("tone3000/user/displayName", m_user.display_name);
+    s.setValue("tone3000/user/avatarUrl", m_user.avatar_url);
+    s.setValue("tone3000/user/url", m_user.url);
 }
 
-void Tone3000Client::clearTokens() {
-    mAccessToken.clear();
-    mRefreshToken.clear();
-    mExpiresAtMs = 0;
-    mUser = {};
+void Tone3000Client::clear_tokens() {
+    m_access_token.clear();
+    m_refresh_token.clear();
+    m_expires_at_ms = 0;
+    m_user = {};
     QSettings s;
     s.remove("tone3000/accessToken");
     s.remove("tone3000/refreshToken");
     s.remove("tone3000/expiresAt");
     s.remove("tone3000/user");
-    mCache.clear();
+    m_cache.clear();
 }
 
-void Tone3000Client::applyTokenResponse(const QJsonObject& o) {
-    mAccessToken = o.value("access_token").toString();
+void Tone3000Client::apply_token_response(const QJsonObject& o) {
+    m_access_token = o.value("access_token").toString();
     const QString refresh = o.value("refresh_token").toString();
     if (!refresh.isEmpty()) {
-        mRefreshToken = refresh;
+        m_refresh_token = refresh;
     }
-    const int expiresIn = o.value("expires_in").toInt(3600);
-    mExpiresAtMs = QDateTime::currentMSecsSinceEpoch() + qint64(expiresIn) * 1000;
-    saveTokens();
+    const int expires_in = o.value("expires_in").toInt(3600);
+    m_expires_at_ms = QDateTime::currentMSecsSinceEpoch() + qint64(expires_in) * 1000;
+    save_tokens();
 }
 
-void Tone3000Client::signOut() {
-    cancelAuth();
-    const bool was = isSignedIn();
-    clearTokens();
+void Tone3000Client::sign_out() {
+    cancel_auth();
+    const bool was = is_signed_in();
+    clear_tokens();
     if (was) {
-        emit authChanged();
+        emit auth_changed();
     }
-    emit userChanged();
+    emit user_changed();
 }
 
 // ---------------------------------------------------------------------------
 // OAuth (PKCE + loopback redirect)
 // ---------------------------------------------------------------------------
 
-void Tone3000Client::startAuth(Flow flow, const QHash<QString, QString>& extra) {
-    if (!hasClientId()) {
-        emit authFinished(false, "No TONE3000 publishable key configured.", 0);
+void Tone3000Client::start_auth(Flow flow, const QHash<QString, QString>& extra) {
+    if (!has_client_id()) {
+        emit auth_finished(false, "No TONE3000 publishable key configured.", 0);
         return;
     }
-    cancelAuth();
+    cancel_auth();
 
     // Loopback server on a known port so the redirect URI can be registered
     // verbatim; both IPv4 and IPv6 since the browser resolves "localhost".
-    mAuthServer = new QTcpServer(this);
-    mAuthServerV6 = new QTcpServer(this);
+    m_auth_server = new QTcpServer(this);
+    m_auth_server_v6 = new QTcpServer(this);
     quint16 port = 0;
-    for (int p : kPreferredPorts) {
-        if (mAuthServer->listen(QHostAddress::LocalHost, static_cast<quint16>(p))) {
+    for (int p : K_PREFERRED_PORTS) {
+        if (m_auth_server->listen(QHostAddress::LocalHost, static_cast<quint16>(p))) {
             port = static_cast<quint16>(p);
             break;
         }
     }
-    if (port == 0 && mAuthServer->listen(QHostAddress::LocalHost, 0)) {
-        port = mAuthServer->serverPort();
+    if (port == 0 && m_auth_server->listen(QHostAddress::LocalHost, 0)) {
+        port = m_auth_server->serverPort();
     }
     if (port == 0) {
-        cancelAuth();
-        emit authFinished(false, "Could not open a local port for the sign-in callback.", 0);
+        cancel_auth();
+        emit auth_finished(false, "Could not open a local port for the sign-in callback.", 0);
         return;
     }
-    if (!mAuthServerV6->listen(QHostAddress::LocalHostIPv6, port)) {
-        mAuthServerV6->deleteLater();
-        mAuthServerV6 = nullptr;
+    if (!m_auth_server_v6->listen(QHostAddress::LocalHostIPv6, port)) {
+        m_auth_server_v6->deleteLater();
+        m_auth_server_v6 = nullptr;
     }
-    connect(mAuthServer, &QTcpServer::newConnection, this, &Tone3000Client::onAuthConnection);
-    if (mAuthServerV6) {
-        connect(mAuthServerV6, &QTcpServer::newConnection, this, &Tone3000Client::onAuthConnection);
+    connect(m_auth_server, &QTcpServer::newConnection, this, &Tone3000Client::on_auth_connection);
+    if (m_auth_server_v6) {
+        connect(m_auth_server_v6, &QTcpServer::newConnection, this,
+                &Tone3000Client::on_auth_connection);
     }
 
-    mAuthFlow = flow;
-    mAuthRedirect = QString("http://localhost:%1/callback").arg(port);
-    mAuthVerifier = base64url(randomBytes(32));
-    mAuthState = base64url(randomBytes(16));
+    m_auth_flow = flow;
+    m_auth_redirect = QString("http://localhost:%1/callback").arg(port);
+    m_auth_verifier = base64url(random_bytes(32));
+    m_auth_state = base64url(random_bytes(16));
     const QString challenge =
-        base64url(QCryptographicHash::hash(mAuthVerifier.toLatin1(), QCryptographicHash::Sha256));
+        base64url(QCryptographicHash::hash(m_auth_verifier.toLatin1(), QCryptographicHash::Sha256));
 
-    QUrl url(apiBase() + "/oauth/authorize");
+    QUrl url(api_base() + "/oauth/authorize");
     QUrlQuery q;
-    q.addQueryItem("client_id", clientId());
-    q.addQueryItem("redirect_uri", mAuthRedirect);
+    q.addQueryItem("client_id", client_id());
+    q.addQueryItem("redirect_uri", m_auth_redirect);
     q.addQueryItem("response_type", "code");
     q.addQueryItem("code_challenge", challenge);
     q.addQueryItem("code_challenge_method", "S256");
-    q.addQueryItem("state", mAuthState);
-    if (flow == Flow::SelectTone) {
+    q.addQueryItem("state", m_auth_state);
+    if (flow == Flow::SELECT_TONE) {
         q.addQueryItem("prompt", "select_tone");
         q.addQueryItem("menubar", "true");
         q.addQueryItem("preview", "true");
@@ -363,40 +364,40 @@ void Tone3000Client::startAuth(Flow flow, const QHash<QString, QString>& extra) 
     }
     url.setQuery(q);
 
-    mAuthTimeout = new QTimer(this);
-    mAuthTimeout->setSingleShot(true);
-    connect(mAuthTimeout, &QTimer::timeout, this, [this] {
-        finishAuth(false, "Sign-in timed out.", 0);
+    m_auth_timeout = new QTimer(this);
+    m_auth_timeout->setSingleShot(true);
+    connect(m_auth_timeout, &QTimer::timeout, this, [this] {
+        finish_auth(false, "Sign-in timed out.", 0);
     });
-    mAuthTimeout->start(kAuthTimeoutMs);
+    m_auth_timeout->start(K_AUTH_TIMEOUT_MS);
 
     // NAM_TONE3000_NO_BROWSER=1 (development): log the URL instead of
     // opening it, so a script can drive the callback.
     if (!qEnvironmentVariableIsEmpty("NAM_TONE3000_NO_BROWSER")) {
-        qCInfo(lcAudio) << "TONE3000 authorize URL:" << url.toString(QUrl::FullyEncoded);
+        qCInfo(lc_audio) << "TONE3000 authorize URL:" << url.toString(QUrl::FullyEncoded);
         return;
     }
     if (!QDesktopServices::openUrl(url)) {
-        finishAuth(false, "Could not open the browser.", 0);
+        finish_auth(false, "Could not open the browser.", 0);
     }
 }
 
-void Tone3000Client::cancelAuth() {
-    for (QTcpServer** s : {&mAuthServer, &mAuthServerV6}) {
+void Tone3000Client::cancel_auth() {
+    for (QTcpServer** s : {&m_auth_server, &m_auth_server_v6}) {
         if (*s) {
             (*s)->close();
             (*s)->deleteLater();
             *s = nullptr;
         }
     }
-    if (mAuthTimeout) {
-        mAuthTimeout->stop();
-        mAuthTimeout->deleteLater();
-        mAuthTimeout = nullptr;
+    if (m_auth_timeout) {
+        m_auth_timeout->stop();
+        m_auth_timeout->deleteLater();
+        m_auth_timeout = nullptr;
     }
 }
 
-void Tone3000Client::onAuthConnection() {
+void Tone3000Client::on_auth_connection() {
     auto* server = qobject_cast<QTcpServer*>(sender());
     if (!server) {
         return;
@@ -412,14 +413,14 @@ void Tone3000Client::onAuthConnection() {
 
             // "GET /callback?code=…&state=… HTTP/1.1"
             const QList<QByteArray> parts = data.left(eol).split(' ');
-            const QUrl reqUrl = parts.size() >= 2
-                                    ? QUrl("http://localhost" + QString::fromLatin1(parts[1]))
-                                    : QUrl();
-            const QUrlQuery q(reqUrl);
+            const QUrl req_url = parts.size() >= 2
+                                     ? QUrl("http://localhost" + QString::fromLatin1(parts[1]))
+                                     : QUrl();
+            const QUrlQuery q(req_url);
 
             QString body;
-            const bool isCallback = reqUrl.path() == "/callback";
-            if (isCallback) {
+            const bool is_callback = req_url.path() == "/callback";
+            if (is_callback) {
                 body =
                     "<!doctype html><html><head><meta charset=\"utf-8\"><title>NAM Player</title>"
                     "<style>body{font-family:sans-serif;background:#15171c;color:#d8dee9;"
@@ -432,11 +433,11 @@ void Tone3000Client::onAuthConnection() {
             }
             const QByteArray bytes = body.toUtf8();
             sock->write(
-                QByteArray(isCallback ? "HTTP/1.1 200 OK\r\n" : "HTTP/1.1 404 Not Found\r\n") +
+                QByteArray(is_callback ? "HTTP/1.1 200 OK\r\n" : "HTTP/1.1 404 Not Found\r\n") +
                 "Content-Type: text/html; charset=utf-8\r\n" + "Content-Length: " +
                 QByteArray::number(bytes.size()) + "\r\n" + "Connection: close\r\n\r\n" + bytes);
             sock->disconnectFromHost();
-            if (!isCallback) {
+            if (!is_callback) {
                 return;
             }
 
@@ -444,119 +445,119 @@ void Tone3000Client::onAuthConnection() {
             const QString code = q.queryItemValue("code");
             const QString error = q.queryItemValue("error");
             const bool canceled = q.queryItemValue("canceled") == "true";
-            const int toneId = q.queryItemValue("tone_id").toInt();
+            const int tone_id = q.queryItemValue("tone_id").toInt();
 
-            if (state != mAuthState) {
-                finishAuth(false, "Sign-in response did not match the request (state).", 0);
+            if (state != m_auth_state) {
+                finish_auth(false, "Sign-in response did not match the request (state).", 0);
                 return;
             }
             if (canceled && code.isEmpty()) {
-                finishAuth(false, "Sign-in canceled.", 0);
+                finish_auth(false, "Sign-in canceled.", 0);
                 return;
             }
             if (!error.isEmpty()) {
-                finishAuth(false, "TONE3000 refused the sign-in: " + error, 0);
+                finish_auth(false, "TONE3000 refused the sign-in: " + error, 0);
                 return;
             }
             if (code.isEmpty()) {
-                finishAuth(false, "No authorization code returned.", 0);
+                finish_auth(false, "No authorization code returned.", 0);
                 return;
             }
-            exchangeCode(code, toneId);
+            exchange_code(code, tone_id);
         });
         connect(sock, &QTcpSocket::disconnected, sock, &QObject::deleteLater);
     }
 }
 
-void Tone3000Client::exchangeCode(const QString& code, int toneId) {
+void Tone3000Client::exchange_code(const QString& code, int tone_id) {
     QUrlQuery form;
     form.addQueryItem("grant_type", "authorization_code");
     form.addQueryItem("code", code);
-    form.addQueryItem("code_verifier", mAuthVerifier);
-    form.addQueryItem("redirect_uri", mAuthRedirect);
-    form.addQueryItem("client_id", clientId());
+    form.addQueryItem("code_verifier", m_auth_verifier);
+    form.addQueryItem("redirect_uri", m_auth_redirect);
+    form.addQueryItem("client_id", client_id());
 
     Request req;
     req.method = "POST";
-    req.url = QUrl(apiBase() + "/oauth/token");
+    req.url = QUrl(api_base() + "/oauth/token");
     req.body = form.query(QUrl::FullyEncoded).toUtf8();
-    req.useCache = false;
-    req.cb = [this, toneId](const Result& r) {
+    req.use_cache = false;
+    req.cb = [this, tone_id](const Result& r) {
         if (!r.ok) {
-            finishAuth(false, "Token exchange failed: " + r.error, 0);
+            finish_auth(false, "Token exchange failed: " + r.error, 0);
             return;
         }
-        applyTokenResponse(r.object());
-        emit authChanged();
-        fetchCurrentUser([this, toneId](const Result&) {
-            finishAuth(true, {}, toneId);
+        apply_token_response(r.object());
+        emit auth_changed();
+        fetch_current_user([this, tone_id](const Result&) {
+            finish_auth(true, {}, tone_id);
         });
     };
     send(std::move(req));
 }
 
-void Tone3000Client::finishAuth(bool ok, const QString& error, int toneId) {
+void Tone3000Client::finish_auth(bool ok, const QString& error, int tone_id) {
     // The socket handler may still be on the stack: tear the servers down
     // on the next event loop turn.
     QTimer::singleShot(0, this, [this] {
-        cancelAuth();
+        cancel_auth();
     });
-    emit authFinished(ok, error, toneId);
+    emit auth_finished(ok, error, tone_id);
 }
 
 // ---------------------------------------------------------------------------
 // Token refresh
 // ---------------------------------------------------------------------------
 
-void Tone3000Client::ensureFreshToken(std::function<void(bool)> then) {
-    if (!isSignedIn()) {
+void Tone3000Client::ensure_fresh_token(std::function<void(bool)> then) {
+    if (!is_signed_in()) {
         then(false);
         return;
     }
     const qint64 now = QDateTime::currentMSecsSinceEpoch();
-    if (now < mExpiresAtMs - 60 * 1000) {
+    if (now < m_expires_at_ms - 60 * 1000) {
         then(true);
         return;
     }
-    refreshToken(std::move(then));
+    refresh_token(std::move(then));
 }
 
-void Tone3000Client::refreshToken(std::function<void(bool)> then) {
-    if (mRefreshToken.isEmpty()) {
+void Tone3000Client::refresh_token(std::function<void(bool)> then) {
+    if (m_refresh_token.isEmpty()) {
         then(false);
         return;
     }
-    mWaitingForToken << std::move(then);
-    if (mRefreshing) {
+    m_waiting_for_token << std::move(then);
+    if (m_refreshing) {
         return;
     }
-    mRefreshing = true;
+    m_refreshing = true;
 
     QUrlQuery form;
     form.addQueryItem("grant_type", "refresh_token");
-    form.addQueryItem("refresh_token", mRefreshToken);
-    form.addQueryItem("client_id", clientId());
+    form.addQueryItem("refresh_token", m_refresh_token);
+    form.addQueryItem("client_id", client_id());
 
     Request req;
     req.method = "POST";
-    req.url = QUrl(apiBase() + "/oauth/token");
+    req.url = QUrl(api_base() + "/oauth/token");
     req.body = form.query(QUrl::FullyEncoded).toUtf8();
-    req.useCache = false;
+    req.use_cache = false;
     req.cb = [this](const Result& r) {
-        mRefreshing = false;
+        m_refreshing = false;
         bool ok = false;
         if (r.ok) {
-            applyTokenResponse(r.object());
+            apply_token_response(r.object());
             ok = true;
         } else if (r.status == 400 || r.status == 401) {
             // invalid_grant: the refresh token is dead — back to signed out.
-            qCWarning(lcAudio) << "TONE3000 refresh token rejected:" << r.error;
-            clearTokens();
-            emit authChanged();
-            emit userChanged();
+            qCWarning(lc_audio) << "TONE3000 refresh token rejected:" << r.error;
+            clear_tokens();
+            emit auth_changed();
+            emit user_changed();
         }
-        const auto waiting = std::move(mWaitingForToken);
-        mWaitingForToken.clear();
+        const auto waiting = std::move(m_waiting_for_token);
+        m_waiting_for_token.clear();
         for (const auto& w : waiting) {
             w(ok);
         }
@@ -569,12 +570,12 @@ void Tone3000Client::refreshToken(std::function<void(bool)> then) {
 // ---------------------------------------------------------------------------
 
 void Tone3000Client::send(Request req) {
-    const bool isTokenCall = req.url.path().endsWith("/oauth/token");
+    const bool is_token_call = req.url.path().endsWith("/oauth/token");
 
-    if (req.method == "GET" && req.useCache) {
-        const auto it = mCache.constFind(req.url.toString());
-        if (it != mCache.constEnd() &&
-            QDateTime::currentMSecsSinceEpoch() - it->atMs < kCacheTtlMs) {
+    if (req.method == "GET" && req.use_cache) {
+        const auto it = m_cache.constFind(req.url.toString());
+        if (it != m_cache.constEnd() &&
+            QDateTime::currentMSecsSinceEpoch() - it->at_ms < K_CACHE_TTL_MS) {
             Result r;
             r.ok = true;
             r.status = 200;
@@ -591,36 +592,36 @@ void Tone3000Client::send(Request req) {
         nr.setRawHeader("Accept", "application/json");
         nr.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::AlwaysNetwork);
         nr.setAttribute(QNetworkRequest::CacheSaveControlAttribute, false);
-        if (!req.url.path().endsWith("/oauth/token") && isSignedIn()) {
-            nr.setRawHeader("Authorization", "Bearer " + mAccessToken.toUtf8());
+        if (!req.url.path().endsWith("/oauth/token") && is_signed_in()) {
+            nr.setRawHeader("Authorization", "Bearer " + m_access_token.toUtf8());
         }
 
         QNetworkReply* reply = nullptr;
         if (req.method == "GET") {
-            reply = mNam->get(nr);
+            reply = m_nam->get(nr);
         } else if (req.method == "PUT") {
-            reply = mNam->put(nr, QByteArray());
+            reply = m_nam->put(nr, QByteArray());
         } else if (req.method == "DELETE") {
-            reply = mNam->deleteResource(nr);
+            reply = m_nam->deleteResource(nr);
         } else {
             nr.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
-            reply = mNam->post(nr, req.body);
+            reply = m_nam->post(nr, req.body);
         }
         connect(reply, &QNetworkReply::finished, this, [this, reply, req] {
-            onReplyFinished(reply, req);
+            on_reply_finished(reply, req);
         });
     };
 
-    if (isTokenCall) {
+    if (is_token_call) {
         fire();
         return;
     }
 
     // Bearer calls: refresh first when the token is about to expire.
-    ensureFreshToken([fire, req](bool fresh) mutable {
+    ensure_fresh_token([fire, req](bool fresh) mutable {
         if (!fresh) {
             Result r;
-            r.authRequired = true;
+            r.auth_required = true;
             r.status = 401;
             r.error = "Sign in to TONE3000 first.";
             req.cb(r);
@@ -630,7 +631,7 @@ void Tone3000Client::send(Request req) {
     });
 }
 
-void Tone3000Client::onReplyFinished(QNetworkReply* reply, Request req) {
+void Tone3000Client::on_reply_finished(QNetworkReply* reply, Request req) {
     reply->deleteLater();
     Result r;
     r.status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
@@ -659,18 +660,18 @@ void Tone3000Client::onReplyFinished(QNetworkReply* reply, Request req) {
     }
 
     if (r.status == 401 && !req.retried401 && !req.url.path().endsWith("/oauth/token") &&
-        !mRefreshToken.isEmpty()) {
+        !m_refresh_token.isEmpty()) {
         // Expiry race between the pre-check and the request: refresh and retry once.
         req.retried401 = true;
         Request again = req;
-        refreshToken([this, again](bool ok) mutable {
+        refresh_token([this, again](bool ok) mutable {
             if (ok) {
                 send(std::move(again));
                 return;
             }
             Result rr;
             rr.status = 401;
-            rr.authRequired = true;
+            rr.auth_required = true;
             rr.error = "Your TONE3000 session has expired. Sign in again.";
             again.cb(rr);
         });
@@ -678,19 +679,19 @@ void Tone3000Client::onReplyFinished(QNetworkReply* reply, Request req) {
     }
 
     if (r.status == 429) {
-        const int retryAfter = reply->rawHeader("Retry-After").toInt();
-        if (!req.retried429 && retryAfter > 0 && retryAfter <= kMaxRetryAfterS) {
+        const int retry_after = reply->rawHeader("Retry-After").toInt();
+        if (!req.retried429 && retry_after > 0 && retry_after <= K_MAX_RETRY_AFTER_S) {
             req.retried429 = true;
-            emit status(QString("TONE3000 rate limit reached, retrying in %1 s…").arg(retryAfter));
+            emit status(QString("TONE3000 rate limit reached, retrying in %1 s…").arg(retry_after));
             Request again = req;
-            QTimer::singleShot(retryAfter * 1000, this, [this, again]() mutable {
+            QTimer::singleShot(retry_after * 1000, this, [this, again]() mutable {
                 send(std::move(again));
             });
             return;
         }
-        r.rateLimited = true;
-        r.error = retryAfter > 0
-                      ? QString("Rate limited by TONE3000, try again in %1 s.").arg(retryAfter)
+        r.rate_limited = true;
+        r.error = retry_after > 0
+                      ? QString("Rate limited by TONE3000, try again in %1 s.").arg(retry_after)
                       : QStringLiteral("Rate limited by TONE3000, try again in a minute.");
         req.cb(r);
         return;
@@ -698,15 +699,15 @@ void Tone3000Client::onReplyFinished(QNetworkReply* reply, Request req) {
 
     if (r.status >= 200 && r.status < 300) {
         r.ok = true;
-        if (req.method == "GET" && req.useCache) {
-            mCache.insert(req.url.toString(), {r.json, QDateTime::currentMSecsSinceEpoch()});
+        if (req.method == "GET" && req.use_cache) {
+            m_cache.insert(req.url.toString(), {r.json, QDateTime::currentMSecsSinceEpoch()});
         }
         req.cb(r);
         return;
     }
 
     if (r.status == 401) {
-        r.authRequired = true;
+        r.auth_required = true;
     }
     const QJsonObject err = r.json.object();
     QString msg = err.value("error_description").toString();
@@ -726,15 +727,15 @@ void Tone3000Client::onReplyFinished(QNetworkReply* reply, Request req) {
     req.cb(r);
 }
 
-void Tone3000Client::invalidateCache(const QString& pathPrefix) {
-    if (pathPrefix.isEmpty()) {
-        mCache.clear();
+void Tone3000Client::invalidate_cache(const QString& path_prefix) {
+    if (path_prefix.isEmpty()) {
+        m_cache.clear();
         return;
     }
-    const QString prefix = apiBase() + pathPrefix;
-    for (auto it = mCache.begin(); it != mCache.end();) {
+    const QString prefix = api_base() + path_prefix;
+    for (auto it = m_cache.begin(); it != m_cache.end();) {
         if (it.key().startsWith(prefix)) {
-            it = mCache.erase(it);
+            it = m_cache.erase(it);
         } else {
             ++it;
         }
@@ -745,65 +746,65 @@ void Tone3000Client::invalidateCache(const QString& pathPrefix) {
 // API calls
 // ---------------------------------------------------------------------------
 
-QString Tone3000Client::listPath(ListKind k) {
+QString Tone3000Client::list_path(ListKind k) {
     switch (k) {
-        case ListKind::Trending:
+        case ListKind::TRENDING:
             return "/tones/trending";
-        case ListKind::Latest:
+        case ListKind::LATEST:
             return "/tones/latest";
-        case ListKind::Favorited:
+        case ListKind::FAVORITED:
             return "/tones/favorited";
-        case ListKind::Downloaded:
+        case ListKind::DOWNLOADED:
             return "/tones/downloaded";
-        case ListKind::Created:
+        case ListKind::CREATED:
             return "/tones/created";
     }
     return "/tones/latest";
 }
 
-void Tone3000Client::listTones(ListKind kind, int page, Callback cb, bool useCache) {
+void Tone3000Client::list_tones(ListKind kind, int page, Callback cb, bool use_cache) {
     Request req;
     req.method = "GET";
-    QUrl url(apiBase() + listPath(kind));
-    if (kind == ListKind::Favorited || kind == ListKind::Downloaded || kind == ListKind::Created) {
+    QUrl url(api_base() + list_path(kind));
+    if (kind == ListKind::FAVORITED || kind == ListKind::DOWNLOADED || kind == ListKind::CREATED) {
         QUrlQuery q;
         q.addQueryItem("page", QString::number(std::max(1, page)));
         q.addQueryItem("page_size", "25");
         url.setQuery(q);
     }
     req.url = url;
-    req.useCache = useCache;
+    req.use_cache = use_cache;
     req.cb = std::move(cb);
     send(std::move(req));
 }
 
-void Tone3000Client::fetchTone(int toneId, Callback cb) {
+void Tone3000Client::fetch_tone(int tone_id, Callback cb) {
     Request req;
     req.method = "GET";
-    req.url = QUrl(apiBase() + "/tones/" + QString::number(toneId));
+    req.url = QUrl(api_base() + "/tones/" + QString::number(tone_id));
     req.cb = std::move(cb);
     send(std::move(req));
 }
 
-void Tone3000Client::fetchModel(int modelId, Callback cb) {
+void Tone3000Client::fetch_model(int model_id, Callback cb) {
     Request req;
     req.method = "GET";
-    req.url = QUrl(apiBase() + "/models/" + QString::number(modelId));
-    req.useCache = false; // model_url may be time-limited
+    req.url = QUrl(api_base() + "/models/" + QString::number(model_id));
+    req.use_cache = false; // model_url may be time-limited
     req.cb = std::move(cb);
     send(std::move(req));
 }
 
-void Tone3000Client::listModels(const T3kTone& tone,
-                                std::function<void(const Result&, QList<T3kModel>)> cb) {
+void Tone3000Client::list_models(const T3kTone& tone,
+                                 std::function<void(const Result&, QList<T3kModel>)> cb) {
     // NAM tones keep A2 files apart from the legacy A1/custom set; the
     // endpoint returns one set per call. IR and other formats: one plain call.
     QStringList archs;
     if (tone.format == "nam") {
-        if (tone.a2Count > 0) {
+        if (tone.a2_count > 0) {
             archs << "2";
         }
-        if (tone.a1Count + tone.customCount > 0) {
+        if (tone.a1_count + tone.custom_count > 0) {
             archs << "";
         }
         if (archs.isEmpty()) {
@@ -821,7 +822,7 @@ void Tone3000Client::listModels(const T3kTone& tone,
     for (const QString& arch : archs) {
         Request req;
         req.method = "GET";
-        QUrl url(apiBase() + "/models");
+        QUrl url(api_base() + "/models");
         QUrlQuery q;
         q.addQueryItem("tone_id", QString::number(tone.id));
         q.addQueryItem("page_size", "300");
@@ -830,11 +831,11 @@ void Tone3000Client::listModels(const T3kTone& tone,
         }
         url.setQuery(q);
         req.url = url;
-        req.useCache = false; // model_url values are fetched fresh
+        req.use_cache = false; // model_url values are fetched fresh
         req.cb = [models, pending, failed, cbp](const Result& r) {
             if (r.ok) {
                 for (const QJsonValue v : r.object().value("data").toArray()) {
-                    const T3kModel m = parseModel(v.toObject());
+                    const T3kModel m = parse_model(v.toObject());
                     const bool dup =
                         std::any_of(models->cbegin(), models->cend(), [&](const T3kModel& x) {
                             return x.id == m.id;
@@ -861,30 +862,30 @@ void Tone3000Client::listModels(const T3kTone& tone,
     }
 }
 
-void Tone3000Client::setFavorite(int toneId, bool on, Callback cb) {
+void Tone3000Client::set_favorite(int tone_id, bool on, Callback cb) {
     Request req;
     req.method = on ? "PUT" : "DELETE";
-    req.url = QUrl(apiBase() + "/tones/" + QString::number(toneId) + "/favorite");
-    req.useCache = false;
+    req.url = QUrl(api_base() + "/tones/" + QString::number(tone_id) + "/favorite");
+    req.use_cache = false;
     req.cb = [this, cb](const Result& r) {
         if (r.ok) {
-            invalidateCache("/tones/favorited");
+            invalidate_cache("/tones/favorited");
         }
         cb(r);
     };
     send(std::move(req));
 }
 
-void Tone3000Client::fetchCurrentUser(Callback cb) {
+void Tone3000Client::fetch_current_user(Callback cb) {
     Request req;
     req.method = "GET";
-    req.url = QUrl(apiBase() + "/user");
-    req.useCache = false;
+    req.url = QUrl(api_base() + "/user");
+    req.use_cache = false;
     req.cb = [this, cb](const Result& r) {
         if (r.ok) {
-            mUser = parseUser(r.object());
-            saveTokens();
-            emit userChanged();
+            m_user = parse_user(r.object());
+            save_tokens();
+            emit user_changed();
         }
         cb(r);
     };
@@ -895,35 +896,35 @@ void Tone3000Client::fetchCurrentUser(Callback cb) {
 // Downloads
 // ---------------------------------------------------------------------------
 
-QString Tone3000Client::localPathFor(const T3kModel& model, const T3kTone& tone) {
-    QString ext = QFileInfo(QUrl(model.modelUrl).path()).suffix().toLower();
+QString Tone3000Client::local_path_for(const T3kModel& model, const T3kTone& tone) {
+    QString ext = QFileInfo(QUrl(model.model_url).path()).suffix().toLower();
     if (ext.isEmpty()) {
         ext = tone.format == "ir" ? "wav" : "nam";
     }
     const QString creator =
-        sanitizeComponent(tone.user.username.isEmpty() ? "unknown" : tone.user.username);
-    return downloadDir() + "/" + creator + "/" + sanitizeComponent(tone.title) + "/" +
-           sanitizeComponent(model.name) + "." + ext;
+        sanitize_component(tone.user.username.isEmpty() ? "unknown" : tone.user.username);
+    return download_dir() + "/" + creator + "/" + sanitize_component(tone.title) + "/" +
+           sanitize_component(model.name) + "." + ext;
 }
 
-void Tone3000Client::downloadModel(const T3kModel& model, const T3kTone& tone,
-                                   std::function<void(bool, QString, QString)> cb) {
-    if (model.modelUrl.isEmpty()) {
+void Tone3000Client::download_model(const T3kModel& model, const T3kTone& tone,
+                                    std::function<void(bool, QString, QString)> cb) {
+    if (model.model_url.isEmpty()) {
         cb(false, {}, "This model has no download URL.");
         return;
     }
-    ensureFreshToken([this, model, tone, cb](bool fresh) {
+    ensure_fresh_token([this, model, tone, cb](bool fresh) {
         if (!fresh) {
             cb(false, {}, "Sign in to TONE3000 first.");
             return;
         }
-        downloadStep(QUrl(model.modelUrl), true, 0, model, tone, cb);
+        download_step(QUrl(model.model_url), true, 0, model, tone, cb);
     });
 }
 
-void Tone3000Client::downloadStep(QUrl url, bool withAuth, int hops, const T3kModel& model,
-                                  const T3kTone& tone,
-                                  std::function<void(bool, QString, QString)> cb) {
+void Tone3000Client::download_step(QUrl url, bool with_auth, int hops, const T3kModel& model,
+                                   const T3kTone& tone,
+                                   std::function<void(bool, QString, QString)> cb) {
     if (hops > 5) {
         cb(false, {}, "Too many redirects.");
         return;
@@ -938,22 +939,23 @@ void Tone3000Client::downloadStep(QUrl url, bool withAuth, int hops, const T3kMo
     // storage, which rejects any extra authentication.
     nr.setAttribute(QNetworkRequest::RedirectPolicyAttribute,
                     QNetworkRequest::ManualRedirectPolicy);
-    const bool apiHost = url.host() == QUrl(apiBase()).host();
-    if (withAuth && hops == 0 && apiHost) {
-        nr.setRawHeader("Authorization", "Bearer " + mAccessToken.toUtf8());
+    const bool api_host = url.host() == QUrl(api_base()).host();
+    if (with_auth && hops == 0 && api_host) {
+        nr.setRawHeader("Authorization", "Bearer " + m_access_token.toUtf8());
     }
 
-    QNetworkReply* reply = mNam->get(nr);
-    const int modelId = model.id;
-    connect(reply, &QNetworkReply::downloadProgress, this, [this, modelId](qint64 rec, qint64 tot) {
-        emit downloadProgress(modelId, rec, tot);
-    });
+    QNetworkReply* reply = m_nam->get(nr);
+    const int model_id = model.id;
+    connect(reply, &QNetworkReply::downloadProgress, this,
+            [this, model_id](qint64 rec, qint64 tot) {
+                emit download_progress(model_id, rec, tot);
+            });
     connect(reply, &QNetworkReply::finished, this, [this, reply, hops, model, tone, cb] {
         reply->deleteLater();
         const int status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
         const QUrl target = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toUrl();
         if (status >= 300 && status < 400 && !target.isEmpty()) {
-            downloadStep(reply->url().resolved(target), false, hops + 1, model, tone, cb);
+            download_step(reply->url().resolved(target), false, hops + 1, model, tone, cb);
             return;
         }
         if (reply->error() != QNetworkReply::NoError || status < 200 || status >= 300) {
@@ -962,7 +964,7 @@ void Tone3000Client::downloadStep(QUrl url, bool withAuth, int hops, const T3kMo
             return;
         }
 
-        const QString path = localPathFor(model, tone);
+        const QString path = local_path_for(model, tone);
         QDir().mkpath(QFileInfo(path).absolutePath());
         QSaveFile f(path);
         if (!f.open(QIODevice::WriteOnly)) {
@@ -986,14 +988,14 @@ void Tone3000Client::downloadStep(QUrl url, bool withAuth, int hops, const T3kMo
         side["url"] = tone.url;
         side["gear"] = tone.gear;
         side["format"] = tone.format;
-        side["image"] = tone.imageUrl();
+        side["image"] = tone.image_url();
         side["downloaded_at"] = QDateTime::currentDateTimeUtc().toString(Qt::ISODate);
-        QSaveFile sf(sidecarPath(path));
+        QSaveFile sf(sidecar_path(path));
         if (sf.open(QIODevice::WriteOnly)) {
             sf.write(QJsonDocument(side).toJson());
             sf.commit();
         }
-        invalidateCache("/tones/downloaded");
+        invalidate_cache("/tones/downloaded");
         cb(true, path, {});
     });
 }
@@ -1002,13 +1004,14 @@ void Tone3000Client::downloadStep(QUrl url, bool withAuth, int hops, const T3kMo
 // Images
 // ---------------------------------------------------------------------------
 
-void Tone3000Client::fetchImage(const QString& url, const QSize& maxSize,
-                                std::function<void(QPixmap)> cb) {
+void Tone3000Client::fetch_image(const QString& url, const QSize& max_size,
+                                 std::function<void(QPixmap)> cb) {
     if (url.isEmpty()) {
         cb(QPixmap());
         return;
     }
-    const QString key = QString("t3k:%1:%2x%3").arg(url).arg(maxSize.width()).arg(maxSize.height());
+    const QString key =
+        QString("t3k:%1:%2x%3").arg(url).arg(max_size.width()).arg(max_size.height());
     QPixmap cached;
     if (QPixmapCache::find(key, &cached)) {
         cb(cached);
@@ -1018,16 +1021,16 @@ void Tone3000Client::fetchImage(const QString& url, const QSize& maxSize,
     QNetworkRequest nr{QUrl(url)};
     nr.setHeader(QNetworkRequest::UserAgentHeader, "NAMPlayer/1.0");
     nr.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferCache);
-    QNetworkReply* reply = mNam->get(nr);
-    connect(reply, &QNetworkReply::finished, this, [reply, key, maxSize, cb] {
+    QNetworkReply* reply = m_nam->get(nr);
+    connect(reply, &QNetworkReply::finished, this, [reply, key, max_size, cb] {
         reply->deleteLater();
         QPixmap px;
         if (reply->error() == QNetworkReply::NoError) {
             const QByteArray bytes = reply->readAll();
             QImage img = QImage::fromData(bytes);
             if (!img.isNull()) {
-                if (img.width() > maxSize.width() || img.height() > maxSize.height()) {
-                    img = img.scaled(maxSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+                if (img.width() > max_size.width() || img.height() > max_size.height()) {
+                    img = img.scaled(max_size, Qt::KeepAspectRatio, Qt::SmoothTransformation);
                 }
                 px = QPixmap::fromImage(img);
                 QPixmapCache::insert(key, px);

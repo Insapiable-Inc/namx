@@ -17,10 +17,10 @@ struct ParamDesc
     QString key;
     KnobWidget* knob = nullptr; // exactly one of knob/toggle is set
     ToggleSwitch* toggle = nullptr;
-    double knobDefault = 0.0; // applied when the key is absent from a present group
-    bool toggleDefault = false;
-    bool inPreset = true; // false = session only (tuner): not saved
-                          // to presets, ignored when one loads
+    double knob_default = 0.0; // applied when the key is absent from a present group
+    bool toggle_default = false;
+    bool in_preset = true; // false = session only (tuner): not saved
+                           // to presets, ignored when one loads
 };
 
 using ParamRegistry = std::vector<ParamDesc>;

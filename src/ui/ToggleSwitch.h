@@ -14,7 +14,7 @@ class ToggleSwitch : public QAbstractButton
 public:
     explicit ToggleSwitch(QWidget* parent = nullptr);
 
-    void setAccent(const QColor& c);
+    void set_accent(const QColor& c);
 
     QSize sizeHint() const override {
         return {42, 22};
@@ -30,6 +30,6 @@ protected:
     void leaveEvent(QEvent*) override;
 
 private:
-    QColor mAccent;
-    bool mHovered{false};
+    QColor m_accent;
+    bool m_hovered{false};
 };

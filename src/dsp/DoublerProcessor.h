@@ -13,29 +13,29 @@
 class DoublerProcessor : public EffectBase
 {
 public:
-    bool supportsStereoOut() const override {
+    bool supports_stereo_out() const override {
         return true;
     }
     void reset() override;
 
-    void setSpread(float ms) {
-        mSpreadMs.store(ms);
+    void set_spread(float ms) {
+        m_spread_ms.store(ms);
     }
-    void setMix(float pct) {
-        mMix.store(pct);
+    void set_mix(float pct) {
+        m_mix.store(pct);
     }
 
-    bool process(float* L, float* R, size_t n, bool inputIsStereo) override;
+    bool process(float* l, float* r, size_t n, bool input_is_stereo) override;
 
 protected:
-    void onSampleRateChanged(double sr) override;
+    void on_sample_rate_changed(double sr) override;
 
 private:
-    std::atomic<float> mSpreadMs{10.0f};
-    std::atomic<float> mMix{100.0f};
+    std::atomic<float> m_spread_ms{10.0f};
+    std::atomic<float> m_mix{100.0f};
 
-    DelayLine mLine;
-    float mDrift = 0.0f, mDriftTarget = 0.0f; // −1 … 1
-    int mUntilNewTarget = 0;
-    uint32_t mSeed = 0x9e3779b9u;
+    DelayLine m_line;
+    float m_drift = 0.0f, m_drift_target = 0.0f; // −1 … 1
+    int m_until_new_target = 0;
+    uint32_t m_seed = 0x9e3779b9u;
 };

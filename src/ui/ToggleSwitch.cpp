@@ -11,14 +11,14 @@
 
 ToggleSwitch::ToggleSwitch(QWidget* parent)
     : QAbstractButton(parent)
-    , mAccent(Theme::genericAccent()) {
+    , m_accent(Theme::generic_accent()) {
     setCheckable(true);
     setCursor(Qt::PointingHandCursor);
     setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 }
 
-void ToggleSwitch::setAccent(const QColor& c) {
-    mAccent = c;
+void ToggleSwitch::set_accent(const QColor& c) {
+    m_accent = c;
     update();
 }
 
@@ -32,8 +32,8 @@ void ToggleSwitch::paintEvent(QPaintEvent*) {
     const qreal rx = h / 2.0;
 
     // ---- Track ----
-    const QColor accent = mAccent;
-    const QColor trackOff = mHovered ? Theme::trackHover() : Theme::track();
+    const QColor accent = m_accent;
+    const QColor track_off = m_hovered ? Theme::track_hover() : Theme::track();
 
     if (isChecked()) {
         QLinearGradient trk(0, 0, 0, h);
@@ -41,7 +41,7 @@ void ToggleSwitch::paintEvent(QPaintEvent*) {
         trk.setColorAt(1.0, accent.darker(110));
         p.setBrush(trk);
     } else {
-        p.setBrush(trackOff);
+        p.setBrush(track_off);
     }
     p.setPen(Qt::NoPen);
     p.drawRoundedRect(r, rx, rx);
@@ -54,35 +54,35 @@ void ToggleSwitch::paintEvent(QPaintEvent*) {
 
     // LED glow when on: small bright dot inside the off-side of the track.
     if (isChecked()) {
-        const qreal ledD = h * 0.32;
-        const qreal ledX = 5.0;
-        const qreal ledY = (h - ledD) / 2.0;
-        QRadialGradient g(QPointF(ledX + ledD / 2.0, ledY + ledD / 2.0), ledD);
+        const qreal led_d = h * 0.32;
+        const qreal led_x = 5.0;
+        const qreal led_y = (h - led_d) / 2.0;
+        QRadialGradient g(QPointF(led_x + led_d / 2.0, led_y + led_d / 2.0), led_d);
         g.setColorAt(0.0, QColor(255, 255, 255, 230));
         g.setColorAt(0.5, QColor(255, 255, 255, 80));
         g.setColorAt(1.0, QColor(255, 255, 255, 0));
         p.setBrush(g);
         p.setPen(Qt::NoPen);
-        p.drawEllipse(QRectF(ledX, ledY, ledD, ledD));
+        p.drawEllipse(QRectF(led_x, led_y, led_d, led_d));
     }
 
     // ---- Thumb ----
     const qreal margin = 2.0;
-    const qreal thumbD = h - 2 * margin;
-    const qreal thumbX = isChecked() ? w - margin - thumbD : margin;
-    const QRectF thumbRect(thumbX, margin, thumbD, thumbD);
+    const qreal thumb_d = h - 2 * margin;
+    const qreal thumb_x = isChecked() ? w - margin - thumb_d : margin;
+    const QRectF thumb_rect(thumb_x, margin, thumb_d, thumb_d);
 
     // Soft shadow under the thumb.
     p.setBrush(QColor(0, 0, 0, 70));
     p.setPen(Qt::NoPen);
-    p.drawEllipse(thumbRect.translated(0, 1.0));
+    p.drawEllipse(thumb_rect.translated(0, 1.0));
 
     // Thumb body with a top highlight.
-    QLinearGradient thumbGrad(thumbRect.topLeft(), thumbRect.bottomLeft());
-    thumbGrad.setColorAt(0.0, Theme::thumbTop());
-    thumbGrad.setColorAt(1.0, Theme::thumbBot());
-    p.setBrush(thumbGrad);
-    p.drawEllipse(thumbRect);
+    QLinearGradient thumb_grad(thumb_rect.topLeft(), thumb_rect.bottomLeft());
+    thumb_grad.setColorAt(0.0, Theme::thumb_top());
+    thumb_grad.setColorAt(1.0, Theme::thumb_bot());
+    p.setBrush(thumb_grad);
+    p.drawEllipse(thumb_rect);
 }
 
 void ToggleSwitch::mouseReleaseEvent(QMouseEvent* e) {
@@ -94,13 +94,13 @@ void ToggleSwitch::mouseReleaseEvent(QMouseEvent* e) {
 }
 
 void ToggleSwitch::enterEvent(QEnterEvent* e) {
-    mHovered = true;
+    m_hovered = true;
     update();
     QAbstractButton::enterEvent(e);
 }
 
 void ToggleSwitch::leaveEvent(QEvent* e) {
-    mHovered = false;
+    m_hovered = false;
     update();
     QAbstractButton::leaveEvent(e);
 }

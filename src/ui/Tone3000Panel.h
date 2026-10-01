@@ -25,16 +25,16 @@ class ToneListModel : public QAbstractListModel
 public:
     enum Role
     {
-        ToneIdRole = Qt::UserRole + 1,
-        TitleRole,
-        GearRole,
-        FormatRole,
-        CreatorRole,
-        FavoriteRole,
-        DownloadedRole,
-        ThumbRole,
-        AvatarRole,
-        LicenseRole
+        TONE_ID_ROLE = Qt::UserRole + 1,
+        TITLE_ROLE,
+        GEAR_ROLE,
+        FORMAT_ROLE,
+        CREATOR_ROLE,
+        FAVORITE_ROLE,
+        DOWNLOADED_ROLE,
+        THUMB_ROLE,
+        AVATAR_ROLE,
+        LICENSE_ROLE
     };
 
     ToneListModel(Tone3000Client& client, LibraryIndex& index, QObject* parent = nullptr);
@@ -42,22 +42,22 @@ public:
     int rowCount(const QModelIndex& parent = {}) const override;
     QVariant data(const QModelIndex& index, int role) const override;
 
-    void setTones(const QList<T3kTone>& tones);
+    void set_tones(const QList<T3kTone>& tones);
     const T3kTone* tone(int row) const {
-        return row >= 0 && row < mTones.size() ? &mTones[row] : nullptr;
+        return row >= 0 && row < m_tones.size() ? &m_tones[row] : nullptr;
     }
-    void setFavorite(int toneId, bool on);
-    void refreshDownloaded();
+    void set_favorite(int tone_id, bool on);
+    void refresh_downloaded();
 
 private:
-    void requestImages();
+    void request_images();
 
-    Tone3000Client& mClient;
-    LibraryIndex& mIndex;
-    QList<T3kTone> mTones;
-    QHash<QString, QPixmap> mImages; // url → scaled pixmap (thumbs + avatars)
-    QSet<QString> mRequested;
-    QHash<int, bool> mDownloaded; // tone id → any model in the library
+    Tone3000Client& m_client;
+    LibraryIndex& m_index;
+    QList<T3kTone> m_tones;
+    QHash<QString, QPixmap> m_images; // url → scaled pixmap (thumbs + avatars)
+    QSet<QString> m_requested;
+    QHash<int, bool> m_downloaded; // tone id → any model in the library
 };
 
 /// Card: 44 px image, title, "gear · format", creator avatar + @name, ★ and ✓.
@@ -68,7 +68,7 @@ public:
     using QStyledItemDelegate::QStyledItemDelegate;
     void paint(QPainter* p, const QStyleOptionViewItem& opt, const QModelIndex& idx) const override;
     QSize sizeHint(const QStyleOptionViewItem& opt, const QModelIndex& idx) const override;
-    static QRect starRect(const QRect& row);
+    static QRect star_rect(const QRect& row);
 };
 
 /// Models of one tone with per-row download state.
@@ -78,20 +78,20 @@ class ToneModelsModel : public QAbstractListModel
 public:
     enum State
     {
-        Idle,
-        Downloading,
-        Done,
-        Failed
+        IDLE,
+        DOWNLOADING,
+        DONE,
+        FAILED
     };
     enum Role
     {
-        ModelIdRole = Qt::UserRole + 1,
-        NameRole,
-        InfoRole,
-        StateRole,
-        ProgressRole,
-        LocalPathRole,
-        ErrorRole
+        MODEL_ID_ROLE = Qt::UserRole + 1,
+        NAME_ROLE,
+        INFO_ROLE,
+        STATE_ROLE,
+        PROGRESS_ROLE,
+        LOCAL_PATH_ROLE,
+        ERROR_ROLE
     };
 
     explicit ToneModelsModel(QObject* parent = nullptr)
@@ -101,24 +101,24 @@ public:
     int rowCount(const QModelIndex& parent = {}) const override;
     QVariant data(const QModelIndex& index, int role) const override;
 
-    void setModels(const QList<T3kModel>& models, const T3kTone& tone, LibraryIndex& index);
+    void set_models(const QList<T3kModel>& models, const T3kTone& tone, LibraryIndex& index);
     const T3kModel* model(int row) const {
-        return row >= 0 && row < mModels.size() ? &mModels[row].model : nullptr;
+        return row >= 0 && row < m_models.size() ? &m_models[row].model : nullptr;
     }
-    int rowOf(int modelId) const;
-    void setState(int modelId, State s, const QString& pathOrError = {});
-    void setProgress(int modelId, int percent);
+    int row_of(int model_id) const;
+    void set_state(int model_id, State s, const QString& path_or_error = {});
+    void set_progress(int model_id, int percent);
     QList<T3kModel> pending() const; // not yet downloaded
 
 private:
     struct Row
     {
         T3kModel model;
-        State state = Idle;
+        State state = IDLE;
         int progress = 0;
         QString path, error;
     };
-    QList<Row> mModels;
+    QList<Row> m_models;
 };
 
 class ToneModelDelegate : public QStyledItemDelegate
@@ -141,13 +141,13 @@ public:
     Tone3000Panel(Tone3000Client& client, LibraryIndex& index, QWidget* parent = nullptr);
 
     /// Open a tone's detail page (after the select flow, or from a preset).
-    void showTone(int toneId);
+    void show_tone(int tone_id);
     /// Start the browser-based catalog picker.
-    void browseCatalog();
+    void browse_catalog();
 
 signals:
     /// A downloaded model/IR should be loaded into the rig.
-    void loadRequested(LibraryEntry::Kind kind, const QString& path);
+    void load_requested(LibraryEntry::Kind kind, const QString& path);
 
 protected:
     // Logo click → site; tone card click → detail / ★.
@@ -156,67 +156,67 @@ protected:
 private:
     enum Page
     {
-        PageSetup,
-        PageSplash,
-        PageBrowse,
-        PageDetail
+        PAGE_SETUP,
+        PAGE_SPLASH,
+        PAGE_BROWSE,
+        PAGE_DETAIL
     };
 
-    bool handleToneViewClick(QMouseEvent* me);
-    static QString pickDownloadDir(QWidget* parent);
+    bool handle_tone_view_click(QMouseEvent* me);
+    static QString pick_download_dir(QWidget* parent);
 
-    void buildHeader();
-    void buildSetupPage();
-    void buildSplashPage();
-    void buildBrowsePage();
-    void buildDetailPage();
+    void build_header();
+    void build_setup_page();
+    void build_splash_page();
+    void build_browse_page();
+    void build_detail_page();
 
-    void syncState(); // pick the page from key / auth state
-    void updateUserHeader();
-    void selectList(int which, bool force = false);
-    void loadList(bool useCache);
-    void showListStatus(const QString& text);
-    void openDetail(const T3kTone& tone);
-    void loadDetailModels();
-    void startDownload(int row);
-    void downloadAll();
-    void onModelRowClicked(const QModelIndex& idx);
-    void toggleFavorite(int toneId, bool on);
-    void setThumbnail(QLabel* label, const QString& url, const QSize& size, bool round);
+    void sync_state(); // pick the page from key / auth state
+    void update_user_header();
+    void select_list(int which, bool force = false);
+    void load_list(bool use_cache);
+    void show_list_status(const QString& text);
+    void open_detail(const T3kTone& tone);
+    void load_detail_models();
+    void start_download(int row);
+    void download_all();
+    void on_model_row_clicked(const QModelIndex& idx);
+    void toggle_favorite(int tone_id, bool on);
+    void set_thumbnail(QLabel* label, const QString& url, const QSize& size, bool round);
 
-    Tone3000Client& mClient;
-    LibraryIndex& mIndex;
+    Tone3000Client& m_client;
+    LibraryIndex& m_index;
 
-    QStackedWidget* mPages = nullptr;
-    QLabel* mLogo = nullptr;
-    QToolButton* mUserBtn = nullptr;
-    QLabel* mNotice = nullptr; // transient status line under the header
+    QStackedWidget* m_pages = nullptr;
+    QLabel* m_logo = nullptr;
+    QToolButton* m_user_btn = nullptr;
+    QLabel* m_notice = nullptr; // transient status line under the header
 
     // Setup
-    QLineEdit* mKeyEdit = nullptr;
+    QLineEdit* m_key_edit = nullptr;
     // Browse
-    QToolButton* mListBtn[5]{};
-    int mList = 0;
-    int mPage = 1, mTotalPages = 1;
-    ToneListModel* mToneModel = nullptr;
-    QListView* mToneView = nullptr;
-    QLabel* mListStatus = nullptr;
-    QToolButton* mPrevPage = nullptr;
-    QToolButton* mNextPage = nullptr;
-    QPushButton* mBrowseBtn = nullptr;
+    QToolButton* m_list_btn[5]{};
+    int m_list = 0;
+    int m_page = 1, m_total_pages = 1;
+    ToneListModel* m_tone_model = nullptr;
+    QListView* m_tone_view = nullptr;
+    QLabel* m_list_status = nullptr;
+    QToolButton* m_prev_page = nullptr;
+    QToolButton* m_next_page = nullptr;
+    QPushButton* m_browse_btn = nullptr;
     // Detail
-    T3kTone mDetailTone;
-    QLabel* mDetailImage = nullptr;
-    QLabel* mDetailTitle = nullptr;
-    QLabel* mDetailMeta = nullptr;
-    QLabel* mDetailCreatorAvatar = nullptr;
-    QLabel* mDetailCreator = nullptr;
-    QLabel* mDetailDesc = nullptr;
-    QToolButton* mDetailFav = nullptr;
-    QLabel* mDetailStatus = nullptr;
-    ToneModelsModel* mModelsModel = nullptr;
-    QListView* mModelsView = nullptr;
-    QPushButton* mDownloadAll = nullptr;
-    int mDetailRequest = 0; // ignore stale replies
-    bool mNoticeBusy = false;
+    T3kTone m_detail_tone;
+    QLabel* m_detail_image = nullptr;
+    QLabel* m_detail_title = nullptr;
+    QLabel* m_detail_meta = nullptr;
+    QLabel* m_detail_creator_avatar = nullptr;
+    QLabel* m_detail_creator = nullptr;
+    QLabel* m_detail_desc = nullptr;
+    QToolButton* m_detail_fav = nullptr;
+    QLabel* m_detail_status = nullptr;
+    ToneModelsModel* m_models_model = nullptr;
+    QListView* m_models_view = nullptr;
+    QPushButton* m_download_all = nullptr;
+    int m_detail_request = 0; // ignore stale replies
+    bool m_notice_busy = false;
 };
