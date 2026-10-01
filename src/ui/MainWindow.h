@@ -86,6 +86,8 @@ private:
     void saveConnections();
     // Amplifier / Cabinet hero rows: file name + metadata line.
     void updateHeroCards();
+    // Status bar, left: model / IR / TONE3000 sign-in at a glance.
+    void updateRigStatus();
 
     // --- Loading (every path in: dialogs, library, drops, session, presets) ---
     // Return false on failure; `quiet` suppresses the error dialog.
@@ -200,6 +202,7 @@ private:
     QLabel*         mLblIROrigin  = nullptr;
 
     AudioStatusBar* mAudioBar = nullptr;
+    QLabel*         mLblRigStatus = nullptr;
     bool            mAudioOk  = false; // last known backend state (drives the
                                        // disconnect watchdog in updateMeters)
 

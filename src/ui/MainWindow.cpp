@@ -307,6 +307,12 @@ void MainWindow::setupUI()
     mAudioBar = new AudioStatusBar(*mEngine);
     statusBar()->setSizeGripEnabled(false);
     statusBar()->addPermanentWidget(mAudioBar);
+    mLblRigStatus = new QLabel;
+    mLblRigStatus->setObjectName("statusItem");
+    mLblRigStatus->setTextFormat(Qt::RichText);
+    statusBar()->addWidget(mLblRigStatus);
+    connect(mTone3000, &Tone3000Client::authChanged, this, &MainWindow::updateRigStatus);
+    connect(mTone3000, &Tone3000Client::userChanged, this, &MainWindow::updateRigStatus);
     connect(mAudioBar, &AudioStatusBar::deviceSelectionChanged,
             this, &MainWindow::restartAudioWithCurrentDevices);
     connect(mAudioBar, &AudioStatusBar::reconnectRequested,
@@ -1523,6 +1529,28 @@ void MainWindow::updateHeroCards()
               QString::fromStdString(mEngine->irPath()), "No impulse response loaded");
     // Every model/IR change lands here — it counts toward the preset `*`.
     if (mPresetStateTimer) mPresetStateTimer->start();
+    updateRigStatus();
+}
+
+void MainWindow::updateRigStatus()
+{
+    auto item = [](bool on, const QString& text) {
+        return QString("<span style=\"color:%1\">●</span> %2")
+            .arg((on ? Theme::meterLow() : Theme::track()).name(), text.toHtmlEscaped());
+    };
+    const bool model = mEngine->isModelLoaded();
+    const bool ir    = mEngine->isIRLoaded();
+    const bool t3k   = mTone3000->isSignedIn();
+    QString t3kText = "TONE3000";
+    if (t3k && mTone3000->user().isValid()) t3kText += " @" + mTone3000->user().username;
+
+    mLblRigStatus->setText(item(model, "Model") + "&nbsp;&nbsp;&nbsp;" + item(ir, "IR")
+                           + "&nbsp;&nbsp;&nbsp;" + item(t3k, t3kText));
+    mLblRigStatus->setToolTip(
+        QString("Model: %1\nIR: %2\nTONE3000: %3")
+            .arg(model ? QFileInfo(QString::fromStdString(mEngine->modelPath())).completeBaseName() : "none",
+                 ir    ? QFileInfo(QString::fromStdString(mEngine->irPath())).completeBaseName()    : "none",
+                 t3k   ? "signed in" : "signed out"));
 }
 
 // ---------------------------------------------------------------------------

@@ -63,6 +63,16 @@ public:
     /// e.g. "JACK ● 48000 Hz ● stereo out" or "WASAPI ● Speakers ● 48000 Hz".
     virtual std::string statusString() const = 0;
 
+    /// Buffer over/underruns since start or the last reset; -1 = the backend
+    /// doesn't report them. Safe to call from the GUI thread.
+    virtual int  xrunCount() const { return -1; }
+    virtual void resetXruns() {}
+
+    /// Capture + playback latency around our ports, in frames, as reported
+    /// by the backend (round trip = this; our own processing adds nothing
+    /// beyond the cycle it already includes). -1 = unknown.
+    virtual int ioLatencyFrames() const { return -1; }
+
     /// Return available capture (input) devices. Empty on JACK.
     virtual std::vector<DeviceInfo> enumerateInputDevices() const { return {}; }
 

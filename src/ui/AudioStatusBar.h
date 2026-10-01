@@ -7,7 +7,8 @@ class AudioEngine;
 class QLabel;
 
 /// VS Code-style status items for the bottom-right of the window: backend
-/// connection state, sample rate, buffer size, latency, and the input/output
+/// connection state, sample rate, buffer size, latency (round trip when the
+/// backend reports it), DSP load with max-hold, xruns, and the input/output
 /// device pickers (click → device menu). Owns device enumeration and the
 /// QSettings persistence of the chosen device IDs (audio/inputDeviceId,
 /// audio/outputDeviceId) — the successor of the old dropdown row.
@@ -36,6 +37,9 @@ signals:
 
 private:
     void pickDevice(bool input);
+    void updateDspLoad();
+    void updateXruns();
+    void resetCounters();
     void setDeviceLabels();
 
     AudioEngine& mEngine;
@@ -43,8 +47,18 @@ private:
     QLabel* mLblRate    = nullptr;
     QLabel* mLblBuffer  = nullptr;
     QLabel* mLblLatency = nullptr;
+    QLabel* mLblLoad    = nullptr;
+    QLabel* mLblXruns   = nullptr;
     QLabel* mLblInput   = nullptr;
     QLabel* mLblOutput  = nullptr;
     QString mInputId, mOutputId;
     bool mConnected = false;
+
+    // DSP load: peaks taken every metrics tick, shown as the max over a
+    // ~0.5 s window (readable, still catches spikes); the all-time max since
+    // the last reset goes in the tooltip.
+    float mLoadWindow = 0.0f;
+    int   mLoadTicks  = 0;
+    float mLoadMax    = 0.0f;
+    int   mShownXruns = -2;
 };

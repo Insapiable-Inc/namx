@@ -120,6 +120,14 @@ public:
     float takeInputPeak()  { return mInputPeak.exchange(0.0f);  }
     float takeOutputPeak() { return mOutputPeak.exchange(0.0f); }
 
+    // ---- Diagnostics (status bar) ----
+    /// Highest audio-thread time per block since the last take, as a
+    /// fraction of the block's duration (1.0 = the whole budget).
+    float takeDspLoadPeak() { return mDspLoadPeak.exchange(0.0f); }
+    int   xrunCount() const { return mBackend ? mBackend->xrunCount() : -1; }
+    void  resetXruns()      { if (mBackend) mBackend->resetXruns(); }
+    int   ioLatencyFrames() const { return mBackend ? mBackend->ioLatencyFrames() : -1; }
+
     // ---- IAudioBackend::Callback ----
     void onAudio(const float* in, float* outL, float* outR, int nframes) override;
     void onBufferSizeChanged(int newSize) override;
@@ -163,6 +171,10 @@ private:
 
     std::atomic<float> mInputPeak {0.0f};
     std::atomic<float> mOutputPeak{0.0f};
+    std::atomic<float> mDspLoadPeak{0.0f};
+
+    // onAudio = timing around this.
+    void processBlock(const float* in, float* outL, float* outR, int nframes);
 
     std::vector<float> mWorkBufL;
     std::vector<float> mWorkBufR;

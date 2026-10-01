@@ -41,6 +41,8 @@ bool JackBackend::start(const std::string& clientName, Callback* cb)
     jack_set_process_callback(mClient, jackProcessCallback, this);
     jack_set_buffer_size_callback(mClient, jackBufferSizeCallback, this);
     jack_on_shutdown(mClient, jackShutdownCallback, this);
+    jack_set_xrun_callback(mClient, jackXrunCallback, this);
+    mXruns.store(0);
 
     mPortIn   = jack_port_register(mClient, "input",    JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput,  0);
     mPortOutL = jack_port_register(mClient, "output_L", JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
@@ -82,6 +84,25 @@ void JackBackend::stop()
         mClient = nullptr;
     }
     mCallback = nullptr;
+}
+
+int JackBackend::jackXrunCallback(void* arg)
+{
+    static_cast<JackBackend*>(arg)->mXruns.fetch_add(1, std::memory_order_relaxed);
+    return 0;
+}
+
+int JackBackend::ioLatencyFrames() const
+{
+    if (!mClient || !mPortIn || !mPortOutL) return -1;
+    // Capture latency of our input port: physical input → here; playback
+    // latency of our output: here → physical output. Unconnected ports
+    // report 0 — no meaningful round trip then.
+    jack_latency_range_t in{}, out{};
+    jack_port_get_latency_range(mPortIn,   JackCaptureLatency,  &in);
+    jack_port_get_latency_range(mPortOutL, JackPlaybackLatency, &out);
+    if (in.max == 0 && out.max == 0) return -1;
+    return static_cast<int>(in.max + out.max);
 }
 
 std::string JackBackend::statusString() const

@@ -48,6 +48,10 @@ public:
                           const std::string& inputDeviceId,
                           const std::string& outputDeviceId) override;
 
+    // Capture packets flagged DATA_DISCONTINUITY (the engine dropped input).
+    int  xrunCount() const override { return mXruns.load(std::memory_order_relaxed); }
+    void resetXruns() override      { mXruns.store(0, std::memory_order_relaxed); }
+
     // WASAPI has no port graph — defaults from base (supportsPortRouting=false)
     // and empty currentConnections/applyConnections apply.
 
@@ -80,6 +84,7 @@ private:
 
     Callback*         mCallback = nullptr;
     std::atomic<bool> mRunning{false};
+    std::atomic<int>  mXruns{0};
     double            mSampleRate = 48000.0;
     int               mBufferSize = 0;
     int               mCaptureChannels = 0;

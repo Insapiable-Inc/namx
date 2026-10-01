@@ -6,6 +6,7 @@
 #include <QMouseEvent>
 #include <QSettings>
 
+#include <algorithm>
 #include <functional>
 
 #include "AudioEngine.h"
@@ -87,7 +88,8 @@ AudioStatusBar::AudioStatusBar(AudioEngine& engine, QWidget* parent)
     mLblRate    = makeItem(lay, "statusItem");
     mLblBuffer  = makeItem(lay, "statusItem");
     mLblLatency = makeItem(lay, "statusItem");
-    mLblLatency->setToolTip("One buffer of latency (buffer size ÷ sample rate)");
+    mLblLoad    = makeAction(lay, [this] { resetCounters(); });
+    mLblXruns   = makeAction(lay, [this] { resetCounters(); });
     mLblInput   = makeAction(lay, [this] { pickDevice(true); });
     mLblOutput  = makeAction(lay, [this] { pickDevice(false); });
 }
@@ -129,7 +131,7 @@ void AudioStatusBar::setError(const QString& text)
 
 void AudioStatusBar::updateMetrics()
 {
-    QString rate, buffer, latency;
+    QString rate, buffer, latency, latencyTip;
     if (mConnected)
     {
         const double sr = mEngine.sampleRate();
@@ -137,11 +139,85 @@ void AudioStatusBar::updateMetrics()
         rate   = QString("%1 Hz").arg(qRound(sr));
         buffer = QString("%1 frames").arg(bs);
         if (sr > 0.0 && bs > 0)
-            latency = QString("%1 ms").arg(bs / sr * 1000.0, 0, 'f', 1);
+        {
+            const QString one = QString("%1 ms").arg(bs / sr * 1000.0, 0, 'f', 1);
+            const int io = mEngine.ioLatencyFrames();
+            if (io > 0)
+            {
+                latency    = QString("Round trip %1 ms").arg(io / sr * 1000.0, 0, 'f', 1);
+                latencyTip = QString("Input → output latency reported by the audio server "
+                                     "(%1 frames). One buffer is %2.").arg(io).arg(one);
+            }
+            else
+            {
+                latency    = one;
+                latencyTip = "One buffer of latency (buffer size ÷ sample rate); "
+                             "the server doesn't report the full round trip";
+            }
+        }
     }
     if (mLblRate->text()    != rate)    mLblRate->setText(rate);
     if (mLblBuffer->text()  != buffer)  mLblBuffer->setText(buffer);
     if (mLblLatency->text() != latency) mLblLatency->setText(latency);
+    mLblLatency->setToolTip(latencyTip);
+
+    updateDspLoad();
+    updateXruns();
+}
+
+// Level → status color: calm, warning, trouble. Theme meter colors so the
+// status bar speaks the same language as the VU meters.
+static QString loadSpan(const QString& text, float frac)
+{
+    const QColor c = frac >= 0.9f ? Theme::meterHigh()
+                   : frac >= 0.7f ? Theme::meterMid()
+                                  : Theme::dimText();
+    return QString("<span style=\"color:%1\">%2</span>").arg(c.name(), text);
+}
+
+void AudioStatusBar::updateDspLoad()
+{
+    const float peak = mEngine.takeDspLoadPeak();
+    if (!mConnected)
+    {
+        mLblLoad->hide();
+        mLoadWindow = 0.0f;
+        mLoadTicks  = 0;
+        return;
+    }
+    mLblLoad->show();
+    mLoadWindow = std::max(mLoadWindow, peak);
+    mLoadMax    = std::max(mLoadMax, peak);
+    if (++mLoadTicks < 10) return; // 10 × 50 ms metrics ticks
+
+    mLblLoad->setText(loadSpan(QString("DSP %1%").arg(qRound(mLoadWindow * 100.0f)), mLoadWindow));
+    mLblLoad->setToolTip(QString("Audio-thread time per buffer as a share of the buffer's duration "
+                                 "(highest in the last half second).\n"
+                                 "Highest since reset: %1%. Over 100% means dropouts.\n"
+                                 "Click to reset this and the xrun counter.")
+                             .arg(qRound(mLoadMax * 100.0f)));
+    mLoadWindow = 0.0f;
+    mLoadTicks  = 0;
+}
+
+void AudioStatusBar::updateXruns()
+{
+    const int x = mConnected ? mEngine.xrunCount() : -1;
+    if (x == mShownXruns) return;
+    mShownXruns = x;
+    mLblXruns->setVisible(x >= 0);
+    if (x < 0) return;
+    mLblXruns->setText(loadSpan(x == 1 ? QString("1 xrun") : QString("%1 xruns").arg(x),
+                                x > 0 ? 0.8f : 0.0f));
+    mLblXruns->setToolTip("Buffer over/underruns (audible dropouts) since start or the last reset.\n"
+                          "Click to reset.");
+}
+
+void AudioStatusBar::resetCounters()
+{
+    mEngine.resetXruns();
+    mLoadMax = 0.0f;
+    updateXruns();
 }
 
 void AudioStatusBar::setDeviceLabels()

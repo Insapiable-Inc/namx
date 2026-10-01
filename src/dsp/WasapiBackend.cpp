@@ -606,6 +606,9 @@ void WasapiBackend::audioThreadMain()
                 if (mCallback) mCallback->onBufferSizeChanged(static_cast<int>(frames));
             }
 
+            if (flags & AUDCLNT_BUFFERFLAGS_DATA_DISCONTINUITY)
+                mXruns.fetch_add(1, std::memory_order_relaxed);
+
             // Down-mix capture to mono float.
             if (flags & AUDCLNT_BUFFERFLAGS_SILENT) {
                 std::fill_n(monoIn.data(), frames, 0.0f);

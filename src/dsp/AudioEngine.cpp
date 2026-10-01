@@ -1,6 +1,7 @@
 #include "AudioEngine.h"
 
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include "Log.h"
 
@@ -254,6 +255,21 @@ void AudioEngine::onBufferSizeChanged(int n)
 }
 
 void AudioEngine::onAudio(const float* in, float* outL, float* outR, int n)
+{
+    // DSP load: wall time of the block vs its real-time duration. steady_clock
+    // is a vDSO read — no syscall, RT-safe.
+    const auto t0 = std::chrono::steady_clock::now();
+    processBlock(in, outL, outR, n);
+    const double secs = std::chrono::duration<double>(std::chrono::steady_clock::now() - t0).count();
+    if (n > 0 && mChainSampleRate > 0.0)
+    {
+        const float load = static_cast<float>(secs * mChainSampleRate / n);
+        if (load > mDspLoadPeak.load(std::memory_order_relaxed))
+            mDspLoadPeak.store(load, std::memory_order_relaxed);
+    }
+}
+
+void AudioEngine::processBlock(const float* in, float* outL, float* outR, int n)
 {
     // Reorder fence: every exit counts the block so setChainOrder() knows
     // when a retired chain vector is safe to free.
