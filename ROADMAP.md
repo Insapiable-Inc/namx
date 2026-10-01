@@ -870,9 +870,18 @@ commit.
 
 ## Ideas parking lot (not committed)
 
-- **A catchy name for the app** (2026-10-01): "NAM Player" is a placeholder. The C++
-  namespace (`npl`), the app id `cl.pichulero.NAMPlayer`, the binary and the packaging
-  follow whatever name is chosen.
+- **A catchy name for the app** (2026-10-01): "NAM Player" is a placeholder.
+  **Candidate: NAM-X**, namespace `namx` (user's pick, 2026-10-01 — not applied yet).
+  Before committing to it:
+  - "Nam XT" (Reinarc, iOS/macOS NAM player) is close in sound and search results;
+  - the "X" echoes Neural DSP's *Archetype: Petrucci X* line (our feature baseline);
+  - "NAM" in third-party names is common (NAM Live, Nam XT, Ampz) and the project
+    is open source, but no naming policy was found — ask Steven Atkinson.
+  The rename itself: namespace `npl` → `namx` (mechanical), app id
+  `cl.pichulero.NAMPlayer`, binary, window title, desktop/AppStream/mime/PKGBUILD,
+  Windows .rc and release artifacts. The QSettings app name decides the config
+  path, so it needs a one-time **settings migration** (session, library roots,
+  favorites/recents, TONE3000 tokens) or users lose their setup.
 
 - Song mode: cue list of preset changes on a song timeline, clock from an external
   player (MPRIS / SMTC) or an in-app file player with A/B loop, slow-down, pitch.
