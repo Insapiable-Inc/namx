@@ -782,13 +782,15 @@ acoustic models. UI: cards gained ▾ detail rows for advanced knobs (`addDetail
 - [ ] **Layout:** ~~bypassed cards dim~~ (done 2026-08-23); ~~2-column knob grid for
       one-height columns~~ and ~~device row moved to Settings~~ (both superseded
       2026-08-23 — uniform 62 px rows and the status bar device pickers); remaining:
-      compact mode for 1366×768 (today the strip scrolls), window sizes S/M/L + free
-      resize (parity), right-click / double-click a row name to bypass it (parity).
+      compact mode for 1366×768 (today the strip scrolls) — *undecided, user not sure
+      they want it*; window sizes S/M/L + free resize (parity). ~~Right-click /
+      double-click a row name to bypass it~~ — dropped 2026-10-01: too easy to hit by
+      accident.
 - [x] **Visual fixes** — all resolved by the 2026-08-23 redesign: Compressor/Reverb
       accents revised (`#4f78bd`/`#8f7d99`), tuner readout rebuilt, stereo toggles
       labelled "Stereo", "Dynamic Wah" named in full.
-- [ ] Windows: **WASAPI exclusive mode** (shared mode's 10–20 ms is not a guitar
-      latency); keep shared as fallback.
+- [~] Windows: **WASAPI exclusive mode** → moved to Phase 21 (2026-10-01): no Windows
+      machine to test on; all untestable Windows audio work waits together.
 
 ## Phase 19 — Themes & community
 
@@ -863,7 +865,10 @@ place where the numbers are edited. Options weighed on 2026-10-01:
 - Whichever is picked: golden test bit-identical at every step, plus a test that the
   8 starter presets load to the same values.
 
-## Phase 21 — ASIO on Windows (added 2026-10-01; last — no Windows machine to test on yet)
+## Phase 21 — Windows audio: WASAPI exclusive + ASIO (added 2026-10-01; last — no Windows machine to test on yet)
+
+- [ ] **WASAPI exclusive mode** (from Phase 18): shared mode's 10–20 ms is not a guitar
+      latency; keep shared as fallback.
 
 - [ ] **Verify the license first:** Steinberg's ASIO SDK is believed to be dual-licensed
       (proprietary / GPLv3) since late 2025. Confirm the terms and the trademark/logo
