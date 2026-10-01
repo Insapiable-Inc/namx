@@ -43,6 +43,10 @@ public:
 
     void reset() override {}
 
+    /// Stereo input → run the model per channel (on) or sum to mono and run
+    /// it once (off, the default: half the CPU, and an amp is mono anyway).
+    void setStereoAmp(bool on) { mStereoAmp.store(on); }
+
     /// Overrides the default EffectBase dispatch so that stereo input is
     /// processed through independent L and R model instances rather than
     /// calling the single-state processBlockMono twice per block.
@@ -68,6 +72,7 @@ private:
     std::string        mModelPath;    // GUI thread only
     std::string        mLastError;    // GUI thread only
     std::atomic<int>   mMaxBuf{0};
+    std::atomic<bool>  mStereoAmp{false};
     double             mModelRate{0.0}; // engine SR as last propagated (guarded by mModelMutex)
     std::vector<float> mScratchL, mScratchR;
 

@@ -153,4 +153,31 @@ constexpr double kWahMixMin     =  0.0;
 constexpr double kWahMixMax     = 100.0;
 constexpr double kWahMixDefault = 100.0;
 
+// ---- Drive (Phase 17) ---------------------------------------------------
+constexpr double kDriveMin     =   0.0;
+constexpr double kDriveMax     = 100.0;
+constexpr double kDriveDefault =  30.0;
+constexpr double kDriveToneMin     =   0.0;
+constexpr double kDriveToneMax     = 100.0;
+constexpr double kDriveToneDefault =  50.0;
+constexpr double kDriveLevelMin     = -20.0;
+constexpr double kDriveLevelMax     =  20.0;
+constexpr double kDriveLevelDefault =   0.0;
+
+// ---- Doubler ------------------------------------------------------------
+constexpr double kDoublerSpreadMin     =  3.0;
+constexpr double kDoublerSpreadMax     = 20.0;
+constexpr double kDoublerSpreadDefault = 10.0;
+constexpr double kDoublerMixMin     =   0.0;
+constexpr double kDoublerMixMax     = 100.0;
+constexpr double kDoublerMixDefault = 100.0;
+
+// ---- Volume pedal -------------------------------------------------------
+constexpr double kVolumePosMin     =   0.0;
+constexpr double kVolumePosMax     = 100.0;
+constexpr double kVolumePosDefault = 100.0;
+constexpr double kVolumeMidMin     = -40.0;
+constexpr double kVolumeMidMax     =   0.0;
+constexpr double kVolumeMidDefault = -12.0;
+
 } // namespace NAMConstants

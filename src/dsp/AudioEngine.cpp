@@ -36,13 +36,16 @@ AudioEngine::AudioEngine()
         {"wah",     &mWah},
         {"flanger", &mFlanger},
         {"phaser",  &mPhaser},
+        {"drive",   &mDrive},   // Phase 17 — new IDs re-enter old sessions here
         {"nam",     &mNam},
         {"eq",      &mEQ},
+        {"doubler", &mDoubler},
         {"chorus",  &mChorus},
         {"tremolo", &mTremolo},
         {"delay",   &mDelay},
         {"reverb",  &mReverb},
         {"ir",      &mIR},
+        {"volume",  &mVolume},
     };
     auto chain = std::make_unique<Chain>();
     chain->reserve(mEffectTable.size());
@@ -253,6 +256,7 @@ void AudioEngine::onBufferSizeChanged(int n)
         for (const auto& [id, fx] : mEffectTable)
             fx->setSampleRate(sr);
         mMetronome.setSampleRate(sr);
+        mLimiter.setSampleRate(sr);
         // ~20 ms one-pole gain smoothing, independent of sample rate.
         mSmoothCoeff = std::exp(-1.0f / (0.020f * static_cast<float>(sr)));
     }
@@ -325,19 +329,24 @@ void AudioEngine::processBlock(const float* in, float* outL, float* outR, int n)
 
     // 3. Output gain (smoothed) + write to output buffers
     const float targetOutGain = dbToLinear(mOutputGainDB.load());
-    float outPeak = 0.0f;
     for (int i = 0; i < n; ++i)
     {
         mOutputGainSmooth = mSmoothCoeff * mOutputGainSmooth
                           + (1.0f - mSmoothCoeff) * targetOutGain;
         outL[i] = mWorkBufL[i] * mOutputGainSmooth;
         outR[i] = mWorkBufR[i] * mOutputGainSmooth;
-        outPeak = std::max(outPeak, std::max(std::abs(outL[i]), std::abs(outR[i])));
     }
+
+    // 4. Output limiter (look-ahead; a no-op when off), then the meter, so
+    //    it shows what actually leaves the app.
+    mLimiter.process(outL, outR, n);
+    float outPeak = 0.0f;
+    for (int i = 0; i < n; ++i)
+        outPeak = std::max(outPeak, std::max(std::abs(outL[i]), std::abs(outR[i])));
     if (outPeak > mOutputPeak.load(std::memory_order_relaxed))
         mOutputPeak.store(outPeak, std::memory_order_relaxed);
 
-    // 4. Metronome on top: own volume/pan, after the meter so the VU shows
+    // 5. Metronome on top: own volume/pan, after the meter so the VU shows
     //    the guitar only.
     mMetronome.process(outL, outR, n);
 }

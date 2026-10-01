@@ -320,6 +320,22 @@ private:
     KnobWidget*   mKnobRevWidth   = nullptr;
     KnobWidget*   mKnobRevMix     = nullptr;
 
+    ToggleSwitch* mSwDriveEnable = nullptr;
+    KnobWidget*   mKnobDrive     = nullptr;
+    KnobWidget*   mKnobDriveTone = nullptr;
+    KnobWidget*   mKnobDriveLevel = nullptr;
+
+    ToggleSwitch* mSwDoublerEnable = nullptr;
+    KnobWidget*   mKnobDblSpread  = nullptr;
+    KnobWidget*   mKnobDblMix     = nullptr;
+
+    ToggleSwitch* mSwVolumeEnable = nullptr;
+    KnobWidget*   mKnobVolPos     = nullptr;
+    KnobWidget*   mKnobVolMid     = nullptr;
+
+    ToggleSwitch* mSwLimiter   = nullptr; // Output card
+    ToggleSwitch* mSwNAMStereo = nullptr; // Amplifier row: per-channel amp
+
     ToggleSwitch* mSwNAMEnable = nullptr;
     ToggleSwitch* mSwIREnable  = nullptr;
 

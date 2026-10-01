@@ -713,6 +713,18 @@
 			null
 		],
 		[
+			"/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/DoublerProcessor.h",
+			"MU",
+			"M336FWOGQD/moc_DoublerProcessor.cpp",
+			null
+		],
+		[
+			"/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/DriveProcessor.h",
+			"MU",
+			"M336FWOGQD/moc_DriveProcessor.cpp",
+			null
+		],
+		[
 			"/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/DynamicWahProcessor.h",
 			"MU",
 			"M336FWOGQD/moc_DynamicWahProcessor.cpp",
@@ -785,6 +797,12 @@
 			null
 		],
 		[
+			"/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/OutputLimiter.h",
+			"MU",
+			"M336FWOGQD/moc_OutputLimiter.cpp",
+			null
+		],
+		[
 			"/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/PhaserProcessor.h",
 			"MU",
 			"M336FWOGQD/moc_PhaserProcessor.cpp",
@@ -806,6 +824,30 @@
 			"/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/TunerProcessor.h",
 			"MU",
 			"M336FWOGQD/moc_TunerProcessor.cpp",
+			null
+		],
+		[
+			"/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/VolumeProcessor.h",
+			"MU",
+			"M336FWOGQD/moc_VolumeProcessor.cpp",
+			null
+		],
+		[
+			"/home/silvercobraa/Git/nam-linux-gui/gui/src/midi/MidiInput.h",
+			"MU",
+			"4RKMHK3BZT/moc_MidiInput.cpp",
+			null
+		],
+		[
+			"/home/silvercobraa/Git/nam-linux-gui/gui/src/midi/MidiMapper.h",
+			"MU",
+			"4RKMHK3BZT/moc_MidiMapper.cpp",
+			null
+		],
+		[
+			"/home/silvercobraa/Git/nam-linux-gui/gui/src/midi/MidiMessage.h",
+			"MU",
+			"4RKMHK3BZT/moc_MidiMessage.cpp",
 			null
 		],
 		[
@@ -860,6 +902,12 @@
 			"/home/silvercobraa/Git/nam-linux-gui/gui/src/ui/MainWindow.h",
 			"MU",
 			"YPKJ5OE7LN/moc_MainWindow.cpp",
+			null
+		],
+		[
+			"/home/silvercobraa/Git/nam-linux-gui/gui/src/ui/MidiMappingsDialog.h",
+			"MU",
+			"YPKJ5OE7LN/moc_MidiMappingsDialog.cpp",
 			null
 		],
 		[
@@ -954,6 +1002,7 @@
 		"/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp",
 		"/home/silvercobraa/Git/nam-linux-gui/gui/src/ui",
 		"/home/silvercobraa/Git/nam-linux-gui/gui/src/net",
+		"/home/silvercobraa/Git/nam-linux-gui/gui/src/midi",
 		"/usr/include/qt6/QtCore",
 		"/usr/include/qt6",
 		"/usr/lib/qt6/mkspecs/linux-g++",
@@ -1059,6 +1108,16 @@
 			null
 		],
 		[
+			"/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/DoublerProcessor.cpp",
+			"MU",
+			null
+		],
+		[
+			"/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/DriveProcessor.cpp",
+			"MU",
+			null
+		],
+		[
 			"/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/DynamicWahProcessor.cpp",
 			"MU",
 			null
@@ -1104,6 +1163,11 @@
 			null
 		],
 		[
+			"/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/OutputLimiter.cpp",
+			"MU",
+			null
+		],
+		[
 			"/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/PhaserProcessor.cpp",
 			"MU",
 			null
@@ -1123,7 +1187,27 @@
 			"MU",
 			null
 		],
+		[
+			"/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/VolumeProcessor.cpp",
+			"MU",
+			null
+		],
 		[ "/home/silvercobraa/Git/nam-linux-gui/gui/src/main.cpp", "MU", null ],
+		[
+			"/home/silvercobraa/Git/nam-linux-gui/gui/src/midi/AlsaMidiInput.cpp",
+			"MU",
+			null
+		],
+		[
+			"/home/silvercobraa/Git/nam-linux-gui/gui/src/midi/MidiInput.cpp",
+			"MU",
+			null
+		],
+		[
+			"/home/silvercobraa/Git/nam-linux-gui/gui/src/midi/MidiMapper.cpp",
+			"MU",
+			null
+		],
 		[
 			"/home/silvercobraa/Git/nam-linux-gui/gui/src/net/Tone3000Client.cpp",
 			"MU",
@@ -1166,6 +1250,11 @@
 		],
 		[
 			"/home/silvercobraa/Git/nam-linux-gui/gui/src/ui/MainWindow.cpp",
+			"MU",
+			null
+		],
+		[
+			"/home/silvercobraa/Git/nam-linux-gui/gui/src/ui/MidiMappingsDialog.cpp",
 			"MU",
 			null
 		],

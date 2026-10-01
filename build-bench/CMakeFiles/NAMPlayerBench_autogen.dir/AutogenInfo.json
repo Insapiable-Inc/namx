@@ -701,6 +701,18 @@
 			null
 		],
 		[
+			"/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/DoublerProcessor.h",
+			"MU",
+			"M336FWOGQD/moc_DoublerProcessor.cpp",
+			null
+		],
+		[
+			"/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/DriveProcessor.h",
+			"MU",
+			"M336FWOGQD/moc_DriveProcessor.cpp",
+			null
+		],
+		[
 			"/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/DynamicWahProcessor.h",
 			"MU",
 			"M336FWOGQD/moc_DynamicWahProcessor.cpp",
@@ -749,6 +761,12 @@
 			null
 		],
 		[
+			"/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/OutputLimiter.h",
+			"MU",
+			"M336FWOGQD/moc_OutputLimiter.cpp",
+			null
+		],
+		[
 			"/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/PhaserProcessor.h",
 			"MU",
 			"M336FWOGQD/moc_PhaserProcessor.cpp",
@@ -770,6 +788,12 @@
 			"/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/TunerProcessor.h",
 			"MU",
 			"M336FWOGQD/moc_TunerProcessor.cpp",
+			null
+		],
+		[
+			"/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/VolumeProcessor.h",
+			"MU",
+			"M336FWOGQD/moc_VolumeProcessor.cpp",
 			null
 		]
 	],
@@ -903,6 +927,16 @@
 			null
 		],
 		[
+			"/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/DoublerProcessor.cpp",
+			"MU",
+			null
+		],
+		[
+			"/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/DriveProcessor.cpp",
+			"MU",
+			null
+		],
+		[
 			"/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/DynamicWahProcessor.cpp",
 			"MU",
 			null
@@ -943,6 +977,11 @@
 			null
 		],
 		[
+			"/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/OutputLimiter.cpp",
+			"MU",
+			null
+		],
+		[
 			"/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/PhaserProcessor.cpp",
 			"MU",
 			null
@@ -959,6 +998,11 @@
 		],
 		[
 			"/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/TunerProcessor.cpp",
+			"MU",
+			null
+		],
+		[
+			"/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/VolumeProcessor.cpp",
 			"MU",
 			null
 		]

@@ -32,6 +32,8 @@
 #include "ChorusProcessor.h"
 #include "CompressorProcessor.h"
 #include "DelayProcessor.h"
+#include "DoublerProcessor.h"
+#include "DriveProcessor.h"
 #include "DynamicWahProcessor.h"
 #include "EQProcessor.h"
 #include "FlangerProcessor.h"
@@ -42,6 +44,8 @@
 #include "ReverbProcessor.h"
 #include "TremoloProcessor.h"
 #include "TunerProcessor.h"
+#include "VolumeProcessor.h"
+#include "OutputLimiter.h"
 
 namespace {
 
@@ -124,6 +128,10 @@ int main(int argc, char** argv)
     DelayProcessor      delay;
     ReverbProcessor     reverb;
     IRProcessor         cab;
+    DriveProcessor      drive;
+    DoublerProcessor    doubler;
+    VolumeProcessor     volume;
+    OutputLimiter       limiter;
 
     // Same defaults as AudioEngine's constructor.
     chorus.setStereoMode(true);
@@ -134,9 +142,10 @@ int main(int argc, char** argv)
     std::vector<Stage> chain = {
         {"Tuner", &tuner, {}},     {"Gate", &gate, {}},       {"Compressor", &comp, {}},
         {"Wah", &wah, {}},         {"Flanger", &flanger, {}}, {"Phaser", &phaser, {}},
-        {"Amp", &nam, {}},         {"EQ", &eq, {}},           {"Chorus", &chorus, {}},
-        {"Tremolo", &tremolo, {}}, {"Delay", &delay, {}},     {"Reverb", &reverb, {}},
-        {"Cab", &cab, {}},
+        {"Drive", &drive, {}},     {"Amp", &nam, {}},         {"EQ", &eq, {}},
+        {"Doubler", &doubler, {}}, {"Chorus", &chorus, {}},   {"Tremolo", &tremolo, {}},
+        {"Delay", &delay, {}},     {"Reverb", &reverb, {}},   {"Cab", &cab, {}},
+        {"Volume", &volume, {}},
     };
 
     for (auto& s : chain)
@@ -165,6 +174,11 @@ int main(int argc, char** argv)
     std::uniform_real_distribution<float> noise(-0.25f, 0.25f);
 
     const int warmup = std::max(50, blocks / 20);
+    limiter.setSampleRate(rate);
+    limiter.setEnabled(listed(only, "Limiter"));
+    std::vector<double> limiterUs;
+    limiterUs.reserve(blocks);
+    bool finite = true;
     std::vector<double> total;
     total.reserve(blocks);
     for (auto& s : chain) s.us.reserve(blocks);
@@ -183,6 +197,15 @@ int main(int argc, char** argv)
             blockUs += us;
             if (b >= warmup) s.us.push_back(us);
         }
+        {
+            const auto t0 = clock::now();
+            limiter.process(L.data(), R.data(), frames);
+            const double us = std::chrono::duration<double, std::micro>(clock::now() - t0).count();
+            blockUs += us;
+            if (b >= warmup) limiterUs.push_back(us);
+        }
+        for (int i = 0; i < frames; ++i)
+            if (!std::isfinite(L[i]) || !std::isfinite(R[i])) finite = false;
         if (b >= warmup) total.push_back(blockUs);
     }
 
@@ -201,10 +224,18 @@ int main(int argc, char** argv)
         std::printf("%-12s %10.2f %10.2f %10.2f %7.2f%%\n", s.name, mean, percentile(s.us, 0.99),
                     percentile(s.us, 1.0), mean / budgetUs * 100.0);
     }
+    if (limiter.isEnabled())
+    {
+        double s = 0.0;
+        for (double v : limiterUs) s += v;
+        std::printf("%-12s %10.2f %10.2f %10.2f %7.2f%%\n", "Limiter", s / limiterUs.size(),
+                    percentile(limiterUs, 0.99), percentile(limiterUs, 1.0), s / limiterUs.size() / budgetUs * 100.0);
+    }
     double sum = 0.0;
     for (double v : total) sum += v;
     const double mean = sum / total.size();
     std::printf("%-12s %10.2f %10.2f %10.2f %7.2f%%\n", "TOTAL", mean, percentile(total, 0.99),
                 percentile(total, 1.0), mean / budgetUs * 100.0);
-    return 0;
+    if (!finite) std::printf("\nWARNING: non-finite samples in the output\n");
+    return finite ? 0 : 1;
 }

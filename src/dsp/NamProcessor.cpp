@@ -149,6 +149,13 @@ bool NamProcessor::process(float* L, float* R, int n, bool inputIsStereo)
 
     if (!mEnabled.load()) return inputIsStereo;
 
+    // A stereo pre-effect feeding a mono amp: sum, run one model.
+    if (inputIsStereo && !mStereoAmp.load(std::memory_order_relaxed))
+    {
+        for (int i = 0; i < n; ++i) L[i] = 0.5f * (L[i] + R[i]);
+        inputIsStereo = false;
+    }
+
     // One snapshot per block: both channels run the same pair even if a load
     // lands mid-block.
     ModelPair* p = mSlot.acquire();

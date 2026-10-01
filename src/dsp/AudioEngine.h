@@ -25,6 +25,10 @@
 #include "ReverbProcessor.h"
 #include "DynamicWahProcessor.h"
 #include "Metronome.h"
+#include "DriveProcessor.h"
+#include "DoublerProcessor.h"
+#include "VolumeProcessor.h"
+#include "OutputLimiter.h"
 
 /// Platform-agnostic audio engine. Owns the signal chain and all DSP
 /// processors. Delegates I/O to an IAudioBackend (JACK on Linux, WASAPI on
@@ -89,6 +93,10 @@ public:
     DelayProcessor&      delay()   { return mDelay;   }
     ReverbProcessor&     reverb()  { return mReverb;  }
     IRProcessor&         ir()      { return mIR;      }
+    DriveProcessor&      drive()   { return mDrive;   }
+    DoublerProcessor&    doubler() { return mDoubler; }
+    VolumeProcessor&     volume()  { return mVolume;  }
+    OutputLimiter&       limiter() { return mLimiter; }
 
     /// Mixed in after the output gain — outside the chain, not metered.
     Metronome&           metronome() { return mMetronome; }
@@ -165,6 +173,10 @@ private:
     DelayProcessor      mDelay;
     ReverbProcessor     mReverb;
     IRProcessor         mIR;
+    DriveProcessor      mDrive;
+    DoublerProcessor    mDoubler;
+    VolumeProcessor     mVolume;
+    OutputLimiter       mLimiter;
     Metronome           mMetronome;
 
     // Gain

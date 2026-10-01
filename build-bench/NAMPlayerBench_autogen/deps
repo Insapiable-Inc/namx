@@ -38,6 +38,10 @@ NAMPlayerBench_autogen/timestamp: \
 	/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/CompressorProcessor.h \
 	/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/DelayProcessor.cpp \
 	/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/DelayProcessor.h \
+	/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/DoublerProcessor.cpp \
+	/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/DoublerProcessor.h \
+	/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/DriveProcessor.cpp \
+	/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/DriveProcessor.h \
 	/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/DynamicWahProcessor.cpp \
 	/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/DynamicWahProcessor.h \
 	/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/EQProcessor.cpp \
@@ -54,6 +58,8 @@ NAMPlayerBench_autogen/timestamp: \
 	/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/NamProcessor.h \
 	/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/NoiseGateProcessor.cpp \
 	/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/NoiseGateProcessor.h \
+	/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/OutputLimiter.cpp \
+	/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/OutputLimiter.h \
 	/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/PhaserProcessor.cpp \
 	/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/PhaserProcessor.h \
 	/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/ReverbProcessor.cpp \
@@ -62,6 +68,8 @@ NAMPlayerBench_autogen/timestamp: \
 	/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/TremoloProcessor.h \
 	/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/TunerProcessor.cpp \
 	/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/TunerProcessor.h \
+	/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/VolumeProcessor.cpp \
+	/home/silvercobraa/Git/nam-linux-gui/gui/src/dsp/VolumeProcessor.h \
 	/usr/lib/cmake/Qt6/FindWrapAtomic.cmake \
 	/usr/lib/cmake/Qt6/FindWrapOpenGL.cmake \
 	/usr/lib/cmake/Qt6/FindWrapVulkanHeaders.cmake \

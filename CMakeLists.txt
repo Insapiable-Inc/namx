@@ -128,6 +128,14 @@ set(GUI_SOURCES
     src/dsp/DynamicWahProcessor.cpp
     src/dsp/DynamicWahProcessor.h
     src/dsp/Metronome.cpp
+    src/dsp/DriveProcessor.cpp
+    src/dsp/DriveProcessor.h
+    src/dsp/DoublerProcessor.cpp
+    src/dsp/DoublerProcessor.h
+    src/dsp/VolumeProcessor.cpp
+    src/dsp/VolumeProcessor.h
+    src/dsp/OutputLimiter.cpp
+    src/dsp/OutputLimiter.h
     src/dsp/Metronome.h
 )
 

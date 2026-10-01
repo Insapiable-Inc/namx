@@ -486,9 +486,25 @@ void MainWindow::setupUI()
         mFxCols[&mEngine->wah()] = col;
     }
 
+    // ---- Drive (TS-style boost in front of the amp) ----
+    {
+        using namespace NAMConstants;
+        mKnobDrive      = new KnobWidget("Drive", kDriveMin, kDriveMax, kDriveDefault, "%");
+        mKnobDriveTone  = new KnobWidget("Tone",  kDriveToneMin, kDriveToneMax, kDriveToneDefault, "%");
+        mKnobDriveLevel = new KnobWidget("Level", kDriveLevelMin, kDriveLevelMax, kDriveLevelDefault, "dB");
+        mKnobDrive->setScrollStep(1.0);
+        mKnobDriveTone->setScrollStep(1.0);
+        mKnobDriveLevel->setScrollStep(0.5);
+        auto* col = makeEffectRow("Drive", mSwDriveEnable, {mKnobDrive, mKnobDriveTone, mKnobDriveLevel});
+        Theme::tagCard(col, "drive");
+        mFxCols[&mEngine->drive()] = col;
+    }
+
     // ---- Amp (NAM) ----
     {
-        auto* col = makeEffectRow("Amplifier", mSwNAMEnable, {});
+        auto* col = makeEffectRow("Amplifier", mSwNAMEnable, {}, &mSwNAMStereo);
+        mSwNAMStereo->setToolTip("Stereo input: run the amp per channel (twice the CPU).\n"
+                                 "Off: a stereo effect before the amp is summed to mono first.");
         mSwNAMEnable->setChecked(true);
         makeHeroControls(col, LibraryEntry::Kind::Model, mLblNAMStatus, mLblNAMMeta, mLblNAMOrigin);
 
@@ -510,6 +526,33 @@ void MainWindow::setupUI()
         mSwEQEnable->setChecked(true);
         Theme::tagCard(col, "eq");
         mFxCols[&mEngine->eq()] = col;
+    }
+
+    // ---- Doubler ----
+    {
+        using namespace NAMConstants;
+        mKnobDblSpread = new KnobWidget("Spread", kDoublerSpreadMin, kDoublerSpreadMax, kDoublerSpreadDefault, "ms");
+        mKnobDblMix    = new KnobWidget("Mix",    kDoublerMixMin, kDoublerMixMax, kDoublerMixDefault, "%");
+        mKnobDblSpread->setScrollStep(0.5);
+        mKnobDblMix->setScrollStep(1.0);
+        auto* col = makeEffectRow("Doubler", mSwDoublerEnable, {mKnobDblMix, mKnobDblSpread});
+        col->setToolTip("Double-tracking from a mono signal: left dry, right a drifting delayed copy.\n"
+                        "Passes a stereo input through untouched.");
+        Theme::tagCard(col, "doubler");
+        mFxCols[&mEngine->doubler()] = col;
+    }
+
+    // ---- Volume pedal ----
+    {
+        using namespace NAMConstants;
+        mKnobVolPos = new KnobWidget("Volume", kVolumePosMin, kVolumePosMax, kVolumePosDefault, "%");
+        mKnobVolMid = new KnobWidget("Mid", kVolumeMidMin, kVolumeMidMax, kVolumeMidDefault, "dB");
+        mKnobVolPos->setScrollStep(1.0);
+        mKnobVolMid->setScrollStep(1.0);
+        mKnobVolMid->setToolTip("Level at half travel: lower = swells stay quiet longer");
+        auto* col = makeEffectRow("Volume Pedal", mSwVolumeEnable, {mKnobVolPos, mKnobVolMid});
+        Theme::tagCard(col, "volume");
+        mFxCols[&mEngine->volume()] = col;
     }
 
     // ---- Flanger ----
@@ -668,6 +711,23 @@ void MainWindow::setupUI()
 
     mInputCard  = makeGainColumn("Input",  mKnobInputGain,  mMeterIn);
     mOutputCard = makeGainColumn("Output", mKnobOutputGain, mMeterOut);
+    {
+        // Output limiter switch under the gain knob.
+        mSwLimiter = new ToggleSwitch;
+        mSwLimiter->setCheckable(true);
+        mSwLimiter->setToolTip("Look-ahead limiter: catches peaks at −0.3 dBFS (adds 1 ms latency)");
+        mSwLimiter->setAccent(Theme::genericAccent());
+        auto* row = new QWidget;
+        auto* rl  = new QVBoxLayout(row);
+        rl->setContentsMargins(0, 0, 0, 0);
+        rl->setSpacing(2);
+        auto* cap = new QLabel("Limit");
+        cap->setObjectName("toggleCaption");
+        cap->setAlignment(Qt::AlignHCenter);
+        rl->addWidget(mSwLimiter, 0, Qt::AlignHCenter);
+        rl->addWidget(cap);
+        static_cast<QVBoxLayout*>(mOutputCard->layout())->insertWidget(2, row, 0, Qt::AlignHCenter);
+    }
 
     // Keyboard shortcut targets per card; keys are (re)assigned left to right
     // on every strip rebuild so they always match the visual order.
@@ -685,6 +745,9 @@ void MainWindow::setupUI()
         {&mEngine->delay(),   {mSwDelayEnable,   mSwDelayStereo}},
         {&mEngine->reverb(),  {mSwReverbEnable,  nullptr}},
         {&mEngine->ir(),      {mSwIREnable,      nullptr}},
+        {&mEngine->drive(),   {mSwDriveEnable,   nullptr}},
+        {&mEngine->doubler(), {mSwDoublerEnable, nullptr}},
+        {&mEngine->volume(),  {mSwVolumeEnable,  nullptr}},
     };
 
     for (const auto& [fx, toggles] : mFxToggles)
@@ -1694,12 +1757,22 @@ void MainWindow::registerParameters()
     knobParam("phaser", "feedback",  mKnobPhFeedback, [e](double v) { e->phaser().setFeedback(static_cast<float>(v)); });
     knobParam("phaser", "mix",       mKnobPhMix,      [e](double v) { e->phaser().setMix     (static_cast<float>(v)); });
 
+    toggleParam("drive", "enabled", mSwDriveEnable,  [e](bool b)   { e->drive().setEnabled(b); });
+    knobParam("drive", "drive",     mKnobDrive,      [e](double v) { e->drive().setDrive(static_cast<float>(v)); });
+    knobParam("drive", "tone",      mKnobDriveTone,  [e](double v) { e->drive().setTone (static_cast<float>(v)); });
+    knobParam("drive", "level",     mKnobDriveLevel, [e](double v) { e->drive().setLevel(static_cast<float>(v)); });
+
     toggleParam("", "namEnabled", mSwNAMEnable, [e](bool b) { e->nam().setEnabled(b); });
+    toggleParam("", "namStereo",  mSwNAMStereo, [e](bool b) { e->nam().setStereoAmp(b); });
 
     toggleParam("eq", "enabled", mSwEQEnable, [e](bool b)   { e->eq().setEnabled(b); });
     knobParam("eq", "low",       mKnobLow,    [e](double v) { e->eq().setLowGain   (v); });
     knobParam("eq", "mid",       mKnobMid,    [e](double v) { e->eq().setMidGain   (v); });
     knobParam("eq", "treble",    mKnobTreble, [e](double v) { e->eq().setTrebleGain(v); });
+
+    toggleParam("doubler", "enabled", mSwDoublerEnable, [e](bool b)   { e->doubler().setEnabled(b); });
+    knobParam("doubler", "spread",    mKnobDblSpread,    [e](double v) { e->doubler().setSpread(static_cast<float>(v)); });
+    knobParam("doubler", "mix",       mKnobDblMix,       [e](double v) { e->doubler().setMix   (static_cast<float>(v)); });
 
     toggleParam("chorus", "enabled", mSwChorusEnable, [e](bool b)   { e->chorus().setEnabled(b); });
     toggleParam("chorus", "stereo",  mSwChorusStereo, [e](bool b)   { e->chorus().setStereoMode(b); });
@@ -1731,6 +1804,12 @@ void MainWindow::registerParameters()
     knobParam("reverb", "mix",       mKnobRevMix,     [e](double v) { e->reverb().setMix     (static_cast<float>(v)); });
 
     toggleParam("", "irEnabled", mSwIREnable, [e](bool b) { e->ir().setEnabled(b); });
+
+    toggleParam("volume", "enabled", mSwVolumeEnable, [e](bool b)   { e->volume().setEnabled(b); });
+    knobParam("volume", "position",  mKnobVolPos,     [e](double v) { e->volume().setPosition(static_cast<float>(v)); });
+    knobParam("volume", "mid",       mKnobVolMid,     [e](double v) { e->volume().setMid     (static_cast<float>(v)); });
+
+    toggleParam("", "limiter", mSwLimiter, [e](bool b) { e->limiter().setEnabled(b); });
 }
 
 // ---------------------------------------------------------------------------
@@ -2125,8 +2204,23 @@ void MainWindow::restorePresetState()
     QSettings s;
     const QString path = s.value("session/presetPath").toString();
     if (path.isEmpty() || !QFile::exists(path)) { updatePresetState(); return; }
-    mPresetPath     = path;
-    mPresetBaseline = QJsonDocument::fromJson(s.value("session/presetBaseline").toString().toUtf8()).object();
+    mPresetPath = path;
+    // A baseline saved by an older version lacks parameters added since;
+    // those take the live (= restored) values, so an upgrade alone never
+    // marks the preset modified.
+    std::function<QJsonObject(QJsonObject, const QJsonObject&)> fill =
+        [&fill](QJsonObject base, const QJsonObject& live) {
+            for (auto it = live.begin(); it != live.end(); ++it)
+            {
+                if (!base.contains(it.key()))
+                    base.insert(it.key(), it.value());
+                else if (it.value().isObject() && base.value(it.key()).isObject())
+                    base.insert(it.key(), fill(base.value(it.key()).toObject(), it.value().toObject()));
+            }
+            return base;
+        };
+    mPresetBaseline = fill(QJsonDocument::fromJson(s.value("session/presetBaseline").toString().toUtf8()).object(),
+                           PresetSerializer::toJson(mParams, *mEngine));
     mLibrary->setLoadedPath(LibraryEntry::Kind::Preset, path);
     updatePresetState();
 }
