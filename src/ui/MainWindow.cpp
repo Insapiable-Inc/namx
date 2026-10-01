@@ -324,7 +324,7 @@ void MainWindow::setupUI()
     connect(mPresetBar, &PresetBar::abCopyRequested,   this, &MainWindow::copyAb);
 
     // ---- Tempo bar: global tempo (session setting) + metronome.
-    mTempoBar = new TempoBar;
+    mTempoBar = new TempoBar(mEngine->metronome());
     mBpm = mTempoBar->bpm();
     rootLayout->addWidget(mTempoBar);
     connect(mTempoBar, &TempoBar::bpmChanged, this, &MainWindow::setTempo);
@@ -1550,6 +1550,7 @@ void MainWindow::updateMeters()
     mMeterOut->setPeak(mEngine->takeOutputPeak());
     mGrGate->setReduction(mEngine->gate().takeGainReductionDb());
     mGrComp->setReduction(mEngine->comp().takeGainReductionDb());
+    mTempoBar->poll();
 }
 
 void MainWindow::updateMeterTimer()

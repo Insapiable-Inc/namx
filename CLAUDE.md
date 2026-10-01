@@ -141,6 +141,9 @@ All effects inherit `EffectBase` (`src/dsp/EffectBase.h` — the header comment 
 | `LibraryDock` | `src/ui/LibraryDock.h/cpp` | Dock content: Library / TONE3000 tab switch over `LibraryPanel` + `Tone3000Panel` |
 | `Tone3000Client` | `src/net/Tone3000Client.h/cpp` | TONE3000 API: OAuth 2.0 + PKCE via system browser + loopback `QTcpServer` (`http://localhost:51731/callback`), Bearer requests with pre-emptive/401 refresh, 5-min listing cache, 429 back-off, model download → `downloadDir()/<creator>/<tone>/` + `.t3k.json` sidecar, disk-cached images. Env: `NAM_TONE3000_API_BASE`, `NAM_TONE3000_NO_BROWSER` |
 | `Tone3000Panel` | `src/ui/Tone3000Panel.h/cpp` | TONE3000 tab: setup (no key) → splash (signed out) → bounded lists (Trending/Latest/Favorites/Downloads/Mine) + "Browse TONE3000" (select_tone flow) → tone detail with per-model download/load; emits `loadRequested(kind, path)` |
+| `TempoBar` | `src/ui/TempoBar.h/cpp` | Tempo + metronome strip: `BpmField`, Tap, play (Space), `BeatLeds` accent editor, meter/subdivision/sound/count-in menus, level/pan; emits `bpmChanged`; `poll()` from the meter timer |
+| `TempoSync.h` | `src/ui/` | Note-value table (index order is a preset contract — append only) + ms/Hz conversions; `MainWindow::addTempoSync`/`pushSynced` wire the Sync switches |
+| `Metronome` | `src/dsp/Metronome.h/cpp` | RT click generator mixed after the output gain (not an effect, not metered); samples synthesized in `setSampleRate`; settings are atomics |
 | `VUMeter` | `src/ui/VUMeter.h/cpp` | Vertical peak bar; `setPeak(linear)` on a 66 dB scale, time-based ballistics, repaints only on movement (fed at ~60 fps, paused while minimized) |
 | `GainReductionMeter` | `src/ui/GainReductionMeter.h/cpp` | Compressor/Gate reduction readout in the rows' stereo slot; fed from `takeGainReductionDb()` |
 | `Log.h` | `src/dsp/` | `nam.audio` logging category — use `qCWarning(lcAudio, …)`, never `std::cerr` (invisible on Windows) |

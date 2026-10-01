@@ -432,7 +432,7 @@ Make every knob feel right across its whole travel, not just near the default.
       changes the dial position mapping. Re-tune `setScrollStep` per taper
       (steps should feel constant-size perceptually).
 
-## Phase 10 — Tempo sync (post-1.0 unless pulled forward; added 2026-08-10)
+## Phase 10 — Tempo sync → done inside Phase 15 (2026-10-01)
 
 Global tempo, so time-based parameters can be set in note values.
 
@@ -650,24 +650,46 @@ The "at the speed of a cockpit" part. Also where *efficient* stops being a sloga
       frequency; both survive relaunch and preset loads.
 - [ ] Fast tanh: A/B a high-gain model against an older build — no audible change.
 
-## Phase 15 — Practice tools: metronome + global tempo (absorbs Phase 10)
+## Phase 15 — Practice tools: metronome + global tempo (absorbs Phase 10) ✅ (completed 2026-10-01, code; manual verification below)
 
 Main use case is practising at home along a song; the metronome is the standalone
 feature people actually use. Petrucci parity for the metronome in full.
 
-- [ ] **Global tempo** in the top bar: BPM field (click to type, drag to nudge), **Tap**
-      (this *is* Phase 10's BPM; Phase 10's delay/LFO sync modes FREE / TAP(tempo)
-      then land here as planned — engine stays dumb, GUI maps note values to ms/Hz).
-- [ ] **Metronome:** play/stop (MIDI-assignable), volume, pan, 40–240 BPM, time
-      signatures incl. compound/complex, per-beat accents (click to cycle), sound
-      sets, subdivision ("rhythm"), beat LEDs; keeps running across preset changes.
-      RT-safe: preloaded click samples, a generator mixed into the output stage on
-      its own gain, outside the effect chain.
-- [ ] **Count-in** and a keyboard shortcut for play/stop.
+Decisions (2026-10-01): **tempo is a session setting, not part of presets** (reverses
+Phase 10's "persisted in preset") — presets store note values and follow the tempo you
+play at; **BPM counts quarter notes** (DAW convention, shared with sync), so x/8 meters
+click eighths at 2 × BPM.
+
+- [x] **Global tempo** in the tempo bar under the preset bar (`TempoBar`): BPM field
+      (drag / Shift-fine / wheel / click to type, 40–240) and **Tap** (last four
+      intervals). Sync for delay time and tremolo / chorus / flanger / phaser rate:
+      `Sync` switch + note-value knob (`TempoSync::kNotes`, 4 bars … 1/32 incl. dotted /
+      triplet) as registry params (`<fx>/sync`, `<fx>/syncNote`); the GUI pushes
+      tempo × note as ms / Hz (`MainWindow::pushSynced`), engine untouched.
+- [x] **Metronome** (`src/dsp/Metronome`): play/stop, level, pan, 40–240 BPM, any meter
+      1–16 over 2/4/8/16 (presets + Custom…), per-beat accents (strong / normal / soft /
+      mute, click the beat lights to cycle; compound defaults stress groups of three),
+      four sound sets (Click, Wood, Beep, Cowbell — synthesized at sample-rate change,
+      no RT allocation), subdivisions (eighths, triplets, sixteenths), beat lights;
+      mixed after the output gain, outside the chain and the meters; keeps running
+      across preset loads. Settings in QSettings `metronome/*`.
+- [x] **Count-in** (0–2 bars, optional "silent after count-in" = lights only) and
+      **Space** for play/stop.
 - [ ] *(Ideas, not committed)* in-app local file player with A/B loop, slow-down,
       pitch; "song mode" cue list driven by an external player's position over
       MPRIS (Firefox ≥ 131 / Chromium expose it for YouTube) or SMTC on Windows.
       Parked — see Ideas.
+
+### Phase 15 — manual verification pending
+
+- [ ] Click tempo matches a reference metronome over a minute (no drift); BPM drag,
+      wheel, typing and Tap all land; Space starts/stops (and still types a space in
+      the library search field).
+- [ ] 7/8 with custom accents, 6/8 default accents, triplet subdivision, all four
+      sounds; level/pan audible; count-in lights amber, silent-after keeps lights only.
+- [ ] Load presets while the metronome runs: it doesn't stop or stutter.
+- [ ] Delay Sync at 1/8. and 120 BPM ≈ 375 ms; changing the tempo moves the echoes;
+      a preset saved with sync reloads synced; tremolo sync at 1/8 pulses in time.
 
 ## Phase 16 — MIDI
 

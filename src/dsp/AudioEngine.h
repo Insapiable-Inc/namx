@@ -24,6 +24,7 @@
 #include "DelayProcessor.h"
 #include "ReverbProcessor.h"
 #include "DynamicWahProcessor.h"
+#include "Metronome.h"
 
 /// Platform-agnostic audio engine. Owns the signal chain and all DSP
 /// processors. Delegates I/O to an IAudioBackend (JACK on Linux, WASAPI on
@@ -88,6 +89,9 @@ public:
     DelayProcessor&      delay()   { return mDelay;   }
     ReverbProcessor&     reverb()  { return mReverb;  }
     IRProcessor&         ir()      { return mIR;      }
+
+    /// Mixed in after the output gain — outside the chain, not metered.
+    Metronome&           metronome() { return mMetronome; }
 
     // ---- Signal chain (processing order = UI order) ----
     // GUI-thread snapshot of the active chain. Reordering goes through
@@ -161,6 +165,7 @@ private:
     DelayProcessor      mDelay;
     ReverbProcessor     mReverb;
     IRProcessor         mIR;
+    Metronome           mMetronome;
 
     // Gain
     std::atomic<float> mInputGainDB {0.0f};

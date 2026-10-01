@@ -252,6 +252,7 @@ void AudioEngine::onBufferSizeChanged(int n)
         mChainSampleRate = sr;
         for (const auto& [id, fx] : mEffectTable)
             fx->setSampleRate(sr);
+        mMetronome.setSampleRate(sr);
         // ~20 ms one-pole gain smoothing, independent of sample rate.
         mSmoothCoeff = std::exp(-1.0f / (0.020f * static_cast<float>(sr)));
     }
@@ -335,4 +336,8 @@ void AudioEngine::processBlock(const float* in, float* outL, float* outR, int n)
     }
     if (outPeak > mOutputPeak.load(std::memory_order_relaxed))
         mOutputPeak.store(outPeak, std::memory_order_relaxed);
+
+    // 4. Metronome on top: own volume/pan, after the meter so the VU shows
+    //    the guitar only.
+    mMetronome.process(outL, outR, n);
 }

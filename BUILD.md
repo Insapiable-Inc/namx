@@ -328,8 +328,9 @@ the TONE3000 ids when they came from there).
 | **A / B**, **A→B** | Two working states of the current preset: switch between them to compare, or copy the active one over the other. Loading a preset clears both |
 | **⋯** (same as the **Preset** menu) | Open…, Import… (copies files into the presets folder), Export… (writes a copy elsewhere), Show in Folder, Delete… (to the trash), Reset All to Defaults… |
 
-**Not part of a preset:** audio devices and port connections, the tuner on/off,
-the library and TONE3000 state, window layout, and the quick-slot assignments. These
+**Not part of a preset:** audio devices and port connections, the tuner (on/off,
+reference pitch), the tempo and the metronome, the library and TONE3000 state, window
+layout, and the quick-slot assignments. These
 belong to the machine or the session, so loading a preset never changes them.
 
 **Starter presets.** On first run eight starter presets are copied to
@@ -337,6 +338,29 @@ belong to the machine or the session, so loading a preset never changes them.
 Ambient Swell, Surf Tremolo, Funk Wah, Jet Flanger, Vibe Phaser). They contain no
 model or IR, so they apply over whatever amp and cab are loaded. If you delete them
 they stay deleted.
+
+### Tempo & metronome
+
+The second bar holds the global tempo and the metronome.
+
+| Control | Action |
+|---------|--------|
+| **BPM** | Drag up/down or scroll (Shift = fine), click to type. 40–240, quarter notes |
+| **Tap** | Tap the beat; the last four intervals are averaged, a 2 s pause starts over |
+| **▶ / ■** (`Space`) | Start / stop the metronome. It keeps running when you load presets |
+| Beat lights | One column per beat; the current beat lights up (amber during the count-in). Click a beat to cycle its accent: strong → normal → soft → mute |
+| **4/4** | Time signature: common meters, or **Custom…** (1–16 beats over 2, 4, 8 or 16). In x/8 the click is on eighths, so 6/8 at 120 BPM clicks eighths at 240 |
+| **♩ / ♪♪ / 3 / ♬** | Subdivision: beats only, eighths, triplets, sixteenths |
+| **Click / Wood / Beep / Cowbell** | Sound set |
+| **Count-in** | 0–2 bars counted in when you press play; **Silent after count-in** keeps only the lights running, to check your own timing |
+| **Level / Pan** | The click's own volume and position. It is mixed in after the Output knob and isn't shown on the output meter |
+
+**Tempo sync.** Delay **Time** and the Tremolo / Chorus / Flanger / Phaser **Rate**
+each have a **Sync** switch: on, the knob picks a note value (4 bars … 1/32, dotted and
+triplets) instead of ms / Hz, and follows the tempo. Delay times are capped at 1000 ms.
+
+The tempo and every metronome setting belong to the session, not to presets: a preset
+stores *note values*, so it fits whatever tempo you're playing at.
 
 ### Library
 

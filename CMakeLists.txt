@@ -118,6 +118,8 @@ set(GUI_SOURCES
     src/dsp/ReverbProcessor.h
     src/dsp/DynamicWahProcessor.cpp
     src/dsp/DynamicWahProcessor.h
+    src/dsp/Metronome.cpp
+    src/dsp/Metronome.h
 )
 
 # Per-platform backend. Each .cpp defines IAudioBackend::create(), exactly one

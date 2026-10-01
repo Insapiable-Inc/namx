@@ -383,6 +383,24 @@ QLineEdit#bpmEdit {
     selection-color: #15171c;
 }
 
+QToolButton#metroPlay {
+    color: #d8dee9;
+    background-color: #2a2f38;
+    border: 1px solid #353c4a;
+    border-radius: 5px;
+    min-width: 26px;
+    padding: 3px 6px;
+    font-size: 11pt;
+}
+QToolButton#metroPlay:hover {
+    background-color: #353c4a;
+}
+QToolButton#metroPlay:checked {
+    color: #15171c;
+    background-color: #5cc8a8;
+    border-color: #5cc8a8;
+}
+
 /* === Tuner row: reference pitch + Hz toggle === */
 QSpinBox#tunerRef {
     background-color: #15171c;
