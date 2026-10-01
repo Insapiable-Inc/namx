@@ -2,8 +2,12 @@
 
 #include <atomic>
 
+#include "Common.h"
 #include "EffectBase.h"
 #include "PitchShifter.h"
+
+namespace npl
+{
 
 /// Transpose ±12 semitones (drop tunings, octave effects) at the front of
 /// the chain. Mix blends the dry signal back in (100 % = transposed only).
@@ -50,7 +54,9 @@ private:
         }
     }
 
-    std::atomic<float> semis{0.0f};
-    std::atomic<float> mix_pct{100.0f};
+    atomic<float> semis{0.0f};
+    atomic<float> mix_pct{100.0f};
     PitchShifter shift[2];
 };
+
+} // namespace npl

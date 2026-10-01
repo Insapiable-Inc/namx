@@ -3,6 +3,11 @@
 #include <algorithm>
 #include <cmath>
 
+#include "Common.h"
+
+namespace npl
+{
+
 static constexpr float PI = 3.14159265358979323846f;
 
 void FlangerProcessor::on_sample_rate_changed(double sr) {
@@ -94,3 +99,5 @@ void FlangerProcessor::process_block_stereo_out(float* l, float* r, size_t nfram
         }
     }
 }
+
+} // namespace npl

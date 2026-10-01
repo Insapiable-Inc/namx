@@ -17,11 +17,13 @@
 #include <QToolButton>
 #include <QVBoxLayout>
 
+#include "Common.h"
 #include "MidiInput.h"
 #include "MidiMapper.h"
 
-namespace
+namespace npl
 {
+
 enum Col
 {
     COL_ON,
@@ -37,10 +39,9 @@ enum Col
     COL_COUNT
 };
 
-QString mapping_dir() {
+static QString mapping_dir() {
     return QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/NAM Player/MIDI";
 }
-} // namespace
 
 MidiMappingsDialog::MidiMappingsDialog(MidiMapper& new_mapper, MidiInput* new_input,
                                        QWidget* parent)
@@ -313,3 +314,5 @@ void MidiMappingsDialog::commit_row(int row) {
     mapper.set_mappings(list);
     rebuilding = false;
 }
+
+} // namespace npl

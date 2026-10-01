@@ -4,6 +4,11 @@
 
 #include <QString>
 
+#include "Common.h"
+
+namespace npl
+{
+
 class KnobWidget;
 class ToggleSwitch;
 
@@ -23,4 +28,6 @@ struct ParamDesc
                            // to presets, ignored when one loads
 };
 
-using ParamRegistry = std::vector<ParamDesc>;
+using ParamRegistry = vector<ParamDesc>;
+
+} // namespace npl

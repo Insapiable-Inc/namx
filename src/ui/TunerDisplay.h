@@ -3,6 +3,11 @@
 #include <QString>
 #include <QWidget>
 
+#include "Common.h"
+
+namespace npl
+{
+
 /// Boss-TU-3-inspired tuner readout: a horizontal LED ladder (the center LED
 /// glows green when in tune; red LEDs march from the center toward flat/left
 /// or sharp/right as the pitch drifts), the note name rendered as a glowing
@@ -42,3 +47,5 @@ private:
     static constexpr int LED_COUNT = 21; // odd, so one LED is dead center
     static constexpr float IN_TUNE_CENTS = 3.0f; // |cents| at or below: green
 };
+
+} // namespace npl

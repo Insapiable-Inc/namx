@@ -9,8 +9,12 @@
 
 #include <NAM/dsp.h>
 
+#include "Common.h"
 #include "EffectBase.h"
 #include "RtSlot.h"
+
+namespace npl
+{
 
 /// Wraps the NAM DSP model as an EffectBase.
 ///
@@ -24,17 +28,17 @@ public:
     NamProcessor();
     ~NamProcessor() override;
 
-    bool load_model(const std::string& path);
+    bool load_model(const string& path);
     void unload_model();
     bool is_model_loaded() const {
         return slot.current() != nullptr;
     }
-    std::string get_model_path() const {
+    string get_model_path() const {
         return model_path;
     }
 
     /// Human-readable reason the last loadModel() returned false (GUI thread only).
-    std::string get_last_error() const {
+    string get_last_error() const {
         return last_error;
     }
 
@@ -76,7 +80,7 @@ private:
     // with (written only while no audio callback is in flight).
     struct ModelPair
     {
-        std::unique_ptr<nam::DSP> l, r;
+        unique_ptr<nam::DSP> l, r;
         size_t reset_buf{0};
         double reset_rate{0.0};
 
@@ -94,18 +98,20 @@ private:
 
     RtSlot<ModelPair> slot;
     std::mutex model_mutex; // serializes publish vs. prepareBuffer / SR change
-    std::string model_path; // GUI thread only
-    std::string last_error; // GUI thread only
-    std::atomic<size_t> max_buf{0};
-    std::atomic<bool> stereo_amp{false};
+    string model_path; // GUI thread only
+    string last_error; // GUI thread only
+    atomic<size_t> max_buf{0};
+    atomic<bool> stereo_amp{false};
     double model_rate{0.0}; // engine SR as last propagated (guarded by model_mutex)
-    std::vector<float> scratch_l, scratch_r;
+    vector<float> scratch_l, scratch_r;
 
     // Click-free swap: load/unload flag a short output fade-in, applied by
     // the audio thread, that masks the waveform discontinuity.
-    std::atomic<bool> fade_pending{false};
+    atomic<bool> fade_pending{false};
     size_t fade_total{1}; // samples; audio thread only
     size_t fade_remaining{0}; // audio thread only
 
-    static void run_model(nam::DSP* model, float* buf, size_t n, std::vector<float>& scratch);
+    static void run_model(nam::DSP* model, float* buf, size_t n, vector<float>& scratch);
 };
+
+} // namespace npl

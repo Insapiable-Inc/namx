@@ -6,8 +6,12 @@
 #include <QToolButton>
 #include <QVBoxLayout>
 
+#include "Common.h"
 #include "LibraryPanel.h"
 #include "Tone3000Panel.h"
+
+namespace npl
+{
 
 LibraryDock::LibraryDock(LibraryIndex& index, Tone3000Client& client, QWidget* parent)
     : QWidget(parent) {
@@ -59,3 +63,5 @@ void LibraryDock::set_tab(Tab tab) {
     }
     QSettings().setValue("library/tab", static_cast<int>(tab));
 }
+
+} // namespace npl

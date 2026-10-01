@@ -6,7 +6,11 @@
 
 #include <NAM/activations.h>
 
+#include "Common.h"
 #include "Log.h"
+
+namespace npl
+{
 
 AudioEngine::AudioEngine() {
     // NAM's fast tanh approximation: ~2.4× on Tanh WaveNets (the common
@@ -49,7 +53,7 @@ AudioEngine::AudioEngine() {
         {"ir", &ir},
         {"volume", &volume},
     };
-    auto chain = std::make_unique<Chain>();
+    auto chain = make_unique<Chain>();
     chain->reserve(effect_table.size());
     for (const auto& [id, fx] : effect_table) {
         chain->push_back(fx);
@@ -70,7 +74,7 @@ void AudioEngine::reclaim_retired() {
     ir.reclaim_retired(stopped);
 }
 
-bool AudioEngine::load_model(const std::string& path) {
+bool AudioEngine::load_model(const string& path) {
     const bool ok = nam.load_model(path);
     reclaim_retired();
     return ok;
@@ -81,7 +85,7 @@ void AudioEngine::unload_model() {
     reclaim_retired();
 }
 
-bool AudioEngine::load_ir(const std::string& path) {
+bool AudioEngine::load_ir(const string& path) {
     const bool ok = ir.load(path);
     reclaim_retired();
     return ok;
@@ -92,7 +96,7 @@ void AudioEngine::unload_ir() {
     reclaim_retired();
 }
 
-bool AudioEngine::load_irb(const std::string& path) {
+bool AudioEngine::load_irb(const string& path) {
     const bool ok = ir.load_b(path);
     reclaim_retired();
     return ok;
@@ -107,8 +111,8 @@ void AudioEngine::unload_irb() {
 // Chain order
 // ---------------------------------------------------------------------------
 
-std::vector<std::string> AudioEngine::default_chain_ids() const {
-    std::vector<std::string> ids;
+vector<string> AudioEngine::default_chain_ids() const {
+    vector<string> ids;
     ids.reserve(effect_table.size());
     for (const auto& [id, fx] : effect_table) {
         ids.push_back(id);
@@ -116,8 +120,8 @@ std::vector<std::string> AudioEngine::default_chain_ids() const {
     return ids;
 }
 
-std::vector<std::string> AudioEngine::chain_ids() const {
-    std::vector<std::string> ids;
+vector<string> AudioEngine::chain_ids() const {
+    vector<string> ids;
     ids.reserve(effect_table.size());
     for (const auto* fx : *chain_slot.current()) {
         ids.push_back(id_for_effect(fx));
@@ -125,7 +129,7 @@ std::vector<std::string> AudioEngine::chain_ids() const {
     return ids;
 }
 
-EffectBase* AudioEngine::effect_by_id(const std::string& id) const {
+EffectBase* AudioEngine::effect_by_id(const string& id) const {
     for (const auto& [eid, fx] : effect_table) {
         if (eid == id) {
             return fx;
@@ -134,7 +138,7 @@ EffectBase* AudioEngine::effect_by_id(const std::string& id) const {
     return nullptr;
 }
 
-std::string AudioEngine::id_for_effect(const EffectBase* fx) const {
+string AudioEngine::id_for_effect(const EffectBase* fx) const {
     for (const auto& [eid, e] : effect_table) {
         if (e == fx) {
             return eid;
@@ -143,9 +147,9 @@ std::string AudioEngine::id_for_effect(const EffectBase* fx) const {
     return {};
 }
 
-void AudioEngine::set_chain_order(const std::vector<std::string>& ids) {
+void AudioEngine::set_chain_order(const vector<string>& ids) {
     // Sanitize: known IDs only, no duplicates.
-    std::vector<EffectBase*> new_chain;
+    vector<EffectBase*> new_chain;
     new_chain.reserve(effect_table.size());
     for (const auto& id : ids) {
         EffectBase* fx = effect_by_id(id);
@@ -184,7 +188,7 @@ void AudioEngine::set_chain_order(const std::vector<std::string>& ids) {
 
     // Publish a fresh vector; the one the audio thread may still be iterating
     // is retired and freed only once it has provably moved on. No waiting.
-    chain_slot.publish(std::make_unique<Chain>(std::move(new_chain)));
+    chain_slot.publish(make_unique<Chain>(std::move(new_chain)));
     reclaim_retired();
 }
 
@@ -192,7 +196,7 @@ AudioEngine::~AudioEngine() {
     stop();
 }
 
-bool AudioEngine::start(const std::string& client_name) {
+bool AudioEngine::start(const string& client_name) {
     if (backend && backend->is_running()) {
         return true;
     }
@@ -214,9 +218,8 @@ bool AudioEngine::start(const std::string& client_name) {
     return true;
 }
 
-bool AudioEngine::start_with_devices(const std::string& input_device_id,
-                                     const std::string& output_device_id,
-                                     const std::string& client_name) {
+bool AudioEngine::start_with_devices(const string& input_device_id, const string& output_device_id,
+                                     const string& client_name) {
     stop();
 
     backend = IAudioBackend::create();
@@ -242,14 +245,14 @@ void AudioEngine::stop() {
     reclaim_retired();
 }
 
-std::vector<IAudioBackend::DeviceInfo> AudioEngine::enumerate_input_devices() const {
-    std::unique_ptr<IAudioBackend> temp = IAudioBackend::create();
-    return temp ? temp->enumerate_input_devices() : std::vector<IAudioBackend::DeviceInfo>{};
+vector<IAudioBackend::DeviceInfo> AudioEngine::enumerate_input_devices() const {
+    unique_ptr<IAudioBackend> temp = IAudioBackend::create();
+    return temp ? temp->enumerate_input_devices() : vector<IAudioBackend::DeviceInfo>{};
 }
 
-std::vector<IAudioBackend::DeviceInfo> AudioEngine::enumerate_output_devices() const {
-    std::unique_ptr<IAudioBackend> temp = IAudioBackend::create();
-    return temp ? temp->enumerate_output_devices() : std::vector<IAudioBackend::DeviceInfo>{};
+vector<IAudioBackend::DeviceInfo> AudioEngine::enumerate_output_devices() const {
+    unique_ptr<IAudioBackend> temp = IAudioBackend::create();
+    return temp ? temp->enumerate_output_devices() : vector<IAudioBackend::DeviceInfo>{};
 }
 
 // ---- IAudioBackend::Callback ----------------------------------------
@@ -368,3 +371,5 @@ void AudioEngine::process_block(const float* in, float* out_l, float* out_r, siz
     //    the guitar only.
     metronome.process(out_l, out_r, n);
 }
+
+} // namespace npl

@@ -3,6 +3,11 @@
 #include <QElapsedTimer>
 #include <QProgressBar>
 
+#include "Common.h"
+
+namespace npl
+{
+
 /// Peak meter (vertical fills bottom→top, horizontal fills left→right),
 /// colored by absolute level like REAPER's meters: green fill, yellow only
 /// for the part above -6 dBFS, and red only for the part above 0 dBFS;
@@ -48,3 +53,5 @@ private:
     static constexpr float HOT_VALUE = (-6.0f - MIN_DB) / (MAX_DB - MIN_DB) * 100.0f;
     static constexpr float CLIP_VALUE = (0.0f - MIN_DB) / (MAX_DB - MIN_DB) * 100.0f;
 };
+
+} // namespace npl

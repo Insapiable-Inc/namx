@@ -23,9 +23,10 @@
 #include <QUrl>
 #include <QVBoxLayout>
 
+#include "Common.h"
 #include "Theme.h"
 
-namespace
+namespace npl
 {
 
 constexpr int THUMB = 44;
@@ -34,14 +35,14 @@ constexpr int ROW_HEIGHT = 58;
 constexpr int STAR_WIDTH = 26;
 constexpr int MODEL_ROW_H = 34;
 
-const char* k_list_names[5] = {"Trending", "Latest", "Favorites", "Downloads", "Mine"};
-const Tone3000Client::ListKind LIST_KINDS[5] = {
+static const char* k_list_names[5] = {"Trending", "Latest", "Favorites", "Downloads", "Mine"};
+static const Tone3000Client::ListKind LIST_KINDS[5] = {
     Tone3000Client::ListKind::TRENDING,  Tone3000Client::ListKind::LATEST,
     Tone3000Client::ListKind::FAVORITED, Tone3000Client::ListKind::DOWNLOADED,
     Tone3000Client::ListKind::CREATED,
 };
 
-QPixmap rounded_thumb(const QPixmap& src, int size, bool circle) {
+static QPixmap rounded_thumb(const QPixmap& src, int size, bool circle) {
     if (src.isNull()) {
         return {};
     }
@@ -64,14 +65,14 @@ QPixmap rounded_thumb(const QPixmap& src, int size, bool circle) {
     return out;
 }
 
-QString count_label(int n) {
+static QString count_label(int n) {
     if (n >= 1000) {
         return QString::number(n / 1000.0, 'f', n >= 10000 ? 0 : 1) + "k";
     }
     return QString::number(n);
 }
 
-QString model_info(const T3kModel& m, const T3kTone& t) {
+static QString model_info(const T3kModel& m, const T3kTone& t) {
     QStringList parts;
     if (t.format == "ir") {
         parts << "IR";
@@ -87,8 +88,6 @@ QString model_info(const T3kModel& m, const T3kTone& t) {
     }
     return parts.join(" · ");
 }
-
-} // namespace
 
 // ===========================================================================
 // ToneListModel
@@ -1323,3 +1322,5 @@ void Tone3000Panel::download_all() {
     }
     download_all_button->setEnabled(false);
 }
+
+} // namespace npl

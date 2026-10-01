@@ -5,8 +5,12 @@
 #include <string>
 #include <vector>
 
+#include "Common.h"
 #include "EffectBase.h"
 #include "IRLoader.h"
+
+namespace npl
+{
 
 /// Cabinet: two IR slots (A, B), each with level, pan and phase, a Blend
 /// between them, then Low/High Cut (12 dB/oct) on the result.
@@ -21,7 +25,7 @@ public:
     IRProcessor();
 
     // Slot A (the hero row / library / presets' irPath).
-    bool load(const std::string& path) {
+    bool load(const string& path) {
         return slot_a.load(path);
     }
     void unload() {
@@ -30,15 +34,15 @@ public:
     bool is_loaded() const {
         return slot_a.is_loaded();
     }
-    std::string file_path() const {
+    string file_path() const {
         return slot_a.get_file_path();
     }
-    std::string last_error() const {
+    string last_error() const {
         return slot_a.get_last_error();
     }
 
     // Slot B.
-    bool load_b(const std::string& path) {
+    bool load_b(const string& path) {
         return slot_b.load(path);
     }
     void unload_b() {
@@ -47,10 +51,10 @@ public:
     bool is_loaded_b() const {
         return slot_b.is_loaded();
     }
-    std::string file_path_b() const {
+    string file_path_b() const {
         return slot_b.get_file_path();
     }
-    std::string last_error_b() const {
+    string last_error_b() const {
         return slot_b.get_last_error();
     }
 
@@ -103,15 +107,17 @@ private:
 
     IRLoader slot_a, slot_b;
 
-    std::atomic<float> level_db[2]{{0.0f}, {0.0f}};
-    std::atomic<float> pan_pct[2]{{0.0f}, {0.0f}};
-    std::atomic<bool> invert[2]{{false}, {false}};
-    std::atomic<float> blend_pct{50.0f};
-    std::atomic<float> low_cut_hz{20.0f};
-    std::atomic<float> high_cut_hz{20000.0f};
+    atomic<float> level_db[2]{{0.0f}, {0.0f}};
+    atomic<float> pan_pct[2]{{0.0f}, {0.0f}};
+    atomic<bool> invert[2]{{false}, {false}};
+    atomic<float> blend_pct{50.0f};
+    atomic<float> low_cut_hz{20.0f};
+    atomic<float> high_cut_hz{20000.0f};
 
     static constexpr size_t CHUNK = 2048;
-    std::vector<float> al, ar, bl, br; // per-slot scratch (CHUNK)
+    vector<float> al, ar, bl, br; // per-slot scratch (CHUNK)
     Biquad hp[2], lp[2];
     float designed_low = -1.0f, designed_high = -1.0f;
 };
+
+} // namespace npl

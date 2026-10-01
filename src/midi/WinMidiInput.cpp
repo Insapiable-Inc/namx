@@ -17,7 +17,9 @@
 
 #include <map>
 
-namespace
+#include "Common.h"
+
+namespace npl
 {
 
 class WinMidiInput final : public MidiInput
@@ -149,8 +151,8 @@ private:
     std::map<QString, HMIDIIN> open;
 };
 
-} // namespace
-
 MidiInput* MidiInput::create(QObject* parent) {
     return new WinMidiInput(parent);
 }
+
+} // namespace npl

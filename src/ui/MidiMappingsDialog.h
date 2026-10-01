@@ -2,12 +2,18 @@
 
 #include <QDialog>
 
-class MidiInput;
-class MidiMapper;
+#include "Common.h"
+
 class QCheckBox;
 class QLabel;
 class QTableWidget;
 class QVBoxLayout;
+
+namespace npl
+{
+
+class MidiInput;
+class MidiMapper;
 
 /// MIDI → Mappings…: the device list (enable checkboxes, follow MIDI clock),
 /// the mapping table (on, source, channel, number, target, mode, range,
@@ -32,3 +38,5 @@ private:
     QLabel* activity = nullptr;
     bool rebuilding = false;
 };
+
+} // namespace npl

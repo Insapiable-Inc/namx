@@ -3,6 +3,11 @@
 #include <QAbstractButton>
 #include <QColor>
 
+#include "Common.h"
+
+namespace npl
+{
+
 /// iOS-style toggle switch.
 /// Drop-in replacement for QCheckBox: same isChecked(), setChecked(), toggled() API.
 /// The "on" track color is set explicitly via setAccent (Theme::tagCard) —
@@ -33,3 +38,5 @@ private:
     QColor accent;
     bool hovered{false};
 };
+
+} // namespace npl

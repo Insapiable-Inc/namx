@@ -16,7 +16,11 @@
 #include <QStyle>
 #include <QToolButton>
 
+#include "Common.h"
 #include "LibraryIndex.h"
+
+namespace npl
+{
 
 static void repolish(QWidget* w) {
     w->style()->unpolish(w);
@@ -308,3 +312,5 @@ void PresetBar::update_slots() {
         repolish(b);
     }
 }
+
+} // namespace npl

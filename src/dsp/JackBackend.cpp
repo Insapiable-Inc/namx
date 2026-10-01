@@ -2,11 +2,15 @@
 
 #include <sstream>
 
+#include "Common.h"
 #include "Denormals.h"
 #include "Log.h"
 
-std::unique_ptr<IAudioBackend> IAudioBackend::create() {
-    return std::make_unique<JackBackend>();
+namespace npl
+{
+
+unique_ptr<IAudioBackend> IAudioBackend::create() {
+    return make_unique<JackBackend>();
 }
 
 JackBackend::JackBackend() = default;
@@ -15,7 +19,7 @@ JackBackend::~JackBackend() {
     stop();
 }
 
-bool JackBackend::start(const std::string& client_name, Callback* cb) {
+bool JackBackend::start(const string& client_name, Callback* cb) {
     if (running.load()) {
         return true;
     }
@@ -104,17 +108,17 @@ int JackBackend::io_latency_frames() const {
     return static_cast<int>(in.max + out.max);
 }
 
-std::string JackBackend::status_string() const {
+string JackBackend::status_string() const {
     std::ostringstream o;
     o << "JACK  ●  " << static_cast<int>(sample_rate) << " Hz  ●  stereo out";
     return o.str();
 }
 
-std::vector<IAudioBackend::DeviceInfo> JackBackend::enumerate_input_devices() const {
+vector<IAudioBackend::DeviceInfo> JackBackend::enumerate_input_devices() const {
     return {{"default", "JACK Server"}};
 }
 
-std::vector<IAudioBackend::DeviceInfo> JackBackend::enumerate_output_devices() const {
+vector<IAudioBackend::DeviceInfo> JackBackend::enumerate_output_devices() const {
     return {{"default", "JACK Server"}};
 }
 
@@ -127,7 +131,7 @@ IAudioBackend::PortConnections JackBackend::current_connections() const {
     }
 
     auto get_conns = [](jack_port_t* p) {
-        std::vector<std::string> result;
+        vector<string> result;
         if (!p) {
             return result;
         }
@@ -227,3 +231,5 @@ int JackBackend::process_audio(jack_nframes_t nframes) {
     }
     return 0;
 }
+
+} // namespace npl

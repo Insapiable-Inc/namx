@@ -3,6 +3,11 @@
 #include <algorithm>
 #include <cmath>
 
+#include "Common.h"
+
+namespace npl
+{
+
 static constexpr float DB_PER_OCTAVE = 6.0205999f; // 20·log10(2)
 
 void CompressorProcessor::reset() {
@@ -62,3 +67,5 @@ void CompressorProcessor::process_block_dual(float* l, float* r, size_t nframes)
     process_channel(l, nframes, 0);
     process_channel(r, nframes, 1);
 }
+
+} // namespace npl

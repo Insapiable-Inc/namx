@@ -3,8 +3,14 @@
 #include <QString>
 #include <QWidget>
 
-class AudioEngine;
+#include "Common.h"
+
 class QLabel;
+
+namespace npl
+{
+
+class AudioEngine;
 
 /// VS Code-style status items for the bottom-right of the window: backend
 /// connection state, sample rate, buffer size, latency (round trip when the
@@ -66,3 +72,5 @@ private:
     float load_max = 0.0f;
     int shown_xruns = -2;
 };
+
+} // namespace npl

@@ -3,9 +3,13 @@
 #include <array>
 #include <atomic>
 
+#include "Common.h"
 #include "DelayLine.h"
 #include "EffectBase.h"
 #include "PitchShifter.h"
+
+namespace npl
+{
 
 /// Freeverb-based stereo reverb (8 comb + 4 all-pass filters).
 class ReverbProcessor : public EffectBase
@@ -64,14 +68,14 @@ protected:
     void process_block_stereo_out(float* l, float* r, size_t nframes) override;
 
 private:
-    std::atomic<float> room_size_pct{50.0f};
-    std::atomic<float> damping_pct{50.0f};
-    std::atomic<float> width_pct{100.0f};
-    std::atomic<float> mix_pct{30.0f};
-    std::atomic<float> pre_delay_ms{0.0f};
-    std::atomic<float> low_cut_hz{20.0f};
-    std::atomic<float> high_cut_hz{20000.0f};
-    std::atomic<float> shimmer_pct{0.0f};
+    atomic<float> room_size_pct{50.0f};
+    atomic<float> damping_pct{50.0f};
+    atomic<float> width_pct{100.0f};
+    atomic<float> mix_pct{30.0f};
+    atomic<float> pre_delay_ms{0.0f};
+    atomic<float> low_cut_hz{20.0f};
+    atomic<float> high_cut_hz{20000.0f};
+    atomic<float> shimmer_pct{0.0f};
     PitchShifter shift[2]; // per bank, +12 st
     float shim_fb[2]{}; // shifted wet fed into the next input sample
 
@@ -126,8 +130,8 @@ private:
     static constexpr size_t NUM_COMBS = 8;
     static constexpr size_t NUM_ALL_PASSES = 4;
 
-    std::array<CombFilter, NUM_COMBS> comb_l, comb_r;
-    std::array<AllPassFilter, NUM_ALL_PASSES> ap_l, ap_r;
+    array<CombFilter, NUM_COMBS> comb_l, comb_r;
+    array<AllPassFilter, NUM_ALL_PASSES> ap_l, ap_r;
 
     static constexpr int COMB_LENGTHS[NUM_COMBS] = {1116, 1188, 1277, 1356, 1422, 1491, 1557, 1617};
     static constexpr int AP_LENGTHS[NUM_ALL_PASSES] = {556, 441, 341, 225};
@@ -135,6 +139,8 @@ private:
 
     void allocate();
     void process_mono_bank(float* buf, size_t nframes, int bank,
-                           std::array<CombFilter, NUM_COMBS>& combs,
-                           std::array<AllPassFilter, NUM_ALL_PASSES>& aps);
+                           array<CombFilter, NUM_COMBS>& combs,
+                           array<AllPassFilter, NUM_ALL_PASSES>& aps);
 };
+
+} // namespace npl

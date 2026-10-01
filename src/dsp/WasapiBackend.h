@@ -5,6 +5,7 @@
 #include <thread>
 #include <vector>
 
+#include "Common.h"
 #include "IAudioBackend.h"
 
 #ifdef _WIN32
@@ -16,6 +17,9 @@ struct IAudioClient;
 struct IAudioCaptureClient;
 struct IAudioRenderClient;
 #endif
+
+namespace npl
+{
 
 /// WASAPI implementation of IAudioBackend (Windows-only).
 ///
@@ -34,7 +38,7 @@ public:
     WasapiBackend();
     ~WasapiBackend() override;
 
-    bool start(const std::string& client_name, Callback* cb) override;
+    bool start(const string& client_name, Callback* cb) override;
     void stop() override;
 
     bool is_running() const override {
@@ -46,13 +50,12 @@ public:
     int get_buffer_size() const override {
         return buffer_size;
     }
-    std::string status_string() const override;
+    string status_string() const override;
 
-    std::vector<DeviceInfo> enumerate_input_devices() const override;
-    std::vector<DeviceInfo> enumerate_output_devices() const override;
-    bool start_with_devices(const std::string& client_name, Callback* cb,
-                            const std::string& input_device_id,
-                            const std::string& output_device_id) override;
+    vector<DeviceInfo> enumerate_input_devices() const override;
+    vector<DeviceInfo> enumerate_output_devices() const override;
+    bool start_with_devices(const string& client_name, Callback* cb, const string& input_device_id,
+                            const string& output_device_id) override;
 
     // Capture packets flagged DATA_DISCONTINUITY (the engine dropped input).
     int xrun_count() const override {
@@ -72,7 +75,7 @@ private:
     bool init_render();
     void teardown();
 
-    IMMDevice* open_device_by_id(const std::string& deviceId) const;
+    IMMDevice* open_device_by_id(const string& deviceId) const;
 
     IMMDeviceEnumerator* enumerator = nullptr;
     IMMDevice* capture_device = nullptr;
@@ -88,15 +91,17 @@ private:
     void* stop_event = nullptr;
 
     std::thread audio_thread;
-    std::string device_name;
+    string device_name;
     bool com_initialized = false;
 #endif
 
     Callback* callback = nullptr;
-    std::atomic<bool> running{false};
-    std::atomic<int> xruns{0};
+    atomic<bool> running{false};
+    atomic<int> xruns{0};
     double sample_rate = 48000.0;
     int buffer_size = 0;
     int capture_channels = 0;
     int render_channels = 0;
 };
+
+} // namespace npl

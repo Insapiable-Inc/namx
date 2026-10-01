@@ -5,9 +5,15 @@
 #include <QString>
 #include <QStringList>
 
+#include "Common.h"
+
 class QFileSystemWatcher;
 class QThread;
 class QTimer;
+
+namespace npl
+{
+
 class LibraryScanWorker;
 
 /// One file the library knows about. The kind-specific metadata (model
@@ -106,3 +112,5 @@ private:
     bool rescan_queued = false;
     QString cache_path;
 };
+
+} // namespace npl

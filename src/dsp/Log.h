@@ -7,4 +7,11 @@
 // controlled at runtime, e.g. QT_LOGGING_RULES="nam.audio.info=false".
 #include <QLoggingCategory>
 
+#include "Common.h"
+
+namespace npl
+{
+
 Q_DECLARE_LOGGING_CATEGORY(lc_audio)
+
+} // namespace npl

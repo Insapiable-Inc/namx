@@ -2,6 +2,11 @@
 
 #include <cmath>
 
+#include "Common.h"
+
+namespace npl
+{
+
 static constexpr float PI = 3.14159265358979323846f;
 
 void TremoloProcessor::process_block_mono(float* buf, size_t nframes) {
@@ -57,3 +62,5 @@ void TremoloProcessor::process_block_stereo_out(float* l, float* r, size_t nfram
         }
     }
 }
+
+} // namespace npl

@@ -26,7 +26,7 @@
 #pragma comment(lib, "mmdevapi.lib")
 #pragma comment(lib, "avrt.lib")
 
-namespace
+namespace npl
 {
 
 constexpr int STOP_EVENT_INDEX = 0;
@@ -47,7 +47,7 @@ struct CoMemFree
 };
 
 // Inspect a WAVEFORMATEX and return true iff it's 32-bit float PCM.
-bool isFloat32(const WAVEFORMATEX* wfx) {
+static bool is_float32(const WAVEFORMATEX* wfx) {
     if (!wfx) {
         return false;
     }
@@ -61,7 +61,7 @@ bool isFloat32(const WAVEFORMATEX* wfx) {
     return false;
 }
 
-std::string friendly_device_name(IMMDevice* dev) {
+static string friendly_device_name(IMMDevice* dev) {
     if (!dev) {
         return {};
     }
@@ -72,7 +72,7 @@ std::string friendly_device_name(IMMDevice* dev) {
 
     PROPVARIANT pv;
     PropVariantInit(&pv);
-    std::string name;
+    string name;
     if (SUCCEEDED(props->GetValue(PKEY_Device_FriendlyName, &pv)) && pv.vt == VT_LPWSTR &&
         pv.pwszVal) {
         // Narrow the wide string for the status pill; ASCII-fold non-ASCII.
@@ -85,7 +85,7 @@ std::string friendly_device_name(IMMDevice* dev) {
     return name;
 }
 
-std::string wide_to_utf8(LPCWSTR wstr) {
+static string wide_to_utf8(LPCWSTR wstr) {
     if (!wstr) {
         return {};
     }
@@ -93,12 +93,12 @@ std::string wide_to_utf8(LPCWSTR wstr) {
     if (len <= 0) {
         return {};
     }
-    std::string result(len - 1, '\0');
+    string result(len - 1, '\0');
     WideCharToMultiByte(CP_UTF8, 0, wstr, -1, result.data(), len, nullptr, nullptr);
     return result;
 }
 
-std::wstring utf8_to_wide(const std::string& str) {
+static std::wstring utf8_to_wide(const string& str) {
     if (str.empty()) {
         return {};
     }
@@ -111,8 +111,8 @@ std::wstring utf8_to_wide(const std::string& str) {
     return result;
 }
 
-std::vector<IAudioBackend::DeviceInfo> enumerate_wasapi_devices(EDataFlow direction) {
-    std::vector<IAudioBackend::DeviceInfo> result;
+static vector<IAudioBackend::DeviceInfo> enumerate_wasapi_devices(EDataFlow direction) {
+    vector<IAudioBackend::DeviceInfo> result;
     result.push_back({"default", "Default"});
 
     HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
@@ -159,16 +159,19 @@ std::vector<IAudioBackend::DeviceInfo> enumerate_wasapi_devices(EDataFlow direct
     return result;
 }
 
-} // namespace
+} // namespace npl
 
 #endif // _WIN32
+
+namespace npl
+{
 
 // ---------------------------------------------------------------------------
 // Factory (Windows side; the Linux factory lives in JackBackend.cpp).
 // ---------------------------------------------------------------------------
 
-std::unique_ptr<IAudioBackend> IAudioBackend::create() {
-    return std::make_unique<WasapiBackend>();
+unique_ptr<IAudioBackend> IAudioBackend::create() {
+    return make_unique<WasapiBackend>();
 }
 
 WasapiBackend::WasapiBackend() = default;
@@ -182,7 +185,7 @@ WasapiBackend::~WasapiBackend() {
 // file is not compiled) is unaffected. The body is conditionally compiled.
 // ---------------------------------------------------------------------------
 
-std::string WasapiBackend::status_string() const {
+string WasapiBackend::status_string() const {
 #ifdef _WIN32
     if (!running.load()) {
         return "WASAPI  \xe2\x97\x8f  not started";
@@ -203,7 +206,7 @@ std::string WasapiBackend::status_string() const {
 // Device enumeration (works before start() is called)
 // ---------------------------------------------------------------------------
 
-std::vector<IAudioBackend::DeviceInfo> WasapiBackend::enumerate_input_devices() const {
+vector<IAudioBackend::DeviceInfo> WasapiBackend::enumerate_input_devices() const {
 #ifdef _WIN32
     return enumerate_wasapi_devices(eCapture);
 #else
@@ -211,7 +214,7 @@ std::vector<IAudioBackend::DeviceInfo> WasapiBackend::enumerate_input_devices() 
 #endif
 }
 
-std::vector<IAudioBackend::DeviceInfo> WasapiBackend::enumerate_output_devices() const {
+vector<IAudioBackend::DeviceInfo> WasapiBackend::enumerate_output_devices() const {
 #ifdef _WIN32
     return enumerate_wasapi_devices(eRender);
 #else
@@ -225,7 +228,7 @@ std::vector<IAudioBackend::DeviceInfo> WasapiBackend::enumerate_output_devices()
 // Device selection helper
 // ---------------------------------------------------------------------------
 
-IMMDevice* WasapiBackend::open_device_by_id(const std::string& deviceId) const {
+IMMDevice* WasapiBackend::open_device_by_id(const string& deviceId) const {
     if (deviceId.empty() || deviceId == "default") {
         return nullptr; // Caller falls back to GetDefaultAudioEndpoint
     }
@@ -245,13 +248,13 @@ IMMDevice* WasapiBackend::open_device_by_id(const std::string& deviceId) const {
 // start / stop / start_with_devices
 // ---------------------------------------------------------------------------
 
-bool WasapiBackend::start(const std::string& client_name, Callback* cb) {
+bool WasapiBackend::start(const string& client_name, Callback* cb) {
     return start_with_devices(client_name, cb, "default", "default");
 }
 
-bool WasapiBackend::start_with_devices(const std::string& /*clientName*/, Callback* cb,
-                                       const std::string& input_device_id,
-                                       const std::string& output_device_id) {
+bool WasapiBackend::start_with_devices(const string& /*clientName*/, Callback* cb,
+                                       const string& input_device_id,
+                                       const string& output_device_id) {
     if (running.load()) {
         return true;
     }
@@ -409,9 +412,9 @@ bool WasapiBackend::init_capture() {
         qCWarning(lc_audio, "[WasapiBackend] Capture GetMixFormat failed");
         return false;
     }
-    std::unique_ptr<WAVEFORMATEX, CoMemFree> wfx{wfxRaw};
+    unique_ptr<WAVEFORMATEX, CoMemFree> wfx{wfxRaw};
 
-    if (!isFloat32(wfx.get())) {
+    if (!is_float32(wfx.get())) {
         qCWarning(lc_audio,
                   "[WasapiBackend] Capture mix format not float32 (tag=%u, bits=%u). "
                   "PCM conversion not yet implemented.",
@@ -462,9 +465,9 @@ bool WasapiBackend::init_render() {
         qCWarning(lc_audio, "[WasapiBackend] Render GetMixFormat failed");
         return false;
     }
-    std::unique_ptr<WAVEFORMATEX, CoMemFree> wfx{wfxRaw};
+    unique_ptr<WAVEFORMATEX, CoMemFree> wfx{wfxRaw};
 
-    if (!isFloat32(wfx.get())) {
+    if (!is_float32(wfx.get())) {
         qCWarning(lc_audio,
                   "[WasapiBackend] Render mix format not float32 (tag=%u, bits=%u). "
                   "PCM conversion not yet implemented.",
@@ -518,9 +521,9 @@ void WasapiBackend::audio_thread_main() {
 #endif
 
     // Scratch buffers — reused across cycles, sized to whatever the device gave us.
-    std::vector<float> mono_in(buffer_size, 0.0f);
-    std::vector<float> out_l(buffer_size, 0.0f);
-    std::vector<float> out_r(buffer_size, 0.0f);
+    vector<float> mono_in(buffer_size, 0.0f);
+    vector<float> out_l(buffer_size, 0.0f);
+    vector<float> out_r(buffer_size, 0.0f);
 
     // Pending-output FIFO. Capture and render run on their own periods, so a
     // processed block does not always fit the render endpoint right away.
@@ -533,7 +536,7 @@ void WasapiBackend::audio_thread_main() {
     if (FAILED(render_client->GetBufferSize(&renderBufSize))) {
         renderBufSize = static_cast<UINT32>(buffer_size);
     }
-    std::vector<float> fifoL, fifoR;
+    vector<float> fifoL, fifoR;
     size_t fifoCap = 0, fifoHead = 0, fifoCount = 0;
     auto resize_fifo = [&](size_t blockFrames) {
         fifoCap = static_cast<size_t>(renderBufSize) + 4 * blockFrames;
@@ -751,20 +754,21 @@ void WasapiBackend::teardown() {
 
 #else // !_WIN32 — stub bodies so the file builds (it shouldn't on Linux, but JIC).
 
-bool WasapiBackend::start(const std::string&, Callback*) {
+bool WasapiBackend::start(const string&, Callback*) {
     return false;
 }
 void WasapiBackend::stop() {
 }
-std::vector<IAudioBackend::DeviceInfo> WasapiBackend::enumerate_input_devices() const {
+vector<IAudioBackend::DeviceInfo> WasapiBackend::enumerate_input_devices() const {
     return {};
 }
-std::vector<IAudioBackend::DeviceInfo> WasapiBackend::enumerate_output_devices() const {
+vector<IAudioBackend::DeviceInfo> WasapiBackend::enumerate_output_devices() const {
     return {};
 }
-bool WasapiBackend::start_with_devices(const std::string&, Callback*, const std::string&,
-                                       const std::string&) {
+bool WasapiBackend::start_with_devices(const string&, Callback*, const string&, const string&) {
     return false;
 }
 
 #endif // _WIN32
+
+} // namespace npl

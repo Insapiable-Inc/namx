@@ -823,7 +823,7 @@ commit.
       then turn on `-Werror` (`/WX`). Done 2026-10-01 for GCC/Clang (via `DelayLine`,
       `size_t` frame counts and types fixed at the source — not casts); MSVC `/WX`
       waits for a Windows build.
-- [ ] **Namespace:** wrap `gui/` in `namespace npl` (placeholder — renamed along with
+- [x] **Namespace:** wrap `gui/` in `namespace npl` (placeholder — renamed along with
       the app once it has a final name) with the shared `using std::…` header.
 - [x] **Naming:** `snake_case` methods/locals/members, `SCREAMING_SNAKE_CASE`
       constants, no `m`/`k`/`s` prefixes; unit suffixes `_ms`/`_db`/`_hz`. Accessors:

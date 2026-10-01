@@ -15,10 +15,14 @@
 #include <QToolButton>
 #include <QWheelEvent>
 
+#include "Common.h"
 #include "KnobWidget.h"
 #include "Metronome.h"
 #include "TempoSync.h"
 #include "Theme.h"
+
+namespace npl
+{
 
 // ---------------------------------------------------------------------------
 // BpmField
@@ -220,18 +224,15 @@ void BeatLeds::mousePressEvent(QMouseEvent* ev) {
 // TempoBar
 // ---------------------------------------------------------------------------
 
-namespace
-{
-const char* k_sound_names[] = {"Click", "Wood", "Beep", "Cowbell"};
-const char* k_subdiv_names[] = {"Beats", "Eighths", "Triplets", "Sixteenths"};
-const char* k_subdiv_short[] = {"♩", "♪♪", "3", "♬"};
+static const char* k_sound_names[] = {"Click", "Wood", "Beep", "Cowbell"};
+static const char* k_subdiv_names[] = {"Beats", "Eighths", "Triplets", "Sixteenths"};
+static const char* k_subdiv_short[] = {"♩", "♪♪", "3", "♬"};
 struct MeterPreset
 {
     int beats, unit;
 };
-const MeterPreset METERS[] = {{2, 4}, {3, 4}, {4, 4}, {5, 4}, {6, 4}, {7, 4},
-                              {3, 8}, {5, 8}, {6, 8}, {7, 8}, {9, 8}, {12, 8}};
-} // namespace
+static const MeterPreset METERS[] = {{2, 4}, {3, 4}, {4, 4}, {5, 4}, {6, 4}, {7, 4},
+                                     {3, 8}, {5, 8}, {6, 8}, {7, 8}, {9, 8}, {12, 8}};
 
 QToolButton* TempoBar::menu_button(const QString& tip) {
     auto* b = new QToolButton(this);
@@ -524,3 +525,5 @@ void TempoBar::tap() {
         bpm->set_value(60000.0 / avg_ms);
     }
 }
+
+} // namespace npl

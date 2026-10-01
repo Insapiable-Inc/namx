@@ -8,6 +8,7 @@
 #include <QStyledItemDelegate>
 #include <QWidget>
 
+#include "Common.h"
 #include "LibraryIndex.h"
 
 class QComboBox;
@@ -15,6 +16,9 @@ class QLabel;
 class QLineEdit;
 class QToolButton;
 class QTimer;
+
+namespace npl
+{
 
 /// All library entries (every kind) as a flat list model. Favorites, recents
 /// and the currently loaded file per kind are overlaid here as roles so the
@@ -187,3 +191,5 @@ private:
     QSet<QString> favorites;
     QStringList recents;
 };
+
+} // namespace npl

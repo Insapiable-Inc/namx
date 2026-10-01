@@ -9,8 +9,12 @@
 #include <QTimer>
 #include <QtGlobal>
 
+#include "Common.h"
 #include "MainWindow.h"
 #include "Theme.h"
+
+namespace npl
+{
 
 #ifndef NAM_VERSION
 #define NAM_VERSION "0.0.0"
@@ -41,7 +45,7 @@ static void migrate_legacy_settings() {
           static_cast<long long>(keys.size()));
 }
 
-int main(int argc, char* argv[]) {
+int run(int argc, char* argv[]) {
     QElapsedTimer startup; // cold-start budget (Phase 14): window up in < 1 s
     startup.start();
     // --version / --help answer before any GUI is created, so they work on a
@@ -124,4 +128,10 @@ int main(int argc, char* argv[]) {
         });
     }
     return app.exec();
+}
+
+} // namespace npl
+
+int main(int argc, char* argv[]) {
+    return npl::run(argc, argv);
 }

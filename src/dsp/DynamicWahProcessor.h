@@ -2,7 +2,11 @@
 
 #include <atomic>
 
+#include "Common.h"
 #include "EffectBase.h"
+
+namespace npl
+{
 
 /// Wah: a resonant SVF band-pass swept either by an envelope follower (Auto)
 /// or by Position (Pedal mode — a MIDI expression pedal's natural target).
@@ -48,11 +52,11 @@ private:
     static constexpr float BASE_FREQ = 400.0f;
     static constexpr float PEAK_FREQ = 3000.0f;
 
-    std::atomic<float> sensitivity_pct{70.0f};
-    std::atomic<float> resonance_pct{60.0f};
-    std::atomic<float> mix_pct{100.0f};
-    std::atomic<bool> pedal{false};
-    std::atomic<float> position_pct{50.0f};
+    atomic<float> sensitivity_pct{70.0f};
+    atomic<float> resonance_pct{60.0f};
+    atomic<float> mix_pct{100.0f};
+    atomic<bool> pedal{false};
+    atomic<float> position_pct{50.0f};
     float pos_smooth[2]{0.5f, 0.5f}; // de-zippered pedal position per channel
 
     float env_attack{0.0f};
@@ -63,3 +67,5 @@ private:
     float svf_lp[2]{0.0f, 0.0f};
     float svf_bp[2]{0.0f, 0.0f};
 };
+
+} // namespace npl

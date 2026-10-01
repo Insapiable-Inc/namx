@@ -11,6 +11,7 @@
 #include <QTimer>
 
 #include "AudioEngine.h"
+#include "Common.h"
 #include "EffectShortcuts.h"
 #include "KnobWidget.h"
 #include "LibraryIndex.h"
@@ -28,6 +29,13 @@ class QVBoxLayout;
 class QLabel;
 class QPushButton;
 class QToolButton;
+
+class QMenu;
+class QShortcut;
+
+namespace npl
+{
+
 class AudioStatusBar;
 class GainReductionMeter;
 class LibraryDock;
@@ -35,8 +43,6 @@ class LibraryPanel;
 class PresetBar;
 class MidiInput;
 class MidiMapper;
-class QMenu;
-class QShortcut;
 class TempoBar;
 class Tone3000Client;
 class Tone3000Panel;
@@ -156,7 +162,7 @@ private:
 
     // --- Effect strip / chain reordering ---
     // Lays the cards out in the given order: dividers follow NAM/EQ.
-    void layout_strip(const std::vector<EffectBase*>& order);
+    void layout_strip(const vector<EffectBase*>& order);
     // layoutStrip(engine chain) + shortcuts re-assigned left to right.
     void rebuild_effect_strip();
     // Keep bypassed cards visually subordinate without disabling their controls.
@@ -216,11 +222,11 @@ private:
     ParamRegistry params;
     // Parameters created in setupUI that don't need a named member (the
     // Phase 17 advanced knobs): registered at the end of registerParameters.
-    std::vector<std::function<void()>> late_params;
+    vector<std::function<void()>> late_params;
     KnobWidget* late_knob(const QString& group, const QString& key, KnobWidget* k,
                           std::function<void(double)> apply);
 
-    std::unique_ptr<AudioEngine> engine;
+    unique_ptr<AudioEngine> engine;
 
     // Effect strip state
     struct CardToggles
@@ -240,8 +246,8 @@ private:
     // Drag state for card reordering
     QWidget* drag_card = nullptr;
     QPoint drag_start_pos;
-    std::string drag_id; // effect ID being dragged; empty = no drag
-    std::vector<std::string> preview_ids; // strip order currently shown while dragging
+    string drag_id; // effect ID being dragged; empty = no drag
+    vector<string> preview_ids; // strip order currently shown while dragging
 
     QLabel* lbl_nam_status = nullptr; // file name (accent when loaded)
     QLabel* lbl_nam_meta = nullptr; // architecture · rate · gear
@@ -364,7 +370,7 @@ private:
 
     TempoBar* tempo_bar = nullptr;
     double bpm = 120.0;
-    std::vector<SyncedParam> synced;
+    vector<SyncedParam> synced;
     PresetBar* preset_bar = nullptr;
     QString preset_path; // current preset file; empty = untitled
     QJsonObject preset_baseline; // toJson() when it was loaded/saved
@@ -382,3 +388,5 @@ private:
     QMenu* midi_menu = nullptr;
     QTimer* midi_blink = nullptr;
 };
+
+} // namespace npl

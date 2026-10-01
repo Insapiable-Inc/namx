@@ -4,6 +4,11 @@
 #include <QElapsedTimer>
 #include <QWidget>
 
+#include "Common.h"
+
+namespace npl
+{
+
 /// Gain-reduction meter for the Compressor / Gate rows: a caption with the
 /// current reduction in dB over a thin bar that fills right → left (the
 /// console convention: reduction "pulls" the level down). Instant attack,
@@ -35,3 +40,5 @@ private:
     qint64 last_ms{0};
     QElapsedTimer clock;
 };
+
+} // namespace npl

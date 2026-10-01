@@ -8,7 +8,11 @@
 #include <thread>
 #include <vector>
 
+#include "Common.h"
 #include "EffectBase.h"
+
+namespace npl
+{
 
 /// Chromatic tuner using NSDF (YIN-style) pitch detection.
 /// The audio thread fills a ring buffer; an internal worker thread runs the
@@ -40,7 +44,7 @@ public:
     /// `refHz` = the A4 reference (concert pitch 440; 420–460 for bands
     /// and records tuned off it).
     static int freq_to_midi(float freq, float ref_hz = 440.0f);
-    static std::string midi_to_name(int midi_note);
+    static string midi_to_name(int midi_note);
     static float cents_offset(float freq, float ref_hz = 440.0f);
 
 protected:
@@ -60,23 +64,25 @@ private:
     void worker_main();
     float detect_pitch();
 
-    std::atomic<bool> mute{false};
+    atomic<bool> mute{false};
 
     // Ring buffer filled by audio thread, consumed by the worker thread.
     // Protected by buf_mutex; audio uses try_lock (non-blocking).
-    std::array<float, BUF_SIZE> ring_buf{};
+    array<float, BUF_SIZE> ring_buf{};
     size_t write_pos{0};
     bool buffer_ready{false};
     std::mutex buf_mutex;
 
     // Snapshot and NSDF scratch used exclusively by detectPitch() (worker thread only)
-    std::array<float, BUF_SIZE> snap_buf{};
-    std::vector<float> nsdf;
+    array<float, BUF_SIZE> snap_buf{};
+    vector<float> nsdf;
 
     std::thread worker;
     std::mutex work_mutex;
     std::condition_variable work_cv;
     bool stop{false}; // guarded by work_mutex
-    std::atomic<float> last_pitch{0.0f};
-    std::atomic<float> fs{44100.0f}; // worker-safe copy of the sample rate
+    atomic<float> last_pitch{0.0f};
+    atomic<float> fs{44100.0f}; // worker-safe copy of the sample rate
 };
+
+} // namespace npl

@@ -3,8 +3,13 @@
 #include <QColor>
 #include <QString>
 
+#include "Common.h"
+
 class QApplication;
 class QWidget;
+
+namespace npl
+{
 
 /// Centralised palette and stylesheet for NAMPlayer — every color lives here
 /// (or in the stylesheet in Theme.cpp); widgets never hardcode hex values.
@@ -63,3 +68,5 @@ void apply(QApplication& app);
 void apply_to(QWidget& root);
 
 } // namespace Theme
+
+} // namespace npl

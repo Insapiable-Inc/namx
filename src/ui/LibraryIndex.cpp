@@ -20,7 +20,11 @@
 #include <QTimer>
 #include <QtEndian>
 
+#include "Common.h"
 #include "Tone3000Client.h"
+
+namespace npl
+{
 
 // ---------------------------------------------------------------------------
 // Roots
@@ -628,5 +632,7 @@ LibraryEntry::Kind LibraryIndex::kind_for_path(const QString& path, bool* ok) {
     }
     return LibraryEntry::Kind::MODEL;
 }
+
+} // namespace npl
 
 #include "LibraryIndex.moc"

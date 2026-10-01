@@ -3,6 +3,11 @@
 #include <algorithm>
 #include <cmath>
 
+#include "Common.h"
+
+namespace npl
+{
+
 void DoublerProcessor::on_sample_rate_changed(double sr) {
     line.resize(static_cast<size_t>(sr * 0.032) + 4); // 20 ms + drift headroom
     reset();
@@ -44,3 +49,5 @@ bool DoublerProcessor::process(float* l, float* r, size_t n, bool input_is_stere
     }
     return true;
 }
+
+} // namespace npl

@@ -3,28 +3,27 @@
 #include <QKeySequence>
 #include <QShortcut>
 
+#include "Common.h"
 #include "ToggleSwitch.h"
 
-namespace
+namespace npl
 {
 
 // Digit row of a Latin American (es-419) layout: after 0 come ' and ¿.
 // Backspace closes the row for the last card (currently the IR toggle).
-constexpr Qt::Key ENABLE_KEYS[] = {
+static constexpr Qt::Key ENABLE_KEYS[] = {
     Qt::Key_1,         Qt::Key_2, Qt::Key_3, Qt::Key_4, Qt::Key_5,          Qt::Key_6,
     Qt::Key_7,         Qt::Key_8, Qt::Key_9, Qt::Key_0, Qt::Key_Apostrophe, Qt::Key_questiondown,
     Qt::Key_Backspace,
 };
 
-constexpr Qt::Key STEREO_KEYS[] = {
+static constexpr Qt::Key STEREO_KEYS[] = {
     Qt::Key_Q, Qt::Key_W, Qt::Key_E, Qt::Key_R, Qt::Key_T,
     Qt::Key_Y, Qt::Key_U, Qt::Key_I, Qt::Key_O, Qt::Key_P,
 };
 
 constexpr int NUM_ENABLE_KEYS = sizeof(ENABLE_KEYS) / sizeof(ENABLE_KEYS[0]);
 constexpr int NUM_STEREO_KEYS = sizeof(STEREO_KEYS) / sizeof(STEREO_KEYS[0]);
-
-} // namespace
 
 void EffectShortcuts::add_effect(ToggleSwitch* enable, ToggleSwitch* stereo) {
     if (enable && enable_index < NUM_ENABLE_KEYS) {
@@ -52,3 +51,5 @@ void EffectShortcuts::bind(ToggleSwitch* toggle, int key, const char* action) {
 
     toggle->setToolTip(QString("%1  (%2)").arg(action, QKeySequence(key).toString()));
 }
+
+} // namespace npl

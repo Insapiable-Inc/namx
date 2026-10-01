@@ -6,9 +6,15 @@
 #include <QString>
 #include <QWidget>
 
+#include "Common.h"
+
 class QContextMenuEvent;
 class QLabel;
 class QMenu;
+
+namespace npl
+{
+
 class VerticalDial;
 
 /// Knob widget wrapping a VerticalDial (responds to vertical mouse drag).
@@ -121,3 +127,5 @@ private:
     int value_to_dial(double v) const;
     void update_label();
 };
+
+} // namespace npl

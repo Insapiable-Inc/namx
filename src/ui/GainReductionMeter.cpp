@@ -5,7 +5,11 @@
 
 #include <QPainter>
 
+#include "Common.h"
 #include "Theme.h"
+
+namespace npl
+{
 
 GainReductionMeter::GainReductionMeter(float new_range_db, const QColor& new_accent,
                                        QWidget* parent)
@@ -68,3 +72,5 @@ void GainReductionMeter::paintEvent(QPaintEvent*) {
         p.drawRoundedRect(QRectF(inner.right() - w, inner.top(), w, inner.height()), 1.5, 1.5);
     }
 }
+
+} // namespace npl

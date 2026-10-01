@@ -3,6 +3,11 @@
 #include <algorithm>
 #include <cmath>
 
+#include "Common.h"
+
+namespace npl
+{
+
 float VolumeProcessor::target_gain() const {
     const float p = std::clamp(position_pct.load(), 0.0f, 100.0f) / 100.0f;
     if (p <= 0.0f) {
@@ -35,3 +40,5 @@ bool VolumeProcessor::process(float* l, float* r, size_t n, bool input_is_stereo
     }
     return input_is_stereo;
 }
+
+} // namespace npl

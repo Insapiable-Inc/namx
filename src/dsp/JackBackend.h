@@ -4,7 +4,11 @@
 
 #include <jack/jack.h>
 
+#include "Common.h"
 #include "IAudioBackend.h"
+
+namespace npl
+{
 
 /// JACK implementation of IAudioBackend.
 /// All JACK-specific state (client handle, ports, callbacks) lives here so
@@ -15,7 +19,7 @@ public:
     JackBackend();
     ~JackBackend() override;
 
-    bool start(const std::string& client_name, Callback* cb) override;
+    bool start(const string& client_name, Callback* cb) override;
     void stop() override;
 
     bool is_running() const override {
@@ -27,7 +31,7 @@ public:
     int get_buffer_size() const override {
         return buffer_size;
     }
-    std::string status_string() const override;
+    string status_string() const override;
 
     bool supports_port_routing() const override {
         return true;
@@ -43,8 +47,8 @@ public:
     }
     int io_latency_frames() const override;
 
-    std::vector<DeviceInfo> enumerate_input_devices() const override;
-    std::vector<DeviceInfo> enumerate_output_devices() const override;
+    vector<DeviceInfo> enumerate_input_devices() const override;
+    vector<DeviceInfo> enumerate_output_devices() const override;
 
 private:
     static int jack_process_callback(jack_nframes_t nframes, void* arg);
@@ -61,8 +65,10 @@ private:
     jack_port_t* port_out_r = nullptr;
 
     Callback* callback = nullptr;
-    std::atomic<bool> running{false};
-    std::atomic<int> xruns{0};
+    atomic<bool> running{false};
+    atomic<int> xruns{0};
     double sample_rate = 44100.0;
     int buffer_size = 0;
 };
+
+} // namespace npl

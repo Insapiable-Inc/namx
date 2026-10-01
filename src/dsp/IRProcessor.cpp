@@ -3,6 +3,11 @@
 #include <algorithm>
 #include <cmath>
 
+#include "Common.h"
+
+namespace npl
+{
+
 static constexpr float PI = 3.14159265358979323846f;
 
 IRProcessor::IRProcessor()
@@ -129,3 +134,5 @@ bool IRProcessor::process_chunk(float* l, float* r, size_t n, bool input_is_ster
     }
     return stereo;
 }
+
+} // namespace npl

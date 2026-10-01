@@ -2,7 +2,11 @@
 
 #include <atomic>
 
+#include "Common.h"
 #include "EffectBase.h"
+
+namespace npl
+{
 
 /// Tremolo: amplitude modulation. Stereo uses a 180° LFO offset (auto-pan, like the other
 /// modulation effects).
@@ -39,8 +43,10 @@ protected:
     void process_block_stereo_out(float* l, float* r, size_t nframes) override;
 
 private:
-    std::atomic<float> rate_hz{5.0f};
-    std::atomic<float> depth_pct{50.0f};
+    atomic<float> rate_hz{5.0f};
+    atomic<float> depth_pct{50.0f};
 
     float phase{0.0f};
 };
+
+} // namespace npl

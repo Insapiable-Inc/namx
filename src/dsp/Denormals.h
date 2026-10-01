@@ -2,6 +2,12 @@
 
 #if defined(__x86_64__) || defined(__i386__) || defined(_M_X64) || defined(_M_IX86)
 #include <xmmintrin.h>
+
+#include "Common.h"
+
+namespace npl
+{
+
 #endif
 
 // Flushes denormals to zero on the calling thread (FTZ + DAZ in MXCSR). Reverb/delay
@@ -16,3 +22,5 @@ inline void enable_flush_to_zero() {
     _mm_setcsr(_mm_getcsr() | FLUSH_TO_ZERO | DENORMALS_ARE_ZERO);
 #endif
 }
+
+} // namespace npl

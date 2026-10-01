@@ -2,9 +2,13 @@
 
 #include <atomic>
 
+#include "Common.h"
 #include "DelayLine.h"
 #include "EffectBase.h"
 #include "PitchShifter.h"
+
+namespace npl
+{
 
 /// Stereo delay.
 /// Mono in + mono mode: one delay line.
@@ -98,16 +102,16 @@ private:
     float loop(int line, float d, const Params& p); // what re-enters the line (crystals)
     static float saturate(float x, float amount);
 
-    std::atomic<float> time_ms{250.0f};
-    std::atomic<float> feedback_pct{40.0f};
-    std::atomic<float> mix_pct{30.0f};
-    std::atomic<float> right_pct{100.0f};
-    std::atomic<float> cross_pct{100.0f};
-    std::atomic<float> low_cut_hz{20.0f};
-    std::atomic<float> high_cut_hz{20000.0f};
-    std::atomic<float> sat_pct{0.0f};
-    std::atomic<float> mod_pct{0.0f};
-    std::atomic<float> crystals_pct{0.0f};
+    atomic<float> time_ms{250.0f};
+    atomic<float> feedback_pct{40.0f};
+    atomic<float> mix_pct{30.0f};
+    atomic<float> right_pct{100.0f};
+    atomic<float> cross_pct{100.0f};
+    atomic<float> low_cut_hz{20.0f};
+    atomic<float> high_cut_hz{20000.0f};
+    atomic<float> sat_pct{0.0f};
+    atomic<float> mod_pct{0.0f};
+    atomic<float> crystals_pct{0.0f};
     PitchShifter shift[2];
 
     Line lines[2];
@@ -115,3 +119,5 @@ private:
 
     static constexpr float MAX_DELAY_MS = 2100.0f; // 1000 ms × 200 % + modulation
 };
+
+} // namespace npl

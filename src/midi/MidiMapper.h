@@ -10,11 +10,16 @@
 #include <QObject>
 #include <QString>
 
+#include "Common.h"
 #include "MidiMessage.h"
+
+class QWidget;
+
+namespace npl
+{
 
 class KnobWidget;
 class ToggleSwitch;
-class QWidget;
 
 /// One MIDI → target binding.
 struct MidiMapping
@@ -74,7 +79,7 @@ public:
     void add_toggle(const QString& id, const QString& group, const QString& label, ToggleSwitch* t);
     void add_action(const QString& id, const QString& group, const QString& label,
                     std::function<void()> fn);
-    const std::vector<MidiTarget>& get_targets() const {
+    const vector<MidiTarget>& get_targets() const {
         return targets;
     }
     const MidiTarget* target(const QString& id) const;
@@ -125,7 +130,7 @@ private:
     void handle_clock(const MidiMessage& m);
     void save() const;
 
-    std::vector<MidiTarget> targets;
+    vector<MidiTarget> targets;
     QList<MidiMapping> mappings;
     QHash<int, int> last_value; // mapping index → last CC value (edge detection)
     QString learn_target;
@@ -138,3 +143,5 @@ private:
     QList<double> beat_ms; // recent beat lengths (24 ticks each)
     double last_clock_bpm = 0.0;
 };
+
+} // namespace npl

@@ -4,6 +4,11 @@
 #include <atomic>
 #include <cstddef>
 
+#include "Common.h"
+
+namespace npl
+{
+
 /// Abstract base for all audio effect processors.
 ///
 /// Provides: enable/bypass, stereo-mode flag, sample rate, and a unified
@@ -122,7 +127,9 @@ protected:
     }
 
     double sample_rate{44100.0};
-    std::atomic<bool> enabled{false};
-    std::atomic<bool> stereo_mode{false};
-    std::atomic<bool> reset_pending{false};
+    atomic<bool> enabled{false};
+    atomic<bool> stereo_mode{false};
+    atomic<bool> reset_pending{false};
 };
+
+} // namespace npl

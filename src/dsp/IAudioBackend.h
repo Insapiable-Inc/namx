@@ -4,6 +4,11 @@
 #include <string>
 #include <vector>
 
+#include "Common.h"
+
+namespace npl
+{
+
 /// Platform-agnostic audio backend interface.
 ///
 /// Linux  → JackBackend (full JACK client with graph routing).
@@ -36,16 +41,16 @@ public:
     /// Device info for device enumeration/selection.
     struct DeviceInfo
     {
-        std::string id; // Stable device identifier (WASAPI endpoint ID, or "default")
-        std::string name; // Human-readable name for the dropdown
+        string id; // Stable device identifier (WASAPI endpoint ID, or "default")
+        string name; // Human-readable name for the dropdown
     };
 
     /// JACK-only port routing data. Empty on backends without a graph.
     struct PortConnections
     {
-        std::vector<std::string> input_sources;
-        std::vector<std::string> output_l_dests;
-        std::vector<std::string> output_r_dests;
+        vector<string> input_sources;
+        vector<string> output_l_dests;
+        vector<string> output_r_dests;
     };
 
     virtual ~IAudioBackend() = default;
@@ -53,7 +58,7 @@ public:
     /// Start the audio stream. `clientName` is the JACK client name where
     /// applicable; ignored on backends that don't use it. `cb` must outlive
     /// the backend (it's borrowed, not owned).
-    virtual bool start(const std::string& client_name, Callback* cb) = 0;
+    virtual bool start(const string& client_name, Callback* cb) = 0;
     virtual void stop() = 0;
 
     virtual bool is_running() const = 0;
@@ -62,7 +67,7 @@ public:
 
     /// Short human-readable status string for the GUI pill,
     /// e.g. "JACK ● 48000 Hz ● stereo out" or "WASAPI ● Speakers ● 48000 Hz".
-    virtual std::string status_string() const = 0;
+    virtual string status_string() const = 0;
 
     /// Buffer over/underruns since start or the last reset; -1 = the backend
     /// doesn't report them. Safe to call from the GUI thread.
@@ -80,20 +85,19 @@ public:
     }
 
     /// Return available capture (input) devices. Empty on JACK.
-    virtual std::vector<DeviceInfo> enumerate_input_devices() const {
+    virtual vector<DeviceInfo> enumerate_input_devices() const {
         return {};
     }
 
     /// Return available render (output) devices. Empty on JACK.
-    virtual std::vector<DeviceInfo> enumerate_output_devices() const {
+    virtual vector<DeviceInfo> enumerate_output_devices() const {
         return {};
     }
 
     /// Start audio using explicitly selected devices.
     /// Empty or "default" ids fall back to system defaults.
-    virtual bool start_with_devices(const std::string& client_name, Callback* cb,
-                                    const std::string& input_device_id,
-                                    const std::string& output_device_id) {
+    virtual bool start_with_devices(const string& client_name, Callback* cb,
+                                    const string& input_device_id, const string& output_device_id) {
         // Default implementation ignores device ids.
         (void)input_device_id;
         (void)output_device_id;
@@ -116,5 +120,7 @@ public:
 
     /// Factory: returns the right backend for this build's target platform.
     /// Defined in JackBackend.cpp (Linux) or WasapiBackend.cpp (Windows).
-    static std::unique_ptr<IAudioBackend> create();
+    static unique_ptr<IAudioBackend> create();
 };
+
+} // namespace npl

@@ -6,9 +6,10 @@
 #include <QFont>
 #include <QPainter>
 
+#include "Common.h"
 #include "Theme.h"
 
-namespace
+namespace npl
 {
 
 // Seven-segment bits: A top, B top-right, C bottom-right, D bottom,
@@ -24,7 +25,7 @@ enum Seg
     SG = 64
 };
 
-int segments_for(QChar letter) {
+static int segments_for(QChar letter) {
     switch (letter.toUpper().unicode()) {
         case 'A':
             return SA | SB | SC | SE | SF | SG;
@@ -46,7 +47,7 @@ int segments_for(QChar letter) {
 }
 
 // One bloom-styled rounded rect: soft halo passes, then the solid core.
-void draw_glow_rect(QPainter& p, const QRectF& r, const QColor& c, qreal radius) {
+static void draw_glow_rect(QPainter& p, const QRectF& r, const QColor& c, qreal radius) {
     QColor halo = c;
     p.setPen(Qt::NoPen);
     halo.setAlpha(28);
@@ -58,8 +59,6 @@ void draw_glow_rect(QPainter& p, const QRectF& r, const QColor& c, qreal radius)
     p.setBrush(c);
     p.drawRoundedRect(r, radius, radius);
 }
-
-} // namespace
 
 TunerDisplay::TunerDisplay(QWidget* parent)
     : QWidget(parent) {
@@ -238,3 +237,5 @@ void TunerDisplay::paintEvent(QPaintEvent*) {
         }
     }
 }
+
+} // namespace npl

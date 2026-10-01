@@ -4,8 +4,12 @@
 #include <QJsonValue>
 
 #include "AudioEngine.h"
+#include "Common.h"
 #include "KnobWidget.h"
 #include "ToggleSwitch.h"
+
+namespace npl
+{
 
 namespace PresetSerializer
 {
@@ -80,3 +84,5 @@ Applied apply(const QJsonObject& obj, const ParamRegistry& params) {
 }
 
 } // namespace PresetSerializer
+
+} // namespace npl

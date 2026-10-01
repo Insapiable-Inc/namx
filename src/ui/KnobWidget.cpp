@@ -18,7 +18,11 @@
 #include <QWheelEvent>
 #include <QtMath>
 
+#include "Common.h"
 #include "Theme.h"
+
+namespace npl
+{
 
 // ---------------------------------------------------------------------------
 // VerticalDial — QDial that maps vertical mouse drag to value changes.
@@ -354,3 +358,5 @@ void KnobWidget::set_log_taper(bool on) {
     dial->blockSignals(blocked);
     update_label();
 }
+
+} // namespace npl

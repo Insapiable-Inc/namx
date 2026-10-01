@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ChorusProcessor.h"
+#include "Common.h"
 #include "CompressorProcessor.h"
 #include "DelayProcessor.h"
 #include "DoublerProcessor.h"
@@ -30,6 +31,9 @@
 #include "TunerProcessor.h"
 #include "VolumeProcessor.h"
 
+namespace npl
+{
+
 /// Platform-agnostic audio engine. Owns the signal chain and all DSP
 /// processors. Delegates I/O to an IAudioBackend (JACK on Linux, WASAPI on
 /// Windows) created via IAudioBackend::create().
@@ -39,11 +43,11 @@ public:
     AudioEngine();
     ~AudioEngine() override;
 
-    bool start(const std::string& client_name = "NAMPlayer");
+    bool start(const string& client_name = "NAMPlayer");
     void stop();
 
-    bool start_with_devices(const std::string& input_device_id, const std::string& output_device_id,
-                            const std::string& client_name = "NAMPlayer");
+    bool start_with_devices(const string& input_device_id, const string& output_device_id,
+                            const string& client_name = "NAMPlayer");
 
     bool is_running() const {
         return backend && backend->is_running();
@@ -56,54 +60,54 @@ public:
     }
 
     /// Human-readable status, e.g. "JACK ● 48000 Hz ● stereo out".
-    std::string backend_status() const {
-        return backend ? backend->status_string() : std::string{};
+    string backend_status() const {
+        return backend ? backend->status_string() : string{};
     }
     bool supports_port_routing() const {
         return backend && backend->supports_port_routing();
     }
 
     // ---- Device enumeration (creates temp backend, so works before start()) ----
-    std::vector<IAudioBackend::DeviceInfo> enumerate_input_devices() const;
-    std::vector<IAudioBackend::DeviceInfo> enumerate_output_devices() const;
+    vector<IAudioBackend::DeviceInfo> enumerate_input_devices() const;
+    vector<IAudioBackend::DeviceInfo> enumerate_output_devices() const;
 
     // ---- Model / IR (thin wrappers for MainWindow convenience) ----
     // Loads publish through RtSlots; when audio is stopped nothing counts
     // blocks, so the wrappers reclaim retired objects eagerly in that case.
-    bool load_model(const std::string& path);
+    bool load_model(const string& path);
     void unload_model();
     bool is_model_loaded() const {
         return nam.is_model_loaded();
     }
-    std::string model_path() const {
+    string model_path() const {
         return nam.get_model_path();
     }
-    std::string model_load_error() const {
+    string model_load_error() const {
         return nam.get_last_error();
     }
 
-    bool load_ir(const std::string& path);
+    bool load_ir(const string& path);
     void unload_ir();
     bool is_ir_loaded() const {
         return ir.is_loaded();
     }
-    std::string ir_path() const {
+    string ir_path() const {
         return ir.file_path();
     }
-    std::string ir_load_error() const {
+    string ir_load_error() const {
         return ir.last_error();
     }
 
     // Second cab slot (Phase 17 dual IR).
-    bool load_irb(const std::string& path);
+    bool load_irb(const string& path);
     void unload_irb();
     bool is_irb_loaded() const {
         return ir.is_loaded_b();
     }
-    std::string ir_path_b() const {
+    string ir_path_b() const {
         return ir.file_path_b();
     }
-    std::string ir_b_load_error() const {
+    string ir_b_load_error() const {
         return ir.last_error_b();
     }
 
@@ -185,24 +189,24 @@ public:
     // ---- Signal chain (processing order = UI order) ----
     // GUI-thread snapshot of the active chain. Reordering goes through
     // setChainOrder().
-    std::vector<EffectBase*> get_chain() const {
+    vector<EffectBase*> get_chain() const {
         return *chain_slot.current();
     }
 
     /// Stable effect IDs in default (construction) order — the persistence
     /// contract for session state and preset schema v2.
-    std::vector<std::string> default_chain_ids() const;
+    vector<string> default_chain_ids() const;
     /// Current chain order as IDs.
-    std::vector<std::string> chain_ids() const;
-    EffectBase* effect_by_id(const std::string& id) const;
-    std::string id_for_effect(const EffectBase* fx) const;
+    vector<string> chain_ids() const;
+    EffectBase* effect_by_id(const string& id) const;
+    string id_for_effect(const EffectBase* fx) const;
 
     /// Reorder the chain RT-safely (RtSlot publish, same pattern as model
     /// swaps — never blocks the GUI). Input is sanitized: unknown/duplicate
     /// IDs are dropped and missing effects re-enter at their default
     /// position. Effects whose position changed get a pending reset,
     /// consumed by the audio thread at the top of their next block.
-    void set_chain_order(const std::vector<std::string>& ids);
+    void set_chain_order(const vector<string>& ids);
 
     // ---- Port-routing pass-through (no-ops on backends without it) ----
     using PortConnections = IAudioBackend::PortConnections;
@@ -248,19 +252,19 @@ public:
     void on_buffer_size_changed(int new_size) override;
 
 private:
-    std::unique_ptr<IAudioBackend> backend;
+    unique_ptr<IAudioBackend> backend;
 
     // Signal chain — published through an RtSlot. The audio thread binds
     // one vector per callback; setChainOrder() publishes a new one and the
     // old vector is freed only after the audio thread has provably left it.
-    using Chain = std::vector<EffectBase*>;
+    using Chain = vector<EffectBase*>;
     RtSlot<Chain> chain_slot;
 
     /// Free objects retired by loads/reorders while the audio thread is idle.
     void reclaim_retired();
 
     // id → effect, in default chain order
-    std::vector<std::pair<std::string, EffectBase*>> effect_table;
+    vector<std::pair<string, EffectBase*>> effect_table;
 
     // Effect instances (owned here, pointers in the chain buffers)
     TunerProcessor tuner;
@@ -284,21 +288,21 @@ private:
     Metronome metronome;
 
     // Gain
-    std::atomic<float> input_gain_db{0.0f};
-    std::atomic<float> output_gain_db{0.0f};
+    atomic<float> input_gain_db{0.0f};
+    atomic<float> output_gain_db{0.0f};
 
     float input_gain_smooth = 1.0f;
     float output_gain_smooth = 1.0f;
 
-    std::atomic<float> input_peak{0.0f};
-    std::atomic<float> output_peak{0.0f};
-    std::atomic<float> dsp_load_peak{0.0f};
+    atomic<float> input_peak{0.0f};
+    atomic<float> output_peak{0.0f};
+    atomic<float> dsp_load_peak{0.0f};
 
     // on_audio = timing around this.
     void process_block(const float* in, float* out_l, float* out_r, size_t nframes);
 
-    std::vector<float> work_buf_l;
-    std::vector<float> work_buf_r;
+    vector<float> work_buf_l;
+    vector<float> work_buf_r;
 
     // Set from on_buffer_size_changed (never concurrent with the audio thread).
     double chain_sample_rate{0.0};
@@ -308,3 +312,5 @@ private:
         return std::pow(10.0f, db / 20.0f);
     }
 };
+
+} // namespace npl

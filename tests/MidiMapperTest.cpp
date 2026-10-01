@@ -17,8 +17,12 @@
 #include <QTemporaryDir>
 #include <QThread>
 
+#include "Common.h"
 #include "KnobWidget.h"
 #include "ToggleSwitch.h"
+
+namespace npl
+{
 
 static int gFailures = 0;
 #define CHECK(cond, msg) \
@@ -44,7 +48,7 @@ static MidiMessage program(int ch, int num) {
     return {MidiMessage::PROGRAM_CHANGE, ch, num, 0};
 }
 
-int main(int argc, char** argv) {
+int run(int argc, char** argv) {
     qputenv("QT_QPA_PLATFORM", "offscreen");
     QApplication app(argc, argv); // widgets (knob/toggle targets)
     app.setOrganizationName("pichulero.cl");
@@ -186,4 +190,10 @@ int main(int argc, char** argv) {
 
     std::printf(gFailures ? "\n%d FAILED\n" : "\nall passed\n", gFailures);
     return gFailures ? 1 : 0;
+}
+
+} // namespace npl
+
+int main(int argc, char** argv) {
+    return npl::run(argc, argv);
 }

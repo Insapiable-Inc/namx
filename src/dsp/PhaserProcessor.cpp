@@ -3,6 +3,11 @@
 #include <algorithm>
 #include <cmath>
 
+#include "Common.h"
+
+namespace npl
+{
+
 static constexpr float PI = 3.14159265358979323846f;
 
 void PhaserProcessor::reset() {
@@ -21,7 +26,7 @@ float PhaserProcessor::coeff_at(float phase, float depth) const {
     return (w - 1.0f) / (w + 1.0f);
 }
 
-void PhaserProcessor::vibe_coeffs(float phase, float depth, std::array<float, STAGES>& d) const {
+void PhaserProcessor::vibe_coeffs(float phase, float depth, array<float, STAGES>& d) const {
     // Lamp + LDR: the light lingers bright and drops quickly — a skewed LFO.
     const float s = 0.5f * (1.0f + std::sin(2.0f * PI * phase));
     const float lfo = std::pow(s, 1.8f);
@@ -34,8 +39,8 @@ void PhaserProcessor::vibe_coeffs(float phase, float depth, std::array<float, ST
     }
 }
 
-float PhaserProcessor::process_vibe(float in, const std::array<float, STAGES>& d,
-                                    std::array<float, STAGES>& x1, std::array<float, STAGES>& y1,
+float PhaserProcessor::process_vibe(float in, const array<float, STAGES>& d,
+                                    array<float, STAGES>& x1, array<float, STAGES>& y1,
                                     float mix) const {
     float sig = in;
     for (size_t s = 0; s < STAGES; ++s) {
@@ -47,8 +52,8 @@ float PhaserProcessor::process_vibe(float in, const std::array<float, STAGES>& d
     return in * (1.0f - mix) + sig * mix;
 }
 
-float PhaserProcessor::process_channel(float in, float d, std::array<float, STAGES>& x1,
-                                       std::array<float, STAGES>& y1, float& fb_state, float fb_amt,
+float PhaserProcessor::process_channel(float in, float d, array<float, STAGES>& x1,
+                                       array<float, STAGES>& y1, float& fb_state, float fb_amt,
                                        float mix) const {
     float sig = in + fb_amt * fb_state;
 
@@ -71,7 +76,7 @@ void PhaserProcessor::process_block_mono(float* buf, size_t nframes) {
 
     const bool current_vibe = vibe.load(std::memory_order_relaxed);
     float d = 0.0f;
-    std::array<float, STAGES> dv{};
+    array<float, STAGES> dv{};
     for (size_t i = 0; i < nframes; ++i) {
         if (i % CTRL_INTERVAL == 0) {
             if (current_vibe) {
@@ -97,7 +102,7 @@ void PhaserProcessor::process_block_dual(float* l, float* r, size_t nframes) {
 
     const bool current_vibe = vibe.load(std::memory_order_relaxed);
     float d = 0.0f;
-    std::array<float, STAGES> dv{};
+    array<float, STAGES> dv{};
     for (size_t i = 0; i < nframes; ++i) {
         // Same LFO phase for both channels: identical mono effect per channel.
         if (i % CTRL_INTERVAL == 0) {
@@ -126,7 +131,7 @@ void PhaserProcessor::process_block_stereo_out(float* l, float* r, size_t nframe
 
     const bool current_vibe = vibe.load(std::memory_order_relaxed);
     float d_l = 0.0f, d_r = 0.0f;
-    std::array<float, STAGES> dv_l{}, dv_r{};
+    array<float, STAGES> dv_l{}, dv_r{};
     for (size_t i = 0; i < nframes; ++i) {
         if (i % CTRL_INTERVAL == 0) {
             if (current_vibe) {
@@ -147,3 +152,5 @@ void PhaserProcessor::process_block_stereo_out(float* l, float* r, size_t nframe
         }
     }
 }
+
+} // namespace npl

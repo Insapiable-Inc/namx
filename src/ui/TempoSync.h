@@ -6,6 +6,11 @@
 
 #include <QString>
 
+#include "Common.h"
+
+namespace npl
+{
+
 /// Note values for tempo-synced parameters (Phase 15). The engine stays
 /// dumb: the GUI turns tempo × note value into the existing ms / Hz atomics
 /// and re-pushes every synced parameter when the tempo changes.
@@ -22,7 +27,7 @@ struct Note
     double wholes; // length in whole notes
 };
 
-inline constexpr std::array<Note, 16> NOTES = {{
+inline constexpr array<Note, 16> NOTES = {{
     {"4 bars", 4.0},
     {"2 bars", 2.0},
     {"1/1", 1.0},
@@ -66,3 +71,5 @@ inline double note_hz(double bpm, double index) {
 }
 
 } // namespace TempoSync
+
+} // namespace npl

@@ -2,8 +2,12 @@
 
 #include <atomic>
 
+#include "Common.h"
 #include "DelayLine.h"
 #include "EffectBase.h"
+
+namespace npl
+{
 
 /// Chorus: LFO-modulated delay. Modes: Normal (one voice), Tri (three voices
 /// 120° apart — lusher), Vintage (triangle LFO, darker BBD-style wet),
@@ -54,12 +58,12 @@ protected:
     void process_block_stereo_out(float* l, float* r, size_t nframes) override;
 
 private:
-    std::atomic<float> rate_hz{1.0f};
-    std::atomic<float> depth_pct{50.0f};
-    std::atomic<float> mix_pct{50.0f};
+    atomic<float> rate_hz{1.0f};
+    atomic<float> depth_pct{50.0f};
+    atomic<float> mix_pct{50.0f};
 
     float lfo_phase{0.0f};
-    std::atomic<int> mode{NORMAL};
+    atomic<int> mode{NORMAL};
     float vint_lp[2]{}; // Vintage wet low-pass per channel
 
     // Wet sample for one channel at an LFO phase (all modes).
@@ -70,3 +74,5 @@ private:
     static constexpr float BASE_MS = 20.0f;
     static constexpr float MAX_DEPTH_MS = 5.0f;
 };
+
+} // namespace npl

@@ -4,6 +4,11 @@
 #include <chrono>
 #include <cmath>
 
+#include "Common.h"
+
+namespace npl
+{
+
 TunerProcessor::TunerProcessor() {
     ring_buf.fill(0.f);
     snap_buf.fill(0.f);
@@ -220,13 +225,13 @@ int TunerProcessor::freq_to_midi(float freq, float ref_hz) {
     return static_cast<int>(std::round(69.0f + 12.0f * std::log2(freq / ref_hz)));
 }
 
-std::string TunerProcessor::midi_to_name(int midi_note) {
+string TunerProcessor::midi_to_name(int midi_note) {
     if (midi_note < 0 || midi_note > 127) {
         return "--";
     }
     static const char* names[] = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
     int octave = midi_note / 12 - 1;
-    return std::string(names[midi_note % 12]) + std::to_string(octave);
+    return string(names[midi_note % 12]) + std::to_string(octave);
 }
 
 float TunerProcessor::cents_offset(float freq, float ref_hz) {
@@ -237,3 +242,5 @@ float TunerProcessor::cents_offset(float freq, float ref_hz) {
     float note_freq = ref_hz * std::pow(2.0f, static_cast<float>(midi - 69) / 12.0f);
     return std::max(-50.0f, std::min(50.0f, 1200.0f * std::log2(freq / note_freq)));
 }
+
+} // namespace npl

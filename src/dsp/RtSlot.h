@@ -6,6 +6,11 @@
 #include <utility>
 #include <vector>
 
+#include "Common.h"
+
+namespace npl
+{
+
 /// Single-writer / single-reader publication slot for objects that a
 /// real-time audio thread reads and a control (GUI) thread replaces.
 ///
@@ -51,13 +56,13 @@ public:
     }
 
     /// Install `next` (or nullptr) and retire whatever was there before.
-    void publish(std::unique_ptr<T> next) {
+    void publish(unique_ptr<T> next) {
         T* prev = active.exchange(next.release(), std::memory_order_acq_rel);
         // Tag read AFTER the swap: any block that saw `prev` either completed
         // before this read or was in flight and will bump the count past it.
         const uint64_t tag = blocks.load(std::memory_order_acquire);
         if (prev) {
-            retired.push_back({tag, std::unique_ptr<T>(prev)});
+            retired.push_back({tag, unique_ptr<T>(prev)});
         }
         reclaim(false);
     }
@@ -83,10 +88,12 @@ private:
     struct Retired
     {
         uint64_t tag;
-        std::unique_ptr<T> obj;
+        unique_ptr<T> obj;
     };
 
-    std::atomic<T*> active{nullptr};
-    std::atomic<uint64_t> blocks{0};
-    std::vector<Retired> retired; // owner thread only
+    atomic<T*> active{nullptr};
+    atomic<uint64_t> blocks{0};
+    vector<Retired> retired; // owner thread only
 };
+
+} // namespace npl

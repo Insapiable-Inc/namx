@@ -4,7 +4,11 @@
 #include <array>
 #include <cmath>
 
+#include "Common.h"
 #include "DelayLine.h"
+
+namespace npl
+{
 
 /// Delay-line pitch shifter (mono, one per channel): two read taps sweep a
 /// window through a short delay line at a rate set by the pitch ratio, each
@@ -134,7 +138,7 @@ private:
     }
 
     DelayLine line;
-    std::array<float, TABLE> hann_table{};
+    array<float, TABLE> hann_table{};
     float phase = 0.0f;
     float window = 2400.0f;
     float ratio = 1.0f;
@@ -143,3 +147,5 @@ private:
     float tap_offsets[2]{}; // per-tap alignment offset (samples)
     float prev[2]{0.0f, 0.5f}; // last phase per tap (wrap detection)
 };
+
+} // namespace npl

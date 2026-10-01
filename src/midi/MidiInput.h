@@ -1,12 +1,15 @@
 #pragma once
 
-
 #include <QObject>
 #include <QSet>
 #include <QString>
 #include <QStringList>
 
+#include "Common.h"
 #include "MidiMessage.h"
+
+namespace npl
+{
 
 /// Platform MIDI input (Phase 16): ALSA sequencer on Linux (USB, DIN through
 /// an interface, and whatever PipeWire/JACK bridge into it), WinMM on
@@ -50,3 +53,5 @@ protected:
 
     QSet<QString> disabled;
 };
+
+} // namespace npl

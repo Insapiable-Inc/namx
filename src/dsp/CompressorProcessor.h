@@ -2,7 +2,11 @@
 
 #include <atomic>
 
+#include "Common.h"
 #include "EffectBase.h"
+
+namespace npl
+{
 
 /// Feedforward peak compressor.
 class CompressorProcessor : public EffectBase
@@ -57,14 +61,16 @@ protected:
 private:
     void process_channel(float* buf, size_t nframes, int ch);
 
-    std::atomic<float> threshold_db{-20.0f};
-    std::atomic<float> ratio{4.0f};
-    std::atomic<float> attack_ms{10.0f};
-    std::atomic<float> release_ms{100.0f};
-    std::atomic<float> makeup_db{0.0f};
+    atomic<float> threshold_db{-20.0f};
+    atomic<float> ratio{4.0f};
+    atomic<float> attack_ms{10.0f};
+    atomic<float> release_ms{100.0f};
+    atomic<float> makeup_db{0.0f};
 
     // Per-channel state: [0] = mono/L, [1] = R (stereo input).
     float env_db_per_channel[2]{-120.0f, -120.0f};
     float gain_db_per_channel[2]{0.0f, 0.0f};
-    std::atomic<float> gr_peak_db{0.0f};
+    atomic<float> gr_peak_db{0.0f};
 };
+
+} // namespace npl

@@ -3,7 +3,11 @@
 #include <array>
 #include <atomic>
 
+#include "Common.h"
 #include "EffectBase.h"
+
+namespace npl
+{
 
 /// 4-stage all-pass phaser. Stereo uses 180° LFO offset.
 class PhaserProcessor : public EffectBase
@@ -53,18 +57,18 @@ protected:
     void process_block_stereo_out(float* l, float* r, size_t nframes) override;
 
 private:
-    std::atomic<float> rate_hz{1.0f};
-    std::atomic<float> depth_pct{50.0f};
-    std::atomic<float> feedback_pct{50.0f};
-    std::atomic<float> mix_pct{50.0f};
+    atomic<float> rate_hz{1.0f};
+    atomic<float> depth_pct{50.0f};
+    atomic<float> feedback_pct{50.0f};
+    atomic<float> mix_pct{50.0f};
 
     float lfo_phase{0.0f};
 
     static constexpr size_t STAGES = 4;
-    std::atomic<bool> vibe{false};
+    atomic<bool> vibe{false};
 
-    std::array<float, STAGES> x1_l{}, y1_l{};
-    std::array<float, STAGES> x1_r{}, y1_r{};
+    array<float, STAGES> x1_l{}, y1_l{};
+    array<float, STAGES> x1_r{}, y1_r{};
     float fb_state_l{0.0f}, fb_state_r{0.0f};
 
     static constexpr float MIN_FREQ = 200.0f;
@@ -75,12 +79,13 @@ private:
     float coeff_at(float phase, float depth) const;
     // Vibe: four stages at staggered fixed ratios (the Uni-Vibe's mismatched
     // photocells), lamp-shaped LFO, no feedback.
-    void vibe_coeffs(float phase, float depth, std::array<float, STAGES>& d) const;
+    void vibe_coeffs(float phase, float depth, array<float, STAGES>& d) const;
     static constexpr int CTRL_INTERVAL = 16; // 0.33 ms @ 48 kHz; LFO ≤ 5 Hz
 
-    float process_vibe(float in, const std::array<float, STAGES>& d, std::array<float, STAGES>& x1,
-                       std::array<float, STAGES>& y1, float mix) const;
-    float process_channel(float in, float d, std::array<float, STAGES>& x1,
-                          std::array<float, STAGES>& y1, float& fb_state, float fb_amt,
-                          float mix) const;
+    float process_vibe(float in, const array<float, STAGES>& d, array<float, STAGES>& x1,
+                       array<float, STAGES>& y1, float mix) const;
+    float process_channel(float in, float d, array<float, STAGES>& x1, array<float, STAGES>& y1,
+                          float& fb_state, float fb_amt, float mix) const;
 };
+
+} // namespace npl

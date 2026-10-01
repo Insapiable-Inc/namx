@@ -7,11 +7,17 @@
 #include <QFrame>
 #include <QVector>
 
-class KnobWidget;
-class Metronome;
+#include "Common.h"
+
 class QLineEdit;
 class QMenu;
 class QToolButton;
+
+namespace npl
+{
+
+class KnobWidget;
+class Metronome;
 
 /// BPM readout you can drag (vertical: 1 BPM per 4 px, Shift = 0.1), scroll
 /// (±1, Shift ±0.1) or click to type into.
@@ -132,3 +138,5 @@ private:
     std::function<void(const QString&, QMenu*)> learn_hook;
     void learn_menu_for(QWidget* w, const QString& action_id);
 };
+
+} // namespace npl

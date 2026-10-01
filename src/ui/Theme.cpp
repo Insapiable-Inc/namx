@@ -5,8 +5,12 @@
 #include <QStyle>
 #include <QWidget>
 
+#include "Common.h"
 #include "KnobWidget.h"
 #include "ToggleSwitch.h"
+
+namespace npl
+{
 
 namespace Theme
 {
@@ -827,3 +831,5 @@ void apply_to(QWidget& root) {
 }
 
 } // namespace Theme
+
+} // namespace npl

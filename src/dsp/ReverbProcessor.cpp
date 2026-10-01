@@ -3,6 +3,11 @@
 #include <algorithm>
 #include <cmath>
 
+#include "Common.h"
+
+namespace npl
+{
+
 constexpr int ReverbProcessor::COMB_LENGTHS[NUM_COMBS];
 constexpr int ReverbProcessor::AP_LENGTHS[NUM_ALL_PASSES];
 
@@ -74,14 +79,12 @@ float ReverbProcessor::wet_filter(int ch, float x, float hp_a, float lp_k) {
 }
 
 // Shared per-block parameters.
-namespace
-{
 struct Cuts
 {
     float hp_a, lp_k;
     size_t pre; // samples
 };
-Cuts cuts_for(double sr, float low_hz, float high_hz, float pre_ms, float max_pre_ms) {
+static Cuts cuts_for(double sr, float low_hz, float high_hz, float pre_ms, float max_pre_ms) {
     constexpr float TWO_PI = 6.28318530718f;
     const float fs = static_cast<float>(sr);
     Cuts c;
@@ -90,7 +93,6 @@ Cuts cuts_for(double sr, float low_hz, float high_hz, float pre_ms, float max_pr
     c.pre = static_cast<size_t>(std::clamp(pre_ms, 0.0f, max_pre_ms) * fs / 1000.0f);
     return c;
 }
-} // namespace
 
 void ReverbProcessor::process_block_stereo_out(float* l, float* r, size_t nframes) {
     const float room_size = room_size_pct.load() / 100.0f;
@@ -132,8 +134,8 @@ void ReverbProcessor::process_block_stereo_out(float* l, float* r, size_t nframe
 }
 
 void ReverbProcessor::process_mono_bank(float* buf, size_t nframes, int bank,
-                                        std::array<CombFilter, NUM_COMBS>& combs,
-                                        std::array<AllPassFilter, NUM_ALL_PASSES>& aps) {
+                                        array<CombFilter, NUM_COMBS>& combs,
+                                        array<AllPassFilter, NUM_ALL_PASSES>& aps) {
     const float room_size = room_size_pct.load() / 100.0f;
     const float damping = damping_pct.load() / 100.0f;
     const float mix = mix_pct.load() / 100.0f;
@@ -171,3 +173,5 @@ void ReverbProcessor::process_block_dual(float* l, float* r, size_t nframes) {
     process_mono_bank(l, nframes, 0, comb_l, ap_l);
     process_mono_bank(r, nframes, 1, comb_r, ap_r);
 }
+
+} // namespace npl

@@ -7,9 +7,13 @@
 #include <Eigen/Dense>
 #include <wav.h> // AudioDSPTools
 
+#include "Common.h"
 #include "Log.h"
 
-static void clear_kernel_buffers(std::vector<float> buffers[2], int write_pos[2]) {
+namespace npl
+{
+
+static void clear_kernel_buffers(vector<float> buffers[2], int write_pos[2]) {
     for (int ch = 0; ch < 2; ++ch) {
         std::fill(buffers[ch].begin(), buffers[ch].end(), 0.0f);
         write_pos[ch] = 0;
@@ -18,8 +22,8 @@ static void clear_kernel_buffers(std::vector<float> buffers[2], int write_pos[2]
 
 /// Windowed-sinc resampler. Produces at most maxOut output samples at fsOut
 /// from `in` at fsIn, band-limited to the lower of the two Nyquist rates.
-static std::vector<float> resample_sinc(const std::vector<float>& in, double fs_in, double fs_out,
-                                        size_t max_out) {
+static vector<float> resample_sinc(const vector<float>& in, double fs_in, double fs_out,
+                                   size_t max_out) {
     if (in.empty()) {
         return {};
     }
@@ -30,7 +34,7 @@ static std::vector<float> resample_sinc(const std::vector<float>& in, double fs_
     const size_t out_len =
         std::min(max_out, static_cast<size_t>(std::ceil(static_cast<double>(in.size()) / step)));
 
-    std::vector<float> out(out_len);
+    vector<float> out(out_len);
     for (size_t i = 0; i < out_len; ++i) {
         const double t = static_cast<double>(i) * step;
         const size_t k_min = static_cast<size_t>(std::max(0.0, std::ceil(t - half)));
@@ -59,10 +63,10 @@ IRLoader::~IRLoader() {
     slot.reclaim(true);
 }
 
-std::unique_ptr<IRLoader::Kernel> IRLoader::build_kernel() const {
-    auto k = std::make_unique<Kernel>();
+unique_ptr<IRLoader::Kernel> IRLoader::build_kernel() const {
+    auto k = make_unique<Kernel>();
 
-    std::vector<float> samples;
+    vector<float> samples;
     const bool resample = target_rate > 0.0 && raw_rate > 0.0 && target_rate != raw_rate;
     if (resample) {
         samples = resample_sinc(raw, raw_rate, target_rate, MAX_IR_LENGTH);
@@ -98,8 +102,8 @@ std::unique_ptr<IRLoader::Kernel> IRLoader::build_kernel() const {
     return k;
 }
 
-bool IRLoader::load(const std::string& path) {
-    std::vector<float> raw_samples;
+bool IRLoader::load(const string& path) {
+    vector<float> raw_samples;
     double sample_rate = 0.0;
 
     dsp::wav::LoadReturnCode result = dsp::wav::Load(path.c_str(), raw_samples, sample_rate);
@@ -224,3 +228,5 @@ void IRLoader::reset() {
         clear_kernel_buffers(k->buffers, k->write_pos);
     }
 }
+
+} // namespace npl

@@ -3,6 +3,11 @@
 #include <atomic>
 #include <vector>
 
+#include "Common.h"
+
+namespace npl
+{
+
 /// Stereo-linked look-ahead peak limiter on the output stage (after the
 /// output gain, before the metronome): 1 ms look-ahead, ceiling −0.3 dBFS,
 /// 80 ms release. When off it costs nothing and adds no latency; when on it
@@ -26,9 +31,9 @@ public:
     void process(float* l, float* r, size_t n);
 
 private:
-    std::atomic<bool> enabled{false};
-    std::atomic<float> gr_peak_db{0.0f};
-    std::vector<float> delay_l, delay_r,
+    atomic<bool> enabled{false};
+    atomic<float> gr_peak_db{0.0f};
+    vector<float> delay_l, delay_r,
         need_window; // look-ahead lines + required gain per slot
     size_t pos = 0;
     size_t look = 48; // look-ahead, samples
@@ -37,3 +42,5 @@ private:
     float attack = 0.2f;
     bool was_enabled = false;
 };
+
+} // namespace npl

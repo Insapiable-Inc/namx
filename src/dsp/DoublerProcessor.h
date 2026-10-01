@@ -3,8 +3,12 @@
 #include <atomic>
 #include <cstdint>
 
+#include "Common.h"
 #include "DelayLine.h"
 #include "EffectBase.h"
+
+namespace npl
+{
 
 /// Double-tracking: from a mono signal, the right channel becomes a second
 /// "take" — a copy delayed 3–20 ms whose delay drifts randomly (timing and
@@ -31,11 +35,13 @@ protected:
     void on_sample_rate_changed(double sr) override;
 
 private:
-    std::atomic<float> spread_ms{10.0f};
-    std::atomic<float> mix_pct{100.0f};
+    atomic<float> spread_ms{10.0f};
+    atomic<float> mix_pct{100.0f};
 
     DelayLine line;
     float drift = 0.0f, drift_target = 0.0f; // −1 … 1
     int until_new_target = 0;
     uint32_t seed = 0x9e3779b9u;
 };
+
+} // namespace npl

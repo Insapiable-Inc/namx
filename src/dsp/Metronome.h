@@ -5,6 +5,11 @@
 #include <cstdint>
 #include <vector>
 
+#include "Common.h"
+
+namespace npl
+{
+
 /// Practice metronome (Phase 15). Not an effect: AudioEngine mixes it into
 /// the output after the output gain, on its own volume and pan, so it keeps
 /// running across preset loads and never goes through the chain.
@@ -118,28 +123,28 @@ private:
         float gain = 0.0f;
     };
 
-    void trigger(const std::vector<float>& sample, float gain);
+    void trigger(const vector<float>& sample, float gain);
     void render(float* l, float* r, size_t from, size_t to, float g_l, float g_r);
     void build_sounds(double sr);
 
     // Click samples: [sound][0 = accent, 1 = beat, 2 = subdivision].
-    std::array<std::array<std::vector<float>, 3>, SOUND_COUNT> samples;
+    array<array<vector<float>, 3>, SOUND_COUNT> samples;
     double sample_rate = 48000.0;
 
-    std::atomic<bool> running{false};
-    std::atomic<double> bpm{120.0};
-    std::atomic<int> beats{4};
-    std::atomic<int> unit{4};
-    std::atomic<uint32_t> accents;
-    std::atomic<int> subdiv{1};
-    std::atomic<size_t> sound{CLICK};
-    std::atomic<float> volume_db{-6.0f};
-    std::atomic<float> pan{0.0f};
-    std::atomic<int> count_in_bars{0};
-    std::atomic<bool> silent_after{false};
+    atomic<bool> running{false};
+    atomic<double> bpm{120.0};
+    atomic<int> beats{4};
+    atomic<int> unit{4};
+    atomic<uint32_t> accents;
+    atomic<int> subdiv{1};
+    atomic<size_t> sound{CLICK};
+    atomic<float> volume_db{-6.0f};
+    atomic<float> pan{0.0f};
+    atomic<int> count_in_bars{0};
+    atomic<bool> silent_after{false};
 
-    std::atomic<int> beat_now{-1};
-    std::atomic<bool> count_in_now{false};
+    atomic<int> beat_now{-1};
+    atomic<bool> count_in_now{false};
 
     // Audio-thread state.
     bool was_running = false;
@@ -147,5 +152,7 @@ private:
     int tick = 0; // subdivision index within the beat
     int beat = 0; // beat within the bar
     int count_in_left = 0; // bars of count-in still to play
-    std::array<Voice, 2> voices{};
+    array<Voice, 2> voices{};
 };
+
+} // namespace npl

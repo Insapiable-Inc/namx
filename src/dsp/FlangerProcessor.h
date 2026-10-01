@@ -2,8 +2,12 @@
 
 #include <atomic>
 
+#include "Common.h"
 #include "DelayLine.h"
 #include "EffectBase.h"
+
+namespace npl
+{
 
 /// Flanger: short modulated delay with feedback. Stereo uses 180° LFO offset.
 class FlangerProcessor : public EffectBase
@@ -51,11 +55,11 @@ protected:
     void process_block_stereo_out(float* l, float* r, size_t nframes) override;
 
 private:
-    std::atomic<float> rate_hz{0.3f}; // matches FLANGER_RATE_DEFAULT
-    std::atomic<float> depth_pct{50.0f};
-    std::atomic<float> feedback_pct{0.0f};
-    std::atomic<float> mix_pct{50.0f};
-    std::atomic<float> range_pct{100.0f};
+    atomic<float> rate_hz{0.3f}; // matches FLANGER_RATE_DEFAULT
+    atomic<float> depth_pct{50.0f};
+    atomic<float> feedback_pct{0.0f};
+    atomic<float> mix_pct{50.0f};
+    atomic<float> range_pct{100.0f};
 
     float lfo_phase{0.0f};
 
@@ -68,3 +72,5 @@ private:
     void process_sample(float in, float phase, DelayLine& line, float& fb, float depth,
                         float fb_amt, float mix, float& out) const;
 };
+
+} // namespace npl

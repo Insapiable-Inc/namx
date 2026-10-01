@@ -28,6 +28,7 @@
 #include <QTest>
 
 #include "ChorusProcessor.h"
+#include "Common.h"
 #include "CompressorProcessor.h"
 #include "DelayProcessor.h"
 #include "Denormals.h"
@@ -46,13 +47,16 @@
 #include "TunerProcessor.h"
 #include "VolumeProcessor.h"
 
+namespace npl
+{
+
 static constexpr double SAMPLE_RATE = 48000.0;
 static constexpr size_t TOTAL_FRAMES = 96000; // 2 s
 // Irregular block sizes, cycled: exercises partial blocks and chunking.
 static constexpr size_t BLOCK_SIZES[] = {128, 64, 37, 256, 1, 200};
 
 // Recorded from the code at the start of Phase 20 (before DelayLine).
-static const std::map<std::string, std::uint64_t> GOLDEN = {
+static const std::map<string, std::uint64_t> GOLDEN = {
     {"cabinet/mono", 0x580a0e82b8397b41ull},
     {"cabinet/stereo", 0x93c47996373aa3c7ull},
     {"chorus-0/mono", 0x0f9a5ea4da5511abull},
@@ -150,8 +154,8 @@ static std::uint64_t render(bool stereo_input,
                             const std::function<void(float*, float*, size_t)>& process,
                             const std::function<void()>& on_halfway = {}) {
     std::uint64_t hash = 0xcbf29ce484222325ull;
-    std::vector<float> left(256);
-    std::vector<float> right(256);
+    vector<float> left(256);
+    vector<float> right(256);
     size_t frame = 0;
     size_t block = 0;
     bool halfway_done = false;
@@ -194,7 +198,7 @@ static std::uint64_t render_effect(EffectBase& fx, bool stereo_input) {
 // 16-bit mono WAV with a fixed decaying-cosine impulse response.
 static bool write_ir(const QString& path, double decay_samples, double frequency) {
     constexpr std::uint32_t LENGTH = 2048;
-    std::vector<std::int16_t> samples(LENGTH);
+    vector<std::int16_t> samples(LENGTH);
     for (std::uint32_t n = 0; n < LENGTH; ++n) {
         const double value =
             (n == 0 ? 0.5 : 0.0) + 0.4 * std::exp(-n / decay_samples) * std::cos(frequency * n);
@@ -239,7 +243,7 @@ private slots:
 
 private:
     using Case = std::function<std::uint64_t()>;
-    std::map<std::string, Case> cases;
+    std::map<string, Case> cases;
     QTemporaryDir temp_dir;
     bool print_mode = false;
 };
@@ -254,7 +258,7 @@ void DspGoldenTest::initTestCase() {
     QVERIFY(write_ir(ir_b, 300.0, 0.05));
 
     // Each effect: once with mono input, once with stereo input.
-    auto both = [this](const std::string& name, auto make) {
+    auto both = [this](const string& name, auto make) {
         for (const bool stereo_input : {false, true}) {
             cases[name + (stereo_input ? "/stereo" : "/mono")] = [make, stereo_input] {
                 auto fx = make();
@@ -264,88 +268,88 @@ void DspGoldenTest::initTestCase() {
     };
 
     both("gate", [] {
-        auto fx = std::make_unique<NoiseGateProcessor>();
+        auto fx = make_unique<NoiseGateProcessor>();
         fx->set_threshold(-40.0f);
         return fx;
     });
     both("compressor", [] {
-        auto fx = std::make_unique<CompressorProcessor>();
+        auto fx = make_unique<CompressorProcessor>();
         fx->set_threshold(-24.0f);
         fx->set_ratio(4.0f);
         fx->set_makeup(6.0f);
         return fx;
     });
     both("wah", [] {
-        return std::make_unique<DynamicWahProcessor>();
+        return make_unique<DynamicWahProcessor>();
     });
     both("wah-pedal", [] {
-        auto fx = std::make_unique<DynamicWahProcessor>();
+        auto fx = make_unique<DynamicWahProcessor>();
         fx->set_pedal_mode(true);
         fx->set_position_pct(70.0f);
         return fx;
     });
     both("flanger", [] {
-        auto fx = std::make_unique<FlangerProcessor>();
+        auto fx = make_unique<FlangerProcessor>();
         fx->set_feedback_pct(60.0f);
         return fx;
     });
     both("flanger-stereo", [] {
-        auto fx = std::make_unique<FlangerProcessor>();
+        auto fx = make_unique<FlangerProcessor>();
         fx->set_stereo_mode(true);
         return fx;
     });
     both("phaser", [] {
-        return std::make_unique<PhaserProcessor>();
+        return make_unique<PhaserProcessor>();
     });
     both("phaser-vibe-stereo", [] {
-        auto fx = std::make_unique<PhaserProcessor>();
+        auto fx = make_unique<PhaserProcessor>();
         fx->set_vibe(true);
         fx->set_stereo_mode(true);
         return fx;
     });
     both("drive", [] {
-        auto fx = std::make_unique<DriveProcessor>();
+        auto fx = make_unique<DriveProcessor>();
         fx->set_drive_pct(70.0f);
         return fx;
     });
     both("eq", [] {
-        auto fx = std::make_unique<EQProcessor>();
+        auto fx = make_unique<EQProcessor>();
         fx->set_low_gain(4.0);
         fx->set_mid_gain(-3.0);
         fx->set_treble_gain(2.0);
         return fx;
     });
     both("doubler", [] {
-        return std::make_unique<DoublerProcessor>();
+        return make_unique<DoublerProcessor>();
     });
     for (int mode = ChorusProcessor::NORMAL; mode <= ChorusProcessor::SPATIAL; ++mode) {
         both("chorus-" + std::to_string(mode), [mode] {
-            auto fx = std::make_unique<ChorusProcessor>();
+            auto fx = make_unique<ChorusProcessor>();
             fx->set_mode(mode);
             fx->set_stereo_mode(true);
             return fx;
         });
     }
     both("chorus-mono-mode", [] {
-        return std::make_unique<ChorusProcessor>();
+        return make_unique<ChorusProcessor>();
     });
     both("tremolo", [] {
-        return std::make_unique<TremoloProcessor>();
+        return make_unique<TremoloProcessor>();
     });
     both("tremolo-stereo", [] {
-        auto fx = std::make_unique<TremoloProcessor>();
+        auto fx = make_unique<TremoloProcessor>();
         fx->set_stereo_mode(true);
         return fx;
     });
     both("delay", [] {
-        auto fx = std::make_unique<DelayProcessor>();
+        auto fx = make_unique<DelayProcessor>();
         fx->set_time(180.0f);
         fx->set_feedback_pct(55.0f);
         fx->set_mix_pct(40.0f);
         return fx;
     });
     both("delay-stereo-mod-sat", [] {
-        auto fx = std::make_unique<DelayProcessor>();
+        auto fx = make_unique<DelayProcessor>();
         fx->set_stereo_mode(true);
         fx->set_time(240.0f);
         fx->set_modulation(50.0f);
@@ -354,40 +358,40 @@ void DspGoldenTest::initTestCase() {
         return fx;
     });
     both("delay-crystals", [] {
-        auto fx = std::make_unique<DelayProcessor>();
+        auto fx = make_unique<DelayProcessor>();
         fx->set_stereo_mode(true);
         fx->set_crystals(60.0f);
         return fx;
     });
     both("reverb", [] {
-        auto fx = std::make_unique<ReverbProcessor>();
+        auto fx = make_unique<ReverbProcessor>();
         fx->set_pre_delay(30.0f);
         return fx;
     });
     both("reverb-stereo-shimmer", [] {
-        auto fx = std::make_unique<ReverbProcessor>();
+        auto fx = make_unique<ReverbProcessor>();
         fx->set_stereo_mode(true);
         fx->set_shimmer_pct(60.0f);
         return fx;
     });
     both("transpose-down", [] {
-        auto fx = std::make_unique<TransposeProcessor>();
+        auto fx = make_unique<TransposeProcessor>();
         fx->set_semitones(-2.0f);
         return fx;
     });
     both("transpose-up", [] {
-        auto fx = std::make_unique<TransposeProcessor>();
+        auto fx = make_unique<TransposeProcessor>();
         fx->set_semitones(12.0f);
         fx->set_mix_pct(50.0f);
         return fx;
     });
     both("volume", [] {
-        auto fx = std::make_unique<VolumeProcessor>();
+        auto fx = make_unique<VolumeProcessor>();
         fx->set_position_pct(40.0f);
         return fx;
     });
     both("cabinet", [ir_a, ir_b] {
-        auto fx = std::make_unique<IRProcessor>();
+        auto fx = make_unique<IRProcessor>();
         fx->set_sample_rate(SAMPLE_RATE);
         const bool loaded = fx->load(ir_a.toStdString()) && fx->load_b(ir_b.toStdString());
         fx->reclaim_retired(true);
@@ -437,7 +441,7 @@ void DspGoldenTest::tuner_detects_pitch() {
     TunerProcessor tuner;
     tuner.set_sample_rate(SAMPLE_RATE);
     tuner.set_enabled(true);
-    std::vector<float> block(256);
+    vector<float> block(256);
     size_t frame = 0;
     float pitch = 0.0f;
     for (int attempt = 0; attempt < 200 && std::abs(pitch - 110.0f) > 0.2f; ++attempt) {
@@ -454,5 +458,7 @@ void DspGoldenTest::tuner_detects_pitch() {
     QVERIFY2(std::abs(pitch - 110.0f) <= 0.2f, qPrintable(QString::number(pitch)));
 }
 
-QTEST_GUILESS_MAIN(DspGoldenTest)
+} // namespace npl
+
+QTEST_GUILESS_MAIN(npl::DspGoldenTest)
 #include "DspGoldenTest.moc"

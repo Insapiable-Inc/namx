@@ -7,7 +7,11 @@
 #include <QPalette>
 #include <QRadialGradient>
 
+#include "Common.h"
 #include "Theme.h"
+
+namespace npl
+{
 
 ToggleSwitch::ToggleSwitch(QWidget* parent)
     : QAbstractButton(parent)
@@ -104,3 +108,5 @@ void ToggleSwitch::leaveEvent(QEvent* e) {
     update();
     QAbstractButton::leaveEvent(e);
 }
+
+} // namespace npl

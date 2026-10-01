@@ -28,6 +28,11 @@
 #include <QTemporaryDir>
 #include <QTimer>
 
+#include "Common.h"
+
+namespace npl
+{
+
 #ifndef MOCK_SERVER_PY
 #define MOCK_SERVER_PY "mock_tone3000.py"
 #endif
@@ -87,7 +92,7 @@ static void message_handler(QtMsgType, const QMessageLogContext&, const QString&
     std::fprintf(stderr, "%s\n", qPrintable(msg));
 }
 
-int main(int argc, char** argv) {
+int run(int argc, char** argv) {
     qputenv("QT_QPA_PLATFORM", "offscreen");
     qputenv("NAM_TONE3000_API_BASE", QString("http://127.0.0.1:%1/api/v1").arg(PORT).toUtf8());
     qputenv("NAM_TONE3000_NO_BROWSER", "1");
@@ -343,4 +348,10 @@ int main(int argc, char** argv) {
     mock.waitForFinished(3000);
     std::printf("%s (%d failures)\n", gFailures ? "FAILED" : "PASSED", gFailures);
     return gFailures ? 1 : 0;
+}
+
+} // namespace npl
+
+int main(int argc, char** argv) {
+    return npl::run(argc, argv);
 }

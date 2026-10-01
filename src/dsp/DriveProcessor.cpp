@@ -3,6 +3,11 @@
 #include <algorithm>
 #include <cmath>
 
+#include "Common.h"
+
+namespace npl
+{
+
 static constexpr float PI = 3.14159265358979323846f;
 
 void DriveProcessor::reset() {
@@ -45,3 +50,5 @@ void DriveProcessor::process_channel(float* buf, size_t n, int ch) {
     hp_y1[ch] = y1;
     lp_per_channel[ch] = lp;
 }
+
+} // namespace npl

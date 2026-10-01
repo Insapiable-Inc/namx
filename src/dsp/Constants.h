@@ -1,4 +1,8 @@
 #pragma once
+#include "Common.h"
+
+namespace npl
+{
 
 /// All knob parameter constants in one place.
 /// Edit here to change min/max/default values across the entire app.
@@ -213,3 +217,5 @@ constexpr double FLANGER_RANGE_MIN = 0.0, FLANGER_RANGE_MAX = 100.0, FLANGER_RAN
 constexpr double WAH_POSITION_MIN = 0.0, WAH_POSITION_MAX = 100.0, WAH_POSITION_DEFAULT = 50.0;
 
 } // namespace NAMConstants
+
+} // namespace npl

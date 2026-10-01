@@ -3,6 +3,11 @@
 #include <algorithm>
 #include <cmath>
 
+#include "Common.h"
+
+namespace npl
+{
+
 static constexpr float TWO_PI = 6.28318530718f;
 
 void DelayProcessor::on_sample_rate_changed(double sr) {
@@ -139,3 +144,5 @@ void DelayProcessor::process_block_stereo_out(float* l, float* r, size_t nframes
         r[i] = r[i] * (1.0f - p.mix) + d_r * p.mix;
     }
 }
+
+} // namespace npl

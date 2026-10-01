@@ -13,10 +13,15 @@
 #include <QUrl>
 #include <QUrlQuery>
 
+#include "Common.h"
+
 class QNetworkAccessManager;
 class QNetworkReply;
 class QTcpServer;
 class QTimer;
+
+namespace npl
+{
 
 // ---------------------------------------------------------------------------
 // API data (the subset of the TONE3000 v1 schema the app shows)
@@ -227,3 +232,5 @@ private:
     QString auth_state, auth_verifier, auth_redirect;
     Flow auth_flow = Flow::STANDARD;
 };
+
+} // namespace npl

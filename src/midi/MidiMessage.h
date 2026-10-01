@@ -3,6 +3,11 @@
 #include <QMetaType>
 #include <QString>
 
+#include "Common.h"
+
+namespace npl
+{
+
 /// One incoming MIDI event, already parsed by the platform backend. Only
 /// what the mapper uses: channel voice messages + clock/transport.
 struct MidiMessage
@@ -100,4 +105,6 @@ struct MidiMessage
     }
 };
 
-Q_DECLARE_METATYPE(MidiMessage)
+} // namespace npl
+
+Q_DECLARE_METATYPE(npl::MidiMessage)

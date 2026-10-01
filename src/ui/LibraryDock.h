@@ -2,10 +2,16 @@
 
 #include <QWidget>
 
-class LibraryIndex;
-class LibraryPanel;
+#include "Common.h"
+
 class QStackedWidget;
 class QToolButton;
+
+namespace npl
+{
+
+class LibraryIndex;
+class LibraryPanel;
 class Tone3000Client;
 class Tone3000Panel;
 
@@ -43,3 +49,5 @@ private:
     LibraryPanel* local = nullptr;
     Tone3000Panel* t3k = nullptr;
 };
+
+} // namespace npl

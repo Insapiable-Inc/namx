@@ -43,6 +43,7 @@
 #include <QVBoxLayout>
 
 #include "AudioStatusBar.h"
+#include "Common.h"
 #include "Constants.h"
 #include "EffectShortcuts.h"
 #include "GainReductionMeter.h"
@@ -62,6 +63,9 @@
 #include "TunerProcessor.h"
 #include "VUMeter.h"
 
+namespace npl
+{
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -70,8 +74,8 @@
 static const char EFFECT_MIME[] = "application/x-nam-effect-id";
 
 // QStringList → the engine's std::string list (effect IDs, JACK port names).
-static std::vector<std::string> to_std_strings(const QStringList& list) {
-    std::vector<std::string> out;
+static vector<string> to_std_strings(const QStringList& list) {
+    vector<string> out;
     for (const QString& s : list) {
         out.push_back(s.toStdString());
     }
@@ -167,7 +171,7 @@ static std::function<QString(double)> hz_label(double off_at = 0.0) {
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
-    , engine(std::make_unique<AudioEngine>()) {
+    , engine(make_unique<AudioEngine>()) {
     setWindowTitle("NAM Player");
     // Laptop-friendly minimum; the effect strip scrolls when it doesn't fit.
     // The default size still shows the full strip — window managers clamp it
@@ -1408,7 +1412,7 @@ void MainWindow::make_hero_controls(QWidget* card, LibraryEntry::Kind kind, QLab
     lay->insertWidget(i++, meta_out, 1, Qt::AlignVCenter);
 }
 
-void MainWindow::layout_strip(const std::vector<EffectBase*>& order) {
+void MainWindow::layout_strip(const vector<EffectBase*>& order) {
     // Empty the layout: the stretch is recreated below, cards are reused
     // (they stay children of the strip while out of the layout).
     while (QLayoutItem* item = strip_lay->takeAt(0)) {
@@ -1474,7 +1478,7 @@ void MainWindow::start_card_drag(QWidget* card) {
     if (!fx) {
         return;
     }
-    const std::string id = engine->id_for_effect(fx);
+    const string id = engine->id_for_effect(fx);
     if (id.empty()) {
         return;
     }
@@ -1511,7 +1515,7 @@ void MainWindow::update_drag_preview(const QPoint& pos) {
         return;
     }
 
-    std::vector<std::string> ids = preview_ids;
+    vector<string> ids = preview_ids;
     ids.erase(std::remove(ids.begin(), ids.end(), drag_id), ids.end());
     if (ids.empty()) {
         return;
@@ -1532,7 +1536,7 @@ void MainWindow::update_drag_preview(const QPoint& pos) {
     }
     preview_ids = ids;
 
-    std::vector<EffectBase*> order;
+    vector<EffectBase*> order;
     order.reserve(ids.size());
     for (const auto& s : ids) {
         if (EffectBase* e = engine->effect_by_id(s)) {
@@ -2679,7 +2683,7 @@ void MainWindow::save_connections() {
         return;
     }
 
-    auto to_list = [](const std::vector<std::string>& v) {
+    auto to_list = [](const vector<string>& v) {
         QStringList l;
         l.reserve(static_cast<int>(v.size()));
         for (const auto& x : v) {
@@ -2806,7 +2810,7 @@ void MainWindow::seed_starter_presets() {
 QJsonObject MainWindow::current_preset_json() const {
     QJsonObject obj = PresetSerializer::to_json(params, *engine);
     // TONE3000 linkage: lets the preset find its model on another machine.
-    auto linkage = [this](const std::string& p) {
+    auto linkage = [this](const string& p) {
         QJsonObject o;
         if (const LibraryEntry* e = library_index->find(QString::fromStdString(p));
             e && e->from_tone3000()) {
@@ -3310,3 +3314,5 @@ void MainWindow::resolve_tone3000_model(int model_id, const QString& title,
             });
     });
 }
+
+} // namespace npl

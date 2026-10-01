@@ -2,7 +2,11 @@
 
 #include <atomic>
 
+#include "Common.h"
 #include "EffectBase.h"
+
+namespace npl
+{
 
 /// Volume pedal: Position 0–100 % (heel = silence, toe = unity) on a curve
 /// bent through the Mid level at the half-way point — set Mid low for swells
@@ -27,7 +31,9 @@ public:
 private:
     float target_gain() const;
 
-    std::atomic<float> position_pct{100.0f};
-    std::atomic<float> mid_db{-12.0f};
+    atomic<float> position_pct{100.0f};
+    atomic<float> mid_db{-12.0f};
     float gain = 1.0f;
 };
+
+} // namespace npl

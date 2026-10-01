@@ -2,7 +2,11 @@
 
 #include <atomic>
 
+#include "Common.h"
 #include "EffectBase.h"
+
+namespace npl
+{
 
 /// Simple envelope-following noise gate.
 class NoiseGateProcessor : public EffectBase
@@ -49,12 +53,14 @@ private:
 
     // Defaults must match the knob defaults in Constants.h — the UI does not
     // push initial knob values to the engine at startup.
-    std::atomic<float> threshold_db{-70.0f};
-    std::atomic<float> attack_ms{1.0f};
-    std::atomic<float> release_ms{100.0f};
+    atomic<float> threshold_db{-70.0f};
+    atomic<float> attack_ms{1.0f};
+    atomic<float> release_ms{100.0f};
 
     // Per-channel state: [0] = mono/L, [1] = R (stereo input).
     float envelope[2]{0.0f, 0.0f};
     float gain_per_channel[2]{0.0f, 0.0f};
-    std::atomic<float> gr_peak_db{0.0f};
+    atomic<float> gr_peak_db{0.0f};
 };
+
+} // namespace npl

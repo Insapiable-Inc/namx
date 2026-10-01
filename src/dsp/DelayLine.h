@@ -5,6 +5,11 @@
 #include <cstddef>
 #include <vector>
 
+#include "Common.h"
+
+namespace npl
+{
+
 // Circular buffer of past samples, the building block of every delay-based effect.
 // Push one sample at a time, then read any of the last size() samples back by how far
 // behind the newest one it is: delay 0 is the newest sample.
@@ -74,6 +79,8 @@ private:
         return next == 0 ? samples.size() - 1 : next - 1;
     }
 
-    std::vector<float> samples;
+    vector<float> samples;
     size_t next = 0; // where the next push() writes
 };
+
+} // namespace npl

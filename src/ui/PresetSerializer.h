@@ -4,7 +4,11 @@
 #include <QString>
 #include <QStringList>
 
+#include "Common.h"
 #include "ParamRegistry.h"
+
+namespace npl
+{
 
 class AudioEngine;
 
@@ -34,3 +38,5 @@ struct Applied
 Applied apply(const QJsonObject& obj, const ParamRegistry& params);
 
 } // namespace PresetSerializer
+
+} // namespace npl

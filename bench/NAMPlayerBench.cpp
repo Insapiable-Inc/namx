@@ -25,6 +25,7 @@
 #include <NAM/activations.h>
 
 #include "ChorusProcessor.h"
+#include "Common.h"
 #include "CompressorProcessor.h"
 #include "DelayProcessor.h"
 #include "Denormals.h"
@@ -44,17 +45,17 @@
 #include "TunerProcessor.h"
 #include "VolumeProcessor.h"
 
-namespace
+namespace npl
 {
 
 struct Stage
 {
     const char* name;
     EffectBase* fx;
-    std::vector<double> us; // per-block time
+    vector<double> us; // per-block time
 };
 
-void usage() {
+static void usage() {
     std::puts("usage: NAMPlayerBench [--model file.nam] [--ir file.wav] [--ir-b file.wav] "
               "[--frames N] [--rate HZ]\n"
               "                      [--blocks N] [--no-fast-tanh] [--only NAME[,NAME…]]\n"
@@ -62,7 +63,7 @@ void usage() {
               "enabled stages (names as printed, case-insensitive).");
 }
 
-double percentile(std::vector<double> v, double p) {
+static double percentile(vector<double> v, double p) {
     if (v.empty()) {
         return 0.0;
     }
@@ -72,7 +73,7 @@ double percentile(std::vector<double> v, double p) {
     return v[i];
 }
 
-double mean(const std::vector<double>& v) {
+static double mean(const vector<double>& v) {
     double sum = 0.0;
     for (double x : v) {
         sum += x;
@@ -80,31 +81,29 @@ double mean(const std::vector<double>& v) {
     return sum / static_cast<double>(v.size());
 }
 
-bool listed(const std::string& only, const char* name) {
+static bool listed(const string& only, const char* name) {
     if (only.empty()) {
         return true;
     }
-    std::string hay = "," + only + ",", needle = std::string(",") + name + ",";
-    auto lower = [](std::string s) {
+    string hay = "," + only + ",", needle = string(",") + name + ",";
+    auto lower = [](string s) {
         for (auto& c : s) {
             c = static_cast<char>(std::tolower(c));
         }
         return s;
     };
-    return lower(hay).find(lower(needle)) != std::string::npos;
+    return lower(hay).find(lower(needle)) != string::npos;
 }
 
-} // namespace
-
-int main(int argc, char** argv) {
-    std::string model, ir, ir_b, only;
+int run(int argc, char** argv) {
+    string model, ir, ir_b, only;
     size_t frames = 128;
     double rate = 48000.0;
     size_t blocks = 4000;
     bool fast_tanh = true;
 
     for (int i = 1; i < argc; ++i) {
-        const std::string a = argv[i];
+        const string a = argv[i];
         auto next = [&]() -> const char* {
             if (i + 1 >= argc) {
                 usage();
@@ -169,7 +168,7 @@ int main(int argc, char** argv) {
     delay.set_stereo_mode(true);
     reverb.set_stereo_mode(true);
 
-    std::vector<Stage> chain = {
+    vector<Stage> chain = {
         {"Tuner", &tuner, {}},     {"Transpose", &transpose, {}},
         {"Gate", &gate, {}},       {"Compressor", &comp, {}},
         {"Wah", &wah, {}},         {"Flanger", &flanger, {}},
@@ -207,17 +206,17 @@ int main(int argc, char** argv) {
         cab.set_enabled(false);
     }
 
-    std::vector<float> l(frames), r(frames);
+    vector<float> l(frames), r(frames);
     std::mt19937 rng(1234);
     std::uniform_real_distribution<float> noise(-0.25f, 0.25f);
 
     const size_t warmup = std::max<size_t>(50, blocks / 20);
     limiter.set_sample_rate(rate);
     limiter.set_enabled(listed(only, "Limiter"));
-    std::vector<double> limiter_us;
+    vector<double> limiter_us;
     limiter_us.reserve(blocks);
     bool finite = true;
-    std::vector<double> total;
+    vector<double> total;
     total.reserve(blocks);
     for (auto& s : chain) {
         s.us.reserve(blocks);
@@ -290,4 +289,10 @@ int main(int argc, char** argv) {
         std::printf("\nWARNING: non-finite samples in the output\n");
     }
     return finite ? 0 : 1;
+}
+
+} // namespace npl
+
+int main(int argc, char** argv) {
+    return npl::run(argc, argv);
 }

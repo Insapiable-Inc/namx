@@ -6,7 +6,11 @@
 
 #include <NAM/get_dsp.h>
 
+#include "Common.h"
 #include "Log.h"
+
+namespace npl
+{
 
 NamProcessor::NamProcessor() {
 }
@@ -18,11 +22,11 @@ NamProcessor::~NamProcessor() {
     slot.reclaim(true);
 }
 
-bool NamProcessor::load_model(const std::string& path) {
+bool NamProcessor::load_model(const string& path) {
     // Load two independent instances from the same file — one per channel.
     // They apply identical weights but maintain separate recurrent states
     // so L and R can diverge (e.g. after a pre-NAM stereo effect).
-    auto pair = std::make_unique<ModelPair>();
+    auto pair = make_unique<ModelPair>();
     try {
         pair->l = nam::get_dsp(std::filesystem::path(path));
         pair->r = nam::get_dsp(std::filesystem::path(path));
@@ -115,7 +119,7 @@ void NamProcessor::on_sample_rate_changed(double sr) {
 }
 
 /*static*/ void NamProcessor::run_model(nam::DSP* model, float* buf, size_t n,
-                                        std::vector<float>& scratch) {
+                                        vector<float>& scratch) {
     // Sized by prepareBuffer(); process() bypasses oversized blocks, so this
     // must never allocate on the audio thread.
     assert(scratch.size() >= n);
@@ -181,3 +185,5 @@ bool NamProcessor::process(float* l, float* r, size_t n, bool input_is_stereo) {
 
     return input_is_stereo;
 }
+
+} // namespace npl

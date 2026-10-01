@@ -10,9 +10,10 @@
 #include <QSettings>
 
 #include "AudioEngine.h"
+#include "Common.h"
 #include "Theme.h"
 
-namespace
+namespace npl
 {
 
 // Label that fires a callback on left click; used for the interactive items
@@ -37,7 +38,7 @@ protected:
     }
 };
 
-QLabel* make_item(QHBoxLayout* lay, const char* object_name) {
+static QLabel* make_item(QHBoxLayout* lay, const char* object_name) {
     auto* l = new QLabel;
     l->setObjectName(object_name);
     l->setTextFormat(Qt::RichText);
@@ -45,7 +46,7 @@ QLabel* make_item(QHBoxLayout* lay, const char* object_name) {
     return l;
 }
 
-ClickableLabel* make_action(QHBoxLayout* lay, std::function<void()> on_click) {
+static ClickableLabel* make_action(QHBoxLayout* lay, std::function<void()> on_click) {
     auto* l = new ClickableLabel;
     l->setObjectName("statusAction");
     l->setTextFormat(Qt::RichText);
@@ -54,14 +55,14 @@ ClickableLabel* make_action(QHBoxLayout* lay, std::function<void()> on_click) {
     return l;
 }
 
-QString dot(const QColor& c) {
+static QString dot(const QColor& c) {
     return QString("<span style=\"color:%1\">●</span> ").arg(c.name());
 }
 
 // Resolve a device id against the enumerated list: the matching name, the
 // first device as fallback, or "Default" when the backend enumerates nothing
 // (JACK — the server is the only "device").
-QString device_name(const std::vector<IAudioBackend::DeviceInfo>& devs, const QString& id) {
+static QString device_name(const vector<IAudioBackend::DeviceInfo>& devs, const QString& id) {
     for (const auto& d : devs) {
         if (QString::fromStdString(d.id) == id) {
             return QString::fromStdString(d.name);
@@ -72,8 +73,6 @@ QString device_name(const std::vector<IAudioBackend::DeviceInfo>& devs, const QS
     }
     return "Default";
 }
-
-} // namespace
 
 AudioStatusBar::AudioStatusBar(AudioEngine& new_engine, QWidget* parent)
     : QWidget(parent)
@@ -232,8 +231,8 @@ void AudioStatusBar::reset_counters() {
 }
 
 void AudioStatusBar::set_device_labels() {
-    const std::vector<IAudioBackend::DeviceInfo> ins = engine.enumerate_input_devices();
-    const std::vector<IAudioBackend::DeviceInfo> outs = engine.enumerate_output_devices();
+    const vector<IAudioBackend::DeviceInfo> ins = engine.enumerate_input_devices();
+    const vector<IAudioBackend::DeviceInfo> outs = engine.enumerate_output_devices();
 
     auto elide = [](QString s) {
         return s.size() > 28 ? s.left(27) + "…" : s;
@@ -247,7 +246,7 @@ void AudioStatusBar::set_device_labels() {
 }
 
 void AudioStatusBar::pick_device(bool input) {
-    const std::vector<IAudioBackend::DeviceInfo> devs =
+    const vector<IAudioBackend::DeviceInfo> devs =
         input ? engine.enumerate_input_devices() : engine.enumerate_output_devices();
     QString& current = input ? input_id : output_id;
     QLabel* anchor = input ? lbl_input : lbl_output;
@@ -277,3 +276,5 @@ void AudioStatusBar::pick_device(bool input) {
     set_device_labels();
     emit device_selection_changed();
 }
+
+} // namespace npl

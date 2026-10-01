@@ -8,8 +8,12 @@
 #include <QJsonDocument>
 #include <QSettings>
 
+#include "Common.h"
 #include "KnobWidget.h"
 #include "ToggleSwitch.h"
+
+namespace npl
+{
 
 // ---------------------------------------------------------------------------
 // MidiMapping
@@ -430,3 +434,5 @@ void MidiMapper::handle_clock(const MidiMessage& m) {
         emit tempo_from_clock(bpm);
     }
 }
+
+} // namespace npl

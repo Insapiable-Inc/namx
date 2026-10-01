@@ -3,6 +3,11 @@
 #include <algorithm>
 #include <cmath>
 
+#include "Common.h"
+
+namespace npl
+{
+
 static constexpr float PI = 3.14159265358979323846f;
 
 void ChorusProcessor::on_sample_rate_changed(double sr) {
@@ -121,3 +126,5 @@ void ChorusProcessor::process_block_stereo_out(float* l, float* r, size_t nframe
         }
     }
 }
+
+} // namespace npl

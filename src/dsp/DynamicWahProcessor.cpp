@@ -3,6 +3,11 @@
 #include <algorithm>
 #include <cmath>
 
+#include "Common.h"
+
+namespace npl
+{
+
 static constexpr float PI = 3.14159265358979323846f;
 
 void DynamicWahProcessor::on_sample_rate_changed(double sr) {
@@ -67,3 +72,5 @@ void DynamicWahProcessor::process_block_dual(float* l, float* r, size_t nframes)
     process_channel(l, nframes, 0);
     process_channel(r, nframes, 1);
 }
+
+} // namespace npl

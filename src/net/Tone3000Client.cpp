@@ -24,32 +24,33 @@
 #include <QTcpSocket>
 #include <QTimer>
 
+#include "Common.h"
 #include "Log.h"
+
+namespace npl
+{
 
 #ifndef NAM_TONE3000_CLIENT_ID
 #define NAM_TONE3000_CLIENT_ID ""
 #endif
 
-namespace
-{
-
 constexpr qint64 CACHE_TTL_MS = 5 * 60 * 1000;
 constexpr int AUTH_TIMEOUT_MS = 5 * 60 * 1000;
 constexpr int MAX_RETRY_AFTER_S = 30;
-constexpr int PREFERRED_PORTS[] = {51731, 51732, 51733, 51734};
+static constexpr int PREFERRED_PORTS[] = {51731, 51732, 51733, 51734};
 
-QString base64url(const QByteArray& bytes) {
+static QString base64url(const QByteArray& bytes) {
     return QString::fromLatin1(
         bytes.toBase64(QByteArray::Base64UrlEncoding | QByteArray::OmitTrailingEquals));
 }
 
-QByteArray random_bytes(int n) {
+static QByteArray random_bytes(int n) {
     QByteArray b(n, Qt::Uninitialized);
     QRandomGenerator::system()->fillRange(reinterpret_cast<quint32*>(b.data()), n / 4);
     return b;
 }
 
-QString title_case_gear(const QString& gear) {
+static QString title_case_gear(const QString& gear) {
     if (gear == "amp-cab" || gear == "full-rig") {
         return "Amp + Cab";
     }
@@ -79,7 +80,7 @@ QString title_case_gear(const QString& gear) {
 
 // File-system safe component: no separators, control chars or Windows
 // reserved punctuation; trimmed; bounded.
-QString sanitize_component(QString s) {
+static QString sanitize_component(QString s) {
     static const QString BAD = QStringLiteral("/\\:*?\"<>|");
     for (QChar& c : s) {
         if (BAD.contains(c) || c.unicode() < 32) {
@@ -98,8 +99,6 @@ QString sanitize_component(QString s) {
     }
     return s;
 }
-
-} // namespace
 
 // ---------------------------------------------------------------------------
 // Data helpers
@@ -1039,3 +1038,5 @@ void Tone3000Client::fetch_image(const QString& url, const QSize& max_size,
         cb(px);
     });
 }
+
+} // namespace npl

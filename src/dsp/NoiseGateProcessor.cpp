@@ -3,6 +3,11 @@
 #include <algorithm>
 #include <cmath>
 
+#include "Common.h"
+
+namespace npl
+{
+
 void NoiseGateProcessor::reset() {
     envelope[0] = envelope[1] = 0.0f;
     gain_per_channel[0] = gain_per_channel[1] = 0.0f;
@@ -55,3 +60,5 @@ void NoiseGateProcessor::process_block_dual(float* l, float* r, size_t nframes) 
     process_channel(l, nframes, 0);
     process_channel(r, nframes, 1);
 }
+
+} // namespace npl

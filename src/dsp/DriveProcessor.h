@@ -2,7 +2,11 @@
 
 #include <atomic>
 
+#include "Common.h"
 #include "EffectBase.h"
+
+namespace npl
+{
 
 /// Overdrive / boost in front of the amp, Tube-Screamer style: only the
 /// high-passed part of the signal (above ~720 Hz) goes through the gain +
@@ -38,10 +42,12 @@ protected:
 private:
     void process_channel(float* buf, size_t n, int ch);
 
-    std::atomic<float> drive_pct{30.0f};
-    std::atomic<float> tone_pct{50.0f};
-    std::atomic<float> level_db{0.0f};
+    atomic<float> drive_pct{30.0f};
+    atomic<float> tone_pct{50.0f};
+    atomic<float> level_db{0.0f};
 
     // Per-channel state: input high-pass, tone low-pass.
     float hp_x1[2]{}, hp_y1[2]{}, lp_per_channel[2]{};
 };
+
+} // namespace npl

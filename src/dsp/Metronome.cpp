@@ -3,6 +3,11 @@
 #include <algorithm>
 #include <cmath>
 
+#include "Common.h"
+
+namespace npl
+{
+
 static constexpr double TWO_PI = 6.283185307179586;
 
 Metronome::Metronome()
@@ -43,11 +48,8 @@ uint32_t Metronome::default_accents(int beats, int unit) {
 // Sound synthesis (non-RT)
 // ---------------------------------------------------------------------------
 
-namespace
-{
-
 // Peak-normalize to 0.9 so every set sits at the same level.
-void normalize(std::vector<float>& s) {
+static void normalize(vector<float>& s) {
     float peak = 0.0f;
     for (float v : s) {
         peak = std::max(peak, std::abs(v));
@@ -59,8 +61,8 @@ void normalize(std::vector<float>& s) {
     }
 }
 
-std::vector<float> sine_blip(double sr, double freq, double len_s, double tau, double attack_s) {
-    std::vector<float> s(static_cast<size_t>(len_s * sr));
+static vector<float> sine_blip(double sr, double freq, double len_s, double tau, double attack_s) {
+    vector<float> s(static_cast<size_t>(len_s * sr));
     for (size_t i = 0; i < s.size(); ++i) {
         const double t = static_cast<double>(i) / sr;
         const double env = std::min(1.0, t / attack_s) * std::exp(-t / tau);
@@ -71,8 +73,8 @@ std::vector<float> sine_blip(double sr, double freq, double len_s, double tau, d
 }
 
 // Noise burst into a resonant band-pass (RBJ): a woodblock-ish knock.
-std::vector<float> wood_knock(double sr, double freq, double len_s) {
-    std::vector<float> s(static_cast<size_t>(len_s * sr));
+static vector<float> wood_knock(double sr, double freq, double len_s) {
+    vector<float> s(static_cast<size_t>(len_s * sr));
     const double w0 = TWO_PI * freq / sr, q = 9.0, alpha = std::sin(w0) / (2.0 * q);
     const double a0 = 1.0 + alpha;
     const double b0 = alpha / a0, b2 = -alpha / a0;
@@ -95,8 +97,8 @@ std::vector<float> wood_knock(double sr, double freq, double len_s) {
 }
 
 // Two detuned square waves through a soft band-limit — the TR-808 recipe.
-std::vector<float> cowbell(double sr, double f1, double f2, double len_s) {
-    std::vector<float> s(static_cast<size_t>(len_s * sr));
+static vector<float> cowbell(double sr, double f1, double f2, double len_s) {
+    vector<float> s(static_cast<size_t>(len_s * sr));
     double lp = 0.0;
     const double k = 1.0 - std::exp(-TWO_PI * 3500.0 / sr);
     for (size_t i = 0; i < s.size(); ++i) {
@@ -111,8 +113,6 @@ std::vector<float> cowbell(double sr, double f1, double f2, double len_s) {
     normalize(s);
     return s;
 }
-
-} // namespace
 
 void Metronome::build_sounds(double sr) {
     samples[CLICK] = {sine_blip(sr, 2000.0, 0.030, 0.006, 0.0005),
@@ -131,7 +131,7 @@ void Metronome::build_sounds(double sr) {
 // Audio thread
 // ---------------------------------------------------------------------------
 
-void Metronome::trigger(const std::vector<float>& sample, float gain) {
+void Metronome::trigger(const vector<float>& sample, float gain) {
     // Free voice, else steal the older one.
     Voice* v = &voices[0];
     if (voices[0].data && (!voices[1].data || voices[1].pos > voices[0].pos)) {
@@ -192,7 +192,7 @@ void Metronome::process(float* l, float* r, size_t n) {
     const double samples_per_tick = sample_rate * 60.0 / current_bpm *
                                     (4.0 / unit.load(std::memory_order_relaxed)) / current_subdiv;
     const uint32_t acc = accents.load(std::memory_order_relaxed);
-    const std::array<std::vector<float>, 3>& set = samples[sound.load(std::memory_order_relaxed)];
+    const array<vector<float>, 3>& set = samples[sound.load(std::memory_order_relaxed)];
     const bool current_silent_after = silent_after.load(std::memory_order_relaxed) &&
                                       count_in_bars.load(std::memory_order_relaxed) > 0;
 
@@ -235,3 +235,5 @@ void Metronome::process(float* l, float* r, size_t n) {
     render(l, r, i, n, g_l, g_r);
     until_next = until - frames;
 }
+
+} // namespace npl

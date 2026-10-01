@@ -2,6 +2,11 @@
 
 #include <QSettings>
 
+#include "Common.h"
+
+namespace npl
+{
+
 MidiInput::MidiInput(QObject* parent)
     : QObject(parent) {
     qRegisterMetaType<MidiMessage>();
@@ -23,3 +28,5 @@ void MidiInput::set_enabled(const QString& device, bool on) {
     QSettings().setValue("midi/disabledDevices", off);
     sync_connections();
 }
+
+} // namespace npl

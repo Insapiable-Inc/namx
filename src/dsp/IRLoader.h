@@ -6,7 +6,11 @@
 #include <string>
 #include <vector>
 
+#include "Common.h"
 #include "RtSlot.h"
+
+namespace npl
+{
 
 /// Loads an IR (Impulse Response) WAV file and applies it as a convolution
 /// cab simulator using a simple brute-force FIR convolution.
@@ -22,7 +26,7 @@ public:
     /// Load an IR from a WAV file. Never blocks the audio thread: the new
     /// kernel is published through an RtSlot and the old one is destroyed
     /// only once the audio thread has left it. Returns true on success.
-    bool load(const std::string& path);
+    bool load(const string& path);
 
     /// Unload the current IR (bypass mode)
     void unload();
@@ -30,12 +34,12 @@ public:
     bool is_loaded() const {
         return slot.current() != nullptr;
     }
-    std::string get_file_path() const {
+    string get_file_path() const {
         return file_path;
     }
 
     /// Human-readable reason the last load() returned false (GUI thread only).
-    std::string get_last_error() const {
+    string get_last_error() const {
         return last_error;
     }
 
@@ -64,10 +68,10 @@ public:
 private:
     struct Kernel
     {
-        std::vector<float> ir; // stored REVERSED so the convolution is a forward dot product
-        std::vector<float> buffers[2]; // per-channel delay line, 2*MAX_IR_LENGTH: each sample is
-                                       // written twice (writePos and writePos+irLen) so the last
-                                       // irLen samples are always contiguous — no wrap in the loop
+        vector<float> ir; // stored REVERSED so the convolution is a forward dot product
+        vector<float> buffers[2]; // per-channel delay line, 2*MAX_IR_LENGTH: each sample is
+                                  // written twice (writePos and writePos+irLen) so the last
+                                  // irLen samples are always contiguous — no wrap in the loop
         int write_pos[2] = {0, 0};
         int ir_len = 0;
         double built_rate = 0.0; // engine rate this kernel was resampled to
@@ -77,13 +81,13 @@ private:
     std::mutex load_mutex; // load/unload (GUI) vs. setTargetSampleRate (backend thread)
 
     // Owner-side state (guarded by load_mutex)
-    std::string file_path;
-    std::string last_error;
-    std::vector<float> raw; // native samples of the loaded file
+    string file_path;
+    string last_error;
+    vector<float> raw; // native samples of the loaded file
     double raw_rate{0.0}; // their sample rate
     double target_rate{0.0};
 
-    std::unique_ptr<Kernel> build_kernel() const;
+    unique_ptr<Kernel> build_kernel() const;
 
     // Per-sample steps for one channel: push the input into the delay line,
     // dot it with the (reversed) IR, advance the write position.
@@ -91,3 +95,5 @@ private:
     static float convolve_at(const Kernel& k, int ch);
     static void advance(Kernel& k, int ch);
 };
+
+} // namespace npl

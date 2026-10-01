@@ -5,7 +5,11 @@
 #include <cmath>
 #include <mutex>
 
+#include "Common.h"
 #include "EffectBase.h"
+
+namespace npl
+{
 
 /// 4-band semi-parametric EQ + low/high cut (Audio EQ Cookbook biquads):
 ///   Bass     low shelf    40–500 Hz   (default 250 — the old fixed band)
@@ -83,10 +87,12 @@ private:
     void rebuild(Band b); // caller holds mutex
     bool active(Band b) const;
 
-    std::array<double, BANDS> gain{}; // dB (shelf/peak bands)
-    std::array<double, BANDS> freq{20.0, 250.0, 1000.0, 3000.0, 4000.0, 20000.0};
-    std::array<Biquad, BANDS> filters_l, filters_r;
-    std::array<bool, BANDS> band_on{}; // band changes the signal (skip flat ones)
+    array<double, BANDS> gain{}; // dB (shelf/peak bands)
+    array<double, BANDS> freq{20.0, 250.0, 1000.0, 3000.0, 4000.0, 20000.0};
+    array<Biquad, BANDS> filters_l, filters_r;
+    array<bool, BANDS> band_on{}; // band changes the signal (skip flat ones)
 
     std::mutex mutex; // GUI writes coefficients; audio thread uses try_lock
 };
+
+} // namespace npl

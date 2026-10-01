@@ -7,6 +7,7 @@
 #include <QStyledItemDelegate>
 #include <QWidget>
 
+#include "Common.h"
 #include "LibraryIndex.h"
 #include "Tone3000Client.h"
 
@@ -17,6 +18,9 @@ class QPushButton;
 class QScrollArea;
 class QStackedWidget;
 class QToolButton;
+
+namespace npl
+{
 
 /// Tone cards for one list (trending / latest / favorites / …).
 class ToneListModel : public QAbstractListModel
@@ -220,3 +224,5 @@ private:
     int detail_request = 0; // ignore stale replies
     bool notice_busy = false;
 };
+
+} // namespace npl

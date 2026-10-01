@@ -7,10 +7,16 @@
 #include <QString>
 #include <QStringList>
 
-class LibraryIndex;
+#include "Common.h"
+
 class QLabel;
 class QMenu;
 class QToolButton;
+
+namespace npl
+{
+
+class LibraryIndex;
 
 /// The preset strip above the rack: ‹ [name ▾] › with a `*` while the state
 /// differs from the file, Save / Save As, quick slots 1–8, A/B compare and
@@ -73,3 +79,5 @@ private:
     std::function<void(const QString&, QMenu*)> learn_hook;
     void learn_menu_for(QWidget* w, const QString& action_id);
 };
+
+} // namespace npl

@@ -25,9 +25,10 @@
 #include <QToolButton>
 #include <QVBoxLayout>
 
+#include "Common.h"
 #include "Theme.h"
 
-namespace
+namespace npl
 {
 
 constexpr int ROW_HEIGHT = 42;
@@ -35,10 +36,10 @@ constexpr int STAR_WIDTH = 26;
 constexpr int ACCENT_BAR = 3;
 constexpr int MAX_RECENTS = 30;
 
-const char* k_section_names[3] = {"Models", "IRs", "Presets"};
-const char* k_section_single[3] = {"model", "IR", "preset"};
+static const char* k_section_names[3] = {"Models", "IRs", "Presets"};
+static const char* k_section_single[3] = {"model", "IR", "preset"};
 
-QColor kind_accent(LibraryEntry::Kind kind) {
+static QColor kind_accent(LibraryEntry::Kind kind) {
     switch (kind) {
         case LibraryEntry::Kind::MODEL:
             return Theme::accent("nam");
@@ -49,8 +50,6 @@ QColor kind_accent(LibraryEntry::Kind kind) {
     }
     return Theme::generic_accent();
 }
-
-} // namespace
 
 // ===========================================================================
 // LibraryListModel
@@ -351,9 +350,6 @@ void LibraryListView::keyPressEvent(QKeyEvent* ev) {
 // Folders dialog
 // ===========================================================================
 
-namespace
-{
-
 class FoldersDialog : public QDialog
 {
 public:
@@ -433,8 +429,6 @@ public:
 private:
     QListWidget* lists[3]{};
 };
-
-} // namespace
 
 // ===========================================================================
 // LibraryPanel
@@ -783,3 +777,5 @@ void LibraryPanel::edit_folders() {
         library_index.set_roots(dlg.roots());
     }
 }
+
+} // namespace npl

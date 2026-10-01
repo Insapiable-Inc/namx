@@ -6,7 +6,11 @@
 #include <QPainter>
 #include <QPainterPath>
 
+#include "Common.h"
 #include "Theme.h"
+
+namespace npl
+{
 
 VUMeter::VUMeter(Qt::Orientation orientation, QWidget* parent)
     : QProgressBar(parent) {
@@ -127,3 +131,5 @@ void VUMeter::paintEvent(QPaintEvent*) {
         }
     }
 }
+
+} // namespace npl

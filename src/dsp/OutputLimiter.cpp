@@ -3,6 +3,11 @@
 #include <algorithm>
 #include <cmath>
 
+#include "Common.h"
+
+namespace npl
+{
+
 static constexpr float CEILING = 0.96605f; // −0.3 dBFS
 
 void OutputLimiter::set_sample_rate(double sr) {
@@ -68,3 +73,5 @@ void OutputLimiter::process(float* l, float* r, size_t n) {
         gr_peak_db.store(gr_db, std::memory_order_relaxed);
     }
 }
+
+} // namespace npl

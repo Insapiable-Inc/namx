@@ -13,10 +13,11 @@
 #include <sys/eventfd.h>
 #include <unistd.h>
 
+#include "Common.h"
 #include "Log.h"
 #include "MidiInput.h"
 
-namespace
+namespace npl
 {
 
 class AlsaMidiInput final : public MidiInput
@@ -165,7 +166,7 @@ private:
     }
 
     void run() {
-        std::vector<pollfd> fds;
+        vector<pollfd> fds;
         {
             std::lock_guard<std::mutex> lock(mutex);
             // ALSA returns the count as int (never negative) but takes it back as unsigned.
@@ -267,15 +268,15 @@ private:
     int port = -1;
     int wake = -1;
     std::thread thread;
-    std::atomic<bool> running{false};
+    atomic<bool> running{false};
     mutable std::mutex mutex; // guards seq calls and the maps
 
     std::map<QString, Addr> present; // name → address, current
     std::map<QString, Addr> connected; // what we subscribed
 };
 
-} // namespace
-
 MidiInput* MidiInput::create(QObject* parent) {
     return new AlsaMidiInput(parent);
 }
+
+} // namespace npl

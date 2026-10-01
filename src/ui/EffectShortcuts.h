@@ -2,8 +2,14 @@
 
 #include <vector>
 
+#include "Common.h"
+
 class QShortcut;
 class QWidget;
+
+namespace npl
+{
+
 class ToggleSwitch;
 
 /// Assigns keyboard shortcuts to the effect strip toggles, left to right,
@@ -35,5 +41,7 @@ private:
     QWidget* window;
     int enable_index{0};
     int stereo_index{0};
-    std::vector<QShortcut*> shortcuts;
+    vector<QShortcut*> shortcuts;
 };
+
+} // namespace npl
