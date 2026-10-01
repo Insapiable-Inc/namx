@@ -8,7 +8,7 @@
 namespace npl
 {
 
-/// Feedforward peak compressor.
+// Feedforward peak compressor.
 class CompressorProcessor : public EffectBase
 {
 public:
@@ -46,7 +46,7 @@ public:
         return makeup_db.load();
     }
 
-    /// Deepest gain reduction (dB, ≥ 0) since the last take — GUI meter.
+    // Deepest gain reduction (dB, ≥ 0) since the last take — GUI meter.
     float take_gain_reduction_db() {
         return gr_peak_db.exchange(0.0f);
     }

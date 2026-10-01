@@ -18,14 +18,14 @@ namespace npl
 
 class LibraryIndex;
 
-/// The preset strip above the rack: ‹ [name ▾] › with a `*` while the state
-/// differs from the file, Save / Save As, quick slots 1–8, A/B compare and
-/// the full Preset menu behind ⋯.
-///
-/// Display + intent only: the owner (MainWindow) loads, saves and compares
-/// state, then reports back through setPreset / setAbState. The quick slots
-/// are self-contained (QSettings `presets/slots`, Ctrl+1…8) and ask the
-/// owner to load through presetChosen like the name menu does.
+// The preset strip above the rack: ‹ [name ▾] › with a `*` while the state
+// differs from the file, Save / Save As, quick slots 1–8, A/B compare and
+// the full Preset menu behind ⋯.
+//
+// Display + intent only: the owner (MainWindow) loads, saves and compares
+// state, then reports back through setPreset / setAbState. The quick slots
+// are self-contained (QSettings `presets/slots`, Ctrl+1…8) and ask the
+// owner to load through presetChosen like the name menu does.
 class PresetBar : public QFrame
 {
     Q_OBJECT
@@ -34,20 +34,20 @@ public:
 
     PresetBar(const LibraryIndex& new_index, QMenu* preset_menu, QWidget* parent = nullptr);
 
-    /// Current preset file (empty = untitled) and whether the live state
-    /// differs from it.
+    // Current preset file (empty = untitled) and whether the live state
+    // differs from it.
     void set_preset(const QString& new_path, bool new_modified);
-    /// Active A/B side (0 = A, 1 = B).
+    // Active A/B side (0 = A, 1 = B).
     void set_ab_state(int active);
 
-    /// Load slot i's preset if it has one (MIDI; never stores).
+    // Load slot i's preset if it has one (MIDI; never stores).
     void recall_slot(int i);
-    /// Widget for an action id ("action:slot3", "action:presetNext", …), for
-    /// the MIDI Learn highlight.
+    // Widget for an action id ("action:slot3", "action:presetNext", …), for
+    // the MIDI Learn highlight.
     QWidget* action_widget(const QString& id) const {
         return action_widgets.value(id);
     }
-    /// Adds MIDI Learn entries to the context menus of the bar's buttons.
+    // Adds MIDI Learn entries to the context menus of the bar's buttons.
     void set_learn_menu_hook(std::function<void(const QString& action_id, QMenu* menu)> hook) {
         learn_hook = std::move(hook);
     }

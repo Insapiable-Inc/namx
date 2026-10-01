@@ -8,23 +8,23 @@
 namespace npl
 {
 
-/// Peak meter (vertical fills bottom→top, horizontal fills left→right),
-/// colored by absolute level like REAPER's meters: green fill, yellow only
-/// for the part above -6 dBFS, and red only for the part above 0 dBFS;
-/// the scale runs -60..+6 dB so there is visible headroom above the clip
-/// point (float audio can exceed full scale). A peak-hold line marks the
-/// recent maximum and falls after a moment; it takes its zone's color, so a
-/// red hold line means the signal clipped within the last second.
-/// Ballistics are time-based (instant attack, steady dB/s release, 1 s hold),
-/// so the look doesn't depend on how often setPeak() is called; it only
-/// repaints when the bar or the hold line actually moves.
+// Peak meter (vertical fills bottom→top, horizontal fills left→right),
+// colored by absolute level like REAPER's meters: green fill, yellow only
+// for the part above -6 dBFS, and red only for the part above 0 dBFS;
+// the scale runs -60..+6 dB so there is visible headroom above the clip
+// point (float audio can exceed full scale). A peak-hold line marks the
+// recent maximum and falls after a moment; it takes its zone's color, so a
+// red hold line means the signal clipped within the last second.
+// Ballistics are time-based (instant attack, steady dB/s release, 1 s hold),
+// so the look doesn't depend on how often setPeak() is called; it only
+// repaints when the bar or the hold line actually moves.
 class VUMeter : public QProgressBar
 {
     Q_OBJECT
 public:
     explicit VUMeter(Qt::Orientation orientation = Qt::Vertical, QWidget* parent = nullptr);
 
-    /// Linear peak (0..1+); 1.0 reaches the 0 dBFS mark.
+    // Linear peak (0..1+); 1.0 reaches the 0 dBFS mark.
     void set_peak(float peak);
 
 protected:

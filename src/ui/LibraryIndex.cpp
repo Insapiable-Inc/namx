@@ -26,10 +26,6 @@
 namespace npl
 {
 
-// ---------------------------------------------------------------------------
-// Roots
-// ---------------------------------------------------------------------------
-
 LibraryRoots LibraryRoots::defaults() {
     const QString home = QDir::homePath();
     const QString music = QStandardPaths::writableLocation(QStandardPaths::MusicLocation);
@@ -75,10 +71,6 @@ static void save_roots(const LibraryRoots& r) {
     s.setValue("library/irRoots", r.irs);
     s.setValue("library/presetRoots", r.presets);
 }
-
-// ---------------------------------------------------------------------------
-// File parsers (worker thread)
-// ---------------------------------------------------------------------------
 
 static QString khz(double sr) {
     if (sr <= 0) {
@@ -294,12 +286,8 @@ static void describe_preset(const QString& path, LibraryEntry& e) {
     e.details = det.join('\n');
 }
 
-// ---------------------------------------------------------------------------
-// Worker
-// ---------------------------------------------------------------------------
-
-/// Lives on LibraryIndex's thread. Owns the on-disk cache: it is the only
-/// code that reads or writes it, so no locking anywhere.
+// Lives on LibraryIndex's thread. Owns the on-disk cache: it is the only
+// code that reads or writes it, so no locking anywhere.
 class LibraryScanWorker : public QObject
 {
     Q_OBJECT
@@ -470,10 +458,6 @@ private:
         }
     }
 };
-
-// ---------------------------------------------------------------------------
-// LibraryIndex
-// ---------------------------------------------------------------------------
 
 LibraryIndex::LibraryIndex(QObject* parent)
     : QObject(parent)

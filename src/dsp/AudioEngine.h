@@ -34,9 +34,9 @@
 namespace npl
 {
 
-/// Platform-agnostic audio engine. Owns the signal chain and all DSP
-/// processors. Delegates I/O to an IAudioBackend (JACK on Linux, WASAPI on
-/// Windows) created via IAudioBackend::create().
+// Platform-agnostic audio engine. Owns the signal chain and all DSP
+// processors. Delegates I/O to an IAudioBackend (JACK on Linux, WASAPI on
+// Windows) created via IAudioBackend::create().
 class AudioEngine : public IAudioBackend::Callback
 {
 public:
@@ -59,7 +59,7 @@ public:
         return backend ? backend->get_buffer_size() : 0;
     }
 
-    /// Human-readable status, e.g. "JACK ● 48000 Hz ● stereo out".
+    // Human-readable status, e.g. "JACK ● 48000 Hz ● stereo out".
     string backend_status() const {
         return backend ? backend->status_string() : string{};
     }
@@ -67,11 +67,11 @@ public:
         return backend && backend->supports_port_routing();
     }
 
-    // ---- Device enumeration (creates temp backend, so works before start()) ----
+    // Device enumeration (creates temp backend, so works before start())
     vector<IAudioBackend::DeviceInfo> enumerate_input_devices() const;
     vector<IAudioBackend::DeviceInfo> enumerate_output_devices() const;
 
-    // ---- Model / IR (thin wrappers for MainWindow convenience) ----
+    // Model / IR (thin wrappers for MainWindow convenience)
     // Loads publish through RtSlots; when audio is stopped nothing counts
     // blocks, so the wrappers reclaim retired objects eagerly in that case.
     bool load_model(const string& path);
@@ -111,7 +111,7 @@ public:
         return ir.last_error_b();
     }
 
-    // ---- Gain ----
+    // Gain
     void set_input_gain(float db) {
         input_gain_db.store(db);
     }
@@ -125,7 +125,7 @@ public:
         return output_gain_db.load();
     }
 
-    // ---- Effect accessors (MainWindow calls setters directly on the effects) ----
+    // Effect accessors (MainWindow calls setters directly on the effects)
     TunerProcessor& get_tuner() {
         return tuner;
     }
@@ -181,34 +181,34 @@ public:
         return transpose;
     }
 
-    /// Mixed in after the output gain — outside the chain, not metered.
+    // Mixed in after the output gain — outside the chain, not metered.
     Metronome& get_metronome() {
         return metronome;
     }
 
-    // ---- Signal chain (processing order = UI order) ----
+    // Signal chain (processing order = UI order)
     // GUI-thread snapshot of the active chain. Reordering goes through
     // setChainOrder().
     vector<EffectBase*> get_chain() const {
         return *chain_slot.current();
     }
 
-    /// Stable effect IDs in default (construction) order — the persistence
-    /// contract for session state and preset schema v2.
+    // Stable effect IDs in default (construction) order — the persistence
+    // contract for session state and preset schema v2.
     vector<string> default_chain_ids() const;
-    /// Current chain order as IDs.
+    // Current chain order as IDs.
     vector<string> chain_ids() const;
     EffectBase* effect_by_id(const string& id) const;
     string id_for_effect(const EffectBase* fx) const;
 
-    /// Reorder the chain RT-safely (RtSlot publish, same pattern as model
-    /// swaps — never blocks the GUI). Input is sanitized: unknown/duplicate
-    /// IDs are dropped and missing effects re-enter at their default
-    /// position. Effects whose position changed get a pending reset,
-    /// consumed by the audio thread at the top of their next block.
+    // Reorder the chain RT-safely (RtSlot publish, same pattern as model
+    // swaps — never blocks the GUI). Input is sanitized: unknown/duplicate
+    // IDs are dropped and missing effects re-enter at their default
+    // position. Effects whose position changed get a pending reset,
+    // consumed by the audio thread at the top of their next block.
     void set_chain_order(const vector<string>& ids);
 
-    // ---- Port-routing pass-through (no-ops on backends without it) ----
+    // Port-routing pass-through (no-ops on backends without it)
     using PortConnections = IAudioBackend::PortConnections;
     PortConnections current_connections() const {
         return backend ? backend->current_connections() : PortConnections{};
@@ -219,7 +219,7 @@ public:
         }
     }
 
-    // ---- VU meters ----
+    // VU meters
     // The audio thread accumulates the peak (max) until the GUI takes it;
     // take-and-reset so no transient between polls is ever missed.
     float take_input_peak() {
@@ -229,9 +229,9 @@ public:
         return output_peak.exchange(0.0f);
     }
 
-    // ---- Diagnostics (status bar) ----
-    /// Highest audio-thread time per block since the last take, as a
-    /// fraction of the block's duration (1.0 = the whole budget).
+    // Diagnostics (status bar)
+    // Highest audio-thread time per block since the last take, as a
+    // fraction of the block's duration (1.0 = the whole budget).
     float take_dsp_load_peak() {
         return dsp_load_peak.exchange(0.0f);
     }
@@ -247,7 +247,7 @@ public:
         return backend ? backend->io_latency_frames() : -1;
     }
 
-    // ---- IAudioBackend::Callback ----
+    // IAudioBackend::Callback
     void on_audio(const float* in, float* out_l, float* out_r, size_t nframes) override;
     void on_buffer_size_changed(int new_size) override;
 
@@ -260,7 +260,7 @@ private:
     using Chain = vector<EffectBase*>;
     RtSlot<Chain> chain_slot;
 
-    /// Free objects retired by loads/reorders while the audio thread is idle.
+    // Free objects retired by loads/reorders while the audio thread is idle.
     void reclaim_retired();
 
     // id → effect, in default chain order

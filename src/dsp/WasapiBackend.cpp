@@ -166,10 +166,6 @@ static vector<IAudioBackend::DeviceInfo> enumerate_wasapi_devices(EDataFlow dire
 namespace npl
 {
 
-// ---------------------------------------------------------------------------
-// Factory (Windows side; the Linux factory lives in JackBackend.cpp).
-// ---------------------------------------------------------------------------
-
 unique_ptr<IAudioBackend> IAudioBackend::create() {
     return make_unique<WasapiBackend>();
 }
@@ -180,10 +176,8 @@ WasapiBackend::~WasapiBackend() {
     stop();
 }
 
-// ---------------------------------------------------------------------------
 // status_string — visible regardless of platform so the Linux build (where this
 // file is not compiled) is unaffected. The body is conditionally compiled.
-// ---------------------------------------------------------------------------
 
 string WasapiBackend::status_string() const {
 #ifdef _WIN32
@@ -201,10 +195,6 @@ string WasapiBackend::status_string() const {
     return "WASAPI  \xe2\x97\x8f  not supported on this platform";
 #endif
 }
-
-// ---------------------------------------------------------------------------
-// Device enumeration (works before start() is called)
-// ---------------------------------------------------------------------------
 
 vector<IAudioBackend::DeviceInfo> WasapiBackend::enumerate_input_devices() const {
 #ifdef _WIN32
@@ -224,10 +214,6 @@ vector<IAudioBackend::DeviceInfo> WasapiBackend::enumerate_output_devices() cons
 
 #ifdef _WIN32
 
-// ---------------------------------------------------------------------------
-// Device selection helper
-// ---------------------------------------------------------------------------
-
 IMMDevice* WasapiBackend::open_device_by_id(const string& deviceId) const {
     if (deviceId.empty() || deviceId == "default") {
         return nullptr; // Caller falls back to GetDefaultAudioEndpoint
@@ -243,10 +229,6 @@ IMMDevice* WasapiBackend::open_device_by_id(const string& deviceId) const {
     }
     return dev;
 }
-
-// ---------------------------------------------------------------------------
-// start / stop / start_with_devices
-// ---------------------------------------------------------------------------
 
 bool WasapiBackend::start(const string& client_name, Callback* cb) {
     return start_with_devices(client_name, cb, "default", "default");
@@ -277,7 +259,7 @@ bool WasapiBackend::start_with_devices(const string& /*clientName*/, Callback* c
         return false;
     }
 
-    // --- Select capture device ---
+    // Select capture device
     capture_device = open_device_by_id(input_device_id);
     if (!capture_device) {
         // Fall back to default multimedia capture device
@@ -290,7 +272,7 @@ bool WasapiBackend::start_with_devices(const string& /*clientName*/, Callback* c
         }
     }
 
-    // --- Select render device ---
+    // Select render device
     render_device = open_device_by_id(output_device_id);
     if (!render_device) {
         hr = enumerator->GetDefaultAudioEndpoint(eRender, eMultimedia, &render_device);
@@ -394,10 +376,6 @@ void WasapiBackend::stop() {
     callback = nullptr;
 }
 
-// ---------------------------------------------------------------------------
-// Per-side init helpers
-// ---------------------------------------------------------------------------
-
 bool WasapiBackend::init_capture() {
     HRESULT hr = capture_device->Activate(__uuidof(IAudioClient), CLSCTX_ALL, nullptr,
                                           reinterpret_cast<void**>(&capture_client));
@@ -500,10 +478,6 @@ bool WasapiBackend::init_render() {
     }
     return true;
 }
-
-// ---------------------------------------------------------------------------
-// Audio thread
-// ---------------------------------------------------------------------------
 
 void WasapiBackend::audio_thread_main() {
     // Pro Audio thread characteristics — bumps priority, registers with the
@@ -698,10 +672,6 @@ void WasapiBackend::audio_thread_main() {
         AvRevertMmThreadCharacteristics(avrtHandle);
     }
 }
-
-// ---------------------------------------------------------------------------
-// Teardown
-// ---------------------------------------------------------------------------
 
 void WasapiBackend::teardown() {
     if (capture) {

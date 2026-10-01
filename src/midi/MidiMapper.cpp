@@ -15,10 +15,6 @@
 namespace npl
 {
 
-// ---------------------------------------------------------------------------
-// MidiMapping
-// ---------------------------------------------------------------------------
-
 static const char* k_source_names[] = {"cc", "note", "program"};
 static const char* k_mode_names[] = {"absolute", "relative", "toggle", "momentary"};
 
@@ -72,10 +68,6 @@ bool MidiMapping::matches(const MidiMessage& m) const {
     }
     return false;
 }
-
-// ---------------------------------------------------------------------------
-// MidiMapper
-// ---------------------------------------------------------------------------
 
 MidiMapper::MidiMapper(QObject* parent)
     : QObject(parent) {

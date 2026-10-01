@@ -21,7 +21,7 @@ namespace npl
 class KnobWidget;
 class ToggleSwitch;
 
-/// One MIDI → target binding.
+// One MIDI → target binding.
 struct MidiMapping
 {
     enum Source
@@ -30,10 +30,10 @@ struct MidiMapping
         NOTE,
         PROGRAM
     };
-    /// Absolute: CC value / note on-off sets the target. Relative: CC is a
-    /// signed increment (1…63 up, 127…65 down — endless encoders). Toggle:
-    /// each press (CC rising past 64, note on, program) flips a switch or
-    /// fires an action. Momentary: on while held.
+    // Absolute: CC value / note on-off sets the target. Relative: CC is a
+    // signed increment (1…63 up, 127…65 down — endless encoders). Toggle:
+    // each press (CC rising past 64, note on, program) flips a switch or
+    // fires an action. Momentary: on while held.
     enum Mode
     {
         ABSOLUTE,
@@ -55,9 +55,9 @@ struct MidiMapping
     bool matches(const MidiMessage& m) const;
 };
 
-/// Something MIDI can drive: a registry knob or toggle (applied through the
-/// widget, so the engine, session and preset `*` follow exactly as for a
-/// mouse change) or an action (slot recall, next preset, tap tempo…).
+// Something MIDI can drive: a registry knob or toggle (applied through the
+// widget, so the engine, session and preset `*` follow exactly as for a
+// mouse change) or an action (slot recall, next preset, tap tempo…).
 struct MidiTarget
 {
     QString id, label, group;
@@ -66,9 +66,9 @@ struct MidiTarget
     std::function<void()> action;
 };
 
-/// Phase 16 mapping engine. Lives on the GUI thread; MidiInput's queued
-/// signal feeds handle(). Mappings persist in QSettings midi/mappings and
-/// as .nammidi files (Mappings window → Save / Load).
+// Phase 16 mapping engine. Lives on the GUI thread; MidiInput's queued
+// signal feeds handle(). Mappings persist in QSettings midi/mappings and
+// as .nammidi files (Mappings window → Save / Load).
 class MidiMapper : public QObject
 {
     Q_OBJECT
@@ -83,7 +83,7 @@ public:
         return targets;
     }
     const MidiTarget* target(const QString& id) const;
-    /// Target driven by this widget (knob or toggle), or null.
+    // Target driven by this widget (knob or toggle), or null.
     const MidiTarget* target_for(const QWidget* w) const;
 
     const QList<MidiMapping>& get_mappings() const {
@@ -98,9 +98,9 @@ public:
     bool save_file(const QString& path) const;
     bool load_file(const QString& path, QString* error = nullptr);
 
-    /// Learn: the next CC / note-on / program change binds to `targetId`
-    /// (replacing that target's mappings). learnRow binds into an existing
-    /// mapping row instead (Mappings window).
+    // Learn: the next CC / note-on / program change binds to `targetId`
+    // (replacing that target's mappings). learnRow binds into an existing
+    // mapping row instead (Mappings window).
     void learn(const QString& target_id);
     void learn_row(qsizetype row);
     void cancel_learn();

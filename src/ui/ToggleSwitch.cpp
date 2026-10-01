@@ -35,7 +35,7 @@ void ToggleSwitch::paintEvent(QPaintEvent*) {
     const qreal w = r.width();
     const qreal rx = h / 2.0;
 
-    // ---- Track ----
+    // Track
     const QColor color = accent;
     const QColor track_off = hovered ? Theme::track_hover() : Theme::track();
 
@@ -70,7 +70,7 @@ void ToggleSwitch::paintEvent(QPaintEvent*) {
         p.drawEllipse(QRectF(led_x, led_y, led_d, led_d));
     }
 
-    // ---- Thumb ----
+    // Thumb
     const qreal margin = 2.0;
     const qreal thumb_d = h - 2 * margin;
     const qreal thumb_x = isChecked() ? w - margin - thumb_d : margin;

@@ -17,17 +17,17 @@ namespace npl
 
 class VerticalDial;
 
-/// Knob widget wrapping a VerticalDial (responds to vertical mouse drag).
-/// Emits valueChanged(double) and uses QPalette::Highlight for the value label.
+// Knob widget wrapping a VerticalDial (responds to vertical mouse drag).
+// Emits valueChanged(double) and uses QPalette::Highlight for the value label.
 class KnobWidget : public QWidget
 {
     Q_OBJECT
     Q_PROPERTY(double value READ value WRITE set_value NOTIFY value_changed)
 
 public:
-    /// Compact: dial left, name over value right (effect rows, ~46px tall).
-    /// Stacked: name over a large dial over the value, all centred — the
-    /// prominent form for the Input/Output gain columns.
+    // Compact: dial left, name over value right (effect rows, ~46px tall).
+    // Stacked: name over a large dial over the value, all centred — the
+    // prominent form for the Input/Output gain columns.
     enum class Form
     {
         COMPACT,
@@ -52,43 +52,43 @@ public:
         return label;
     }
 
-    /// Extra entries for every knob's context menu (MIDI Learn). Set once by
-    /// the owner of the parameter registry.
+    // Extra entries for every knob's context menu (MIDI Learn). Set once by
+    // the owner of the parameter registry.
     static void set_menu_hook(std::function<void(KnobWidget*, QMenu*)> hook);
 
-    /// Explicit accent color for the value arc, indicator tick, and value
-    /// label (the knob body stays neutral). Pushed by Theme::tagCard — the
-    /// app stylesheet disables parent→child palette propagation, so palette
-    /// Highlight can NOT be used for this.
+    // Explicit accent color for the value arc, indicator tick, and value
+    // label (the knob body stays neutral). Pushed by Theme::tagCard — the
+    // app stylesheet disables parent→child palette propagation, so palette
+    // Highlight can NOT be used for this.
     void set_accent(const QColor& new_accent);
 
-    /// When true, the value label shows a rounded integer.
+    // When true, the value label shows a rounded integer.
     void set_integer_display(bool on) {
         int_display = on;
         update_label();
     }
 
-    /// Discrete knob: value() and valueChanged snap to multiples of `step`
-    /// (e.g. 1.0 for a list index); 0 = continuous.
+    // Discrete knob: value() and valueChanged snap to multiples of `step`
+    // (e.g. 1.0 for a list index); 0 = continuous.
     void set_snap(double step) {
         snap = step;
         update_label();
     }
-    /// Custom value label (e.g. note names for a sync knob); replaces the
-    /// number + unit text. Pass {} to restore the default.
+    // Custom value label (e.g. note names for a sync knob); replaces the
+    // number + unit text. Pass {} to restore the default.
     void set_value_formatter(std::function<QString(double)> f) {
         formatter = std::move(f);
         update_label();
     }
 
-    /// Logarithmic dial (frequencies, times, rates): equal travel = equal
-    /// ratio, so 100 Hz–1 kHz gets as much of the sweep as 1–10 kHz. Values
-    /// stored in presets don't change — only how the dial maps to them.
-    /// Requires min > 0. The wheel then steps 1 % of the travel.
+    // Logarithmic dial (frequencies, times, rates): equal travel = equal
+    // ratio, so 100 Hz–1 kHz gets as much of the sweep as 1–10 kHz. Values
+    // stored in presets don't change — only how the dial maps to them.
+    // Requires min > 0. The wheel then steps 1 % of the travel.
     void set_log_taper(bool on);
 
-    /// Set the scroll-wheel increment in value units (e.g. 0.1 for 0.1 dB).
-    /// Pass 0 to use the default (1% of range).
+    // Set the scroll-wheel increment in value units (e.g. 0.1 for 0.1 dB).
+    // Pass 0 to use the default (1% of range).
     void set_scroll_step(double step) {
         scroll_step = step;
     }

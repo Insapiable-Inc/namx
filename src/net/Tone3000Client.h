@@ -23,10 +23,6 @@ class QTimer;
 namespace npl
 {
 
-// ---------------------------------------------------------------------------
-// API data (the subset of the TONE3000 v1 schema the app shows)
-// ---------------------------------------------------------------------------
-
 struct T3kUser
 {
     int id = 0;
@@ -64,15 +60,13 @@ struct T3kModel
     QString name, model_url, size, architecture; // architecture "1" / "2" / "custom" / ""
 };
 
-// ---------------------------------------------------------------------------
-
-/// TONE3000 API client: OAuth 2.0 + PKCE through the system browser and a
-/// loopback callback server, Bearer requests with pre-emptive token refresh,
-/// a short in-memory listing cache, 429 back-off, model downloads with a
-/// `.t3k.json` sidecar, and image fetches through a disk cache. Every
-/// callback runs on the GUI thread. Free non-commercial tier only: the
-/// bounded list endpoints (trending / latest / favorited / downloaded /
-/// created) and the OAuth prompt flows; no catalog search calls.
+// TONE3000 API client: OAuth 2.0 + PKCE through the system browser and a
+// loopback callback server, Bearer requests with pre-emptive token refresh,
+// a short in-memory listing cache, 429 back-off, model downloads with a
+// `.t3k.json` sidecar, and image fetches through a disk cache. Every
+// callback runs on the GUI thread. Free non-commercial tier only: the
+// bounded list endpoints (trending / latest / favorited / downloaded /
+// created) and the OAuth prompt flows; no catalog search calls.
 class Tone3000Client : public QObject
 {
     Q_OBJECT
@@ -80,24 +74,24 @@ public:
     explicit Tone3000Client(QObject* parent = nullptr);
     ~Tone3000Client() override;
 
-    // --- Configuration -----------------------------------------------------
-    /// Publishable key (`t3k_pub_…`): QSettings `tone3000/clientId` overrides
-    /// the build-time NAM_TONE3000_CLIENT_ID define.
+    // Configuration
+    // Publishable key (`t3k_pub_…`): QSettings `tone3000/clientId` overrides
+    // the build-time NAM_TONE3000_CLIENT_ID define.
     static QString client_id();
     static void set_client_id(const QString& id);
     static bool has_client_id() {
         return !client_id().isEmpty();
     }
-    /// Where downloads land (QSettings `library/tone3000Dir`); always part of
-    /// the library's model and IR roots.
+    // Where downloads land (QSettings `library/tone3000Dir`); always part of
+    // the library's model and IR roots.
     static QString download_dir();
 
     static constexpr const char* SITE_URL = "https://www.tone3000.com";
-    /// "https://www.tone3000.com/api/v1", or NAM_TONE3000_API_BASE from the
-    /// environment (development: point the client at a mock server).
+    // "https://www.tone3000.com/api/v1", or NAM_TONE3000_API_BASE from the
+    // environment (development: point the client at a mock server).
     static QString api_base();
 
-    // --- Auth --------------------------------------------------------------
+    // Auth
     bool is_signed_in() const {
         return !access_token.isEmpty();
     }
@@ -110,8 +104,8 @@ public:
         STANDARD,
         SELECT_TONE
     };
-    /// Opens the browser. Ends with authFinished(). `extra` are extra
-    /// authorize-URL parameters (format, gears…).
+    // Opens the browser. Ends with authFinished(). `extra` are extra
+    // authorize-URL parameters (format, gears…).
     void start_auth(Flow flow, const QHash<QString, QString>& extra = {});
     bool auth_in_progress() const {
         return auth_server != nullptr;
@@ -119,7 +113,7 @@ public:
     void cancel_auth();
     void sign_out();
 
-    // --- Requests ----------------------------------------------------------
+    // Requests
     struct Result
     {
         bool ok = false;
@@ -135,7 +129,7 @@ public:
     };
     using Callback = std::function<void(const Result&)>;
 
-    /// Bounded lists. `page` is ignored by trending/latest (10 items, unpaged).
+    // Bounded lists. `page` is ignored by trending/latest (10 items, unpaged).
     enum class ListKind
     {
         TRENDING,
@@ -147,28 +141,28 @@ public:
     static QString list_path(ListKind k);
     void list_tones(ListKind kind, int page, Callback cb, bool use_cache = true);
     void fetch_tone(int tone_id, Callback cb);
-    /// All models of a tone (A2 + legacy sets merged, tone page order).
+    // All models of a tone (A2 + legacy sets merged, tone page order).
     void list_models(const T3kTone& tone, std::function<void(const Result&, QList<T3kModel>)> cb);
     void fetch_model(int model_id, Callback cb);
     void set_favorite(int tone_id, bool on, Callback cb);
     void fetch_current_user(Callback cb);
 
-    // --- Downloads ---------------------------------------------------------
-    /// Saves the model file under downloadDir()/<creator>/<tone>/ with a
-    /// sidecar; `cb(ok, path, error)`.
+    // Downloads
+    // Saves the model file under downloadDir()/<creator>/<tone>/ with a
+    // sidecar; `cb(ok, path, error)`.
     void download_model(const T3kModel& model, const T3kTone& tone,
                         std::function<void(bool, QString, QString)> cb);
-    /// Destination path a (tone, model) pair maps to — exists ⇒ downloaded.
+    // Destination path a (tone, model) pair maps to — exists ⇒ downloaded.
     static QString local_path_for(const T3kModel& model, const T3kTone& tone);
     static QString sidecar_path(const QString& model_file) {
         return model_file + ".t3k.json";
     }
 
-    // --- Images ------------------------------------------------------------
-    /// Fetches (disk-cached) and scales to fit `maxSize`; null pixmap on failure.
+    // Images
+    // Fetches (disk-cached) and scales to fit `maxSize`; null pixmap on failure.
     void fetch_image(const QString& url, const QSize& max_size, std::function<void(QPixmap)> cb);
 
-    // --- Parsing -----------------------------------------------------------
+    // Parsing
     static T3kUser parse_user(const QJsonObject& o);
     static T3kTone parse_tone(const QJsonObject& o);
     static T3kModel parse_model(const QJsonObject& o);
@@ -178,7 +172,7 @@ public:
 signals:
     void auth_changed(); // signed in / out
     void user_changed(); // profile arrived
-    /// `toneId` > 0 when a select_tone flow picked a tone.
+    // `toneId` > 0 when a select_tone flow picked a tone.
     void auth_finished(bool ok, const QString& error, int tone_id);
     void download_progress(int model_id, qint64 received, qint64 total);
     void status(const QString& message); // transient UI notices

@@ -10,10 +10,10 @@
 namespace npl
 {
 
-/// Double-tracking: from a mono signal, the right channel becomes a second
-/// "take" — a copy delayed 3–20 ms whose delay drifts randomly (timing and
-/// a little pitch), the left stays dry. A stereo input passes untouched:
-/// there is nothing mono left to double.
+// Double-tracking: from a mono signal, the right channel becomes a second
+// "take" — a copy delayed 3–20 ms whose delay drifts randomly (timing and
+// a little pitch), the left stays dry. A stereo input passes untouched:
+// there is nothing mono left to double.
 class DoublerProcessor : public EffectBase
 {
 public:

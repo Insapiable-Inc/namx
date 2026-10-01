@@ -8,8 +8,8 @@
 namespace npl
 {
 
-/// Tremolo: amplitude modulation. Stereo uses a 180° LFO offset (auto-pan, like the other
-/// modulation effects).
+// Tremolo: amplitude modulation. Stereo uses a 180° LFO offset (auto-pan, like the other
+// modulation effects).
 class TremoloProcessor : public EffectBase
 {
 public:

@@ -11,15 +11,15 @@
 namespace npl
 {
 
-/// 4-band semi-parametric EQ + low/high cut (Audio EQ Cookbook biquads):
-///   Bass     low shelf    40–500 Hz   (default 250 — the old fixed band)
-///   Middle   peak, Q 0.7  200–2.5 kHz (default 1 kHz)
-///   High-Mid peak, Q 1.0  800–8 kHz   (default 3 kHz)
-///   Treble   high shelf   1.5–12 kHz  (default 4 kHz)
-///   Low Cut  2nd-order high-pass 20–500 Hz (20 = off)
-///   High Cut 2nd-order low-pass 2–20 kHz (20 kHz = off)
-/// GUI setters rebuild coefficients under a mutex; the audio thread
-/// try_locks and skips a block rather than wait. Independent L/R state.
+// 4-band semi-parametric EQ + low/high cut (Audio EQ Cookbook biquads):
+//   Bass     low shelf    40–500 Hz   (default 250 — the old fixed band)
+//   Middle   peak, Q 0.7  200–2.5 kHz (default 1 kHz)
+//   High-Mid peak, Q 1.0  800–8 kHz   (default 3 kHz)
+//   Treble   high shelf   1.5–12 kHz  (default 4 kHz)
+//   Low Cut  2nd-order high-pass 20–500 Hz (20 = off)
+//   High Cut 2nd-order low-pass 2–20 kHz (20 kHz = off)
+// GUI setters rebuild coefficients under a mutex; the audio thread
+// try_locks and skips a block rather than wait. Independent L/R state.
 class EQProcessor : public EffectBase
 {
 public:

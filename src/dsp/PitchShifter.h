@@ -10,16 +10,16 @@
 namespace npl
 {
 
-/// Delay-line pitch shifter (mono, one per channel): two read taps sweep a
-/// window through a short delay line at a rate set by the pitch ratio, each
-/// faded by a Hann window half a period apart (the gains always sum to 1).
-///
-/// WSOLA alignment: when a tap restarts its sweep (silent at that moment),
-/// its new start is moved by up to ±12 ms to the position whose recent
-/// waveform best matches what the other tap is playing, so the crossfade
-/// joins two in-phase signals instead of beating (plain two-tap shifters
-/// cancel whole frequencies). Latency ≈ half the window (25 ms at 50 ms).
-/// Allocates only in prepare() (non-RT).
+// Delay-line pitch shifter (mono, one per channel): two read taps sweep a
+// window through a short delay line at a rate set by the pitch ratio, each
+// faded by a Hann window half a period apart (the gains always sum to 1).
+//
+// WSOLA alignment: when a tap restarts its sweep (silent at that moment),
+// its new start is moved by up to ±12 ms to the position whose recent
+// waveform best matches what the other tap is playing, so the crossfade
+// joins two in-phase signals instead of beating (plain two-tap shifters
+// cancel whole frequencies). Latency ≈ half the window (25 ms at 50 ms).
+// Allocates only in prepare() (non-RT).
 class PitchShifter
 {
 public:
@@ -44,7 +44,7 @@ public:
         prev[1] = 0.5f;
     }
 
-    /// Semitones (fractional allowed); 0 = passthrough delay.
+    // Semitones (fractional allowed); 0 = passthrough delay.
     void set_semitones(float st) {
         ratio = std::pow(2.0f, st / 12.0f);
     }

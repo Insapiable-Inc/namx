@@ -15,10 +15,6 @@ namespace npl
 namespace Theme
 {
 
-// ---------------------------------------------------------------------------
-// Palette
-// ---------------------------------------------------------------------------
-
 // Per-effect accents (user-chosen, 2026-08-10). IDs match
 // AudioEngine::effect_table; "neutral" covers Input/Output and fallbacks.
 struct FxColor
@@ -121,10 +117,6 @@ void tag_card(QWidget* card, const QString& fx_id) {
         card->style()->polish(card);
     }
 }
-
-// ---------------------------------------------------------------------------
-// Stylesheet
-// ---------------------------------------------------------------------------
 
 static const char* k_style_sheet = R"(
 /* === Window / base === */

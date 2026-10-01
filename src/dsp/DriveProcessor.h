@@ -8,10 +8,10 @@
 namespace npl
 {
 
-/// Overdrive / boost in front of the amp, Tube-Screamer style: only the
-/// high-passed part of the signal (above ~720 Hz) goes through the gain +
-/// soft-clip stage and is added back to the clean signal — the mid hump and
-/// tight lows every high-gain rig wants — then a tone low-pass and level.
+// Overdrive / boost in front of the amp, Tube-Screamer style: only the
+// high-passed part of the signal (above ~720 Hz) goes through the gain +
+// soft-clip stage and is added back to the clean signal — the mid hump and
+// tight lows every high-gain rig wants — then a tone low-pass and level.
 class DriveProcessor : public EffectBase
 {
 public:

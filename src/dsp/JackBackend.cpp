@@ -122,7 +122,7 @@ vector<IAudioBackend::DeviceInfo> JackBackend::enumerate_output_devices() const 
     return {{"default", "JACK Server"}};
 }
 
-// ---- Port connection persistence ------------------------------------
+// Port connection persistence
 
 IAudioBackend::PortConnections JackBackend::current_connections() const {
     PortConnections out;
@@ -195,7 +195,7 @@ void JackBackend::apply_connections(const PortConnections& c) {
     }
 }
 
-// ---- JACK callbacks --------------------------------------------------
+// JACK callbacks
 
 int JackBackend::jack_process_callback(jack_nframes_t nframes, void* arg) {
     return static_cast<JackBackend*>(arg)->process_audio(nframes);

@@ -20,8 +20,8 @@ static void clear_kernel_buffers(vector<float> buffers[2], int write_pos[2]) {
     }
 }
 
-/// Windowed-sinc resampler. Produces at most maxOut output samples at fsOut
-/// from `in` at fsIn, band-limited to the lower of the two Nyquist rates.
+// Windowed-sinc resampler. Produces at most maxOut output samples at fsOut
+// from `in` at fsIn, band-limited to the lower of the two Nyquist rates.
 static vector<float> resample_sinc(const vector<float>& in, double fs_in, double fs_out,
                                    size_t max_out) {
     if (in.empty()) {

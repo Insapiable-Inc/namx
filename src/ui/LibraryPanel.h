@@ -20,9 +20,9 @@ class QTimer;
 namespace npl
 {
 
-/// All library entries (every kind) as a flat list model. Favorites, recents
-/// and the currently loaded file per kind are overlaid here as roles so the
-/// proxies and the delegate never touch QSettings.
+// All library entries (every kind) as a flat list model. Favorites, recents
+// and the currently loaded file per kind are overlaid here as roles so the
+// proxies and the delegate never touch QSettings.
 class LibraryListModel : public QAbstractListModel
 {
     Q_OBJECT
@@ -66,8 +66,8 @@ private:
     QString loaded[3];
 };
 
-/// One proxy per kind: kind filter, search words, All / Favorites / Recent
-/// mode and the sort key. Recent mode always sorts by recency.
+// One proxy per kind: kind filter, search words, All / Favorites / Recent
+// mode and the sort key. Recent mode always sorts by recency.
 class LibraryFilterProxy : public QSortFilterProxyModel
 {
     Q_OBJECT
@@ -101,8 +101,8 @@ private:
     Sort sort_order{Sort::NAME};
 };
 
-/// Two-line rows (name / summary), a ★ toggle at the right edge, and an
-/// accent bar + accent name for the entry that is currently loaded.
+// Two-line rows (name / summary), a ★ toggle at the right edge, and an
+// accent bar + accent name for the entry that is currently loaded.
 class LibraryItemDelegate : public QStyledItemDelegate
 {
     Q_OBJECT
@@ -113,8 +113,8 @@ public:
     static QRect star_rect(const QRect& row);
 };
 
-/// QListView that routes a click on the ★ to favoriteToggled instead of
-/// changing the selection, and Return/Enter to activated.
+// QListView that routes a click on the ★ to favoriteToggled instead of
+// changing the selection, and Return/Enter to activated.
 class LibraryListView : public QListView
 {
     Q_OBJECT
@@ -133,35 +133,35 @@ protected:
     }
 };
 
-/// The Library dock content: Models / IRs / Presets sections, search,
-/// favorites, recents, sort, and the list. Selecting an entry (click, arrow
-/// keys, PgUp/PgDn, Return) emits activated(); the owner loads the file and
-/// reports back through setLoadedPath() so the list can mark it.
+// The Library dock content: Models / IRs / Presets sections, search,
+// favorites, recents, sort, and the list. Selecting an entry (click, arrow
+// keys, PgUp/PgDn, Return) emits activated(); the owner loads the file and
+// reports back through setLoadedPath() so the list can mark it.
 class LibraryPanel : public QWidget
 {
     Q_OBJECT
 public:
     explicit LibraryPanel(LibraryIndex& new_index, QWidget* parent = nullptr);
 
-    /// Switch to a section and give the list keyboard focus.
+    // Switch to a section and give the list keyboard focus.
     void show_section(LibraryEntry::Kind kind);
     void focus_search();
 
-    /// Mark the loaded file of a kind (empty = nothing loaded).
+    // Mark the loaded file of a kind (empty = nothing loaded).
     void set_loaded_path(LibraryEntry::Kind kind, const QString& path);
     QString loaded_path(LibraryEntry::Kind kind) const;
-    /// Push a path to the top of the recents list (any load, any source).
+    // Push a path to the top of the recents list (any load, any source).
     void note_used(const QString& path);
 
-    /// Path `step` rows away from `fromPath` in the section's current visible
-    /// order (wraps around); empty when the section is empty.
+    // Path `step` rows away from `fromPath` in the section's current visible
+    // order (wraps around); empty when the section is empty.
     QString neighbour(LibraryEntry::Kind kind, const QString& from_path, int step) const;
 
-    /// Root-folder editor dialog; applies to the index on OK.
+    // Root-folder editor dialog; applies to the index on OK.
     void edit_folders();
 
 signals:
-    /// The user picked a file in the list.
+    // The user picked a file in the list.
     void activated(LibraryEntry::Kind kind, const QString& path);
 
 private:

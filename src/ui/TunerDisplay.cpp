@@ -109,7 +109,7 @@ void TunerDisplay::paintEvent(QPaintEvent*) {
     const QColor green = Theme::led_green();
     const QColor red = Theme::led_red();
 
-    // ---- LED ladder across the top ----
+    // LED ladder across the top
     {
         const qreal margin = 14.0;
         const qreal led_d = 6.0;
@@ -154,7 +154,7 @@ void TunerDisplay::paintEvent(QPaintEvent*) {
         }
     }
 
-    // ---- Seven-segment note in the center ----
+    // Seven-segment note in the center
     const QColor digit_color = !valid ? Theme::track().lighter(150) : in_tune ? green : red;
     const qreal w = 18.0, h = 26.0, t = 3.5;
     const qreal half = (h - 3 * t) / 2.0;
@@ -205,7 +205,7 @@ void TunerDisplay::paintEvent(QPaintEvent*) {
         p.drawText(sharp_rect, Qt::AlignCenter, "#");
     }
 
-    // ---- Signed cents readout, right of the digit ----
+    // Signed cents readout, right of the digit
     {
         QFont f = font();
         f.setPointSizeF(10.0);
@@ -219,7 +219,7 @@ void TunerDisplay::paintEvent(QPaintEvent*) {
         p.drawText(text_rect, Qt::AlignLeft | Qt::AlignVCenter, text);
     }
 
-    // ---- Left of the digit: detected Hz, or the reference when that's off ----
+    // Left of the digit: detected Hz, or the reference when that's off
     {
         QFont f = font();
         f.setPointSizeF(show_hz ? 10.0 : 8.5);

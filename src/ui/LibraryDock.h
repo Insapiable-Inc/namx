@@ -15,8 +15,8 @@ class LibraryPanel;
 class Tone3000Client;
 class Tone3000Panel;
 
-/// Content of the Library dock: a two-way switch between the local library
-/// and the TONE3000 community tab, each a full panel with its own state.
+// Content of the Library dock: a two-way switch between the local library
+// and the TONE3000 community tab, each a full panel with its own state.
 class LibraryDock : public QWidget
 {
     Q_OBJECT

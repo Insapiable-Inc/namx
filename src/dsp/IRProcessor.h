@@ -12,13 +12,13 @@
 namespace npl
 {
 
-/// Cabinet: two IR slots (A, B), each with level, pan and phase, a Blend
-/// between them, then Low/High Cut (12 dB/oct) on the result.
-///
-/// Slot A alone with default settings is exactly the old single-IR cab
-/// (mono stays mono). Different pans — or a stereo input — give a stereo
-/// output. Each loader counts every block (RtSlot reclaim) even when its
-/// slot is empty or the cab is bypassed.
+// Cabinet: two IR slots (A, B), each with level, pan and phase, a Blend
+// between them, then Low/High Cut (12 dB/oct) on the result.
+//
+// Slot A alone with default settings is exactly the old single-IR cab
+// (mono stays mono). Different pans — or a stereo input — give a stereo
+// output. Each loader counts every block (RtSlot reclaim) even when its
+// slot is empty or the cab is bypassed.
 class IRProcessor : public EffectBase
 {
 public:

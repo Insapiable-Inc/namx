@@ -24,10 +24,6 @@
 namespace npl
 {
 
-// ---------------------------------------------------------------------------
-// BpmField
-// ---------------------------------------------------------------------------
-
 BpmField::BpmField(QWidget* parent)
     : QWidget(parent) {
     setObjectName("bpmField");
@@ -151,10 +147,6 @@ void BpmField::end_edit(bool commit) {
     update();
 }
 
-// ---------------------------------------------------------------------------
-// BeatLeds
-// ---------------------------------------------------------------------------
-
 BeatLeds::BeatLeds(QWidget* parent)
     : QWidget(parent) {
     setCursor(Qt::PointingHandCursor);
@@ -220,10 +212,6 @@ void BeatLeds::mousePressEvent(QMouseEvent* ev) {
     emit accents_changed(accents);
 }
 
-// ---------------------------------------------------------------------------
-// TempoBar
-// ---------------------------------------------------------------------------
-
 static const char* k_sound_names[] = {"Click", "Wood", "Beep", "Cowbell"};
 static const char* k_subdiv_names[] = {"Beats", "Eighths", "Triplets", "Sixteenths"};
 static const char* k_subdiv_short[] = {"♩", "♪♪", "3", "♬"};
@@ -277,7 +265,7 @@ TempoBar::TempoBar(Metronome& metronome, QWidget* parent)
     lay->addWidget(tap_button);
     lay->addSpacing(18);
 
-    // ---- Metronome ----
+    // Metronome
     auto* metro_caption = new QLabel("Metronome", this);
     metro_caption->setObjectName("presetCaption");
     lay->addWidget(metro_caption);

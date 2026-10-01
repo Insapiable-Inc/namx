@@ -8,10 +8,10 @@
 namespace npl
 {
 
-/// Stereo-linked look-ahead peak limiter on the output stage (after the
-/// output gain, before the metronome): 1 ms look-ahead, ceiling −0.3 dBFS,
-/// 80 ms release. When off it costs nothing and adds no latency; when on it
-/// delays the output by the 1 ms look-ahead.
+// Stereo-linked look-ahead peak limiter on the output stage (after the
+// output gain, before the metronome): 1 ms look-ahead, ceiling −0.3 dBFS,
+// 80 ms release. When off it costs nothing and adds no latency; when on it
+// delays the output by the 1 ms look-ahead.
 class OutputLimiter
 {
 public:
@@ -23,7 +23,7 @@ public:
         return enabled.load();
     }
 
-    /// Deepest reduction since the last take (dB ≥ 0), for a meter.
+    // Deepest reduction since the last take (dB ≥ 0), for a meter.
     float take_reduction_db() {
         return gr_peak_db.exchange(0.0f);
     }

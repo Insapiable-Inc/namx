@@ -8,10 +8,10 @@
 namespace npl
 {
 
-/// Volume pedal: Position 0–100 % (heel = silence, toe = unity) on a curve
-/// bent through the Mid level at the half-way point — set Mid low for swells
-/// that stay quiet until late in the travel. Gain is smoothed (~10 ms), so an
-/// expression pedal over MIDI never zips.
+// Volume pedal: Position 0–100 % (heel = silence, toe = unity) on a curve
+// bent through the Mid level at the half-way point — set Mid low for swells
+// that stay quiet until late in the travel. Gain is smoothed (~10 ms), so an
+// expression pedal over MIDI never zips.
 class VolumeProcessor : public EffectBase
 {
 public:

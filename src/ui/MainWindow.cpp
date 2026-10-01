@@ -66,10 +66,6 @@
 namespace npl
 {
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
 // Mime type carrying the effect ID of a dragged strip card.
 static const char EFFECT_MIME[] = "application/x-nam-effect-id";
 
@@ -167,8 +163,6 @@ static std::function<QString(double)> hz_label(double off_at = 0.0) {
     };
 }
 
-// ---------------------------------------------------------------------------
-
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , engine(make_unique<AudioEngine>()) {
@@ -257,8 +251,6 @@ MainWindow::~MainWindow() {
     engine->stop();
     delete midi; // stop MIDI input before the rest of the window is torn down
 }
-
-// ---------------------------------------------------------------------------
 
 QFrame* MainWindow::make_row_card(const QString& title) {
     auto* card = new QFrame;
@@ -393,10 +385,6 @@ QWidget* MainWindow::make_effect_row(const QString& title, ToggleSwitch*& toggle
     return card;
 }
 
-// ---------------------------------------------------------------------------
-// UI setup
-// ---------------------------------------------------------------------------
-
 void MainWindow::setup_ui() {
     auto* central = new QWidget(this);
     setCentralWidget(central);
@@ -404,7 +392,7 @@ void MainWindow::setup_ui() {
     root_layout->setContentsMargins(8, 4, 8, 6);
     root_layout->setSpacing(4);
 
-    // ---- Menu bar ----
+    // Menu bar
     QMenu* library_menu = nullptr;
     QMenu* preset_menu = nullptr;
     QMenu* midi_top_menu = nullptr;
@@ -483,7 +471,7 @@ void MainWindow::setup_ui() {
     connect(audio_bar, &AudioStatusBar::reconnect_requested, this,
             &MainWindow::restart_audio_with_current_devices);
 
-    // ---- Scrollable effect strip ----
+    // Scrollable effect strip
     // (NAM model / IR file pickers live inside the Amp and IR rows below.)
     auto* scroll = new QScrollArea;
     scroll->setWidgetResizable(true);
@@ -501,7 +489,7 @@ void MainWindow::setup_ui() {
     // NOT added to the layout — rebuildEffectStrip lays them out in engine
     // chain order, so audio order and UI order stay in sync automatically.
 
-    // ---- Tuner ----
+    // Tuner
     {
         QFrame* col = make_row_card("Tuner");
         QHBoxLayout* lay = row_layout(col);
@@ -557,7 +545,7 @@ void MainWindow::setup_ui() {
         fx_cols[&engine->get_tuner()] = col;
     }
 
-    // ---- Transpose ----
+    // Transpose
     {
         KnobWidget* semis =
             late_knob("transpose", "semitones", new KnobWidget("Semitones", -12.0, 12.0, 0.0),
@@ -581,7 +569,7 @@ void MainWindow::setup_ui() {
         fx_cols[&engine->get_transpose()] = col;
     }
 
-    // ---- Noise Gate ----
+    // Noise Gate
     {
         using namespace NAMConstants;
         knob_gate_thresh = new KnobWidget("Threshold", GATE_THRESH_MIN, GATE_THRESH_MAX,
@@ -603,7 +591,7 @@ void MainWindow::setup_ui() {
         fx_cols[&engine->get_gate()] = col;
     }
 
-    // ---- Compressor ----
+    // Compressor
     {
         using namespace NAMConstants;
         knob_comp_thresh = new KnobWidget("Threshold", COMP_THRESH_MIN, COMP_THRESH_MAX,
@@ -632,7 +620,7 @@ void MainWindow::setup_ui() {
         fx_cols[&engine->get_comp()] = col;
     }
 
-    // ---- Dynamic Wah ----
+    // Dynamic Wah
     {
         using namespace NAMConstants;
         knob_wah_sens =
@@ -667,7 +655,7 @@ void MainWindow::setup_ui() {
         fx_cols[&engine->get_wah()] = col;
     }
 
-    // ---- Drive (TS-style boost in front of the amp) ----
+    // Drive (TS-style boost in front of the amp)
     {
         using namespace NAMConstants;
         knob_drive = new KnobWidget("Drive", DRIVE_MIN, DRIVE_MAX, DRIVE_DEFAULT, "%");
@@ -684,7 +672,7 @@ void MainWindow::setup_ui() {
         fx_cols[&engine->get_drive()] = col;
     }
 
-    // ---- Amp (NAM) ----
+    // Amp (NAM)
     {
         QWidget* col = make_effect_row("Amplifier", sw_nam_enable, {}, &sw_nam_stereo);
         sw_nam_stereo->setToolTip("Stereo input: run the amp per channel (twice the CPU).\n"
@@ -697,7 +685,7 @@ void MainWindow::setup_ui() {
         fx_cols[&engine->get_nam()] = col;
     }
 
-    // ---- EQ ----
+    // EQ
     {
         using namespace NAMConstants;
         knob_low = new KnobWidget("Bass", EQ_BAND_MIN, EQ_BAND_MAX, EQ_BAND_DEFAULT, "dB");
@@ -748,7 +736,7 @@ void MainWindow::setup_ui() {
         fx_cols[&engine->get_eq()] = col;
     }
 
-    // ---- Doubler ----
+    // Doubler
     {
         using namespace NAMConstants;
         knob_dbl_spread = new KnobWidget("Spread", DOUBLER_SPREAD_MIN, DOUBLER_SPREAD_MAX,
@@ -766,7 +754,7 @@ void MainWindow::setup_ui() {
         fx_cols[&engine->get_doubler()] = col;
     }
 
-    // ---- Volume pedal ----
+    // Volume pedal
     {
         using namespace NAMConstants;
         knob_vol_pos =
@@ -782,7 +770,7 @@ void MainWindow::setup_ui() {
         fx_cols[&engine->get_volume()] = col;
     }
 
-    // ---- Flanger ----
+    // Flanger
     {
         using namespace NAMConstants;
         knob_fl_rate =
@@ -820,7 +808,7 @@ void MainWindow::setup_ui() {
         fx_cols[&engine->get_flanger()] = col;
     }
 
-    // ---- Phaser ----
+    // Phaser
     {
         using namespace NAMConstants;
         knob_ph_rate =
@@ -859,7 +847,7 @@ void MainWindow::setup_ui() {
         fx_cols[&engine->get_phaser()] = col;
     }
 
-    // ---- Chorus ----
+    // Chorus
     {
         using namespace NAMConstants;
         knob_ch_rate =
@@ -896,7 +884,7 @@ void MainWindow::setup_ui() {
         fx_cols[&engine->get_chorus()] = col;
     }
 
-    // ---- Tremolo ----
+    // Tremolo
     {
         using namespace NAMConstants;
         knob_tr_rate =
@@ -917,7 +905,7 @@ void MainWindow::setup_ui() {
         fx_cols[&engine->get_tremolo()] = col;
     }
 
-    // ---- Delay ----
+    // Delay
     {
         using namespace NAMConstants;
         knob_del_time =
@@ -1004,7 +992,7 @@ void MainWindow::setup_ui() {
         fx_cols[&engine->get_delay()] = col;
     }
 
-    // ---- Reverb ----
+    // Reverb
     {
         using namespace NAMConstants;
         knob_rev_room =
@@ -1060,7 +1048,7 @@ void MainWindow::setup_ui() {
         fx_cols[&engine->get_reverb()] = col;
     }
 
-    // ---- IR toggle ----
+    // IR toggle
     {
         QWidget* col = make_effect_row("Cabinet", sw_ir_enable, {});
         sw_ir_enable->setChecked(true);
@@ -1297,7 +1285,7 @@ void MainWindow::setup_ui() {
     rack_row->addWidget(output_card);
     root_layout->addLayout(rack_row, 1);
 
-    // ---- Library dock (left of the rig; closable, movable, remembers state) ----
+    // Library dock (left of the rig; closable, movable, remembers state)
     library_tabs = new LibraryDock(*library_index, *tone3000);
     library = library_tabs->get_local();
     t3k_panel = library_tabs->tone3000();
@@ -1462,10 +1450,6 @@ void MainWindow::apply_chain_order(const QStringList& ids) {
     engine->set_chain_order(to_std_strings(ids));
     rebuild_effect_strip();
 }
-
-// ---------------------------------------------------------------------------
-// Card drag & drop
-// ---------------------------------------------------------------------------
 
 void MainWindow::start_card_drag(QWidget* card) {
     EffectBase* fx = nullptr;
@@ -1778,10 +1762,6 @@ void MainWindow::restart_audio_with_current_devices() {
     }
 }
 
-// ---------------------------------------------------------------------------
-// File slots
-// ---------------------------------------------------------------------------
-
 void MainWindow::on_import_nam() {
     const QString path = QFileDialog::getOpenFileName(nullptr, "Import NAM Model",
                                                       QSettings().value("files/lastNAM").toString(),
@@ -1813,10 +1793,6 @@ void MainWindow::on_unload_ir() {
     library->set_loaded_path(LibraryEntry::Kind::IR, {});
     update_hero_cards();
 }
-
-// ---------------------------------------------------------------------------
-// Loading — shared by dialogs, the library, drops, session restore, presets
-// ---------------------------------------------------------------------------
 
 bool MainWindow::load_model_file(const QString& path, bool quiet) {
     const QString clean = QDir::cleanPath(path);
@@ -1972,10 +1948,6 @@ void MainWindow::open_paths(const QStringList& paths) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// Parameter registry
-// ---------------------------------------------------------------------------
-
 void MainWindow::knob_param(const QString& group, const QString& key, KnobWidget* knob,
                             const std::function<void(double)>& apply) {
     connect(knob, &KnobWidget::value_changed, this, [this, apply](double v) {
@@ -2001,10 +1973,6 @@ void MainWindow::toggle_param(const QString& group, const QString& key, ToggleSw
                             target_label_for(sw, group, key), label, sw);
 }
 
-// ---------------------------------------------------------------------------
-// MIDI
-// ---------------------------------------------------------------------------
-
 QString MainWindow::target_label_for(QWidget* w, const QString& group, const QString& key) const {
     // The card's display name ("Delay", "Input") groups the target.
     for (QWidget* p = w; p; p = p->parentWidget()) {
@@ -2016,7 +1984,7 @@ QString MainWindow::target_label_for(QWidget* w, const QString& group, const QSt
 }
 
 void MainWindow::setup_midi(QMenu* top_menu) {
-    // ---- Actions ----
+    // Actions
     for (int i = 0; i < PresetBar::SLOT_COUNT; ++i) {
         midi_mapper->add_action(QString("action:slot%1").arg(i + 1), "Presets",
                                 QString("Slot %1").arg(i + 1), [this, i] {
@@ -2039,7 +2007,7 @@ void MainWindow::setup_midi(QMenu* top_menu) {
         tempo_bar->tap_tempo();
     });
 
-    // ---- Learn entries in every context menu ----
+    // Learn entries in every context menu
     KnobWidget::set_menu_hook([this](KnobWidget* k, QMenu* menu) {
         if (const MidiTarget* t = midi_mapper->target_for(k)) {
             menu->addSeparator();
@@ -2057,7 +2025,7 @@ void MainWindow::setup_midi(QMenu* top_menu) {
     connect(learn_esc, &QShortcut::activated, midi_mapper, &MidiMapper::cancel_learn);
     connect(midi_mapper, &MidiMapper::learn_changed, this, &MainWindow::on_learn_changed);
 
-    // ---- Input ----
+    // Input
     midi = MidiInput::create(this);
     connect(midi, &MidiInput::message_received, midi_mapper, &MidiMapper::handle);
     midi_ok = midi->start();
@@ -2088,7 +2056,7 @@ void MainWindow::setup_midi(QMenu* top_menu) {
         midi_ok ? QString("MIDI input (%1) — MIDI → Mappings…").arg(midi->backend_name())
                 : QString("MIDI is not available on this system"));
 
-    // ---- Menu ----
+    // Menu
     connect(top_menu->addAction("Mappings…"), &QAction::triggered, this, [this] {
         MidiMappingsDialog dlg(*midi_mapper, midi_ok ? midi : nullptr, this);
         dlg.exec();
@@ -2193,10 +2161,6 @@ void MainWindow::on_learn_changed() {
     }
 }
 
-// ---------------------------------------------------------------------------
-// Tempo sync
-// ---------------------------------------------------------------------------
-
 void MainWindow::add_tempo_sync(QWidget* card, KnobWidget* free_knob, const QString& label,
                                 bool is_time, int default_note, double min, double max,
                                 std::function<void(double)> push) {
@@ -2266,10 +2230,6 @@ void MainWindow::set_tempo(double new_bpm) {
         }
     }
 }
-
-// ---------------------------------------------------------------------------
-// Session state — the registry serialized to QSettings under "session/"
-// ---------------------------------------------------------------------------
 
 void MainWindow::schedule_session_save() {
     if (session_save_timer) {
@@ -2568,10 +2528,6 @@ void MainWindow::register_parameters() {
     late_params.clear();
 }
 
-// ---------------------------------------------------------------------------
-// Meters & tuner
-// ---------------------------------------------------------------------------
-
 void MainWindow::update_meters() {
     meter_in->set_peak(engine->take_input_peak());
     meter_out->set_peak(engine->take_output_peak());
@@ -2631,10 +2587,6 @@ void MainWindow::update_tuner() {
     tuner_display->set_reading(QString::fromStdString(TunerProcessor::midi_to_name(midi_note)),
                                cents, true, freq);
 }
-
-// ---------------------------------------------------------------------------
-// Persisted file state
-// ---------------------------------------------------------------------------
 
 void MainWindow::restore_last_files() {
     QSettings s;
@@ -2699,10 +2651,6 @@ void MainWindow::save_connections() {
     s.setValue("connections/outputRDests", to_list(c.output_r_dests));
     s.setValue("connections/saved", true);
 }
-
-// ---------------------------------------------------------------------------
-// Hero rows (Amplifier / Cabinet)
-// ---------------------------------------------------------------------------
 
 void MainWindow::update_hero_cards() {
     auto set_status = [this](QLabel* name, QLabel* meta, QLabel* origin, bool loaded,
@@ -2781,10 +2729,6 @@ void MainWindow::update_rig_status() {
                     : "none",
                  t3k ? "signed in" : "signed out"));
 }
-
-// ---------------------------------------------------------------------------
-// Preset save / load
-// ---------------------------------------------------------------------------
 
 void MainWindow::seed_starter_presets() {
     // Once per config: copy the bundled starters into <presets>/Starter so a

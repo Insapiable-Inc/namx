@@ -24,10 +24,6 @@
 namespace npl
 {
 
-// ---------------------------------------------------------------------------
-// VerticalDial — QDial that maps vertical mouse drag to value changes.
-// ---------------------------------------------------------------------------
-
 class VerticalDial : public QDial
 {
 public:
@@ -151,10 +147,6 @@ private:
     int drag_start_y{0};
     int drag_start_val{0};
 };
-
-// ---------------------------------------------------------------------------
-// KnobWidget
-// ---------------------------------------------------------------------------
 
 KnobWidget::KnobWidget(const QString& new_label, double min_val, double max_val, double default_val,
                        const QString& new_unit, Form form, QWidget* parent)

@@ -570,7 +570,7 @@ Tone3000Panel::Tone3000Panel(Tone3000Client& new_client, LibraryIndex& new_index
     sync_state();
 }
 
-// --- Header ------------------------------------------------------------------
+// Header
 
 void Tone3000Panel::build_header() {
     auto* header = new QWidget;
@@ -671,7 +671,7 @@ void Tone3000Panel::update_user_header() {
     }
 }
 
-// --- Pages -------------------------------------------------------------------
+// Pages
 
 void Tone3000Panel::build_setup_page() {
     auto* page = new QWidget;
@@ -985,7 +985,7 @@ void Tone3000Panel::build_detail_page() {
     pages->insertWidget(PAGE_DETAIL, page);
 }
 
-// --- State -------------------------------------------------------------------
+// State
 
 void Tone3000Panel::sync_state() {
     update_user_header();
@@ -1129,7 +1129,7 @@ void Tone3000Panel::toggle_favorite(int tone_id, bool on) {
     });
 }
 
-// --- Detail ------------------------------------------------------------------
+// Detail
 
 void Tone3000Panel::show_tone(int tone_id) {
     pages->setCurrentIndex(PAGE_DETAIL);

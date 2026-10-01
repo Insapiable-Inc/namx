@@ -15,11 +15,11 @@ namespace npl
 class MidiInput;
 class MidiMapper;
 
-/// MIDI → Mappings…: the device list (enable checkboxes, follow MIDI clock),
-/// the mapping table (on, source, channel, number, target, mode, range,
-/// delete), per-row Learn, and Load / Save / Defaults for mapping files.
-/// Every edit goes straight to the mapper (no OK/Cancel), like the rest of
-/// the app's settings.
+// MIDI → Mappings…: the device list (enable checkboxes, follow MIDI clock),
+// the mapping table (on, source, channel, number, target, mode, range,
+// delete), per-row Learn, and Load / Save / Defaults for mapping files.
+// Every edit goes straight to the mapper (no OK/Cancel), like the rest of
+// the app's settings.
 class MidiMappingsDialog : public QDialog
 {
     Q_OBJECT

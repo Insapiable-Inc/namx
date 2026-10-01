@@ -12,9 +12,9 @@
 namespace npl
 {
 
-/// Loads an IR (Impulse Response) WAV file and applies it as a convolution
-/// cab simulator using a simple brute-force FIR convolution.
-/// The IR is resampled to the engine rate, then truncated to MAX_IR_LENGTH.
+// Loads an IR (Impulse Response) WAV file and applies it as a convolution
+// cab simulator using a simple brute-force FIR convolution.
+// The IR is resampled to the engine rate, then truncated to MAX_IR_LENGTH.
 class IRLoader
 {
 public:
@@ -23,12 +23,12 @@ public:
     IRLoader();
     ~IRLoader();
 
-    /// Load an IR from a WAV file. Never blocks the audio thread: the new
-    /// kernel is published through an RtSlot and the old one is destroyed
-    /// only once the audio thread has left it. Returns true on success.
+    // Load an IR from a WAV file. Never blocks the audio thread: the new
+    // kernel is published through an RtSlot and the old one is destroyed
+    // only once the audio thread has left it. Returns true on success.
     bool load(const string& path);
 
-    /// Unload the current IR (bypass mode)
+    // Unload the current IR (bypass mode)
     void unload();
 
     bool is_loaded() const {
@@ -38,31 +38,31 @@ public:
         return file_path;
     }
 
-    /// Human-readable reason the last load() returned false (GUI thread only).
+    // Human-readable reason the last load() returned false (GUI thread only).
     string get_last_error() const {
         return last_error;
     }
 
-    /// Engine sample rate. If an IR is loaded whose kernel was built for a
-    /// different rate, it is rebuilt (resampled) and republished. Called
-    /// with no audio callback in flight (backend buffer-size hook).
+    // Engine sample rate. If an IR is loaded whose kernel was built for a
+    // different rate, it is rebuilt (resampled) and republished. Called
+    // with no audio callback in flight (backend buffer-size hook).
     void set_target_sample_rate(double sr);
 
-    /// Free retired kernels; `audioStopped` frees unconditionally.
+    // Free retired kernels; `audioStopped` frees unconditionally.
     void reclaim_retired(bool audio_stopped) {
         slot.reclaim(audio_stopped);
     }
 
-    /// Process a block in-place. inputIsStereo=false means L and R hold the
-    /// same signal: the convolution then runs once (L) and is copied to R,
-    /// while both per-channel delay lines are still fed so the R state is
-    /// valid the moment a stereo block arrives. inputIsStereo=true convolves
-    /// each channel with its own state. `enabled=false` only counts the
-    /// block (needed so retired kernels can be reclaimed) and leaves the
-    /// audio untouched. Audio thread only.
+    // Process a block in-place. inputIsStereo=false means L and R hold the
+    // same signal: the convolution then runs once (L) and is copied to R,
+    // while both per-channel delay lines are still fed so the R state is
+    // valid the moment a stereo block arrives. inputIsStereo=true convolves
+    // each channel with its own state. `enabled=false` only counts the
+    // block (needed so retired kernels can be reclaimed) and leaves the
+    // audio untouched. Audio thread only.
     void process_block(float* l, float* r, size_t num_frames, bool input_is_stereo, bool enabled);
 
-    /// Reset convolution state of the active kernel. Audio thread only.
+    // Reset convolution state of the active kernel. Audio thread only.
     void reset();
 
 private:

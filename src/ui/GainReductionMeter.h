@@ -9,18 +9,18 @@
 namespace npl
 {
 
-/// Gain-reduction meter for the Compressor / Gate rows: a caption with the
-/// current reduction in dB over a thin bar that fills right → left (the
-/// console convention: reduction "pulls" the level down). Instant attack,
-/// time-based release; repaints only when the reading moves.
+// Gain-reduction meter for the Compressor / Gate rows: a caption with the
+// current reduction in dB over a thin bar that fills right → left (the
+// console convention: reduction "pulls" the level down). Instant attack,
+// time-based release; repaints only when the reading moves.
 class GainReductionMeter : public QWidget
 {
     Q_OBJECT
 public:
-    /// `rangeDb` = reduction at full bar; `accent` = the card's color.
+    // `rangeDb` = reduction at full bar; `accent` = the card's color.
     GainReductionMeter(float new_range_db, const QColor& new_accent, QWidget* parent = nullptr);
 
-    /// Deepest reduction since the last call (dB, ≥ 0).
+    // Deepest reduction since the last call (dB, ≥ 0).
     void set_reduction(float new_db);
 
     QSize sizeHint() const override {

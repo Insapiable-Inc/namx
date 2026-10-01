@@ -22,7 +22,7 @@ class QToolButton;
 namespace npl
 {
 
-/// Tone cards for one list (trending / latest / favorites / …).
+// Tone cards for one list (trending / latest / favorites / …).
 class ToneListModel : public QAbstractListModel
 {
     Q_OBJECT
@@ -64,7 +64,7 @@ private:
     QHash<int, bool> downloaded; // tone id → any model in the library
 };
 
-/// Card: 44 px image, title, "gear · format", creator avatar + @name, ★ and ✓.
+// Card: 44 px image, title, "gear · format", creator avatar + @name, ★ and ✓.
 class ToneDelegate : public QStyledItemDelegate
 {
     Q_OBJECT
@@ -75,7 +75,7 @@ public:
     static QRect star_rect(const QRect& row);
 };
 
-/// Models of one tone with per-row download state.
+// Models of one tone with per-row download state.
 class ToneModelsModel : public QAbstractListModel
 {
     Q_OBJECT
@@ -134,23 +134,23 @@ public:
     QSize sizeHint(const QStyleOptionViewItem& opt, const QModelIndex& idx) const override;
 };
 
-/// The TONE3000 tab of the Library dock. States: no publishable key → setup;
-/// signed out → partnership splash; signed in → bounded lists (Trending,
-/// Latest, Favorites, Downloads, Mine) + "Browse TONE3000" (select flow);
-/// tone detail with per-model download / load.
+// The TONE3000 tab of the Library dock. States: no publishable key → setup;
+// signed out → partnership splash; signed in → bounded lists (Trending,
+// Latest, Favorites, Downloads, Mine) + "Browse TONE3000" (select flow);
+// tone detail with per-model download / load.
 class Tone3000Panel : public QWidget
 {
     Q_OBJECT
 public:
     Tone3000Panel(Tone3000Client& new_client, LibraryIndex& new_index, QWidget* parent = nullptr);
 
-    /// Open a tone's detail page (after the select flow, or from a preset).
+    // Open a tone's detail page (after the select flow, or from a preset).
     void show_tone(int tone_id);
-    /// Start the browser-based catalog picker.
+    // Start the browser-based catalog picker.
     void browse_catalog();
 
 signals:
-    /// A downloaded model/IR should be loaded into the rig.
+    // A downloaded model/IR should be loaded into the rig.
     void load_requested(LibraryEntry::Kind kind, const QString& path);
 
 protected:

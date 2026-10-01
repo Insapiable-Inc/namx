@@ -9,10 +9,10 @@
 namespace npl
 {
 
-/// Chorus: LFO-modulated delay. Modes: Normal (one voice), Tri (three voices
-/// 120° apart — lusher), Vintage (triangle LFO, darker BBD-style wet),
-/// Spatial (stereo: 90° LFOs, right wet phase-inverted for extra width).
-/// Stereo mode uses a 180° offset (90° in Spatial).
+// Chorus: LFO-modulated delay. Modes: Normal (one voice), Tri (three voices
+// 120° apart — lusher), Vintage (triangle LFO, darker BBD-style wet),
+// Spatial (stereo: 90° LFOs, right wet phase-inverted for extra width).
+// Stereo mode uses a 180° offset (90° in Spatial).
 class ChorusProcessor : public EffectBase
 {
 public:

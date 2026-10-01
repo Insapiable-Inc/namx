@@ -100,10 +100,6 @@ static QString sanitize_component(QString s) {
     return s;
 }
 
-// ---------------------------------------------------------------------------
-// Data helpers
-// ---------------------------------------------------------------------------
-
 QString T3kTone::gear_label() const {
     return title_case_gear(gear);
 }
@@ -174,10 +170,6 @@ T3kModel Tone3000Client::parse_model(const QJsonObject& o) {
     return m;
 }
 
-// ---------------------------------------------------------------------------
-// Configuration
-// ---------------------------------------------------------------------------
-
 QString Tone3000Client::api_base() {
     static const QString BASE = [] {
         const QByteArray env = qgetenv("NAM_TONE3000_API_BASE");
@@ -212,10 +204,6 @@ QString Tone3000Client::download_dir() {
     return QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) +
            "/NAM Player/TONE3000";
 }
-
-// ---------------------------------------------------------------------------
-// Construction / tokens
-// ---------------------------------------------------------------------------
 
 Tone3000Client::Tone3000Client(QObject* parent)
     : QObject(parent)
@@ -297,10 +285,6 @@ void Tone3000Client::sign_out() {
     }
     emit user_changed();
 }
-
-// ---------------------------------------------------------------------------
-// OAuth (PKCE + loopback redirect)
-// ---------------------------------------------------------------------------
 
 void Tone3000Client::start_auth(Flow flow, const QHash<QString, QString>& extra) {
     if (!has_client_id()) {
@@ -504,10 +488,6 @@ void Tone3000Client::finish_auth(bool ok, const QString& error, int tone_id) {
     emit auth_finished(ok, error, tone_id);
 }
 
-// ---------------------------------------------------------------------------
-// Token refresh
-// ---------------------------------------------------------------------------
-
 void Tone3000Client::ensure_fresh_token(std::function<void(bool)> then) {
     if (!is_signed_in()) {
         then(false);
@@ -563,10 +543,6 @@ void Tone3000Client::refresh_access_token(std::function<void(bool)> then) {
     };
     send(std::move(req));
 }
-
-// ---------------------------------------------------------------------------
-// Requests
-// ---------------------------------------------------------------------------
 
 void Tone3000Client::send(Request req) {
     const bool is_token_call = req.url.path().endsWith("/oauth/token");
@@ -741,10 +717,6 @@ void Tone3000Client::invalidate_cache(const QString& path_prefix) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// API calls
-// ---------------------------------------------------------------------------
-
 QString Tone3000Client::list_path(ListKind k) {
     switch (k) {
         case ListKind::TRENDING:
@@ -891,10 +863,6 @@ void Tone3000Client::fetch_current_user(Callback cb) {
     send(std::move(req));
 }
 
-// ---------------------------------------------------------------------------
-// Downloads
-// ---------------------------------------------------------------------------
-
 QString Tone3000Client::local_path_for(const T3kModel& model, const T3kTone& tone) {
     QString ext = QFileInfo(QUrl(model.model_url).path()).suffix().toLower();
     if (ext.isEmpty()) {
@@ -998,10 +966,6 @@ void Tone3000Client::download_step(QUrl url, bool with_auth, int hops, const T3k
         cb(true, path, {});
     });
 }
-
-// ---------------------------------------------------------------------------
-// Images
-// ---------------------------------------------------------------------------
 
 void Tone3000Client::fetch_image(const QString& url, const QSize& max_size,
                                  std::function<void(QPixmap)> cb) {

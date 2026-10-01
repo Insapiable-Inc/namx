@@ -11,7 +11,7 @@
 namespace npl
 {
 
-/// Freeverb-based stereo reverb (8 comb + 4 all-pass filters).
+// Freeverb-based stereo reverb (8 comb + 4 all-pass filters).
 class ReverbProcessor : public EffectBase
 {
 public:
@@ -43,7 +43,7 @@ public:
     void set_high_cut(float hz) {
         high_cut_hz.store(hz);
     }
-    /// Octave-up feedback into the tail (0–100 %): the shimmer reverb.
+    // Octave-up feedback into the tail (0–100 %): the shimmer reverb.
     void set_shimmer_pct(float pct) {
         shimmer_pct.store(pct);
     }

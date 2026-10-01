@@ -11,13 +11,13 @@
 namespace npl
 {
 
-/// Note values for tempo-synced parameters (Phase 15). The engine stays
-/// dumb: the GUI turns tempo × note value into the existing ms / Hz atomics
-/// and re-pushes every synced parameter when the tempo changes.
-///
-/// The list is ordered longest → shortest so turning a sync knob clockwise
-/// always speeds things up. Indices are stored in presets — append only,
-/// never reorder.
+// Note values for tempo-synced parameters (Phase 15). The engine stays
+// dumb: the GUI turns tempo × note value into the existing ms / Hz atomics
+// and re-pushes every synced parameter when the tempo changes.
+//
+// The list is ordered longest → shortest so turning a sync knob clockwise
+// always speeds things up. Indices are stored in presets — append only,
+// never reorder.
 namespace TempoSync
 {
 
@@ -60,12 +60,12 @@ inline QString label(double index) {
     return QString::fromLatin1(NOTES[clamp_index(index)].label);
 }
 
-/// Note length in milliseconds at `bpm` quarter notes per minute.
+// Note length in milliseconds at `bpm` quarter notes per minute.
 inline double note_ms(double bpm, double index) {
     return NOTES[clamp_index(index)].wholes * 4.0 * 60000.0 / bpm;
 }
 
-/// LFO rate whose period is one note.
+// LFO rate whose period is one note.
 inline double note_hz(double bpm, double index) {
     return 1000.0 / note_ms(bpm, index);
 }

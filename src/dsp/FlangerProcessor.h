@@ -9,7 +9,7 @@
 namespace npl
 {
 
-/// Flanger: short modulated delay with feedback. Stereo uses 180° LFO offset.
+// Flanger: short modulated delay with feedback. Stereo uses 180° LFO offset.
 class FlangerProcessor : public EffectBase
 {
 public:
@@ -30,7 +30,7 @@ public:
     void set_mix_pct(float pct) {
         mix_pct.store(pct);
     }
-    /// 0 = short, metallic sweep (≈0–3 ms) … 100 = long jet sweep (0–14 ms).
+    // 0 = short, metallic sweep (≈0–3 ms) … 100 = long jet sweep (0–14 ms).
     void set_range_pct(float pct) {
         range_pct.store(pct);
     }

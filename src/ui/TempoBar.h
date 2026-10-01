@@ -19,8 +19,8 @@ namespace npl
 class KnobWidget;
 class Metronome;
 
-/// BPM readout you can drag (vertical: 1 BPM per 4 px, Shift = 0.1), scroll
-/// (±1, Shift ±0.1) or click to type into.
+// BPM readout you can drag (vertical: 1 BPM per 4 px, Shift = 0.1), scroll
+// (±1, Shift ±0.1) or click to type into.
 class BpmField : public QWidget
 {
     Q_OBJECT
@@ -58,8 +58,8 @@ private:
     double press_bpm = 0.0;
 };
 
-/// One column per beat: height = accent (strong / normal / soft / mute
-/// outline), the current beat lit. Clicking a beat cycles its accent.
+// One column per beat: height = accent (strong / normal / soft / mute
+// outline), the current beat lit. Clicking a beat cycles its accent.
 class BeatLeds : public QWidget
 {
     Q_OBJECT
@@ -67,7 +67,7 @@ public:
     explicit BeatLeds(QWidget* parent = nullptr);
 
     void set_pattern(int new_beats, uint32_t new_accents);
-    /// Current beat (-1 = stopped); `countIn` lights it amber.
+    // Current beat (-1 = stopped); `countIn` lights it amber.
     void set_beat(int new_beat, bool new_count_in);
 
     QSize sizeHint() const override;
@@ -87,12 +87,12 @@ private:
     bool count_in = false;
 };
 
-/// Global tempo + metronome strip under the preset bar.
-///
-/// The tempo is a session setting (QSettings tempo/bpm), not part of presets
-/// — a preset stores note values and follows whatever tempo you play at. The
-/// metronome's settings live in QSettings metronome/* (excluded from presets
-/// too) and it keeps running across preset loads. Space starts/stops it.
+// Global tempo + metronome strip under the preset bar.
+//
+// The tempo is a session setting (QSettings tempo/bpm), not part of presets
+// — a preset stores note values and follows whatever tempo you play at. The
+// metronome's settings live in QSettings metronome/* (excluded from presets
+// too) and it keeps running across preset loads. Space starts/stops it.
 class TempoBar : public QFrame
 {
     Q_OBJECT
@@ -105,7 +105,7 @@ public:
     void tap_tempo() {
         tap();
     }
-    /// Beat LEDs follow the audio thread — call at display rate.
+    // Beat LEDs follow the audio thread — call at display rate.
     void poll();
 
     QWidget* action_widget(const QString& id) const;

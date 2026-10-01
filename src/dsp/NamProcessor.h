@@ -16,12 +16,12 @@
 namespace npl
 {
 
-/// Wraps the NAM DSP model as an EffectBase.
-///
-/// Model swaps go through an RtSlot: the GUI thread publishes a freshly
-/// loaded L/R pair, the audio thread binds one pair per block, and the
-/// previous pair is destroyed only after the audio thread has provably
-/// finished with it. Loads never block and can arrive at any rate.
+// Wraps the NAM DSP model as an EffectBase.
+//
+// Model swaps go through an RtSlot: the GUI thread publishes a freshly
+// loaded L/R pair, the audio thread binds one pair per block, and the
+// previous pair is destroyed only after the audio thread has provably
+// finished with it. Loads never block and can arrive at any rate.
 class NamProcessor : public EffectBase
 {
 public:
@@ -37,20 +37,20 @@ public:
         return model_path;
     }
 
-    /// Human-readable reason the last loadModel() returned false (GUI thread only).
+    // Human-readable reason the last loadModel() returned false (GUI thread only).
     string get_last_error() const {
         return last_error;
     }
 
-    /// Free retired model pairs. Called by the engine whenever the audio
-    /// thread is known to be stopped (so pairs retired while it was idle
-    /// don't linger); otherwise loads reclaim lazily.
+    // Free retired model pairs. Called by the engine whenever the audio
+    // thread is known to be stopped (so pairs retired while it was idle
+    // don't linger); otherwise loads reclaim lazily.
     void reclaim_retired(bool audio_stopped) {
         slot.reclaim(audio_stopped);
     }
 
-    /// Must be called whenever the backend reports a (new) buffer size, before
-    /// the next process callback. Re-Reset()s the live models if the size grew.
+    // Must be called whenever the backend reports a (new) buffer size, before
+    // the next process callback. Re-Reset()s the live models if the size grew.
     void prepare_buffer(size_t new_max_buf);
     size_t get_max_buf() const {
         return max_buf.load();
@@ -59,15 +59,15 @@ public:
     void reset() override {
     }
 
-    /// Stereo input → run the model per channel (on) or sum to mono and run
-    /// it once (off, the default: half the CPU, and an amp is mono anyway).
+    // Stereo input → run the model per channel (on) or sum to mono and run
+    // it once (off, the default: half the CPU, and an amp is mono anyway).
     void set_stereo_amp(bool on) {
         stereo_amp.store(on);
     }
 
-    /// Overrides the default EffectBase dispatch so that stereo input is
-    /// processed through independent L and R model instances rather than
-    /// calling the single-state process_block_mono twice per block.
+    // Overrides the default EffectBase dispatch so that stereo input is
+    // processed through independent L and R model instances rather than
+    // calling the single-state process_block_mono twice per block.
     bool process(float* l, float* r, size_t n, bool input_is_stereo) override;
 
 protected:

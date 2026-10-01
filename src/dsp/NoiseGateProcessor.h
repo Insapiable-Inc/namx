@@ -8,7 +8,7 @@
 namespace npl
 {
 
-/// Simple envelope-following noise gate.
+// Simple envelope-following noise gate.
 class NoiseGateProcessor : public EffectBase
 {
 public:
@@ -34,8 +34,8 @@ public:
         return release_ms.load();
     }
 
-    /// Deepest attenuation (dB, ≥ 0, capped at MAX_GR_DB) since the last
-    /// take — GUI meter.
+    // Deepest attenuation (dB, ≥ 0, capped at MAX_GR_DB) since the last
+    // take — GUI meter.
     float take_gain_reduction_db() {
         return gr_peak_db.exchange(0.0f);
     }

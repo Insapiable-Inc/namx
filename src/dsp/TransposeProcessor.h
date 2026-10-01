@@ -9,9 +9,9 @@
 namespace npl
 {
 
-/// Transpose ±12 semitones (drop tunings, octave effects) at the front of
-/// the chain. Mix blends the dry signal back in (100 % = transposed only).
-/// At 0 semitones it passes the signal straight through (no added latency).
+// Transpose ±12 semitones (drop tunings, octave effects) at the front of
+// the chain. Mix blends the dry signal back in (100 % = transposed only).
+// At 0 semitones it passes the signal straight through (no added latency).
 class TransposeProcessor : public EffectBase
 {
 public:

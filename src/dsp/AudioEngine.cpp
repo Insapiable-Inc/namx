@@ -61,10 +61,6 @@ AudioEngine::AudioEngine() {
     chain_slot.publish(std::move(chain));
 }
 
-// ---------------------------------------------------------------------------
-// Model / IR wrappers
-// ---------------------------------------------------------------------------
-
 void AudioEngine::reclaim_retired() {
     // Only valid with no audio callback possible: after stop(), or before
     // the backend was ever started.
@@ -106,10 +102,6 @@ void AudioEngine::unload_irb() {
     ir.unload_b();
     reclaim_retired();
 }
-
-// ---------------------------------------------------------------------------
-// Chain order
-// ---------------------------------------------------------------------------
 
 vector<string> AudioEngine::default_chain_ids() const {
     vector<string> ids;
@@ -255,7 +247,7 @@ vector<IAudioBackend::DeviceInfo> AudioEngine::enumerate_output_devices() const 
     return temp ? temp->enumerate_output_devices() : vector<IAudioBackend::DeviceInfo>{};
 }
 
-// ---- IAudioBackend::Callback ----------------------------------------
+// IAudioBackend::Callback
 
 void AudioEngine::on_buffer_size_changed(int new_size) {
     if (new_size <= 0) {

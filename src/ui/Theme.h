@@ -11,22 +11,22 @@ class QWidget;
 namespace npl
 {
 
-/// Centralised palette and stylesheet for NAMPlayer — every color lives here
-/// (or in the stylesheet in Theme.cpp); widgets never hardcode hex values.
-///
-/// Each effect card is tagged with its effect ID (same IDs as
-/// AudioEngine::effect_table, plus "neutral" for non-effect cards). The
-/// accent is rendered VERBATIM — stripe, title, knob ring/tick/value label,
-/// toggle "on" state all use the exact palette hex; contrast is managed by
-/// choosing the palette values, not by code. tagCard pushes the accent to
-/// the card's knobs/toggles explicitly because the app stylesheet disables
-/// parent→child palette propagation.
+// Centralised palette and stylesheet for NAMPlayer — every color lives here
+// (or in the stylesheet in Theme.cpp); widgets never hardcode hex values.
+//
+// Each effect card is tagged with its effect ID (same IDs as
+// AudioEngine::effect_table, plus "neutral" for non-effect cards). The
+// accent is rendered VERBATIM — stripe, title, knob ring/tick/value label,
+// toggle "on" state all use the exact palette hex; contrast is managed by
+// choosing the palette values, not by code. tagCard pushes the accent to
+// the card's knobs/toggles explicitly because the app stylesheet disables
+// parent→child palette propagation.
 namespace Theme
 {
 
-/// Accent for an effect ID ("gate", "nam", … or "neutral").
+// Accent for an effect ID ("gate", "nam", … or "neutral").
 QColor accent(const QString& fx_id);
-/// Default accent before a card is tagged (also the VU-meter green).
+// Default accent before a card is tagged (also the VU-meter green).
 QColor generic_accent();
 
 // Neutral chrome tones for custom-painted widgets (knobs, switches).
@@ -52,19 +52,19 @@ QColor led_green(); // in tune
 QColor led_red(); // off pitch
 QColor display_bg(); // near-black LED panel
 
-/// Tags a card with its effect ID: sets the `fx` dynamic property (drives the
-/// per-effect QSS rules) and overrides QPalette::Highlight so descendant
-/// knobs/switches pick up the accent without individual tagging.
+// Tags a card with its effect ID: sets the `fx` dynamic property (drives the
+// per-effect QSS rules) and overrides QPalette::Highlight so descendant
+// knobs/switches pick up the accent without individual tagging.
 void tag_card(QWidget* card, const QString& fx_id);
 
-/// Install Fusion + a tooltip-only application stylesheet. Call once after
-/// QApplication is constructed.
+// Install Fusion + a tooltip-only application stylesheet. Call once after
+// QApplication is constructed.
 void apply(QApplication& app);
 
-/// Apply the dark palette + the full stylesheet to the main window's subtree.
-/// Deliberately NOT application-wide: parentless dialogs (file dialogs,
-/// which are in-process Qt widgets even when "native" on KDE) stay outside
-/// this tree and keep the OS default look.
+// Apply the dark palette + the full stylesheet to the main window's subtree.
+// Deliberately NOT application-wide: parentless dialogs (file dialogs,
+// which are in-process Qt widgets even when "native" on KDE) stay outside
+// this tree and keep the OS default look.
 void apply_to(QWidget& root);
 
 } // namespace Theme

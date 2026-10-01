@@ -14,11 +14,11 @@
 namespace npl
 {
 
-/// Chromatic tuner using NSDF (YIN-style) pitch detection.
-/// The audio thread fills a ring buffer; an internal worker thread runs the
-/// detection (~1M MACs — far too heavy for the GUI thread); the GUI polls
-/// lastPitch(). When enabled and mute is on, zeros the audio. When disabled,
-/// passes through unchanged.
+// Chromatic tuner using NSDF (YIN-style) pitch detection.
+// The audio thread fills a ring buffer; an internal worker thread runs the
+// detection (~1M MACs — far too heavy for the GUI thread); the GUI polls
+// lastPitch(). When enabled and mute is on, zeros the audio. When disabled,
+// passes through unchanged.
 class TunerProcessor : public EffectBase
 {
 public:
@@ -36,13 +36,13 @@ public:
         return mute.load();
     }
 
-    /// Latest pitch computed by the worker thread, in Hz (0.0 = no pitch).
+    // Latest pitch computed by the worker thread, in Hz (0.0 = no pitch).
     float get_last_pitch() const {
         return last_pitch.load();
     }
 
-    /// `refHz` = the A4 reference (concert pitch 440; 420–460 for bands
-    /// and records tuned off it).
+    // `refHz` = the A4 reference (concert pitch 440; 420–460 for bands
+    // and records tuned off it).
     static int freq_to_midi(float freq, float ref_hz = 440.0f);
     static string midi_to_name(int midi_note);
     static float cents_offset(float freq, float ref_hz = 440.0f);

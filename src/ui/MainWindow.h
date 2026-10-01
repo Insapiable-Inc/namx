@@ -57,8 +57,8 @@ public:
     explicit MainWindow(QWidget* parent = nullptr);
     ~MainWindow() override;
 
-    /// Command-line / file-manager arguments: .nam, .wav, .nampreset (a preset
-    /// first, then a model/IR given alongside overrides the preset's own).
+    // Command-line / file-manager arguments: .nam, .wav, .nampreset (a preset
+    // first, then a model/IR given alongside overrides the preset's own).
     void open_paths(const QStringList& paths);
 
 protected:
@@ -107,7 +107,7 @@ private:
     // Status bar, left: model / IR / TONE3000 sign-in at a glance.
     void update_rig_status();
 
-    // --- Loading (every path in: dialogs, library, drops, session, presets) ---
+    // Loading (every path in: dialogs, library, drops, session, presets)
     // Return false on failure; `quiet` suppresses the error dialog.
     bool load_model_file(const QString& path, bool quiet = false);
     bool load_ir_file(const QString& path, bool quiet = false);
@@ -135,7 +135,7 @@ private:
                              const std::initializer_list<KnobWidget*>& knobs,
                              ToggleSwitch** stereo_toggle_out = nullptr);
 
-    // --- Tempo sync (Phase 15) ---------------------------------------------
+    // Tempo sync (Phase 15)
     // A time-based knob (delay time, LFO rate) gets a Sync toggle and a
     // note-value knob shown in its place while synced. All three are registry
     // parameters; each change re-pushes the effective value through `push`,
@@ -160,7 +160,7 @@ private:
     // state persists per card (QSettings ui/expandedCards).
     void add_detail_row(QWidget* card, const QList<QWidget*>& widgets);
 
-    // --- Effect strip / chain reordering ---
+    // Effect strip / chain reordering
     // Lays the cards out in the given order: dividers follow NAM/EQ.
     void layout_strip(const vector<EffectBase*>& order);
     // layoutStrip(engine chain) + shortcuts re-assigned left to right.
@@ -179,7 +179,7 @@ private:
     // to defaults; the enable toggle keeps its state.
     void reset_card_to_defaults(QWidget* card);
 
-    // --- Parameter registry (ParamDesc lives in ParamRegistry.h) ------------
+    // Parameter registry (ParamDesc lives in ParamRegistry.h)
     // Registration wires each widget to the engine; the same table then
     // drives preset save/load (PresetSerializer) and session persistence.
     void register_parameters();
@@ -188,7 +188,7 @@ private:
     void toggle_param(const QString& group, const QString& key, ToggleSwitch* sw,
                       const std::function<void(bool)>& apply);
 
-    // --- Current preset: name, `*` state, A/B ---------------------------
+    // Current preset: name, `*` state, A/B
     // Serialized state written by Save (registry + order + model/IR + the
     // TONE3000 linkage).
     QJsonObject current_preset_json() const;
@@ -204,7 +204,7 @@ private:
     void restore_preset_state();
     static void seed_starter_presets();
 
-    // --- MIDI (Phase 16) ----------------------------------------------------
+    // MIDI (Phase 16)
     // Every registry knob/toggle is a target (registered by knobParam /
     // toggleParam), plus the actions added here.
     void setup_midi(QMenu* top_menu);

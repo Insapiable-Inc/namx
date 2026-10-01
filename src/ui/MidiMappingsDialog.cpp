@@ -53,7 +53,7 @@ MidiMappingsDialog::MidiMappingsDialog(MidiMapper& new_mapper, MidiInput* new_in
     resize(980, 560);
     auto* root = new QVBoxLayout(this);
 
-    // ---- Devices ----
+    // Devices
     auto* devices = new QGroupBox("Devices");
     auto* dev_lay = new QVBoxLayout(devices);
     device_box = new QVBoxLayout;
@@ -70,7 +70,7 @@ MidiMappingsDialog::MidiMappingsDialog(MidiMapper& new_mapper, MidiInput* new_in
         connect(input, &MidiInput::devices_changed, this, &MidiMappingsDialog::rebuild_devices);
     }
 
-    // ---- Mappings ----
+    // Mappings
     table = new QTableWidget(0, COL_COUNT);
     table->setHorizontalHeaderLabels(
         {"On", "Source", "Channel", "#", "Target", "Mode", "Min %", "Max %", "", ""});
@@ -95,7 +95,7 @@ MidiMappingsDialog::MidiMappingsDialog(MidiMapper& new_mapper, MidiInput* new_in
     connect(&mapper, &MidiMapper::mappings_changed, this, later);
     connect(&mapper, &MidiMapper::learn_changed, this, later);
 
-    // ---- Buttons ----
+    // Buttons
     auto* row = new QHBoxLayout;
     auto* add = new QPushButton("Add");
     connect(add, &QPushButton::clicked, this, [this] {

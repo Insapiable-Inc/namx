@@ -8,8 +8,8 @@
 namespace npl
 {
 
-/// Wah: a resonant SVF band-pass swept either by an envelope follower (Auto)
-/// or by Position (Pedal mode — a MIDI expression pedal's natural target).
+// Wah: a resonant SVF band-pass swept either by an envelope follower (Auto)
+// or by Position (Pedal mode — a MIDI expression pedal's natural target).
 class DynamicWahProcessor : public EffectBase
 {
 public:

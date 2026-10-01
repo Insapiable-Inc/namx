@@ -8,8 +8,8 @@
 namespace npl
 {
 
-/// One incoming MIDI event, already parsed by the platform backend. Only
-/// what the mapper uses: channel voice messages + clock/transport.
+// One incoming MIDI event, already parsed by the platform backend. Only
+// what the mapper uses: channel voice messages + clock/transport.
 struct MidiMessage
 {
     enum Type
@@ -35,7 +35,7 @@ struct MidiMessage
                type == PROGRAM_CHANGE;
     }
 
-    /// "CC 11 · ch 1 · 64" — for the Mappings window and Learn feedback.
+    // "CC 11 · ch 1 · 64" — for the Mappings window and Learn feedback.
     QString describe() const {
         const QString ch = QString("ch %1").arg(channel + 1);
         switch (type) {
@@ -61,7 +61,7 @@ struct MidiMessage
         return {};
     }
 
-    /// Parses a raw 1–3 byte message (WinMM delivers these packed).
+    // Parses a raw 1–3 byte message (WinMM delivers these packed).
     static MidiMessage from_bytes(unsigned char status, unsigned char d1, unsigned char d2) {
         MidiMessage m;
         switch (status) {

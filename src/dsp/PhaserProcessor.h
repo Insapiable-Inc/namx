@@ -9,7 +9,7 @@
 namespace npl
 {
 
-/// 4-stage all-pass phaser. Stereo uses 180° LFO offset.
+// 4-stage all-pass phaser. Stereo uses 180° LFO offset.
 class PhaserProcessor : public EffectBase
 {
 public:
@@ -27,7 +27,7 @@ public:
     void set_feedback_pct(float pct) {
         feedback_pct.store(pct);
     }
-    /// 0 = classic phaser, 1 = Vibe.
+    // 0 = classic phaser, 1 = Vibe.
     void set_vibe(bool on) {
         vibe.store(on);
     }

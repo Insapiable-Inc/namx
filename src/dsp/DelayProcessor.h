@@ -10,15 +10,15 @@
 namespace npl
 {
 
-/// Stereo delay.
-/// Mono in + mono mode: one delay line.
-/// Mono in + stereo mode: two lines — left at Time, right at Time × R Time %
-///   — with Cross-feed blending the repeats across: 100 % = ping-pong
-///   (left → right → left …), 0 % = two independent echoes.
-/// Stereo in (any mode): each channel through its own line (L/R times).
-/// Every mode: Low/High Cut and Saturation act inside the feedback loop, so
-/// each repeat is darker / dirtier than the last (tape/analog character);
-/// Modulation wobbles the delay time (tape flutter / chorus on the repeats).
+// Stereo delay.
+// Mono in + mono mode: one delay line.
+// Mono in + stereo mode: two lines — left at Time, right at Time × R Time %
+//   — with Cross-feed blending the repeats across: 100 % = ping-pong
+//   (left → right → left …), 0 % = two independent echoes.
+// Stereo in (any mode): each channel through its own line (L/R times).
+// Every mode: Low/High Cut and Saturation act inside the feedback loop, so
+// each repeat is darker / dirtier than the last (tape/analog character);
+// Modulation wobbles the delay time (tape flutter / chorus on the repeats).
 class DelayProcessor : public EffectBase
 {
 public:
@@ -54,7 +54,7 @@ public:
     void set_modulation(float pct) {
         mod_pct.store(pct);
     }
-    /// Octave-up repeats (0–100 %): each pass through the loop climbs.
+    // Octave-up repeats (0–100 %): each pass through the loop climbs.
     void set_crystals(float pct) {
         crystals_pct.store(pct);
     }

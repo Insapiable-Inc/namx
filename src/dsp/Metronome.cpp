@@ -44,10 +44,6 @@ uint32_t Metronome::default_accents(int beats, int unit) {
     return p;
 }
 
-// ---------------------------------------------------------------------------
-// Sound synthesis (non-RT)
-// ---------------------------------------------------------------------------
-
 // Peak-normalize to 0.9 so every set sits at the same level.
 static void normalize(vector<float>& s) {
     float peak = 0.0f;
@@ -126,10 +122,6 @@ void Metronome::build_sounds(double sr) {
     samples[COWBELL] = {cowbell(sr, 587.0, 845.0, 0.200), cowbell(sr, 540.0, 800.0, 0.200),
                         cowbell(sr, 540.0, 800.0, 0.090)};
 }
-
-// ---------------------------------------------------------------------------
-// Audio thread
-// ---------------------------------------------------------------------------
 
 void Metronome::trigger(const vector<float>& sample, float gain) {
     // Free voice, else steal the older one.

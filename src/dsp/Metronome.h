@@ -10,18 +10,18 @@
 namespace npl
 {
 
-/// Practice metronome (Phase 15). Not an effect: AudioEngine mixes it into
-/// the output after the output gain, on its own volume and pan, so it keeps
-/// running across preset loads and never goes through the chain.
-///
-/// RT-safety: click samples for every sound set are synthesized in
-/// setSampleRate() (non-RT — called from on_buffer_size_changed); process()
-/// only reads them. All settings are atomics read once per block.
-///
-/// Timing: BPM counts quarter notes (the same tempo the sync knobs use);
-/// the meter's unit sets what a beat is (x/8 → eighths at 2 × BPM). Each beat
-/// can be split into 1–4 subdivisions. A sample-accurate double accumulator
-/// places every click.
+// Practice metronome (Phase 15). Not an effect: AudioEngine mixes it into
+// the output after the output gain, on its own volume and pan, so it keeps
+// running across preset loads and never goes through the chain.
+//
+// RT-safety: click samples for every sound set are synthesized in
+// setSampleRate() (non-RT — called from on_buffer_size_changed); process()
+// only reads them. All settings are atomics read once per block.
+//
+// Timing: BPM counts quarter notes (the same tempo the sync knobs use);
+// the meter's unit sets what a beat is (x/8 → eighths at 2 × BPM). Each beat
+// can be split into 1–4 subdivisions. A sample-accurate double accumulator
+// places every click.
 class Metronome
 {
 public:
@@ -46,7 +46,7 @@ public:
 
     void set_sample_rate(double new_sr); // non-RT: rebuilds the click samples
 
-    // ---- Settings (any thread) ----
+    // Settings (any thread)
     void set_running(bool on) {
         running.store(on);
     }
@@ -63,7 +63,7 @@ public:
     int get_unit() const {
         return unit.load();
     }
-    /// 2 bits per beat (Accent), beat 0 in the low bits.
+    // 2 bits per beat (Accent), beat 0 in the low bits.
     void set_accents(uint32_t packed) {
         accents.store(packed);
     }
@@ -76,8 +76,8 @@ public:
     static uint32_t with_accent(uint32_t packed, int beat, Accent a) {
         return (packed & ~(3u << (2 * beat))) | (uint32_t(a) << (2 * beat));
     }
-    /// Default pattern: strong downbeat; compound meters (6/8, 9/8, 12/8 …)
-    /// stress each group of three; everything else Normal.
+    // Default pattern: strong downbeat; compound meters (6/8, 9/8, 12/8 …)
+    // stress each group of three; everything else Normal.
     static uint32_t default_accents(int beats, int unit);
 
     void set_subdivision(int n) {
@@ -92,17 +92,17 @@ public:
     void set_pan(float new_pan) {
         pan.store(new_pan);
     } // -1 … +1
-    /// Bars counted in (all beats audible, downbeat strong) when starting.
+    // Bars counted in (all beats audible, downbeat strong) when starting.
     void set_count_in_bars(int bars) {
         count_in_bars.store(bars < 0 ? 0 : bars > 4 ? 4 : bars);
     }
-    /// Silent after the count-in: the beat LEDs keep time, the click stops.
+    // Silent after the count-in: the beat LEDs keep time, the click stops.
     void set_silent_after_count_in(bool s) {
         silent_after.store(s);
     }
 
-    // ---- GUI polling ----
-    /// Beat within the bar for the LEDs; -1 when stopped.
+    // GUI polling
+    // Beat within the bar for the LEDs; -1 when stopped.
     int current_beat() const {
         return beat_now.load(std::memory_order_relaxed);
     }
@@ -110,8 +110,8 @@ public:
         return count_in_now.load(std::memory_order_relaxed);
     }
 
-    // ---- Audio thread ----
-    /// Adds the click into L/R (after the output stage).
+    // Audio thread
+    // Adds the click into L/R (after the output stage).
     void process(float* l, float* r, size_t n);
 
 private:

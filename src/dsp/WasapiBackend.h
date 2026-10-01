@@ -21,17 +21,17 @@ struct IAudioRenderClient;
 namespace npl
 {
 
-/// WASAPI implementation of IAudioBackend (Windows-only).
-///
-/// Shared-mode, event-driven. Captures from a user-selectable or default
-/// input device and renders to a user-selectable or default output device.
-/// Internal sample format is float32 (the WASAPI mix format on modern
-/// Windows is almost always 32-bit float, so no resampling is needed in
-/// the common path).
-///
-/// Threading: an internal `audio_thread` runs the capture+render loop. The
-/// thread blocks on the capture-ready event, pulls a block, hands it to the
-/// AudioEngine callback, then writes the result to the render endpoint.
+// WASAPI implementation of IAudioBackend (Windows-only).
+//
+// Shared-mode, event-driven. Captures from a user-selectable or default
+// input device and renders to a user-selectable or default output device.
+// Internal sample format is float32 (the WASAPI mix format on modern
+// Windows is almost always 32-bit float, so no resampling is needed in
+// the common path).
+//
+// Threading: an internal `audio_thread` runs the capture+render loop. The
+// thread blocks on the capture-ready event, pulls a block, hands it to the
+// AudioEngine callback, then writes the result to the render endpoint.
 class WasapiBackend : public IAudioBackend
 {
 public:

@@ -12,10 +12,10 @@ namespace npl
 class KnobWidget;
 class ToggleSwitch;
 
-/// One user-facing parameter. The registry (built once by
-/// MainWindow::registerParameters) is the single source of truth for the
-/// parameter list: it drives widget→engine wiring, preset save/load
-/// (PresetSerializer), session persistence, and future MIDI mapping.
+// One user-facing parameter. The registry (built once by
+// MainWindow::registerParameters) is the single source of truth for the
+// parameter list: it drives widget→engine wiring, preset save/load
+// (PresetSerializer), session persistence, and future MIDI mapping.
 struct ParamDesc
 {
     QString group; // JSON object holding the key; empty = top-level

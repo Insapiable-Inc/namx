@@ -68,6 +68,8 @@ BreakTemplateDeclarations: Yes
 EmptyLineBeforeAccessModifier: LogicalBlock
 SpaceBeforeParens: ControlStatements
 Cpp11BracedListStyle: true
+# Never re-wrap comments: it mangles tables and aligned notes.
+ReflowComments: false
 
 # Includes (Google order): own header, std, third-party <…>, project "…"; sorted per block.
 SortIncludes: CaseSensitive
