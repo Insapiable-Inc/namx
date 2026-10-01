@@ -51,10 +51,6 @@ static QColor kind_accent(LibraryEntry::Kind kind) {
     return Theme::generic_accent();
 }
 
-// ===========================================================================
-// LibraryListModel
-// ===========================================================================
-
 LibraryListModel::LibraryListModel(QObject* parent)
     : QAbstractListModel(parent) {
 }
@@ -148,10 +144,6 @@ int LibraryListModel::row_of(const QString& path) const {
     return -1;
 }
 
-// ===========================================================================
-// LibraryFilterProxy
-// ===========================================================================
-
 LibraryFilterProxy::LibraryFilterProxy(LibraryEntry::Kind new_kind, QObject* parent)
     : QSortFilterProxyModel(parent)
     , kind(new_kind) {
@@ -206,6 +198,14 @@ bool LibraryFilterProxy::filterAcceptsRow(int row, const QModelIndex& parent) co
     return true;
 }
 
+// Natural, case-insensitive order ("Amp 2" before "Amp 10").
+static QCollator numeric_collator() {
+    QCollator c;
+    c.setNumericMode(true);
+    c.setCaseSensitivity(Qt::CaseInsensitive);
+    return c;
+}
+
 bool LibraryFilterProxy::lessThan(const QModelIndex& a, const QModelIndex& b) const {
     if (mode == Mode::RECENT) {
         return a.data(LibraryListModel::RECENT_RANK_ROLE).toInt() <
@@ -218,12 +218,7 @@ bool LibraryFilterProxy::lessThan(const QModelIndex& a, const QModelIndex& b) co
             return ma > mb;
         }
     }
-    static QCollator collator = [] {
-        QCollator c;
-        c.setNumericMode(true);
-        c.setCaseSensitivity(Qt::CaseInsensitive);
-        return c;
-    }();
+    static QCollator collator = numeric_collator();
     const int by_name = collator.compare(a.data(LibraryListModel::NAME_ROLE).toString(),
                                          b.data(LibraryListModel::NAME_ROLE).toString());
     if (by_name != 0) {
@@ -232,10 +227,6 @@ bool LibraryFilterProxy::lessThan(const QModelIndex& a, const QModelIndex& b) co
     return a.data(LibraryListModel::PATH_ROLE).toString() <
            b.data(LibraryListModel::PATH_ROLE).toString();
 }
-
-// ===========================================================================
-// LibraryItemDelegate
-// ===========================================================================
 
 QRect LibraryItemDelegate::star_rect(const QRect& row) {
     return QRect(row.right() - STAR_WIDTH, row.top(), STAR_WIDTH, row.height());
@@ -313,10 +304,6 @@ void LibraryItemDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt,
     p->restore();
 }
 
-// ===========================================================================
-// LibraryListView
-// ===========================================================================
-
 void LibraryListView::mousePressEvent(QMouseEvent* ev) {
     const QModelIndex idx = indexAt(ev->pos());
     if (idx.isValid() && ev->button() == Qt::LeftButton &&
@@ -345,10 +332,6 @@ void LibraryListView::keyPressEvent(QKeyEvent* ev) {
     }
     QListView::keyPressEvent(ev);
 }
-
-// ===========================================================================
-// Folders dialog
-// ===========================================================================
 
 class FoldersDialog : public QDialog
 {
@@ -383,20 +366,7 @@ public:
 
             QListWidget* lw = lists[i];
             connect(add, &QPushButton::clicked, this, [this, lw, i] {
-                const QString start =
-                    lw->count() ? lw->item(lw->count() - 1)->text() : QDir::homePath();
-                const QString dir = QFileDialog::getExistingDirectory(
-                    this, QString("Add %1 folder").arg(SECTION_NAMES[i]), start);
-                if (dir.isEmpty()) {
-                    return;
-                }
-                const QString clean = QDir::cleanPath(dir);
-                for (int r = 0; r < lw->count(); ++r) {
-                    if (lw->item(r)->text() == clean) {
-                        return;
-                    }
-                }
-                lw->addItem(clean);
+                add_folder(lw, i);
             });
             connect(rm, &QPushButton::clicked, this, [lw] {
                 delete lw->currentItem();
@@ -412,27 +382,41 @@ public:
     }
 
     LibraryRoots roots() const {
-        auto items = [](QListWidget* lw) {
-            QStringList l;
-            for (int r = 0; r < lw->count(); ++r) {
-                l << lw->item(r)->text();
-            }
-            return l;
-        };
         LibraryRoots r;
-        r.models = items(lists[0]);
-        r.irs = items(lists[1]);
-        r.presets = items(lists[2]);
+        r.models = list_items(lists[0]);
+        r.irs = list_items(lists[1]);
+        r.presets = list_items(lists[2]);
         return r;
     }
 
 private:
+    // Asks for a folder and adds it to section `section`'s list, unless listed.
+    void add_folder(QListWidget* lw, int section) {
+        const QString start = lw->count() ? lw->item(lw->count() - 1)->text() : QDir::homePath();
+        const QString dir = QFileDialog::getExistingDirectory(
+            this, QString("Add %1 folder").arg(SECTION_NAMES[section]), start);
+        if (dir.isEmpty()) {
+            return;
+        }
+        const QString clean = QDir::cleanPath(dir);
+        for (int r = 0; r < lw->count(); ++r) {
+            if (lw->item(r)->text() == clean) {
+                return;
+            }
+        }
+        lw->addItem(clean);
+    }
+
+    static QStringList list_items(const QListWidget* lw) {
+        QStringList l;
+        for (int r = 0; r < lw->count(); ++r) {
+            l << lw->item(r)->text();
+        }
+        return l;
+    }
+
     QListWidget* lists[3]{};
 };
-
-// ===========================================================================
-// LibraryPanel
-// ===========================================================================
 
 LibraryPanel::LibraryPanel(LibraryIndex& new_index, QWidget* parent)
     : QWidget(parent)
@@ -482,13 +466,7 @@ LibraryPanel::LibraryPanel(LibraryIndex& new_index, QWidget* parent)
     search->setObjectName("librarySearch");
     search->setPlaceholderText("Search…");
     search->setClearButtonEnabled(true);
-    connect(search, &QLineEdit::textChanged, this, [this](const QString& t) {
-        for (auto* p : proxies) {
-            p->set_search(t);
-        }
-        update_counts();
-        restore_current_from_loaded();
-    });
+    connect(search, &QLineEdit::textChanged, this, &LibraryPanel::apply_search);
     lay->addWidget(search);
 
     // Mode buttons + sort key.
@@ -506,16 +484,7 @@ LibraryPanel::LibraryPanel(LibraryIndex& new_index, QWidget* parent)
             b->setAutoRaise(true);
             b->setFocusPolicy(Qt::NoFocus);
             connect(b, &QToolButton::clicked, this, [this, i] {
-                for (int k = 0; k < 3; ++k) {
-                    mode_btn[k]->setChecked(k == i);
-                }
-                for (auto* p : proxies) {
-                    p->set_mode(static_cast<LibraryFilterProxy::Mode>(i));
-                }
-                sort_box->setEnabled(i != 2);
-                QSettings().setValue("library/mode", i);
-                update_counts();
-                restore_current_from_loaded();
+                set_mode(i);
             });
             row->addWidget(b);
             mode_btn[i] = b;
@@ -526,13 +495,7 @@ LibraryPanel::LibraryPanel(LibraryIndex& new_index, QWidget* parent)
         sort_box->addItems({"Name", "Newest"});
         sort_box->setToolTip("Sort order");
         sort_box->setFocusPolicy(Qt::NoFocus);
-        connect(sort_box, &QComboBox::currentIndexChanged, this, [this](int i) {
-            for (auto* p : proxies) {
-                p->set_sort_key(static_cast<LibraryFilterProxy::Sort>(i));
-            }
-            QSettings().setValue("library/sort", i);
-            restore_current_from_loaded();
-        });
+        connect(sort_box, &QComboBox::currentIndexChanged, this, &LibraryPanel::set_sort_key);
         row->addWidget(sort_box);
         lay->addLayout(row);
     }
@@ -776,6 +739,35 @@ void LibraryPanel::edit_folders() {
     if (dlg.exec() == QDialog::Accepted) {
         library_index.set_roots(dlg.roots());
     }
+}
+
+void LibraryPanel::apply_search(const QString& text) {
+    for (auto* p : proxies) {
+        p->set_search(text);
+    }
+    update_counts();
+    restore_current_from_loaded();
+}
+
+void LibraryPanel::set_mode(int mode) {
+    for (int k = 0; k < 3; ++k) {
+        mode_btn[k]->setChecked(k == mode);
+    }
+    for (auto* p : proxies) {
+        p->set_mode(static_cast<LibraryFilterProxy::Mode>(mode));
+    }
+    sort_box->setEnabled(mode != 2);
+    QSettings().setValue("library/mode", mode);
+    update_counts();
+    restore_current_from_loaded();
+}
+
+void LibraryPanel::set_sort_key(int key) {
+    for (auto* p : proxies) {
+        p->set_sort_key(static_cast<LibraryFilterProxy::Sort>(key));
+    }
+    QSettings().setValue("library/sort", key);
+    restore_current_from_loaded();
 }
 
 } // namespace npl

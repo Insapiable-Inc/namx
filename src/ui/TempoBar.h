@@ -137,6 +137,19 @@ private:
     QVector<qint64> taps; // ms timestamps of the recent taps
     std::function<void(const QString&, QMenu*)> learn_hook;
     void learn_menu_for(QWidget* w, const QString& action_id);
+    void show_learn_menu(const QString& action_id, const QPoint& global_pos);
+
+    void on_bpm_field_changed(double new_bpm);
+    void on_play_toggled(bool on);
+    void on_accents_edited(uint32_t accents);
+    void populate_meter_menu(); // time signatures, rebuilt each time it opens
+    void ask_custom_meter();
+    void choose_subdivision(int subdivision); // 1 = beats … 4 = sixteenths
+    void choose_sound(int sound);
+    void choose_count_in(int bars);
+    void choose_silent_after_count_in(bool on);
+    void on_volume_changed(double db);
+    void on_pan_changed(double pct);
 };
 
 } // namespace npl

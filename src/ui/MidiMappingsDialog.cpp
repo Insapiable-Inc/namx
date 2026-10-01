@@ -98,42 +98,11 @@ MidiMappingsDialog::MidiMappingsDialog(MidiMapper& new_mapper, MidiInput* new_in
     // Buttons
     auto* row = new QHBoxLayout;
     auto* add = new QPushButton("Add");
-    connect(add, &QPushButton::clicked, this, [this] {
-        QList<MidiMapping> list = mapper.get_mappings();
-        MidiMapping m;
-        if (!mapper.get_targets().empty()) {
-            m.target = mapper.get_targets().front().id;
-        }
-        list << m;
-        mapper.set_mappings(list);
-        mapper.learn_row(list.size() - 1); // most people add by playing the control
-    });
+    connect(add, &QPushButton::clicked, this, &MidiMappingsDialog::add_mapping);
     auto* load = new QPushButton("Load…");
-    connect(load, &QPushButton::clicked, this, [this] {
-        const QString path =
-            QFileDialog::getOpenFileName(this, "Load MIDI Mappings", mapping_dir(),
-                                         "NAM MIDI mappings (*.nammidi);;All Files (*)");
-        QString err;
-        if (!path.isEmpty() && !mapper.load_file(path, &err)) {
-            QMessageBox::warning(this, "MIDI Mappings", "Cannot load " + path + ":\n" + err);
-        }
-    });
+    connect(load, &QPushButton::clicked, this, &MidiMappingsDialog::load_mappings);
     auto* save = new QPushButton("Save…");
-    connect(save, &QPushButton::clicked, this, [this] {
-        QDir().mkpath(mapping_dir());
-        QString path = QFileDialog::getSaveFileName(this, "Save MIDI Mappings",
-                                                    mapping_dir() + "/Controller.nammidi",
-                                                    "NAM MIDI mappings (*.nammidi);;All Files (*)");
-        if (path.isEmpty()) {
-            return;
-        }
-        if (QFileInfo(path).suffix().isEmpty()) {
-            path += ".nammidi";
-        }
-        if (!mapper.save_file(path)) {
-            QMessageBox::warning(this, "MIDI Mappings", "Cannot write " + path);
-        }
-    });
+    connect(save, &QPushButton::clicked, this, &MidiMappingsDialog::save_mappings);
     auto* defaults = new QPushButton("Defaults");
     defaults->setToolTip("Program changes 0–7 → slots 1–8; everything else unmapped");
     connect(defaults, &QPushButton::clicked, this, [this] {
@@ -247,16 +216,8 @@ void MidiMappingsDialog::rebuild_table() {
         connect(mode, &QComboBox::currentIndexChanged, this, commit);
         table->setCellWidget(r, COL_MODE, mode);
 
-        auto pct = [&](double v, Col col) {
-            auto* sp = new QSpinBox;
-            sp->setRange(0, 100);
-            sp->setValue(qRound(v * 100.0));
-            sp->setToolTip("Share of the knob's range the controller sweeps (knobs only)");
-            connect(sp, &QSpinBox::valueChanged, this, commit);
-            table->setCellWidget(r, col, sp);
-        };
-        pct(m.min, COL_MIN);
-        pct(m.max, COL_MAX);
+        add_percent_cell(r, COL_MIN, m.min);
+        add_percent_cell(r, COL_MAX, m.max);
 
         auto* learn = new QToolButton;
         const bool learning = mapper.learning_row() == r;
@@ -275,12 +236,7 @@ void MidiMappingsDialog::rebuild_table() {
         del->setText("×");
         del->setToolTip("Delete this mapping");
         connect(del, &QToolButton::clicked, this, [this, r] {
-            QList<MidiMapping> remaining = mapper.get_mappings();
-            if (r < remaining.size()) {
-                remaining.removeAt(r);
-            }
-            mapper.cancel_learn();
-            mapper.set_mappings(remaining);
+            delete_mapping(r);
         });
         table->setCellWidget(r, COL_DELETE, del);
     }
@@ -313,6 +269,62 @@ void MidiMappingsDialog::commit_row(int row) {
     rebuilding = true; // our own edit: the widgets already show it
     mapper.set_mappings(list);
     rebuilding = false;
+}
+
+void MidiMappingsDialog::add_mapping() {
+    QList<MidiMapping> list = mapper.get_mappings();
+    MidiMapping m;
+    if (!mapper.get_targets().empty()) {
+        m.target = mapper.get_targets().front().id;
+    }
+    list << m;
+    mapper.set_mappings(list);
+    mapper.learn_row(list.size() - 1); // most people add by playing the control
+}
+
+void MidiMappingsDialog::delete_mapping(int row) {
+    QList<MidiMapping> remaining = mapper.get_mappings();
+    if (row < remaining.size()) {
+        remaining.removeAt(row);
+    }
+    mapper.cancel_learn();
+    mapper.set_mappings(remaining);
+}
+
+void MidiMappingsDialog::load_mappings() {
+    const QString path = QFileDialog::getOpenFileName(
+        this, "Load MIDI Mappings", mapping_dir(), "NAM MIDI mappings (*.nammidi);;All Files (*)");
+    QString err;
+    if (!path.isEmpty() && !mapper.load_file(path, &err)) {
+        QMessageBox::warning(this, "MIDI Mappings", "Cannot load " + path + ":\n" + err);
+    }
+}
+
+void MidiMappingsDialog::save_mappings() {
+    QDir().mkpath(mapping_dir());
+    QString path = QFileDialog::getSaveFileName(this, "Save MIDI Mappings",
+                                                mapping_dir() + "/Controller.nammidi",
+                                                "NAM MIDI mappings (*.nammidi);;All Files (*)");
+    if (path.isEmpty()) {
+        return;
+    }
+    if (QFileInfo(path).suffix().isEmpty()) {
+        path += ".nammidi";
+    }
+    if (!mapper.save_file(path)) {
+        QMessageBox::warning(this, "MIDI Mappings", "Cannot write " + path);
+    }
+}
+
+void MidiMappingsDialog::add_percent_cell(int row, int column, double value) {
+    auto* sp = new QSpinBox;
+    sp->setRange(0, 100);
+    sp->setValue(qRound(value * 100.0));
+    sp->setToolTip("Share of the knob's range the controller sweeps (knobs only)");
+    connect(sp, &QSpinBox::valueChanged, this, [this, row] {
+        commit_row(row);
+    });
+    table->setCellWidget(row, column, sp);
 }
 
 } // namespace npl

@@ -30,6 +30,12 @@ private:
     void rebuild_devices();
     void rebuild_table();
     void commit_row(int row);
+    void add_mapping();
+    void delete_mapping(int row);
+    void load_mappings();
+    void save_mappings();
+    // A 0–100 % spin box for the Min/Max column of `row`.
+    void add_percent_cell(int row, int column, double value);
 
     MidiMapper& mapper;
     MidiInput* input;

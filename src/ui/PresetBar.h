@@ -78,6 +78,9 @@ private:
     QHash<QString, QWidget*> action_widgets;
     std::function<void(const QString&, QMenu*)> learn_hook;
     void learn_menu_for(QWidget* w, const QString& action_id);
+    void show_learn_menu(const QString& action_id, const QPoint& global_pos);
+    QToolButton* make_tool_button(const QString& text, const QString& tip, const char* object_name);
+    void on_ab_clicked(int side);
 };
 
 } // namespace npl

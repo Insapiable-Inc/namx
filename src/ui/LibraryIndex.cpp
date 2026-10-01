@@ -108,6 +108,13 @@ static void append_sidecar_info(LibraryEntry& e) {
     e.details = e.details.isEmpty() ? line : e.details + "\n" + line;
 }
 
+// A text field from a model's metadata. The trainer's placeholder strings
+// ("tz-make", "tz-model") are not gear.
+static QString metadata_field(const QJsonObject& metadata, const char* key) {
+    const QString v = metadata.value(key).toString().trimmed();
+    return v.startsWith("tz-") ? QString() : v;
+}
+
 // Model metadata from the .nam JSON. Files carry the full weight array, so
 // this is the one expensive step of a scan — the cache keeps it one-time.
 static void describe_model(const QString& path, LibraryEntry& e) {
@@ -133,13 +140,8 @@ static void describe_model(const QString& path, LibraryEntry& e) {
     if (sr > 0) {
         sum << khz(sr);
     }
-    // The trainer's placeholder strings ("tz-make", "tz-model") are not gear.
-    auto field = [&](const char* key) {
-        const QString v = m.value(key).toString().trimmed();
-        return v.startsWith("tz-") ? QString() : v;
-    };
-    const QString make = field("gear_make");
-    const QString model_name = field("gear_model");
+    const QString make = metadata_field(m, "gear_make");
+    const QString model_name = metadata_field(m, "gear_model");
     const QString gear =
         (model_name.startsWith(make, Qt::CaseInsensitive) ? model_name : (make + " " + model_name))
             .trimmed();
@@ -160,8 +162,8 @@ static void describe_model(const QString& path, LibraryEntry& e) {
     if (!gear.isEmpty()) {
         det << "Gear: " + gear;
     }
-    const QString gear_type = field("gear_type");
-    const QString tone_type = field("tone_type");
+    const QString gear_type = metadata_field(m, "gear_type");
+    const QString tone_type = metadata_field(m, "tone_type");
     QStringList types;
     if (!gear_type.isEmpty()) {
         types << gear_type;
@@ -172,7 +174,7 @@ static void describe_model(const QString& path, LibraryEntry& e) {
     if (!types.isEmpty()) {
         det << "Type: " + types.join(" / ");
     }
-    const QString by = field("modeled_by");
+    const QString by = metadata_field(m, "modeled_by");
     if (!by.isEmpty()) {
         det << "Modeled by: " + by;
     }

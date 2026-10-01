@@ -59,6 +59,12 @@ void VUMeter::set_peak(float peak) {
     update();
 }
 
+// The part of the meter between two offsets (px from the quiet end).
+static QRectF zone_rect(const QRectF& inner, bool vert, qreal from, qreal to) {
+    return vert ? QRectF(inner.left(), inner.bottom() - to, inner.width(), to - from)
+                : QRectF(inner.left() + from, inner.top(), to - from, inner.height());
+}
+
 void VUMeter::paintEvent(QPaintEvent*) {
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing);
@@ -89,22 +95,17 @@ void VUMeter::paintEvent(QPaintEvent*) {
     // Zone fill: one rect per zone the level reaches — color by absolute
     // level, red strictly above the 0 dBFS mark.
     const float t = level;
-    auto zone_rect = [&](float from, float to) -> QRectF {
-        const qreal a = pos(from), b = pos(to);
-        return vert ? QRectF(inner.left(), inner.bottom() - b, inner.width(), b - a)
-                    : QRectF(inner.left() + a, inner.top(), b - a, inner.height());
-    };
     if (t > 0.0f) {
         p.setBrush(Theme::meter_low());
-        p.drawRect(zone_rect(0.0f, std::min(t, HOT_VALUE)));
+        p.drawRect(zone_rect(inner, vert, pos(0.0f), pos(std::min(t, HOT_VALUE))));
     }
     if (t > HOT_VALUE) {
         p.setBrush(Theme::meter_mid());
-        p.drawRect(zone_rect(HOT_VALUE, std::min(t, CLIP_VALUE)));
+        p.drawRect(zone_rect(inner, vert, pos(HOT_VALUE), pos(std::min(t, CLIP_VALUE))));
     }
     if (t > CLIP_VALUE) {
         p.setBrush(Theme::meter_clip());
-        p.drawRect(zone_rect(CLIP_VALUE, t));
+        p.drawRect(zone_rect(inner, vert, pos(CLIP_VALUE), pos(t)));
     }
 
     // 0 dBFS mark on the groove.

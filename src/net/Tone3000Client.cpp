@@ -170,12 +170,15 @@ T3kModel Tone3000Client::parse_model(const QJsonObject& o) {
     return m;
 }
 
+// NAM_TONE3000_API_BASE overrides the API host (tests point it at a mock).
+static QString api_base_from_env() {
+    const QByteArray env = qgetenv("NAM_TONE3000_API_BASE");
+    return env.isEmpty() ? QStringLiteral("https://www.tone3000.com/api/v1")
+                         : QString::fromUtf8(env).trimmed();
+}
+
 QString Tone3000Client::api_base() {
-    static const QString BASE = [] {
-        const QByteArray env = qgetenv("NAM_TONE3000_API_BASE");
-        return env.isEmpty() ? QStringLiteral("https://www.tone3000.com/api/v1")
-                             : QString::fromUtf8(env).trimmed();
-    }();
+    static const QString BASE = api_base_from_env();
     return BASE;
 }
 
@@ -387,69 +390,71 @@ void Tone3000Client::on_auth_connection() {
     }
     while (QTcpSocket* sock = server->nextPendingConnection()) {
         connect(sock, &QTcpSocket::readyRead, this, [this, sock] {
-            const QByteArray data = sock->peek(64 * 1024);
-            const qsizetype eol = data.indexOf("\r\n");
-            if (eol < 0) {
-                return; // request line not complete yet
-            }
-            sock->readAll();
-
-            // "GET /callback?code=…&state=… HTTP/1.1"
-            const QList<QByteArray> parts = data.left(eol).split(' ');
-            const QUrl req_url = parts.size() >= 2
-                                     ? QUrl("http://localhost" + QString::fromLatin1(parts[1]))
-                                     : QUrl();
-            const QUrlQuery q(req_url);
-
-            QString body;
-            const bool is_callback = req_url.path() == "/callback";
-            if (is_callback) {
-                body =
-                    "<!doctype html><html><head><meta charset=\"utf-8\"><title>NAM Player</title>"
-                    "<style>body{font-family:sans-serif;background:#15171c;color:#d8dee9;"
-                    "display:flex;align-items:center;justify-content:center;height:100vh;margin:0}"
-                    "div{text-align:center}h1{font-weight:600}</style></head><body><div>"
-                    "<h1>NAM Player</h1><p>You can close this tab and return to the app.</p>"
-                    "</div></body></html>";
-            } else {
-                body = "<!doctype html><html><body>Not found</body></html>";
-            }
-            const QByteArray bytes = body.toUtf8();
-            sock->write(
-                QByteArray(is_callback ? "HTTP/1.1 200 OK\r\n" : "HTTP/1.1 404 Not Found\r\n") +
-                "Content-Type: text/html; charset=utf-8\r\n" + "Content-Length: " +
-                QByteArray::number(bytes.size()) + "\r\n" + "Connection: close\r\n\r\n" + bytes);
-            sock->disconnectFromHost();
-            if (!is_callback) {
-                return;
-            }
-
-            const QString state = q.queryItemValue("state");
-            const QString code = q.queryItemValue("code");
-            const QString error = q.queryItemValue("error");
-            const bool canceled = q.queryItemValue("canceled") == "true";
-            const int tone_id = q.queryItemValue("tone_id").toInt();
-
-            if (state != auth_state) {
-                finish_auth(false, "Sign-in response did not match the request (state).", 0);
-                return;
-            }
-            if (canceled && code.isEmpty()) {
-                finish_auth(false, "Sign-in canceled.", 0);
-                return;
-            }
-            if (!error.isEmpty()) {
-                finish_auth(false, "TONE3000 refused the sign-in: " + error, 0);
-                return;
-            }
-            if (code.isEmpty()) {
-                finish_auth(false, "No authorization code returned.", 0);
-                return;
-            }
-            exchange_code(code, tone_id);
+            on_auth_request(sock);
         });
         connect(sock, &QTcpSocket::disconnected, sock, &QObject::deleteLater);
     }
+}
+
+// The browser hit the loopback server: answer it and finish the sign-in.
+void Tone3000Client::on_auth_request(QTcpSocket* sock) {
+    const QByteArray data = sock->peek(64 * 1024);
+    const qsizetype eol = data.indexOf("\r\n");
+    if (eol < 0) {
+        return; // request line not complete yet
+    }
+    sock->readAll();
+
+    // "GET /callback?code=…&state=… HTTP/1.1"
+    const QList<QByteArray> parts = data.left(eol).split(' ');
+    const QUrl req_url =
+        parts.size() >= 2 ? QUrl("http://localhost" + QString::fromLatin1(parts[1])) : QUrl();
+    const QUrlQuery q(req_url);
+
+    QString body;
+    const bool is_callback = req_url.path() == "/callback";
+    if (is_callback) {
+        body = "<!doctype html><html><head><meta charset=\"utf-8\"><title>NAM Player</title>"
+               "<style>body{font-family:sans-serif;background:#15171c;color:#d8dee9;"
+               "display:flex;align-items:center;justify-content:center;height:100vh;margin:0}"
+               "div{text-align:center}h1{font-weight:600}</style></head><body><div>"
+               "<h1>NAM Player</h1><p>You can close this tab and return to the app.</p>"
+               "</div></body></html>";
+    } else {
+        body = "<!doctype html><html><body>Not found</body></html>";
+    }
+    const QByteArray bytes = body.toUtf8();
+    sock->write(QByteArray(is_callback ? "HTTP/1.1 200 OK\r\n" : "HTTP/1.1 404 Not Found\r\n") +
+                "Content-Type: text/html; charset=utf-8\r\n" + "Content-Length: " +
+                QByteArray::number(bytes.size()) + "\r\n" + "Connection: close\r\n\r\n" + bytes);
+    sock->disconnectFromHost();
+    if (!is_callback) {
+        return;
+    }
+
+    const QString state = q.queryItemValue("state");
+    const QString code = q.queryItemValue("code");
+    const QString error = q.queryItemValue("error");
+    const bool canceled = q.queryItemValue("canceled") == "true";
+    const int tone_id = q.queryItemValue("tone_id").toInt();
+
+    if (state != auth_state) {
+        finish_auth(false, "Sign-in response did not match the request (state).", 0);
+        return;
+    }
+    if (canceled && code.isEmpty()) {
+        finish_auth(false, "Sign-in canceled.", 0);
+        return;
+    }
+    if (!error.isEmpty()) {
+        finish_auth(false, "TONE3000 refused the sign-in: " + error, 0);
+        return;
+    }
+    if (code.isEmpty()) {
+        finish_auth(false, "No authorization code returned.", 0);
+        return;
+    }
+    exchange_code(code, tone_id);
 }
 
 void Tone3000Client::exchange_code(const QString& code, int tone_id) {
@@ -466,17 +471,21 @@ void Tone3000Client::exchange_code(const QString& code, int tone_id) {
     req.body = form.query(QUrl::FullyEncoded).toUtf8();
     req.use_cache = false;
     req.cb = [this, tone_id](const Result& r) {
-        if (!r.ok) {
-            finish_auth(false, "Token exchange failed: " + r.error, 0);
-            return;
-        }
-        apply_token_response(r.object());
-        emit auth_changed();
-        fetch_current_user([this, tone_id](const Result&) {
-            finish_auth(true, {}, tone_id);
-        });
+        on_code_exchanged(r, tone_id);
     };
     send(std::move(req));
+}
+
+void Tone3000Client::on_code_exchanged(const Result& r, int tone_id) {
+    if (!r.ok) {
+        finish_auth(false, "Token exchange failed: " + r.error, 0);
+        return;
+    }
+    apply_token_response(r.object());
+    emit auth_changed();
+    fetch_current_user([this, tone_id](const Result&) {
+        finish_auth(true, {}, tone_id);
+    });
 }
 
 void Tone3000Client::finish_auth(bool ok, const QString& error, int tone_id) {
@@ -523,25 +532,29 @@ void Tone3000Client::refresh_access_token(std::function<void(bool)> then) {
     req.body = form.query(QUrl::FullyEncoded).toUtf8();
     req.use_cache = false;
     req.cb = [this](const Result& r) {
-        refreshing = false;
-        bool ok = false;
-        if (r.ok) {
-            apply_token_response(r.object());
-            ok = true;
-        } else if (r.status == 400 || r.status == 401) {
-            // invalid_grant: the refresh token is dead — back to signed out.
-            qCWarning(lc_audio) << "TONE3000 refresh token rejected:" << r.error;
-            clear_tokens();
-            emit auth_changed();
-            emit user_changed();
-        }
-        const QList<std::function<void(bool)>> waiting = std::move(waiting_for_token);
-        waiting_for_token.clear();
-        for (const auto& w : waiting) {
-            w(ok);
-        }
+        on_token_refreshed(r);
     };
     send(std::move(req));
+}
+
+void Tone3000Client::on_token_refreshed(const Result& r) {
+    refreshing = false;
+    bool ok = false;
+    if (r.ok) {
+        apply_token_response(r.object());
+        ok = true;
+    } else if (r.status == 400 || r.status == 401) {
+        // invalid_grant: the refresh token is dead — back to signed out.
+        qCWarning(lc_audio) << "TONE3000 refresh token rejected:" << r.error;
+        clear_tokens();
+        emit auth_changed();
+        emit user_changed();
+    }
+    const QList<std::function<void(bool)>> waiting = std::move(waiting_for_token);
+    waiting_for_token.clear();
+    for (const auto& w : waiting) {
+        w(ok);
+    }
 }
 
 void Tone3000Client::send(Request req) {
@@ -560,50 +573,67 @@ void Tone3000Client::send(Request req) {
         }
     }
 
-    auto fire = [this, req]() mutable {
-        QNetworkRequest nr(req.url);
-        nr.setHeader(QNetworkRequest::UserAgentHeader,
-                     "NAMPlayer/1.0 (+https://github.com/silvercobraa/nam-player)");
-        nr.setRawHeader("Accept", "application/json");
-        nr.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::AlwaysNetwork);
-        nr.setAttribute(QNetworkRequest::CacheSaveControlAttribute, false);
-        if (!req.url.path().endsWith("/oauth/token") && is_signed_in()) {
-            nr.setRawHeader("Authorization", "Bearer " + access_token.toUtf8());
-        }
-
-        QNetworkReply* reply = nullptr;
-        if (req.method == "GET") {
-            reply = nam->get(nr);
-        } else if (req.method == "PUT") {
-            reply = nam->put(nr, QByteArray());
-        } else if (req.method == "DELETE") {
-            reply = nam->deleteResource(nr);
-        } else {
-            nr.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
-            reply = nam->post(nr, req.body);
-        }
-        connect(reply, &QNetworkReply::finished, this, [this, reply, req] {
-            on_reply_finished(reply, req);
-        });
-    };
-
     if (is_token_call) {
-        fire();
+        start_request(req);
         return;
     }
 
     // Bearer calls: refresh first when the token is about to expire.
-    ensure_fresh_token([fire, req](bool fresh) mutable {
-        if (!fresh) {
-            Result r;
-            r.auth_required = true;
-            r.status = 401;
-            r.error = "Sign in to TONE3000 first.";
-            req.cb(r);
-            return;
-        }
-        fire();
+    ensure_fresh_token([this, req](bool fresh) {
+        on_token_checked(req, fresh);
     });
+}
+
+void Tone3000Client::on_token_checked(const Request& req, bool fresh) {
+    if (!fresh) {
+        Result r;
+        r.auth_required = true;
+        r.status = 401;
+        r.error = "Sign in to TONE3000 first.";
+        req.cb(r);
+        return;
+    }
+    start_request(req);
+}
+
+void Tone3000Client::start_request(const Request& req) {
+    QNetworkRequest nr(req.url);
+    nr.setHeader(QNetworkRequest::UserAgentHeader,
+                 "NAMPlayer/1.0 (+https://github.com/silvercobraa/nam-player)");
+    nr.setRawHeader("Accept", "application/json");
+    nr.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::AlwaysNetwork);
+    nr.setAttribute(QNetworkRequest::CacheSaveControlAttribute, false);
+    if (!req.url.path().endsWith("/oauth/token") && is_signed_in()) {
+        nr.setRawHeader("Authorization", "Bearer " + access_token.toUtf8());
+    }
+
+    QNetworkReply* reply = nullptr;
+    if (req.method == "GET") {
+        reply = nam->get(nr);
+    } else if (req.method == "PUT") {
+        reply = nam->put(nr, QByteArray());
+    } else if (req.method == "DELETE") {
+        reply = nam->deleteResource(nr);
+    } else {
+        nr.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+        reply = nam->post(nr, req.body);
+    }
+    connect(reply, &QNetworkReply::finished, this, [this, reply, req] {
+        on_reply_finished(reply, req);
+    });
+}
+
+// A 401 triggered a token refresh: resend `req`, or report the expired session.
+void Tone3000Client::retry_after_refresh(Request req, bool refreshed) {
+    if (refreshed) {
+        send(std::move(req));
+        return;
+    }
+    Result r;
+    r.status = 401;
+    r.auth_required = true;
+    r.error = "Your TONE3000 session has expired. Sign in again.";
+    req.cb(r);
 }
 
 void Tone3000Client::on_reply_finished(QNetworkReply* reply, Request req) {
@@ -639,16 +669,8 @@ void Tone3000Client::on_reply_finished(QNetworkReply* reply, Request req) {
         // Expiry race between the pre-check and the request: refresh and retry once.
         req.retried401 = true;
         Request again = req;
-        refresh_access_token([this, again](bool ok) mutable {
-            if (ok) {
-                send(std::move(again));
-                return;
-            }
-            Result rr;
-            rr.status = 401;
-            rr.auth_required = true;
-            rr.error = "Your TONE3000 session has expired. Sign in again.";
-            again.cb(rr);
+        refresh_access_token([this, again](bool ok) {
+            retry_after_refresh(again, ok);
         });
         return;
     }
@@ -766,6 +788,43 @@ void Tone3000Client::fetch_model(int model_id, Callback cb) {
     send(std::move(req));
 }
 
+// list_models runs one request per architecture; their answers meet here.
+struct ModelsBatch
+{
+    QList<T3kModel> models;
+    qsizetype pending = 0; // requests still running
+    Tone3000Client::Result failed; // first failure, reported if nothing arrived
+    std::function<void(const Tone3000Client::Result&, QList<T3kModel>)> cb;
+};
+
+// Merges one page into the batch (skipping duplicates); the last one calls back.
+static void add_models_page(ModelsBatch& batch, const Tone3000Client::Result& r) {
+    if (r.ok) {
+        for (const QJsonValue v : r.object().value("data").toArray()) {
+            const T3kModel m = Tone3000Client::parse_model(v.toObject());
+            const bool dup =
+                std::any_of(batch.models.cbegin(), batch.models.cend(), [&m](const T3kModel& x) {
+                    return x.id == m.id;
+                });
+            if (!dup) {
+                batch.models.append(m);
+            }
+        }
+    } else if (!batch.failed.status && batch.failed.error.isEmpty()) {
+        batch.failed = r;
+    }
+    if (--batch.pending == 0) {
+        if (!batch.models.isEmpty() || batch.failed.error.isEmpty()) {
+            Tone3000Client::Result ok;
+            ok.ok = true;
+            ok.status = 200;
+            batch.cb(ok, batch.models);
+        } else {
+            batch.cb(batch.failed, {});
+        }
+    }
+}
+
 void Tone3000Client::list_models(const T3kTone& tone,
                                  std::function<void(const Result&, QList<T3kModel>)> cb) {
     // NAM tones keep A2 files apart from the legacy A1/custom set; the
@@ -785,10 +844,9 @@ void Tone3000Client::list_models(const T3kTone& tone,
         archs << "";
     }
 
-    auto models = std::make_shared<QList<T3kModel>>();
-    auto pending = std::make_shared<int>(archs.size());
-    auto failed = std::make_shared<Result>();
-    auto cbp = std::make_shared<decltype(cb)>(std::move(cb));
+    auto batch = std::make_shared<ModelsBatch>();
+    batch->pending = archs.size();
+    batch->cb = std::move(cb);
 
     for (const QString& arch : archs) {
         Request req;
@@ -803,31 +861,8 @@ void Tone3000Client::list_models(const T3kTone& tone,
         url.setQuery(q);
         req.url = url;
         req.use_cache = false; // model_url values are fetched fresh
-        req.cb = [models, pending, failed, cbp](const Result& r) {
-            if (r.ok) {
-                for (const QJsonValue v : r.object().value("data").toArray()) {
-                    const T3kModel m = parse_model(v.toObject());
-                    const bool dup =
-                        std::any_of(models->cbegin(), models->cend(), [&](const T3kModel& x) {
-                            return x.id == m.id;
-                        });
-                    if (!dup) {
-                        models->append(m);
-                    }
-                }
-            } else if (!failed->status && failed->error.isEmpty()) {
-                *failed = r;
-            }
-            if (--*pending == 0) {
-                if (!models->isEmpty() || failed->error.isEmpty()) {
-                    Result ok;
-                    ok.ok = true;
-                    ok.status = 200;
-                    (*cbp)(ok, *models);
-                } else {
-                    (*cbp)(*failed, {});
-                }
-            }
+        req.cb = [batch](const Result& r) {
+            add_models_page(*batch, r);
         };
         send(std::move(req));
     }
@@ -839,10 +874,7 @@ void Tone3000Client::set_favorite(int tone_id, bool on, Callback cb) {
     req.url = QUrl(api_base() + "/tones/" + QString::number(tone_id) + "/favorite");
     req.use_cache = false;
     req.cb = [this, cb](const Result& r) {
-        if (r.ok) {
-            invalidate_cache("/tones/favorited");
-        }
-        cb(r);
+        on_favorite_set(r, cb);
     };
     send(std::move(req));
 }
@@ -853,14 +885,25 @@ void Tone3000Client::fetch_current_user(Callback cb) {
     req.url = QUrl(api_base() + "/user");
     req.use_cache = false;
     req.cb = [this, cb](const Result& r) {
-        if (r.ok) {
-            user = parse_user(r.object());
-            save_tokens();
-            emit user_changed();
-        }
-        cb(r);
+        on_user_fetched(r, cb);
     };
     send(std::move(req));
+}
+
+void Tone3000Client::on_favorite_set(const Result& r, const Callback& cb) {
+    if (r.ok) {
+        invalidate_cache("/tones/favorited");
+    }
+    cb(r);
+}
+
+void Tone3000Client::on_user_fetched(const Result& r, const Callback& cb) {
+    if (r.ok) {
+        user = parse_user(r.object());
+        save_tokens();
+        emit user_changed();
+    }
+    cb(r);
 }
 
 QString Tone3000Client::local_path_for(const T3kModel& model, const T3kTone& tone) {
@@ -881,12 +924,17 @@ void Tone3000Client::download_model(const T3kModel& model, const T3kTone& tone,
         return;
     }
     ensure_fresh_token([this, model, tone, cb](bool fresh) {
-        if (!fresh) {
-            cb(false, {}, "Sign in to TONE3000 first.");
-            return;
-        }
-        download_step(QUrl(model.model_url), true, 0, model, tone, cb);
+        start_download(fresh, model, tone, cb);
     });
+}
+
+void Tone3000Client::start_download(bool fresh, const T3kModel& model, const T3kTone& tone,
+                                    const DownloadCallback& cb) {
+    if (!fresh) {
+        cb(false, {}, "Sign in to TONE3000 first.");
+        return;
+    }
+    download_step(QUrl(model.model_url), true, 0, model, tone, cb);
 }
 
 void Tone3000Client::download_step(QUrl url, bool with_auth, int hops, const T3kModel& model,
@@ -918,53 +966,77 @@ void Tone3000Client::download_step(QUrl url, bool with_auth, int hops, const T3k
                 emit download_progress(model_id, rec, tot);
             });
     connect(reply, &QNetworkReply::finished, this, [this, reply, hops, model, tone, cb] {
-        reply->deleteLater();
-        const int status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-        const QUrl target = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toUrl();
-        if (status >= 300 && status < 400 && !target.isEmpty()) {
-            download_step(reply->url().resolved(target), false, hops + 1, model, tone, cb);
-            return;
-        }
-        if (reply->error() != QNetworkReply::NoError || status < 200 || status >= 300) {
-            cb(false, {},
-               status ? QString("Download failed (HTTP %1).").arg(status) : reply->errorString());
-            return;
-        }
-
-        const QString path = local_path_for(model, tone);
-        QDir().mkpath(QFileInfo(path).absolutePath());
-        QSaveFile f(path);
-        if (!f.open(QIODevice::WriteOnly)) {
-            cb(false, path, "Cannot write " + path);
-            return;
-        }
-        f.write(reply->readAll());
-        if (!f.commit()) {
-            cb(false, path, "Cannot write " + path);
-            return;
-        }
-
-        QJsonObject side;
-        side["tone_id"] = tone.id;
-        side["model_id"] = model.id;
-        side["tone_title"] = tone.title;
-        side["model_name"] = model.name;
-        side["creator"] = tone.user.username;
-        side["creator_url"] = tone.user.url;
-        side["license"] = tone.license;
-        side["url"] = tone.url;
-        side["gear"] = tone.gear;
-        side["format"] = tone.format;
-        side["image"] = tone.image_url();
-        side["downloaded_at"] = QDateTime::currentDateTimeUtc().toString(Qt::ISODate);
-        QSaveFile sf(sidecar_path(path));
-        if (sf.open(QIODevice::WriteOnly)) {
-            sf.write(QJsonDocument(side).toJson());
-            sf.commit();
-        }
-        invalidate_cache("/tones/downloaded");
-        cb(true, path, {});
+        on_download_finished(reply, hops, model, tone, cb);
     });
+}
+
+void Tone3000Client::on_download_finished(QNetworkReply* reply, int hops, const T3kModel& model,
+                                          const T3kTone& tone, const DownloadCallback& cb) {
+    reply->deleteLater();
+    const int status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    const QUrl target = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toUrl();
+    if (status >= 300 && status < 400 && !target.isEmpty()) {
+        download_step(reply->url().resolved(target), false, hops + 1, model, tone, cb);
+        return;
+    }
+    if (reply->error() != QNetworkReply::NoError || status < 200 || status >= 300) {
+        cb(false, {},
+           status ? QString("Download failed (HTTP %1).").arg(status) : reply->errorString());
+        return;
+    }
+
+    const QString path = local_path_for(model, tone);
+    QDir().mkpath(QFileInfo(path).absolutePath());
+    QSaveFile f(path);
+    if (!f.open(QIODevice::WriteOnly)) {
+        cb(false, path, "Cannot write " + path);
+        return;
+    }
+    f.write(reply->readAll());
+    if (!f.commit()) {
+        cb(false, path, "Cannot write " + path);
+        return;
+    }
+
+    QJsonObject side;
+    side["tone_id"] = tone.id;
+    side["model_id"] = model.id;
+    side["tone_title"] = tone.title;
+    side["model_name"] = model.name;
+    side["creator"] = tone.user.username;
+    side["creator_url"] = tone.user.url;
+    side["license"] = tone.license;
+    side["url"] = tone.url;
+    side["gear"] = tone.gear;
+    side["format"] = tone.format;
+    side["image"] = tone.image_url();
+    side["downloaded_at"] = QDateTime::currentDateTimeUtc().toString(Qt::ISODate);
+    QSaveFile sf(sidecar_path(path));
+    if (sf.open(QIODevice::WriteOnly)) {
+        sf.write(QJsonDocument(side).toJson());
+        sf.commit();
+    }
+    invalidate_cache("/tones/downloaded");
+    cb(true, path, {});
+}
+
+// Decodes, scales and caches a fetched image, then hands it over (null on error).
+static void on_image_finished(QNetworkReply* reply, const QString& key, const QSize& max_size,
+                              const std::function<void(QPixmap)>& cb) {
+    reply->deleteLater();
+    QPixmap px;
+    if (reply->error() == QNetworkReply::NoError) {
+        const QByteArray bytes = reply->readAll();
+        QImage img = QImage::fromData(bytes);
+        if (!img.isNull()) {
+            if (img.width() > max_size.width() || img.height() > max_size.height()) {
+                img = img.scaled(max_size, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+            }
+            px = QPixmap::fromImage(img);
+            QPixmapCache::insert(key, px);
+        }
+    }
+    cb(px);
 }
 
 void Tone3000Client::fetch_image(const QString& url, const QSize& max_size,
@@ -986,20 +1058,7 @@ void Tone3000Client::fetch_image(const QString& url, const QSize& max_size,
     nr.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferCache);
     QNetworkReply* reply = nam->get(nr);
     connect(reply, &QNetworkReply::finished, this, [reply, key, max_size, cb] {
-        reply->deleteLater();
-        QPixmap px;
-        if (reply->error() == QNetworkReply::NoError) {
-            const QByteArray bytes = reply->readAll();
-            QImage img = QImage::fromData(bytes);
-            if (!img.isNull()) {
-                if (img.width() > max_size.width() || img.height() > max_size.height()) {
-                    img = img.scaled(max_size, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-                }
-                px = QPixmap::fromImage(img);
-                QPixmapCache::insert(key, px);
-            }
-        }
-        cb(px);
+        on_image_finished(reply, key, max_size, cb);
     });
 }
 

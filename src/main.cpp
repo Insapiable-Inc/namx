@@ -45,6 +45,24 @@ static void migrate_legacy_settings() {
           static_cast<long long>(keys.size()));
 }
 
+// Self-test end: report peak memory and quit with success.
+static void finish_self_test() {
+#ifdef Q_OS_LINUX
+    // Peak resident set (VmHWM) after the library scan and audio start.
+    if (FILE* f = std::fopen("/proc/self/status", "r")) {
+        char line[256];
+        while (std::fgets(line, sizeof line, f)) {
+            if (!std::strncmp(line, "VmHWM:", 6)) {
+                std::printf("self-test: peak RSS %s", line + 6);
+            }
+        }
+        std::fclose(f);
+    }
+#endif
+    std::fflush(stdout);
+    QCoreApplication::exit(0);
+}
+
 int run(int argc, char* argv[]) {
     QElapsedTimer startup; // cold-start budget (Phase 14): window up in < 1 s
     startup.start();
@@ -108,24 +126,11 @@ int run(int argc, char* argv[]) {
     if (self_test) {
         // First event-loop pass after show(): the window has been laid out
         // and its first frame requested — what the user perceives as "up".
-        QTimer::singleShot(0, &app, [&startup] {
+        QTimer::singleShot(0, &app, [startup] {
             std::printf("self-test: window shown after %lld ms\n",
                         static_cast<long long>(startup.elapsed()));
         });
-        QTimer::singleShot(1500, &app, [] {
-#ifdef Q_OS_LINUX
-            // Peak resident set (VmHWM) after the library scan and audio start.
-            if (FILE* f = std::fopen("/proc/self/status", "r")) {
-                char line[256];
-                while (std::fgets(line, sizeof line, f))
-                    if (!std::strncmp(line, "VmHWM:", 6))
-                        std::printf("self-test: peak RSS %s", line + 6);
-                std::fclose(f);
-            }
-#endif
-            std::fflush(stdout);
-            QCoreApplication::exit(0);
-        });
+        QTimer::singleShot(1500, &app, &finish_self_test);
     }
     return app.exec();
 }

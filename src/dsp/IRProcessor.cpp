@@ -32,24 +32,24 @@ void IRProcessor::reset() {
     }
 }
 
+// RBJ Butterworth high-pass / low-pass (Q = 0.707).
+void IRProcessor::design_butterworth(Biquad& b, float f, bool high, float fs) {
+    f = std::clamp(f, 10.0f, 0.45f * fs);
+    const float w = 2.0f * PI * f / fs, cw = std::cos(w), alpha = std::sin(w) / (2.0f * 0.7071f);
+    const float a0 = 1.0f + alpha;
+    const float k = high ? (1.0f + cw) / 2.0f : (1.0f - cw) / 2.0f;
+    b.b0 = k / a0;
+    b.b1 = (high ? -2.0f * k : 2.0f * k) / a0;
+    b.b2 = k / a0;
+    b.a1 = -2.0f * cw / a0;
+    b.a2 = (1.0f - alpha) / a0;
+}
+
 void IRProcessor::design_cuts(float low_hz, float high_hz) {
-    // RBJ Butterworth high-pass / low-pass (Q = 0.707).
     const float fs = static_cast<float>(sample_rate);
-    auto design = [fs](float f, bool high, Biquad& b) {
-        f = std::clamp(f, 10.0f, 0.45f * fs);
-        const float w = 2.0f * PI * f / fs, cw = std::cos(w),
-                    alpha = std::sin(w) / (2.0f * 0.7071f);
-        const float a0 = 1.0f + alpha;
-        const float k = high ? (1.0f + cw) / 2.0f : (1.0f - cw) / 2.0f;
-        b.b0 = k / a0;
-        b.b1 = (high ? -2.0f * k : 2.0f * k) / a0;
-        b.b2 = k / a0;
-        b.a1 = -2.0f * cw / a0;
-        b.a2 = (1.0f - alpha) / a0;
-    };
     for (int c = 0; c < 2; ++c) {
-        design(low_hz, true, hp[c]);
-        design(high_hz, false, lp[c]);
+        design_butterworth(hp[c], low_hz, true, fs);
+        design_butterworth(lp[c], high_hz, false, fs);
     }
     designed_low = low_hz;
     designed_high = high_hz;

@@ -57,6 +57,8 @@ private:
     static int jack_xrun_callback(void* arg);
 
     int process_audio(jack_nframes_t nframes);
+    // Drops every connection of one of our ports.
+    void disconnect_all(jack_port_t* p);
     int on_buffer_size(jack_nframes_t nframes);
 
     jack_client_t* client = nullptr;

@@ -81,18 +81,28 @@ static double mean(const vector<double>& v) {
     return sum / static_cast<double>(v.size());
 }
 
+static string to_lower(string s) {
+    for (auto& c : s) {
+        c = static_cast<char>(std::tolower(c));
+    }
+    return s;
+}
+
 static bool listed(const string& only, const char* name) {
     if (only.empty()) {
         return true;
     }
     string hay = "," + only + ",", needle = string(",") + name + ",";
-    auto lower = [](string s) {
-        for (auto& c : s) {
-            c = static_cast<char>(std::tolower(c));
-        }
-        return s;
-    };
-    return lower(hay).find(lower(needle)) != string::npos;
+    return to_lower(hay).find(to_lower(needle)) != string::npos;
+}
+
+// The value after option argv[i]; advances i. Exits with usage if it's missing.
+static const char* option_value(int& i, int argc, char** argv) {
+    if (i + 1 >= argc) {
+        usage();
+        std::exit(2);
+    }
+    return argv[++i];
 }
 
 int run(int argc, char** argv) {
@@ -104,27 +114,20 @@ int run(int argc, char** argv) {
 
     for (int i = 1; i < argc; ++i) {
         const string a = argv[i];
-        auto next = [&]() -> const char* {
-            if (i + 1 >= argc) {
-                usage();
-                std::exit(2);
-            }
-            return argv[++i];
-        };
         if (a == "--model") {
-            model = next();
+            model = option_value(i, argc, argv);
         } else if (a == "--ir") {
-            ir = next();
+            ir = option_value(i, argc, argv);
         } else if (a == "--ir-b") {
-            ir_b = next();
+            ir_b = option_value(i, argc, argv);
         } else if (a == "--frames") {
-            frames = std::strtoul(next(), nullptr, 10);
+            frames = std::strtoul(option_value(i, argc, argv), nullptr, 10);
         } else if (a == "--rate") {
-            rate = std::atof(next());
+            rate = std::atof(option_value(i, argc, argv));
         } else if (a == "--blocks") {
-            blocks = std::strtoul(next(), nullptr, 10);
+            blocks = std::strtoul(option_value(i, argc, argv), nullptr, 10);
         } else if (a == "--only") {
-            only = next();
+            only = option_value(i, argc, argv);
         } else if (a == "--no-fast-tanh") {
             fast_tanh = false;
         } else {

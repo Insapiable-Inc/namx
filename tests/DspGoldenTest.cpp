@@ -231,6 +231,160 @@ static bool write_ir(const QString& path, double decay_samples, double frequency
     return true;
 }
 
+// Effect configurations rendered by the cases below.
+static unique_ptr<NoiseGateProcessor> make_gate() {
+    auto fx = make_unique<NoiseGateProcessor>();
+    fx->set_threshold(-40.0f);
+    return fx;
+}
+
+static unique_ptr<CompressorProcessor> make_compressor() {
+    auto fx = make_unique<CompressorProcessor>();
+    fx->set_threshold(-24.0f);
+    fx->set_ratio(4.0f);
+    fx->set_makeup(6.0f);
+    return fx;
+}
+
+static unique_ptr<DynamicWahProcessor> make_wah_pedal() {
+    auto fx = make_unique<DynamicWahProcessor>();
+    fx->set_pedal_mode(true);
+    fx->set_position_pct(70.0f);
+    return fx;
+}
+
+static unique_ptr<FlangerProcessor> make_flanger() {
+    auto fx = make_unique<FlangerProcessor>();
+    fx->set_feedback_pct(60.0f);
+    return fx;
+}
+
+static unique_ptr<FlangerProcessor> make_flanger_stereo() {
+    auto fx = make_unique<FlangerProcessor>();
+    fx->set_stereo_mode(true);
+    return fx;
+}
+
+static unique_ptr<PhaserProcessor> make_phaser_vibe_stereo() {
+    auto fx = make_unique<PhaserProcessor>();
+    fx->set_vibe(true);
+    fx->set_stereo_mode(true);
+    return fx;
+}
+
+static unique_ptr<DriveProcessor> make_drive() {
+    auto fx = make_unique<DriveProcessor>();
+    fx->set_drive_pct(70.0f);
+    return fx;
+}
+
+static unique_ptr<EQProcessor> make_eq() {
+    auto fx = make_unique<EQProcessor>();
+    fx->set_low_gain(4.0);
+    fx->set_mid_gain(-3.0);
+    fx->set_treble_gain(2.0);
+    return fx;
+}
+
+static unique_ptr<TremoloProcessor> make_tremolo_stereo() {
+    auto fx = make_unique<TremoloProcessor>();
+    fx->set_stereo_mode(true);
+    return fx;
+}
+
+static unique_ptr<DelayProcessor> make_delay() {
+    auto fx = make_unique<DelayProcessor>();
+    fx->set_time(180.0f);
+    fx->set_feedback_pct(55.0f);
+    fx->set_mix_pct(40.0f);
+    return fx;
+}
+
+static unique_ptr<DelayProcessor> make_delay_stereo_mod_sat() {
+    auto fx = make_unique<DelayProcessor>();
+    fx->set_stereo_mode(true);
+    fx->set_time(240.0f);
+    fx->set_modulation(50.0f);
+    fx->set_saturation(50.0f);
+    fx->set_cross_feed(30.0f);
+    return fx;
+}
+
+static unique_ptr<DelayProcessor> make_delay_crystals() {
+    auto fx = make_unique<DelayProcessor>();
+    fx->set_stereo_mode(true);
+    fx->set_crystals(60.0f);
+    return fx;
+}
+
+static unique_ptr<ReverbProcessor> make_reverb() {
+    auto fx = make_unique<ReverbProcessor>();
+    fx->set_pre_delay(30.0f);
+    return fx;
+}
+
+static unique_ptr<ReverbProcessor> make_reverb_stereo_shimmer() {
+    auto fx = make_unique<ReverbProcessor>();
+    fx->set_stereo_mode(true);
+    fx->set_shimmer_pct(60.0f);
+    return fx;
+}
+
+static unique_ptr<TransposeProcessor> make_transpose_down() {
+    auto fx = make_unique<TransposeProcessor>();
+    fx->set_semitones(-2.0f);
+    return fx;
+}
+
+static unique_ptr<TransposeProcessor> make_transpose_up() {
+    auto fx = make_unique<TransposeProcessor>();
+    fx->set_semitones(12.0f);
+    fx->set_mix_pct(50.0f);
+    return fx;
+}
+
+static unique_ptr<VolumeProcessor> make_volume() {
+    auto fx = make_unique<VolumeProcessor>();
+    fx->set_position_pct(40.0f);
+    return fx;
+}
+
+static unique_ptr<ChorusProcessor> make_chorus(int mode) {
+    auto fx = make_unique<ChorusProcessor>();
+    fx->set_mode(mode);
+    fx->set_stereo_mode(true);
+    return fx;
+}
+
+// Both cabinet slots loaded with the generated IRs; null if a load fails.
+static unique_ptr<IRProcessor> make_cabinet(const QString& ir_a, const QString& ir_b) {
+    auto fx = make_unique<IRProcessor>();
+    fx->set_sample_rate(SAMPLE_RATE);
+    const bool loaded = fx->load(ir_a.toStdString()) && fx->load_b(ir_b.toStdString());
+    fx->reclaim_retired(true);
+    fx->set_blend_pct(35.0f);
+    fx->set_pan(1, 60.0f);
+    return loaded ? std::move(fx) : nullptr;
+}
+
+// The limiter fed 18 dB hot, so it actually limits.
+static void drive_and_limit(OutputLimiter& limiter, float* left, float* right, size_t frames) {
+    for (size_t i = 0; i < frames; ++i) {
+        left[i] *= 8.0f;
+        right[i] *= 8.0f;
+    }
+    limiter.process(left, right, frames);
+}
+
+static std::uint64_t render_limiter() {
+    OutputLimiter limiter;
+    limiter.set_sample_rate(SAMPLE_RATE);
+    limiter.set_enabled(true);
+    return render(false, [&limiter](float* left, float* right, size_t frames) {
+        drive_and_limit(limiter, left, right, frames);
+    });
+}
+
 class DspGoldenTest : public QObject
 {
     Q_OBJECT
@@ -261,73 +415,31 @@ void DspGoldenTest::initTestCase() {
     auto both = [this](const string& name, auto make) {
         for (const bool stereo_input : {false, true}) {
             cases[name + (stereo_input ? "/stereo" : "/mono")] = [make, stereo_input] {
-                auto fx = make();
-                return render_effect(*fx, stereo_input);
+                return render_effect(*make(), stereo_input);
             };
         }
     };
 
-    both("gate", [] {
-        auto fx = make_unique<NoiseGateProcessor>();
-        fx->set_threshold(-40.0f);
-        return fx;
-    });
-    both("compressor", [] {
-        auto fx = make_unique<CompressorProcessor>();
-        fx->set_threshold(-24.0f);
-        fx->set_ratio(4.0f);
-        fx->set_makeup(6.0f);
-        return fx;
-    });
+    both("gate", &make_gate);
+    both("compressor", &make_compressor);
     both("wah", [] {
         return make_unique<DynamicWahProcessor>();
     });
-    both("wah-pedal", [] {
-        auto fx = make_unique<DynamicWahProcessor>();
-        fx->set_pedal_mode(true);
-        fx->set_position_pct(70.0f);
-        return fx;
-    });
-    both("flanger", [] {
-        auto fx = make_unique<FlangerProcessor>();
-        fx->set_feedback_pct(60.0f);
-        return fx;
-    });
-    both("flanger-stereo", [] {
-        auto fx = make_unique<FlangerProcessor>();
-        fx->set_stereo_mode(true);
-        return fx;
-    });
+    both("wah-pedal", &make_wah_pedal);
+    both("flanger", &make_flanger);
+    both("flanger-stereo", &make_flanger_stereo);
     both("phaser", [] {
         return make_unique<PhaserProcessor>();
     });
-    both("phaser-vibe-stereo", [] {
-        auto fx = make_unique<PhaserProcessor>();
-        fx->set_vibe(true);
-        fx->set_stereo_mode(true);
-        return fx;
-    });
-    both("drive", [] {
-        auto fx = make_unique<DriveProcessor>();
-        fx->set_drive_pct(70.0f);
-        return fx;
-    });
-    both("eq", [] {
-        auto fx = make_unique<EQProcessor>();
-        fx->set_low_gain(4.0);
-        fx->set_mid_gain(-3.0);
-        fx->set_treble_gain(2.0);
-        return fx;
-    });
+    both("phaser-vibe-stereo", &make_phaser_vibe_stereo);
+    both("drive", &make_drive);
+    both("eq", &make_eq);
     both("doubler", [] {
         return make_unique<DoublerProcessor>();
     });
     for (int mode = ChorusProcessor::NORMAL; mode <= ChorusProcessor::SPATIAL; ++mode) {
         both("chorus-" + std::to_string(mode), [mode] {
-            auto fx = make_unique<ChorusProcessor>();
-            fx->set_mode(mode);
-            fx->set_stereo_mode(true);
-            return fx;
+            return make_chorus(mode);
         });
     }
     both("chorus-mono-mode", [] {
@@ -336,83 +448,20 @@ void DspGoldenTest::initTestCase() {
     both("tremolo", [] {
         return make_unique<TremoloProcessor>();
     });
-    both("tremolo-stereo", [] {
-        auto fx = make_unique<TremoloProcessor>();
-        fx->set_stereo_mode(true);
-        return fx;
-    });
-    both("delay", [] {
-        auto fx = make_unique<DelayProcessor>();
-        fx->set_time(180.0f);
-        fx->set_feedback_pct(55.0f);
-        fx->set_mix_pct(40.0f);
-        return fx;
-    });
-    both("delay-stereo-mod-sat", [] {
-        auto fx = make_unique<DelayProcessor>();
-        fx->set_stereo_mode(true);
-        fx->set_time(240.0f);
-        fx->set_modulation(50.0f);
-        fx->set_saturation(50.0f);
-        fx->set_cross_feed(30.0f);
-        return fx;
-    });
-    both("delay-crystals", [] {
-        auto fx = make_unique<DelayProcessor>();
-        fx->set_stereo_mode(true);
-        fx->set_crystals(60.0f);
-        return fx;
-    });
-    both("reverb", [] {
-        auto fx = make_unique<ReverbProcessor>();
-        fx->set_pre_delay(30.0f);
-        return fx;
-    });
-    both("reverb-stereo-shimmer", [] {
-        auto fx = make_unique<ReverbProcessor>();
-        fx->set_stereo_mode(true);
-        fx->set_shimmer_pct(60.0f);
-        return fx;
-    });
-    both("transpose-down", [] {
-        auto fx = make_unique<TransposeProcessor>();
-        fx->set_semitones(-2.0f);
-        return fx;
-    });
-    both("transpose-up", [] {
-        auto fx = make_unique<TransposeProcessor>();
-        fx->set_semitones(12.0f);
-        fx->set_mix_pct(50.0f);
-        return fx;
-    });
-    both("volume", [] {
-        auto fx = make_unique<VolumeProcessor>();
-        fx->set_position_pct(40.0f);
-        return fx;
-    });
+    both("tremolo-stereo", &make_tremolo_stereo);
+    both("delay", &make_delay);
+    both("delay-stereo-mod-sat", &make_delay_stereo_mod_sat);
+    both("delay-crystals", &make_delay_crystals);
+    both("reverb", &make_reverb);
+    both("reverb-stereo-shimmer", &make_reverb_stereo_shimmer);
+    both("transpose-down", &make_transpose_down);
+    both("transpose-up", &make_transpose_up);
+    both("volume", &make_volume);
     both("cabinet", [ir_a, ir_b] {
-        auto fx = make_unique<IRProcessor>();
-        fx->set_sample_rate(SAMPLE_RATE);
-        const bool loaded = fx->load(ir_a.toStdString()) && fx->load_b(ir_b.toStdString());
-        fx->reclaim_retired(true);
-        fx->set_blend_pct(35.0f);
-        fx->set_pan(1, 60.0f);
-        return loaded ? std::move(fx) : nullptr;
+        return make_cabinet(ir_a, ir_b);
     });
 
-    cases["limiter"] = [] {
-        OutputLimiter limiter;
-        limiter.set_sample_rate(SAMPLE_RATE);
-        limiter.set_enabled(true);
-        return render(false, [&limiter](float* left, float* right, size_t frames) {
-            // Drive it 18 dB hot so it actually limits.
-            for (size_t i = 0; i < frames; ++i) {
-                left[i] *= 8.0f;
-                right[i] *= 8.0f;
-            }
-            limiter.process(left, right, frames);
-        });
-    };
+    cases["limiter"] = &render_limiter;
 }
 
 void DspGoldenTest::effects_data() {

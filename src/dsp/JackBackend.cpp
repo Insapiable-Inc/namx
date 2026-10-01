@@ -124,32 +124,52 @@ vector<IAudioBackend::DeviceInfo> JackBackend::enumerate_output_devices() const 
 
 // Port connection persistence
 
+// Names of the ports `p` is connected to (empty for a null port).
+static vector<string> port_connections(jack_port_t* p) {
+    vector<string> result;
+    if (!p) {
+        return result;
+    }
+    const char** conns = jack_port_get_connections(p);
+    if (!conns) {
+        return result;
+    }
+    for (int i = 0; conns[i]; ++i) {
+        result.emplace_back(conns[i]);
+    }
+    jack_free(conns);
+    return result;
+}
+
 IAudioBackend::PortConnections JackBackend::current_connections() const {
     PortConnections out;
     if (!client) {
         return out;
     }
-
-    auto get_conns = [](jack_port_t* p) {
-        vector<string> result;
-        if (!p) {
-            return result;
-        }
-        const char** conns = jack_port_get_connections(p);
-        if (!conns) {
-            return result;
-        }
-        for (int i = 0; conns[i]; ++i) {
-            result.emplace_back(conns[i]);
-        }
-        jack_free(conns);
-        return result;
-    };
-
-    out.input_sources = get_conns(port_in);
-    out.output_l_dests = get_conns(port_out_l);
-    out.output_r_dests = get_conns(port_out_r);
+    out.input_sources = port_connections(port_in);
+    out.output_l_dests = port_connections(port_out_l);
+    out.output_r_dests = port_connections(port_out_r);
     return out;
+}
+
+void JackBackend::disconnect_all(jack_port_t* p) {
+    if (!p) {
+        return;
+    }
+    const char** conns = jack_port_get_connections(p);
+    if (!conns) {
+        return;
+    }
+    const char* my_name = jack_port_name(p);
+    const bool is_out = (jack_port_flags(p) & JackPortIsOutput) != 0;
+    for (int i = 0; conns[i]; ++i) {
+        if (is_out) {
+            jack_disconnect(client, my_name, conns[i]);
+        } else {
+            jack_disconnect(client, conns[i], my_name);
+        }
+    }
+    jack_free(conns);
 }
 
 void JackBackend::apply_connections(const PortConnections& c) {
@@ -157,25 +177,6 @@ void JackBackend::apply_connections(const PortConnections& c) {
         return;
     }
 
-    auto disconnect_all = [this](jack_port_t* p) {
-        if (!p) {
-            return;
-        }
-        const char** conns = jack_port_get_connections(p);
-        if (!conns) {
-            return;
-        }
-        const char* my_name = jack_port_name(p);
-        const bool is_out = (jack_port_flags(p) & JackPortIsOutput) != 0;
-        for (int i = 0; conns[i]; ++i) {
-            if (is_out) {
-                jack_disconnect(client, my_name, conns[i]);
-            } else {
-                jack_disconnect(client, conns[i], my_name);
-            }
-        }
-        jack_free(conns);
-    };
     disconnect_all(port_in);
     disconnect_all(port_out_l);
     disconnect_all(port_out_r);

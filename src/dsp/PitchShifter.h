@@ -90,32 +90,32 @@ private:
     // Best offset in [−search, +search] (kept ≥ 0 delay) for a restarting
     // tap: maximise the normalised correlation between the last corr_len
     // samples behind its new read point and behind the other tap's.
+    // Normalised correlation between the corr_len samples behind delay `d` and
+    // behind `d_other`; very low when `d` is out of range.
+    float alignment_score(float d, float d_other) const {
+        if (d < 1.0f ||
+            d + static_cast<float>(corr_len) + 2.0f >= static_cast<float>(line.size())) {
+            return -1e30f;
+        }
+        float xy = 0.0f, yy = 1e-9f;
+        for (size_t j = 0; j < corr_len; j += 2) // every other sample: plenty for alignment
+        {
+            const float a = line.at(static_cast<size_t>(d) + j);
+            const float b = line.at(static_cast<size_t>(d_other) + j);
+            xy += a * b;
+            yy += a * a;
+        }
+        return xy / std::sqrt(yy);
+    }
+
     float align(float p, float p_other, float off_other) const {
         const float d_other = delay_of(p_other, off_other);
         const float d_base = delay_of(p, 0.0f);
-        auto at = [&](float d, size_t j) {
-            return line.at(static_cast<size_t>(d) + j);
-        };
-        auto score = [&](int off) {
-            const float d = d_base + static_cast<float>(off);
-            if (d < 1.0f ||
-                d + static_cast<float>(corr_len) + 2.0f >= static_cast<float>(line.size())) {
-                return -1e30f;
-            }
-            float xy = 0.0f, yy = 1e-9f;
-            for (size_t j = 0; j < corr_len; j += 2) // every other sample: plenty for alignment
-            {
-                const float a = at(d, j), b = at(d_other, j);
-                xy += a * b;
-                yy += a * a;
-            }
-            return xy / std::sqrt(yy);
-        };
         int best = 0;
-        float best_s = score(0);
+        float best_s = alignment_score(d_base, d_other);
         for (int off = -search; off <= search; off += 4) // coarse
         {
-            const float sc = score(off);
+            const float sc = alignment_score(d_base + static_cast<float>(off), d_other);
             if (sc > best_s) {
                 best_s = sc;
                 best = off;
@@ -124,7 +124,7 @@ private:
         const int c = best;
         for (int off = c - 3; off <= c + 3; ++off) // refine
         {
-            const float sc = score(off);
+            const float sc = alignment_score(d_base + static_cast<float>(off), d_other);
             if (sc > best_s) {
                 best_s = sc;
                 best = off;

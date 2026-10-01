@@ -35,22 +35,12 @@ PresetBar::PresetBar(const LibraryIndex& new_index, QMenu* preset_menu, QWidget*
     lay->setContentsMargins(8, 4, 8, 4);
     lay->setSpacing(4);
 
-    auto tool = [this](const QString& text, const QString& tip, const char* new_name) {
-        auto* b = new QToolButton(this);
-        b->setObjectName(new_name);
-        b->setText(text);
-        b->setToolTip(tip);
-        b->setAutoRaise(true);
-        b->setFocusPolicy(Qt::NoFocus);
-        return b;
-    };
-
     auto* caption = new QLabel("Preset", this);
     caption->setObjectName("presetCaption");
     lay->addWidget(caption);
 
-    QToolButton* prev = tool("‹", "Previous preset in the library", "heroArrow");
-    QToolButton* next = tool("›", "Next preset in the library", "heroArrow");
+    QToolButton* prev = make_tool_button("‹", "Previous preset in the library", "heroArrow");
+    QToolButton* next = make_tool_button("›", "Next preset in the library", "heroArrow");
     connect(prev, &QToolButton::clicked, this, [this] {
         emit step_requested(-1);
     });
@@ -59,7 +49,7 @@ PresetBar::PresetBar(const LibraryIndex& new_index, QMenu* preset_menu, QWidget*
     });
 
     // Name button: the library's presets as a menu, folders as submenus.
-    name = tool({}, {}, "presetName");
+    name = make_tool_button({}, {}, "presetName");
     name->setPopupMode(QToolButton::InstantPopup);
     auto* list_menu = new QMenu(name);
     connect(list_menu, &QMenu::aboutToShow, this, [this, list_menu] {
@@ -79,8 +69,9 @@ PresetBar::PresetBar(const LibraryIndex& new_index, QMenu* preset_menu, QWidget*
     lay->addWidget(next);
     lay->addSpacing(8);
 
-    QToolButton* save = tool("Save", "Save the preset (Ctrl+S)", "presetTool");
-    QToolButton* save_as = tool("Save As…", "Save as a new preset (Ctrl+Shift+S)", "presetTool");
+    QToolButton* save = make_tool_button("Save", "Save the preset (Ctrl+S)", "presetTool");
+    QToolButton* save_as =
+        make_tool_button("Save As…", "Save as a new preset (Ctrl+Shift+S)", "presetTool");
     connect(save, &QToolButton::clicked, this, &PresetBar::save_requested);
     connect(save_as, &QToolButton::clicked, this, &PresetBar::save_as_requested);
     lay->addWidget(save);
@@ -96,7 +87,7 @@ PresetBar::PresetBar(const LibraryIndex& new_index, QMenu* preset_menu, QWidget*
         slot_paths << QString();
     }
     for (int i = 0; i < SLOT_COUNT; ++i) {
-        QToolButton* b = tool(QString::number(i + 1), {}, "presetSlot");
+        QToolButton* b = make_tool_button(QString::number(i + 1), {}, "presetSlot");
         b->setContextMenuPolicy(Qt::CustomContextMenu);
         connect(b, &QToolButton::clicked, this, [this, i] {
             activate_slot(i);
@@ -117,22 +108,21 @@ PresetBar::PresetBar(const LibraryIndex& new_index, QMenu* preset_menu, QWidget*
 
     // A/B compare: two in-memory states; the owner swaps them.
     for (int i = 0; i < 2; ++i) {
-        ab[i] = tool(i == 0 ? "A" : "B", {}, "presetAb");
+        ab[i] = make_tool_button(i == 0 ? "A" : "B", {}, "presetAb");
         ab[i]->setCheckable(true);
         connect(ab[i], &QToolButton::clicked, this, [this, i] {
-            ab[i]->setChecked(i == ab_active); // the owner confirms via setAbState
-            emit ab_switch_requested(i);
+            on_ab_clicked(i);
         });
         lay->addWidget(ab[i]);
     }
     learn_menu_for(ab[0], "action:abToggle");
     learn_menu_for(ab[1], "action:abToggle");
-    ab_copy = tool({}, {}, "presetTool");
+    ab_copy = make_tool_button({}, {}, "presetTool");
     connect(ab_copy, &QToolButton::clicked, this, &PresetBar::ab_copy_requested);
     lay->addWidget(ab_copy);
     lay->addSpacing(8);
 
-    QToolButton* more = tool("⋯", "Preset menu", "presetTool");
+    QToolButton* more = make_tool_button("⋯", "Preset menu", "presetTool");
     more->setPopupMode(QToolButton::InstantPopup);
     more->setMenu(preset_menu);
     lay->addWidget(more);
@@ -147,15 +137,35 @@ void PresetBar::learn_menu_for(QWidget* w, const QString& action_id) {
     }
     w->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(w, &QWidget::customContextMenuRequested, this, [this, w, action_id](const QPoint& p) {
-        if (!learn_hook) {
-            return;
-        }
-        QMenu menu(this);
-        learn_hook(action_id, &menu);
-        if (!menu.isEmpty()) {
-            menu.exec(w->mapToGlobal(p));
-        }
+        show_learn_menu(action_id, w->mapToGlobal(p));
     });
+}
+
+void PresetBar::show_learn_menu(const QString& action_id, const QPoint& global_pos) {
+    if (!learn_hook) {
+        return;
+    }
+    QMenu menu(this);
+    learn_hook(action_id, &menu);
+    if (!menu.isEmpty()) {
+        menu.exec(global_pos);
+    }
+}
+
+QToolButton* PresetBar::make_tool_button(const QString& text, const QString& tip,
+                                         const char* object_name) {
+    auto* b = new QToolButton(this);
+    b->setObjectName(object_name);
+    b->setText(text);
+    b->setToolTip(tip);
+    b->setAutoRaise(true);
+    b->setFocusPolicy(Qt::NoFocus);
+    return b;
+}
+
+void PresetBar::on_ab_clicked(int side) {
+    ab[side]->setChecked(side == ab_active); // the owner confirms via set_ab_state
+    emit ab_switch_requested(side);
 }
 
 void PresetBar::recall_slot(int i) {
@@ -197,6 +207,29 @@ void PresetBar::set_ab_state(int active) {
     ab_copy->setToolTip(QString("Copy the current state over %1").arg(active == 0 ? 'B' : 'A'));
 }
 
+static bool by_folder_then_name(const LibraryEntry* a, const LibraryEntry* b) {
+    if (a->folder != b->folder) {
+        return a->folder.compare(b->folder, Qt::CaseInsensitive) < 0;
+    }
+    return a->name.compare(b->name, Qt::CaseInsensitive) < 0;
+}
+
+// The submenu of `root` for a folder path ("Artist/Album"), created on demand
+// (parents first) and remembered in `folders`.
+static QMenu* folder_menu(const QString& folder, QMenu* root, QMap<QString, QMenu*>& folders) {
+    if (folder.isEmpty()) {
+        return root;
+    }
+    if (auto it = folders.find(folder); it != folders.end()) {
+        return *it;
+    }
+    const qsizetype slash = folder.lastIndexOf('/');
+    QMenu* parent = folder_menu(slash < 0 ? QString() : folder.left(slash), root, folders);
+    QMenu* sub = parent->addMenu(folder.mid(slash + 1));
+    folders.insert(folder, sub);
+    return sub;
+}
+
 void PresetBar::populate_preset_menu(QMenu* menu) {
     menu->clear();
 
@@ -210,37 +243,19 @@ void PresetBar::populate_preset_menu(QMenu* menu) {
         menu->addAction("No presets in the library")->setEnabled(false);
         return;
     }
-    std::sort(presets.begin(), presets.end(), [](const LibraryEntry* a, const LibraryEntry* b) {
-        if (a->folder != b->folder) {
-            return a->folder.compare(b->folder, Qt::CaseInsensitive) < 0;
-        }
-        return a->name.compare(b->name, Qt::CaseInsensitive) < 0;
-    });
+    std::sort(presets.begin(), presets.end(), &by_folder_then_name);
 
     // Folder path → submenu, created on demand; root-level files after the
     // folders so the tree reads like a file manager.
     QMap<QString, QMenu*> folders;
-    std::function<QMenu*(const QString&)> menu_for = [&](const QString& folder) -> QMenu* {
-        if (folder.isEmpty()) {
-            return menu;
-        }
-        if (auto it = folders.find(folder); it != folders.end()) {
-            return *it;
-        }
-        const qsizetype slash = folder.lastIndexOf('/');
-        QMenu* parent = menu_for(slash < 0 ? QString() : folder.left(slash));
-        QMenu* sub = parent->addMenu(folder.mid(slash + 1));
-        folders.insert(folder, sub);
-        return sub;
-    };
     for (const LibraryEntry* e : presets) {
         if (!e->folder.isEmpty()) {
-            menu_for(e->folder);
+            folder_menu(e->folder, menu, folders);
         }
     }
 
     for (const LibraryEntry* e : presets) {
-        QAction* a = menu_for(e->folder)->addAction(e->name);
+        QAction* a = folder_menu(e->folder, menu, folders)->addAction(e->name);
         a->setCheckable(true);
         a->setChecked(e->path == path);
         a->setToolTip(e->summary);

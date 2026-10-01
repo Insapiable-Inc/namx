@@ -130,6 +130,13 @@ private:
     }
 
     // Readable, subscribable ports of other clients (GUI thread).
+    // GUI thread, after a hot-plug: rescan, reconnect and tell listeners.
+    void refresh_devices() {
+        rescan();
+        sync_connections();
+        emit devices_changed();
+    }
+
     void rescan() {
         std::map<QString, Addr> found;
         {
@@ -251,14 +258,8 @@ private:
             if (topology) {
                 // Rescan + reconnect on the GUI thread, where the enabled set
                 // lives; seq calls stay serialized by the mutex.
-                QMetaObject::invokeMethod(
-                    this,
-                    [this] {
-                        rescan();
-                        sync_connections();
-                        emit devices_changed();
-                    },
-                    Qt::QueuedConnection);
+                QMetaObject::invokeMethod(this, &AlsaMidiInput::refresh_devices,
+                                          Qt::QueuedConnection);
             }
         }
     }

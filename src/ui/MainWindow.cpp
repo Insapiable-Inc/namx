@@ -151,15 +151,19 @@ static void place_in_stereo_slot(QWidget* card, QWidget* w) {
     slot->layout()->addWidget(w);
 }
 
+static QString format_hz(double hz, double off_at) {
+    if ((off_at > 0.0 && hz <= off_at) || (off_at < 0.0 && hz >= -off_at)) {
+        return QString("Off");
+    }
+    return hz < 1000.0 ? QString("%1 Hz").arg(qRound(hz))
+                       : QString("%1 kHz").arg(hz / 1000.0, 0, 'f', hz < 10000.0 ? 1 : 0);
+}
+
 // Frequency readout for EQ/cut knobs: "250 Hz", "3.2 kHz", or "Off" at the
 // knob's open end (offAt > 0: at or below it; offAt < 0: at or above −offAt).
 static std::function<QString(double)> hz_label(double off_at = 0.0) {
     return [off_at](double hz) {
-        if ((off_at > 0.0 && hz <= off_at) || (off_at < 0.0 && hz >= -off_at)) {
-            return QString("Off");
-        }
-        return hz < 1000.0 ? QString("%1 Hz").arg(qRound(hz))
-                           : QString("%1 kHz").arg(hz / 1000.0, 0, 'f', hz < 10000.0 ? 1 : 0);
+        return format_hz(hz, off_at);
     };
 }
 
@@ -297,6 +301,28 @@ KnobWidget* MainWindow::late_knob(const QString& group, const QString& key, Knob
     return k;
 }
 
+// Shows or hides a card's detail rows and resizes the card to fit.
+static void show_details(QWidget* card, QWidget* container, QToolButton* more, bool open) {
+    container->setVisible(open);
+    card->setFixedHeight(ROW_CARD_HEIGHT +
+                         (open ? container->layout()->count() * DETAIL_ROW_HEIGHT : 0));
+    more->setText(open ? "▴" : "▾");
+    more->setToolTip(open ? "Fewer controls" : "More controls");
+}
+
+// The ▾ button: show/hide the details and remember it per card across sessions.
+static void toggle_details(QWidget* card, QWidget* container, QToolButton* more,
+                           const QString& name, bool open) {
+    show_details(card, container, more, open);
+    QSettings s;
+    QStringList expanded = s.value("ui/expandedCards").toStringList();
+    expanded.removeAll(name);
+    if (open) {
+        expanded << name;
+    }
+    s.setValue("ui/expandedCards", expanded);
+}
+
 void MainWindow::add_detail_row(QWidget* card, const QList<QWidget*>& widgets) {
     // All detail rows of a card live in one container behind one ▾ toggle;
     // a second call adds a second row.
@@ -342,26 +368,12 @@ void MainWindow::add_detail_row(QWidget* card, const QList<QWidget*>& widgets) {
     more->setFocusPolicy(Qt::NoFocus);
     more->setAutoRaise(true);
     row_layout(card)->addWidget(more, 0, Qt::AlignVCenter); // after the stretch: right edge
-    auto apply = [card, container, more](bool open) {
-        container->setVisible(open);
-        card->setFixedHeight(ROW_CARD_HEIGHT +
-                             (open ? container->layout()->count() * DETAIL_ROW_HEIGHT : 0));
-        more->setText(open ? "▴" : "▾");
-        more->setToolTip(open ? "Fewer controls" : "More controls");
-    };
-    connect(more, &QToolButton::toggled, this, [apply, name](bool open) {
-        apply(open);
-        QSettings s;
-        QStringList expanded = s.value("ui/expandedCards").toStringList();
-        expanded.removeAll(name);
-        if (open) {
-            expanded << name;
-        }
-        s.setValue("ui/expandedCards", expanded);
+    connect(more, &QToolButton::toggled, this, [card, container, more, name](bool open) {
+        toggle_details(card, container, more, name, open);
     });
     const bool open = QSettings().value("ui/expandedCards").toStringList().contains(name);
     more->setChecked(open);
-    apply(open);
+    show_details(card, container, more, open);
 }
 
 QWidget* MainWindow::make_effect_row(const QString& title, ToggleSwitch*& toggle_out,
@@ -383,6 +395,24 @@ QWidget* MainWindow::make_effect_row(const QString& title, ToggleSwitch*& toggle
 
     lay->addStretch();
     return card;
+}
+
+// Cabinet blend readout: "A = B", "A 70", "B 65".
+static QString format_blend(double v) {
+    const int b = static_cast<int>(std::lround(v));
+    return b == 50  ? QString("A = B")
+           : b < 50 ? QString("A %1").arg(100 - b)
+                    : QString("B %1").arg(b);
+}
+
+static QString format_chorus_mode(double v) {
+    static const char* names[] = {"Normal", "Tri", "Vintage", "Spatial"};
+    return QString(names[std::clamp(static_cast<int>(std::lround(v)), 0, 3)]);
+}
+
+static QString format_semitones(double v) {
+    const int s = static_cast<int>(std::lround(v));
+    return s == 0 ? QString("0 st") : QString("%1%2 st").arg(s > 0 ? "+" : "").arg(s);
 }
 
 void MainWindow::setup_ui() {
@@ -516,9 +546,7 @@ void MainWindow::setup_ui() {
         ref->setFocusPolicy(Qt::ClickFocus); // keep digit keys for effect shortcuts
         ref->setToolTip("Reference pitch (concert pitch is 440 Hz)");
         connect(ref, &QSpinBox::valueChanged, this, [this](int hz) {
-            tuner_ref_hz = hz;
-            tuner_display->set_reference(hz);
-            QSettings().setValue("tuner/reference", hz);
+            set_tuner_reference(hz);
         });
         tuner_display->set_reference(tuner_ref_hz);
 
@@ -531,8 +559,7 @@ void MainWindow::setup_ui() {
         hz->setChecked(s.value("tuner/showHz", false).toBool());
         tuner_display->set_show_hz(hz->isChecked());
         connect(hz, &QToolButton::toggled, this, [this](bool on) {
-            tuner_display->set_show_hz(on);
-            QSettings().setValue("tuner/showHz", on);
+            set_tuner_show_hz(on);
         });
 
         ref->setFixedWidth(112);
@@ -553,10 +580,7 @@ void MainWindow::setup_ui() {
                           engine->get_transpose().set_semitones(static_cast<float>(v));
                       });
         semis->set_snap(1.0);
-        semis->set_value_formatter([](double v) {
-            const int s = static_cast<int>(std::lround(v));
-            return s == 0 ? QString("0 st") : QString("%1%2 st").arg(s > 0 ? "+" : "").arg(s);
-        });
+        semis->set_value_formatter(&format_semitones);
         semis->setToolTip("Pitch shift in semitones: −1 / −2 for drop tunings, ±12 for octaves "
                           "(adds ~25 ms latency when not 0)");
         KnobWidget* mix = late_knob(
@@ -705,31 +729,25 @@ void MainWindow::setup_ui() {
                       new KnobWidget("High-Mid", EQ_BAND_MIN, EQ_BAND_MAX, EQ_BAND_DEFAULT, "dB"),
                       eq_set(EQProcessor::HIGH_MID, true));
         hi_mid->set_scroll_step(0.1);
-        auto freq_knob = [&](const QString& key, const QString& label, double lo, double hi,
-                             double def, EQProcessor::Band b, double off_at) {
-            KnobWidget* k =
-                late_knob("eq", key, new KnobWidget(label, lo, hi, def, "Hz"), eq_set(b, false));
-            k->set_log_taper(true);
-            k->set_value_formatter(hz_label(off_at));
-            return static_cast<QWidget*>(k);
-        };
         QWidget* col =
             make_effect_row("Equalizer", sw_eq_enable, {knob_low, knob_mid, hi_mid, knob_treble});
         add_detail_row(
             col,
             {
-                freq_knob("lowFreq", "Bass Freq", EQ_BASS_FREQ_MIN, EQ_BASS_FREQ_MAX,
-                          EQ_BASS_FREQ_DEFAULT, EQProcessor::BASS, 0),
-                freq_knob("midFreq", "Mid Freq", EQ_MID_FREQ_MIN, EQ_MID_FREQ_MAX,
-                          EQ_MID_FREQ_DEFAULT, EQProcessor::MIDDLE, 0),
-                freq_knob("highMidFreq", "High-Mid Freq", EQ_HI_MID_FREQ_MIN, EQ_HI_MID_FREQ_MAX,
-                          EQ_HI_MID_FREQ_DEFAULT, EQProcessor::HIGH_MID, 0),
-                freq_knob("trebleFreq", "Treble Freq", EQ_TREBLE_FREQ_MIN, EQ_TREBLE_FREQ_MAX,
-                          EQ_TREBLE_FREQ_DEFAULT, EQProcessor::TREBLE, 0),
-                freq_knob("lowCut", "Low Cut", LOW_CUT_MIN, LOW_CUT_MAX, LOW_CUT_DEFAULT,
-                          EQProcessor::LOW_CUT, LOW_CUT_MIN + 0.5),
-                freq_knob("highCut", "High Cut", HIGH_CUT_MIN, HIGH_CUT_MAX, HIGH_CUT_DEFAULT,
-                          EQProcessor::HIGH_CUT, -(HIGH_CUT_MAX - 1.0)),
+                make_eq_freq_knob("lowFreq", "Bass Freq", EQ_BASS_FREQ_MIN, EQ_BASS_FREQ_MAX,
+                                  EQ_BASS_FREQ_DEFAULT, EQProcessor::BASS, 0),
+                make_eq_freq_knob("midFreq", "Mid Freq", EQ_MID_FREQ_MIN, EQ_MID_FREQ_MAX,
+                                  EQ_MID_FREQ_DEFAULT, EQProcessor::MIDDLE, 0),
+                make_eq_freq_knob("highMidFreq", "High-Mid Freq", EQ_HI_MID_FREQ_MIN,
+                                  EQ_HI_MID_FREQ_MAX, EQ_HI_MID_FREQ_DEFAULT, EQProcessor::HIGH_MID,
+                                  0),
+                make_eq_freq_knob("trebleFreq", "Treble Freq", EQ_TREBLE_FREQ_MIN,
+                                  EQ_TREBLE_FREQ_MAX, EQ_TREBLE_FREQ_DEFAULT, EQProcessor::TREBLE,
+                                  0),
+                make_eq_freq_knob("lowCut", "Low Cut", LOW_CUT_MIN, LOW_CUT_MAX, LOW_CUT_DEFAULT,
+                                  EQProcessor::LOW_CUT, LOW_CUT_MIN + 0.5),
+                make_eq_freq_knob("highCut", "High Cut", HIGH_CUT_MIN, HIGH_CUT_MAX,
+                                  HIGH_CUT_DEFAULT, EQProcessor::HIGH_CUT, -(HIGH_CUT_MAX - 1.0)),
             });
         sw_eq_enable->setChecked(true);
         Theme::tag_card(col, "eq");
@@ -872,10 +890,7 @@ void MainWindow::setup_ui() {
                 engine->get_chorus().set_mode(static_cast<int>(std::lround(v)));
             });
         mode->set_snap(1.0);
-        mode->set_value_formatter([](double v) {
-            static const char* names[] = {"Normal", "Tri", "Vintage", "Spatial"};
-            return QString(names[std::clamp(static_cast<int>(std::lround(v)), 0, 3)]);
-        });
+        mode->set_value_formatter(&format_chorus_mode);
         mode->setToolTip("Normal · Tri (three voices) · Vintage (darker, triangle LFO) · Spatial "
                          "(wider stereo)");
         add_detail_row(col, {mode});
@@ -924,14 +939,6 @@ void MainWindow::setup_ui() {
                        DELAY_TIME_MAX, [this](double v) {
                            engine->get_delay().set_time(static_cast<float>(v));
                        });
-        auto pct = [&](const QString& key, const QString& label, double lo, double hi, double def,
-                       std::function<void(double)> f, const QString& tip) {
-            KnobWidget* k =
-                late_knob("delay", key, new KnobWidget(label, lo, hi, def, "%"), std::move(f));
-            k->set_scroll_step(1.0);
-            k->setToolTip(tip);
-            return static_cast<QWidget*>(k);
-        };
         KnobWidget* low_cut = late_knob(
             "delay", "lowCut",
             new KnobWidget("Low Cut", LOW_CUT_MIN, DELAY_LOW_CUT_MAX, LOW_CUT_DEFAULT, "Hz"),
@@ -951,14 +958,14 @@ void MainWindow::setup_ui() {
         add_detail_row(
             col,
             {
-                pct(
+                make_delay_pct_knob(
                     "rightRatio", "R Time", DELAY_RIGHT_MIN, DELAY_RIGHT_MAX, DELAY_RIGHT_DEFAULT,
                     [this](double v) {
                         engine->get_delay().set_right_ratio(static_cast<float>(v));
                     },
                     "Right repeat time as a share of Time (stereo): 75 % or 150 % for a wide, "
                     "uneven bounce"),
-                pct(
+                make_delay_pct_knob(
                     "crossFeed", "Cross-feed", DELAY_CROSS_MIN, DELAY_CROSS_MAX,
                     DELAY_CROSS_DEFAULT,
                     [this](double v) {
@@ -967,19 +974,19 @@ void MainWindow::setup_ui() {
                     "100 % = ping-pong between the sides · 0 % = two separate echoes"),
                 low_cut,
                 high_cut,
-                pct(
+                make_delay_pct_knob(
                     "saturation", "Saturation", DELAY_SAT_MIN, DELAY_SAT_MAX, DELAY_SAT_DEFAULT,
                     [this](double v) {
                         engine->get_delay().set_saturation(static_cast<float>(v));
                     },
                     "Tape-style rounding of the repeats as they build up"),
-                pct(
+                make_delay_pct_knob(
                     "modulation", "Modulation", DELAY_MOD_MIN, DELAY_MOD_MAX, DELAY_MOD_DEFAULT,
                     [this](double v) {
                         engine->get_delay().set_modulation(static_cast<float>(v));
                     },
                     "Wobble on the repeats (tape flutter / chorused echoes)"),
-                pct(
+                make_delay_pct_knob(
                     "crystals", "Crystals", 0.0, 100.0, 0.0,
                     [this](double v) {
                         engine->get_delay().set_crystals(static_cast<float>(v));
@@ -1056,61 +1063,12 @@ void MainWindow::setup_ui() {
 
         // Dual cab (Phase 17): A/B mixer + cuts, then slot B's picker.
         using namespace NAMConstants;
-        auto level = [&](int slot) {
-            KnobWidget* k =
-                late_knob("ir", slot ? "levelB" : "levelA",
-                          new KnobWidget(slot ? "Level B" : "Level A", -24.0, 6.0, 0.0, "dB"),
-                          [this, slot](double v) {
-                              engine->get_ir().set_level(slot, static_cast<float>(v));
-                          });
-            k->set_scroll_step(0.5);
-            return static_cast<QWidget*>(k);
-        };
-        auto pan = [&](int slot) {
-            KnobWidget* k =
-                late_knob("ir", slot ? "panB" : "panA",
-                          new KnobWidget(slot ? "Pan B" : "Pan A", -100.0, 100.0, 0.0, "%"),
-                          [this, slot](double v) {
-                              engine->get_ir().set_pan(slot, static_cast<float>(v));
-                          });
-            k->set_scroll_step(10.0);
-            k->set_value_formatter([](double v) {
-                const int p = static_cast<int>(std::lround(v));
-                return p == 0 ? QString("Center")
-                              : QString("%1 %2").arg(std::abs(p)).arg(p < 0 ? "L" : "R");
-            });
-            return static_cast<QWidget*>(k);
-        };
-        auto phase = [&](int slot) {
-            auto* sw = new ToggleSwitch;
-            sw->setCheckable(true);
-            sw->setToolTip("Invert this slot's polarity (fix phase cancellation between two mics)");
-            late_params.push_back([this, sw, slot] {
-                toggle_param("ir", slot ? "invertB" : "invertA", sw, [this, slot](bool b) {
-                    engine->get_ir().set_phase(slot, b);
-                });
-            });
-            auto* w = new QWidget;
-            auto* l = new QHBoxLayout(w);
-            l->setContentsMargins(0, 0, 8, 0);
-            l->setSpacing(6);
-            auto* cap = new QLabel(slot ? "Ø B" : "Ø A");
-            cap->setObjectName("toggleCaption");
-            l->addWidget(sw, 0, Qt::AlignVCenter);
-            l->addWidget(cap, 0, Qt::AlignVCenter);
-            return w;
-        };
         KnobWidget* blend = late_knob("ir", "blend", new KnobWidget("Blend", 0.0, 100.0, 50.0, "%"),
                                       [this](double v) {
                                           engine->get_ir().set_blend_pct(static_cast<float>(v));
                                       });
         blend->set_scroll_step(1.0);
-        blend->set_value_formatter([](double v) {
-            const int b = static_cast<int>(std::lround(v));
-            return b == 50  ? QString("A = B")
-                   : b < 50 ? QString("A %1").arg(100 - b)
-                            : QString("B %1").arg(b);
-        });
+        blend->set_value_formatter(&format_blend);
         blend->setToolTip("Crossfade between the two IRs (only when both slots are loaded)");
         KnobWidget* low_cut =
             late_knob("ir", "lowCut",
@@ -1128,40 +1086,16 @@ void MainWindow::setup_ui() {
             });
         high_cut->set_log_taper(true);
         high_cut->set_value_formatter(hz_label(-(HIGH_CUT_MAX - 1.0)));
-        add_detail_row(col, {level(0), pan(0), phase(0), blend, low_cut, high_cut});
+        add_detail_row(col, {make_ir_level_knob(0), make_ir_pan_knob(0), make_ir_phase_switch(0),
+                             blend, low_cut, high_cut});
 
         // Slot B: ‹ › through the library's IRs, Choose… (file dialog), ×.
         auto* b_title = new QLabel("IR B");
         b_title->setObjectName("fxName");
-        auto arrow = [this](const QString& glyph, int step) {
-            auto* b = new QToolButton;
-            b->setObjectName("heroArrow");
-            b->setText(glyph);
-            b->setAutoRaise(true);
-            b->setFocusPolicy(Qt::NoFocus);
-            b->setToolTip(step < 0 ? "Previous IR in the library (slot B)"
-                                   : "Next IR in the library (slot B)");
-            connect(b, &QToolButton::clicked, this, [this, step] {
-                const QString next = library->neighbour(
-                    LibraryEntry::Kind::IR, QString::fromStdString(engine->ir_path_b()), step);
-                if (!next.isEmpty()) {
-                    load_irb_file(next);
-                }
-            });
-            return b;
-        };
         auto* choose = new QPushButton("Choose…");
         choose->setFocusPolicy(Qt::NoFocus);
         connect(choose, &QPushButton::clicked, this, [this] {
-            QString start = QString::fromStdString(engine->ir_path_b());
-            if (start.isEmpty()) {
-                start = QString::fromStdString(engine->ir_path());
-            }
-            const QString p = QFileDialog::getOpenFileName(
-                nullptr, "Impulse Response for Slot B", start, "WAV Files (*.wav);;All Files (*)");
-            if (!p.isEmpty()) {
-                load_irb_file(p);
-            }
+            choose_ir_b();
         });
         auto* clear = new QToolButton;
         clear->setObjectName("heroArrow");
@@ -1170,14 +1104,13 @@ void MainWindow::setup_ui() {
         clear->setFocusPolicy(Qt::NoFocus);
         clear->setToolTip("Empty slot B");
         connect(clear, &QToolButton::clicked, this, [this] {
-            engine->unload_irb();
-            QSettings().remove("files/lastIRB");
-            update_hero_cards();
+            clear_ir_b();
         });
         lbl_irb_status = new QLabel;
         lbl_irb_status->setObjectName("fileStatus");
-        add_detail_row(col, {b_title, arrow("‹", -1), arrow("›", +1), choose, clear, lbl_irb_status,
-                             level(1), pan(1), phase(1)});
+        add_detail_row(col, {b_title, make_ir_b_arrow("‹", -1), make_ir_b_arrow("›", +1), choose,
+                             clear, lbl_irb_status, make_ir_level_knob(1), make_ir_pan_knob(1),
+                             make_ir_phase_switch(1)});
 
         Theme::tag_card(col, "ir");
         fx_cols[&engine->get_ir()] = col;
@@ -1186,30 +1119,6 @@ void MainWindow::setup_ui() {
     // Input/Output gain columns. Not draggable and not part of the chain, so
     // they flank the strip: input on the left, output on the right — signal
     // flows in → chain → out. The full-height meter reads bottom→top.
-    auto make_gain_column = [&](const QString& title, KnobWidget*& knob,
-                                VUMeter*& meter) -> QWidget* {
-        using namespace NAMConstants;
-        auto* col = new QFrame;
-        col->setProperty("fxCard", true);
-        col->setProperty("displayName", title);
-        auto* lay = new QVBoxLayout(col);
-        lay->setContentsMargins(8, 8, 8, 8);
-        lay->setSpacing(8);
-
-        auto* name = new QLabel(title);
-        name->setObjectName("fxName");
-        name->setAlignment(Qt::AlignHCenter);
-        knob = new KnobWidget("Gain", GAIN_MIN, GAIN_MAX, GAIN_DEFAULT, "dB",
-                              KnobWidget::Form::STACKED);
-        knob->set_scroll_step(0.1);
-        meter = new VUMeter(Qt::Vertical);
-
-        lay->addWidget(name);
-        lay->addWidget(knob, 0, Qt::AlignHCenter);
-        lay->addWidget(meter, 1, Qt::AlignHCenter);
-        Theme::tag_card(col, "neutral"); // after children — pushes accents to them
-        return col;
-    };
 
     input_card = make_gain_column("Input", knob_input_gain, meter_in);
     output_card = make_gain_column("Output", knob_output_gain, meter_out);
@@ -1316,19 +1225,13 @@ void MainWindow::setup_ui() {
         QAction* find = library_menu->addAction("Find in Library");
         find->setShortcut(QKeySequence::Find); // Ctrl+F
         connect(find, &QAction::triggered, this, [this] {
-            library_dock->show();
-            library_tabs->set_tab(LibraryDock::LOCAL);
-            library->focus_search();
+            find_in_library();
         });
         QAction* t3k = library_menu->addAction("Browse TONE3000…");
         t3k->setIcon(
             QIcon(QPixmap(":/tone3000/t3k-mark.png").scaledToHeight(14, Qt::SmoothTransformation)));
         connect(t3k, &QAction::triggered, this, [this] {
-            library_dock->show();
-            library_tabs->set_tab(LibraryDock::TONE3000);
-            if (tone3000->is_signed_in()) {
-                t3k_panel->browse_catalog();
-            }
+            browse_tone3000();
         });
         library_menu->addSeparator();
         connect(library_menu->addAction("Folders…"), &QAction::triggered, library,
@@ -1343,37 +1246,182 @@ void MainWindow::setup_ui() {
     }
 }
 
+void MainWindow::set_tuner_reference(int hz) {
+    tuner_ref_hz = hz;
+    tuner_display->set_reference(hz);
+    QSettings().setValue("tuner/reference", hz);
+}
+
+void MainWindow::set_tuner_show_hz(bool on) {
+    tuner_display->set_show_hz(on);
+    QSettings().setValue("tuner/showHz", on);
+}
+
+// EQ band frequency knob (log taper, "Off" past off_at).
+QWidget* MainWindow::make_eq_freq_knob(const QString& key, const QString& label, double lo,
+                                       double hi, double def, EQProcessor::Band b, double off_at) {
+    KnobWidget* k =
+        late_knob("eq", key, new KnobWidget(label, lo, hi, def, "Hz"), [this, b](double v) {
+            engine->get_eq().set_freq(b, v);
+        });
+    k->set_log_taper(true);
+    k->set_value_formatter(hz_label(off_at));
+    return static_cast<QWidget*>(k);
+}
+
+QWidget* MainWindow::make_delay_pct_knob(const QString& key, const QString& label, double lo,
+                                         double hi, double def, std::function<void(double)> f,
+                                         const QString& tip) {
+    KnobWidget* k = late_knob("delay", key, new KnobWidget(label, lo, hi, def, "%"), std::move(f));
+    k->set_scroll_step(1.0);
+    k->setToolTip(tip);
+    return static_cast<QWidget*>(k);
+}
+
+QWidget* MainWindow::make_ir_level_knob(int slot) {
+    KnobWidget* k = late_knob("ir", slot ? "levelB" : "levelA",
+                              new KnobWidget(slot ? "Level B" : "Level A", -24.0, 6.0, 0.0, "dB"),
+                              [this, slot](double v) {
+                                  engine->get_ir().set_level(slot, static_cast<float>(v));
+                              });
+    k->set_scroll_step(0.5);
+    return static_cast<QWidget*>(k);
+}
+
+// Pan readout: "Center", "40 L", "25 R".
+static QString format_pan(double v) {
+    const int p = static_cast<int>(std::lround(v));
+    return p == 0 ? QString("Center") : QString("%1 %2").arg(std::abs(p)).arg(p < 0 ? "L" : "R");
+}
+
+QWidget* MainWindow::make_ir_pan_knob(int slot) {
+    KnobWidget* k = late_knob("ir", slot ? "panB" : "panA",
+                              new KnobWidget(slot ? "Pan B" : "Pan A", -100.0, 100.0, 0.0, "%"),
+                              [this, slot](double v) {
+                                  engine->get_ir().set_pan(slot, static_cast<float>(v));
+                              });
+    k->set_scroll_step(10.0);
+    k->set_value_formatter(&format_pan);
+    return static_cast<QWidget*>(k);
+}
+
+// Cabinet slot polarity switch with its "Ø A/B" caption.
+QWidget* MainWindow::make_ir_phase_switch(int slot) {
+    auto* sw = new ToggleSwitch;
+    sw->setCheckable(true);
+    sw->setToolTip("Invert this slot's polarity (fix phase cancellation between two mics)");
+    late_params.push_back([this, sw, slot] {
+        toggle_param("ir", slot ? "invertB" : "invertA", sw, [this, slot](bool b) {
+            engine->get_ir().set_phase(slot, b);
+        });
+    });
+    auto* w = new QWidget;
+    auto* l = new QHBoxLayout(w);
+    l->setContentsMargins(0, 0, 8, 0);
+    l->setSpacing(6);
+    auto* cap = new QLabel(slot ? "Ø B" : "Ø A");
+    cap->setObjectName("toggleCaption");
+    l->addWidget(sw, 0, Qt::AlignVCenter);
+    l->addWidget(cap, 0, Qt::AlignVCenter);
+    return w;
+}
+
+QToolButton* MainWindow::make_ir_b_arrow(const QString& glyph, int step) {
+    auto* b = new QToolButton;
+    b->setObjectName("heroArrow");
+    b->setText(glyph);
+    b->setAutoRaise(true);
+    b->setFocusPolicy(Qt::NoFocus);
+    b->setToolTip(step < 0 ? "Previous IR in the library (slot B)"
+                           : "Next IR in the library (slot B)");
+    connect(b, &QToolButton::clicked, this, [this, step] {
+        step_ir_b(step);
+    });
+    return b;
+}
+
+void MainWindow::step_ir_b(int step) {
+    const QString next = library->neighbour(LibraryEntry::Kind::IR,
+                                            QString::fromStdString(engine->ir_path_b()), step);
+    if (!next.isEmpty()) {
+        load_irb_file(next);
+    }
+}
+
+void MainWindow::choose_ir_b() {
+    QString start = QString::fromStdString(engine->ir_path_b());
+    if (start.isEmpty()) {
+        start = QString::fromStdString(engine->ir_path());
+    }
+    const QString p = QFileDialog::getOpenFileName(nullptr, "Impulse Response for Slot B", start,
+                                                   "WAV Files (*.wav);;All Files (*)");
+    if (!p.isEmpty()) {
+        load_irb_file(p);
+    }
+}
+
+void MainWindow::clear_ir_b() {
+    engine->unload_irb();
+    QSettings().remove("files/lastIRB");
+    update_hero_cards();
+}
+
+// Input/Output column: title, big gain knob, full-height meter.
+QWidget* MainWindow::make_gain_column(const QString& title, KnobWidget*& knob, VUMeter*& meter) {
+    using namespace NAMConstants;
+    auto* col = new QFrame;
+    col->setProperty("fxCard", true);
+    col->setProperty("displayName", title);
+    auto* lay = new QVBoxLayout(col);
+    lay->setContentsMargins(8, 8, 8, 8);
+    lay->setSpacing(8);
+
+    auto* name = new QLabel(title);
+    name->setObjectName("fxName");
+    name->setAlignment(Qt::AlignHCenter);
+    knob =
+        new KnobWidget("Gain", GAIN_MIN, GAIN_MAX, GAIN_DEFAULT, "dB", KnobWidget::Form::STACKED);
+    knob->set_scroll_step(0.1);
+    meter = new VUMeter(Qt::Vertical);
+
+    lay->addWidget(name);
+    lay->addWidget(knob, 0, Qt::AlignHCenter);
+    lay->addWidget(meter, 1, Qt::AlignHCenter);
+    Theme::tag_card(col, "neutral"); // after children — pushes accents to them
+    return col;
+}
+
+void MainWindow::find_in_library() {
+    library_dock->show();
+    library_tabs->set_tab(LibraryDock::LOCAL);
+    library->focus_search();
+}
+
+void MainWindow::browse_tone3000() {
+    library_dock->show();
+    library_tabs->set_tab(LibraryDock::TONE3000);
+    if (tone3000->is_signed_in()) {
+        t3k_panel->browse_catalog();
+    }
+}
+
 void MainWindow::make_hero_controls(QWidget* card, LibraryEntry::Kind kind, QLabel*& name_out,
                                     QLabel*& meta_out, QLabel*& origin_out) {
     QHBoxLayout* lay = row_layout(card);
     const bool model = kind == LibraryEntry::Kind::MODEL;
 
     // ‹ › cycle the library section in its current visible order.
-    auto arrow = [&](const QString& glyph, int step, const QString& tip) {
-        auto* b = new QToolButton;
-        b->setObjectName("heroArrow");
-        b->setText(glyph);
-        b->setAutoRaise(true);
-        b->setFocusPolicy(Qt::NoFocus);
-        b->setToolTip(tip);
-        connect(b, &QToolButton::clicked, this, [this, kind, step] {
-            step_library(kind, step);
-        });
-        return b;
-    };
-    QToolButton* prev =
-        arrow("‹", -1, model ? "Previous model in the library" : "Previous IR in the library");
-    QToolButton* next =
-        arrow("›", +1, model ? "Next model in the library" : "Next IR in the library");
+    QToolButton* prev = make_library_arrow(
+        "‹", -1, model ? "Previous model in the library" : "Previous IR in the library", kind);
+    QToolButton* next = make_library_arrow(
+        "›", +1, model ? "Next model in the library" : "Next IR in the library", kind);
 
     auto* browse = new QPushButton("Browse");
     browse->setToolTip(model ? "Show the model list in the Library"
                              : "Show the IR list in the Library");
     browse->setFocusPolicy(Qt::NoFocus);
     connect(browse, &QPushButton::clicked, this, [this, kind] {
-        library_dock->show();
-        library_tabs->set_tab(LibraryDock::LOCAL);
-        library->show_section(kind);
+        show_library_section(kind);
     });
 
     // TONE3000 origin marker (the compact T3K mark), shown only when the
@@ -1398,6 +1446,27 @@ void MainWindow::make_hero_controls(QWidget* card, LibraryEntry::Kind kind, QLab
     lay->insertWidget(i++, origin_out, 0, Qt::AlignVCenter);
     lay->insertWidget(i++, name_out, 0, Qt::AlignVCenter);
     lay->insertWidget(i++, meta_out, 1, Qt::AlignVCenter);
+}
+
+// ‹ › on a hero row: step through the library section in its visible order.
+QToolButton* MainWindow::make_library_arrow(const QString& glyph, int step, const QString& tip,
+                                            LibraryEntry::Kind kind) {
+    auto* b = new QToolButton;
+    b->setObjectName("heroArrow");
+    b->setText(glyph);
+    b->setAutoRaise(true);
+    b->setFocusPolicy(Qt::NoFocus);
+    b->setToolTip(tip);
+    connect(b, &QToolButton::clicked, this, [this, kind, step] {
+        step_library(kind, step);
+    });
+    return b;
+}
+
+void MainWindow::show_library_section(LibraryEntry::Kind kind) {
+    library_dock->show();
+    library_tabs->set_tab(LibraryDock::LOCAL);
+    library->show_section(kind);
 }
 
 void MainWindow::layout_strip(const vector<EffectBase*>& order) {
@@ -1950,10 +2019,8 @@ void MainWindow::open_paths(const QStringList& paths) {
 
 void MainWindow::knob_param(const QString& group, const QString& key, KnobWidget* knob,
                             const std::function<void(double)>& apply) {
-    connect(knob, &KnobWidget::value_changed, this, [this, apply](double v) {
-        apply(v);
-        schedule_session_save();
-    });
+    connect(knob, &KnobWidget::value_changed, this, apply);
+    connect(knob, &KnobWidget::value_changed, this, &MainWindow::schedule_session_save);
     params.push_back({group, key, knob, nullptr, knob->get_default_value(), false});
     const QString card = target_label_for(knob, group, key);
     midi_mapper->add_knob("param:" + (group.isEmpty() ? key : group + "/" + key), card,
@@ -1963,10 +2030,8 @@ void MainWindow::knob_param(const QString& group, const QString& key, KnobWidget
 
 void MainWindow::toggle_param(const QString& group, const QString& key, ToggleSwitch* sw,
                               const std::function<void(bool)>& apply) {
-    connect(sw, &ToggleSwitch::toggled, this, [this, apply](bool b) {
-        apply(b);
-        schedule_session_save();
-    });
+    connect(sw, &ToggleSwitch::toggled, this, apply);
+    connect(sw, &ToggleSwitch::toggled, this, &MainWindow::schedule_session_save);
     params.push_back({group, key, nullptr, sw, 0.0, sw->isChecked()});
     const QString label = key == "stereo" ? "Stereo" : key == "sync" ? "Sync" : "On / Off";
     midi_mapper->add_toggle("param:" + (group.isEmpty() ? key : group + "/" + key),
@@ -2039,44 +2104,22 @@ void MainWindow::setup_midi(QMenu* top_menu) {
     midi_blink = new QTimer(this);
     midi_blink->setSingleShot(true);
     midi_blink->setInterval(120);
-    auto show_light = [this](bool lit) {
-        const QColor c = !midi_ok ? Theme::track() : lit ? Theme::meter_mid() : Theme::meter_low();
-        lbl_midi->setText(QString("<span style=\"color:%1\">●</span> MIDI").arg(c.name()));
-    };
-    connect(midi_blink, &QTimer::timeout, this, [show_light] {
-        show_light(false);
+    connect(midi_blink, &QTimer::timeout, this, [this] {
+        show_midi_light(false);
     });
-    connect(midi_mapper, &MidiMapper::activity, this, [this, show_light](const QString& what) {
-        show_light(true);
-        midi_blink->start();
-        lbl_midi->setToolTip("Last MIDI message: " + what);
-    });
-    show_light(false);
+    connect(midi_mapper, &MidiMapper::activity, this, &MainWindow::on_midi_activity);
+    show_midi_light(false);
     lbl_midi->setToolTip(
         midi_ok ? QString("MIDI input (%1) — MIDI → Mappings…").arg(midi->backend_name())
                 : QString("MIDI is not available on this system"));
 
     // Menu
     connect(top_menu->addAction("Mappings…"), &QAction::triggered, this, [this] {
-        MidiMappingsDialog dlg(*midi_mapper, midi_ok ? midi : nullptr, this);
-        dlg.exec();
+        open_midi_mappings();
     });
     QMenu* devices = top_menu->addMenu("Devices");
     connect(devices, &QMenu::aboutToShow, this, [this, devices] {
-        devices->clear();
-        const QStringList list = midi_ok ? midi->devices() : QStringList();
-        if (list.isEmpty()) {
-            devices->addAction(midi_ok ? "No MIDI devices found" : "MIDI not available")
-                ->setEnabled(false);
-        }
-        for (const QString& d : list) {
-            QAction* a = devices->addAction(d);
-            a->setCheckable(true);
-            a->setChecked(midi->is_enabled(d));
-            connect(a, &QAction::toggled, this, [this, d](bool on) {
-                midi->set_enabled(d, on);
-            });
-        }
+        populate_midi_devices_menu(devices);
     });
     QAction* clock = top_menu->addAction("Follow MIDI Clock");
     clock->setCheckable(true);
@@ -2084,6 +2127,28 @@ void MainWindow::setup_midi(QMenu* top_menu) {
         clock->setChecked(midi_mapper->get_follow_clock());
     });
     connect(clock, &QAction::toggled, midi_mapper, &MidiMapper::set_follow_clock);
+}
+
+void MainWindow::open_midi_mappings() {
+    MidiMappingsDialog dlg(*midi_mapper, midi_ok ? midi : nullptr, this);
+    dlg.exec();
+}
+
+void MainWindow::populate_midi_devices_menu(QMenu* devices) {
+    devices->clear();
+    const QStringList list = midi_ok ? midi->devices() : QStringList();
+    if (list.isEmpty()) {
+        devices->addAction(midi_ok ? "No MIDI devices found" : "MIDI not available")
+            ->setEnabled(false);
+    }
+    for (const QString& d : list) {
+        QAction* a = devices->addAction(d);
+        a->setCheckable(true);
+        a->setChecked(midi->is_enabled(d));
+        connect(a, &QAction::toggled, this, [this, d](bool on) {
+            midi->set_enabled(d, on);
+        });
+    }
 }
 
 void MainWindow::add_learn_entries(const QString& target_id, QMenu* menu) {
@@ -2123,6 +2188,12 @@ void MainWindow::start_learn(const QString& target_id) {
         return;
     }
     midi_mapper->learn(target_id);
+}
+
+// Synced: the note-value knob replaces the free one.
+static void show_synced_knob(KnobWidget* free_knob, KnobWidget* note, bool on) {
+    free_knob->setVisible(!on);
+    note->setVisible(on);
 }
 
 void MainWindow::on_learn_changed() {
@@ -2196,8 +2267,7 @@ void MainWindow::add_tempo_sync(QWidget* card, KnobWidget* free_knob, const QStr
     lay->insertWidget(lay->count() - 1, slot, 0, Qt::AlignVCenter); // before the stretch
 
     connect(sw, &ToggleSwitch::toggled, this, [free_knob, note](bool on) {
-        free_knob->setVisible(!on);
-        note->setVisible(on);
+        show_synced_knob(free_knob, note, on);
     });
     synced.push_back({free_knob, note, sw, is_time, min, max, std::move(push)});
 }
@@ -2630,64 +2700,33 @@ void MainWindow::restore_connections() {
     engine->apply_connections(c);
 }
 
+static QStringList to_string_list(const vector<string>& v) {
+    QStringList l;
+    l.reserve(static_cast<int>(v.size()));
+    for (const auto& x : v) {
+        l << QString::fromStdString(x);
+    }
+    return l;
+}
+
 void MainWindow::save_connections() {
     if (!engine->is_running() || !engine->supports_port_routing()) {
         return;
     }
 
-    auto to_list = [](const vector<string>& v) {
-        QStringList l;
-        l.reserve(static_cast<int>(v.size()));
-        for (const auto& x : v) {
-            l << QString::fromStdString(x);
-        }
-        return l;
-    };
-
     IAudioBackend::PortConnections c = engine->current_connections();
     QSettings s;
-    s.setValue("connections/inputSources", to_list(c.input_sources));
-    s.setValue("connections/outputLDests", to_list(c.output_l_dests));
-    s.setValue("connections/outputRDests", to_list(c.output_r_dests));
+    s.setValue("connections/inputSources", to_string_list(c.input_sources));
+    s.setValue("connections/outputLDests", to_string_list(c.output_l_dests));
+    s.setValue("connections/outputRDests", to_string_list(c.output_r_dests));
     s.setValue("connections/saved", true);
 }
 
 void MainWindow::update_hero_cards() {
-    auto set_status = [this](QLabel* name, QLabel* meta, QLabel* origin, bool loaded,
-                             const QString& path, const QString& empty_text) {
-        if (!loaded) {
-            name->setText(empty_text);
-            name->setObjectName("fileStatus");
-            name->setToolTip({});
-            meta->clear();
-            meta->setToolTip({});
-            origin->hide();
-        } else {
-            // Metadata comes from the index when the file is in the library,
-            // otherwise it is read now (one-off imports, dropped files).
-            const LibraryEntry* e = library_index->find(path);
-            const LibraryEntry fresh = e ? *e : LibraryIndex::describe(path);
-            name->setText(
-                name->fontMetrics().elidedText(fresh.name, Qt::ElideMiddle, HERO_NAME_MAX_WIDTH));
-            name->setObjectName("fileStatusOk");
-            name->setToolTip(QDir::toNativeSeparators(fresh.path));
-            meta->setText(fresh.summary);
-            meta->setToolTip(fresh.details);
-            origin->setVisible(fresh.from_tone3000());
-            origin->setProperty("toneId", fresh.t3k_tone_id);
-            origin->setToolTip(fresh.from_tone3000()
-                                   ? QString("From TONE3000: %1 by @%2 (click to open)")
-                                         .arg(fresh.t3k_title, fresh.t3k_creator)
-                                   : QString());
-        }
-        name->style()->unpolish(name);
-        name->style()->polish(name);
-    };
-
-    set_status(lbl_nam_status, lbl_nam_meta, lbl_nam_origin, engine->is_model_loaded(),
-               QString::fromStdString(engine->model_path()), "No model loaded");
-    set_status(lbl_ir_status, lbl_ir_meta, lbl_ir_origin, engine->is_ir_loaded(),
-               QString::fromStdString(engine->ir_path()), "No impulse response loaded");
+    show_file_status(lbl_nam_status, lbl_nam_meta, lbl_nam_origin, engine->is_model_loaded(),
+                     QString::fromStdString(engine->model_path()), "No model loaded");
+    show_file_status(lbl_ir_status, lbl_ir_meta, lbl_ir_origin, engine->is_ir_loaded(),
+                     QString::fromStdString(engine->ir_path()), "No impulse response loaded");
     if (lbl_irb_status) {
         const bool b = engine->is_irb_loaded();
         const QString p = QString::fromStdString(engine->ir_path_b());
@@ -2704,6 +2743,38 @@ void MainWindow::update_hero_cards() {
         preset_state_timer->start();
     }
     update_rig_status();
+}
+
+// Fills one hero row (name, metadata, TONE3000 origin) for a loaded file or its empty state.
+void MainWindow::show_file_status(QLabel* name, QLabel* meta, QLabel* origin, bool loaded,
+                                  const QString& path, const QString& empty_text) {
+    if (!loaded) {
+        name->setText(empty_text);
+        name->setObjectName("fileStatus");
+        name->setToolTip({});
+        meta->clear();
+        meta->setToolTip({});
+        origin->hide();
+    } else {
+        // Metadata comes from the index when the file is in the library,
+        // otherwise it is read now (one-off imports, dropped files).
+        const LibraryEntry* e = library_index->find(path);
+        const LibraryEntry fresh = e ? *e : LibraryIndex::describe(path);
+        name->setText(
+            name->fontMetrics().elidedText(fresh.name, Qt::ElideMiddle, HERO_NAME_MAX_WIDTH));
+        name->setObjectName("fileStatusOk");
+        name->setToolTip(QDir::toNativeSeparators(fresh.path));
+        meta->setText(fresh.summary);
+        meta->setToolTip(fresh.details);
+        origin->setVisible(fresh.from_tone3000());
+        origin->setProperty("toneId", fresh.t3k_tone_id);
+        origin->setToolTip(fresh.from_tone3000()
+                               ? QString("From TONE3000: %1 by @%2 (click to open)")
+                                     .arg(fresh.t3k_title, fresh.t3k_creator)
+                               : QString());
+    }
+    name->style()->unpolish(name);
+    name->style()->polish(name);
 }
 
 void MainWindow::update_rig_status() {
@@ -2754,26 +2825,15 @@ void MainWindow::seed_starter_presets() {
 QJsonObject MainWindow::current_preset_json() const {
     QJsonObject obj = PresetSerializer::to_json(params, *engine);
     // TONE3000 linkage: lets the preset find its model on another machine.
-    auto linkage = [this](const string& p) {
-        QJsonObject o;
-        if (const LibraryEntry* e = library_index->find(QString::fromStdString(p));
-            e && e->from_tone3000()) {
-            o["toneId"] = e->t3k_tone_id;
-            o["modelId"] = e->t3k_model_id;
-            o["title"] = e->t3k_title;
-            o["creator"] = e->t3k_creator;
-        }
-        return o;
-    };
     QJsonObject t3k;
     if (engine->is_model_loaded()) {
-        const QJsonObject m = linkage(engine->model_path());
+        const QJsonObject m = tone3000_linkage(engine->model_path());
         if (!m.isEmpty()) {
             t3k["model"] = m;
         }
     }
     if (engine->is_ir_loaded()) {
-        const QJsonObject m = linkage(engine->ir_path());
+        const QJsonObject m = tone3000_linkage(engine->ir_path());
         if (!m.isEmpty()) {
             t3k["ir"] = m;
         }
@@ -2782,6 +2842,19 @@ QJsonObject MainWindow::current_preset_json() const {
         obj["tone3000"] = t3k;
     }
     return obj;
+}
+
+// TONE3000 linkage of a loaded file, so a preset can find it on another machine.
+QJsonObject MainWindow::tone3000_linkage(const string& p) const {
+    QJsonObject o;
+    if (const LibraryEntry* e = library_index->find(QString::fromStdString(p));
+        e && e->from_tone3000()) {
+        o["toneId"] = e->t3k_tone_id;
+        o["modelId"] = e->t3k_model_id;
+        o["title"] = e->t3k_title;
+        o["creator"] = e->t3k_creator;
+    }
+    return o;
 }
 
 bool MainWindow::write_preset_file(const QString& path) {
@@ -2967,6 +3040,34 @@ void MainWindow::update_preset_state() {
                              .arg(QFileInfo(preset_path).completeBaseName(), modified ? "*" : ""));
 }
 
+// `base` plus whatever `live` has that `base` lacks (recursively), so keys added
+// since a baseline was saved don't count as edits.
+static QJsonObject merge_new_keys(QJsonObject base, const QJsonObject& live) {
+    for (auto it = live.begin(); it != live.end(); ++it) {
+        if (!base.contains(it.key())) {
+            base.insert(it.key(), it.value());
+        } else if (it.key() == "effectOrder" && it.value().isArray()) {
+            // Effects added since (new IDs) sit in the live order at
+            // their default slots: if the live order is the saved one
+            // plus new IDs, adopt it.
+            const QJsonArray saved = base.value(it.key()).toArray();
+            QJsonArray known;
+            for (const auto& id : it.value().toArray()) {
+                if (saved.contains(id)) {
+                    known.append(id);
+                }
+            }
+            if (known == saved) {
+                base.insert(it.key(), it.value());
+            }
+        } else if (it.value().isObject() && base.value(it.key()).isObject()) {
+            base.insert(it.key(),
+                        merge_new_keys(base.value(it.key()).toObject(), it.value().toObject()));
+        }
+    }
+    return base;
+}
+
 void MainWindow::restore_preset_state() {
     QSettings s;
     const QString path = s.value("session/presetPath").toString();
@@ -2978,33 +3079,7 @@ void MainWindow::restore_preset_state() {
     // A baseline saved by an older version lacks parameters added since;
     // those take the live (= restored) values, so an upgrade alone never
     // marks the preset modified.
-    std::function<QJsonObject(QJsonObject, const QJsonObject&)> fill =
-        [&fill](QJsonObject base, const QJsonObject& live) {
-            for (auto it = live.begin(); it != live.end(); ++it) {
-                if (!base.contains(it.key())) {
-                    base.insert(it.key(), it.value());
-                } else if (it.key() == "effectOrder" && it.value().isArray()) {
-                    // Effects added since (new IDs) sit in the live order at
-                    // their default slots: if the live order is the saved one
-                    // plus new IDs, adopt it.
-                    const QJsonArray saved = base.value(it.key()).toArray();
-                    QJsonArray known;
-                    for (const auto& id : it.value().toArray()) {
-                        if (saved.contains(id)) {
-                            known.append(id);
-                        }
-                    }
-                    if (known == saved) {
-                        base.insert(it.key(), it.value());
-                    }
-                } else if (it.value().isObject() && base.value(it.key()).isObject()) {
-                    base.insert(it.key(),
-                                fill(base.value(it.key()).toObject(), it.value().toObject()));
-                }
-            }
-            return base;
-        };
-    preset_baseline = fill(
+    preset_baseline = merge_new_keys(
         QJsonDocument::fromJson(s.value("session/presetBaseline").toString().toUtf8()).object(),
         PresetSerializer::to_json(params, *engine));
     library->set_loaded_path(LibraryEntry::Kind::PRESET, path);
@@ -3112,12 +3187,6 @@ bool MainWindow::load_preset_file(const QString& path_in) {
     // A referenced file that isn't there: the TONE3000 linkage can still find
     // it (same model id elsewhere in the library) or fetch it.
     const QJsonObject t3k = doc.object().value("tone3000").toObject();
-    auto try_load = [this](const QString& p, LibraryEntry::Kind kind) {
-        if (p.isEmpty() || !QFile::exists(p)) {
-            return false;
-        }
-        return kind == LibraryEntry::Kind::MODEL ? load_model_file(p, true) : load_ir_file(p, true);
-    };
     // A TONE3000 fetch can land after this returns: the fetched model is
     // part of the preset, not an edit, so it moves the baseline.
     auto rebaseline = [this, path] {
@@ -3127,15 +3196,16 @@ bool MainWindow::load_preset_file(const QString& path_in) {
     };
 
     QStringList failed;
-    if (!applied.nam_path.isEmpty() && !try_load(applied.nam_path, LibraryEntry::Kind::MODEL)) {
+    if (!applied.nam_path.isEmpty() &&
+        !try_load_referenced_file(applied.nam_path, LibraryEntry::Kind::MODEL)) {
         const QJsonObject link = t3k.value("model").toObject();
         const int model_id = link.value("modelId").toInt();
         if (model_id > 0) {
             const QString title = link.value("title").toString().isEmpty()
                                       ? QFileInfo(applied.nam_path).completeBaseName()
                                       : link.value("title").toString();
-            resolve_tone3000_model(model_id, title, [try_load, rebaseline](const QString& p) {
-                if (!p.isEmpty() && try_load(p, LibraryEntry::Kind::MODEL)) {
+            resolve_tone3000_model(model_id, title, [this, rebaseline](const QString& p) {
+                if (!p.isEmpty() && try_load_referenced_file(p, LibraryEntry::Kind::MODEL)) {
                     rebaseline();
                 }
             });
@@ -3143,15 +3213,16 @@ bool MainWindow::load_preset_file(const QString& path_in) {
             failed << applied.nam_path;
         }
     }
-    if (!applied.ir_path.isEmpty() && !try_load(applied.ir_path, LibraryEntry::Kind::IR)) {
+    if (!applied.ir_path.isEmpty() &&
+        !try_load_referenced_file(applied.ir_path, LibraryEntry::Kind::IR)) {
         const QJsonObject link = t3k.value("ir").toObject();
         const int model_id = link.value("modelId").toInt();
         if (model_id > 0) {
             const QString title = link.value("title").toString().isEmpty()
                                       ? QFileInfo(applied.ir_path).completeBaseName()
                                       : link.value("title").toString();
-            resolve_tone3000_model(model_id, title, [try_load, rebaseline](const QString& p) {
-                if (!p.isEmpty() && try_load(p, LibraryEntry::Kind::IR)) {
+            resolve_tone3000_model(model_id, title, [this, rebaseline](const QString& p) {
+                if (!p.isEmpty() && try_load_referenced_file(p, LibraryEntry::Kind::IR)) {
                     rebaseline();
                 }
             });
@@ -3227,36 +3298,71 @@ void MainWindow::resolve_tone3000_model(int model_id, const QString& title,
     }
 
     tone3000->fetch_model(model_id, [this, then, title](const Tone3000Client::Result& r) {
-        if (!r.ok) {
-            QMessageBox::warning(this, "TONE3000",
-                                 "Could not look up \"" + title + "\": " + r.error);
-            then({});
-            return;
-        }
-        const T3kModel model = Tone3000Client::parse_model(r.object());
-        tone3000->fetch_tone(
-            model.tone_id, [this, then, title, model](const Tone3000Client::Result& tr) {
-                if (!tr.ok) {
-                    QMessageBox::warning(this, "TONE3000",
-                                         "Could not look up the tone of \"" + title +
-                                             "\": " + tr.error);
-                    then({});
-                    return;
-                }
-                const T3kTone tone = Tone3000Client::parse_tone(tr.object());
-                tone3000->download_model(
-                    model, tone, [this, then, title](bool ok, QString path, QString err) {
-                        if (!ok) {
-                            QMessageBox::warning(this, "TONE3000",
-                                                 "Download of \"" + title + "\" failed: " + err);
-                            then({});
-                            return;
-                        }
-                        library_index->rescan();
-                        then(path);
-                    });
-            });
+        on_t3k_model_fetched(then, title, r);
     });
+}
+
+// resolve_tone3000_model, step 1 of 3: model → its tone → download.
+void MainWindow::on_t3k_model_fetched(const std::function<void(const QString&)>& then,
+                                      const QString& title, const Tone3000Client::Result& r) {
+    if (!r.ok) {
+        QMessageBox::warning(this, "TONE3000", "Could not look up \"" + title + "\": " + r.error);
+        then({});
+        return;
+    }
+    const T3kModel model = Tone3000Client::parse_model(r.object());
+    tone3000->fetch_tone(model.tone_id,
+                         [this, then, title, model](const Tone3000Client::Result& tr) {
+                             on_t3k_tone_fetched(then, title, model, tr);
+                         });
+}
+
+void MainWindow::on_t3k_tone_fetched(const std::function<void(const QString&)>& then,
+                                     const QString& title, const T3kModel& model,
+                                     const Tone3000Client::Result& tr) {
+    if (!tr.ok) {
+        QMessageBox::warning(this, "TONE3000",
+                             "Could not look up the tone of \"" + title + "\": " + tr.error);
+        then({});
+        return;
+    }
+    const T3kTone tone = Tone3000Client::parse_tone(tr.object());
+    tone3000->download_model(model, tone, [this, then, title](bool ok, QString path, QString err) {
+        on_t3k_model_downloaded(then, title, ok, path, err);
+    });
+}
+
+void MainWindow::on_t3k_model_downloaded(const std::function<void(const QString&)>& then,
+                                         const QString& title, bool ok, const QString& path,
+                                         const QString& err) {
+    if (!ok) {
+        QMessageBox::warning(this, "TONE3000", "Download of \"" + title + "\" failed: " + err);
+        then({});
+        return;
+    }
+    library_index->rescan();
+    then(path);
+}
+
+// A model/IR path a preset references: loaded if the file is there.
+bool MainWindow::try_load_referenced_file(const QString& path, LibraryEntry::Kind kind) {
+    if (path.isEmpty() || !QFile::exists(path)) {
+        return false;
+    }
+    return kind == LibraryEntry::Kind::MODEL ? load_model_file(path, true)
+                                             : load_ir_file(path, true);
+}
+
+// Status bar MIDI light: lit briefly on activity, grey without MIDI.
+void MainWindow::show_midi_light(bool lit) {
+    const QColor c = !midi_ok ? Theme::track() : lit ? Theme::meter_mid() : Theme::meter_low();
+    lbl_midi->setText(QString("<span style=\"color:%1\">●</span> MIDI").arg(c.name()));
+}
+
+void MainWindow::on_midi_activity(const QString& what) {
+    show_midi_light(true);
+    midi_blink->start();
+    lbl_midi->setToolTip("Last MIDI message: " + what);
 }
 
 } // namespace npl

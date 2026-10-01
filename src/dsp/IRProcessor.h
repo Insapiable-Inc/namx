@@ -102,6 +102,7 @@ private:
             z1 = z2 = 0.0f;
         }
     };
+    static void design_butterworth(Biquad& b, float f, bool high, float fs);
     void design_cuts(float low_hz, float high_hz);
     bool process_chunk(float* l, float* r, size_t n, bool input_is_stereo);
 

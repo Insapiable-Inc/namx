@@ -89,10 +89,6 @@ static QString model_info(const T3kModel& m, const T3kTone& t) {
     return parts.join(" · ");
 }
 
-// ===========================================================================
-// ToneListModel
-// ===========================================================================
-
 ToneListModel::ToneListModel(Tone3000Client& new_client, LibraryIndex& new_index, QObject* parent)
     : QAbstractListModel(parent)
     , client(new_client)
@@ -180,34 +176,35 @@ void ToneListModel::refresh_downloaded() {
 }
 
 void ToneListModel::request_images() {
-    auto want = [this](const QString& url, int size, bool circle, int role) {
-        if (url.isEmpty() || images.contains(url) || requested.contains(url)) {
-            return;
-        }
-        requested.insert(url);
-        client.fetch_image(
-            url, QSize(size * 2, size * 2), [this, url, size, circle, role](QPixmap px) {
-                requested.remove(url);
-                if (px.isNull()) {
-                    return;
-                }
-                images.insert(url, rounded_thumb(px, size, circle));
-                for (int i = 0; i < tones.size(); ++i) {
-                    if (tones[i].image_url() == url || tones[i].user.avatar_url == url) {
-                        emit dataChanged(index(i), index(i), {role});
-                    }
-                }
-            });
-    };
     for (const auto& t : tones) {
-        want(t.image_url(), THUMB, false, THUMB_ROLE);
-        want(t.user.avatar_url, AVATAR, true, AVATAR_ROLE);
+        request_image(t.image_url(), THUMB, false, THUMB_ROLE);
+        request_image(t.user.avatar_url, AVATAR, true, AVATAR_ROLE);
     }
 }
 
-// ===========================================================================
-// ToneDelegate
-// ===========================================================================
+void ToneListModel::request_image(const QString& url, int size, bool circle, int role) {
+    if (url.isEmpty() || images.contains(url) || requested.contains(url)) {
+        return;
+    }
+    requested.insert(url);
+    client.fetch_image(url, QSize(size * 2, size * 2), [this, url, size, circle, role](QPixmap px) {
+        on_image_fetched(url, size, circle, role, px);
+    });
+}
+
+void ToneListModel::on_image_fetched(const QString& url, int size, bool circle, int role,
+                                     const QPixmap& px) {
+    requested.remove(url);
+    if (px.isNull()) {
+        return;
+    }
+    images.insert(url, rounded_thumb(px, size, circle));
+    for (int i = 0; i < tones.size(); ++i) {
+        if (tones[i].image_url() == url || tones[i].user.avatar_url == url) {
+            emit dataChanged(index(i), index(i), {role});
+        }
+    }
+}
 
 QRect ToneDelegate::star_rect(const QRect& row) {
     return QRect(row.right() - STAR_WIDTH, row.top(), STAR_WIDTH, row.height());
@@ -310,10 +307,6 @@ void ToneDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt,
                                Qt::ElideRight, width - (cx - left)));
     p->restore();
 }
-
-// ===========================================================================
-// ToneModelsModel / ToneModelDelegate
-// ===========================================================================
 
 int ToneModelsModel::rowCount(const QModelIndex& parent) const {
     return parent.isValid() ? 0 : static_cast<int>(models.size());
@@ -505,10 +498,6 @@ void ToneModelDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt,
     p->restore();
 }
 
-// ===========================================================================
-// Tone3000Panel
-// ===========================================================================
-
 Tone3000Panel::Tone3000Panel(Tone3000Client& new_client, LibraryIndex& new_index, QWidget* parent)
     : QWidget(parent)
     , client(new_client)
@@ -539,27 +528,8 @@ Tone3000Panel::Tone3000Panel(Tone3000Client& new_client, LibraryIndex& new_index
     connect(&client, &Tone3000Client::user_changed, this, [this] {
         update_user_header();
     });
-    connect(&client, &Tone3000Client::status, this, [this](const QString& m) {
-        notice->setText(m);
-        notice->show();
-        QTimer::singleShot(6000, notice, &QWidget::hide);
-    });
-    connect(&client, &Tone3000Client::auth_finished, this,
-            [this](bool ok, const QString& err, int tone_id) {
-                browse_btn->setEnabled(true);
-                if (!ok) {
-                    notice->setText(err);
-                    notice->show();
-                    QTimer::singleShot(8000, notice, &QWidget::hide);
-                    sync_state();
-                    return;
-                }
-                notice->hide();
-                sync_state();
-                if (tone_id > 0) {
-                    show_tone(tone_id);
-                }
-            });
+    connect(&client, &Tone3000Client::status, this, &Tone3000Panel::show_notice);
+    connect(&client, &Tone3000Client::auth_finished, this, &Tone3000Panel::on_auth_finished);
     connect(&client, &Tone3000Client::download_progress, this,
             [this](int model_id, qint64 rec, qint64 tot) {
                 if (tot > 0) {
@@ -568,6 +538,28 @@ Tone3000Panel::Tone3000Panel(Tone3000Client& new_client, LibraryIndex& new_index
             });
 
     sync_state();
+}
+
+void Tone3000Panel::show_notice(const QString& m) {
+    notice->setText(m);
+    notice->show();
+    QTimer::singleShot(6000, notice, &QWidget::hide);
+}
+
+void Tone3000Panel::on_auth_finished(bool ok, const QString& err, int tone_id) {
+    browse_btn->setEnabled(true);
+    if (!ok) {
+        notice->setText(err);
+        notice->show();
+        QTimer::singleShot(8000, notice, &QWidget::hide);
+        sync_state();
+        return;
+    }
+    notice->hide();
+    sync_state();
+    if (tone_id > 0) {
+        show_tone(tone_id);
+    }
 }
 
 // Header
@@ -594,32 +586,12 @@ void Tone3000Panel::build_header() {
     user_btn->setPopupMode(QToolButton::InstantPopup);
     user_btn->setFocusPolicy(Qt::NoFocus);
     auto* menu = new QMenu(user_btn);
-    connect(menu->addAction("Open my TONE3000 profile"), &QAction::triggered, this, [this] {
-        const QString u = client.get_user().url;
-        QDesktopServices::openUrl(QUrl(u.isEmpty() ? QString(Tone3000Client::SITE_URL) : u));
-    });
-    connect(menu->addAction("Change download folder…"), &QAction::triggered, this, [this] {
-        const QString dir = pick_download_dir(this);
-        if (dir.isEmpty()) {
-            return;
-        }
-        QSettings().setValue("library/tone3000Dir", dir);
-        library_index.rescan();
-    });
-    connect(menu->addAction("TONE3000 publishable key…"), &QAction::triggered, this, [this] {
-        bool ok = false;
-        const QString key = QInputDialog::getText(
-            window(), "TONE3000 key",
-            "Publishable key (t3k_pub_…) from tone3000.com → Settings → API Keys.\n"
-            "Leave empty to use the key this build was compiled with.",
-            QLineEdit::Normal, QSettings().value("tone3000/clientId").toString(), &ok);
-        if (!ok) {
-            return;
-        }
-        Tone3000Client::set_client_id(key);
-        client.sign_out();
-        sync_state();
-    });
+    connect(menu->addAction("Open my TONE3000 profile"), &QAction::triggered, this,
+            &Tone3000Panel::open_profile);
+    connect(menu->addAction("Change download folder…"), &QAction::triggered, this,
+            &Tone3000Panel::change_download_dir);
+    connect(menu->addAction("TONE3000 publishable key…"), &QAction::triggered, this,
+            &Tone3000Panel::ask_client_id);
     menu->addSeparator();
     connect(menu->addAction("Sign out"), &QAction::triggered, this, [this] {
         client.sign_out();
@@ -629,6 +601,35 @@ void Tone3000Panel::build_header() {
 
     logo->installEventFilter(this);
     update_user_header();
+}
+
+void Tone3000Panel::open_profile() {
+    const QString u = client.get_user().url;
+    QDesktopServices::openUrl(QUrl(u.isEmpty() ? QString(Tone3000Client::SITE_URL) : u));
+}
+
+void Tone3000Panel::change_download_dir() {
+    const QString dir = pick_download_dir(this);
+    if (dir.isEmpty()) {
+        return;
+    }
+    QSettings().setValue("library/tone3000Dir", dir);
+    library_index.rescan();
+}
+
+void Tone3000Panel::ask_client_id() {
+    bool ok = false;
+    const QString key = QInputDialog::getText(
+        window(), "TONE3000 key",
+        "Publishable key (t3k_pub_…) from tone3000.com → Settings → API Keys.\n"
+        "Leave empty to use the key this build was compiled with.",
+        QLineEdit::Normal, QSettings().value("tone3000/clientId").toString(), &ok);
+    if (!ok) {
+        return;
+    }
+    Tone3000Client::set_client_id(key);
+    client.sign_out();
+    sync_state();
 }
 
 QString Tone3000Panel::pick_download_dir(QWidget* parent) {
@@ -663,12 +664,16 @@ void Tone3000Panel::update_user_header() {
     if (!u.avatar_url.isEmpty()) {
         const QString url = u.avatar_url;
         client.fetch_image(url, QSize(64, 64), [this, url](QPixmap px) {
-            if (px.isNull() || client.get_user().avatar_url != url) {
-                return;
-            }
-            user_btn->setIcon(QIcon(rounded_thumb(px, 18, true)));
+            on_avatar_fetched(url, px);
         });
     }
+}
+
+void Tone3000Panel::on_avatar_fetched(const QString& url, const QPixmap& px) {
+    if (px.isNull() || client.get_user().avatar_url != url) {
+        return;
+    }
+    user_btn->setIcon(QIcon(rounded_thumb(px, 18, true)));
 }
 
 // Pages
@@ -693,14 +698,16 @@ void Tone3000Panel::build_setup_page() {
     key_edit->setPlaceholderText("t3k_pub_…");
     lay->addWidget(key_edit);
     auto* save = new QPushButton("Save key");
-    connect(save, &QPushButton::clicked, this, [this] {
-        Tone3000Client::set_client_id(key_edit->text());
-        sync_state();
-    });
+    connect(save, &QPushButton::clicked, this, &Tone3000Panel::save_client_id);
     connect(key_edit, &QLineEdit::returnPressed, save, &QPushButton::click);
     lay->addWidget(save, 0, Qt::AlignLeft);
     lay->addStretch();
     pages->insertWidget(PAGE_SETUP, page);
+}
+
+void Tone3000Panel::save_client_id() {
+    Tone3000Client::set_client_id(key_edit->text());
+    sync_state();
 }
 
 void Tone3000Panel::build_splash_page() {
@@ -1046,47 +1053,51 @@ void Tone3000Panel::load_list(bool use_cache) {
     client.list_tones(
         kind, list_page,
         [this, my_list, my_page, paged](const Tone3000Client::Result& r) {
-            if (my_list != list || my_page != list_page) {
-                return; // switched meanwhile
-            }
-            if (!r.ok) {
-                if (r.offline) {
-                    show_list_status(
-                        "Offline. The local library still works; TONE3000 will be back "
-                        "when you are.");
-                } else if (r.auth_required) {
-                    show_list_status(r.error);
-                    sync_state();
-                } else {
-                    show_list_status(r.error);
-                }
-                return;
-            }
-            QList<T3kTone> tones;
-            for (const QJsonValue v : r.object().value("data").toArray()) {
-                tones << Tone3000Client::parse_tone(v.toObject());
-            }
-            tone_model->set_tones(tones);
-            tone_view->scrollToTop();
-            total_pages = paged ? std::max(1, r.object().value("total_pages").toInt(1)) : 1;
-            prev_page->setEnabled(list_page > 1);
-            next_page->setEnabled(list_page < total_pages);
-            if (tones.isEmpty()) {
-                show_list_status(my_list == 2   ? "No favorites yet. ★ a tone here or on TONE3000."
-                                 : my_list == 3 ? "Nothing downloaded on TONE3000 yet."
-                                 : my_list == 4 ? "You haven't published tones on TONE3000."
-                                                : "Nothing here right now.");
-            } else if (paged) {
-                show_list_status(QString("%1 tones · page %2 of %3")
-                                     .arg(r.object().value("total").toInt(
-                                         static_cast<int>(tones.size()))) // JSON ints are int
-                                     .arg(list_page)
-                                     .arg(total_pages));
-            } else {
-                show_list_status(QString("%1 tones").arg(tones.size()));
-            }
+            on_list_loaded(my_list, my_page, paged, r);
         },
         use_cache);
+}
+
+void Tone3000Panel::on_list_loaded(int my_list, int my_page, bool paged,
+                                   const Tone3000Client::Result& r) {
+    if (my_list != list || my_page != list_page) {
+        return; // switched meanwhile
+    }
+    if (!r.ok) {
+        if (r.offline) {
+            show_list_status("Offline. The local library still works; TONE3000 will be back "
+                             "when you are.");
+        } else if (r.auth_required) {
+            show_list_status(r.error);
+            sync_state();
+        } else {
+            show_list_status(r.error);
+        }
+        return;
+    }
+    QList<T3kTone> tones;
+    for (const QJsonValue v : r.object().value("data").toArray()) {
+        tones << Tone3000Client::parse_tone(v.toObject());
+    }
+    tone_model->set_tones(tones);
+    tone_view->scrollToTop();
+    total_pages = paged ? std::max(1, r.object().value("total_pages").toInt(1)) : 1;
+    prev_page->setEnabled(list_page > 1);
+    next_page->setEnabled(list_page < total_pages);
+    if (tones.isEmpty()) {
+        show_list_status(my_list == 2   ? "No favorites yet. ★ a tone here or on TONE3000."
+                         : my_list == 3 ? "Nothing downloaded on TONE3000 yet."
+                         : my_list == 4 ? "You haven't published tones on TONE3000."
+                                        : "Nothing here right now.");
+    } else if (paged) {
+        show_list_status(QString("%1 tones · page %2 of %3")
+                             .arg(r.object().value("total").toInt(
+                                 static_cast<int>(tones.size()))) // JSON ints are int
+                             .arg(list_page)
+                             .arg(total_pages));
+    } else {
+        show_list_status(QString("%1 tones").arg(tones.size()));
+    }
 }
 
 bool Tone3000Panel::handle_tone_view_click(QMouseEvent* me) {
@@ -1114,19 +1125,24 @@ void Tone3000Panel::toggle_favorite(int tone_id, bool on) {
         detail_fav->setText(on ? "★" : "☆");
     }
     client.set_favorite(tone_id, on, [this, tone_id, on](const Tone3000Client::Result& r) {
-        if (r.ok) {
-            return;
-        }
-        tone_model->set_favorite(tone_id, !on); // revert
-        if (detail_tone.id == tone_id) {
-            detail_tone.is_favorite = !on;
-            detail_fav->setChecked(!on);
-            detail_fav->setText(!on ? "★" : "☆");
-        }
-        notice->setText(r.offline ? QStringLiteral("Offline — favorite not saved.") : r.error);
-        notice->show();
-        QTimer::singleShot(6000, notice, &QWidget::hide);
+        on_favorite_saved(tone_id, on, r);
     });
+}
+
+// Reverts the optimistic favorite toggle if TONE3000 refused it.
+void Tone3000Panel::on_favorite_saved(int tone_id, bool on, const Tone3000Client::Result& r) {
+    if (r.ok) {
+        return;
+    }
+    tone_model->set_favorite(tone_id, !on); // revert
+    if (detail_tone.id == tone_id) {
+        detail_tone.is_favorite = !on;
+        detail_fav->setChecked(!on);
+        detail_fav->setText(!on ? "★" : "☆");
+    }
+    notice->setText(r.offline ? QStringLiteral("Offline — favorite not saved.") : r.error);
+    notice->show();
+    QTimer::singleShot(6000, notice, &QWidget::hide);
 }
 
 // Detail
@@ -1143,17 +1159,21 @@ void Tone3000Panel::show_tone(int tone_id) {
     models_model->set_models({}, {}, library_index);
     const int req = ++detail_request;
     client.fetch_tone(tone_id, [this, req](const Tone3000Client::Result& r) {
-        if (req != detail_request) {
-            return;
-        }
-        if (!r.ok) {
-            detail_title->setText(r.offline ? QStringLiteral("Offline")
-                                            : QStringLiteral("Could not load this tone"));
-            detail_status->setText(r.error);
-            return;
-        }
-        open_detail(Tone3000Client::parse_tone(r.object()));
+        on_tone_fetched(req, r);
     });
+}
+
+void Tone3000Panel::on_tone_fetched(int req, const Tone3000Client::Result& r) {
+    if (req != detail_request) {
+        return;
+    }
+    if (!r.ok) {
+        detail_title->setText(r.offline ? QStringLiteral("Offline")
+                                        : QStringLiteral("Could not load this tone"));
+        detail_status->setText(r.error);
+        return;
+    }
+    open_detail(Tone3000Client::parse_tone(r.object()));
 }
 
 void Tone3000Panel::open_detail(const T3kTone& tone) {
@@ -1189,19 +1209,24 @@ void Tone3000Panel::open_detail(const T3kTone& tone) {
     if (tone.description.isEmpty()) {
         const int req = ++detail_request;
         client.fetch_tone(tone.id, [this, req](const Tone3000Client::Result& r) {
-            if (req != detail_request || !r.ok) {
-                return;
-            }
-            const T3kTone full = Tone3000Client::parse_tone(r.object());
-            if (full.id != detail_tone.id) {
-                return;
-            }
-            detail_tone.description = full.description;
-            detail_desc->setText(full.description.trimmed());
-            detail_desc->setVisible(!full.description.trimmed().isEmpty());
+            on_description_fetched(req, r);
         });
     }
     load_detail_models();
+}
+
+// Fills in the description of the tone the detail page shows.
+void Tone3000Panel::on_description_fetched(int req, const Tone3000Client::Result& r) {
+    if (req != detail_request || !r.ok) {
+        return;
+    }
+    const T3kTone full = Tone3000Client::parse_tone(r.object());
+    if (full.id != detail_tone.id) {
+        return;
+    }
+    detail_tone.description = full.description;
+    detail_desc->setText(full.description.trimmed());
+    detail_desc->setVisible(!full.description.trimmed().isEmpty());
 }
 
 void Tone3000Panel::set_thumbnail(QLabel* label, const QString& url, const QSize& size,
@@ -1213,62 +1238,71 @@ void Tone3000Panel::set_thumbnail(QLabel* label, const QString& url, const QSize
     }
     label->setVisible(true);
     client.fetch_image(url, size, [this, label, url, size, round](QPixmap px) {
-        if (px.isNull()) {
-            return;
-        }
-        if (label == detail_image && detail_tone.image_url() != url) {
-            return;
-        }
-        if (label == detail_creator_avatar && detail_tone.user.avatar_url != url) {
-            return;
-        }
-        if (round) {
-            label->setPixmap(rounded_thumb(px, size.height(), true));
-            return;
-        }
-        // Fit the panel width, rounded corners.
-        const int w = std::max(120, label->width() - 4);
-        QPixmap scaled = px.scaledToWidth(std::min(w, px.width() * 2), Qt::SmoothTransformation);
-        if (scaled.height() > 220) {
-            scaled = scaled.scaledToHeight(220, Qt::SmoothTransformation);
-        }
-        QPixmap out(scaled.size());
-        out.fill(Qt::transparent);
-        QPainter p(&out);
-        p.setRenderHint(QPainter::Antialiasing);
-        QPainterPath path;
-        path.addRoundedRect(out.rect(), 6, 6);
-        p.setClipPath(path);
-        p.drawPixmap(0, 0, scaled);
-        label->setPixmap(out);
+        on_thumbnail_fetched(label, url, size, round, px);
     });
+}
+
+void Tone3000Panel::on_thumbnail_fetched(QLabel* label, const QString& url, const QSize& size,
+                                         bool round, const QPixmap& px) {
+    if (px.isNull()) {
+        return;
+    }
+    if (label == detail_image && detail_tone.image_url() != url) {
+        return;
+    }
+    if (label == detail_creator_avatar && detail_tone.user.avatar_url != url) {
+        return;
+    }
+    if (round) {
+        label->setPixmap(rounded_thumb(px, size.height(), true));
+        return;
+    }
+    // Fit the panel width, rounded corners.
+    const int w = std::max(120, label->width() - 4);
+    QPixmap scaled = px.scaledToWidth(std::min(w, px.width() * 2), Qt::SmoothTransformation);
+    if (scaled.height() > 220) {
+        scaled = scaled.scaledToHeight(220, Qt::SmoothTransformation);
+    }
+    QPixmap out(scaled.size());
+    out.fill(Qt::transparent);
+    QPainter p(&out);
+    p.setRenderHint(QPainter::Antialiasing);
+    QPainterPath path;
+    path.addRoundedRect(out.rect(), 6, 6);
+    p.setClipPath(path);
+    p.drawPixmap(0, 0, scaled);
+    label->setPixmap(out);
 }
 
 void Tone3000Panel::load_detail_models() {
     const int req = ++detail_request;
     const T3kTone tone = detail_tone;
-    client.list_models(
-        tone, [this, req, tone](const Tone3000Client::Result& r, QList<T3kModel> models) {
-            if (req != detail_request) {
-                return;
-            }
-            if (!r.ok) {
-                detail_status->setText(
-                    r.offline ? QStringLiteral("Offline — models can't be listed right now.")
-                              : r.error);
-                return;
-            }
-            models_model->set_models(models, tone, library_index);
-            const qsizetype pending = models_model->pending().size();
-            detail_status->setText(
-                models.isEmpty() ? QStringLiteral("This tone has no downloadable models.")
-                : pending == 0   ? QStringLiteral("All models are in your library.")
-                                 : QString("%1 models · click one to download").arg(models.size()));
-            download_all_button->setEnabled(pending > 0);
-            download_all_button->setText(pending > 0 && pending < models.size()
-                                             ? QString("Download the other %1").arg(pending)
-                                             : QStringLiteral("Download all"));
-        });
+    client.list_models(tone,
+                       [this, req, tone](const Tone3000Client::Result& r, QList<T3kModel> models) {
+                           on_models_listed(req, tone, r, models);
+                       });
+}
+
+void Tone3000Panel::on_models_listed(int req, const T3kTone& tone, const Tone3000Client::Result& r,
+                                     const QList<T3kModel>& models) {
+    if (req != detail_request) {
+        return;
+    }
+    if (!r.ok) {
+        detail_status->setText(
+            r.offline ? QStringLiteral("Offline — models can't be listed right now.") : r.error);
+        return;
+    }
+    models_model->set_models(models, tone, library_index);
+    const qsizetype pending = models_model->pending().size();
+    detail_status->setText(
+        models.isEmpty() ? QStringLiteral("This tone has no downloadable models.")
+        : pending == 0   ? QStringLiteral("All models are in your library.")
+                         : QString("%1 models · click one to download").arg(models.size()));
+    download_all_button->setEnabled(pending > 0);
+    download_all_button->setText(pending > 0 && pending < models.size()
+                                     ? QString("Download the other %1").arg(pending)
+                                     : QStringLiteral("Download all"));
 }
 
 void Tone3000Panel::on_model_row_clicked(const QModelIndex& idx) {
@@ -1298,18 +1332,23 @@ void Tone3000Panel::start_download(int row) {
     const T3kTone tone = detail_tone;
     models_model->set_state(model.id, ToneModelsModel::DOWNLOADING);
     client.download_model(model, tone, [this, model](bool ok, QString path, QString err) {
-        models_model->set_state(model.id, ok ? ToneModelsModel::DONE : ToneModelsModel::FAILED,
-                                ok ? path : err);
-        if (ok) {
-            library_index.rescan(); // a new folder isn't watched until scanned once
-            const qsizetype pending = models_model->pending().size();
-            download_all_button->setEnabled(pending > 0);
-            detail_status->setText(pending == 0 ? QStringLiteral("All models are in your library.")
-                                                : QString("%1 left to download").arg(pending));
-        } else {
-            detail_status->setText(err);
-        }
+        on_model_downloaded(model, ok, path, err);
     });
+}
+
+void Tone3000Panel::on_model_downloaded(const T3kModel& model, bool ok, const QString& path,
+                                        const QString& err) {
+    models_model->set_state(model.id, ok ? ToneModelsModel::DONE : ToneModelsModel::FAILED,
+                            ok ? path : err);
+    if (ok) {
+        library_index.rescan(); // a new folder isn't watched until scanned once
+        const qsizetype pending = models_model->pending().size();
+        download_all_button->setEnabled(pending > 0);
+        detail_status->setText(pending == 0 ? QStringLiteral("All models are in your library.")
+                                            : QString("%1 left to download").arg(pending));
+    } else {
+        detail_status->setText(err);
+    }
 }
 
 void Tone3000Panel::download_all() {

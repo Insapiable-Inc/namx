@@ -68,6 +68,8 @@ private:
 
     // Wet sample for one channel at an LFO phase (all modes).
     float wet(const DelayLine& line, float phase, float depth, float fs, int current_mode);
+    // One modulated read of the line at an LFO phase.
+    static float tap(const DelayLine& line, float phase, float depth, float fs, int current_mode);
 
     DelayLine line_l, line_r;
 

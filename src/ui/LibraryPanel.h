@@ -172,6 +172,9 @@ private:
     void toggle_favorite(const QString& path);
     void update_counts();
     void restore_current_from_loaded();
+    void apply_search(const QString& text);
+    void set_mode(int mode); // 0 All, 1 Favorites, 2 Recent (the mode buttons)
+    void set_sort_key(int key); // index into the sort box
     LibraryFilterProxy* proxy(LibraryEntry::Kind kind) const {
         return proxies[static_cast<int>(kind)];
     }

@@ -55,6 +55,9 @@ public:
 
 private:
     void request_images();
+    // Fetches a thumbnail once; `role` is the data role refreshed when it arrives.
+    void request_image(const QString& url, int size, bool circle, int role);
+    void on_image_fetched(const QString& url, int size, bool circle, int role, const QPixmap& px);
 
     Tone3000Client& client;
     LibraryIndex& library_index;
@@ -187,6 +190,23 @@ private:
     void on_model_row_clicked(const QModelIndex& idx);
     void toggle_favorite(int tone_id, bool on);
     void set_thumbnail(QLabel* label, const QString& url, const QSize& size, bool round);
+    void show_notice(const QString& m);
+    void on_auth_finished(bool ok, const QString& err, int tone_id);
+    void open_profile();
+    void change_download_dir();
+    void ask_client_id();
+    void on_avatar_fetched(const QString& url, const QPixmap& px);
+    void save_client_id();
+    void on_list_loaded(int my_list, int my_page, bool paged, const Tone3000Client::Result& r);
+    void on_favorite_saved(int tone_id, bool on, const Tone3000Client::Result& r);
+    void on_tone_fetched(int req, const Tone3000Client::Result& r);
+    void on_description_fetched(int req, const Tone3000Client::Result& r);
+    void on_thumbnail_fetched(QLabel* label, const QString& url, const QSize& size, bool round,
+                              const QPixmap& px);
+    void on_models_listed(int req, const T3kTone& tone, const Tone3000Client::Result& r,
+                          const QList<T3kModel>& models);
+    void on_model_downloaded(const T3kModel& model, bool ok, const QString& path,
+                             const QString& err);
 
     Tone3000Client& client;
     LibraryIndex& library_index;

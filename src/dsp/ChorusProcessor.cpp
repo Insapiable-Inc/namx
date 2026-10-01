@@ -24,23 +24,28 @@ void ChorusProcessor::reset() {
     vint_lp[0] = vint_lp[1] = 0.0f;
 }
 
+float ChorusProcessor::tap(const DelayLine& line, float phase, float depth, float fs,
+                           int current_mode) {
+    float lfo;
+    if (current_mode == VINTAGE) {
+        const float f = phase - std::floor(phase);
+        lfo = 4.0f * std::abs(f - 0.5f) - 1.0f; // triangle
+    } else {
+        lfo = std::sin(2.0f * PI * phase);
+    }
+    const float del = std::max(1.0f, (BASE_MS + depth * MAX_DEPTH_MS * lfo) * fs / 1000.0f);
+    return line.interpolate(del);
+}
+
 float ChorusProcessor::wet(const DelayLine& line, float phase, float depth, float fs,
                            int current_mode) {
-    auto tap = [&](float ph) {
-        float lfo;
-        if (current_mode == VINTAGE) {
-            const float f = ph - std::floor(ph);
-            lfo = 4.0f * std::abs(f - 0.5f) - 1.0f; // triangle
-        } else {
-            lfo = std::sin(2.0f * PI * ph);
-        }
-        const float del = std::max(1.0f, (BASE_MS + depth * MAX_DEPTH_MS * lfo) * fs / 1000.0f);
-        return line.interpolate(del);
-    };
     if (current_mode == TRI) {
-        return (tap(phase) + tap(phase + 1.0f / 3.0f) + tap(phase + 2.0f / 3.0f)) * (1.0f / 3.0f);
+        return (tap(line, phase, depth, fs, current_mode) +
+                tap(line, phase + 1.0f / 3.0f, depth, fs, current_mode) +
+                tap(line, phase + 2.0f / 3.0f, depth, fs, current_mode)) *
+               (1.0f / 3.0f);
     }
-    return tap(phase);
+    return tap(line, phase, depth, fs, current_mode);
 }
 
 // One processing loop for every dispatch case: `stereoOut` = mono in, true

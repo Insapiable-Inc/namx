@@ -18,6 +18,7 @@
 #include "ParamRegistry.h"
 #include "PresetSerializer.h"
 #include "ToggleSwitch.h"
+#include "Tone3000Client.h"
 
 class QDockWidget;
 class QDragEnterEvent;
@@ -44,7 +45,6 @@ class PresetBar;
 class MidiInput;
 class MidiMapper;
 class TempoBar;
-class Tone3000Client;
 class Tone3000Panel;
 class TunerDisplay;
 class VUMeter;
@@ -159,6 +159,40 @@ private:
     // ▾ toggle at the row's right end. Starts at the knob column; expanded
     // state persists per card (QSettings ui/expandedCards).
     void add_detail_row(QWidget* card, const QList<QWidget*>& widgets);
+    void set_tuner_reference(int hz);
+    void set_tuner_show_hz(bool on);
+    QWidget* make_eq_freq_knob(const QString& key, const QString& label, double lo, double hi,
+                               double def, EQProcessor::Band b, double off_at);
+    QWidget* make_delay_pct_knob(const QString& key, const QString& label, double lo, double hi,
+                                 double def, std::function<void(double)> f, const QString& tip);
+    QWidget* make_ir_level_knob(int slot);
+    QWidget* make_ir_pan_knob(int slot);
+    QWidget* make_ir_phase_switch(int slot);
+    QToolButton* make_ir_b_arrow(const QString& glyph, int step);
+    void step_ir_b(int step);
+    void choose_ir_b();
+    void clear_ir_b();
+    QWidget* make_gain_column(const QString& title, KnobWidget*& knob, VUMeter*& meter);
+    void find_in_library();
+    void browse_tone3000();
+    QToolButton* make_library_arrow(const QString& glyph, int step, const QString& tip,
+                                    LibraryEntry::Kind kind);
+    void show_library_section(LibraryEntry::Kind kind);
+    void show_midi_light(bool lit);
+    void on_midi_activity(const QString& what);
+    void open_midi_mappings();
+    void populate_midi_devices_menu(QMenu* devices);
+    void show_file_status(QLabel* name, QLabel* meta, QLabel* origin, bool loaded,
+                          const QString& path, const QString& empty_text);
+    QJsonObject tone3000_linkage(const string& p) const;
+    bool try_load_referenced_file(const QString& path, LibraryEntry::Kind kind);
+    void on_t3k_model_fetched(const std::function<void(const QString&)>& then, const QString& title,
+                              const Tone3000Client::Result& r);
+    void on_t3k_tone_fetched(const std::function<void(const QString&)>& then, const QString& title,
+                             const T3kModel& model, const Tone3000Client::Result& tr);
+    void on_t3k_model_downloaded(const std::function<void(const QString&)>& then,
+                                 const QString& title, bool ok, const QString& path,
+                                 const QString& err);
 
     // Effect strip / chain reordering
     // Lays the cards out in the given order: dividers follow NAM/EQ.

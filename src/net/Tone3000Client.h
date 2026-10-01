@@ -10,6 +10,7 @@
 #include <QPixmap>
 #include <QString>
 #include <QStringList>
+#include <QTcpSocket>
 #include <QUrl>
 #include <QUrlQuery>
 
@@ -128,6 +129,8 @@ public:
         }
     };
     using Callback = std::function<void(const Result&)>;
+    // (ok, path, error)
+    using DownloadCallback = std::function<void(bool, QString, QString)>;
 
     // Bounded lists. `page` is ignored by trending/latest (10 items, unpaged).
     enum class ListKind
@@ -191,6 +194,19 @@ private:
 
     void send(Request req);
     void on_reply_finished(QNetworkReply* reply, Request req);
+    void on_token_checked(const Request& req, bool fresh);
+    void start_request(const Request& req);
+    void retry_after_refresh(Request req, bool refreshed);
+    void on_token_refreshed(const Result& r);
+    void on_code_exchanged(const Result& r, int tone_id);
+    void on_auth_request(QTcpSocket* sock);
+    void on_favorite_set(const Result& r, const Callback& cb);
+    void on_user_fetched(const Result& r, const Callback& cb);
+    void start_download(bool fresh, const T3kModel& model, const T3kTone& tone,
+                        const DownloadCallback& cb);
+    // A download hop finished: follow the redirect, or save file + sidecar.
+    void on_download_finished(QNetworkReply* reply, int hops, const T3kModel& model,
+                              const T3kTone& tone, const DownloadCallback& cb);
     void ensure_fresh_token(std::function<void(bool)> then);
     void refresh_access_token(std::function<void(bool)> then);
     void apply_token_response(const QJsonObject& o);
