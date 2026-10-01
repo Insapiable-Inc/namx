@@ -92,7 +92,7 @@ Qt6 application with a platform audio backend behind the `IAudioBackend` interfa
 
 ### Signal chain
 
-`AudioEngine` (implements `IAudioBackend::Callback`) owns all processors and a **double-buffered chain** (two `std::vector<EffectBase*>` + atomic index) iterated every callback. **Processing order = UI order** — `MainWindow::rebuildEffectStrip` lays the cards out by iterating `chain()`, and the user can reorder by dragging cards. Each effect has a stable string ID (`AudioEngine::mEffectTable` — never rename); `setChainOrder(ids)` sanitizes (unknown IDs dropped, missing effects at default slot) and swaps RT-safely, flagging moved effects for an audio-thread `reset()` via `requestReset()`/`consumePendingReset()`. All 17 effects reorder freely — nothing is pinned; only the Input/Output gain stages, the output limiter and the metronome sit outside the chain. New effect IDs are appended to the table at their default slot, and old sessions/presets get them there via the sanitizer. The default order:
+`AudioEngine` (implements `IAudioBackend::Callback`) owns all processors and a **double-buffered chain** (two `std::vector<EffectBase*>` + atomic index) iterated every callback. **Processing order = UI order** — `MainWindow::rebuild_effect_strip` lays the cards out by iterating `get_chain()`, and the user can reorder by dragging cards. Each effect has a stable string ID (`AudioEngine::effect_table` — never rename); `set_chain_order(ids)` sanitizes (unknown IDs dropped, missing effects at default slot) and swaps RT-safely, flagging moved effects for an audio-thread `reset()` via `request_reset()`/`consume_pending_reset()`. All 17 effects reorder freely — nothing is pinned; only the Input/Output gain stages, the output limiter and the metronome sit outside the chain. New effect IDs are appended to the table at their default slot, and old sessions/presets get them there via the sanitizer. The default order:
 
 ```
 mono input → input gain (smoothed)
@@ -103,23 +103,23 @@ mono input → input gain (smoothed)
   → output gain (smoothed) → output limiter → meter → + metronome → stereo out (L, R)
 ```
 
-Cards have a main row and optional ▾ detail rows (`MainWindow::addDetailRow`) for advanced knobs; those knobs register through `lateKnob` (deferred `knobParam`) so they don't need named members.
+Cards have a main row and optional ▾ detail rows (`MainWindow::add_detail_row`) for advanced knobs; those knobs register through `late_knob` (deferred `knob_param`) so they don't need named members.
 
 ### EffectBase dispatch
 
-All effects inherit `EffectBase` (`src/dsp/EffectBase.h` — the header comment documents the full routing table). `process(L, R, n, inputIsStereo)` returns whether output is now stereo; the flag threads through the chain so each effect knows if L≠R. Effects implement:
+All effects inherit `EffectBase` (`src/dsp/EffectBase.h` — the header comment documents the full routing table). `process(l, r, n, input_is_stereo)` returns whether output is now stereo; the flag threads through the chain so each effect knows if L≠R. Effects implement:
 
-- `processBlockMono` — mono in-place;
-- `processBlockDual` — stereo input, mono effect per channel (**stateful effects must override with per-channel state**; the default reuses one state — see BUG-06);
-- `processBlockStereoOut` — true stereo from mono (only if `supportsStereoOut()`).
+- `process_block_mono` — mono in-place;
+- `process_block_dual` — stereo input, mono effect per channel (**stateful effects must override with per-channel state**; the default reuses one state — see BUG-06);
+- `process_block_stereo_out` — true stereo from mono (only if `supports_stereo_out()`).
 
-`setSampleRate` is non-virtual; effects hook `onSampleRateChanged`.
+`set_sample_rate` is non-virtual; effects hook `on_sample_rate_changed`.
 
 ### Thread-safety patterns
 
 - **Simple parameters** (gains, enable flags, rates…) are `std::atomic<float>`/`std::atomic<bool>` — set from GUI thread, read lock-free in audio thread.
 - **EQ coefficient updates** use a mutex + `try_lock` in the audio thread (skips one block if the GUI is writing).
-- **NAM model swaps, IR kernel swaps and chain reorders** all go through `RtSlot<T>` (`src/dsp/RtSlot.h`): the GUI publishes a freshly built object, the audio thread binds it once per block (`acquire()` … `endBlock()` on every exit path), and the previous object is parked on a retired list and freed only after the audio thread has provably completed a block that began after the swap. Publishing never blocks and back-to-back publishes are safe; `AudioEngine::reclaimRetired()` frees eagerly when the backend is stopped. Never `delete` or mutate a published object from the GUI thread.
+- **NAM model swaps, IR kernel swaps and chain reorders** all go through `RtSlot<T>` (`src/dsp/RtSlot.h`): the GUI publishes a freshly built object, the audio thread binds it once per block (`acquire()` … `end_block()` on every exit path), and the previous object is parked on a retired list and freed only after the audio thread has provably completed a block that began after the swap. Publishing never blocks and back-to-back publishes are safe; `AudioEngine::reclaim_retired()` frees eagerly when the backend is stopped. Never `delete` or mutate a published object from the GUI thread.
 - **No allocations in the audio callback.**
 
 ### Key classes
@@ -144,62 +144,70 @@ All effects inherit `EffectBase` (`src/dsp/EffectBase.h` — the header comment 
 | `OutputLimiter` | `src/dsp/OutputLimiter.h/cpp` | Output-stage look-ahead limiter (not an effect; registry key `limiter`) |
 | `MainWindow` | `src/ui/MainWindow.h/cpp` | Window assembly, parameter registry, effect strip + DnD reorder, session state |
 | `ParamRegistry.h` | `src/ui/` | `ParamDesc` — one entry per user-facing parameter (shared by MainWindow + PresetSerializer) |
-| `PresetBar` | `src/ui/PresetBar.h/cpp` | Bar above the rack: preset name menu, ‹ ›, `*`, Save/Save As, quick slots 1–8 (owns `presets/slots`), A/B buttons; MainWindow owns the preset state (`mPresetPath` + baseline) |
+| `PresetBar` | `src/ui/PresetBar.h/cpp` | Bar above the rack: preset name menu, ‹ ›, `*`, Save/Save As, quick slots 1–8 (owns `presets/slots`), A/B buttons; MainWindow owns the preset state (`preset_path` + baseline) |
 | `PresetSerializer` | `src/ui/PresetSerializer.h/cpp` | Preset schema v2 JSON ↔ registry/engine (v1 files load too) |
-| `AudioStatusBar` | `src/ui/AudioStatusBar.h/cpp` | Bottom status bar: backend state, rate/buffer/latency, device pickers; persists IDs, emits `deviceSelectionChanged` |
+| `AudioStatusBar` | `src/ui/AudioStatusBar.h/cpp` | Bottom status bar: backend state, rate/buffer/latency, device pickers; persists IDs, emits `device_selection_changed` |
 | `LibraryIndex` | `src/ui/LibraryIndex.h/cpp` | Library scan: worker thread over the root folders, metadata cache (`AppDataLocation/library-index.json`), `QFileSystemWatcher` rescans; `LibraryEntry` carries a pre-built `summary`/`details` per file |
-| `LibraryPanel` | `src/ui/LibraryPanel.h/cpp` | Local library tab: Models/IRs/Presets sections, search, favorites, recents, sort, two-line list; emits `activated(kind, path)`, owner reports back via `setLoadedPath` |
+| `LibraryPanel` | `src/ui/LibraryPanel.h/cpp` | Local library tab: Models/IRs/Presets sections, search, favorites, recents, sort, two-line list; emits `activated(kind, path)`, owner reports back via `set_loaded_path` |
 | `LibraryDock` | `src/ui/LibraryDock.h/cpp` | Dock content: Library / TONE3000 tab switch over `LibraryPanel` + `Tone3000Panel` |
-| `Tone3000Client` | `src/net/Tone3000Client.h/cpp` | TONE3000 API: OAuth 2.0 + PKCE via system browser + loopback `QTcpServer` (`http://localhost:51731/callback`), Bearer requests with pre-emptive/401 refresh, 5-min listing cache, 429 back-off, model download → `downloadDir()/<creator>/<tone>/` + `.t3k.json` sidecar, disk-cached images. Env: `NAM_TONE3000_API_BASE`, `NAM_TONE3000_NO_BROWSER` |
-| `Tone3000Panel` | `src/ui/Tone3000Panel.h/cpp` | TONE3000 tab: setup (no key) → splash (signed out) → bounded lists (Trending/Latest/Favorites/Downloads/Mine) + "Browse TONE3000" (select_tone flow) → tone detail with per-model download/load; emits `loadRequested(kind, path)` |
-| `TempoBar` | `src/ui/TempoBar.h/cpp` | Tempo + metronome strip: `BpmField`, Tap, play (Space), `BeatLeds` accent editor, meter/subdivision/sound/count-in menus, level/pan; emits `bpmChanged`; `poll()` from the meter timer |
-| `TempoSync.h` | `src/ui/` | Note-value table (index order is a preset contract — append only) + ms/Hz conversions; `MainWindow::addTempoSync`/`pushSynced` wire the Sync switches |
-| `Metronome` | `src/dsp/Metronome.h/cpp` | RT click generator mixed after the output gain (not an effect, not metered); samples synthesized in `setSampleRate`; settings are atomics |
-| `MidiInput` | `src/midi/MidiInput.h/cpp` + `AlsaMidiInput.cpp` (Linux) / `WinMidiInput.cpp` (Windows) | Platform MIDI input; backend thread → queued `messageReceived(MidiMessage)`; devices by name, hot-plug, enable set in `midi/disabledDevices` |
-| `MidiMapper` | `src/midi/MidiMapper.h/cpp` | Mappings (CC/note/program × absolute/relative/toggle/momentary, range) → registry knobs/toggles (registered automatically by `knobParam`/`toggleParam`) and actions; Learn; `.nammidi` files; clock → tempo. Tested by `tests/MidiMapperTest` |
+| `Tone3000Client` | `src/net/Tone3000Client.h/cpp` | TONE3000 API: OAuth 2.0 + PKCE via system browser + loopback `QTcpServer` (`http://localhost:51731/callback`), Bearer requests with pre-emptive/401 refresh, 5-min listing cache, 429 back-off, model download → `download_dir()/<creator>/<tone>/` + `.t3k.json` sidecar, disk-cached images. Env: `NAM_TONE3000_API_BASE`, `NAM_TONE3000_NO_BROWSER` |
+| `Tone3000Panel` | `src/ui/Tone3000Panel.h/cpp` | TONE3000 tab: setup (no key) → splash (signed out) → bounded lists (Trending/Latest/Favorites/Downloads/Mine) + "Browse TONE3000" (select_tone flow) → tone detail with per-model download/load; emits `load_requested(kind, path)` |
+| `TempoBar` | `src/ui/TempoBar.h/cpp` | Tempo + metronome strip: `BpmField`, Tap, play (Space), `BeatLeds` accent editor, meter/subdivision/sound/count-in menus, level/pan; emits `bpm_changed`; `poll()` from the meter timer |
+| `TempoSync.h` | `src/ui/` | Note-value table (index order is a preset contract — append only) + ms/Hz conversions; `MainWindow::add_tempo_sync`/`push_synced` wire the Sync switches |
+| `Metronome` | `src/dsp/Metronome.h/cpp` | RT click generator mixed after the output gain (not an effect, not metered); samples synthesized in `set_sample_rate`; settings are atomics |
+| `MidiInput` | `src/midi/MidiInput.h/cpp` + `AlsaMidiInput.cpp` (Linux) / `WinMidiInput.cpp` (Windows) | Platform MIDI input; backend thread → queued `message_received(MidiMessage)`; devices by name, hot-plug, enable set in `midi/disabledDevices` |
+| `MidiMapper` | `src/midi/MidiMapper.h/cpp` | Mappings (CC/note/program × absolute/relative/toggle/momentary, range) → registry knobs/toggles (registered automatically by `knob_param`/`toggle_param`) and actions; Learn; `.nammidi` files; clock → tempo. Tested by `tests/MidiMapperTest` |
 | `MidiMappingsDialog` | `src/ui/MidiMappingsDialog.h/cpp` | MIDI → Mappings… window (devices, table, per-row learn, load/save/defaults) |
-| `VUMeter` | `src/ui/VUMeter.h/cpp` | Vertical peak bar; `setPeak(linear)` on a 66 dB scale, time-based ballistics, repaints only on movement (fed at ~60 fps, paused while minimized) |
-| `GainReductionMeter` | `src/ui/GainReductionMeter.h/cpp` | Compressor/Gate reduction readout in the rows' stereo slot; fed from `takeGainReductionDb()` |
-| `Log.h` | `src/dsp/` | `nam.audio` logging category — use `qCWarning(lcAudio, …)`, never `std::cerr` (invisible on Windows) |
+| `VUMeter` | `src/ui/VUMeter.h/cpp` | Vertical peak bar; `set_peak(linear)` on a 66 dB scale, time-based ballistics, repaints only on movement (fed at ~60 fps, paused while minimized) |
+| `GainReductionMeter` | `src/ui/GainReductionMeter.h/cpp` | Compressor/Gate reduction readout in the rows' stereo slot; fed from `take_gain_reduction_db()` |
+| `Log.h` | `src/dsp/` | `nam.audio` logging category — use `qCWarning(lc_audio, …)`, never `std::cerr` (invisible on Windows) |
 | `KnobWidget` | `src/ui/KnobWidget.h/cpp` | `QDial` wrapper: float range, scroll step, label |
 | `ToggleSwitch` | `src/ui/ToggleSwitch.h/cpp` | Custom-painted on/off switch |
-| `Theme` | `src/ui/Theme.h/cpp` | Fusion + dark palette + app stylesheet; per-effect accents (`tagCard(card, fxId)`) + chrome color accessors — **all colors live here** |
+| `Theme` | `src/ui/Theme.h/cpp` | Fusion + dark palette + app stylesheet; per-effect accents (`tag_card(card, fx_id)`) + chrome color accessors — **all colors live here** |
 | `EffectShortcuts` | `src/ui/EffectShortcuts.h/cpp` | Keyboard toggles for effects (user has Latin American layout) |
 | `Constants.h` | `src/dsp/` | DSP parameter ranges and defaults for all effects |
 
+### Naming
+
+Code follows `gui/CPP_GUIDELINES.md` (Phase 20, 2026-10-01): `snake_case` functions,
+variables and members with no prefixes, `UPPER_CASE` constants, `PascalCase` types; no
+parameter or local reuses a member's name (`new_<x>` / `current_<x>` / `<x>_per_channel`).
+Settings keys, preset JSON keys and effect IDs are data and keep their spelling
+(`effectOrder`, `tone3000/clientId`, …). `gui/.clang-tidy` encodes the naming rules.
+
 ### Parameter registry
 
-`MainWindow::registerParameters()` is the **single source of truth for every user-facing
-parameter**: one `knobParam`/`toggleParam` line per control builds `mParams`
-(`ParamDesc { group, key, widget, defaults, inPreset }`) and wires the widget to the
+`MainWindow::register_parameters()` is the **single source of truth for every user-facing
+parameter**: one `knob_param`/`toggle_param` line per control builds `params`
+(`ParamDesc { group, key, widget, defaults, in_preset }`) and wires the widget to the
 engine via a lambda connect. Preset save/load are single loops over this table; Phase 3
 session persistence and future MIDI mapping consume it too. **When adding an effect
 parameter, register it here — never add hand-written connects, slots, or preset keys.**
 `group`+`key` mirror the preset JSON schema (empty group = top-level key).
-`inPreset = false` keeps a parameter session-only (the tuner): presets neither save nor
+`in_preset = false` keeps a parameter session-only (the tuner): presets neither save nor
 apply it, and it doesn't count toward the preset `*`.
 
 ### Loading files
 
 Every way a model/IR/preset gets loaded — library click, ‹ › arrows, `Library → Import…`
 dialogs, drag-and-drop onto the window, session restore, preset references — goes through
-`MainWindow::loadModelFile` / `loadIRFile` / `loadPresetFile`. They skip a reload of the
+`MainWindow::load_model_file` / `load_ir_file` / `load_preset_file`. They skip a reload of the
 already-loaded path, persist `files/last*`, bump the library recents and mark the loaded
-entry, and refresh the Amplifier/Cabinet hero rows (`updateHeroCards`). Don't call
-`AudioEngine::loadModel`/`loadIR` from the UI directly.
+entry, and refresh the Amplifier/Cabinet hero rows (`update_hero_cards`). Don't call
+`AudioEngine::load_model`/`load_ir` from the UI directly.
 
 ### TONE3000 constraints (free non-commercial tier)
 
 Only the bounded list endpoints (trending, latest, favorited, downloaded, created) and
 the OAuth prompt flows are allowed — **never call `/tones/search`**; catalog search is
-the browser-based `select_tone` flow, which returns a `tone_id` to `authFinished`.
+the browser-based `select_tone` flow, which returns a `tone_id` to `auth_finished`.
 Branding rules are implemented deliberately: full logo on the splash and list header
 before the compact T3K mark appears (Browse button, hero-row origin mark); every card
 shows image, title, gear type, format and creator; the signed-in user is visible.
-The TONE3000 download folder is always scanned by `LibraryIndex` (`withTone3000Dir`),
-and entries carry `t3kToneId`/`t3kModelId` from the sidecar, which `PresetSerializer`'s
+The TONE3000 download folder is always scanned by `LibraryIndex` (`with_tone3000_dir`),
+and entries carry `t3k_tone_id`/`t3k_model_id` from the sidecar, which `PresetSerializer`'s
 caller writes into the preset's `tone3000` object for cross-machine resolution
-(`MainWindow::resolveTone3000Model`).
+(`MainWindow::resolve_tone3000_model`).
 
 ### Persistence
 
@@ -216,7 +224,7 @@ model->prewarm();  // run inference on silence to settle state
 model->process(NAM_SAMPLE** inputs, NAM_SAMPLE** outputs, int numFrames);
 ```
 
-`NAM_SAMPLE` is `float` when compiled with `-DNAM_SAMPLE_FLOAT` (set in `gui/CMakeLists.txt`, along with `-DNAM_ENABLE_A2_FAST` for the fast-path WaveNet). Models are loaded via `nam::get_dsp(std::filesystem::path)` from `NAM/get_dsp.h`. A model `Reset` to buffer size N must never be fed more than N frames — the core only asserts, and Release strips asserts. `NamProcessor` guards this: `prepareBuffer` re-`Reset()`s live models when the max grows, and `process()` bypasses oversized blocks.
+`NAM_SAMPLE` is `float` when compiled with `-DNAM_SAMPLE_FLOAT` (set in `gui/CMakeLists.txt`, along with `-DNAM_ENABLE_A2_FAST` for the fast-path WaveNet). Models are loaded via `nam::get_dsp(std::filesystem::path)` from `NAM/get_dsp.h`. A model `Reset` to buffer size N must never be fed more than N frames — the core only asserts, and Release strips asserts. `NamProcessor` guards this: `prepare_buffer` re-`Reset()`s live models when the max grows, and `process()` bypasses oversized blocks.
 
 ## CMake notes
 
