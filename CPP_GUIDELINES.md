@@ -44,7 +44,9 @@ everywhere.
   `release_ms`, `threshold_db`, `rate_hz`, `MAX_GR_DB`.
 - **Library names stay as the library spells them.** Qt (and std, Eigen…) API is
   used as-is, and overrides keep the base-class name (`paintEvent`,
-  `mousePressEvent`, `sizeHint`). Everything we declare ourselves follows the table.
+  `mousePressEvent`, `sizeHint`), and so do names a framework looks up by spelling
+  (Qt Test's `initTestCase` / `cleanupTestCase`, `Q_PROPERTY` accessors). Everything we
+  declare ourselves follows the table.
 
 ### Data members and accessors
 

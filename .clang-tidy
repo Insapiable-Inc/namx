@@ -15,6 +15,8 @@ CheckOptions:
   readability-identifier-naming.TemplateParameterCase: CamelCase
   readability-identifier-naming.FunctionCase: lower_case
   readability-identifier-naming.MethodCase: lower_case
+  # Qt Test finds these slots by name.
+  readability-identifier-naming.MethodIgnoredRegexp: '^(initTestCase|cleanupTestCase)$'
   readability-identifier-naming.VariableCase: lower_case
   readability-identifier-naming.ParameterCase: lower_case
   readability-identifier-naming.MemberCase: lower_case

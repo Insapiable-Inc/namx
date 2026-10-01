@@ -232,7 +232,7 @@ class DspGoldenTest : public QObject
     Q_OBJECT
 
 private slots:
-    void init_test_case();
+    void initTestCase();
     void effects_data();
     void effects();
     void tuner_detects_pitch();
@@ -244,7 +244,7 @@ private:
     bool print_mode = false;
 };
 
-void DspGoldenTest::init_test_case() {
+void DspGoldenTest::initTestCase() {
     enable_flush_to_zero(); // same MXCSR as the backends' audio threads
     print_mode = qEnvironmentVariableIsSet("NAM_GOLDEN_PRINT");
     QVERIFY(temp_dir.isValid());
