@@ -52,6 +52,11 @@ QColor led_green(); // in tune
 QColor led_red(); // off pitch
 QColor display_bg(); // near-black LED panel
 
+// Chilean flag ("Made in Chile" badge in the menu bar).
+QColor flag_blue();
+QColor flag_red();
+QColor flag_white();
+
 // Tags a card with its effect ID: sets the `fx` dynamic property (drives the
 // per-effect QSS rules) and overrides QPalette::Highlight so descendant
 // knobs/switches pick up the accent without individual tagging.

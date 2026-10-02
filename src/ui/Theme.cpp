@@ -94,6 +94,15 @@ QColor led_red() {
 QColor display_bg() {
     return QColor("#07080c");
 }
+QColor flag_blue() {
+    return QColor("#0039a6");
+}
+QColor flag_red() {
+    return QColor("#d52b1e");
+}
+QColor flag_white() {
+    return QColor("#ffffff");
+}
 
 void tag_card(QWidget* card, const QString& fx_id) {
     if (!card) {
@@ -129,6 +138,10 @@ QWidget {
 }
 
 /* === Menu bar === */
+QLabel#madeInChile {
+    color: #d8dee9;
+    font-weight: 600;
+}
 QMenuBar {
     background-color: #1a1d24;
     color: #d8dee9;

@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <numbers>
 
 #include <QAction>
 #include <QApplication>
@@ -29,6 +30,9 @@
 #include <QMessageBox>
 #include <QMimeData>
 #include <QMouseEvent>
+#include <QPainter>
+#include <QPixmap>
+#include <QPolygonF>
 #include <QPushButton>
 #include <QScrollArea>
 #include <QSettings>
@@ -156,6 +160,56 @@ static QHBoxLayout* row_layout(QWidget* card) {
 }
 
 // A switch with a fixed caption beside it ("Vibe"), for an either/or mode.
+// The Chilean flag, `height` px tall (3:2): blue canton with a white star over
+// a white band, red lower half. Painted rather than an emoji so it shows the
+// same everywhere (Windows has no flag emoji).
+static QPixmap chile_flag(int height, qreal dpr) {
+    const qreal w = height * 1.5;
+    const qreal h = height;
+    QPixmap pm(QSize(qRound(w * dpr), qRound(h * dpr)));
+    pm.setDevicePixelRatio(dpr);
+    pm.fill(Qt::transparent);
+    QPainter p(&pm);
+    p.setRenderHint(QPainter::Antialiasing);
+    p.setPen(Qt::NoPen);
+    p.setBrush(Theme::flag_white());
+    p.drawRect(QRectF(0, 0, w, h / 2));
+    p.setBrush(Theme::flag_red());
+    p.drawRect(QRectF(0, h / 2, w, h / 2));
+    const QRectF canton(0, 0, h / 2, h / 2);
+    p.setBrush(Theme::flag_blue());
+    p.drawRect(canton);
+
+    // Five-pointed star, its diameter half the canton's side.
+    const qreal outer = canton.width() / 4.0;
+    const qreal inner = outer * 0.382;
+    QPolygonF star;
+    for (int i = 0; i < 10; ++i) {
+        const qreal r = i % 2 == 0 ? outer : inner;
+        const qreal a = -std::numbers::pi / 2 + i * std::numbers::pi / 5;
+        star << canton.center() + QPointF(r * std::cos(a), r * std::sin(a));
+    }
+    p.setBrush(Theme::flag_white());
+    p.drawPolygon(star);
+    return pm;
+}
+
+// "Made in Chile" + flag, in the menu bar's right corner.
+static QWidget* make_made_in_chile() {
+    auto* w = new QWidget;
+    auto* lay = new QHBoxLayout(w);
+    lay->setContentsMargins(0, 0, 10, 0);
+    lay->setSpacing(7);
+    auto* text = new QLabel("Made in Chile");
+    text->setObjectName("madeInChile");
+    auto* flag = new QLabel;
+    flag->setPixmap(chile_flag(14, qApp->devicePixelRatio()));
+    lay->addWidget(text, 0, Qt::AlignVCenter);
+    lay->addWidget(flag, 0, Qt::AlignVCenter);
+    w->setToolTip("Hecho en Chile");
+    return w;
+}
+
 static QWidget* make_caption_switch(ToggleSwitch* sw, const QString& caption) {
     auto* w = new QWidget;
     auto* lay = new QHBoxLayout(w);
@@ -475,6 +529,7 @@ void MainWindow::setup_ui() {
     QMenu* midi_top_menu = nullptr;
     {
         QMenuBar* mb = menuBar();
+        mb->setCornerWidget(make_made_in_chile(), Qt::TopRightCorner);
         preset_menu = mb->addMenu("Preset");
         QAction* act_save = preset_menu->addAction("Save");
         act_save->setShortcut(QKeySequence::Save); // Ctrl+S
