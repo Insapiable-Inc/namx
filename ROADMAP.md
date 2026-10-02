@@ -36,7 +36,8 @@ Decisions:
   the same day: `gui/LICENSE`, PKGBUILD, AppStream, Windows zip, README.
 - **Execution order:** 7 → 11 → 12 → 8 (packaging) → **tag v1.0** → 13 → 14 →
   15 (absorbs Phase 10 tempo) → 16 → 17 → 20 (C++ guidelines, decided 2026-10-01)
-  → 18 → 19 → 21 (ASIO, last: needs a Windows machine); Phase 9 (knob tapers) slots in
+  → 18 → 22 (DSP quality, added 2026-10-01 as the immediate next milestone) → 19
+  → 21 (ASIO, last: needs a Windows machine); Phase 9 (knob tapers) slots in
   wherever a knob-heavy phase touches the widgets (17 at the latest).
 
 ---
@@ -875,6 +876,27 @@ place where the numbers are edited. Options weighed on 2026-10-01:
   filled by position (struct order = spec order, guarded by a test).
 - Whichever is picked: golden test bit-identical at every step, plus a test that the
   8 starter presets load to the same values.
+
+## Phase 22 — DSP quality: state-of-the-art effects (added 2026-10-01; runs next, before 19)
+
+Research in `gui/DSP_RESEARCH.md` (options per effect, real-time flags, licenses,
+sources). Each step keeps the golden test green for effects it doesn't touch, re-records
+it for the one it replaces, and is measured with `NAMPlayerBench`.
+
+- [ ] **Pitch shifter:** Signalsmith Stretch (MIT) behind `PitchShifter`, A/B'd against
+      today's WSOLA on distorted chords; latency measured. Then a < 10 ms
+      filter-bank shifter (Juillerat 2008) as a "Low latency" mode for drop tuning.
+- [ ] **Partitioned FFT convolution** for the cabinet (lifts the IR length cap, cuts
+      CPU) — the engine IR reverbs need.
+- [ ] **Reverb:** Freeverb → Dattorro plate + FDN hall/room; then IR reverb.
+- [ ] **Drive:** a second NAM slot ("Pedal") before the amp for OD/boost captures;
+      later a WDF Tube Screamer with anti-aliasing for the built-in Drive.
+- [ ] **Modulation:** BBD core for Chorus/Flanger (+ analog Delay mode); virtual-analog
+      Uni-Vibe (lamp + photocells + 4 staggered stages).
+- [ ] **Wah:** Crybaby nodal-DK model; **Delay:** tape mode (ChowTape model);
+      **Compressor:** smooth-branching detector + soft knee.
+- [ ] Re-enable Shimmer and Crystals on the new high-quality shifter (latency is
+      irrelevant inside tails).
 
 ## Phase 21 — Windows audio: WASAPI exclusive + ASIO (added 2026-10-01; last — no Windows machine to test on yet)
 
