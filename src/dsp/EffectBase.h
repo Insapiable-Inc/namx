@@ -58,6 +58,12 @@ public:
 
     virtual void reset() = 0;
 
+    // Processing latency this effect adds to the signal right now, in ms (0 for most).
+    // Any thread: implementations read atomics only.
+    virtual double latency_ms() const {
+        return 0.0;
+    }
+
     // Ask the audio thread to reset() this effect at the top of its next
     // block (used on chain reorder to drop stale per-channel/tail state).
     // reset() implementations must stay allocation-free for this to be RT-safe.

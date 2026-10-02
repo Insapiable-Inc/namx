@@ -145,16 +145,34 @@ void AudioStatusBar::update_metrics() {
         if (sr > 0.0 && bs > 0) {
             const QString one = QString("%1 ms").arg(bs / sr * 1000.0, 0, 'f', 1);
             const int io = engine.io_latency_frames();
+            // What the effects add on top of the I/O (review item 28): Transpose,
+            // resampling, the limiter's look-ahead.
+            double fx_ms = 0.0;
+            QStringList fx_parts;
+            for (const auto& src : engine.processing_latency()) {
+                fx_ms += src.ms;
+                fx_parts << QString("%1 %2 ms")
+                                .arg(QString::fromStdString(src.name))
+                                .arg(src.ms, 0, 'f', src.ms < 10.0 ? 1 : 0);
+            }
+            const QString fx_tip =
+                fx_parts.isEmpty() ? QString() : "\nProcessing adds " + fx_parts.join(", ") + ".";
             if (io > 0) {
-                latency = QString("Round trip %1 ms").arg(io / sr * 1000.0, 0, 'f', 1);
-                latency_tip = QString("Input → output latency reported by the audio server "
-                                      "(%1 frames). One buffer is %2.")
+                latency = QString("Round trip %1 ms").arg(io / sr * 1000.0 + fx_ms, 0, 'f', 1);
+                latency_tip = QString("Input → output latency: %1 ms reported by the audio "
+                                      "server (%2 frames; one buffer is %3)")
+                                  .arg(io / sr * 1000.0, 0, 'f', 1)
                                   .arg(io)
-                                  .arg(one);
+                                  .arg(one) +
+                              (fx_parts.isEmpty() ? QString(".") : QString(".") + fx_tip);
             } else {
-                latency = one;
+                latency = fx_ms > 0.0 ? QString("%1 ms + %2 ms processing")
+                                            .arg(bs / sr * 1000.0, 0, 'f', 1)
+                                            .arg(fx_ms, 0, 'f', 1)
+                                      : one;
                 latency_tip = "One buffer of latency (buffer size ÷ sample rate); "
-                              "the server doesn't report the full round trip";
+                              "the server doesn't report the full round trip." +
+                              fx_tip;
             }
         }
     }

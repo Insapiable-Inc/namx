@@ -44,6 +44,11 @@ public:
         return resampled_model_rate.load(std::memory_order_relaxed);
     }
 
+    // The resampler's delay while resampling (see get_resampled_model_rate).
+    double latency_ms() const override {
+        return enabled.load() ? resample_latency_ms.load(std::memory_order_relaxed) : 0.0;
+    }
+
     // Human-readable reason the last loadModel() returned false (GUI thread only).
     string get_last_error() const {
         return last_error;
@@ -117,6 +122,8 @@ private:
     string last_error; // GUI thread only
     atomic<size_t> max_buf{0};
     atomic<double> resampled_model_rate{0.0}; // see get_resampled_model_rate()
+    atomic<double> resample_latency_ms{0.0}; // see latency_ms()
+    void publish_resampling(const ModelPair* p); // updates the two atomics above
     atomic<bool> stereo_amp{false};
     double model_rate{0.0}; // engine SR as last propagated (guarded by model_mutex)
     vector<float> scratch_l, scratch_r;

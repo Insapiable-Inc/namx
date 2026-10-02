@@ -1,6 +1,7 @@
 #pragma once
 
 #include <atomic>
+#include <cmath>
 
 #include "Common.h"
 #include "EffectBase.h"
@@ -28,6 +29,14 @@ public:
     void set_continuous(bool on) {
         continuous.store(on);
     }
+    // Shifting (or ready to, in continuous mode): about half the shifter's window.
+    double latency_ms() const override {
+        const bool shifting = std::abs(semis.load()) >= 0.01f || continuous.load();
+        return enabled.load() && shifting && sample_rate > 0.0
+                   ? shift[0].latency_samples() / sample_rate * 1000.0
+                   : 0.0;
+    }
+
     void set_mix_pct(float pct) {
         mix_pct.store(pct);
     }

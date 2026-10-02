@@ -30,6 +30,11 @@ public:
 
     void process(float* l, float* r, size_t n);
 
+    // The look-ahead delay while on, in ms. Any thread.
+    double latency_ms() const {
+        return enabled.load() ? look_ms.load(std::memory_order_relaxed) : 0.0;
+    }
+
 private:
     atomic<bool> enabled{false};
     atomic<float> gr_peak_db{0.0f};
@@ -37,6 +42,7 @@ private:
         need_window; // look-ahead lines + required gain per slot
     size_t pos = 0;
     size_t look = 48; // look-ahead, samples
+    atomic<double> look_ms{1.0};
     float gain = 1.0f;
     float release = 0.9997f;
     float attack = 0.2f;

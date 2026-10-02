@@ -23,6 +23,12 @@ namespace npl
 class PitchShifter
 {
 public:
+    // Average delay of the shifted signal: half the window (the WSOLA re-alignment
+    // moves it by up to ±12 ms around that).
+    double latency_samples() const {
+        return 0.5 * static_cast<double>(window);
+    }
+
     void prepare(double sr, float window_ms = 50.0f) {
         window = std::max(64.0f, static_cast<float>(sr) * window_ms / 1000.0f);
         search = std::max(8, static_cast<int>(sr * 0.012));

@@ -239,6 +239,15 @@ public:
             backend->reset_xruns();
         }
     }
+    // Processing latency the chain adds right now (effects + output limiter), each
+    // nonzero source with a display name. GUI thread.
+    struct LatencySource
+    {
+        string name;
+        double ms;
+    };
+    vector<LatencySource> processing_latency() const;
+
     int io_latency_frames() const {
         return backend ? backend->io_latency_frames() : -1;
     }

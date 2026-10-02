@@ -12,6 +12,7 @@ static constexpr float CEILING = 0.96605f; // −0.3 dBFS
 
 void OutputLimiter::set_sample_rate(double sr) {
     look = std::max<size_t>(1, static_cast<size_t>(sr * 0.001));
+    look_ms.store(static_cast<double>(look) / sr * 1000.0);
     delay_l.assign(look, 0.0f);
     delay_r.assign(look, 0.0f);
     need_window.assign(look, 1.0f);

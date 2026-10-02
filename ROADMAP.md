@@ -925,7 +925,7 @@ for the backend work (Phase 21), and a second full review follows the big change
       19 (mono→stereo exposes stale right-channel state), 21 (model change freezes
       the GUI, double prewarm), ~~22~~ (done 2026-10-02),
       ~~23~~ (done 2026-10-02), 24 (IR truncation silent/abrupt),
-      26 (limiter scans the whole look-ahead per sample), ~~27~~ (done 2026-10-02), 28 (reported latency omits effect delays).
+      26 (limiter scans the whole look-ahead per sample), ~~27~~ (done 2026-10-02), ~~28~~ (done 2026-10-02).
 - [ ] Belong elsewhere: 20 (bypass cuts tails → "Trails", with Phase 22),
       25 (direct IR convolution cost → Phase 22's FFT convolution), 29–31 (WASAPI
       device loss, clock drift, capture averaging → Phase 21), 12–13 also touch

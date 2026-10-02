@@ -365,4 +365,18 @@ void AudioEngine::process_block(const float* in, float* out_l, float* out_r, siz
     limiter.process(out_l, out_r, n);
 }
 
+vector<AudioEngine::LatencySource> AudioEngine::processing_latency() const {
+    vector<LatencySource> out;
+    if (const double ms = transpose.latency_ms(); ms > 0.0) {
+        out.push_back({"Transpose", ms});
+    }
+    if (const double ms = nam.latency_ms(); ms > 0.0) {
+        out.push_back({"Amplifier resampling", ms});
+    }
+    if (const double ms = limiter.latency_ms(); ms > 0.0) {
+        out.push_back({"Output limiter", ms});
+    }
+    return out;
+}
+
 } // namespace npl
