@@ -141,7 +141,7 @@ All effects inherit `EffectBase` (`src/dsp/EffectBase.h` — the header comment 
 | `DelayProcessor` | `src/dsp/DelayProcessor.h/cpp` | Ping-pong stereo delay |
 | `ReverbProcessor` | `src/dsp/ReverbProcessor.h/cpp` | Freeverb (8 comb + 4 all-pass, stereo) + pre-delay, wet cuts (shimmer in the DSP, its knob disabled) |
 | `DriveProcessor`, `VolumeProcessor`, `TransposeProcessor` | `src/dsp/…` | Phase 17 stages: TS-style drive, volume pedal with mid-point, ±12 st transpose |
-| `PitchShifter` | `src/dsp/PitchShifter.h` | Two-tap Hann delay-line shifter with WSOLA re-alignment (Transpose, Shimmer, Crystals) |
+| `PitchShifter` | `src/dsp/PitchShifter.h` | Two-tap Hann delay-line shifter with WSOLA re-alignment (Transpose; Shimmer and Crystals are in the DSP with their knobs disabled) |
 | `OutputLimiter` | `src/dsp/OutputLimiter.h/cpp` | Output-stage look-ahead limiter (not an effect; registry key `limiter`) |
 | `MainWindow` | `src/ui/MainWindow.h/cpp` | Window assembly, parameter registry, effect strip + DnD reorder, session state |
 | `ParamRegistry.h` | `src/ui/` | `ParamDesc` — one entry per user-facing parameter (shared by MainWindow + PresetSerializer) |

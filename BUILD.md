@@ -485,14 +485,14 @@ switch is on, which runs the model once per channel at twice the CPU.
 | Dynamic Wah | Mix, Sensitivity, Resonance, Mode (Auto / Pedal), Position | — |
 | Flanger / Phaser / Chorus | Mix, Rate (Sync), Depth, Feedback (not Chorus); Flanger **Range**; Phaser **Vibe** switch (off = classic) | — |
 | Equalizer | Bass, Middle, High-Mid, Treble (±12 dB) | the four band frequencies, Low Cut, High Cut |
-| Delay | Mix, Time (Sync), Feedback | R Time, Cross-feed, Low/High Cut, Saturation, Modulation, Crystals |
+| Delay | Mix, Time (Sync), Feedback (ping-pong in stereo) | R Time, Low/High Cut, Saturation, Modulation |
 | Reverb | Mix, Decay, Damping, Width | Pre-delay, Low/High Cut |
 | Cabinet | IR A (library, ‹ ›) | Level/Pan/Ø A, Blend, Low/High Cut · IR B (‹ ›, Choose…, ×), Level/Pan/Ø B |
 | Volume Pedal | Volume, Mid (level at half travel) | — |
 | Output | Gain, **Limit** (look-ahead limiter at −0.3 dBFS) | — |
 
-Times, rates and frequencies use logarithmic knobs. Transpose and Crystals use
-the built-in pitch shifter, which adds about 30 ms of latency while it's active.
+Times, rates and frequencies use logarithmic knobs. Transpose uses the built-in pitch
+shifter, which adds about 30 ms of latency while it's active.
 
 ---
 

@@ -1009,13 +1009,15 @@ void MainWindow::setup_ui() {
                     },
                     "Right repeat time as a share of Time (stereo): 75 % or 150 % for a wide, "
                     "uneven bounce"),
-                make_delay_pct_knob(
-                    "crossFeed", "Cross-feed", DELAY_CROSS_MIN, DELAY_CROSS_MAX,
-                    DELAY_CROSS_DEFAULT,
-                    [this](double v) {
-                        engine->get_delay().set_cross_feed(static_cast<float>(v));
-                    },
-                    "100 % = ping-pong between the sides · 0 % = two separate echoes"),
+                // GUIDELINE EXCEPTION (commented-out code, user's call 2026-10-01): Cross-feed is
+                // off — the delay stays ping-pong (its 100 % default).
+                // make_delay_pct_knob(
+                //     "crossFeed", "Cross-feed", DELAY_CROSS_MIN, DELAY_CROSS_MAX,
+                //     DELAY_CROSS_DEFAULT,
+                //     [this](double v) {
+                //         engine->get_delay().set_cross_feed(static_cast<float>(v));
+                //     },
+                //     "100 % = ping-pong between the sides · 0 % = two separate echoes"),
                 low_cut,
                 high_cut,
                 make_delay_pct_knob(
@@ -1030,12 +1032,14 @@ void MainWindow::setup_ui() {
                         engine->get_delay().set_modulation(static_cast<float>(v));
                     },
                     "Wobble on the repeats (tape flutter / chorused echoes)"),
-                make_delay_pct_knob(
-                    "crystals", "Crystals", 0.0, 100.0, 0.0,
-                    [this](double v) {
-                        engine->get_delay().set_crystals(static_cast<float>(v));
-                    },
-                    "Octave-up repeats: each echo climbs higher"),
+                // GUIDELINE EXCEPTION (commented-out code, user's call 2026-10-01): Crystals is off
+                // (pitch shifter quality); repeats stay at their pitch.
+                // make_delay_pct_knob(
+                //     "crystals", "Crystals", 0.0, 100.0, 0.0,
+                //     [this](double v) {
+                //         engine->get_delay().set_crystals(static_cast<float>(v));
+                //     },
+                //     "Octave-up repeats: each echo climbs higher"),
             });
         sw_delay_stereo->setChecked(true);
         Theme::tag_card(col, "delay");
