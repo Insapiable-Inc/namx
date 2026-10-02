@@ -993,6 +993,47 @@ effect in `MainWindow`, registry groups = effect IDs (`delay/mix`), the session 
 - [ ] Manual check: two delays in series, a removed effect staying removed after a
       preset reload, an old v2 preset and an old session loading as before.
 
+## Phase 25 — TONE3000: compliance or removal (added 2026-10-02; decide before the v1.0 tag)
+
+TONE3000's API page (https://www.tone3000.com/api#design-requirements) sets design
+requirements for apps using it. Checked 2026-10-02: the OAuth select flow, the
+bounded list endpoints only (no `/tones/search`), the splash copy (their recommended
+wording, verbatim), the list cards (image, title, gear type, format, creator +
+avatar), the signed-in user, the persistent "Browse TONE3000…" path, the tone detail
+(image, creator, description, per-model load/download) and the logo-before-mark
+order already comply. **Decide first: bring the gaps into compliance, or remove the
+integration** (it reverses the north-star decision "Library + TONE3000 ship in v1.0").
+
+**Path A — compliance (the four gaps):**
+- [ ] **Entry point in the signal block:** "the TONE3000 entry point is associated
+      with adding a tone to a signal block" — add a TONE3000 entry on the Amplifier and
+      Cabinet rows (next to ‹ ›) that opens the TONE3000 tab (the splash when signed
+      out). Today it is only the dock tab and Library → Browse TONE3000….
+- [ ] **Loaded tone image in the signal block:** show the tone's image beside the T3K
+      mark on the Amplifier/Cabinet rows; cache it next to the download (sidecar) so it
+      shows offline. Pack title, gear type, format and creator where space allows.
+- [ ] **"Discover more" in partial lists:** a last card in Trending / Latest / … that
+      invites to the full catalog (opens the select flow).
+- [ ] **Tab names:** "Mine" → **Created**, "Downloads" → **Downloaded** (required tabs:
+      Favorites, Created, Downloaded).
+- [ ] Not code (user): register the app (the Phase 12 key prerequisite) and, for
+      production, ask support@tone3000.com about the 100 requests/min default limit.
+      The free tier is non-commercial — fine while the app is free; selling it needs
+      their commercial agreement and sign-off before release.
+
+**Path B — removal:**
+- [ ] Remove `Tone3000Client`, `Tone3000Panel`, the dock's TONE3000 tab, the
+      Library → Browse TONE3000… action, the hero-row T3K origin mark, the TONE3000
+      folder scan (`with_tone3000_dir`) and sidecar fields, `resources/tone3000/`,
+      `Tone3000ClientTest` + `mock_tone3000.py`, the `NAM_TONE3000_CLIENT_ID` option,
+      and the BUILD.md / CLAUDE.md / ROADMAP sections about it.
+- [ ] Keep old data harmless: presets with a `tone3000` object still load (the object
+      is ignored; the embedded `namPath`/`irPath` keep working); already downloaded
+      models stay in the library as plain files (the user's download folder can be
+      added as a normal library root); stale `tone3000/*` QSettings keys (including
+      tokens) are deleted once.
+- [ ] Update the north star (decision reversed, with the date and the reason).
+
 ## Phase 21 — Windows audio: WASAPI exclusive + ASIO (added 2026-10-01; last — no Windows machine to test on yet)
 
 - [ ] **WASAPI exclusive mode** (from Phase 18): shared mode's 10–20 ms is not a guitar
