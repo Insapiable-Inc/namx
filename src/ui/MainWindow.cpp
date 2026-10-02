@@ -169,6 +169,12 @@ static QWidget* make_caption_switch(ToggleSwitch* sw, const QString& caption) {
     return w;
 }
 
+// Puts `w` in a card's Sync column (the column right of Stereo).
+static void put_in_sync_column(QWidget* card, QWidget* w) {
+    QWidget* slot = card->findChild<QWidget*>("syncSlot");
+    static_cast<QHBoxLayout*>(slot->layout())->addWidget(w, 0, Qt::AlignVCenter);
+}
+
 // Adds `w` at the end of a card's main row, after its knobs.
 static void append_to_row(QWidget* card, QWidget* w) {
     QHBoxLayout* lay = row_layout(card);
@@ -707,16 +713,23 @@ void MainWindow::setup_ui() {
         knob_wah_res->set_scroll_step(1.0);
         knob_wah_mix->set_scroll_step(1.0);
 
-        KnobWidget* mode =
-            late_knob("dynamicWah", "mode", new KnobWidget("Mode", 0, 1, 0), [this](double v) {
-                engine->get_wah().set_pedal_mode(v > 0.5);
-            });
-        mode->set_snap(1.0);
-        mode->set_value_formatter([](double v) {
-            return v > 0.5 ? QString("Pedal") : QString("Auto");
-        });
-        mode->setToolTip("Auto: the envelope sweeps the wah · Pedal: Position sweeps it (map an "
-                         "expression pedal)");
+        // Mode: Auto, or Pedal when switched on (registered as "dynamicWah/mode").
+        sw_wah_pedal = new ToggleSwitch;
+        sw_wah_pedal->setCheckable(true);
+        sw_wah_pedal->setToolTip("Pedal: Position sweeps the wah (map an expression pedal) · "
+                                 "off = Auto: the playing envelope sweeps it");
+        // GUIDELINE EXCEPTION (commented-out code, user's call 2026-10-01): the Mode knob
+        // this switch replaced, kept for reference.
+        // KnobWidget* mode =
+        //     late_knob("dynamicWah", "mode", new KnobWidget("Mode", 0, 1, 0), [this](double v) {
+        //         engine->get_wah().set_pedal_mode(v > 0.5);
+        //     });
+        // mode->set_snap(1.0);
+        // mode->set_value_formatter([](double v) {
+        //     return v > 0.5 ? QString("Pedal") : QString("Auto");
+        // });
+        // mode->setToolTip("Auto: the envelope sweeps the wah · Pedal: Position sweeps it (map an "
+        //                  "expression pedal)");
         KnobWidget* pos = late_knob("dynamicWah", "position",
                                     new KnobWidget("Position", WAH_POSITION_MIN, WAH_POSITION_MAX,
                                                    WAH_POSITION_DEFAULT, "%"),
@@ -725,7 +738,8 @@ void MainWindow::setup_ui() {
                                     });
         pos->set_scroll_step(1.0);
         QWidget* col = make_effect_row("Dynamic Wah", sw_wah_enable,
-                                       {knob_wah_mix, knob_wah_sens, knob_wah_res, mode, pos});
+                                       {knob_wah_mix, knob_wah_sens, knob_wah_res, pos});
+        put_in_sync_column(col, make_caption_switch(sw_wah_pedal, "Pedal"));
         Theme::tag_card(col, "wah");
 
         fx_cols[&engine->get_wah()] = col;
@@ -1492,10 +1506,10 @@ void MainWindow::make_hero_controls(QWidget* card, LibraryEntry::Kind kind, QLab
     meta_out = new QLabel;
     meta_out->setObjectName("fileMeta");
 
-    // After grip, name, enable, stereo and sync slots: starts at the knob column.
+    // ‹ › in the Sync column; the file name starts at the knob column.
+    put_in_sync_column(card, prev);
+    put_in_sync_column(card, next);
     int i = lay->indexOf(card->findChild<QWidget*>("syncSlot")) + 1;
-    lay->insertWidget(i++, prev, 0, Qt::AlignVCenter);
-    lay->insertWidget(i++, next, 0, Qt::AlignVCenter);
     lay->insertWidget(i++, origin_out, 0, Qt::AlignVCenter);
     lay->insertWidget(i++, name_out, 0, Qt::AlignVCenter);
     lay->insertWidget(i++, meta_out, 1, Qt::AlignVCenter);
@@ -2495,6 +2509,9 @@ void MainWindow::register_parameters() {
 
     toggle_param("dynamicWah", "enabled", sw_wah_enable, [e](bool b) {
         e->get_wah().set_enabled(b);
+    });
+    toggle_param("dynamicWah", "mode", sw_wah_pedal, [e](bool b) {
+        e->get_wah().set_pedal_mode(b);
     });
     knob_param("dynamicWah", "sensitivity", knob_wah_sens, [e](double v) {
         e->get_wah().set_sensitivity_pct(static_cast<float>(v));
