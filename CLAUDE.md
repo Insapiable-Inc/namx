@@ -102,7 +102,7 @@ mono input → input gain (smoothed)
   → Volume pedal (first in the effects loop) → EQ
   → Chorus → Tremolo → Delay → Reverb                              (stereo-capable)
   → Cabinet (one IR in the UI; the DSP has a second slot, its controls disabled)
-  → output gain (smoothed) → output limiter → meter → + metronome → stereo out (L, R)
+  → output gain (smoothed) → meter (guitar) → + metronome → output limiter → stereo out (L, R)
 ```
 
 Cards have a main row and optional ▾ detail rows (`MainWindow::add_detail_row`) for advanced knobs; those knobs register through `late_knob` (deferred `knob_param`) so they don't need named members.
@@ -159,7 +159,7 @@ All effects inherit `EffectBase` (`src/dsp/EffectBase.h` — the header comment 
 | `TempoBar` | `src/ui/TempoBar.h/cpp` | Tempo + metronome strip: BPM `NumberField`, Tap, play (Space), `BeatLeds` accent editor, meter/subdivision/sound/count-in menus, level/pan; emits `bpm_changed`; `poll()` from the meter timer |
 | `NumberField` | `src/ui/NumberField.h/cpp` | Drag / scroll / click-to-type numeric readout with a unit (tempo BPM, tuner A4 reference) |
 | `TempoSync.h` | `src/ui/` | Note-value table (index order is a preset contract — append only) + ms/Hz conversions; `MainWindow::add_tempo_sync`/`push_synced` wire the Sync switches |
-| `Metronome` | `src/dsp/Metronome.h/cpp` | RT click generator mixed after the output gain (not an effect, not metered); samples synthesized in `set_sample_rate`; settings are atomics |
+| `Metronome` | `src/dsp/Metronome.h/cpp` | RT click generator mixed after the output gain and meter, before the limiter (not an effect, not metered); samples synthesized in `set_sample_rate`; settings are atomics |
 | `MidiInput` | `src/midi/MidiInput.h/cpp` + `AlsaMidiInput.cpp` (Linux) / `WinMidiInput.cpp` (Windows) | Platform MIDI input; backend thread → queued `message_received(MidiMessage)`; devices by name, hot-plug, enable set in `midi/disabledDevices` |
 | `MidiMapper` | `src/midi/MidiMapper.h/cpp` | Mappings (CC/note/program × absolute/relative/toggle/momentary, range) → registry knobs/toggles (registered automatically by `knob_param`/`toggle_param`) and actions; Learn; `.nammidi` files; clock → tempo. Tested by `tests/MidiMapperTest` |
 | `MidiMappingsDialog` | `src/ui/MidiMappingsDialog.h/cpp` | MIDI → Mappings… window (devices, table, per-row learn, load/save/defaults) |

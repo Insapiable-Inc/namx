@@ -347,9 +347,9 @@ void AudioEngine::process_block(const float* in, float* out_l, float* out_r, siz
         out_r[i] = work_buf_r[i] * output_gain_smooth;
     }
 
-    // 4. Output limiter (look-ahead; a no-op when off), then the meter, so
-    //    it shows what actually leaves the app.
-    limiter.process(out_l, out_r, n);
+    // 4. The output meter: the guitar at the output stage, before the click is
+    //    added and before the limiter — red means the limiter is (or would be)
+    //    catching peaks.
     float out_peak = 0.0f;
     for (size_t i = 0; i < n; ++i) {
         out_peak = std::max(out_peak, std::max(std::abs(out_l[i]), std::abs(out_r[i])));
@@ -358,9 +358,11 @@ void AudioEngine::process_block(const float* in, float* out_l, float* out_r, siz
         output_peak.store(out_peak, std::memory_order_relaxed);
     }
 
-    // 5. Metronome on top: own volume/pan, after the meter so the VU shows
-    //    the guitar only.
+    // 5. Metronome (own volume/pan), then the limiter (look-ahead; a no-op when
+    //    off) as the very last stage, so it guards everything that leaves the app —
+    //    guitar plus click (review item 27).
     metronome.process(out_l, out_r, n);
+    limiter.process(out_l, out_r, n);
 }
 
 } // namespace npl

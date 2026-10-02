@@ -481,7 +481,7 @@ the effects loop, after the amp, so it swells the level without changing the amp
 ```
 input ─▶ Input Gain ─▶ Tuner ─▶ Transpose ─▶ Noise Gate ─▶ Compressor ─▶ Wah ─▶ Flanger ─▶ Phaser ─▶ Drive
       ─▶ Amplifier (NAM) ─▶ Volume Pedal ─▶ Equalizer ─▶ Chorus ─▶ Tremolo ─▶ Delay ─▶ Reverb
-      ─▶ Cabinet (IR A + IR B) ─▶ Output Gain ─▶ Limiter ─▶ (+ metronome) ─▶ output L/R
+      ─▶ Cabinet (IR A + IR B) ─▶ Output Gain ─▶ (+ metronome) ─▶ Limiter ─▶ output L/R
 ```
 
 The chain starts mono. Effects in stereo mode (Chorus, Tremolo, Delay, Reverb by
