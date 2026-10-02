@@ -898,7 +898,7 @@ for the backend work (Phase 21), and a second full review follows the big change
       WaveNet) — validate the weight count before construction.
 - [x] **03** (done 2026-10-02: LSTM dimensions and weight count validated before allocating) LSTM `input_size` vs channel count disagree → out-of-bounds write
       (`NAM/lstm.cpp`).
-- [ ] **04** EQ `reset()` on the audio thread races the GUI's `rebuild()` (before
+- [x] **04** (done 2026-10-02 with 18: lock-free EQ — atomics + version, the audio thread owns all filter state; TSan: 16 races before, 0 after) EQ `reset()` on the audio thread races the GUI's `rebuild()` (before
       Phase 24 creates effects while audio runs).
 - [x] **06** (done 2026-10-02: `QSaveFile` for presets, `.nammidi`, the library cache; test in `MidiMapperTest`) Preset and MIDI saves truncate the old file and report success even on a
       failed write → `QSaveFile` + check, dirty state only after success (before
@@ -920,7 +920,7 @@ for the backend work (Phase 21), and a second full review follows the big change
 - [ ] Small and standalone: 09 (A/B can't restore an unloaded model/IR), ~~10–11~~ (done with 01), 12 (download paths not unique per
       model), 13 (downloads/images buffered whole in memory), 14 (closing waits for
       the library scan), 16–17 (JACK: client not closed on shutdown; sample-rate
-      changes not propagated), 18 (EQ contention bypasses a whole block),
+      changes not propagated), ~~18~~ (done with 04),
       19 (mono→stereo exposes stale right-channel state), 21 (model change freezes
       the GUI, double prewarm), 22 (delay-time edits jump the read position),
       23 (reverb input gain depends on routing), 24 (IR truncation silent/abrupt),

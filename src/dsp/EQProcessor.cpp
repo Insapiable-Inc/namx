@@ -12,65 +12,70 @@ namespace npl
 #endif
 
 EQProcessor::EQProcessor() {
+    static constexpr array<double, BANDS> DEFAULT_FREQ{20.0,   250.0,  1000.0,
+                                                       3000.0, 4000.0, 20000.0};
     for (size_t b = 0; b < BANDS; ++b) {
-        rebuild(Band(b));
+        gain[b].store(0.0);
+        freq[b].store(DEFAULT_FREQ[b]);
     }
 }
 
 void EQProcessor::on_sample_rate_changed(double) {
-    // Same lock discipline as the setters: the audio thread try_locks this
-    // mutex, so coefficient/state rewrites must never happen bare.
-    std::lock_guard<std::mutex> lock(mutex);
-    for (size_t b = 0; b < BANDS; ++b) {
-        rebuild(Band(b));
-    }
-    for (Biquad& filter : filters_l) {
-        filter.reset();
-    }
-    for (Biquad& filter : filters_r) {
-        filter.reset();
-    }
+    // Called with processing suspended. The coefficients depend on the rate, and the
+    // old filter state belongs to the old rate: recompute and start clean.
+    reset_pending.store(true);
+    version.fetch_add(1, std::memory_order_release);
 }
 
 void EQProcessor::set_gain(Band b, double db) {
-    std::lock_guard<std::mutex> lock(mutex);
-    gain[b] = db;
-    rebuild(b);
+    gain[b].store(db, std::memory_order_relaxed);
+    version.fetch_add(1, std::memory_order_release);
 }
 
 void EQProcessor::set_freq(Band b, double hz) {
-    std::lock_guard<std::mutex> lock(mutex);
-    freq[b] = hz;
-    rebuild(b);
+    freq[b].store(hz, std::memory_order_relaxed);
+    version.fetch_add(1, std::memory_order_release);
 }
 
-bool EQProcessor::active(Band b) const {
+bool EQProcessor::active(Band b, double gain_db, double freq_hz) const {
     switch (b) {
         case LOW_CUT:
-            return freq[b] > 20.5;
+            return freq_hz > 20.5;
         case HIGH_CUT:
-            return freq[b] < 19999.0 && freq[b] < 0.45 * sample_rate;
+            return freq_hz < 19999.0 && freq_hz < 0.45 * sample_rate;
         default:
-            return std::abs(gain[b]) > 0.01;
+            return std::abs(gain_db) > 0.01;
     }
 }
 
-void EQProcessor::rebuild(Band b) {
-    const Biquad c = design(b);
-    filters_l[b].set_coeffs(c);
-    filters_r[b].set_coeffs(c);
-    const bool on = active(b);
-    if (on && !band_on[b]) {
-        filters_l[b].reset();
-        filters_r[b].reset();
-    } // start a band from silence
-    band_on[b] = on;
+void EQProcessor::apply_changes() {
+    const unsigned v = version.load(std::memory_order_acquire);
+    if (v != applied_version) {
+        applied_version = v;
+        for (size_t i = 0; i < BANDS; ++i) {
+            const Band b = Band(i);
+            const double g = gain[i].load(std::memory_order_relaxed);
+            const double f = freq[i].load(std::memory_order_relaxed);
+            const Biquad c = design(b, g, f);
+            filters_l[i].set_coeffs(c);
+            filters_r[i].set_coeffs(c);
+            const bool on = active(b, g, f);
+            if (on && !band_on[i]) { // start a band from silence
+                filters_l[i].reset();
+                filters_r[i].reset();
+            }
+            band_on[i] = on;
+        }
+    }
+    if (reset_pending.exchange(false, std::memory_order_acquire)) {
+        reset_filters();
+    }
 }
 
-EQProcessor::Biquad EQProcessor::design(Band band) const {
+EQProcessor::Biquad EQProcessor::design(Band band, double gain_db, double freq_hz) const {
     Biquad bq;
     const double fs = sample_rate;
-    const double f = std::clamp(freq[band], 10.0, 0.45 * fs);
+    const double f = std::clamp(freq_hz, 10.0, 0.45 * fs);
     const double w0 = 2.0 * M_PI * f / fs;
     const double cw = std::cos(w0), sw = std::sin(w0);
     double b0, b1, b2, a0, a1, a2;
@@ -95,7 +100,7 @@ EQProcessor::Biquad EQProcessor::design(Band band) const {
         }
         case MIDDLE:
         case HIGH_MID: {
-            const double a = std::pow(10.0, gain[band] / 40.0);
+            const double a = std::pow(10.0, gain_db / 40.0);
             const double alpha = sw / (2.0 * (band == MIDDLE ? 0.707 : 1.0));
             b0 = 1 + alpha * a;
             b1 = -2 * cw;
@@ -108,7 +113,7 @@ EQProcessor::Biquad EQProcessor::design(Band band) const {
         case BASS:
         case TREBLE:
         default: {
-            const double a = std::pow(10.0, gain[band] / 40.0);
+            const double a = std::pow(10.0, gain_db / 40.0);
             const double alpha = sw / 2.0 * std::sqrt(2.0); // shelf slope S = 1
             const double s_a = 2.0 * std::sqrt(a) * alpha;
             if (band == BASS) {
@@ -142,10 +147,7 @@ bool EQProcessor::process(float* l, float* r, size_t n, bool input_is_stereo) {
         return input_is_stereo;
     }
 
-    // Skip this block if the GUI thread is updating coefficients (inaudible at normal buffer sizes)
-    if (!mutex.try_lock()) {
-        return input_is_stereo;
-    }
+    apply_changes();
 
     for (size_t b = 0; b < BANDS; ++b) {
         if (!band_on[b]) {
@@ -166,11 +168,14 @@ bool EQProcessor::process(float* l, float* r, size_t n, bool input_is_stereo) {
         std::copy(l, l + n, r);
     }
 
-    mutex.unlock();
     return input_is_stereo;
 }
 
-void EQProcessor::reset() {
+void EQProcessor::reset() { // audio thread (chain reorder), like process()
+    reset_filters();
+}
+
+void EQProcessor::reset_filters() {
     for (Biquad& filter : filters_l) {
         filter.reset();
     }

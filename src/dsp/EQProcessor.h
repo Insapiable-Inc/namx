@@ -3,7 +3,6 @@
 #include <array>
 #include <atomic>
 #include <cmath>
-#include <mutex>
 
 #include "Common.h"
 #include "EffectBase.h"
@@ -18,8 +17,10 @@ namespace npl
 //   Treble   high shelf   1.5–12 kHz  (default 4 kHz)
 //   Low Cut  2nd-order high-pass 20–500 Hz (20 = off)
 //   High Cut 2nd-order low-pass 2–20 kHz (20 kHz = off)
-// GUI setters rebuild coefficients under a mutex; the audio thread
-// try_locks and skips a block rather than wait. Independent L/R state.
+// Lock-free: the GUI only stores gains/frequencies in atomics and bumps a version;
+// the audio thread owns every filter (coefficients and state) and recomputes the
+// coefficients at the top of the next block — no mutex, no skipped blocks, no shared
+// filter state (code review items 04, 18). Independent L/R state.
 class EQProcessor : public EffectBase
 {
 public:
@@ -83,16 +84,21 @@ private:
         }
     };
 
-    Biquad design(Band b) const;
-    void rebuild(Band b); // caller holds mutex
-    bool active(Band b) const;
+    Biquad design(Band b, double gain_db, double freq_hz) const;
+    bool active(Band b, double gain_db, double freq_hz) const;
+    void apply_changes(); // audio thread: picks up new settings, then pending resets
+    void reset_filters();
 
-    array<double, BANDS> gain{}; // dB (shelf/peak bands)
-    array<double, BANDS> freq{20.0, 250.0, 1000.0, 3000.0, 4000.0, 20000.0};
+    // Written by the GUI (any order), read by the audio thread after `version`.
+    array<atomic<double>, BANDS> gain{}; // dB (shelf/peak bands)
+    array<atomic<double>, BANDS> freq{};
+    atomic<unsigned> version{1}; // bumped after every write
+    atomic<bool> reset_pending{false};
+
+    // Audio thread only.
+    unsigned applied_version = 0;
     array<Biquad, BANDS> filters_l, filters_r;
     array<bool, BANDS> band_on{}; // band changes the signal (skip flat ones)
-
-    std::mutex mutex; // GUI writes coefficients; audio thread uses try_lock
 };
 
 } // namespace npl
