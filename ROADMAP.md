@@ -894,9 +894,9 @@ for the backend work (Phase 21), and a second full review follows the big change
 **Now — P1, platform-independent:**
 - [x] **01** (done 2026-10-02 with 10 and 11: the GUI reads IRs with its own strict `WavReader`, no longer compiling AudioDSPTools' `wav.cpp`; `WavReaderTest`, clean under ASan/UBSan) Malformed WAV data lengths overrun the heap (`AudioDSPTools/dsp/wav.cpp`) —
       reachable by loading any IR, including downloads. Validate chunk sizes first.
-- [ ] **02** Truncated model weights are read past the end (`NAM/lstm.cpp`, ConvNet,
+- [x] **02** (done 2026-10-02: `nam::weights_iterator` in `NAM/weights.h` throws instead of reading past the end; LSTM/ConvNet/WaveNet check the exact count) Truncated model weights are read past the end (`NAM/lstm.cpp`, ConvNet,
       WaveNet) — validate the weight count before construction.
-- [ ] **03** LSTM `input_size` vs channel count disagree → out-of-bounds write
+- [x] **03** (done 2026-10-02: LSTM dimensions and weight count validated before allocating) LSTM `input_size` vs channel count disagree → out-of-bounds write
       (`NAM/lstm.cpp`).
 - [ ] **04** EQ `reset()` on the audio thread races the GUI's `rebuild()` (before
       Phase 24 creates effects while audio runs).
