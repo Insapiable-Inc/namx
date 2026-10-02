@@ -2330,26 +2330,25 @@ void MainWindow::setup_midi(QMenu* top_menu) {
 
 void MainWindow::open_settings(SettingsDialog::Page page) {
     if (!settings_dialog) {
-        settings_dialog = new SettingsDialog(
-            {
-                .engine = *engine,
-                .status_bar = *audio_bar,
-                .midi = midi_ok ? midi : nullptr,
-                .midi_mapper = *midi_mapper,
-                .library_index = *library_index,
-                .tuner_reference = *tuner_reference_box,
-                .tuner_display = *tuner_display,
-                .set_tuner_show_hz =
-                    [this](bool on) {
-                        set_tuner_show_hz(on);
-                    },
-                .window = *this,
-                .open_midi_mappings =
-                    [this] {
-                        open_midi_mappings();
-                    },
-            },
-            this);
+        SettingsTargets targets{
+            .engine = *engine,
+            .status_bar = *audio_bar,
+            .midi = midi_ok ? midi : nullptr,
+            .midi_mapper = *midi_mapper,
+            .library_index = *library_index,
+            .tuner_reference = *tuner_reference_box,
+            .tuner_display = *tuner_display,
+            .set_tuner_show_hz =
+                [this](bool on) {
+                    set_tuner_show_hz(on);
+                },
+            .window = *this,
+            .open_midi_mappings =
+                [this] {
+                    open_midi_mappings();
+                },
+        };
+        settings_dialog = new SettingsDialog(std::move(targets), this);
     }
     settings_dialog->show_page(page);
 }
