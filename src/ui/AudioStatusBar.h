@@ -39,8 +39,12 @@ public:
         return output_id;
     }
 
+    // Selects and persists a device (the status bar menus and the settings dialog).
+    void set_device(bool input, const QString& id);
+    void reset_counters();
+
 signals:
-    // A device was picked from a menu and persisted — owner restarts audio.
+    // A device was picked and persisted — owner restarts audio.
     void device_selection_changed();
     // The backend item was clicked while disconnected.
     void reconnect_requested();
@@ -49,7 +53,6 @@ private:
     void pick_device(bool input);
     void update_dsp_load();
     void update_xruns();
-    void reset_counters();
     void set_device_labels();
 
     AudioEngine& engine;

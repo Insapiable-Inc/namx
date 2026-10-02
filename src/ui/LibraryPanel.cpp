@@ -333,91 +333,6 @@ void LibraryListView::keyPressEvent(QKeyEvent* ev) {
     QListView::keyPressEvent(ev);
 }
 
-class FoldersDialog : public QDialog
-{
-public:
-    FoldersDialog(const LibraryRoots& roots, QWidget* parent)
-        : QDialog(parent) {
-        setWindowTitle("Library Folders");
-        resize(560, 380);
-        auto* lay = new QVBoxLayout(this);
-
-        auto* hint = new QLabel("Each folder is scanned recursively, and the library follows "
-                                "changes on disk. A folder can serve several kinds.");
-        hint->setWordWrap(true);
-        lay->addWidget(hint);
-
-        auto* tabs = new QTabWidget;
-        const QStringList* root_lists[3] = {&roots.models, &roots.irs, &roots.presets};
-        for (int i = 0; i < 3; ++i) {
-            auto* page = new QWidget;
-            auto* pl = new QHBoxLayout(page);
-            lists[i] = new QListWidget;
-            lists[i]->addItems(*root_lists[i]);
-            pl->addWidget(lists[i], 1);
-
-            auto* btns = new QVBoxLayout;
-            auto* add = new QPushButton("Add…");
-            auto* rm = new QPushButton("Remove");
-            btns->addWidget(add);
-            btns->addWidget(rm);
-            btns->addStretch();
-            pl->addLayout(btns);
-
-            QListWidget* lw = lists[i];
-            connect(add, &QPushButton::clicked, this, [this, lw, i] {
-                add_folder(lw, i);
-            });
-            connect(rm, &QPushButton::clicked, this, [lw] {
-                delete lw->currentItem();
-            });
-            tabs->addTab(page, SECTION_NAMES[i]);
-        }
-        lay->addWidget(tabs, 1);
-
-        auto* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
-        connect(bb, &QDialogButtonBox::accepted, this, &QDialog::accept);
-        connect(bb, &QDialogButtonBox::rejected, this, &QDialog::reject);
-        lay->addWidget(bb);
-    }
-
-    LibraryRoots roots() const {
-        LibraryRoots r;
-        r.models = list_items(lists[0]);
-        r.irs = list_items(lists[1]);
-        r.presets = list_items(lists[2]);
-        return r;
-    }
-
-private:
-    // Asks for a folder and adds it to section `section`'s list, unless listed.
-    void add_folder(QListWidget* lw, int section) {
-        const QString start = lw->count() ? lw->item(lw->count() - 1)->text() : QDir::homePath();
-        const QString dir = QFileDialog::getExistingDirectory(
-            this, QString("Add %1 folder").arg(SECTION_NAMES[section]), start);
-        if (dir.isEmpty()) {
-            return;
-        }
-        const QString clean = QDir::cleanPath(dir);
-        for (int r = 0; r < lw->count(); ++r) {
-            if (lw->item(r)->text() == clean) {
-                return;
-            }
-        }
-        lw->addItem(clean);
-    }
-
-    static QStringList list_items(const QListWidget* lw) {
-        QStringList l;
-        for (int r = 0; r < lw->count(); ++r) {
-            l << lw->item(r)->text();
-        }
-        return l;
-    }
-
-    QListWidget* lists[3]{};
-};
-
 LibraryPanel::LibraryPanel(LibraryIndex& new_index, QWidget* parent)
     : QWidget(parent)
     , library_index(new_index) {
@@ -530,7 +445,7 @@ LibraryPanel::LibraryPanel(LibraryIndex& new_index, QWidget* parent)
         folders->setAutoRaise(true);
         folders->setFocusPolicy(Qt::NoFocus);
         folders->setToolTip("Choose which folders the library scans");
-        connect(folders, &QToolButton::clicked, this, &LibraryPanel::edit_folders);
+        connect(folders, &QToolButton::clicked, this, &LibraryPanel::folders_requested);
         row->addWidget(folders);
 
         auto* rescan = new QToolButton;
@@ -732,13 +647,6 @@ void LibraryPanel::update_counts() {
                    .arg(visible == 1 ? "" : "s");
     }
     status->setText(text);
-}
-
-void LibraryPanel::edit_folders() {
-    FoldersDialog dlg(library_index.get_roots(), window());
-    if (dlg.exec() == QDialog::Accepted) {
-        library_index.set_roots(dlg.roots());
-    }
 }
 
 void LibraryPanel::apply_search(const QString& text) {

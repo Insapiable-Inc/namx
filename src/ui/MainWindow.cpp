@@ -455,6 +455,16 @@ void MainWindow::setup_ui() {
         library_menu = mb->addMenu("Library"); // filled once the dock exists (below)
         midi_top_menu = mb->addMenu("MIDI"); // filled by setupMidi
 
+        QMenu* settings_menu = mb->addMenu("Settings");
+        QAction* act_settings = settings_menu->addAction("Settings…");
+        act_settings->setShortcut(QKeySequence("Ctrl+,"));
+        connect(act_settings, &QAction::triggered, this, [this] {
+            open_settings(SettingsDialog::Page::AUDIO);
+        });
+        connect(settings_menu->addAction("Keyboard Shortcuts…"), &QAction::triggered, this, [this] {
+            open_settings(SettingsDialog::Page::SHORTCUTS);
+        });
+
         QMenu* help_menu = mb->addMenu("Help");
         connect(help_menu->addAction("About NAM Player"), &QAction::triggered, this, [this] {
             QMessageBox::about(
@@ -537,7 +547,8 @@ void MainWindow::setup_ui() {
         // not part of presets or the registry.
         QSettings s;
         tuner_ref_hz = std::clamp(s.value("tuner/reference", 440).toInt(), 420, 460);
-        auto* ref = new QSpinBox;
+        tuner_reference_box = new QSpinBox;
+        QSpinBox* ref = tuner_reference_box;
         ref->setObjectName("tunerRef");
         ref->setRange(420, 460);
         ref->setPrefix("A4 = ");
@@ -550,7 +561,8 @@ void MainWindow::setup_ui() {
         });
         tuner_display->set_reference(tuner_ref_hz);
 
-        auto* hz = new QToolButton;
+        tuner_hz_button = new QToolButton;
+        QToolButton* hz = tuner_hz_button;
         hz->setObjectName("tunerOption");
         hz->setText("Hz");
         hz->setCheckable(true);
@@ -1234,8 +1246,12 @@ void MainWindow::setup_ui() {
             browse_tone3000();
         });
         library_menu->addSeparator();
-        connect(library_menu->addAction("Folders…"), &QAction::triggered, library,
-                &LibraryPanel::edit_folders);
+        connect(library_menu->addAction("Folders…"), &QAction::triggered, this, [this] {
+            open_settings(SettingsDialog::Page::LIBRARY);
+        });
+        connect(library, &LibraryPanel::folders_requested, this, [this] {
+            open_settings(SettingsDialog::Page::LIBRARY);
+        });
         connect(library_menu->addAction("Rescan"), &QAction::triggered, library_index,
                 &LibraryIndex::rescan);
         library_menu->addSeparator();
@@ -2087,6 +2103,7 @@ void MainWindow::setup_midi(QMenu* top_menu) {
 
     learn_esc = new QShortcut(QKeySequence(Qt::Key_Escape), this);
     learn_esc->setEnabled(false);
+    learn_esc->setWhatsThis("Cancel MIDI learn");
     connect(learn_esc, &QShortcut::activated, midi_mapper, &MidiMapper::cancel_learn);
     connect(midi_mapper, &MidiMapper::learn_changed, this, &MainWindow::on_learn_changed);
 
@@ -2127,6 +2144,28 @@ void MainWindow::setup_midi(QMenu* top_menu) {
         clock->setChecked(midi_mapper->get_follow_clock());
     });
     connect(clock, &QAction::toggled, midi_mapper, &MidiMapper::set_follow_clock);
+}
+
+void MainWindow::open_settings(SettingsDialog::Page page) {
+    if (!settings_dialog) {
+        settings_dialog = new SettingsDialog(
+            {
+                .engine = *engine,
+                .status_bar = *audio_bar,
+                .midi = midi_ok ? midi : nullptr,
+                .midi_mapper = *midi_mapper,
+                .library_index = *library_index,
+                .tuner_reference = *tuner_reference_box,
+                .tuner_show_hz = *tuner_hz_button,
+                .window = *this,
+                .open_midi_mappings =
+                    [this] {
+                        open_midi_mappings();
+                    },
+            },
+            this);
+    }
+    settings_dialog->show_page(page);
 }
 
 void MainWindow::open_midi_mappings() {

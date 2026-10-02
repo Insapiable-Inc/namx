@@ -27,11 +27,11 @@ constexpr int NUM_STEREO_KEYS = sizeof(STEREO_KEYS) / sizeof(STEREO_KEYS[0]);
 
 void EffectShortcuts::add_effect(ToggleSwitch* enable, ToggleSwitch* stereo) {
     if (enable && enable_index < NUM_ENABLE_KEYS) {
-        bind(enable, ENABLE_KEYS[enable_index++], "Toggle effect");
+        bind(enable, ENABLE_KEYS[enable_index++], "Toggle effect", "Turn %1 on or off");
     }
 
     if (stereo && stereo_index < NUM_STEREO_KEYS) {
-        bind(stereo, STEREO_KEYS[stereo_index++], "Toggle stereo");
+        bind(stereo, STEREO_KEYS[stereo_index++], "Toggle stereo", "%1: Stereo on or off");
     }
 }
 
@@ -44,8 +44,21 @@ void EffectShortcuts::clear() {
     stereo_index = 0;
 }
 
-void EffectShortcuts::bind(ToggleSwitch* toggle, int key, const char* action) {
+// The effect a toggle belongs to: the "displayName" of its card.
+static QString card_name(const QWidget* w) {
+    for (; w; w = w->parentWidget()) {
+        const QVariant name = w->property("displayName");
+        if (name.isValid()) {
+            return name.toString();
+        }
+    }
+    return "the effect";
+}
+
+void EffectShortcuts::bind(ToggleSwitch* toggle, int key, const char* action,
+                           const char* description) {
     auto* shortcut = new QShortcut(QKeySequence(key), window);
+    shortcut->setWhatsThis(QString(description).arg(card_name(toggle)));
     QObject::connect(shortcut, &QShortcut::activated, toggle, &QAbstractButton::toggle);
     shortcuts.push_back(shortcut);
 

@@ -391,11 +391,24 @@ CC and Toggle for everything else.
 Out of the box, program changes 0–7 recall quick slots 1–8. The mappings are
 machine settings (QSettings `midi/*`), not part of presets.
 
+### Settings
+
+**Settings → Settings…** (`Ctrl+,`) collects the machine settings in one window; every
+change applies immediately.
+
+| Page | What's there |
+|---|---|
+| Audio | Input / output device (same as the status bar's In: / Out:), the server's sample rate, buffer and round-trip latency (read-only: PipeWire/JACK own them), xruns + reset |
+| MIDI | Input devices on/off, Follow MIDI clock, **Mappings…** |
+| Library | Model / IR / preset folders, the TONE3000 download folder, rescan |
+| Tuner | Reference pitch, show the detected frequency (also on the tuner card) |
+| Shortcuts | Every keyboard shortcut, read from the window (**Settings → Keyboard Shortcuts…**) |
+
 ### Library
 
 The **Library** dock (left of the rack; `Ctrl+L` shows/hides it) lists every `.nam`
 model, `.wav` IR and `.nampreset` preset found under the configured folders
-(**Library → Folders…**; defaults: `~/NAM` for models and IRs, `~/Music/IRs`, and
+(**Library → Folders…**, which opens the Library page of **Settings**; defaults: `~/NAM` for models and IRs, `~/Music/IRs`, and
 `~/Documents/NAM Player/Presets`). Folders are scanned recursively on a background
 thread, metadata is cached, and the list follows changes on disk.
 

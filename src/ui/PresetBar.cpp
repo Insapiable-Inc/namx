@@ -97,6 +97,7 @@ PresetBar::PresetBar(const LibraryIndex& new_index, QMenu* preset_menu, QWidget*
         });
         auto* sc = new QShortcut(QKeySequence(Qt::CTRL | (Qt::Key_1 + i)), this);
         sc->setContext(Qt::WindowShortcut);
+        sc->setWhatsThis(QString("Load quick slot %1").arg(i + 1));
         connect(sc, &QShortcut::activated, this, [this, i] {
             activate_slot(i);
         });

@@ -36,7 +36,8 @@ public:
     void clear();
 
 private:
-    void bind(ToggleSwitch* toggle, int key, const char* action);
+    // `description` (with %1 = the card name) labels the key on the Shortcuts page.
+    void bind(ToggleSwitch* toggle, int key, const char* action, const char* description);
 
     QWidget* window;
     int enable_index{0};

@@ -17,6 +17,7 @@
 #include "LibraryIndex.h"
 #include "ParamRegistry.h"
 #include "PresetSerializer.h"
+#include "SettingsDialog.h"
 #include "ToggleSwitch.h"
 #include "Tone3000Client.h"
 
@@ -181,6 +182,8 @@ private:
     void show_midi_light(bool lit);
     void on_midi_activity(const QString& what);
     void open_midi_mappings();
+    // Shows the settings window (created on first use) on `page`.
+    void open_settings(SettingsDialog::Page page);
     void populate_midi_devices_menu(QMenu* devices);
     void show_file_status(QLabel* name, QLabel* meta, QLabel* origin, bool loaded,
                           const QString& path, const QString& empty_text);
@@ -309,6 +312,9 @@ private:
     GainReductionMeter* gr_comp = nullptr;
 
     TunerDisplay* tuner_display = nullptr;
+    QSpinBox* tuner_reference_box = nullptr; // on the tuner card; the settings page drives it
+    QToolButton* tuner_hz_button = nullptr;
+    SettingsDialog* settings_dialog = nullptr;
     int tuner_ref_hz = 440;
 
     KnobWidget* knob_input_gain = nullptr;

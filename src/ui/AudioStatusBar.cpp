@@ -270,9 +270,16 @@ void AudioStatusBar::pick_device(bool input) {
         return;
     }
 
-    current = picked->data().toString();
-    QSettings s;
-    s.setValue(input ? "audio/inputDeviceId" : "audio/outputDeviceId", current);
+    set_device(input, picked->data().toString());
+}
+
+void AudioStatusBar::set_device(bool input, const QString& id) {
+    QString& current = input ? input_id : output_id;
+    if (id == current) {
+        return;
+    }
+    current = id;
+    QSettings().setValue(input ? "audio/inputDeviceId" : "audio/outputDeviceId", current);
     set_device_labels();
     emit device_selection_changed();
 }

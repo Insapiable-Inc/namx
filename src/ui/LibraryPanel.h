@@ -158,9 +158,10 @@ public:
     QString neighbour(LibraryEntry::Kind kind, const QString& from_path, int step) const;
 
     // Root-folder editor dialog; applies to the index on OK.
-    void edit_folders();
 
 signals:
+    // The folders button: the owner opens the Library settings page.
+    void folders_requested();
     // The user picked a file in the list.
     void activated(LibraryEntry::Kind kind, const QString& path);
 

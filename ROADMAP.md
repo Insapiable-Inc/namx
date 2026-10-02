@@ -776,9 +776,14 @@ acoustic models. UI: cards gained ▾ detail rows for advanced knobs (`addDetail
 
 ## Phase 18 — Settings, layout discipline, platform
 
-- [ ] **Settings dialog:** audio (device, requested buffer size / sample rate; on
+- [x] **Settings dialog:** audio (device, requested buffer size / sample rate; on
       Windows later WASAPI-exclusive), MIDI devices, library folders, theme, meter
       options, a **shortcuts sheet** (discoverability of the digit/QWE toggles).
+      Done 2026-10-01: Audio (devices; rate/buffer read-only — server-owned), MIDI,
+      Library (replaces the Folders dialog), Tuner, Shortcuts (built live from the
+      window); instant apply. Theme waits for Phase 19; "meter options" dropped. The
+      Shortcuts page shows the open gap: 13 digit keys for 17 effects — Delay, Reverb,
+      Cabinet and Volume have no on/off key.
 - [ ] **Layout:** ~~bypassed cards dim~~ (done 2026-08-23); ~~2-column knob grid for
       one-height columns~~ and ~~device row moved to Settings~~ (both superseded
       2026-08-23 — uniform 62 px rows and the status bar device pickers); remaining:

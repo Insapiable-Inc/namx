@@ -93,6 +93,8 @@ set(GUI_SOURCES
     src/ui/TunerDisplay.cpp
     src/ui/TunerDisplay.h
     src/ui/Theme.h
+    src/ui/SettingsDialog.cpp
+    src/ui/SettingsDialog.h
     src/dsp/AudioEngine.cpp
     src/dsp/AudioEngine.h
     src/dsp/IAudioBackend.h

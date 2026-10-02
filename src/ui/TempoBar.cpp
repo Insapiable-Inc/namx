@@ -281,6 +281,7 @@ TempoBar::TempoBar(Metronome& metronome, QWidget* parent)
     connect(play, &QToolButton::toggled, this, &TempoBar::on_play_toggled);
     auto* space = new QShortcut(QKeySequence(Qt::Key_Space), this);
     space->setContext(Qt::WindowShortcut);
+    space->setWhatsThis("Start or stop the metronome");
     connect(space, &QShortcut::activated, play, &QToolButton::toggle);
     learn_menu_for(play, "action:metronome");
     lay->addWidget(play);
