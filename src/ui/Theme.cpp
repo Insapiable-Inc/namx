@@ -348,18 +348,21 @@ QToolButton#presetName:hover {
     border-color: #424b5c;
 }
 QToolButton#presetName::menu-indicator {
+    image: url(:/icons/down-arrow.png);
     subcontrol-position: right center;
-    right: 6px;
+    right: 8px;
 }
+/* Slots and A/B: filled buttons like Save; an empty slot is dimmer. */
 QToolButton#presetSlot, QToolButton#presetAb {
     color: #d8dee9;
-    background: transparent;
-    border: 1px solid transparent;
+    background-color: #232830;
+    border: 1px solid #353c4a;
     border-radius: 4px;
     padding: 3px 8px;
 }
 QToolButton#presetSlot:hover, QToolButton#presetAb:hover {
     background-color: #2f3744;
+    border-color: #424b5c;
 }
 /* Push buttons (Save, Tap, A→B…) and menu buttons (4/4, Click…): filled and
    bordered so they read as clickable; menu buttons carry a ▾. */
@@ -381,18 +384,22 @@ QToolButton#menuTool {
     padding-right: 20px;
 }
 QToolButton#menuTool::menu-indicator {
+    image: url(:/icons/down-arrow.png);
     subcontrol-origin: padding;
     subcontrol-position: right center;
-    right: 6px;
+    right: 7px;
 }
 QToolButton#presetSlot {
-    color: #555c6b;
+    color: #6b7280;
+    background-color: #1d2027;
+    border-color: #2a2f38;
     min-width: 14px;
     padding: 3px 5px;
     font-weight: 600;
 }
 QToolButton#presetSlot[filled="true"] {
     color: #d8dee9;
+    background-color: #232830;
     border-color: #353c4a;
 }
 QToolButton#presetSlot[active="true"] {
@@ -403,7 +410,6 @@ QToolButton#presetSlot[active="true"] {
 QToolButton#presetAb {
     min-width: 14px;
     font-weight: 700;
-    border-color: #353c4a;
 }
 QToolButton#presetAb:checked {
     color: #15171c;
@@ -526,27 +532,16 @@ QToolButton#librarySection:checked {
     color: #d8dee9;
     border-bottom: 2px solid #3daee9;
 }
-QToolButton#libraryTool {
-    color: #9aa1ad;
-    background: transparent;
-    border: 1px solid transparent;
-    border-radius: 4px;
-    padding: 3px 8px;
-}
-QToolButton#libraryTool:hover {
-    color: #d8dee9;
-    background-color: #2f3744;
-}
-/* All / ★ / Recent: filled like the preset bar's buttons, the active one in
-   the accent like A/B. */
-QToolButton#libraryMode {
+/* All / ★ / Recent, Folders…, rescan: filled like the preset bar's buttons;
+   the active mode in the accent like A/B. */
+QToolButton#libraryMode, QToolButton#libraryTool {
     color: #d8dee9;
     background-color: #232830;
     border: 1px solid #353c4a;
     border-radius: 4px;
     padding: 3px 9px;
 }
-QToolButton#libraryMode:hover {
+QToolButton#libraryMode:hover, QToolButton#libraryTool:hover {
     background-color: #2f3744;
     border-color: #424b5c;
 }
@@ -719,11 +714,11 @@ QComboBox::drop-down {
     width: 20px;
 }
 QComboBox::down-arrow {
+    image: url(:/icons/down-arrow.png); /* @2x picked up on HiDPI */
+    margin-right: 6px;
+}
+QComboBox::down-arrow:disabled {
     image: none;
-    border-left: 4px solid transparent;
-    border-right: 4px solid transparent;
-    border-top: 5px solid #9aa1ad;
-    margin-right: 5px;
 }
 QComboBox QAbstractItemView {
     background-color: #1a1d24;
