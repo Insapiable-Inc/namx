@@ -1026,12 +1026,14 @@ void MainWindow::setup_ui() {
                         engine->get_delay().set_saturation(static_cast<float>(v));
                     },
                     "Tape-style rounding of the repeats as they build up"),
-                make_delay_pct_knob(
-                    "modulation", "Modulation", DELAY_MOD_MIN, DELAY_MOD_MAX, DELAY_MOD_DEFAULT,
-                    [this](double v) {
-                        engine->get_delay().set_modulation(static_cast<float>(v));
-                    },
-                    "Wobble on the repeats (tape flutter / chorused echoes)"),
+                // GUIDELINE EXCEPTION (commented-out code, user's call 2026-10-01): Modulation is
+                // off; repeats stay steady (its 0 % default).
+                // make_delay_pct_knob(
+                //     "modulation", "Modulation", DELAY_MOD_MIN, DELAY_MOD_MAX, DELAY_MOD_DEFAULT,
+                //     [this](double v) {
+                //         engine->get_delay().set_modulation(static_cast<float>(v));
+                //     },
+                //     "Wobble on the repeats (tape flutter / chorused echoes)"),
                 // GUIDELINE EXCEPTION (commented-out code, user's call 2026-10-01): Crystals is off
                 // (pitch shifter quality); repeats stay at their pitch.
                 // make_delay_pct_knob(
