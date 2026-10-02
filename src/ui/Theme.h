@@ -26,7 +26,7 @@ namespace Theme
 
 // Accent for an effect ID ("gate", "nam", … or "neutral").
 QColor accent(const QString& fx_id);
-// Default accent before a card is tagged (also the VU-meter green).
+// The app accent (Breeze blue): chrome, selections, and cards before they are tagged.
 QColor generic_accent();
 
 // Neutral chrome tones for custom-painted widgets (knobs, switches).

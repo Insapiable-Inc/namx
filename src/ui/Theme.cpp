@@ -40,7 +40,7 @@ QColor accent(const QString& fx_id) {
 }
 
 QColor generic_accent() {
-    return QColor("#5cc8a8");
+    return QColor("#3daee9");
 }
 
 // Neutral chrome tones (keep in sync with the stylesheet below).
@@ -289,7 +289,7 @@ QLabel#fileStatus {
     padding-left: 6px;
 }
 QLabel#fileStatusOk {
-    color: #5cc8a8;
+    color: #3daee9;
     font-weight: 600;
     padding-left: 6px;
 }
@@ -329,7 +329,7 @@ QLabel#presetCaption {
     padding: 0 4px;
 }
 QToolButton#presetName {
-    color: #5cc8a8;
+    color: #3daee9;
     font-size: 11pt;
     font-weight: 700;
     min-width: 220px;
@@ -383,8 +383,8 @@ QToolButton#presetSlot[filled="true"] {
 }
 QToolButton#presetSlot[active="true"] {
     color: #15171c;
-    background-color: #5cc8a8;
-    border-color: #5cc8a8;
+    background-color: #3daee9;
+    border-color: #3daee9;
 }
 QToolButton#presetAb {
     min-width: 14px;
@@ -393,8 +393,8 @@ QToolButton#presetAb {
 }
 QToolButton#presetAb:checked {
     color: #15171c;
-    background-color: #5cc8a8;
-    border-color: #5cc8a8;
+    background-color: #3daee9;
+    border-color: #3daee9;
 }
 
 /* === Tempo bar (under the preset bar) === */
@@ -405,12 +405,12 @@ QFrame#tempoBar {
 }
 QLineEdit#bpmEdit {
     background-color: #15171c;
-    color: #5cc8a8;
+    color: #3daee9;
     border: 1px solid #424b5c;
     border-radius: 4px;
     font-size: 12pt;
     font-weight: 700;
-    selection-background-color: #5cc8a8;
+    selection-background-color: #3daee9;
     selection-color: #15171c;
 }
 
@@ -428,8 +428,8 @@ QToolButton#metroPlay:hover {
 }
 QToolButton#metroPlay:checked {
     color: #15171c;
-    background-color: #5cc8a8;
-    border-color: #5cc8a8;
+    background-color: #3daee9;
+    border-color: #3daee9;
 }
 
 /* === Effect card ▾ detail toggle === */
@@ -470,8 +470,8 @@ QToolButton#tunerOption:hover {
 }
 QToolButton#tunerOption:checked {
     color: #15171c;
-    background-color: #5cc8a8;
-    border-color: #5cc8a8;
+    background-color: #3daee9;
+    border-color: #3daee9;
 }
 
 /* === MIDI Mappings window === */
@@ -560,7 +560,7 @@ QToolButton#librarySection:hover {
 }
 QToolButton#librarySection:checked {
     color: #d8dee9;
-    border-bottom: 2px solid #5cc8a8;
+    border-bottom: 2px solid #3daee9;
 }
 QToolButton#libraryMode, QToolButton#libraryTool {
     color: #9aa1ad;
@@ -584,11 +584,11 @@ QLineEdit#librarySearch {
     border: 1px solid #2a2f38;
     border-radius: 5px;
     padding: 5px 8px;
-    selection-background-color: #5cc8a8;
+    selection-background-color: #3daee9;
     selection-color: #15171c;
 }
 QLineEdit#librarySearch:focus {
-    border-color: #5cc8a8;
+    border-color: #3daee9;
 }
 QListView#libraryList {
     background-color: #1a1d24;
@@ -619,7 +619,7 @@ QToolButton#libraryTab:hover {
 }
 QToolButton#libraryTab:checked {
     color: #d8dee9;
-    border-bottom: 2px solid #5cc8a8;
+    border-bottom: 2px solid #3daee9;
 }
 
 /* === TONE3000 tab === */
@@ -639,7 +639,7 @@ QLabel#t3kFinePrint {
     font-size: 8pt;
 }
 QPushButton#t3kPrimary {
-    background-color: #5cc8a8;
+    background-color: #3daee9;
     color: #15171c;
     border: none;
     padding: 8px 22px;
@@ -713,7 +713,7 @@ QTabBar::tab {
 }
 QTabBar::tab:selected {
     color: #d8dee9;
-    border-bottom: 2px solid #5cc8a8;
+    border-bottom: 2px solid #3daee9;
 }
 QTabBar::tab:hover {
     color: #d8dee9;
@@ -801,7 +801,7 @@ void apply_to(QWidget& root) {
     p.setColor(QPalette::Mid, QColor("#353c4a"));
     p.setColor(QPalette::Dark, QColor("#15171c"));
     p.setColor(QPalette::Shadow, QColor("#0a0c10"));
-    p.setColor(QPalette::Highlight, QColor("#5cc8a8"));
+    p.setColor(QPalette::Highlight, QColor("#3daee9"));
     p.setColor(QPalette::HighlightedText, QColor("#15171c"));
 
     p.setColor(QPalette::Disabled, QPalette::Text, QColor("#555c6b"));
