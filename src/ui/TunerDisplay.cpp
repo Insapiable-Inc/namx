@@ -145,8 +145,8 @@ void TunerDisplay::paintEvent(QPaintEvent*) {
             if (lit) {
                 draw_glow_rect(p, r, base, led_d / 2.0);
             } else {
-                QColor ghost = base;
-                ghost.setAlpha(30);
+                QColor ghost = base; // an unlit LED: dark, barely tinted
+                ghost.setAlpha(12);
                 p.setPen(Qt::NoPen);
                 p.setBrush(ghost);
                 p.drawEllipse(r);

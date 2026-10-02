@@ -612,10 +612,6 @@ void MainWindow::setup_ui() {
         lay->addWidget(ref, 0, Qt::AlignVCenter);
         lay->addStretch();
 
-        // Off, the display would be an empty dark box: show it only while tuning.
-        tuner_display->setVisible(sw_tuner_enable->isChecked());
-        connect(sw_tuner_enable, &ToggleSwitch::toggled, tuner_display, &QWidget::setVisible);
-
         Theme::tag_card(col, "tuner"); // after children — pushes accents to them
         fx_cols[&engine->get_tuner()] = col;
     }
