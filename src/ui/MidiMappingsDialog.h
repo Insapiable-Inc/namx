@@ -14,6 +14,7 @@ namespace npl
 
 class MidiInput;
 class MidiMapper;
+struct MidiTarget;
 
 // MIDI → Mappings…: the device list (enable checkboxes, follow MIDI clock),
 // the mapping table (on, source, channel, number, target, mode, range,
@@ -34,8 +35,9 @@ private:
     void delete_mapping(int row);
     void load_mappings();
     void save_mappings();
-    // A 0–100 % spin box for the Min/Max column of `row`.
-    void add_percent_cell(int row, int column, double value);
+    // The Min/Max cell of `row`: for a knob target, a spin box in the knob's own unit
+    // and range (the mapping stores a 0–1 share of it); "—" for switches and actions.
+    void add_range_cell(int row, int column, double share, const MidiTarget* target);
 
     MidiMapper& mapper;
     MidiInput* input;

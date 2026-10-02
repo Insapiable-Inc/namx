@@ -1003,7 +1003,7 @@ the Volume pedal — get the controls a real expression setup has. MIDI multi-as
 (one pedal → several targets, Min above Max reverses a sweep; tested in
 `MidiMapperTest`) already works and must keep working.
 
-- [ ] **Heel/toe range in real units.** MIDI → Mappings… already has Min/Max per row,
+- [x] **Heel/toe range in real units** (done 2026-10-02: Min/Max cells are spin boxes in the knob's unit and range; "—" for switches/actions; `.nammidi` unchanged). MIDI → Mappings… already has Min/Max per row,
       but as a percentage of the knob's span — "Transpose 0 to +12 st" is Min 50 %,
       Max 100 % today. Show and edit Min/Max in the target's own unit (st, %, dB),
       so a wah can stop short of the toe, Transpose sweeps 0…+12 or 0…−12 st, and the

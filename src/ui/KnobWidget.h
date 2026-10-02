@@ -51,6 +51,12 @@ public:
     QString get_label() const {
         return label;
     }
+    const QString& get_unit() const {
+        return unit;
+    }
+    double get_snap() const {
+        return snap;
+    }
 
     // Extra entries for every knob's context menu (MIDI Learn). Set once by
     // the owner of the parameter registry.

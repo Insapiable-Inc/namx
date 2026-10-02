@@ -706,7 +706,7 @@ void MainWindow::setup_ui() {
     // Transpose
     {
         knob_transpose_semis =
-            late_knob("transpose", "semitones", new KnobWidget("Semitones", -12.0, 12.0, 0.0),
+            late_knob("transpose", "semitones", new KnobWidget("Semitones", -12.0, 12.0, 0.0, "st"),
                       [this](double v) {
                           engine->get_transpose().set_semitones(static_cast<float>(v));
                       });

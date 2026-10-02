@@ -1,8 +1,12 @@
 #include "MidiMappingsDialog.h"
 
+#include <algorithm>
+#include <cmath>
+
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDir>
+#include <QDoubleSpinBox>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QGroupBox>
@@ -18,6 +22,7 @@
 #include <QVBoxLayout>
 
 #include "Common.h"
+#include "KnobWidget.h"
 #include "MidiInput.h"
 #include "MidiMapper.h"
 
@@ -73,7 +78,7 @@ MidiMappingsDialog::MidiMappingsDialog(MidiMapper& new_mapper, MidiInput* new_in
     // Mappings
     table = new QTableWidget(0, COL_COUNT);
     table->setHorizontalHeaderLabels(
-        {"On", "Source", "Channel", "#", "Target", "Mode", "Min %", "Max %", "", ""});
+        {"On", "Source", "Channel", "#", "Target", "Mode", "Min", "Max", "", ""});
     table->verticalHeader()->hide();
     table->setSelectionMode(QAbstractItemView::NoSelection);
     table->horizontalHeader()->setSectionResizeMode(COL_TARGET, QHeaderView::Stretch);
@@ -216,8 +221,9 @@ void MidiMappingsDialog::rebuild_table() {
         connect(mode, &QComboBox::currentIndexChanged, this, commit);
         table->setCellWidget(r, COL_MODE, mode);
 
-        add_percent_cell(r, COL_MIN, m.min);
-        add_percent_cell(r, COL_MAX, m.max);
+        const MidiTarget* target = mapper.target(m.target);
+        add_range_cell(r, COL_MIN, m.min, target);
+        add_range_cell(r, COL_MAX, m.max, target);
 
         auto* learn = new QToolButton;
         const bool learning = mapper.learning_row() == r;
@@ -260,13 +266,27 @@ void MidiMappingsDialog::commit_row(int row) {
         static_cast<QComboBox*>(table->cellWidget(row, COL_SOURCE))->currentIndex());
     m.channel = static_cast<QComboBox*>(table->cellWidget(row, COL_CHANNEL))->currentIndex() - 1;
     m.number = static_cast<QSpinBox*>(table->cellWidget(row, COL_NUMBER))->value();
-    m.target =
-        static_cast<QComboBox*>(table->cellWidget(row, COL_TARGET))->currentData().toString();
     m.mode = MidiMapping::Mode(
         static_cast<QComboBox*>(table->cellWidget(row, COL_MODE))->currentIndex());
-    m.min = static_cast<QSpinBox*>(table->cellWidget(row, COL_MIN))->value() / 100.0;
-    m.max = static_cast<QSpinBox*>(table->cellWidget(row, COL_MAX))->value() / 100.0;
-    rebuilding = true; // our own edit: the widgets already show it
+    // Min/Max are shown in the old target's unit: read them before a target change.
+    const MidiTarget* shown = mapper.target(m.target);
+    if (shown && shown->knob) {
+        const double lo = shown->knob->minimum();
+        const double span = shown->knob->maximum() - lo;
+        auto share = [&](int column) {
+            const double v = static_cast<QDoubleSpinBox*>(table->cellWidget(row, column))->value();
+            return span > 0.0 ? std::clamp((v - lo) / span, 0.0, 1.0) : 0.0;
+        };
+        m.min = share(COL_MIN);
+        m.max = share(COL_MAX);
+    }
+    const QString new_target =
+        static_cast<QComboBox*>(table->cellWidget(row, COL_TARGET))->currentData().toString();
+    const bool target_changed = new_target != m.target;
+    m.target = new_target;
+    // Our own edit: the widgets already show it — unless the target changed, whose
+    // Min/Max cells need the new unit (let the table rebuild).
+    rebuilding = !target_changed;
     mapper.set_mappings(list);
     rebuilding = false;
 }
@@ -316,13 +336,33 @@ void MidiMappingsDialog::save_mappings() {
     }
 }
 
-void MidiMappingsDialog::add_percent_cell(int row, int column, double value) {
-    auto* sp = new QSpinBox;
-    sp->setRange(0, 100);
-    sp->setValue(qRound(value * 100.0));
-    sp->setToolTip("Share of the knob's range the controller sweeps (knobs only); "
-                   "Min above Max reverses the sweep");
-    connect(sp, &QSpinBox::valueChanged, this, [this, row] {
+void MidiMappingsDialog::add_range_cell(int row, int column, double share,
+                                        const MidiTarget* target) {
+    auto* sp = new QDoubleSpinBox;
+    if (!target || !target->knob) {
+        sp->setEnabled(false);
+        sp->setSpecialValueText("—"); // shown at the minimum
+        sp->setValue(sp->minimum());
+        sp->setToolTip("Only knobs have a range");
+        table->setCellWidget(row, column, sp);
+        return;
+    }
+    const KnobWidget* k = target->knob;
+    const double lo = k->minimum(), hi = k->maximum();
+    const double span = hi - lo;
+    const double snap = k->get_snap();
+    const int decimals = snap >= 1.0 ? 0 : snap > 0.0 ? 1 : span >= 100.0 ? 0 : span >= 10.0 ? 1 : 2;
+    sp->setDecimals(decimals);
+    sp->setRange(lo, hi);
+    sp->setSingleStep(snap > 0.0 ? snap : std::pow(10.0, -decimals));
+    if (!k->get_unit().isEmpty()) {
+        sp->setSuffix(" " + k->get_unit());
+    }
+    sp->setValue(lo + share * span);
+    sp->setToolTip(QString("%1 at the %2 of the controller's travel; Min above Max reverses "
+                           "the sweep")
+                       .arg(k->get_label(), column == COL_MIN ? "start" : "end"));
+    connect(sp, &QDoubleSpinBox::valueChanged, this, [this, row] {
         commit_row(row);
     });
     table->setCellWidget(row, column, sp);

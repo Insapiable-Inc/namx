@@ -382,7 +382,7 @@ blinks on every incoming message.
 | **MIDI → Devices** | Enable or disable each input device |
 | **MIDI → Follow MIDI Clock** | Incoming clock sets the tempo (averaged over four beats) |
 
-Modes: **Absolute** (the CC sets the value; *Min/Max %* limit the sweep, e.g. an
+Modes: **Absolute** (the CC sets the value; *Min/Max* — in the knob's own unit (st, %, dB, Hz) — limit the sweep, e.g. an
 expression pedal over part of a knob), **Relative** (endless encoders: 1–63 up,
 65–127 down), **Toggle** (each press flips a switch or fires an action; the default for
 footswitches), **Momentary** (on while held). Learn picks Absolute for a knob moved by a
