@@ -923,7 +923,8 @@ for the backend work (Phase 21), and a second full review follows the big change
       the library scan), 16–17 (JACK: client not closed on shutdown; sample-rate
       changes not propagated), ~~18~~ (done with 04),
       19 (mono→stereo exposes stale right-channel state), 21 (model change freezes
-      the GUI, double prewarm), ~~22~~ (done 2026-10-02),
+      the GUI — halved 2026-10-02: one parse, no double prewarm, 27 → 13.5 ms per switch;
+      a background loader only if big models still stutter), ~~22~~ (done 2026-10-02),
       ~~23~~ (done 2026-10-02), 24 (IR truncation silent/abrupt),
       26 (limiter scans the whole look-ahead per sample), ~~27~~ (done 2026-10-02), ~~28~~ (done 2026-10-02).
 - [ ] Belong elsewhere: 20 (bypass cuts tails → "Trails", with Phase 22),

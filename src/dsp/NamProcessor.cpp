@@ -26,8 +26,9 @@ void NamProcessor::ModelPair::reset(double rate, size_t max_frames) {
             : max_frames;
     const double model_rate = resample ? native : rate;
     for (nam::DSP* m : {l.get(), r.get()}) {
+        // Reset() prewarms too (the core's default); a second prewarm() was just
+        // repeated work on the GUI thread (review item 21).
         m->Reset(model_rate, static_cast<int>(model_frames)); // the NAM core counts in int
-        m->prewarm();
     }
     if (resample) {
         for (unique_ptr<Resampler>* rs : {&resampler_l, &resampler_r}) {
@@ -57,8 +58,10 @@ bool NamProcessor::load_model(const string& path) {
     // so L and R can diverge (e.g. after a pre-NAM stereo effect).
     auto pair = make_unique<ModelPair>();
     try {
-        pair->l = nam::get_dsp(std::filesystem::path(path));
-        pair->r = nam::get_dsp(std::filesystem::path(path));
+        // Read and parse the file once; build both instances from it (review item 21).
+        nam::dspData parsed;
+        pair->l = nam::get_dsp(std::filesystem::path(path), parsed);
+        pair->r = nam::get_dsp(parsed);
     } catch (const std::exception& e) {
         last_error = e.what();
         qCWarning(lc_audio, "[NamProcessor] Failed to load model: %s", e.what());
