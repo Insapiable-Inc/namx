@@ -508,28 +508,6 @@ QDialog#midiMappings QCheckBox {
 }
 
 /* === Library dock === */
-QDockWidget {
-    color: #9aa1ad;
-    font-weight: 600;
-    titlebar-close-icon: none;
-    titlebar-normal-icon: none;
-}
-QDockWidget::title {
-    background-color: #1a1d24;
-    border-bottom: 1px solid #2a2f38;
-    padding: 5px 8px;
-    text-align: left;
-}
-QDockWidget::close-button, QDockWidget::float-button {
-    border: none;
-    background: transparent;
-    padding: 0;
-    icon-size: 12px;
-}
-QDockWidget::close-button:hover, QDockWidget::float-button:hover {
-    background-color: #2f3744;
-    border-radius: 3px;
-}
 QWidget#libraryPanel {
     background-color: #15171c;
 }

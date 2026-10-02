@@ -263,6 +263,7 @@ MainWindow::MainWindow(QWidget* parent)
         if (!state.isEmpty()) {
             restoreState(state); // dock position + visibility
         }
+        library_dock->setFloating(false); // a floating dock without a title bar can't be moved
     }
 
     setup_audio();
@@ -1267,8 +1268,9 @@ void MainWindow::setup_ui() {
     library_dock = new QDockWidget("Library", this);
     library_dock->setObjectName("libraryDock"); // saveState() needs a name
     library_dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-    library_dock->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable |
-                              QDockWidget::DockWidgetFloatable);
+    // No title bar: the Library / TONE3000 tabs head the dock; Ctrl+L shows and hides it.
+    library_dock->setTitleBarWidget(new QWidget(library_dock));
+    library_dock->setFeatures(QDockWidget::DockWidgetClosable);
     library_dock->setWidget(library_tabs);
     addDockWidget(Qt::LeftDockWidgetArea, library_dock);
     resizeDocks({library_dock}, {320}, Qt::Horizontal);
