@@ -32,7 +32,6 @@
 #include "CompressorProcessor.h"
 #include "DelayProcessor.h"
 #include "Denormals.h"
-#include "DoublerProcessor.h"
 #include "DriveProcessor.h"
 #include "DynamicWahProcessor.h"
 #include "EQProcessor.h"
@@ -77,8 +76,6 @@ static const std::map<string, std::uint64_t> GOLDEN = {
     {"delay-stereo-mod-sat/stereo", 0x8d406d0d286cd103ull},
     {"delay/mono", 0x78f0426cf3c35cadull},
     {"delay/stereo", 0x918f8f162e6ea7b2ull},
-    {"doubler/mono", 0xac9d0d1465f2754aull},
-    {"doubler/stereo", 0xb4c6248f4f5cc715ull},
     {"drive/mono", 0x735229383a5a3f31ull},
     {"drive/stereo", 0xc9dba72e9bc7abe9ull},
     {"eq/mono", 0x454f5b66d4a3d135ull},
@@ -434,9 +431,6 @@ void DspGoldenTest::initTestCase() {
     both("phaser-vibe-stereo", &make_phaser_vibe_stereo);
     both("drive", &make_drive);
     both("eq", &make_eq);
-    both("doubler", [] {
-        return make_unique<DoublerProcessor>();
-    });
     for (int mode = ChorusProcessor::NORMAL; mode <= ChorusProcessor::SPATIAL; ++mode) {
         both("chorus-" + std::to_string(mode), [mode] {
             return make_chorus(mode);

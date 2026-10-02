@@ -782,8 +782,12 @@ acoustic models. UI: cards gained ▾ detail rows for advanced knobs (`addDetail
       Done 2026-10-01: Audio (devices; rate/buffer read-only — server-owned), MIDI,
       Library (replaces the Folders dialog), Tuner, Shortcuts (built live from the
       window); instant apply. Theme waits for Phase 19; "meter options" dropped. The
-      Shortcuts page shows the open gap: 13 digit keys for 17 effects — Delay, Reverb,
-      Cabinet and Volume have no on/off key.
+      Shortcuts page shows the open gap: 13 digit keys for 16 effects — the last three
+      rows have no on/off key.
+- [x] **Doubler removed** (2026-10-01): sounded like a flanger to the user. Old presets,
+      sessions and the stored order drop the `doubler` ID through the sanitizer.
+      Transpose tried on distorted guitar: "not bad, not professional grade" — see the
+      Transpose latency note in the ideas list.
 - [ ] **Layout:** ~~bypassed cards dim~~ (done 2026-08-23); ~~2-column knob grid for
       one-height columns~~ and ~~device row moved to Settings~~ (both superseded
       2026-08-23 — uniform 62 px rows and the status bar device pickers); remaining:

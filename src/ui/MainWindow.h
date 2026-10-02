@@ -387,9 +387,6 @@ private:
     KnobWidget* knob_drive_tone = nullptr;
     KnobWidget* knob_drive_level = nullptr;
 
-    ToggleSwitch* sw_doubler_enable = nullptr;
-    KnobWidget* knob_dbl_spread = nullptr;
-    KnobWidget* knob_dbl_mix = nullptr;
 
     ToggleSwitch* sw_volume_enable = nullptr;
     KnobWidget* knob_vol_pos = nullptr;

@@ -12,7 +12,6 @@
 #include "Common.h"
 #include "CompressorProcessor.h"
 #include "DelayProcessor.h"
-#include "DoublerProcessor.h"
 #include "DriveProcessor.h"
 #include "DynamicWahProcessor.h"
 #include "EQProcessor.h"
@@ -168,9 +167,6 @@ public:
     DriveProcessor& get_drive() {
         return drive;
     }
-    DoublerProcessor& get_doubler() {
-        return doubler;
-    }
     VolumeProcessor& get_volume() {
         return volume;
     }
@@ -281,7 +277,6 @@ private:
     ReverbProcessor reverb;
     IRProcessor ir;
     DriveProcessor drive;
-    DoublerProcessor doubler;
     VolumeProcessor volume;
     OutputLimiter limiter;
     TransposeProcessor transpose;

@@ -469,12 +469,12 @@ the effects loop, after the amp, so it swells the level without changing the amp
 
 ```
 input ─▶ Input Gain ─▶ Tuner ─▶ Transpose ─▶ Noise Gate ─▶ Compressor ─▶ Wah ─▶ Flanger ─▶ Phaser ─▶ Drive
-      ─▶ Amplifier (NAM) ─▶ Volume Pedal ─▶ Equalizer ─▶ Doubler ─▶ Chorus ─▶ Tremolo ─▶ Delay ─▶ Reverb
+      ─▶ Amplifier (NAM) ─▶ Volume Pedal ─▶ Equalizer ─▶ Chorus ─▶ Tremolo ─▶ Delay ─▶ Reverb
       ─▶ Cabinet (IR A + IR B) ─▶ Output Gain ─▶ Limiter ─▶ (+ metronome) ─▶ output L/R
 ```
 
 The chain starts mono. Effects in stereo mode (Chorus, Tremolo, Delay, Reverb by
-default; Flanger/Phaser when switched; the Doubler; a panned Cabinet) make it stereo from
+default; Flanger/Phaser when switched; a panned Cabinet) make it stereo from
 there on. A stereo signal reaching the Amplifier is summed to mono unless its **Stereo**
 switch is on, which runs the model once per channel at twice the CPU.
 
@@ -485,7 +485,6 @@ switch is on, which runs the model once per channel at twice the CPU.
 | Dynamic Wah | Mix, Sensitivity, Resonance, Mode (Auto / Pedal), Position | — |
 | Flanger / Phaser / Chorus | Mix, Rate (Sync), Depth, Feedback | Flanger Range · Phaser Mode (Classic / Vibe) · Chorus Mode (Normal / Tri / Vintage / Spatial) |
 | Equalizer | Bass, Middle, High-Mid, Treble (±12 dB) | the four band frequencies, Low Cut, High Cut |
-| Doubler | Mix, Spread (3–20 ms) | — |
 | Delay | Mix, Time (Sync), Feedback | R Time, Cross-feed, Low/High Cut, Saturation, Modulation, Crystals |
 | Reverb | Mix, Decay, Damping, Width | Pre-delay, Low/High Cut, Shimmer |
 | Cabinet | IR A (library, ‹ ›) | Level/Pan/Ø A, Blend, Low/High Cut · IR B (‹ ›, Choose…, ×), Level/Pan/Ø B |

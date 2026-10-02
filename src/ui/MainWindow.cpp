@@ -766,24 +766,6 @@ void MainWindow::setup_ui() {
         fx_cols[&engine->get_eq()] = col;
     }
 
-    // Doubler
-    {
-        using namespace NAMConstants;
-        knob_dbl_spread = new KnobWidget("Spread", DOUBLER_SPREAD_MIN, DOUBLER_SPREAD_MAX,
-                                         DOUBLER_SPREAD_DEFAULT, "ms");
-        knob_dbl_mix =
-            new KnobWidget("Mix", DOUBLER_MIX_MIN, DOUBLER_MIX_MAX, DOUBLER_MIX_DEFAULT, "%");
-        knob_dbl_spread->set_scroll_step(0.5);
-        knob_dbl_mix->set_scroll_step(1.0);
-        QWidget* col =
-            make_effect_row("Doubler", sw_doubler_enable, {knob_dbl_mix, knob_dbl_spread});
-        col->setToolTip(
-            "Double-tracking from a mono signal: left dry, right a drifting delayed copy.\n"
-            "Passes a stereo input through untouched.");
-        Theme::tag_card(col, "doubler");
-        fx_cols[&engine->get_doubler()] = col;
-    }
-
     // Volume pedal
     {
         using namespace NAMConstants;
@@ -1170,7 +1152,6 @@ void MainWindow::setup_ui() {
         {&engine->get_reverb(), {sw_reverb_enable, nullptr}},
         {&engine->get_ir(), {sw_ir_enable, nullptr}},
         {&engine->get_drive(), {sw_drive_enable, nullptr}},
-        {&engine->get_doubler(), {sw_doubler_enable, nullptr}},
         {&engine->get_volume(), {sw_volume_enable, nullptr}},
         {&engine->get_transpose(), {sw_transpose_enable, nullptr}},
     };
@@ -2538,16 +2519,6 @@ void MainWindow::register_parameters() {
     });
     knob_param("eq", "treble", knob_treble, [e](double v) {
         e->get_eq().set_treble_gain(v);
-    });
-
-    toggle_param("doubler", "enabled", sw_doubler_enable, [e](bool b) {
-        e->get_doubler().set_enabled(b);
-    });
-    knob_param("doubler", "spread", knob_dbl_spread, [e](double v) {
-        e->get_doubler().set_spread(static_cast<float>(v));
-    });
-    knob_param("doubler", "mix", knob_dbl_mix, [e](double v) {
-        e->get_doubler().set_mix_pct(static_cast<float>(v));
     });
 
     toggle_param("chorus", "enabled", sw_chorus_enable, [e](bool b) {

@@ -92,14 +92,14 @@ Qt6 application with a platform audio backend behind the `IAudioBackend` interfa
 
 ### Signal chain
 
-`AudioEngine` (implements `IAudioBackend::Callback`) owns all processors and a **double-buffered chain** (two `std::vector<EffectBase*>` + atomic index) iterated every callback. **Processing order = UI order** — `MainWindow::rebuild_effect_strip` lays the cards out by iterating `get_chain()`, and the user can reorder by dragging cards. Each effect has a stable string ID (`AudioEngine::effect_table` — never rename); `set_chain_order(ids)` sanitizes (unknown IDs dropped, missing effects at default slot) and swaps RT-safely, flagging moved effects for an audio-thread `reset()` via `request_reset()`/`consume_pending_reset()`. All 17 effects reorder freely — nothing is pinned; only the Input/Output gain stages, the output limiter and the metronome sit outside the chain. New effect IDs are appended to the table at their default slot, and old sessions/presets get them there via the sanitizer. The default order:
+`AudioEngine` (implements `IAudioBackend::Callback`) owns all processors and a **double-buffered chain** (two `std::vector<EffectBase*>` + atomic index) iterated every callback. **Processing order = UI order** — `MainWindow::rebuild_effect_strip` lays the cards out by iterating `get_chain()`, and the user can reorder by dragging cards. Each effect has a stable string ID (`AudioEngine::effect_table` — never rename); `set_chain_order(ids)` sanitizes (unknown IDs dropped, missing effects at default slot) and swaps RT-safely, flagging moved effects for an audio-thread `reset()` via `request_reset()`/`consume_pending_reset()`. All 16 effects reorder freely — nothing is pinned; only the Input/Output gain stages, the output limiter and the metronome sit outside the chain. New effect IDs are appended to the table at their default slot, and old sessions/presets get them there via the sanitizer. The default order:
 
 ```
 mono input → input gain (smoothed)
   → Tuner → Transpose → Gate → Compressor → Wah → Flanger → Phaser → Drive   (mono section)
   → NAM model (sums a stereo input unless the Amplifier's Stereo switch is on)
   → Volume pedal (first in the effects loop) → EQ
-  → Doubler → Chorus → Tremolo → Delay → Reverb                              (stereo-capable)
+  → Chorus → Tremolo → Delay → Reverb                              (stereo-capable)
   → Cabinet (2 IR slots)
   → output gain (smoothed) → output limiter → meter → + metronome → stereo out (L, R)
 ```
@@ -140,7 +140,7 @@ All effects inherit `EffectBase` (`src/dsp/EffectBase.h` — the header comment 
 | `ChorusProcessor`, `FlangerProcessor`, `PhaserProcessor`, `TremoloProcessor` | `src/dsp/…` | Modulation effects; stereo variants use LFO phase offsets |
 | `DelayProcessor` | `src/dsp/DelayProcessor.h/cpp` | Ping-pong stereo delay |
 | `ReverbProcessor` | `src/dsp/ReverbProcessor.h/cpp` | Freeverb (8 comb + 4 all-pass, stereo) + pre-delay, wet cuts, shimmer |
-| `DriveProcessor`, `DoublerProcessor`, `VolumeProcessor`, `TransposeProcessor` | `src/dsp/…` | Phase 17 stages: TS-style drive, double-tracker, volume pedal with mid-point, ±12 st transpose |
+| `DriveProcessor`, `VolumeProcessor`, `TransposeProcessor` | `src/dsp/…` | Phase 17 stages: TS-style drive, volume pedal with mid-point, ±12 st transpose |
 | `PitchShifter` | `src/dsp/PitchShifter.h` | Two-tap Hann delay-line shifter with WSOLA re-alignment (Transpose, Shimmer, Crystals) |
 | `OutputLimiter` | `src/dsp/OutputLimiter.h/cpp` | Output-stage look-ahead limiter (not an effect; registry key `limiter`) |
 | `MainWindow` | `src/ui/MainWindow.h/cpp` | Window assembly, parameter registry, effect strip + DnD reorder, session state |

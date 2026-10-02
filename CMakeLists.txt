@@ -133,8 +133,6 @@ set(GUI_SOURCES
     src/dsp/Metronome.cpp
     src/dsp/DriveProcessor.cpp
     src/dsp/DriveProcessor.h
-    src/dsp/DoublerProcessor.cpp
-    src/dsp/DoublerProcessor.h
     src/dsp/VolumeProcessor.cpp
     src/dsp/VolumeProcessor.h
     src/dsp/OutputLimiter.cpp

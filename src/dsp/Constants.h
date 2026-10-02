@@ -169,14 +169,6 @@ constexpr double DRIVE_LEVEL_MIN = -20.0;
 constexpr double DRIVE_LEVEL_MAX = 20.0;
 constexpr double DRIVE_LEVEL_DEFAULT = 0.0;
 
-// Doubler
-constexpr double DOUBLER_SPREAD_MIN = 3.0;
-constexpr double DOUBLER_SPREAD_MAX = 20.0;
-constexpr double DOUBLER_SPREAD_DEFAULT = 10.0;
-constexpr double DOUBLER_MIX_MIN = 0.0;
-constexpr double DOUBLER_MIX_MAX = 100.0;
-constexpr double DOUBLER_MIX_DEFAULT = 100.0;
-
 // Volume pedal
 constexpr double VOLUME_POS_MIN = 0.0;
 constexpr double VOLUME_POS_MAX = 100.0;

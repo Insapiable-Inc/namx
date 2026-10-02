@@ -46,7 +46,6 @@ AudioEngine::AudioEngine() {
         {"nam", &nam},
         {"volume", &volume}, // first in the effects loop: swells without touching amp gain
         {"eq", &eq},
-        {"doubler", &doubler},
         {"chorus", &chorus},
         {"tremolo", &tremolo},
         {"delay", &delay},

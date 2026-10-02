@@ -29,7 +29,6 @@
 #include "CompressorProcessor.h"
 #include "DelayProcessor.h"
 #include "Denormals.h"
-#include "DoublerProcessor.h"
 #include "DriveProcessor.h"
 #include "DynamicWahProcessor.h"
 #include "EQProcessor.h"
@@ -159,7 +158,6 @@ int run(int argc, char** argv) {
     ReverbProcessor reverb;
     IRProcessor cab;
     DriveProcessor drive;
-    DoublerProcessor doubler;
     VolumeProcessor volume;
     OutputLimiter limiter;
     TransposeProcessor transpose;
@@ -176,11 +174,10 @@ int run(int argc, char** argv) {
         {"Gate", &gate, {}},       {"Compressor", &comp, {}},
         {"Wah", &wah, {}},         {"Flanger", &flanger, {}},
         {"Phaser", &phaser, {}},   {"Drive", &drive, {}},
-        {"Amp", &nam, {}},         {"EQ", &eq, {}},
-        {"Doubler", &doubler, {}}, {"Chorus", &chorus, {}},
+        {"Amp", &nam, {}},         {"Volume", &volume, {}},
+        {"EQ", &eq, {}},           {"Chorus", &chorus, {}},
         {"Tremolo", &tremolo, {}}, {"Delay", &delay, {}},
         {"Reverb", &reverb, {}},   {"Cab", &cab, {}},
-        {"Volume", &volume, {}},
     };
 
     for (auto& s : chain) {
