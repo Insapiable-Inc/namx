@@ -68,6 +68,7 @@ jobs:
           ./build-release/Tone3000ClientTest
           ./build-release/MidiMapperTest
           ./build-release/DspGoldenTest
+          ./build-release/WavReaderTest
 
       - name: Packaging files + install layout
         working-directory: gui

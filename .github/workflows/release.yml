@@ -81,6 +81,7 @@ jobs:
           ./build-release/Tone3000ClientTest
           ./build-release/MidiMapperTest
           ./build-release/DspGoldenTest
+          ./build-release/WavReaderTest
       - name: Validate packaging files + install layout
         working-directory: gui
         run: |
@@ -120,6 +121,7 @@ jobs:
           ./build-release/Tone3000ClientTest
           ./build-release/MidiMapperTest
           ./build-release/DspGoldenTest
+          ./build-release/WavReaderTest
           DESTDIR="$PWD/stage" cmake --install build-release --prefix /usr
           find stage -type f | sort
 
