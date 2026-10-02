@@ -44,6 +44,7 @@ AudioEngine::AudioEngine() {
         {"phaser", &phaser},
         {"drive", &drive}, // Phase 17 — new IDs re-enter old sessions here
         {"nam", &nam},
+        {"volume", &volume}, // first in the effects loop: swells without touching amp gain
         {"eq", &eq},
         {"doubler", &doubler},
         {"chorus", &chorus},
@@ -51,7 +52,6 @@ AudioEngine::AudioEngine() {
         {"delay", &delay},
         {"reverb", &reverb},
         {"ir", &ir},
-        {"volume", &volume},
     };
     auto chain = make_unique<Chain>();
     chain->reserve(effect_table.size());

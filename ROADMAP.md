@@ -886,6 +886,12 @@ place where the numbers are edited. Options weighed on 2026-10-01:
 
 ## Ideas parking lot (not committed)
 
+- **Transpose latency** (measured 2026-10-01): pitch is accurate (median within ±0.3 cents
+  over 110–330 Hz, −12…+12 st; brief ±10–15 cent wobble at crossfades when shifting up),
+  but a shift costs ~30 ms of latency (50 ms window; 3 ms at 0 st) — noticeable for
+  drop tunings. A 25–30 ms window would give ~13–15 ms at the cost of more artifacts on
+  low notes; a lower-latency algorithm is a bigger project. Chords not evaluated.
+
 - **A catchy name for the app** (2026-10-01): "NAM Player" is a placeholder.
   **Candidate: NAM-X**, namespace `namx` (user's pick, 2026-10-01 — not applied yet).
   Before committing to it:

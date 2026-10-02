@@ -464,12 +464,13 @@ of opening it.
 
 ## 7. Signal chain
 
-Default order (drag the ≡ grips to reorder any effect):
+Default order (drag the ≡ grips to reorder any effect). The Volume Pedal sits first in
+the effects loop, after the amp, so it swells the level without changing the amp's gain:
 
 ```
 input ─▶ Input Gain ─▶ Tuner ─▶ Transpose ─▶ Noise Gate ─▶ Compressor ─▶ Wah ─▶ Flanger ─▶ Phaser ─▶ Drive
-      ─▶ Amplifier (NAM) ─▶ Equalizer ─▶ Doubler ─▶ Chorus ─▶ Tremolo ─▶ Delay ─▶ Reverb
-      ─▶ Cabinet (IR A + IR B) ─▶ Volume Pedal ─▶ Output Gain ─▶ Limiter ─▶ (+ metronome) ─▶ output L/R
+      ─▶ Amplifier (NAM) ─▶ Volume Pedal ─▶ Equalizer ─▶ Doubler ─▶ Chorus ─▶ Tremolo ─▶ Delay ─▶ Reverb
+      ─▶ Cabinet (IR A + IR B) ─▶ Output Gain ─▶ Limiter ─▶ (+ metronome) ─▶ output L/R
 ```
 
 The chain starts mono. Effects in stereo mode (Chorus, Tremolo, Delay, Reverb by
