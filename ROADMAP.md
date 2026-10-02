@@ -36,7 +36,8 @@ Decisions:
   the same day: `gui/LICENSE`, PKGBUILD, AppStream, Windows zip, README.
 - **Execution order:** 7 → 11 → 12 → 8 (packaging) → **tag v1.0** → 13 → 14 →
   15 (absorbs Phase 10 tempo) → 16 → 17 → 20 (C++ guidelines, decided 2026-10-01)
-  → 18 → 22 (DSP quality, added 2026-10-01 as the immediate next milestone) → 19
+  → 18 → 22 (DSP quality, added 2026-10-01 as the immediate next milestone) → 23
+  (expression pedals, added 2026-10-02) → 19
   → 21 (ASIO, last: needs a Windows machine); Phase 9 (knob tapers) slots in
   wherever a knob-heavy phase touches the widgets (17 at the latest).
 
@@ -903,6 +904,32 @@ it for the one it replaces, and is measured with `NAMPlayerBench`.
       **Compressor:** smooth-branching detector + soft knee.
 - [ ] Re-enable Shimmer and Crystals on the new high-quality shifter (latency is
       irrelevant inside tails).
+
+## Phase 23 — Expression pedals: range, reverse, whammy (added 2026-10-02; after 22, before 19)
+
+The pedal-like effects — Dynamic Wah (Position, Pedal mode), Transpose (Semitones) and
+the Volume pedal — get the controls a real expression setup has. MIDI multi-assign
+(one pedal → several targets, Min above Max reverses a sweep; tested in
+`MidiMapperTest`) already works and must keep working.
+
+- [ ] **Heel/toe range in real units.** MIDI → Mappings… already has Min/Max per row,
+      but as a percentage of the knob's span — "Transpose 0 to +12 st" is Min 50 %,
+      Max 100 % today. Show and edit Min/Max in the target's own unit (st, %, dB),
+      so a wah can stop short of the toe, Transpose sweeps 0…+12 or 0…−12 st, and the
+      Volume pedal stays above a floor. Stored as today (0…1 share): no file change.
+- [ ] **Reverse switch** in the Stereo column of Wah, Transpose and Volume (none of
+      them uses that column): flips which end of the pedal is heel and which is toe
+      for every controller driving that parameter. Decide first how it relates to
+      per-mapping Min > Max (probably: Reverse flips the effect's pedal axis, and the
+      mapping range is applied on top). Registered with `toggle_param`, saved in
+      presets; the knob always shows the real value.
+- [ ] **Transpose: Discrete / Continuous** switch in the Sync column. Discrete =
+      today's whole-semitone snap; Continuous = smooth glides for whammy-style
+      bends (`PitchShifter::set_semitones` already takes fractions). Smooth the
+      ratio per block so a fast pedal doesn't zipper; listen for the WSOLA
+      crossfade wobble on sweeps, and re-check with the Phase 22 shifter.
+- [ ] Manual check with a real pedal: wah stopped short of the toe, 0…+12 st whammy,
+      reversed volume, a crossfade volume ↔ wah on one pedal.
 
 ## Phase 21 — Windows audio: WASAPI exclusive + ASIO (added 2026-10-01; last — no Windows machine to test on yet)
 
