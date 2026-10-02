@@ -67,7 +67,8 @@ private:
 };
 
 // One proxy per kind: kind filter, search words, All / Favorites / Recent
-// mode and the sort key. Recent mode always sorts by recency.
+// mode and the sort key. Recent mode always sorts by recency. Each section keeps
+// its own search, so filtering one leaves the others' ‹ › order untouched.
 class LibraryFilterProxy : public QSortFilterProxyModel
 {
     Q_OBJECT
@@ -87,6 +88,9 @@ public:
     explicit LibraryFilterProxy(LibraryEntry::Kind new_kind, QObject* parent = nullptr);
 
     void set_search(const QString& text);
+    const QString& get_search() const {
+        return search_text;
+    }
     void set_mode(Mode m);
     void set_sort_key(Sort s);
 
@@ -96,6 +100,7 @@ protected:
 
 private:
     LibraryEntry::Kind kind;
+    QString search_text;
     QStringList words;
     Mode mode{Mode::ALL};
     Sort sort_order{Sort::NAME};

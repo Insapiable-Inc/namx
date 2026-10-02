@@ -20,6 +20,7 @@
 #include <QPainter>
 #include <QPushButton>
 #include <QSettings>
+#include <QSignalBlocker>
 #include <QTabWidget>
 #include <QTimer>
 #include <QToolButton>
@@ -154,6 +155,7 @@ LibraryFilterProxy::LibraryFilterProxy(LibraryEntry::Kind new_kind, QObject* par
 void LibraryFilterProxy::set_search(const QString& text) {
     // Qt 6.10 deprecated invalidateFilter(); Ubuntu 22.04's Qt 6.2 lacks the
     // replacement.
+    search_text = text;
 #if QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
     beginFilterChange();
     words = text.simplified().split(' ', Qt::SkipEmptyParts);
@@ -498,6 +500,10 @@ void LibraryPanel::set_section(int new_section, bool focus_list) {
     connect(view->selectionModel(), &QItemSelectionModel::currentChanged, this,
             &LibraryPanel::on_current_changed);
     syncing = false;
+    {
+        const QSignalBlocker block(search);
+        search->setText(proxies[new_section]->get_search());
+    }
 
     restore_current_from_loaded();
     update_counts();
@@ -651,9 +657,7 @@ void LibraryPanel::update_counts() {
 }
 
 void LibraryPanel::apply_search(const QString& text) {
-    for (auto* p : proxies) {
-        p->set_search(text);
-    }
+    proxies[section]->set_search(text);
     update_counts();
     restore_current_from_loaded();
 }
