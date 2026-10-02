@@ -424,7 +424,7 @@ thread, metadata is cached, and the list follows changes on disk.
 
 The **Amplifier** and **Cabinet** rows show the loaded file with its metadata
 (architecture, sample rate, gear; rate, channels, length). **‹ ›** step through the
-library in its current visible order; **Browse** focuses the matching section. Files can
+library in its current visible order; clicking the file name focuses the matching section. Files can
 also be dropped onto the window, imported through **Library → Import…**, or unloaded
 from the row's right-click menu. The **On/Off** toggle bypasses the stage without
 unloading it.

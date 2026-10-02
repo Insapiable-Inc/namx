@@ -84,6 +84,7 @@ static constexpr int GRIP_COLUMN_WIDTH = 22; // "≡" drag handle
 static constexpr int NAME_COLUMN_WIDTH = 120; // fits "Dynamic Wah"
 static constexpr int ENABLE_SLOT_WIDTH = 74; // toggle + "On"/"Off" caption
 static constexpr int STEREO_SLOT_WIDTH = 96; // toggle + "Stereo" caption
+static constexpr int SYNC_SLOT_WIDTH = 80; // toggle + "Sync" caption
 // Every row is exactly as tall as a knob row (40 px dial + knob margins +
 // card margins + border), so knob-less rows and the tuner match the rest.
 static constexpr int ROW_CARD_HEIGHT = 62;
@@ -137,18 +138,35 @@ static QWidget* make_stereo_slot(ToggleSwitch** out_toggle) {
     return w;
 }
 
-// A card's main row (grip, name, enable slot, stereo slot, controls…).
+// The Sync column, right of Stereo: reserved on every row like the stereo slot, and
+// filled by add_tempo_sync on the rows whose time/rate knob can follow the tempo.
+static QWidget* make_sync_slot() {
+    auto* w = new QWidget;
+    w->setObjectName("syncSlot");
+    w->setFixedWidth(SYNC_SLOT_WIDTH);
+    auto* lay = new QHBoxLayout(w);
+    lay->setContentsMargins(0, 0, 0, 0);
+    lay->setSpacing(6);
+    return w;
+}
+
+// A card's main row (grip, name, enable slot, stereo slot, sync slot, controls…).
 static QHBoxLayout* row_layout(QWidget* card) {
     return static_cast<QHBoxLayout*>(
         card->findChild<QWidget*>("cardRow", Qt::FindDirectChildrenOnly)->layout());
 }
 
-// Rows without a stereo mode (Gate, Compressor) show their gain-reduction
-// meter in the reserved stereo slot, so the knob column stays aligned.
-static void place_in_stereo_slot(QWidget* card, QWidget* w) {
-    // Main row: grip, name, enable slot, stereo slot, …
-    QWidget* slot = row_layout(card)->itemAt(3)->widget();
-    slot->layout()->addWidget(w);
+// Rows without Stereo or Sync (Gate, Compressor) show their gain-reduction meter
+// across both switch columns; the knob column stays aligned.
+static void place_across_switch_columns(QWidget* card, QWidget* w) {
+    // Main row: grip, name, enable slot, stereo slot, sync slot, …
+    QWidget* stereo_slot = row_layout(card)->itemAt(3)->widget();
+    QWidget* sync_slot = card->findChild<QWidget*>("syncSlot");
+    const int width = STEREO_SLOT_WIDTH + row_layout(card)->spacing() + SYNC_SLOT_WIDTH;
+    sync_slot->hide(); // a hidden widget takes no space or spacing in the row
+    stereo_slot->setFixedWidth(width);
+    w->setFixedWidth(width);
+    stereo_slot->layout()->addWidget(w);
 }
 
 static QString format_hz(double hz, double off_at) {
@@ -340,9 +358,9 @@ void MainWindow::add_detail_row(QWidget* card, const QList<QWidget*>& widgets) {
     auto* row = new QWidget;
     row->setFixedHeight(DETAIL_ROW_HEIGHT);
     auto* lay = new QHBoxLayout(row);
-    // Indent to the knob column: margin + grip + name + enable + stereo slots.
-    const int indent =
-        10 + GRIP_COLUMN_WIDTH + NAME_COLUMN_WIDTH + ENABLE_SLOT_WIDTH + STEREO_SLOT_WIDTH + 4 * 10;
+    // Indent to the knob column: margin + grip + name + enable, stereo and sync slots.
+    const int indent = 10 + GRIP_COLUMN_WIDTH + NAME_COLUMN_WIDTH + ENABLE_SLOT_WIDTH +
+                       STEREO_SLOT_WIDTH + SYNC_SLOT_WIDTH + 5 * 10;
     lay->setContentsMargins(indent, 0, 10, 8);
     lay->setSpacing(10);
     for (QWidget* w : widgets) {
@@ -388,6 +406,7 @@ QWidget* MainWindow::make_effect_row(const QString& title, ToggleSwitch*& toggle
     lay->addWidget(make_enable_slot(toggle_out), 0, Qt::AlignVCenter);
 
     lay->addWidget(make_stereo_slot(stereo_toggle_out), 0, Qt::AlignVCenter);
+    lay->addWidget(make_sync_slot(), 0, Qt::AlignVCenter);
 
     for (auto* k : knobs) {
         lay->addWidget(k, 0, Qt::AlignVCenter);
@@ -538,6 +557,7 @@ void MainWindow::setup_ui() {
         sw_tuner_enable->setCheckable(true);
         lay->addWidget(make_enable_slot(sw_tuner_enable), 0, Qt::AlignVCenter);
         lay->addWidget(make_stereo_slot(nullptr), 0, Qt::AlignVCenter);
+        lay->addWidget(make_sync_slot(), 0, Qt::AlignVCenter);
 
         tuner_display = new TunerDisplay;
         tuner_display->setMaximumWidth(560); // one compact instrument, not a strip
@@ -621,7 +641,7 @@ void MainWindow::setup_ui() {
         QWidget* col = make_effect_row("Noise Gate", sw_gate_enable,
                                        {knob_gate_thresh, knob_gate_attack, knob_gate_release});
         gr_gate = new GainReductionMeter(40.0f, Theme::accent("gate"));
-        place_in_stereo_slot(col, gr_gate);
+        place_across_switch_columns(col, gr_gate);
         Theme::tag_card(col, "gate");
 
         fx_cols[&engine->get_gate()] = col;
@@ -650,7 +670,7 @@ void MainWindow::setup_ui() {
                                        {knob_comp_thresh, knob_comp_ratio, knob_comp_attack,
                                         knob_comp_release, knob_comp_makeup});
         gr_comp = new GainReductionMeter(20.0f, Theme::accent("comp"));
-        place_in_stereo_slot(col, gr_comp);
+        place_across_switch_columns(col, gr_comp);
         Theme::tag_card(col, "comp");
 
         fx_cols[&engine->get_comp()] = col;
@@ -1413,14 +1433,6 @@ void MainWindow::make_hero_controls(QWidget* card, LibraryEntry::Kind kind, QLab
     QToolButton* next = make_library_arrow(
         "›", +1, model ? "Next model in the library" : "Next IR in the library", kind);
 
-    auto* browse = new QPushButton("Browse");
-    browse->setToolTip(model ? "Show the model list in the Library"
-                             : "Show the IR list in the Library");
-    browse->setFocusPolicy(Qt::NoFocus);
-    connect(browse, &QPushButton::clicked, this, [this, kind] {
-        show_library_section(kind);
-    });
-
     // TONE3000 origin marker (the compact T3K mark), shown only when the
     // loaded file carries a download sidecar.
     origin_out = new QLabel;
@@ -1430,16 +1442,22 @@ void MainWindow::make_hero_controls(QWidget* card, LibraryEntry::Kind kind, QLab
     origin_out->setCursor(Qt::PointingHandCursor);
     origin_out->hide();
 
+    // The file name opens the Library on this row's section: the library is where
+    // models and IRs are browsed (and imported).
     name_out = new QLabel(model ? "No model loaded" : "No impulse response loaded");
     name_out->setObjectName("fileStatus");
+    name_out->setCursor(Qt::PointingHandCursor);
+    name_out->setToolTip(model ? "Show the models in the Library"
+                               : "Show the impulse responses in the Library");
+    name_out->setProperty("heroKind", static_cast<int>(kind));
+    name_out->installEventFilter(this);
     meta_out = new QLabel;
     meta_out->setObjectName("fileMeta");
 
-    // Before the trailing stretch: grip, name, toggle, stereo slot = 4 items.
-    int i = 4;
+    // After grip, name, enable, stereo and sync slots: starts at the knob column.
+    int i = lay->indexOf(card->findChild<QWidget*>("syncSlot")) + 1;
     lay->insertWidget(i++, prev, 0, Qt::AlignVCenter);
     lay->insertWidget(i++, next, 0, Qt::AlignVCenter);
-    lay->insertWidget(i++, browse, 0, Qt::AlignVCenter);
     lay->insertWidget(i++, origin_out, 0, Qt::AlignVCenter);
     lay->insertWidget(i++, name_out, 0, Qt::AlignVCenter);
     lay->insertWidget(i++, meta_out, 1, Qt::AlignVCenter);
@@ -1685,6 +1703,10 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* ev) {
         case QEvent::MouseButtonRelease:
             if (obj == drag_card) {
                 drag_card = nullptr;
+            }
+            if (const QVariant kind = obj->property("heroKind"); kind.isValid()) {
+                show_library_section(static_cast<LibraryEntry::Kind>(kind.toInt()));
+                return true;
             }
             if (obj == lbl_nam_origin || obj == lbl_ir_origin) {
                 // T3K mark on a hero row: open that tone in the TONE3000 tab.
@@ -2271,19 +2293,17 @@ void MainWindow::add_tempo_sync(QWidget* card, KnobWidget* free_knob, const QStr
     note->hide();
     lay->insertWidget(lay->indexOf(free_knob) + 1, note, 0, Qt::AlignVCenter);
 
-    // Sync switch at the end of the row (knob columns stay aligned).
+    // Sync switch in the row's Sync column, right of Stereo.
     auto* sw = new ToggleSwitch;
     sw->setCheckable(true);
-    sw->setToolTip("Sync to the global tempo");
-    auto* slot = new QWidget;
-    auto* sl = new QHBoxLayout(slot);
-    sl->setContentsMargins(0, 0, 0, 0);
-    sl->setSpacing(6);
+    sw->setToolTip(QString("Sync %1 to the global tempo").arg(label));
     auto* cap = new QLabel("Sync");
     cap->setObjectName("toggleCaption");
+    QWidget* slot = card->findChild<QWidget*>("syncSlot");
+    auto* sl = static_cast<QHBoxLayout*>(slot->layout());
     sl->addWidget(sw, 0, Qt::AlignVCenter);
     sl->addWidget(cap, 0, Qt::AlignVCenter);
-    lay->insertWidget(lay->count() - 1, slot, 0, Qt::AlignVCenter); // before the stretch
+    sl->addStretch();
 
     connect(sw, &ToggleSwitch::toggled, this, [free_knob, note](bool on) {
         show_synced_knob(free_knob, note, on);
