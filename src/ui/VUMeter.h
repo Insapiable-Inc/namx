@@ -36,7 +36,7 @@ private:
         return (db - MIN_DB) / (MAX_DB - MIN_DB) * 100.0f;
     }
 
-    static constexpr int WIDTH = 22;
+    static constexpr int WIDTH = 36;
     static constexpr qreal MARGIN = 6.0; // panel edge to the LEDs: room for the glow
     static constexpr qreal LED_SIZE = 4.0; // along the meter axis
     static constexpr qreal LED_GAP = 2.0;
