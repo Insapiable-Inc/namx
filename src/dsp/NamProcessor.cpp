@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cmath>
 #include <stdexcept>
 
 #include <NAM/get_dsp.h>
@@ -13,6 +14,34 @@ namespace npl
 {
 
 NamProcessor::NamProcessor() {
+}
+
+void NamProcessor::ModelPair::reset(double rate, size_t max_frames) {
+    const double native = native_rate();
+    const bool resample = rate > 0.0 && std::abs(rate - native) > 0.5;
+    // Behind the resampler the model sees up to ceil(n × native / rate) frames per call.
+    const size_t model_frames =
+        resample
+            ? static_cast<size_t>(std::ceil(static_cast<double>(max_frames) * native / rate)) + 1
+            : max_frames;
+    const double model_rate = resample ? native : rate;
+    for (nam::DSP* m : {l.get(), r.get()}) {
+        m->Reset(model_rate, static_cast<int>(model_frames)); // the NAM core counts in int
+        m->prewarm();
+    }
+    if (resample) {
+        for (unique_ptr<Resampler>* rs : {&resampler_l, &resampler_r}) {
+            *rs = make_unique<Resampler>(native);
+            (*rs)->Reset(rate, static_cast<int>(max_frames));
+        }
+        qCInfo(lc_audio, "[NamProcessor] Model trained at %.0f Hz, engine at %.0f Hz: resampling",
+               native, rate);
+    } else {
+        resampler_l.reset();
+        resampler_r.reset();
+    }
+    reset_buf = max_frames;
+    reset_rate = rate;
 }
 
 NamProcessor::~NamProcessor() {
@@ -118,7 +147,7 @@ void NamProcessor::on_sample_rate_changed(double sr) {
     model_rate = sr;
 }
 
-/*static*/ void NamProcessor::run_model(nam::DSP* model, float* buf, size_t n,
+/*static*/ void NamProcessor::run_model(nam::DSP* model, Resampler* resampler, float* buf, size_t n,
                                         vector<float>& scratch) {
     // Sized by prepareBuffer(); process() bypasses oversized blocks, so this
     // must never allocate on the audio thread.
@@ -128,7 +157,16 @@ void NamProcessor::on_sample_rate_changed(double sr) {
     NAM_SAMPLE* out_ptr = scratch.data();
     NAM_SAMPLE** in_ptrs = &in_ptr;
     NAM_SAMPLE** out_ptrs = &out_ptr;
-    model->process(in_ptrs, out_ptrs, static_cast<int>(n)); // the NAM core counts in int
+    const int frames = static_cast<int>(n); // the NAM core counts in int
+    if (resampler) {
+        // The lambda captures one pointer: std::function keeps it inline, no allocation.
+        resampler->ProcessBlock(in_ptrs, out_ptrs, frames,
+                                [model](float** in, float** out, int count) {
+                                    model->process(in, out, count);
+                                });
+    } else {
+        model->process(in_ptrs, out_ptrs, frames);
+    }
     std::copy(scratch.data(), scratch.data() + n, buf);
 }
 
@@ -162,9 +200,9 @@ bool NamProcessor::process(float* l, float* r, size_t n, bool input_is_stereo) {
     // would overrun the core's buffers — bypass instead (see prepareBuffer).
     const bool can_run = p && n <= p->reset_buf && n <= scratch_l.size();
     if (can_run) {
-        run_model(p->l.get(), l, n, scratch_l);
+        run_model(p->l.get(), p->resampler_l.get(), l, n, scratch_l);
         if (input_is_stereo) {
-            run_model(p->r.get(), r, n, scratch_r);
+            run_model(p->r.get(), p->resampler_r.get(), r, n, scratch_r);
         }
     }
     if (!input_is_stereo) {

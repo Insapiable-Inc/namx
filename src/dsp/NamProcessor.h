@@ -11,6 +11,7 @@
 
 #include "Common.h"
 #include "EffectBase.h"
+#include "ModelResampler.h"
 #include "RtSlot.h"
 
 namespace npl
@@ -74,26 +75,34 @@ protected:
     void on_sample_rate_changed(double sr) override;
 
 private:
+    // Runs a model at its training rate inside an engine running at another one
+    // (Lanczos, A = 12 — the same resampler the official NAM plugin uses).
+    using Resampler = dsp::ResamplingContainer<float, 1, 12>;
+
     // One published unit: both channels loaded from the same file so they
     // apply identical non-linearity; their recurrent states evolve
-    // independently. resetBuf/resetRate record what Reset() was last called
+    // independently. reset_buf/reset_rate record what reset() was last called
     // with (written only while no audio callback is in flight).
     struct ModelPair
     {
         unique_ptr<nam::DSP> l, r;
+        // Present only when the engine rate differs from the model's training rate.
+        unique_ptr<Resampler> resampler_l, resampler_r;
         size_t reset_buf{0};
         double reset_rate{0.0};
 
-        // Reset() + prewarm() both models for blocks of up to `maxFrames`, and record it.
-        void reset(double rate, size_t max_frames) {
-            const int frames = static_cast<int>(max_frames); // the NAM core counts in int
-            l->Reset(rate, frames);
-            l->prewarm();
-            r->Reset(rate, frames);
-            r->prewarm();
-            reset_buf = max_frames;
-            reset_rate = rate;
+        // The rate the model was trained at; models that don't say are 48 kHz (as
+        // in the official plugin).
+        double native_rate() const {
+            const double expected = l->GetExpectedSampleRate();
+            return expected > 0.0 ? expected : 48000.0;
         }
+
+        // Prepares both models for engine blocks of up to `max_frames` at engine rate
+        // `rate`: directly when the rates match, otherwise at the model's own rate
+        // behind a resampler (code review item 15). Allocates — GUI thread, or with
+        // processing suspended.
+        void reset(double rate, size_t max_frames);
     };
 
     RtSlot<ModelPair> slot;
@@ -111,7 +120,8 @@ private:
     size_t fade_total{1}; // samples; audio thread only
     size_t fade_remaining{0}; // audio thread only
 
-    static void run_model(nam::DSP* model, float* buf, size_t n, vector<float>& scratch);
+    static void run_model(nam::DSP* model, Resampler* resampler, float* buf, size_t n,
+                          vector<float>& scratch);
 };
 
 } // namespace npl

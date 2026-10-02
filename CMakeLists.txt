@@ -109,6 +109,7 @@ set(GUI_SOURCES
     src/dsp/IRProcessor.h
     src/dsp/NamProcessor.cpp
     src/dsp/NamProcessor.h
+    src/dsp/ModelResampler.h
     src/dsp/EQProcessor.cpp
     src/dsp/EQProcessor.h
     src/dsp/TunerProcessor.cpp
@@ -188,6 +189,8 @@ target_include_directories(NAMPlayer SYSTEM PRIVATE
     ${NAM_ROOT}
     ${NAM_DEPS_PATH}/eigen
     ${NAM_DEPS_PATH}/nlohmann
+    # Header-only Lanczos resampler (NamProcessor: models at their training rate).
+    ${NAM_DEPS_PATH}/AudioDSPTools/dsp/ResamplingContainer
 )
 target_include_directories(NAMPlayer PRIVATE
     src/dsp
@@ -350,7 +353,8 @@ if(NAM_BUILD_BENCH)
     list(FILTER BENCH_DSP_SOURCES EXCLUDE REGEX "(AudioEngine|JackBackend|WasapiBackend)\\.cpp$")
     add_executable(NAMPlayerBench bench/NAMPlayerBench.cpp ${BENCH_DSP_SOURCES} ${NAM_SOURCES})
     target_include_directories(NAMPlayerBench SYSTEM PRIVATE
-        ${NAM_ROOT} ${NAM_DEPS_PATH}/eigen ${NAM_DEPS_PATH}/nlohmann)
+        ${NAM_ROOT} ${NAM_DEPS_PATH}/eigen ${NAM_DEPS_PATH}/nlohmann
+        ${NAM_DEPS_PATH}/AudioDSPTools/dsp/ResamplingContainer)
     target_include_directories(NAMPlayerBench PRIVATE src/dsp)
     target_compile_definitions(NAMPlayerBench PRIVATE NAM_SAMPLE_FLOAT NAM_ENABLE_A2_FAST)
     target_link_libraries(NAMPlayerBench PRIVATE Qt6::Core) # Log.cpp: QLoggingCategory

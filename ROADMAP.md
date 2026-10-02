@@ -906,7 +906,7 @@ for the backend work (Phase 21), and a second full review follows the big change
 - [x] **08** (P2, same reason; done 2026-10-02: `PresetSerializer::validate` — version,
       types, "is it a preset at all" — before anything changes; all 29 presets on disk pass)
       Preset version/schema validated before anything is applied.
-- [ ] **15** A model's training sample rate is ignored (a 48 kHz model at 44.1/96 kHz
+- [x] **15** (done 2026-10-02: models run at their training rate behind the official plugin's Lanczos resampler when the engine rate differs; 44.1/96 kHz match 48 kHz native; 0 allocations on the audio thread) A model's training sample rate is ignored (a 48 kHz model at 44.1/96 kHz
       sounds wrong, silently) → resample around the model, or warn.
 - [ ] 01–03 live in upstream code (`NAM/`, `Dependencies/AudioDSPTools`): offer the
       fixes upstream too.

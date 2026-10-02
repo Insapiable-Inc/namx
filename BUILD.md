@@ -556,6 +556,9 @@ IR files are compatible with any standard cab sim WAV (e.g., from OwnHammer, Cel
   Click either to reset.
 - Increase the JACK buffer size (`-p 512` or `-p 1024`).
 - Use a Release build (`./build.sh Release`), not Debug.
+- A model always runs at the rate it was trained at (usually 48 kHz). With the audio
+  device at another rate (44.1 or 96 kHz) the Amplifier resamples around it, which
+  costs roughly 30 % more amp CPU and ~1 ms; running the device at 48 kHz avoids both.
 - Large NAM models (e.g., standard WaveNet) are CPU-heavy by design, and a stereo
   effect placed *before* the Amplifier runs the model twice (one per channel).
 - With the `powersave` CPU governor, cores idle at low clock between audio buffers,
