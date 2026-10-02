@@ -939,6 +939,15 @@ it for the one it replaces, and is measured with `NAMPlayerBench`.
   path, so it needs a one-time **settings migration** (session, library roots,
   favorites/recents, TONE3000 tokens) or users lose their setup.
 
+- **Experiment — activity bar for the library** (2026-10-02): a VS Code–style icon
+  strip at the window edge (Models / IRs / Presets / TONE3000) replacing both tab rows
+  of the dock; clicking the active icon collapses the panel (the dock lost its close
+  button with the title bar). Try it on a branch and compare side by side: the user
+  finds the current labelled tabs ("Models (179)") clearer, so the bar has to
+  communicate as well before it replaces them — tooltips, counts (badge or caption),
+  per-view shortcuts. Costs: four icons that read at ~20 px (no QtSvg in the build:
+  QPainter or PNG), the panel stops being a movable dock, and LibraryDock /
+  LibraryPanel / window state / Settings → Library all change.
 - Song mode: cue list of preset changes on a song timeline, clock from an external
   player (MPRIS / SMTC) or an in-app file player with A/B loop, slow-down, pitch.
 - Headless CLAP was discussed and **rejected** with the no-plugin decision.
