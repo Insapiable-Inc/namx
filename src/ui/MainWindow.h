@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include <QHash>
 #include <QJsonObject>
 #include <QMainWindow>
 #include <QPoint>
@@ -178,6 +179,8 @@ private:
     void browse_tone3000();
     QToolButton* make_library_arrow(const QString& glyph, int step, const QString& tip,
                                     LibraryEntry::Kind kind);
+    // MIDI action id of a hero ‹ › arrow ("action:modelNext", …).
+    static QString library_step_action(LibraryEntry::Kind kind, int step);
     void show_library_section(LibraryEntry::Kind kind);
     void show_midi_light(bool lit);
     void on_midi_activity(const QString& what);
@@ -416,6 +419,7 @@ private:
     bool midi_ok = false;
     QShortcut* learn_esc = nullptr;
     QWidget* learn_widget = nullptr; // highlighted while learning
+    QHash<QString, QWidget*> library_arrows; // hero ‹ › by MIDI action id
     QString learn_target;
     QLabel* lbl_midi = nullptr; // status bar activity light
     QMenu* midi_menu = nullptr;

@@ -1532,7 +1532,22 @@ QToolButton* MainWindow::make_library_arrow(const QString& glyph, int step, cons
     connect(b, &QToolButton::clicked, this, [this, kind, step] {
         step_library(kind, step);
     });
+    const QString action_id = library_step_action(kind, step);
+    library_arrows.insert(action_id, b);
+    b->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(b, &QWidget::customContextMenuRequested, this, [this, b, action_id](const QPoint& p) {
+        QMenu menu(this);
+        add_learn_entries(action_id, &menu);
+        if (!menu.isEmpty()) {
+            menu.exec(b->mapToGlobal(p));
+        }
+    });
     return b;
+}
+
+QString MainWindow::library_step_action(LibraryEntry::Kind kind, int step) {
+    const char* what = kind == LibraryEntry::Kind::MODEL ? "model" : "ir";
+    return QString("action:%1%2").arg(what, step > 0 ? "Next" : "Prev");
 }
 
 void MainWindow::show_library_section(LibraryEntry::Kind kind) {
@@ -2137,6 +2152,18 @@ void MainWindow::setup_midi(QMenu* top_menu) {
     midi_mapper->add_action("action:presetPrev", "Presets", "Previous preset", [this] {
         step_preset(-1);
     });
+    for (const auto kind : {LibraryEntry::Kind::MODEL, LibraryEntry::Kind::IR}) {
+        const bool model = kind == LibraryEntry::Kind::MODEL;
+        const QString group = model ? "Amplifier" : "Cabinet";
+        const QString what = model ? "model" : "IR";
+        for (const int step : {+1, -1}) {
+            midi_mapper->add_action(library_step_action(kind, step), group,
+                                    QString(step > 0 ? "Next %1" : "Previous %1").arg(what),
+                                    [this, kind, step] {
+                                        step_library(kind, step);
+                                    });
+        }
+    }
     midi_mapper->add_action("action:abToggle", "Presets", "Switch A / B", [this] {
         switch_ab(1 - ab_active);
     });
@@ -2275,6 +2302,9 @@ QWidget* MainWindow::widget_for_target(const QString& target_id) const {
         }
     }
     if (QWidget* w = preset_bar->action_widget(target_id)) {
+        return w;
+    }
+    if (QWidget* w = library_arrows.value(target_id)) {
         return w;
     }
     return tempo_bar->action_widget(target_id);
