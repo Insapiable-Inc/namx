@@ -526,21 +526,34 @@ QToolButton#librarySection:checked {
     color: #d8dee9;
     border-bottom: 2px solid #3daee9;
 }
-QToolButton#libraryMode, QToolButton#libraryTool {
+QToolButton#libraryTool {
     color: #9aa1ad;
     background: transparent;
     border: 1px solid transparent;
     border-radius: 4px;
     padding: 3px 8px;
 }
-QToolButton#libraryMode:hover, QToolButton#libraryTool:hover {
+QToolButton#libraryTool:hover {
     color: #d8dee9;
     background-color: #2f3744;
 }
-QToolButton#libraryMode:checked {
+/* All / ★ / Recent: filled like the preset bar's buttons, the active one in
+   the accent like A/B. */
+QToolButton#libraryMode {
     color: #d8dee9;
-    background-color: #2a2f38;
-    border-color: #353c4a;
+    background-color: #232830;
+    border: 1px solid #353c4a;
+    border-radius: 4px;
+    padding: 3px 9px;
+}
+QToolButton#libraryMode:hover {
+    background-color: #2f3744;
+    border-color: #424b5c;
+}
+QToolButton#libraryMode:checked {
+    color: #15171c;
+    background-color: #3daee9;
+    border-color: #3daee9;
 }
 QLineEdit#librarySearch {
     background-color: #1a1d24;

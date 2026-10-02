@@ -410,7 +410,7 @@ LibraryPanel::LibraryPanel(LibraryIndex& new_index, QWidget* parent)
         row->addStretch();
         sort_box = new QComboBox;
         sort_box->setObjectName("librarySort");
-        sort_box->addItems({"Name", "Newest"});
+        sort_box->addItems({"Sort by: Name", "Sort by: Newest"});
         sort_box->setToolTip("Sort order");
         sort_box->setFocusPolicy(Qt::NoFocus);
         connect(sort_box, &QComboBox::currentIndexChanged, this, &LibraryPanel::set_sort_key);
