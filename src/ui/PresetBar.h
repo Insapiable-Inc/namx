@@ -61,6 +61,8 @@ signals:
     void ab_copy_requested(); // active side → the other one
 
 private:
+    static constexpr int NAME_WIDTH = 260; // the name button
+    static constexpr int NAME_CHROME = 44; // its padding + the menu arrow
     void populate_preset_menu(QMenu* menu);
     void activate_slot(int i);
     void show_slot_menu(int i, const QPoint& global_pos);
@@ -69,7 +71,6 @@ private:
     const LibraryIndex& library_index;
     QString path;
     QToolButton* name = nullptr;
-    QLabel* modified = nullptr;
     QToolButton* quick_slots[SLOT_COUNT]{};
     QStringList slot_paths; // SLOT_COUNT entries, "" = empty slot
     QToolButton* ab[2]{};

@@ -332,7 +332,6 @@ QToolButton#presetName {
     color: #3daee9;
     font-size: 11pt;
     font-weight: 700;
-    min-width: 220px;
     padding: 3px 10px;
     text-align: left;
     border: 1px solid #2a2f38;
@@ -350,12 +349,6 @@ QToolButton#presetName:hover {
 QToolButton#presetName::menu-indicator {
     subcontrol-position: right center;
     right: 6px;
-}
-QLabel#presetModified {
-    color: #f0c850;
-    font-size: 13pt;
-    font-weight: 700;
-    min-width: 10px;
 }
 QToolButton#presetTool, QToolButton#presetSlot, QToolButton#presetAb {
     color: #d8dee9;

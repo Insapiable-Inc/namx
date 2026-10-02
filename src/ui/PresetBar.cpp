@@ -57,15 +57,13 @@ PresetBar::PresetBar(const LibraryIndex& new_index, QMenu* preset_menu, QWidget*
     });
     name->setMenu(list_menu);
 
-    modified = new QLabel("*", this);
-    modified->setObjectName("presetModified");
-    modified->setToolTip("Modified since the preset was loaded or saved");
+    // Fixed width: long names elide and a change of preset never moves ‹ › or Save.
+    name->setFixedWidth(NAME_WIDTH);
 
     learn_menu_for(prev, "action:presetPrev");
     learn_menu_for(next, "action:presetNext");
     lay->addWidget(prev);
     lay->addWidget(name);
-    lay->addWidget(modified);
     lay->addWidget(next);
     lay->addSpacing(8);
 
@@ -184,11 +182,15 @@ void PresetBar::set_preset(const QString& new_path, bool new_modified) {
     if (new_path.isEmpty()) {
         name->setText("Untitled");
         name->setToolTip("Not saved as a preset — click to pick one");
-        modified->hide();
     } else {
-        name->setText(QFileInfo(new_path).completeBaseName());
-        name->setToolTip(QDir::toNativeSeparators(new_path));
-        modified->setVisible(new_modified);
+        // "Name *" when modified since loaded or saved; the name elides, the star stays.
+        const QString star = new_modified ? " *" : "";
+        const int room = NAME_WIDTH - NAME_CHROME - name->fontMetrics().horizontalAdvance(star);
+        name->setText(name->fontMetrics().elidedText(QFileInfo(new_path).completeBaseName(),
+                                                     Qt::ElideRight, room) +
+                      star);
+        name->setToolTip(QDir::toNativeSeparators(new_path) +
+                         (new_modified ? "\nModified since it was loaded or saved" : ""));
     }
     name->setProperty("untitled", new_path.isEmpty());
     repolish(name);
