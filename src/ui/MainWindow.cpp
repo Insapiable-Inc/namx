@@ -34,8 +34,8 @@
 #include <QPixmap>
 #include <QPolygonF>
 #include <QPushButton>
-#include <QScrollArea>
 #include <QSaveFile>
+#include <QScrollArea>
 #include <QSettings>
 #include <QShortcut>
 #include <QStandardPaths>
