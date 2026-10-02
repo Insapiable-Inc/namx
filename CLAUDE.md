@@ -100,7 +100,7 @@ mono input → input gain (smoothed)
   → NAM model (sums a stereo input unless the Amplifier's Stereo switch is on)
   → Volume pedal (first in the effects loop) → EQ
   → Chorus → Tremolo → Delay → Reverb                              (stereo-capable)
-  → Cabinet (2 IR slots)
+  → Cabinet (one IR in the UI; the DSP has a second slot, its controls disabled)
   → output gain (smoothed) → output limiter → meter → + metronome → stereo out (L, R)
 ```
 
@@ -132,7 +132,7 @@ All effects inherit `EffectBase` (`src/dsp/EffectBase.h` — the header comment 
 | `JackBackend` | `src/dsp/JackBackend.h/cpp` | Linux JACK/PipeWire-JACK backend |
 | `WasapiBackend` | `src/dsp/WasapiBackend.h/cpp` | Windows WASAPI shared-mode backend (float32 mix format only) |
 | `NamProcessor` | `src/dsp/NamProcessor.h/cpp` | NAM model hosting; independent L/R instances for stereo |
-| `IRLoader` / `IRProcessor` | `src/dsp/IRLoader.h/cpp`, `IRProcessor.h/cpp` | FIR cab sim, energy-normalized, RtSlot kernel swap; `IRProcessor` = two loaders (slots A/B) with level/pan/phase/blend + cuts |
+| `IRLoader` / `IRProcessor` | `src/dsp/IRLoader.h/cpp`, `IRProcessor.h/cpp` | FIR cab sim, energy-normalized, RtSlot kernel swap; `IRProcessor` = two loaders (slots A/B) with level/pan/phase/blend + cuts — the UI exposes slot A only (advanced options commented out 2026-10-01; slot B is neither restored nor loaded from presets) |
 | `EQProcessor` | `src/dsp/EQProcessor.h/cpp` | 4-band semi-parametric biquad EQ + low/high cut (Audio EQ Cookbook) |
 | `TunerProcessor` | `src/dsp/TunerProcessor.h/cpp` | NSDF pitch detect; audio thread fills, GUI timer reads |
 | `TunerDisplay` | `src/ui/TunerDisplay.h/cpp` | TU-3-style readout: LED ladder, glowing seven-segment note, signed cents |

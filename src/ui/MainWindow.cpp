@@ -441,13 +441,15 @@ QWidget* MainWindow::make_effect_row(const QString& title, ToggleSwitch*& toggle
     return card;
 }
 
-// Cabinet blend readout: "A = B", "A 70", "B 65".
-static QString format_blend(double v) {
-    const int b = static_cast<int>(std::lround(v));
-    return b == 50  ? QString("A = B")
-           : b < 50 ? QString("A %1").arg(100 - b)
-                    : QString("B %1").arg(b);
-}
+// GUIDELINE EXCEPTION (commented-out code, user's call 2026-10-01): used by the disabled
+// Cabinet Blend knob.
+// // Cabinet blend readout: "A = B", "A 70", "B 65".
+// static QString format_blend(double v) {
+//     const int b = static_cast<int>(std::lround(v));
+//     return b == 50  ? QString("A = B")
+//            : b < 50 ? QString("A %1").arg(100 - b)
+//                     : QString("B %1").arg(b);
+// }
 
 // GUIDELINE EXCEPTION (commented-out code): used by the disabled Chorus Mode knob.
 // static QString format_chorus_mode(double v) {
@@ -1127,56 +1129,59 @@ void MainWindow::setup_ui() {
         sw_ir_enable->setChecked(true);
         make_hero_controls(col, LibraryEntry::Kind::IR, lbl_ir_status, lbl_ir_meta, lbl_ir_origin);
 
-        // Dual cab (Phase 17): A/B mixer + cuts, then slot B's picker.
-        using namespace NAMConstants;
-        KnobWidget* blend = late_knob("ir", "blend", new KnobWidget("Blend", 0.0, 100.0, 50.0, "%"),
-                                      [this](double v) {
-                                          engine->get_ir().set_blend_pct(static_cast<float>(v));
-                                      });
-        blend->set_scroll_step(1.0);
-        blend->set_value_formatter(&format_blend);
-        blend->setToolTip("Crossfade between the two IRs (only when both slots are loaded)");
-        KnobWidget* low_cut =
-            late_knob("ir", "lowCut",
-                      new KnobWidget("Low Cut", LOW_CUT_MIN, LOW_CUT_MAX, LOW_CUT_DEFAULT, "Hz"),
-                      [this](double v) {
-                          engine->get_ir().set_low_cut(static_cast<float>(v));
-                      });
-        low_cut->set_log_taper(true);
-        low_cut->set_value_formatter(hz_label(LOW_CUT_MIN + 0.5));
-        KnobWidget* high_cut = late_knob(
-            "ir", "highCut",
-            new KnobWidget("High Cut", HIGH_CUT_MIN, HIGH_CUT_MAX, HIGH_CUT_DEFAULT, "Hz"),
-            [this](double v) {
-                engine->get_ir().set_high_cut(static_cast<float>(v));
-            });
-        high_cut->set_log_taper(true);
-        high_cut->set_value_formatter(hz_label(-(HIGH_CUT_MAX - 1.0)));
-        add_detail_row(col, {make_ir_level_knob(0), make_ir_pan_knob(0), make_ir_phase_switch(0),
-                             blend, low_cut, high_cut});
-
-        // Slot B: ‹ › through the library's IRs, Choose… (file dialog), ×.
-        auto* b_title = new QLabel("IR B");
-        b_title->setObjectName("fxName");
-        auto* choose = new QPushButton("Choose…");
-        choose->setFocusPolicy(Qt::NoFocus);
-        connect(choose, &QPushButton::clicked, this, [this] {
-            choose_ir_b();
-        });
-        auto* clear = new QToolButton;
-        clear->setObjectName("heroArrow");
-        clear->setText("×");
-        clear->setAutoRaise(true);
-        clear->setFocusPolicy(Qt::NoFocus);
-        clear->setToolTip("Empty slot B");
-        connect(clear, &QToolButton::clicked, this, [this] {
-            clear_ir_b();
-        });
-        lbl_irb_status = new QLabel;
-        lbl_irb_status->setObjectName("fileStatus");
-        add_detail_row(col, {b_title, make_ir_b_arrow("‹", -1), make_ir_b_arrow("›", +1), choose,
-                             clear, lbl_irb_status, make_ir_level_knob(1), make_ir_pan_knob(1),
-                             make_ir_phase_switch(1)});
+        // GUIDELINE EXCEPTION (commented-out code, user's call 2026-10-01): the Cabinet's
+        // advanced options (per-IR level/pan/phase, blend, cuts, slot B) are off; it is a
+        // single-IR cab at neutral settings.
+        // // Dual cab (Phase 17): A/B mixer + cuts, then slot B's picker.
+        // using namespace NAMConstants;
+        // KnobWidget* blend = late_knob("ir", "blend", new KnobWidget("Blend", 0.0, 100.0, 50.0, "%"),
+        //                               [this](double v) {
+        //                                   engine->get_ir().set_blend_pct(static_cast<float>(v));
+        //                               });
+        // blend->set_scroll_step(1.0);
+        // blend->set_value_formatter(&format_blend);
+        // blend->setToolTip("Crossfade between the two IRs (only when both slots are loaded)");
+        // KnobWidget* low_cut =
+        //     late_knob("ir", "lowCut",
+        //               new KnobWidget("Low Cut", LOW_CUT_MIN, LOW_CUT_MAX, LOW_CUT_DEFAULT, "Hz"),
+        //               [this](double v) {
+        //                   engine->get_ir().set_low_cut(static_cast<float>(v));
+        //               });
+        // low_cut->set_log_taper(true);
+        // low_cut->set_value_formatter(hz_label(LOW_CUT_MIN + 0.5));
+        // KnobWidget* high_cut = late_knob(
+        //     "ir", "highCut",
+        //     new KnobWidget("High Cut", HIGH_CUT_MIN, HIGH_CUT_MAX, HIGH_CUT_DEFAULT, "Hz"),
+        //     [this](double v) {
+        //         engine->get_ir().set_high_cut(static_cast<float>(v));
+        //     });
+        // high_cut->set_log_taper(true);
+        // high_cut->set_value_formatter(hz_label(-(HIGH_CUT_MAX - 1.0)));
+        // add_detail_row(col, {make_ir_level_knob(0), make_ir_pan_knob(0), make_ir_phase_switch(0),
+        //                      blend, low_cut, high_cut});
+        //
+        // // Slot B: ‹ › through the library's IRs, Choose… (file dialog), ×.
+        // auto* b_title = new QLabel("IR B");
+        // b_title->setObjectName("fxName");
+        // auto* choose = new QPushButton("Choose…");
+        // choose->setFocusPolicy(Qt::NoFocus);
+        // connect(choose, &QPushButton::clicked, this, [this] {
+        //     choose_ir_b();
+        // });
+        // auto* clear = new QToolButton;
+        // clear->setObjectName("heroArrow");
+        // clear->setText("×");
+        // clear->setAutoRaise(true);
+        // clear->setFocusPolicy(Qt::NoFocus);
+        // clear->setToolTip("Empty slot B");
+        // connect(clear, &QToolButton::clicked, this, [this] {
+        //     clear_ir_b();
+        // });
+        // lbl_irb_status = new QLabel;
+        // lbl_irb_status->setObjectName("fileStatus");
+        // add_detail_row(col, {b_title, make_ir_b_arrow("‹", -1), make_ir_b_arrow("›", +1), choose,
+        //                      clear, lbl_irb_status, make_ir_level_knob(1), make_ir_pan_knob(1),
+        //                      make_ir_phase_switch(1)});
 
         Theme::tag_card(col, "ir");
         fx_cols[&engine->get_ir()] = col;
@@ -2758,10 +2763,12 @@ void MainWindow::restore_last_files() {
         load_ir_file(ir, /*quiet=*/true);
     }
 
-    const QString ir_b = s.value("files/lastIRB").toString();
-    if (!ir_b.isEmpty() && QFile::exists(ir_b)) {
-        load_irb_file(ir_b, /*quiet=*/true);
-    }
+    // GUIDELINE EXCEPTION (commented-out code, user's call 2026-10-01): slot B has no
+    // controls while the Cabinet's advanced options are off, so it isn't restored.
+    // const QString ir_b = s.value("files/lastIRB").toString();
+    // if (!ir_b.isEmpty() && QFile::exists(ir_b)) {
+    //     load_irb_file(ir_b, /*quiet=*/true);
+    // }
 
     update_hero_cards();
 }
@@ -3317,16 +3324,19 @@ bool MainWindow::load_preset_file(const QString& path_in) {
             failed << applied.ir_path;
         }
     }
-    // Slot B: presets made before the dual cab don't mention it (left alone);
-    // newer ones say exactly what slot B holds, empty included.
-    if (applied.has_ir_path_b) {
-        if (applied.ir_path_b.isEmpty()) {
-            engine->unload_irb();
-            QSettings().remove("files/lastIRB");
-        } else if (!(QFile::exists(applied.ir_path_b) && load_irb_file(applied.ir_path_b, true))) {
-            failed << applied.ir_path_b;
-        }
-    }
+    // GUIDELINE EXCEPTION (commented-out code, user's call 2026-10-01): slot B has no
+    // controls while the Cabinet's advanced options are off, so presets don't load it.
+    // // Slot B: presets made before the dual cab don't mention it (left alone);
+    // // newer ones say exactly what slot B holds, empty included.
+    // if (applied.has_ir_path_b) {
+    //     if (applied.ir_path_b.isEmpty()) {
+    //         engine->unload_irb();
+    //         QSettings().remove("files/lastIRB");
+    //     } else if (!(QFile::exists(applied.ir_path_b) && load_irb_file(applied.ir_path_b, true))) {
+    //         failed << applied.ir_path_b;
+    //     }
+    // }
+
     update_hero_cards();
     set_current_preset(path);
     if (!failed.isEmpty()) {

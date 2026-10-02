@@ -487,7 +487,7 @@ switch is on, which runs the model once per channel at twice the CPU.
 | Equalizer | Bass, Middle, High-Mid, Treble (±12 dB) | the four band frequencies, Low Cut, High Cut |
 | Delay | Mix, Time (Sync), Feedback (ping-pong in stereo) | R Time, Low/High Cut, Saturation |
 | Reverb | Mix, Decay, Damping, Width | Pre-delay, Low/High Cut |
-| Cabinet | IR A (library, ‹ ›) | Level/Pan/Ø A, Blend, Low/High Cut · IR B (‹ ›, Choose…, ×), Level/Pan/Ø B |
+| Cabinet | IR (library, ‹ ›; click the name to browse) | — |
 | Volume Pedal | Volume, Mid (level at half travel) | — |
 | Output | Gain, **Limit** (look-ahead limiter at −0.3 dBFS) | — |
 
