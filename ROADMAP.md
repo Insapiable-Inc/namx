@@ -431,15 +431,14 @@ Make every knob feel right across its whole travel, not just near the default.
 
 - [ ] **Audit all ranges/defaults in `Constants.h`** against musical usefulness —
       e.g. does the comp ratio need 20:1, is the gate threshold floor right, do the
-      LFO rate extremes get used.
-- [ ] **Per-knob response curves (taper).** `KnobWidget` maps dial↔value linearly
-      today (`dialToValue`/`valueToDial`, 10000 steps); add an optional
-      logarithmic/exponential taper so e.g. rates (Hz) and delay time spend more
-      travel in the musically dense low region. dB-valued knobs are already
-      log-domain and stay linear-in-dB.
-- [ ] **No schema impact:** presets/session store real units; the taper only
-      changes the dial position mapping. Re-tune `setScrollStep` per taper
-      (steps should feel constant-size perceptually).
+      LFO rate extremes get used. A first pass landed 2026-06-09 (`114c2b6`), before
+      this phase was written; Phase 17 added many knobs since (EQ bands, delay
+      R Time / Cross-feed, pre-delay, wah Position…).
+- [x] **Per-knob response curves (taper)** — done in Phase 17 (`3a92121`): log dials
+      for times, rates and frequencies, dial resolution 10× finer; dB knobs stay
+      linear-in-dB.
+- [x] **No schema impact** — presets and the session store real units; the taper only
+      changes the dial mapping.
 
 ## Phase 10 — Tempo sync → done inside Phase 15 (2026-10-01)
 
