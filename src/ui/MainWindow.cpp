@@ -1138,29 +1138,29 @@ void MainWindow::setup_ui() {
     // Keyboard shortcut targets per card; keys are (re)assigned left to right
     // on every strip rebuild so they always match the visual order.
     fx_toggles = {
-        {&engine->get_tuner(), {sw_tuner_enable, nullptr}},
-        {&engine->get_gate(), {sw_gate_enable, nullptr}},
-        {&engine->get_comp(), {sw_comp_enable, nullptr}},
-        {&engine->get_wah(), {sw_wah_enable, nullptr}},
-        {&engine->get_flanger(), {sw_flanger_enable, sw_flanger_stereo}},
-        {&engine->get_phaser(), {sw_phaser_enable, sw_phaser_stereo}},
-        {&engine->get_nam(), {sw_nam_enable, nullptr}},
-        {&engine->get_eq(), {sw_eq_enable, nullptr}},
-        {&engine->get_chorus(), {sw_chorus_enable, sw_chorus_stereo}},
-        {&engine->get_tremolo(), {sw_tremolo_enable, sw_tremolo_stereo}},
-        {&engine->get_delay(), {sw_delay_enable, sw_delay_stereo}},
-        {&engine->get_reverb(), {sw_reverb_enable, nullptr}},
-        {&engine->get_ir(), {sw_ir_enable, nullptr}},
-        {&engine->get_drive(), {sw_drive_enable, nullptr}},
-        {&engine->get_volume(), {sw_volume_enable, nullptr}},
-        {&engine->get_transpose(), {sw_transpose_enable, nullptr}},
+        {&engine->get_tuner(), sw_tuner_enable},
+        {&engine->get_gate(), sw_gate_enable},
+        {&engine->get_comp(), sw_comp_enable},
+        {&engine->get_wah(), sw_wah_enable},
+        {&engine->get_flanger(), sw_flanger_enable},
+        {&engine->get_phaser(), sw_phaser_enable},
+        {&engine->get_nam(), sw_nam_enable},
+        {&engine->get_eq(), sw_eq_enable},
+        {&engine->get_chorus(), sw_chorus_enable},
+        {&engine->get_tremolo(), sw_tremolo_enable},
+        {&engine->get_delay(), sw_delay_enable},
+        {&engine->get_reverb(), sw_reverb_enable},
+        {&engine->get_ir(), sw_ir_enable},
+        {&engine->get_drive(), sw_drive_enable},
+        {&engine->get_volume(), sw_volume_enable},
+        {&engine->get_transpose(), sw_transpose_enable},
     };
 
-    for (const auto& [fx, toggles] : fx_toggles) {
-        connect(toggles.enable, &ToggleSwitch::toggled, this, [this, fx](bool enabled) {
+    for (const auto& [fx, enable] : fx_toggles) {
+        connect(enable, &ToggleSwitch::toggled, this, [this, fx](bool enabled) {
             update_card_bypass_state(fx, enabled);
         });
-        update_card_bypass_state(fx, toggles.enable->isChecked());
+        update_card_bypass_state(fx, enable->isChecked());
     }
 
     // Drag sources + context menus: every card. Drop target: the strip itself.
@@ -1486,12 +1486,12 @@ void MainWindow::layout_strip(const vector<EffectBase*>& order) {
 void MainWindow::rebuild_effect_strip() {
     layout_strip(engine->get_chain());
 
-    // Digit/QWE shortcuts always match the visual top-to-bottom order.
+    // Effect keys (1…0, Q…P) always follow the rows top to bottom.
     shortcuts.clear();
     for (auto* fx : engine->get_chain()) {
         auto tg = fx_toggles.find(fx);
         if (tg != fx_toggles.end()) {
-            shortcuts.add_effect(tg->second.enable, tg->second.stereo);
+            shortcuts.add_effect(tg->second);
         }
     }
 }
@@ -1554,8 +1554,7 @@ void MainWindow::start_card_drag(QWidget* card) {
     // Drop committed inside the event filter; a cancelled drag just falls
     // back to the engine order here.
     auto toggles = fx_toggles.find(fx);
-    update_card_bypass_state(fx,
-                             toggles != fx_toggles.end() && toggles->second.enable->isChecked());
+    update_card_bypass_state(fx, toggles != fx_toggles.end() && toggles->second->isChecked());
     drag_id.clear();
     rebuild_effect_strip();
 }
@@ -1624,7 +1623,7 @@ void MainWindow::reset_card_to_defaults(QWidget* card) {
         if (w == card) {
             auto tg = fx_toggles.find(fx);
             if (tg != fx_toggles.end()) {
-                enable = tg->second.enable;
+                enable = tg->second;
             }
             break;
         }

@@ -782,8 +782,9 @@ acoustic models. UI: cards gained ▾ detail rows for advanced knobs (`addDetail
       Done 2026-10-01: Audio (devices; rate/buffer read-only — server-owned), MIDI,
       Library (replaces the Folders dialog), Tuner, Shortcuts (built live from the
       window); instant apply. Theme waits for Phase 19; "meter options" dropped. The
-      Shortcuts page shows the open gap: 13 digit keys for 16 effects — the last three
-      rows have no on/off key.
+      Shortcuts page showed the gap (13 keys for 16 effects); fixed the same day: effect
+      on/off keys are now `1…0` then `Q…P` by row position (20 keys), and the Stereo
+      switches have no keys any more (user's call: live switching is for MIDI).
 - [x] **Doubler removed** (2026-10-01): sounded like a flanger to the user. Old presets,
       sessions and the stored order drop the `doubler` ID through the sanitizer.
       Transpose tried on distorted guitar: "not bad, not professional grade" — see the

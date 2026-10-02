@@ -423,8 +423,9 @@ QWidget* SettingsDialog::build_shortcuts_page() {
     shortcuts->setSelectionMode(QAbstractItemView::NoSelection);
     auto* lay = new QVBoxLayout;
     lay->addWidget(shortcuts);
-    return make_page("Effect keys follow the order of the effect rows: the digit row toggles "
-                     "the effects, Q W E… their Stereo switches.",
+    return make_page("Effect keys follow the order of the effect rows: 1 … 0, then Q … P "
+                     "turn the effects on and off. For live switching, map a MIDI "
+                     "footswitch (MIDI → Mappings…).",
                      lay, true);
 }
 

@@ -266,13 +266,8 @@ private:
     unique_ptr<AudioEngine> engine;
 
     // Effect strip state
-    struct CardToggles
-    {
-        ToggleSwitch* enable;
-        ToggleSwitch* stereo;
-    };
     std::unordered_map<EffectBase*, QWidget*> fx_cols;
-    std::unordered_map<EffectBase*, CardToggles> fx_toggles;
+    std::unordered_map<EffectBase*, ToggleSwitch*> fx_toggles; // each effect's on/off switch
     std::unordered_map<QWidget*, QWidget*> card_grips; // card → ≡ drag handle
     QWidget* strip = nullptr;
     QVBoxLayout* strip_lay = nullptr;
@@ -386,7 +381,6 @@ private:
     KnobWidget* knob_drive = nullptr;
     KnobWidget* knob_drive_tone = nullptr;
     KnobWidget* knob_drive_level = nullptr;
-
 
     ToggleSwitch* sw_volume_enable = nullptr;
     KnobWidget* knob_vol_pos = nullptr;

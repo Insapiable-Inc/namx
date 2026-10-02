@@ -1,27 +1,22 @@
 #pragma once
 
-#include <vector>
+#include <QShortcut>
+#include <QWidget>
 
 #include "Common.h"
-
-class QShortcut;
-class QWidget;
+#include "ToggleSwitch.h"
 
 namespace npl
 {
 
-class ToggleSwitch;
-
-// Assigns keyboard shortcuts to the effect strip toggles, left to right,
-// following the digit row of a Latin American keyboard layout:
+// Keyboard shortcuts for the effects' on/off switches, by position in the strip:
 //
-//   1 2 3 … 9 0 ' ¿ Backspace   enable/bypass toggle of each effect card
-//   Q W E …                     stereo toggle, in order, for the cards that have one
+//   1 2 3 … 9 0   then   Q W E R T Y U I O P
 //
-// Register cards with addEffect() in strip (chain) order; keys are handed
-// out sequentially, and cards beyond the end of a key list get no shortcut.
-// When the strip is reordered, call clear() and re-register so the digit row
-// keeps matching the visual left-to-right order.
+// Register the cards with add_effect() in strip order; keys are handed out in that
+// order, and cards past the last key get none. After a reorder, clear() and
+// register again so the keys keep following the rows top to bottom. Plain keys on
+// purpose (practice at the desk); live switching is what MIDI mappings are for.
 class EffectShortcuts
 {
 public:
@@ -29,19 +24,13 @@ public:
         : window(new_window) {
     }
 
-    // Register one effect card. `stereo` is null for cards without a stereo toggle.
-    void add_effect(ToggleSwitch* enable, ToggleSwitch* stereo = nullptr);
-
-    // Delete all created shortcuts and restart key assignment (chain reorder).
+    void add_effect(ToggleSwitch* enable);
+    // Deletes the shortcuts and restarts the key assignment.
     void clear();
 
 private:
-    // `description` (with %1 = the card name) labels the key on the Shortcuts page.
-    void bind(ToggleSwitch* toggle, int key, const char* action, const char* description);
-
     QWidget* window;
-    int enable_index{0};
-    int stereo_index{0};
+    size_t next_key = 0;
     vector<QShortcut*> shortcuts;
 };
 
