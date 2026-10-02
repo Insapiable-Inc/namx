@@ -340,8 +340,9 @@ LibraryPanel::LibraryPanel(LibraryIndex& new_index, QWidget* parent)
     setMinimumWidth(240);
 
     QSettings s;
-    favorites = QSet<QString>(s.value("library/favorites").toStringList().begin(),
-                              s.value("library/favorites").toStringList().end());
+    // One list: begin() and end() must come from the same container.
+    const QStringList saved_favorites = s.value("library/favorites").toStringList();
+    favorites = QSet<QString>(saved_favorites.begin(), saved_favorites.end());
     recents = s.value("library/recents").toStringList();
 
     model = new LibraryListModel(this);
