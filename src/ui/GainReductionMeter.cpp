@@ -44,13 +44,13 @@ void GainReductionMeter::paintEvent(QPaintEvent*) {
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing);
 
-    // Caption: "GR" left, value right — knob-label typography.
+    // Caption: "Gain reduction" left, value right — knob-label typography.
     QFont f = font();
     f.setPointSizeF(8.0);
     p.setFont(f);
     const QRectF text(0, 0, width(), 16);
     p.setPen(Theme::dim_text());
-    p.drawText(text, Qt::AlignLeft | Qt::AlignVCenter, "GR");
+    p.drawText(text, Qt::AlignLeft | Qt::AlignVCenter, "Gain reduction");
     f.setBold(true);
     p.setFont(f);
     p.setPen(db >= 0.1f ? accent : Theme::dim_text());
