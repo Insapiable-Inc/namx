@@ -883,6 +883,12 @@ Research in `gui/DSP_RESEARCH.md` (options per effect, real-time flags, licenses
 sources). Each step keeps the golden test green for effects it doesn't touch, re-records
 it for the one it replaces, and is measured with `NAMPlayerBench`.
 
+- [ ] **Discrete selector widget** (user request 2026-10-01): a stepped, rotary-switch
+      style control with N labelled positions (detents, the current label shown,
+      click/scroll/drag steps one position, MIDI maps to positions). For the reverb
+      type (Plate / Hall / Room / Spring / IR), Chorus modes (to bring back Tri /
+      Vintage / Spatial), Phaser/Flanger modes. Replaces the "continuous knob with
+      snap" workaround; registered like a knob (integer value, preset key unchanged).
 - [ ] **Pitch shifter:** Signalsmith Stretch (MIT) behind `PitchShifter`, A/B'd against
       today's WSOLA on distorted chords; latency measured. Then a < 10 ms
       filter-bank shifter (Juillerat 2008) as a "Low latency" mode for drop tuning.
