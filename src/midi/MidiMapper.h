@@ -64,6 +64,9 @@ struct MidiTarget
     KnobWidget* knob = nullptr;
     ToggleSwitch* toggle = nullptr;
     std::function<void()> action;
+    // Knobs only: while this switch is on, every controller sweeps the knob
+    // backwards (heel and toe swap) — the effect card's Reverse switch.
+    ToggleSwitch* reverse = nullptr;
 };
 
 // Phase 16 mapping engine. Lives on the GUI thread; MidiInput's queued
@@ -79,6 +82,8 @@ public:
     void add_toggle(const QString& id, const QString& group, const QString& label, ToggleSwitch* t);
     void add_action(const QString& id, const QString& group, const QString& label,
                     std::function<void()> fn);
+    // Attach a Reverse switch to a knob target (see MidiTarget::reverse).
+    void set_reverse_switch(const QString& id, ToggleSwitch* sw);
     const vector<MidiTarget>& get_targets() const {
         return targets;
     }

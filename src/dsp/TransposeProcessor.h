@@ -11,7 +11,9 @@ namespace npl
 
 // Transpose ±12 semitones (drop tunings, octave effects) at the front of
 // the chain. Mix blends the dry signal back in (100 % = transposed only).
-// At 0 semitones it passes the signal straight through (no added latency).
+// At 0 semitones it passes the signal straight through (no added latency) —
+// except in continuous mode (whammy sweeps), where the shifter keeps running so
+// a pedal passing through 0 doesn't jump between the dry and the delayed path.
 class TransposeProcessor : public EffectBase
 {
 public:
@@ -22,6 +24,9 @@ public:
 
     void set_semitones(float st) {
         semis.store(st);
+    }
+    void set_continuous(bool on) {
+        continuous.store(on);
     }
     void set_mix_pct(float pct) {
         mix_pct.store(pct);
@@ -43,7 +48,7 @@ protected:
 private:
     void process_channel(float* buf, size_t n, int ch) {
         const float st = semis.load(std::memory_order_relaxed);
-        if (std::abs(st) < 0.01f) {
+        if (std::abs(st) < 0.01f && !continuous.load(std::memory_order_relaxed)) {
             return;
         }
         const float mix = mix_pct.load(std::memory_order_relaxed) / 100.0f;
@@ -56,6 +61,7 @@ private:
 
     atomic<float> semis{0.0f};
     atomic<float> mix_pct{100.0f};
+    atomic<bool> continuous{false};
     PitchShifter shift[2];
 };
 

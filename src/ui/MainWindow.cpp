@@ -87,7 +87,7 @@ static constexpr int GRIP_COLUMN_WIDTH = 22; // "≡" drag handle
 static constexpr int NAME_COLUMN_WIDTH = 120; // fits "Dynamic Wah"
 static constexpr int ENABLE_SLOT_WIDTH = 74; // toggle + "On"/"Off" caption
 static constexpr int STEREO_SLOT_WIDTH = 96; // toggle + "Stereo" caption
-static constexpr int SYNC_SLOT_WIDTH = 96; // toggle + "Sync" / "Manual" caption
+static constexpr int SYNC_SLOT_WIDTH = 112; // toggle + "Sync" / "Manual" / "Continuous"
 // Every row is exactly as tall as a knob row (40 px dial + knob margins +
 // card margins + border), so knob-less rows and the tuner match the rest.
 static constexpr int ROW_CARD_HEIGHT = 62;
@@ -159,7 +159,6 @@ static QHBoxLayout* row_layout(QWidget* card) {
         card->findChild<QWidget*>("cardRow", Qt::FindDirectChildrenOnly)->layout());
 }
 
-// A switch with a fixed caption beside it ("Vibe"), for an either/or mode.
 // The Chilean flag, `height` px tall (3:2): blue canton with a white star over
 // a white band, red lower half. Painted rather than an emoji so it shows the
 // same everywhere (Windows has no flag emoji).
@@ -210,6 +209,7 @@ static QWidget* make_made_in_chile() {
     return w;
 }
 
+// A switch with a fixed caption beside it ("Vibe"), for an either/or mode.
 static QWidget* make_caption_switch(ToggleSwitch* sw, const QString& caption) {
     auto* w = new QWidget;
     auto* lay = new QHBoxLayout(w);
@@ -220,6 +220,13 @@ static QWidget* make_caption_switch(ToggleSwitch* sw, const QString& caption) {
     lay->addWidget(sw, 0, Qt::AlignVCenter);
     lay->addWidget(label, 0, Qt::AlignVCenter);
     return w;
+}
+
+// Puts `w` in a card's Stereo column, on rows that have no stereo mode.
+static void put_in_stereo_column(QWidget* card, QWidget* w) {
+    // Main row: grip, name, enable slot, stereo slot, sync slot, …
+    QWidget* stereo_slot = row_layout(card)->itemAt(3)->widget();
+    static_cast<QHBoxLayout*>(stereo_slot->layout())->addWidget(w, 0, Qt::AlignVCenter);
 }
 
 // Puts `w` in a card's Sync column (the column right of Stereo).
@@ -511,9 +518,26 @@ QWidget* MainWindow::make_effect_row(const QString& title, ToggleSwitch*& toggle
 //     return QString(names[std::clamp(static_cast<int>(std::lround(v)), 0, 3)]);
 // }
 
+// Whole steps as "+3 st"; Transpose's continuous mode adds a decimal ("+3.4 st").
 static QString format_semitones(double v) {
-    const int s = static_cast<int>(std::lround(v));
-    return s == 0 ? QString("0 st") : QString("%1%2 st").arg(s > 0 ? "+" : "").arg(s);
+    const double tenths = std::round(v * 10.0) / 10.0;
+    if (tenths == 0.0) {
+        return QString("0 st");
+    }
+    const bool whole = std::fmod(tenths, 1.0) == 0.0;
+    return QString("%1%2 st").arg(tenths > 0 ? "+" : "").arg(tenths, 0, 'f', whole ? 0 : 1);
+}
+
+// Reverse switch for a pedal-like knob (Stereo column): MIDI controllers sweep that
+// knob backwards while it's on (MidiTarget::reverse).
+static ToggleSwitch* make_reverse_switch(QWidget* card, const QString& knob_name) {
+    auto* sw = new ToggleSwitch;
+    sw->setCheckable(true);
+    sw->setToolTip(QString("Reverse the expression pedal: heel and toe swap for every MIDI "
+                           "controller mapped to %1")
+                       .arg(knob_name));
+    put_in_stereo_column(card, make_caption_switch(sw, "Reverse"));
+    return sw;
 }
 
 void MainWindow::setup_ui() {
@@ -673,12 +697,14 @@ void MainWindow::setup_ui() {
 
     // Transpose
     {
-        KnobWidget* semis =
+        knob_transpose_semis =
             late_knob("transpose", "semitones", new KnobWidget("Semitones", -12.0, 12.0, 0.0),
                       [this](double v) {
                           engine->get_transpose().set_semitones(static_cast<float>(v));
                       });
-        semis->set_snap(1.0);
+        KnobWidget* semis = knob_transpose_semis;
+        semis->set_snap(1.0); // Discrete until the Continuous switch says otherwise
+        semis->set_scroll_step(0.1); // used in continuous mode
         semis->set_value_formatter(&format_semitones);
         semis->setToolTip("Pitch shift in semitones: −1 / −2 for drop tunings, ±12 for octaves "
                           "(adds ~25 ms latency when not 0)");
@@ -688,6 +714,13 @@ void MainWindow::setup_ui() {
             });
         mix->set_scroll_step(1.0);
         QWidget* col = make_effect_row("Transpose", sw_transpose_enable, {semis, mix});
+        sw_transpose_reverse = make_reverse_switch(col, "Semitones");
+        sw_transpose_continuous = new ToggleSwitch;
+        sw_transpose_continuous->setCheckable(true);
+        sw_transpose_continuous->setToolTip(
+            "Continuous: Semitones glides smoothly (whammy-style bends with an expression "
+            "pedal) · off = Discrete: whole semitones");
+        put_in_sync_column(col, make_caption_switch(sw_transpose_continuous, "Continuous"));
         Theme::tag_card(col, "transpose");
         fx_cols[&engine->get_transpose()] = col;
     }
@@ -780,6 +813,7 @@ void MainWindow::setup_ui() {
         pos->set_scroll_step(1.0);
         QWidget* col = make_effect_row("Dynamic Wah", sw_wah_enable,
                                        {knob_wah_mix, knob_wah_sens, knob_wah_res, pos});
+        sw_wah_reverse = make_reverse_switch(col, "Position");
         put_in_sync_column(col, make_caption_switch(sw_wah_manual, "Manual"));
         Theme::tag_card(col, "wah");
 
@@ -873,6 +907,7 @@ void MainWindow::setup_ui() {
         knob_vol_mid->setToolTip("Level at half travel: lower = swells stay quiet longer");
         QWidget* col =
             make_effect_row("Volume Pedal", sw_volume_enable, {knob_vol_pos, knob_vol_mid});
+        sw_volume_reverse = make_reverse_switch(col, "Volume");
         Theme::tag_card(col, "volume");
         fx_cols[&engine->get_volume()] = col;
     }
@@ -1364,6 +1399,14 @@ void MainWindow::set_tuner_reference(int hz) {
     tuner_ref_hz = hz;
     tuner_display->set_reference(hz);
     QSettings().setValue("tuner/reference", hz);
+}
+
+void MainWindow::set_transpose_continuous(bool on) {
+    engine->get_transpose().set_continuous(on);
+    knob_transpose_semis->set_snap(on ? 0.0 : 1.0);
+    if (!on) {
+        knob_transpose_semis->set_value(knob_transpose_semis->value()); // round to a step
+    }
 }
 
 void MainWindow::set_tuner_show_hz(bool on) {
@@ -2214,6 +2257,11 @@ void MainWindow::setup_midi(QMenu* top_menu) {
         tempo_bar->tap_tempo();
     });
 
+    // The cards' Reverse switches flip their pedal knob's sweep.
+    midi_mapper->set_reverse_switch("param:dynamicWah/position", sw_wah_reverse);
+    midi_mapper->set_reverse_switch("param:transpose/semitones", sw_transpose_reverse);
+    midi_mapper->set_reverse_switch("param:volume/position", sw_volume_reverse);
+
     // Learn entries in every context menu
     KnobWidget::set_menu_hook([this](KnobWidget* k, QMenu* menu) {
         if (const MidiTarget* t = midi_mapper->target_for(k)) {
@@ -2553,6 +2601,13 @@ void MainWindow::register_parameters() {
     toggle_param("transpose", "enabled", sw_transpose_enable, [e](bool b) {
         e->get_transpose().set_enabled(b);
     });
+    // Registered before Semitones (a late knob), so a preset's fractional value
+    // isn't rounded by the discrete snap on its way in.
+    toggle_param("transpose", "continuous", sw_transpose_continuous, [this](bool b) {
+        set_transpose_continuous(b);
+    });
+    // Reverse: read by the MIDI mapper (MidiTarget::reverse), nothing for the engine.
+    toggle_param("transpose", "reverse", sw_transpose_reverse, [](bool) {});
 
     toggle_param("noiseGate", "enabled", sw_gate_enable, [e](bool b) {
         e->get_gate().set_enabled(b);
@@ -2592,6 +2647,8 @@ void MainWindow::register_parameters() {
     toggle_param("dynamicWah", "mode", sw_wah_manual, [e](bool b) {
         e->get_wah().set_pedal_mode(b);
     });
+    // Reverse: read by the MIDI mapper (MidiTarget::reverse), nothing for the engine.
+    toggle_param("dynamicWah", "reverse", sw_wah_reverse, [](bool) {});
     knob_param("dynamicWah", "sensitivity", knob_wah_sens, [e](double v) {
         e->get_wah().set_sensitivity_pct(static_cast<float>(v));
     });
@@ -2747,6 +2804,8 @@ void MainWindow::register_parameters() {
     toggle_param("volume", "enabled", sw_volume_enable, [e](bool b) {
         e->get_volume().set_enabled(b);
     });
+    // Reverse: read by the MIDI mapper (MidiTarget::reverse), nothing for the engine.
+    toggle_param("volume", "reverse", sw_volume_reverse, [](bool) {});
     knob_param("volume", "position", knob_vol_pos, [e](double v) {
         e->get_volume().set_position_pct(static_cast<float>(v));
     });

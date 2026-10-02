@@ -918,13 +918,17 @@ the Volume pedal — get the controls a real expression setup has. MIDI multi-as
       Max 100 % today. Show and edit Min/Max in the target's own unit (st, %, dB),
       so a wah can stop short of the toe, Transpose sweeps 0…+12 or 0…−12 st, and the
       Volume pedal stays above a floor. Stored as today (0…1 share): no file change.
-- [ ] **Reverse switch** in the Stereo column of Wah, Transpose and Volume (none of
+- [x] **Reverse switch** (done 2026-10-02: `MidiTarget::reverse` swaps the mapping's lo/hi, so it composes with Min/Max; preset keys `<fx>/reverse`) in the Stereo column of Wah, Transpose and Volume (none of
       them uses that column): flips which end of the pedal is heel and which is toe
       for every controller driving that parameter. Decide first how it relates to
       per-mapping Min > Max (probably: Reverse flips the effect's pedal axis, and the
       mapping range is applied on top). Registered with `toggle_param`, saved in
       presets; the knob always shows the real value.
-- [ ] **Transpose: Discrete / Continuous** switch in the Sync column. Discrete =
+- [x] **Transpose: Discrete / Continuous** switch in the Sync column (done 2026-10-02:
+      preset key `transpose/continuous`, registered before Semitones so a fractional
+      value survives loading; continuous mode keeps the shifter running at 0 st so a
+      sweep through 0 doesn't jump between dry and delayed; Sync column → 112 px; the
+      per-block ratio change has no audible zipper on paper — listen with a pedal). Discrete =
       today's whole-semitone snap; Continuous = smooth glides for whammy-style
       bends (`PitchShifter::set_semitones` already takes fractions). Smooth the
       ratio per block so a fast pedal doesn't zipper; listen for the WSOLA

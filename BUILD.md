@@ -395,6 +395,10 @@ if one starts off and the other on, each press alternates between them. On an
 expression pedal, setting **Min** above **Max** in Mappings… reverses that row's
 sweep: volume 0→100 % and wah 100→0 % on one pedal crossfade the two.
 
+**Reverse** on the Transpose, Dynamic Wah and Volume Pedal cards flips the pedal for
+every controller mapped to Semitones / Position / Volume (heel and toe swap), on top of
+each mapping's Min/Max. It's saved in presets; the knob always shows the real value.
+
 Out of the box, program changes 0–7 recall quick slots 1–8. The mappings are
 machine settings (QSettings `midi/*`), not part of presets.
 
@@ -487,15 +491,15 @@ switch is on, which runs the model once per channel at twice the CPU.
 
 | Stage | Main controls | ▾ More |
 |-------|---------------|--------|
-| Transpose | Semitones (±12), Mix | — |
+| Transpose | Semitones (±12), Mix; **Reverse** (pedal heel ↔ toe), **Continuous** switch (off = Discrete: whole semitones; on = smooth whammy-style glides, the shifter then stays active at 0 st) | — |
 | Drive | Drive, Tone, Level (TS-style: clipping on the mids/highs, clean lows kept) | — |
-| Dynamic Wah | **Manual** switch (off = Auto: your playing sweeps it), Mix, Sensitivity, Resonance, Position (the sweep in Manual mode — map an expression pedal) | — |
+| Dynamic Wah | **Manual** switch (off = Auto: your playing sweeps it), **Reverse** (pedal heel ↔ toe), Mix, Sensitivity, Resonance, Position (the sweep in Manual mode — map an expression pedal) | — |
 | Flanger / Phaser / Chorus | Mix, Rate (Sync), Depth, Feedback (not Chorus); Flanger **Range**; Phaser **Vibe** switch (off = classic) | — |
 | Equalizer | Bass, Middle, High-Mid, Treble (±12 dB) | the four band frequencies, Low Cut, High Cut |
 | Delay | Mix, Time (Sync), Feedback (ping-pong in stereo) | R Time, Low/High Cut, Saturation |
 | Reverb | Mix, Decay, Damping, Width | Pre-delay, Low/High Cut |
 | Cabinet | IR (library, ‹ ›; click the name to browse) | — |
-| Volume Pedal | Volume, Mid (level at half travel) | — |
+| Volume Pedal | Volume, Mid (level at half travel), **Reverse** (pedal heel ↔ toe) | — |
 | Output | Gain, **Limit** (look-ahead limiter at −0.3 dBFS) | — |
 
 Times, rates and frequencies use logarithmic knobs. Transpose uses the built-in pitch

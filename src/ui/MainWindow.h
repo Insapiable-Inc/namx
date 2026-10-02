@@ -163,6 +163,7 @@ private:
     void add_detail_row(QWidget* card, const QList<QWidget*>& widgets);
     void set_tuner_reference(int hz);
     void set_tuner_show_hz(bool on);
+    void set_transpose_continuous(bool on);
     QWidget* make_eq_freq_knob(const QString& key, const QString& label, double lo, double hi,
                                double def, EQProcessor::Band b, double off_at);
     QWidget* make_delay_pct_knob(const QString& key, const QString& label, double lo, double hi,
@@ -352,6 +353,7 @@ private:
     ToggleSwitch* sw_phaser_stereo = nullptr;
     ToggleSwitch* sw_phaser_vibe = nullptr; // Mode: Classic / Vibe
     ToggleSwitch* sw_wah_manual = nullptr; // Mode: Auto / Manual
+    ToggleSwitch* sw_wah_reverse = nullptr;
     KnobWidget* knob_ph_rate = nullptr;
     KnobWidget* knob_ph_depth = nullptr;
     KnobWidget* knob_ph_feedback = nullptr;
@@ -381,12 +383,16 @@ private:
     KnobWidget* knob_rev_mix = nullptr;
 
     ToggleSwitch* sw_transpose_enable = nullptr;
+    ToggleSwitch* sw_transpose_reverse = nullptr;
+    ToggleSwitch* sw_transpose_continuous = nullptr;
+    KnobWidget* knob_transpose_semis = nullptr;
     ToggleSwitch* sw_drive_enable = nullptr;
     KnobWidget* knob_drive = nullptr;
     KnobWidget* knob_drive_tone = nullptr;
     KnobWidget* knob_drive_level = nullptr;
 
     ToggleSwitch* sw_volume_enable = nullptr;
+    ToggleSwitch* sw_volume_reverse = nullptr;
     KnobWidget* knob_vol_pos = nullptr;
     KnobWidget* knob_vol_mid = nullptr;
 

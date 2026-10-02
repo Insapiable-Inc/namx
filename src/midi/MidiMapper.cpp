@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <utility>
 
 #include <QFile>
 #include <QJsonArray>
@@ -93,6 +94,14 @@ void MidiMapper::add_knob(const QString& id, const QString& group, const QString
 void MidiMapper::add_toggle(const QString& id, const QString& group, const QString& label,
                             ToggleSwitch* t) {
     targets.push_back({id, label, group, nullptr, t, {}});
+}
+
+void MidiMapper::set_reverse_switch(const QString& id, ToggleSwitch* sw) {
+    for (auto& t : targets) {
+        if (t.id == id) {
+            t.reverse = sw;
+        }
+    }
 }
 
 void MidiMapper::add_action(const QString& id, const QString& group, const QString& label,
@@ -358,8 +367,11 @@ void MidiMapper::apply(MidiMapping& mp, int index, const MidiMessage& m) {
 
     if (t->knob) {
         KnobWidget* k = t->knob;
-        const double lo = k->minimum() + mp.min * (k->maximum() - k->minimum());
-        const double hi = k->minimum() + mp.max * (k->maximum() - k->minimum());
+        double lo = k->minimum() + mp.min * (k->maximum() - k->minimum());
+        double hi = k->minimum() + mp.max * (k->maximum() - k->minimum());
+        if (t->reverse && t->reverse->isChecked()) {
+            std::swap(lo, hi); // heel ↔ toe
+        }
         switch (mp.mode) {
             case MidiMapping::ABSOLUTE:
                 k->set_value(lo + (hi - lo) * value / 127.0);

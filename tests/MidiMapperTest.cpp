@@ -196,6 +196,17 @@ int run(int argc, char** argv) {
         CHECK(std::abs(volume.value()) < 0.05 && std::abs(wah.value() - 100.0) < 0.05,
               "pedal up: volume min, inverted wah max");
 
+        // The card's Reverse switch swaps heel and toe on top of the mapping range.
+        ToggleSwitch volume_reverse;
+        volume_reverse.setCheckable(true);
+        mapper.set_reverse_switch("param:volume/volume", &volume_reverse);
+        volume_reverse.setChecked(true);
+        mapper.handle(cc(0, 7, 127));
+        CHECK(std::abs(volume.value()) < 0.05 && std::abs(wah.value()) < 0.05,
+              "Reverse: pedal down → volume min; the wah (no Reverse) unchanged");
+        volume_reverse.setChecked(false);
+        mapper.set_reverse_switch("param:volume/volume", nullptr);
+
         mapper.learn("param:chorus/enabled");
         mapper.handle(cc(0, 81, 127));
         mapper.handle(cc(0, 81, 0));
