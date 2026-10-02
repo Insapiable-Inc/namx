@@ -24,6 +24,9 @@ public:
     void set_reading(const QString& new_note, float new_cents, bool new_valid, float new_hz = 0.0f);
     // Left of the note: the detected frequency (on) or the A4 reference (off).
     void set_show_hz(bool on);
+    bool get_show_hz() const {
+        return show_hz;
+    }
     void set_reference(int new_hz);
 
     QSize sizeHint() const override {

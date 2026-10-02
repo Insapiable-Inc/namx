@@ -460,24 +460,6 @@ QToolButton#cardMore:hover {
     background-color: #2f3744;
 }
 
-/* === Tuner row: Hz toggle === */
-QToolButton#tunerOption {
-    color: #9aa1ad;
-    background: transparent;
-    border: 1px solid #353c4a;
-    border-radius: 4px;
-    padding: 3px 8px;
-    font-weight: 600;
-}
-QToolButton#tunerOption:hover {
-    background-color: #2f3744;
-}
-QToolButton#tunerOption:checked {
-    color: #15171c;
-    background-color: #3daee9;
-    border-color: #3daee9;
-}
-
 /* === MIDI Mappings window === */
 QDialog#midiMappings QGroupBox {
     border: 1px solid #2a2f38;

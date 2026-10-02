@@ -20,9 +20,9 @@ public:
     {
         double minimum;
         double maximum;
-        int decimals;         // values round to this many places
-        double step;          // one scroll notch; four pixels of drag
-        QString unit;         // dim, right of the number ("BPM", "Hz")
+        int decimals; // values round to this many places
+        double step; // one scroll notch; four pixels of drag
+        QString unit; // dim, right of the number ("BPM", "Hz")
         QString caption = {}; // dim, left of the number ("A4")
     };
 

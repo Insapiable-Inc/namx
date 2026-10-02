@@ -147,7 +147,7 @@ void SettingsDialog::refresh_current_page() {
             break;
         case Page::TUNER:
             reference_box->setValue(qRound(targets.tuner_reference.value()));
-            show_hz_box->setChecked(targets.tuner_show_hz.isChecked());
+            show_hz_box->setChecked(targets.tuner_display.get_show_hz());
             break;
         case Page::SHORTCUTS:
             refresh_shortcuts();
@@ -406,12 +406,12 @@ QWidget* SettingsDialog::build_tuner_page() {
             &NumberField::set_value);
 
     show_hz_box = new QCheckBox("Show the detected frequency");
-    connect(show_hz_box, &QCheckBox::toggled, &targets.tuner_show_hz, &QToolButton::setChecked);
+    connect(show_hz_box, &QCheckBox::toggled, this, targets.set_tuner_show_hz);
 
     QFormLayout* form = make_form();
     form->addRow("Reference pitch", reference_box);
     form->addRow("", show_hz_box);
-    return make_page("Also on the tuner card. Concert pitch is 440 Hz.", form);
+    return make_page("The reference is also on the tuner card. Concert pitch is 440 Hz.", form);
 }
 
 // Shortcuts: listed from the window itself, so the page can't go stale.

@@ -311,7 +311,6 @@ private:
 
     TunerDisplay* tuner_display = nullptr;
     NumberField* tuner_reference_box = nullptr; // on the tuner card; the settings page drives it
-    QToolButton* tuner_hz_button = nullptr;
     SettingsDialog* settings_dialog = nullptr;
     int tuner_ref_hz = 440;
 

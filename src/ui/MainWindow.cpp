@@ -590,12 +590,16 @@ void MainWindow::setup_ui() {
         tuner_display->setMaximumWidth(560); // one compact instrument, not a strip
         lay->addWidget(tuner_display, 1, Qt::AlignVCenter);
 
-        // Reference pitch + Hz readout: machine settings (QSettings tuner/*),
+        // Reference pitch + Hz readout (Settings → Tuner): machine settings (QSettings tuner/*),
         // not part of presets or the registry.
         QSettings s;
         tuner_ref_hz = std::clamp(s.value("tuner/reference", 440).toInt(), 420, 460);
-        tuner_reference_box = new NumberField(
-            {.minimum = 420, .maximum = 460, .decimals = 0, .step = 1, .unit = "Hz", .caption = "A4"});
+        tuner_reference_box = new NumberField({.minimum = 420,
+                                               .maximum = 460,
+                                               .decimals = 0,
+                                               .step = 1,
+                                               .unit = "Hz",
+                                               .caption = "A4"});
         NumberField* ref = tuner_reference_box;
         ref->set_value(tuner_ref_hz);
         ref->setToolTip("Reference pitch (concert pitch is 440 Hz): drag up/down or scroll to "
@@ -605,22 +609,10 @@ void MainWindow::setup_ui() {
         });
         tuner_display->set_reference(tuner_ref_hz);
 
-        tuner_hz_button = new QToolButton;
-        QToolButton* hz = tuner_hz_button;
-        hz->setObjectName("tunerOption");
-        hz->setText("Hz");
-        hz->setCheckable(true);
-        hz->setFocusPolicy(Qt::NoFocus);
-        hz->setToolTip("Show the detected frequency");
-        hz->setChecked(s.value("tuner/showHz", false).toBool());
-        tuner_display->set_show_hz(hz->isChecked());
-        connect(hz, &QToolButton::toggled, this, [this](bool on) {
-            set_tuner_show_hz(on);
-        });
+        tuner_display->set_show_hz(s.value("tuner/showHz", false).toBool());
 
         lay->addSpacing(8);
         lay->addWidget(ref, 0, Qt::AlignVCenter);
-        lay->addWidget(hz, 0, Qt::AlignVCenter);
         lay->addStretch();
 
         Theme::tag_card(col, "tuner"); // after children — pushes accents to them
@@ -2237,7 +2229,11 @@ void MainWindow::open_settings(SettingsDialog::Page page) {
                 .midi_mapper = *midi_mapper,
                 .library_index = *library_index,
                 .tuner_reference = *tuner_reference_box,
-                .tuner_show_hz = *tuner_hz_button,
+                .tuner_display = *tuner_display,
+                .set_tuner_show_hz =
+                    [this](bool on) {
+                        set_tuner_show_hz(on);
+                    },
                 .window = *this,
                 .open_midi_mappings =
                     [this] {

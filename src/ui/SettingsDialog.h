@@ -21,6 +21,7 @@
 #include "MidiInput.h"
 #include "MidiMapper.h"
 #include "NumberField.h"
+#include "TunerDisplay.h"
 
 namespace npl
 {
@@ -34,8 +35,9 @@ struct SettingsTargets
     MidiInput* midi = nullptr; // null when MIDI input is unavailable
     MidiMapper& midi_mapper;
     LibraryIndex& library_index;
-    NumberField& tuner_reference; // the tuner card's own controls
-    QToolButton& tuner_show_hz;
+    NumberField& tuner_reference; // the tuner card's own control
+    TunerDisplay& tuner_display;
+    std::function<void(bool)> set_tuner_show_hz; // applies and persists
     QMainWindow& window; // its menus and shortcuts fill the Shortcuts page
     std::function<void()> open_midi_mappings;
 };
