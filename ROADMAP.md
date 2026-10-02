@@ -900,7 +900,7 @@ for the backend work (Phase 21), and a second full review follows the big change
       (`NAM/lstm.cpp`).
 - [ ] **04** EQ `reset()` on the audio thread races the GUI's `rebuild()` (before
       Phase 24 creates effects while audio runs).
-- [ ] **06** Preset and MIDI saves truncate the old file and report success even on a
+- [x] **06** (done 2026-10-02: `QSaveFile` for presets, `.nammidi`, the library cache; test in `MidiMapperTest`) Preset and MIDI saves truncate the old file and report success even on a
       failed write → `QSaveFile` + check, dirty state only after success (before
       Phase 24 rewrites saving).
 - [ ] **08** (P2, same reason) Preset version/schema validated before anything is

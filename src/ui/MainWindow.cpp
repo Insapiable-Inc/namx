@@ -35,6 +35,7 @@
 #include <QPolygonF>
 #include <QPushButton>
 #include <QScrollArea>
+#include <QSaveFile>
 #include <QSettings>
 #include <QShortcut>
 #include <QStandardPaths>
@@ -3084,14 +3085,16 @@ QJsonObject MainWindow::tone3000_linkage(const string& p) const {
     return o;
 }
 
+// Atomic: the old file stays untouched unless the new one was written completely
+// (QSaveFile writes a temporary and renames it over the target on commit()).
 bool MainWindow::write_preset_file(const QString& path) {
-    QFile f(path);
-    if (!f.open(QIODevice::WriteOnly)) {
-        QMessageBox::critical(this, "Preset", "Cannot write preset:\n" + path);
+    const QByteArray data = QJsonDocument(current_preset_json()).toJson();
+    QSaveFile f(path);
+    if (!f.open(QIODevice::WriteOnly) || f.write(data) != data.size() || !f.commit()) {
+        QMessageBox::critical(this, "Preset",
+                              "Cannot write preset:\n" + path + "\n\n" + f.errorString());
         return false;
     }
-    f.write(QJsonDocument(current_preset_json()).toJson());
-    f.close();
     return true;
 }
 

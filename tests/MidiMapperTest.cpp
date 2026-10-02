@@ -13,7 +13,9 @@
 #include <cstdio>
 
 #include <QApplication>
+#include <QDir>
 #include <QElapsedTimer>
+#include <QFile>
 #include <QSettings>
 #include <QTemporaryDir>
 #include <QThread>
@@ -239,6 +241,27 @@ int run(int argc, char** argv) {
         CHECK(mapper.get_mappings().size() == n, "same number of mappings after load");
         MidiMapper second; // reads QSettings midi/mappings
         CHECK(second.get_mappings().size() == n, "mappings persist in QSettings");
+
+        // A save that can't complete reports failure and leaves the old file intact
+        // (review item 06). A read-only folder inside our own temp dir: the atomic
+        // save can't create its temporary there, so nothing may touch the file.
+        const QString locked_dir = tmp.path() + "/locked";
+        QDir().mkpath(locked_dir);
+        const QString kept = locked_dir + "/kept.nammidi";
+        CHECK(mapper.save_file(kept), "save before locking the folder");
+        QFile before(kept);
+        CHECK(before.open(QIODevice::ReadOnly), "read the saved file");
+        const QByteArray original = before.readAll();
+        before.close();
+        QFile::setPermissions(locked_dir, QFile::ReadOwner | QFile::ExeOwner);
+        mapper.set_mappings(MidiMapper::default_mappings()); // different content
+        const bool saved = mapper.save_file(kept);
+        QFile after(kept);
+        CHECK(after.open(QIODevice::ReadOnly), "the file is still there");
+        CHECK(!saved, "save into a read-only folder reports failure");
+        CHECK(after.readAll() == original, "the existing file is left as it was");
+        QFile::setPermissions(locked_dir, QFile::ReadOwner | QFile::WriteOwner |
+                                              QFile::ExeOwner); // so tmp can clean up
     }
 
     std::printf("MIDI clock → tempo\n");

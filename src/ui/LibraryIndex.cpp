@@ -13,6 +13,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QLocale>
+#include <QSaveFile>
 #include <QSet>
 #include <QSettings>
 #include <QStandardPaths>
@@ -454,9 +455,10 @@ private:
         root["version"] = 2;
         root["entries"] = arr;
         QDir().mkpath(QFileInfo(path).absolutePath());
-        QFile f(path);
-        if (f.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        QSaveFile f(path); // atomic: an interrupted write keeps the previous cache
+        if (f.open(QIODevice::WriteOnly)) {
             f.write(QJsonDocument(root).toJson(QJsonDocument::Compact));
+            f.commit();
         }
     }
 };

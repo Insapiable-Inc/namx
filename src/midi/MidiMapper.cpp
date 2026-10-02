@@ -7,6 +7,7 @@
 #include <QFile>
 #include <QJsonArray>
 #include <QJsonDocument>
+#include <QSaveFile>
 #include <QSettings>
 
 #include "Common.h"
@@ -195,12 +196,10 @@ bool MidiMapper::save_file(const QString& path) const {
     QJsonObject root;
     root["version"] = 1;
     root["mappings"] = arr;
-    QFile f(path);
-    if (!f.open(QIODevice::WriteOnly)) {
-        return false;
-    }
-    f.write(QJsonDocument(root).toJson());
-    return true;
+    // Atomic: a failed write leaves the old file as it was.
+    const QByteArray data = QJsonDocument(root).toJson();
+    QSaveFile f(path);
+    return f.open(QIODevice::WriteOnly) && f.write(data) == data.size() && f.commit();
 }
 
 bool MidiMapper::load_file(const QString& path, QString* error) {
