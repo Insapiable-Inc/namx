@@ -8,16 +8,16 @@
 namespace npl
 {
 
-// Peak meter (vertical fills bottom→top, horizontal fills left→right),
-// colored by absolute level like REAPER's meters: green fill, yellow only
-// for the part above -6 dBFS, and red only for the part above 0 dBFS;
-// the scale runs -60..+6 dB so there is visible headroom above the clip
-// point (float audio can exceed full scale). A peak-hold line marks the
-// recent maximum and falls after a moment; it takes its zone's color, so a
-// red hold line means the signal clipped within the last second.
-// Ballistics are time-based (instant attack, steady dB/s release, 1 s hold),
-// so the look doesn't depend on how often setPeak() is called; it only
-// repaints when the bar or the hold line actually moves.
+// LED bar-graph peak meter (vertical fills bottom→top, horizontal fills
+// left→right): a column of glowing segments on a dark panel, colored by
+// absolute level like REAPER's meters — green, yellow above -6 dBFS, red
+// above 0 dBFS; the scale runs -60..+6 dB so there is visible headroom above
+// the clip point (float audio can exceed full scale). Unlit segments stay
+// faintly visible. A single peak-hold LED marks the recent maximum and falls
+// after a moment; a red hold LED means the signal clipped within the last
+// second. Ballistics are time-based (instant attack, steady dB/s release,
+// 1 s hold), so the look doesn't depend on how often set_peak() is called; it
+// only repaints when the bar or the hold LED actually moves.
 class VUMeter : public QProgressBar
 {
     Q_OBJECT
@@ -31,10 +31,15 @@ protected:
     void paintEvent(QPaintEvent* event) override;
 
 private:
+    static QColor zone_color(float value);
     static float to_value(float db) {
         return (db - MIN_DB) / (MAX_DB - MIN_DB) * 100.0f;
     }
 
+    static constexpr int WIDTH = 22;
+    static constexpr qreal MARGIN = 6.0; // panel edge to the LEDs: room for the glow
+    static constexpr qreal LED_SIZE = 4.0; // along the meter axis
+    static constexpr qreal LED_GAP = 2.0;
     static constexpr float MIN_DB = -60.0f;
     static constexpr float MAX_DB = 6.0f; // headroom above the clip point
     static constexpr float RELEASE_DB_PER_SEC = 24.0f; // bar fall (digital peak meter)

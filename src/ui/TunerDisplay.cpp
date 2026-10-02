@@ -7,6 +7,7 @@
 #include <QPainter>
 
 #include "Common.h"
+#include "LedPaint.h"
 #include "Theme.h"
 
 namespace npl
@@ -44,20 +45,6 @@ static int segments_for(QChar letter) {
         default:
             return SG; // "-" placeholder
     }
-}
-
-// One bloom-styled rounded rect: soft halo passes, then the solid core.
-static void draw_glow_rect(QPainter& p, const QRectF& r, const QColor& c, qreal radius) {
-    QColor halo = c;
-    p.setPen(Qt::NoPen);
-    halo.setAlpha(28);
-    p.setBrush(halo);
-    p.drawRoundedRect(r.adjusted(-3.0, -3.0, 3.0, 3.0), radius + 3.0, radius + 3.0);
-    halo.setAlpha(70);
-    p.setBrush(halo);
-    p.drawRoundedRect(r.adjusted(-1.2, -1.2, 1.2, 1.2), radius + 1.2, radius + 1.2);
-    p.setBrush(c);
-    p.drawRoundedRect(r, radius, radius);
 }
 
 TunerDisplay::TunerDisplay(QWidget* parent)
@@ -143,13 +130,9 @@ void TunerDisplay::paintEvent(QPaintEvent*) {
                 }
             }
             if (lit) {
-                draw_glow_rect(p, r, base, led_d / 2.0);
+                draw_lit_led(p, r, base, led_d / 2.0);
             } else {
-                QColor ghost = base; // an unlit LED: dark, barely tinted
-                ghost.setAlpha(12);
-                p.setPen(Qt::NoPen);
-                p.setBrush(ghost);
-                p.drawEllipse(r);
+                draw_unlit_led(p, r, base, led_d / 2.0, 12);
             }
         }
     }
@@ -179,13 +162,9 @@ void TunerDisplay::paintEvent(QPaintEvent*) {
     const int lit = valid && !note.isEmpty() ? segments_for(note.at(0)) : 0;
     for (const auto& s : segs) {
         if (lit & s.seg) {
-            draw_glow_rect(p, s.r, digit_color, t / 2.0);
+            draw_lit_led(p, s.r, digit_color, t / 2.0);
         } else {
-            QColor ghost = red; // unlit segments are always dark red, like the LEDs
-            ghost.setAlpha(16);
-            p.setPen(Qt::NoPen);
-            p.setBrush(ghost);
-            p.drawRoundedRect(s.r, t / 2.0, t / 2.0);
+            draw_unlit_led(p, s.r, red, t / 2.0, 16); // always dark red, like the LEDs
         }
     }
 

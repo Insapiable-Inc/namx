@@ -87,6 +87,7 @@ set(GUI_SOURCES
     src/midi/MidiInput.h
     src/midi/MidiMapper.cpp
     src/midi/MidiMapper.h
+    src/ui/LedPaint.h
     src/ui/VUMeter.cpp
     src/ui/VUMeter.h
     src/ui/GainReductionMeter.cpp

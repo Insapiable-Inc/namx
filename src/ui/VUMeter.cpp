@@ -4,9 +4,9 @@
 #include <cmath>
 
 #include <QPainter>
-#include <QPainterPath>
 
 #include "Common.h"
+#include "LedPaint.h"
 #include "Theme.h"
 
 namespace npl
@@ -19,10 +19,10 @@ VUMeter::VUMeter(Qt::Orientation orientation, QWidget* parent)
     setValue(0);
     setTextVisible(false);
     if (orientation == Qt::Horizontal) {
-        setFixedHeight(14);
+        setFixedHeight(WIDTH);
         setMinimumWidth(70);
     } else {
-        setFixedWidth(14);
+        setFixedWidth(WIDTH);
         setMinimumHeight(70);
     }
 }
@@ -59,77 +59,62 @@ void VUMeter::set_peak(float peak) {
     update();
 }
 
-// The part of the meter between two offsets (px from the quiet end).
-static QRectF zone_rect(const QRectF& inner, bool vert, qreal from, qreal to) {
-    return vert ? QRectF(inner.left(), inner.bottom() - to, inner.width(), to - from)
-                : QRectF(inner.left() + from, inner.top(), to - from, inner.height());
+// LED color by the zone a segment sits in: green, yellow above -6 dBFS, red
+// above 0 dBFS.
+QColor VUMeter::zone_color(float value) {
+    return value > CLIP_VALUE  ? Theme::led_red()
+           : value > HOT_VALUE ? Theme::meter_mid()
+                               : Theme::led_green();
 }
 
 void VUMeter::paintEvent(QPaintEvent*) {
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing);
 
-    // Groove.
-    const QRectF groove = QRectF(rect()).adjusted(0.5, 0.5, -0.5, -0.5);
+    // The dark LED panel.
+    const QRectF panel = QRectF(rect()).adjusted(0.5, 0.5, -0.5, -0.5);
     p.setPen(QPen(Theme::track(), 1.0));
-    p.setBrush(Theme::bezel());
-    p.drawRoundedRect(groove, 3, 3);
+    p.setBrush(Theme::display_bg());
+    p.drawRoundedRect(panel, 3, 3);
 
-    const QRectF inner = groove.adjusted(1.5, 1.5, -1.5, -1.5);
+    // A column of LED segments from the quiet end; the margin leaves room for the glow.
     const bool vert = orientation() == Qt::Vertical;
-
-    // Position (px offset along the meter axis from the quiet end) of a
-    // 0..100 value.
-    const qreal span = vert ? inner.height() : inner.width();
-    auto pos = [span](float v) {
-        return span * (v / 100.0f);
+    const QRectF leds = panel.adjusted(MARGIN, MARGIN, -MARGIN, -MARGIN);
+    const qreal span = vert ? leds.height() : leds.width();
+    const int count = std::max(1, static_cast<int>((span + LED_GAP) / (LED_SIZE + LED_GAP)));
+    const qreal used = count * (LED_SIZE + LED_GAP) - LED_GAP;
+    const qreal start = (span - used) / 2.0; // center the column in the panel
+    auto led_rect = [&](int i) {
+        const qreal from = start + i * (LED_SIZE + LED_GAP);
+        return vert ? QRectF(leds.left(), leds.bottom() - from - LED_SIZE, leds.width(), LED_SIZE)
+                    : QRectF(leds.left() + from, leds.top(), LED_SIZE, leds.height());
     };
 
-    // Everything below is clipped to the rounded inner region so the zone
-    // rectangles keep the rounded silhouette.
-    QPainterPath clip;
-    clip.addRoundedRect(inner, 2, 2);
-    p.setClipPath(clip);
-    p.setPen(Qt::NoPen);
-
-    // Zone fill: one rect per zone the level reaches — color by absolute
-    // level, red strictly above the 0 dBFS mark.
-    const float t = level;
-    if (t > 0.0f) {
-        p.setBrush(Theme::meter_low());
-        p.drawRect(zone_rect(inner, vert, pos(0.0f), pos(std::min(t, HOT_VALUE))));
-    }
-    if (t > HOT_VALUE) {
-        p.setBrush(Theme::meter_mid());
-        p.drawRect(zone_rect(inner, vert, pos(HOT_VALUE), pos(std::min(t, CLIP_VALUE))));
-    }
-    if (t > CLIP_VALUE) {
-        p.setBrush(Theme::meter_clip());
-        p.drawRect(zone_rect(inner, vert, pos(CLIP_VALUE), pos(t)));
-    }
-
-    // 0 dBFS mark on the groove.
-    {
-        const qreal c = pos(CLIP_VALUE);
-        p.setBrush(Theme::track());
-        if (vert) {
-            p.drawRect(QRectF(inner.left(), inner.bottom() - c - 0.5, inner.width(), 1.0));
+    // A segment lights once the level reaches its middle; the hold LED is the
+    // segment the peak-hold value falls in.
+    const auto n = static_cast<float>(count);
+    auto center_of = [n](int i) {
+        return (static_cast<float>(i) + 0.5f) / n * 100.0f;
+    };
+    const int hold_led =
+        hold > 0.5f ? std::min(count - 1, static_cast<int>(hold / 100.0f * n)) : -1;
+    // Unlit first, so no halo is painted over by a dark neighbour.
+    vector<int> lit_leds;
+    for (int i = 0; i < count; ++i) {
+        const float center = center_of(i);
+        if (level >= center || i == hold_led) {
+            lit_leds.push_back(i);
         } else {
-            p.drawRect(QRectF(inner.left() + c - 0.5, inner.top(), 1.0, inner.height()));
+            draw_unlit_led(p, led_rect(i), zone_color(center), 1.0);
         }
     }
-
-    // Peak-hold line, colored by the zone it sits in.
-    if (hold > 0.5f) {
-        p.setBrush(hold > CLIP_VALUE  ? Theme::meter_clip()
-                   : hold > HOT_VALUE ? Theme::meter_mid()
-                                      : Theme::meter_low());
-        const qreal hp = pos(hold);
-        if (vert) {
-            p.drawRect(QRectF(inner.left(), inner.bottom() - hp - 1.0, inner.width(), 2.0));
-        } else {
-            p.drawRect(QRectF(inner.left() + hp - 1.0, inner.top(), 2.0, inner.height()));
-        }
+    for (const int i : lit_leds) {
+        const QRectF r = led_rect(i);
+        const QColor c = zone_color(center_of(i));
+        draw_lit_led(p, r, c, 1.0);
+        // Hot core: lit LEDs read whiter in the middle.
+        p.setBrush(c.lighter(150));
+        p.drawRoundedRect(r.adjusted(r.width() * 0.25, 1.0, -r.width() * 0.25, -1.0), 1.0, 1.0);
     }
 }
 
