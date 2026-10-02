@@ -156,6 +156,12 @@ static QHBoxLayout* row_layout(QWidget* card) {
         card->findChild<QWidget*>("cardRow", Qt::FindDirectChildrenOnly)->layout());
 }
 
+// Adds `w` at the end of a card's main row, after its knobs.
+static void append_to_row(QWidget* card, QWidget* w) {
+    QHBoxLayout* lay = row_layout(card);
+    lay->insertWidget(lay->count() - 1, w, 0, Qt::AlignVCenter); // before the stretch
+}
+
 // Rows without Stereo or Sync (Gate, Compressor) show their gain-reduction meter
 // across both switch columns; the knob column stays aligned.
 static void place_across_switch_columns(QWidget* card, QWidget* w) {
@@ -834,7 +840,7 @@ void MainWindow::setup_ui() {
                       });
         range->set_scroll_step(1.0);
         range->setToolTip("Sweep length: low = short, metallic · high = long jet sweep");
-        add_detail_row(col, {range});
+        append_to_row(col, range);
         Theme::tag_card(col, "flanger");
 
         fx_cols[&engine->get_flanger()] = col;
@@ -873,7 +879,7 @@ void MainWindow::setup_ui() {
         });
         mode->setToolTip(
             "Classic phaser, or Vibe: staggered stages, lamp-shaped sweep, no feedback");
-        add_detail_row(col, {mode});
+        append_to_row(col, mode);
         Theme::tag_card(col, "phaser");
 
         fx_cols[&engine->get_phaser()] = col;
@@ -907,7 +913,7 @@ void MainWindow::setup_ui() {
         mode->set_value_formatter(&format_chorus_mode);
         mode->setToolTip("Normal · Tri (three voices) · Vintage (darker, triangle LFO) · Spatial "
                          "(wider stereo)");
-        add_detail_row(col, {mode});
+        append_to_row(col, mode);
         Theme::tag_card(col, "chorus");
 
         fx_cols[&engine->get_chorus()] = col;
