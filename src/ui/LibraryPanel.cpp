@@ -636,7 +636,7 @@ void LibraryPanel::update_counts() {
         ++total[static_cast<int>(e.kind)];
     }
     for (int i = 0; i < 3; ++i) {
-        section_btn[i]->setText(QString("%1  %2").arg(SECTION_NAMES[i]).arg(total[i]));
+        section_btn[i]->setText(QString("%1 (%2)").arg(SECTION_NAMES[i]).arg(total[i]));
     }
 
     const int visible = proxies[section]->rowCount();
