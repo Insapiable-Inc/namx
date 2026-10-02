@@ -774,7 +774,7 @@ acoustic models. UI: cards gained ▾ detail rows for advanced knobs (`addDetail
 - [ ] Limiter catches peaks with Output +20 dB; no pumping at normal levels.
 - [ ] Wah Pedal mode with a MIDI expression pedal on Position.
 
-## Phase 18 — Settings, layout discipline, platform
+## Phase 18 — Settings, layout discipline, platform ✅ (completed 2026-10-01)
 
 - [x] **Settings dialog:** audio (device, requested buffer size / sample rate; on
       Windows later WASAPI-exclusive), MIDI devices, library folders, theme, meter
@@ -789,11 +789,12 @@ acoustic models. UI: cards gained ▾ detail rows for advanced knobs (`addDetail
       sessions and the stored order drop the `doubler` ID through the sanitizer.
       Transpose tried on distorted guitar: "not bad, not professional grade" — see the
       Transpose latency note in the ideas list.
-- [ ] **Layout:** ~~bypassed cards dim~~ (done 2026-08-23); ~~2-column knob grid for
+- [x] **Layout:** ~~bypassed cards dim~~ (done 2026-08-23); ~~2-column knob grid for
       one-height columns~~ and ~~device row moved to Settings~~ (both superseded
       2026-08-23 — uniform 62 px rows and the status bar device pickers); remaining:
-      compact mode for 1366×768 (today the strip scrolls) — *undecided, user not sure
-      they want it*; window sizes S/M/L + free resize (parity). ~~Right-click /
+      ~~compact mode for 1366×768~~ and ~~window sizes S/M/L~~ — dropped 2026-10-01: the
+      full strip fits a maximized 1080p window (checked by the user after the Sync
+      column landed), and free resize/maximize cover the rest. ~~Right-click /
       double-click a row name to bypass it~~ — dropped 2026-10-01: too easy to hit by
       accident.
 - [x] **Visual fixes** — all resolved by the 2026-08-23 redesign: Compressor/Reverb
