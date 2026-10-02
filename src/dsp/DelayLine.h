@@ -58,20 +58,20 @@ public:
     }
 
     // The signal `delay` samples behind the newest, linearly interpolated between the
-    // two neighbouring samples. 0 <= delay < size() - 1.
+    // two neighbouring samples. Clamped to 0 … size() - 2: a negative delay (a read
+    // "from the future", which the pitch shifter's WSOLA offset can ask for) gets the
+    // newest sample instead of wrapping around to the oldest.
+    // The fraction is taken from `delay` itself, never from a buffer position: a float
+    // index near 2^17 resolves only 1/64 of a sample, so the result would get coarser
+    // (and change) with the buffer's length.
     float interpolate(float delay) const {
-        const size_t length = samples.size();
-        float position = static_cast<float>(newest_index()) - delay;
-        if (position < 0.0f) {
-            position += static_cast<float>(length);
-        }
-        size_t i0 = static_cast<size_t>(position);
-        if (i0 >= length) { // position rounded up to exactly `length`
-            i0 -= length;
-        }
-        const size_t i1 = i0 + 1 == length ? 0 : i0 + 1;
-        const float fraction = position - std::floor(position);
-        return samples[i0] + (samples[i1] - samples[i0]) * fraction;
+        delay = std::clamp(delay, 0.0f, static_cast<float>(samples.size() - 2));
+        const float whole = std::floor(delay);
+        const float fraction = delay - whole;
+        const size_t newer = static_cast<size_t>(whole);
+        const float a = at(newer);
+        const float b = at(newer + 1);
+        return a + (b - a) * fraction;
     }
 
 private:
