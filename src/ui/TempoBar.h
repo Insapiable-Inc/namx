@@ -8,8 +8,8 @@
 #include <QVector>
 
 #include "Common.h"
+#include "NumberField.h"
 
-class QLineEdit;
 class QMenu;
 class QToolButton;
 
@@ -18,45 +18,6 @@ namespace npl
 
 class KnobWidget;
 class Metronome;
-
-// BPM readout you can drag (vertical: 1 BPM per 4 px, Shift = 0.1), scroll
-// (±1, Shift ±0.1) or click to type into.
-class BpmField : public QWidget
-{
-    Q_OBJECT
-public:
-    explicit BpmField(QWidget* parent = nullptr);
-
-    double value() const {
-        return bpm;
-    }
-    void set_value(double new_bpm); // clamps + rounds to 0.1; emits on change
-
-    QSize sizeHint() const override {
-        return {86, 30};
-    }
-
-signals:
-    void value_changed(double bpm);
-
-protected:
-    void paintEvent(QPaintEvent* ev) override;
-    void mousePressEvent(QMouseEvent* ev) override;
-    void mouseMoveEvent(QMouseEvent* ev) override;
-    void mouseReleaseEvent(QMouseEvent* ev) override;
-    void wheelEvent(QWheelEvent* ev) override;
-
-private:
-    void begin_edit();
-    void end_edit(bool commit);
-
-    double bpm = 120.0;
-    QLineEdit* edit = nullptr;
-    bool dragging = false;
-    bool pressed = false;
-    int press_y = 0;
-    double press_bpm = 0.0;
-};
 
 // One column per beat: height = accent (strong / normal / soft / mute
 // outline), the current beat lit. Clicking a beat cycles its accent.
@@ -123,7 +84,7 @@ private:
     QToolButton* menu_button(const QString& tip);
 
     Metronome& metro;
-    BpmField* bpm = nullptr;
+    NumberField* bpm = nullptr;
     QToolButton* tap_button = nullptr;
     QToolButton* play = nullptr;
     BeatLeds* leds = nullptr;

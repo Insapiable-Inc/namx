@@ -33,7 +33,6 @@
 #include <QScrollArea>
 #include <QSettings>
 #include <QShortcut>
-#include <QSpinBox>
 #include <QStandardPaths>
 #include <QStatusBar>
 #include <QStyle>
@@ -475,7 +474,7 @@ void MainWindow::setup_ui() {
     QMenu* midi_top_menu = nullptr;
     {
         QMenuBar* mb = menuBar();
-        preset_menu = mb->addMenu("Preset"); // also behind ⋯ on the preset bar
+        preset_menu = mb->addMenu("Preset");
         QAction* act_save = preset_menu->addAction("Save");
         act_save->setShortcut(QKeySequence::Save); // Ctrl+S
         connect(act_save, &QAction::triggered, this, &MainWindow::on_save_preset);
@@ -526,7 +525,7 @@ void MainWindow::setup_ui() {
     }
 
     // ---- Preset bar (top): name, ‹ ›, Save, quick slots, A/B, Preset menu.
-    preset_bar = new PresetBar(*library_index, preset_menu);
+    preset_bar = new PresetBar(*library_index);
     root_layout->addWidget(preset_bar);
     connect(preset_bar, &PresetBar::preset_chosen, this, [this](const QString& p) {
         load_preset_file(p);
@@ -595,17 +594,14 @@ void MainWindow::setup_ui() {
         // not part of presets or the registry.
         QSettings s;
         tuner_ref_hz = std::clamp(s.value("tuner/reference", 440).toInt(), 420, 460);
-        tuner_reference_box = new QSpinBox;
-        QSpinBox* ref = tuner_reference_box;
-        ref->setObjectName("tunerRef");
-        ref->setRange(420, 460);
-        ref->setPrefix("A4 = ");
-        ref->setSuffix(" Hz");
-        ref->setValue(tuner_ref_hz);
-        ref->setFocusPolicy(Qt::ClickFocus); // keep digit keys for effect shortcuts
-        ref->setToolTip("Reference pitch (concert pitch is 440 Hz)");
-        connect(ref, &QSpinBox::valueChanged, this, [this](int hz) {
-            set_tuner_reference(hz);
+        tuner_reference_box = new NumberField(
+            {.minimum = 420, .maximum = 460, .decimals = 0, .step = 1, .unit = "Hz", .caption = "A4"});
+        NumberField* ref = tuner_reference_box;
+        ref->set_value(tuner_ref_hz);
+        ref->setToolTip("Reference pitch (concert pitch is 440 Hz): drag up/down or scroll to "
+                        "change, click to type");
+        connect(ref, &NumberField::value_changed, this, [this](double hz) {
+            set_tuner_reference(qRound(hz));
         });
         tuner_display->set_reference(tuner_ref_hz);
 
@@ -622,7 +618,6 @@ void MainWindow::setup_ui() {
             set_tuner_show_hz(on);
         });
 
-        ref->setFixedWidth(112);
         lay->addSpacing(8);
         lay->addWidget(ref, 0, Qt::AlignVCenter);
         lay->addWidget(hz, 0, Qt::AlignVCenter);

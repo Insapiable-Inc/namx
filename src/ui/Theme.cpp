@@ -306,12 +306,13 @@ QToolButton#heroArrow {
     min-width: 22px;
     max-width: 22px;
     padding: 0 0 3px 0;
-    border: none;
+    border: 1px solid #353c4a;
     border-radius: 4px;
-    background: transparent;
+    background-color: #232830;
 }
 QToolButton#heroArrow:hover {
     background-color: #2f3744;
+    border-color: #424b5c;
 }
 QToolButton#heroArrow:pressed {
     background-color: #1f242c;
@@ -350,19 +351,39 @@ QToolButton#presetName::menu-indicator {
     subcontrol-position: right center;
     right: 6px;
 }
-QToolButton#presetTool, QToolButton#presetSlot, QToolButton#presetAb {
+QToolButton#presetSlot, QToolButton#presetAb {
     color: #d8dee9;
     background: transparent;
     border: 1px solid transparent;
     border-radius: 4px;
     padding: 3px 8px;
 }
-QToolButton#presetTool:hover, QToolButton#presetSlot:hover, QToolButton#presetAb:hover {
+QToolButton#presetSlot:hover, QToolButton#presetAb:hover {
     background-color: #2f3744;
 }
-QToolButton#presetTool::menu-indicator {
-    image: none;
-    width: 0;
+/* Push buttons (Save, Tap, A→B…) and menu buttons (4/4, Click…): filled and
+   bordered so they read as clickable; menu buttons carry a ▾. */
+QToolButton#presetTool, QToolButton#menuTool {
+    color: #d8dee9;
+    background-color: #232830;
+    border: 1px solid #353c4a;
+    border-radius: 4px;
+    padding: 3px 9px;
+}
+QToolButton#presetTool:hover, QToolButton#menuTool:hover {
+    background-color: #2f3744;
+    border-color: #424b5c;
+}
+QToolButton#presetTool:pressed, QToolButton#menuTool:pressed {
+    background-color: #1f242c;
+}
+QToolButton#menuTool {
+    padding-right: 20px;
+}
+QToolButton#menuTool::menu-indicator {
+    subcontrol-origin: padding;
+    subcontrol-position: right center;
+    right: 6px;
 }
 QToolButton#presetSlot {
     color: #555c6b;
@@ -396,7 +417,7 @@ QFrame#tempoBar {
     border: 1px solid #2a2f38;
     border-radius: 6px;
 }
-QLineEdit#bpmEdit {
+QLineEdit#numberEdit {
     background-color: #15171c;
     color: #3daee9;
     border: 1px solid #424b5c;
@@ -439,17 +460,7 @@ QToolButton#cardMore:hover {
     background-color: #2f3744;
 }
 
-/* === Tuner row: reference pitch + Hz toggle === */
-QSpinBox#tunerRef {
-    background-color: #15171c;
-    color: #d8dee9;
-    border: 1px solid #2a2f38;
-    border-radius: 4px;
-    padding: 3px 4px;
-}
-QSpinBox#tunerRef:focus {
-    border-color: #424b5c;
-}
+/* === Tuner row: Hz toggle === */
 QToolButton#tunerOption {
     color: #9aa1ad;
     background: transparent;

@@ -32,7 +32,7 @@ class PresetBar : public QFrame
 public:
     static constexpr int SLOT_COUNT = 8;
 
-    PresetBar(const LibraryIndex& new_index, QMenu* preset_menu, QWidget* parent = nullptr);
+    explicit PresetBar(const LibraryIndex& new_index, QWidget* parent = nullptr);
 
     // Current preset file (empty = untitled) and whether the live state
     // differs from it.

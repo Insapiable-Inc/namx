@@ -20,6 +20,7 @@
 #include "LibraryIndex.h"
 #include "MidiInput.h"
 #include "MidiMapper.h"
+#include "NumberField.h"
 
 namespace npl
 {
@@ -33,7 +34,7 @@ struct SettingsTargets
     MidiInput* midi = nullptr; // null when MIDI input is unavailable
     MidiMapper& midi_mapper;
     LibraryIndex& library_index;
-    QSpinBox& tuner_reference; // the tuner card's own controls
+    NumberField& tuner_reference; // the tuner card's own controls
     QToolButton& tuner_show_hz;
     QMainWindow& window; // its menus and shortcuts fill the Shortcuts page
     std::function<void()> open_midi_mappings;

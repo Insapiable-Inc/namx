@@ -75,6 +75,8 @@ set(GUI_SOURCES
     src/ui/PresetSerializer.h
     src/ui/PresetBar.cpp
     src/ui/PresetBar.h
+    src/ui/NumberField.cpp
+    src/ui/NumberField.h
     src/ui/TempoBar.cpp
     src/ui/TempoBar.h
     src/ui/TempoSync.h

@@ -27,7 +27,7 @@ static void repolish(QWidget* w) {
     w->style()->polish(w);
 }
 
-PresetBar::PresetBar(const LibraryIndex& new_index, QMenu* preset_menu, QWidget* parent)
+PresetBar::PresetBar(const LibraryIndex& new_index, QWidget* parent)
     : QFrame(parent)
     , library_index(new_index) {
     setObjectName("presetBar");
@@ -119,12 +119,6 @@ PresetBar::PresetBar(const LibraryIndex& new_index, QMenu* preset_menu, QWidget*
     ab_copy = make_tool_button({}, {}, "presetTool");
     connect(ab_copy, &QToolButton::clicked, this, &PresetBar::ab_copy_requested);
     lay->addWidget(ab_copy);
-    lay->addSpacing(8);
-
-    QToolButton* more = make_tool_button("⋯", "Preset menu", "presetTool");
-    more->setPopupMode(QToolButton::InstantPopup);
-    more->setMenu(preset_menu);
-    lay->addWidget(more);
 
     set_preset({}, false);
     set_ab_state(0);

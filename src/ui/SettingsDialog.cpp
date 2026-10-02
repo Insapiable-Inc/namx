@@ -146,7 +146,7 @@ void SettingsDialog::refresh_current_page() {
             refresh_library();
             break;
         case Page::TUNER:
-            reference_box->setValue(targets.tuner_reference.value());
+            reference_box->setValue(qRound(targets.tuner_reference.value()));
             show_hz_box->setChecked(targets.tuner_show_hz.isChecked());
             break;
         case Page::SHORTCUTS:
@@ -398,10 +398,12 @@ void SettingsDialog::choose_tone3000_dir() {
 
 QWidget* SettingsDialog::build_tuner_page() {
     reference_box = new QSpinBox;
-    reference_box->setRange(targets.tuner_reference.minimum(), targets.tuner_reference.maximum());
+    reference_box->setRange(qRound(targets.tuner_reference.minimum()),
+                            qRound(targets.tuner_reference.maximum()));
     reference_box->setPrefix("A4 = ");
     reference_box->setSuffix(" Hz");
-    connect(reference_box, &QSpinBox::valueChanged, &targets.tuner_reference, &QSpinBox::setValue);
+    connect(reference_box, &QSpinBox::valueChanged, &targets.tuner_reference,
+            &NumberField::set_value);
 
     show_hz_box = new QCheckBox("Show the detected frequency");
     connect(show_hz_box, &QCheckBox::toggled, &targets.tuner_show_hz, &QToolButton::setChecked);

@@ -310,7 +310,7 @@ private:
     GainReductionMeter* gr_comp = nullptr;
 
     TunerDisplay* tuner_display = nullptr;
-    QSpinBox* tuner_reference_box = nullptr; // on the tuner card; the settings page drives it
+    NumberField* tuner_reference_box = nullptr; // on the tuner card; the settings page drives it
     QToolButton* tuner_hz_button = nullptr;
     SettingsDialog* settings_dialog = nullptr;
     int tuner_ref_hz = 440;

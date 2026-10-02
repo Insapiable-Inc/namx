@@ -6,14 +6,12 @@
 #include <QHBoxLayout>
 #include <QInputDialog>
 #include <QLabel>
-#include <QLineEdit>
 #include <QMenu>
 #include <QMouseEvent>
 #include <QPainter>
 #include <QSettings>
 #include <QShortcut>
 #include <QToolButton>
-#include <QWheelEvent>
 
 #include "Common.h"
 #include "KnobWidget.h"
@@ -23,129 +21,6 @@
 
 namespace npl
 {
-
-BpmField::BpmField(QWidget* parent)
-    : QWidget(parent) {
-    setObjectName("bpmField");
-    setFixedSize(sizeHint());
-    setCursor(Qt::SizeVerCursor);
-    setAttribute(Qt::WA_Hover); // border brightens under the mouse
-    setToolTip("Tempo (quarter notes per minute): drag up/down or scroll to change "
-               "(Shift = fine), click to type");
-}
-
-void BpmField::set_value(double new_bpm) {
-    new_bpm = std::round(std::clamp(new_bpm, TempoSync::MIN_BPM, TempoSync::MAX_BPM) * 10.0) / 10.0;
-    if (new_bpm == bpm) {
-        return;
-    }
-    bpm = new_bpm;
-    update();
-    emit value_changed(bpm);
-}
-
-void BpmField::paintEvent(QPaintEvent*) {
-    QPainter p(this);
-    p.setRenderHint(QPainter::Antialiasing);
-    const QRectF r = QRectF(rect()).adjusted(0.5, 0.5, -0.5, -0.5);
-    p.setPen(
-        QPen(underMouse() || dragging ? Theme::track_hover().lighter(130) : Theme::track(), 1.0));
-    p.setBrush(Theme::well());
-    p.drawRoundedRect(r, 5, 5);
-    if (edit) {
-        return; // the line edit draws the text while typing
-    }
-
-    QFont f = font();
-    f.setPointSizeF(12.0);
-    f.setBold(true);
-    p.setFont(f);
-    p.setPen(Theme::generic_accent());
-    const QString num =
-        std::fmod(bpm, 1.0) == 0.0 ? QString::number(bpm, 'f', 0) : QString::number(bpm, 'f', 1);
-    p.drawText(r.adjusted(8, 0, -30, 0), Qt::AlignRight | Qt::AlignVCenter, num);
-    f.setPointSizeF(7.5);
-    f.setBold(false);
-    p.setFont(f);
-    p.setPen(Theme::dim_text());
-    p.drawText(r.adjusted(0, 0, -6, 0), Qt::AlignRight | Qt::AlignVCenter, "BPM");
-}
-
-void BpmField::mousePressEvent(QMouseEvent* ev) {
-    if (ev->button() != Qt::LeftButton || edit) {
-        return QWidget::mousePressEvent(ev);
-    }
-    pressed = true;
-    dragging = false;
-    press_y = ev->position().toPoint().y();
-    press_bpm = bpm;
-}
-
-void BpmField::mouseMoveEvent(QMouseEvent* ev) {
-    if (!pressed) {
-        return;
-    }
-    const int dy = press_y - ev->position().toPoint().y();
-    if (!dragging && std::abs(dy) < 3) {
-        return;
-    }
-    dragging = true;
-    const double per_px = (ev->modifiers() & Qt::ShiftModifier) ? 0.025 : 0.25;
-    set_value(press_bpm + dy * per_px);
-}
-
-void BpmField::mouseReleaseEvent(QMouseEvent* ev) {
-    if (ev->button() != Qt::LeftButton || !pressed) {
-        return;
-    }
-    pressed = false;
-    if (!dragging) {
-        begin_edit(); // a click without a drag: type a value
-    }
-    dragging = false;
-    update();
-}
-
-void BpmField::wheelEvent(QWheelEvent* ev) {
-    const int d = ev->angleDelta().y();
-    if (d == 0) {
-        return;
-    }
-    const double step = (ev->modifiers() & Qt::ShiftModifier) ? 0.1 : 1.0;
-    set_value(bpm + (d > 0 ? step : -step));
-}
-
-void BpmField::begin_edit() {
-    edit = new QLineEdit(QString::number(bpm, 'f', std::fmod(bpm, 1.0) == 0.0 ? 0 : 1), this);
-    edit->setObjectName("bpmEdit");
-    edit->setGeometry(rect().adjusted(2, 2, -2, -2));
-    edit->setAlignment(Qt::AlignCenter);
-    edit->selectAll();
-    edit->show();
-    edit->setFocus();
-    connect(edit, &QLineEdit::returnPressed, this, [this] {
-        end_edit(true);
-    });
-    connect(edit, &QLineEdit::editingFinished, this, [this] {
-        end_edit(true);
-    });
-    update();
-}
-
-void BpmField::end_edit(bool commit) {
-    if (!edit) {
-        return;
-    }
-    QLineEdit* e = edit;
-    edit = nullptr;
-    bool ok = false;
-    const double v = e->text().replace(',', '.').toDouble(&ok);
-    e->deleteLater();
-    if (commit && ok) {
-        set_value(v);
-    }
-    update();
-}
 
 BeatLeds::BeatLeds(QWidget* parent)
     : QWidget(parent) {
@@ -224,7 +99,7 @@ static const MeterPreset METERS[] = {{2, 4}, {3, 4}, {4, 4}, {5, 4}, {6, 4}, {7,
 
 QToolButton* TempoBar::menu_button(const QString& tip) {
     auto* b = new QToolButton(this);
-    b->setObjectName("presetTool");
+    b->setObjectName("menuTool");
     b->setToolTip(tip);
     b->setFocusPolicy(Qt::NoFocus);
     b->setPopupMode(QToolButton::InstantPopup);
@@ -251,10 +126,17 @@ TempoBar::TempoBar(Metronome& metronome, QWidget* parent)
     caption->setObjectName("presetCaption");
     lay->addWidget(caption);
 
-    bpm = new BpmField(this);
+    bpm = new NumberField({.minimum = TempoSync::MIN_BPM,
+                           .maximum = TempoSync::MAX_BPM,
+                           .decimals = 1,
+                           .step = 1.0,
+                           .unit = "BPM"},
+                          this);
+    bpm->setToolTip("Tempo (quarter notes per minute): drag up/down or scroll to change "
+                    "(Shift = fine), click to type");
     bpm->set_value(s.value("tempo/bpm", TempoSync::DEFAULT_BPM).toDouble());
     metro.set_bpm(bpm->value());
-    connect(bpm, &BpmField::value_changed, this, &TempoBar::on_bpm_field_changed);
+    connect(bpm, &NumberField::value_changed, this, &TempoBar::on_bpm_field_changed);
     lay->addWidget(bpm);
 
     tap_button = new QToolButton(this);
