@@ -881,33 +881,43 @@ place where the numbers are edited. Options weighed on 2026-10-01:
 - Whichever is picked: golden test bit-identical at every step, plus a test that the
   8 starter presets load to the same values.
 
-## Phase 26 — Hardening: the 2026-10-01 code review (added 2026-10-02; proposed to run first)
+## Phase 26 — Hardening: the 2026-10-01 code review (added 2026-10-02; P1s run now)
 
 From the review in `ISSUES.md` (repo root, untracked — 34 findings with locations and
 suggested fixes; some reproduced with AddressSanitizer). Re-check each finding against
 the current code before fixing (the review predates later commits). One commit per
 fix; regression tests use fixed, hand-made inputs (never random), in temp dirs.
 
-**P1 — memory safety, data loss, correctness:**
+**Scope decided 2026-10-02:** fix the platform-independent P1s now; backend issues wait
+for the backend work (Phase 21), and a second full review follows the big changes.
+
+**Now — P1, platform-independent:**
 - [ ] **01** Malformed WAV data lengths overrun the heap (`AudioDSPTools/dsp/wav.cpp`) —
       reachable by loading any IR, including downloads. Validate chunk sizes first.
 - [ ] **02** Truncated model weights are read past the end (`NAM/lstm.cpp`, ConvNet,
       WaveNet) — validate the weight count before construction.
 - [ ] **03** LSTM `input_size` vs channel count disagree → out-of-bounds write
       (`NAM/lstm.cpp`).
-- [ ] **04** EQ `reset()` on the audio thread races the GUI's `rebuild()` (EQ state).
-- [ ] **05** JACK buffer-size changes race the GUI's reads (`JackBackend`).
+- [ ] **04** EQ `reset()` on the audio thread races the GUI's `rebuild()` (before
+      Phase 24 creates effects while audio runs).
 - [ ] **06** Preset and MIDI saves truncate the old file and report success even on a
-      failed write → `QSaveFile` + check, dirty state only after success.
-- [ ] **07** A late preset download can replace the model of a newer preset.
+      failed write → `QSaveFile` + check, dirty state only after success (before
+      Phase 24 rewrites saving).
+- [ ] **08** (P2, same reason) Preset version/schema validated before anything is
+      applied.
 - [ ] **15** A model's training sample rate is ignored (a 48 kHz model at 44.1/96 kHz
       sounds wrong, silently) → resample around the model, or warn.
 - [ ] 01–03 live in upstream code (`NAM/`, `Dependencies/AudioDSPTools`): offer the
       fixes upstream too.
 
+**Deferred:** 07 (late download replaces a newer preset's model) → Phase 25;
+05 (JACK buffer-size race), 16, 17 → Phase 21 with the backend work.
+
+- [ ] **Second full code review** after Phases 21 and 24 (new backends, effect
+      instances), before any major release.
+
 **P2 — fold into the phase they touch, or fix here when small:**
-- [ ] Small and standalone: 08 (preset version/schema validated before applying),
-      09 (A/B can't restore an unloaded model/IR), 10–11 (WAV: truncated audio
+- [ ] Small and standalone: 09 (A/B can't restore an unloaded model/IR), 10–11 (WAV: truncated audio
       accepted; 32-bit PCM polarity inverted), 12 (download paths not unique per
       model), 13 (downloads/images buffered whole in memory), 14 (closing waits for
       the library scan), 16–17 (JACK: client not closed on shutdown; sample-rate
