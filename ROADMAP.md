@@ -924,6 +924,41 @@ fix; regression tests use fixed, hand-made inputs (never random), in temp dirs.
 - [ ] P3: 32 (MainWindow too big), 33 (naming leftovers), 34 (loader/transition test
       coverage — grows with the fixes above).
 
+## Phase 27 — Benchmarking: measured against the best (added 2026-10-02; after 26, before 22)
+
+"The world's best" has to be measured. What exists: `NAMPlayerBench` (per-stage time
+against the block budget), `--self-test-and-exit` (cold start, peak RSS), the DSP %
+and xrun counters, `DspGoldenTest` (bit-exactness, not quality). This phase adds the
+comparisons and the quality numbers, and keeps them from regressing. Measurements are
+deterministic (fixed signals and models, no random input); results are dated, with the
+machine, in `gui/BENCHMARKS.md`.
+
+- [ ] **NAM CPU vs the official plugin:** the same models (standard / lite / feather /
+      nano WaveNet, an A2 model, an LSTM) at 32 / 64 / 128 / 256 frames and 44.1 / 48 /
+      96 kHz, ours vs NeuralAmpModelerPlugin (and the upstream core's `benchmodel`
+      for the inference alone). Same machine, `performance` governor.
+- [ ] **NAM accuracy vs the official plugin:** render the same input through both and
+      null them; ours must match within float tolerance at the model's own rate, and
+      report how each handles other rates (ties to Phase 26 item 15).
+- [ ] **Latency:** measured round trip with a loopback cable (`jack_iodelay`) against
+      what the status bar reports, ours vs the official plugin in a host at the same
+      buffer; plus each effect's added latency (Transpose, limiter look-ahead) — ties
+      to review item 28.
+- [ ] **Effect quality numbers** (the yardstick Phase 22 needs before replacing
+      anything): Drive aliasing (sine sweep, energy outside the harmonics), Transpose
+      pitch error / latency / crossfade artefacts, reverb tail decay vs Decay, delay
+      modulation smoothness, EQ response vs the Audio EQ Cookbook curves, limiter
+      ceiling overshoot.
+- [ ] **Whole app:** cold start, peak RSS, model-load time (no GUI freeze — review
+      item 21), idle CPU with the window open (the LED meters repaint at up to
+      60 fps), CPU with every effect on.
+- [ ] **No regressions:** a CI job runs the bench and compares against a stored
+      baseline — instruction counts (e.g. `valgrind --tool=callgrind` on a short render)
+      rather than wall time, since CI machines are noisy; the budget in BUILD.md
+      becomes a checked number.
+- [ ] Optional: CPU and features vs Archetype: Petrucci X (the feature baseline), in a
+      DAW at the same buffer — if a license is at hand.
+
 ## Phase 22 — DSP quality: state-of-the-art effects (added 2026-10-01; runs next, before 19)
 
 Research in `gui/DSP_RESEARCH.md` (options per effect, real-time flags, licenses,
