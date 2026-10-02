@@ -1087,13 +1087,15 @@ void MainWindow::setup_ui() {
             });
         high_cut->set_log_taper(true);
         high_cut->set_value_formatter(hz_label(-(HIGH_CUT_MAX - 1.0)));
-        KnobWidget* shimmer = late_knob(
-            "reverb", "shimmer", new KnobWidget("Shimmer", 0.0, 100.0, 0.0, "%"), [this](double v) {
-                engine->get_reverb().set_shimmer_pct(static_cast<float>(v));
-            });
-        shimmer->set_scroll_step(1.0);
-        shimmer->setToolTip("Octave-up feedback into the tail — the shimmer reverb");
-        add_detail_row(col, {pre, low_cut, high_cut, shimmer});
+        // GUIDELINE EXCEPTION (commented-out code, user's call 2026-10-01): Shimmer is off
+        // for now (the pitch shifter isn't good enough); the reverb runs without it.
+        // KnobWidget* shimmer = late_knob(
+        //     "reverb", "shimmer", new KnobWidget("Shimmer", 0.0, 100.0, 0.0, "%"), [this](double v) {
+        //         engine->get_reverb().set_shimmer_pct(static_cast<float>(v));
+        //     });
+        // shimmer->set_scroll_step(1.0);
+        // shimmer->setToolTip("Octave-up feedback into the tail — the shimmer reverb");
+        add_detail_row(col, {pre, low_cut, high_cut});
         Theme::tag_card(col, "reverb");
 
         fx_cols[&engine->get_reverb()] = col;
