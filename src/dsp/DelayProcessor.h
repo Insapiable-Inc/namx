@@ -3,6 +3,7 @@
 #include <atomic>
 
 #include "Common.h"
+#include "Constants.h"
 #include "DelayLine.h"
 #include "EffectBase.h"
 #include "PitchShifter.h"
@@ -117,7 +118,10 @@ private:
     Line lines[2];
     float mod_phase = 0.0f;
 
-    static constexpr float MAX_DELAY_MS = 2100.0f; // 1000 ms × 200 % + modulation
+    // Longest Time × the longest R Time (200 %), plus headroom for the modulation.
+    static constexpr float MAX_DELAY_MS =
+        static_cast<float>(NAMConstants::DELAY_TIME_MAX * NAMConstants::DELAY_RIGHT_MAX / 100.0) +
+        100.0f;
 };
 
 } // namespace npl

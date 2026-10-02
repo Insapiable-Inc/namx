@@ -425,11 +425,16 @@ app id in hicolor, `setWindowIcon` from the qrc, Windows exe icon + version bloc
       github v1.0.0` — the release workflow does the rest. Fill the PKGBUILD's
       `sha256sums` from the published tarball and push it to the AUR.
 
-## Phase 9 — Knob range calibration (tapers done in Phase 17, 2026-10-01; range audit still open)
+## Phase 9 — Knob range calibration ✅ (tapers in Phase 17; range audit done 2026-10-02)
 
 Make every knob feel right across its whole travel, not just near the default.
 
-- [ ] **Audit all ranges/defaults in `Constants.h`** against musical usefulness —
+- [x] **Audit all ranges/defaults in `Constants.h`** (done 2026-10-02: compared with
+      the Petrucci X / Gojira X / Cory Wong X manuals and Fractal's Blocks Guide —
+      delay Time max 1000 → 3000 ms (6 s judged too much), phaser Rate max 5 → 10 Hz;
+      EQ ±12 dB, Transpose ±12 st, flanger feedback ±99 %, comp 20:1 confirmed;
+      no published numbers for EQ band frequencies, wah, drive, volume Mid) against
+      musical usefulness —
       e.g. does the comp ratio need 20:1, is the gate threshold floor right, do the
       LFO rate extremes get used. A first pass landed 2026-06-09 (`114c2b6`), before
       this phase was written; Phase 17 added many knobs since (EQ bands, delay

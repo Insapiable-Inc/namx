@@ -362,7 +362,7 @@ The second bar holds the global tempo and the metronome.
 
 **Tempo sync.** Delay **Time** and the Tremolo / Chorus / Flanger / Phaser **Rate**
 each have a **Sync** switch: on, the knob picks a note value (4 bars … 1/32, dotted and
-triplets) instead of ms / Hz, and follows the tempo. Delay times are capped at 1000 ms.
+triplets) instead of ms / Hz, and follows the tempo. Delay times are capped at 3000 ms.
 
 The tempo and every metronome setting belong to the session, not to presets: a preset
 stores *note values*, so it fits whatever tempo you're playing at.

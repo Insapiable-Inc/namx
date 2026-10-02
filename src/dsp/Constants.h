@@ -88,8 +88,9 @@ constexpr double FLANGER_MIX_MAX = 100.0;
 constexpr double FLANGER_MIX_DEFAULT = 50.0;
 
 // Phaser
+// Up to 10 Hz for fast Phase 90 / Uni-Vibe "chop" settings (~7–8 Hz).
 constexpr double PHASER_RATE_MIN = 0.1;
-constexpr double PHASER_RATE_MAX = 5.0;
+constexpr double PHASER_RATE_MAX = 10.0;
 constexpr double PHASER_RATE_DEFAULT = 1.0;
 
 constexpr double PHASER_DEPTH_MIN = 0.0;
@@ -114,10 +115,11 @@ constexpr double TREMOLO_DEPTH_MAX = 100.0;
 constexpr double TREMOLO_DEPTH_DEFAULT = 50.0;
 
 // Delay
-// 20 ms floor keeps the delay line at least one sample long; 1 s covers
-// musical delay times without drifting into looper territory.
+// 20 ms floor keeps the delay line at least one sample long; 3 s covers synced
+// note values at slow tempos (a dotted half at 80 BPM is 1125 ms) without drifting
+// into looper territory (Gojira X: 3 s; Petrucci X: 6 s).
 constexpr double DELAY_TIME_MIN = 20.0;
-constexpr double DELAY_TIME_MAX = 1000.0;
+constexpr double DELAY_TIME_MAX = 3000.0;
 constexpr double DELAY_TIME_DEFAULT = 250.0;
 
 constexpr double DELAY_FEEDBACK_MIN = 0.0;
