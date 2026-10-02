@@ -39,10 +39,6 @@ file(GLOB_RECURSE NAM_SOURCES
     "${NAM_ROOT}/NAM/*.c"
 )
 
-# AudioDSPTools wav sources for IR loading
-set(AUDIO_DSP_TOOLS_DIR "${NAM_DEPS_PATH}/AudioDSPTools")
-set(WAV_SOURCES "${AUDIO_DSP_TOOLS_DIR}/dsp/wav.cpp")
-
 # ---------------------------------------------------------------------------
 # GUI sources (platform-agnostic)
 # ---------------------------------------------------------------------------
@@ -107,6 +103,8 @@ set(GUI_SOURCES
     src/dsp/EffectBase.h
     src/dsp/IRLoader.cpp
     src/dsp/IRLoader.h
+    src/dsp/WavReader.cpp
+    src/dsp/WavReader.h
     src/dsp/IRProcessor.cpp
     src/dsp/IRProcessor.h
     src/dsp/NamProcessor.cpp
@@ -169,7 +167,7 @@ endif()
 # Target
 # ---------------------------------------------------------------------------
 
-add_executable(NAMPlayer ${GUI_SOURCES} ${NAM_SOURCES} ${WAV_SOURCES})
+add_executable(NAMPlayer ${GUI_SOURCES} ${NAM_SOURCES})
 
 # Warnings (CPP_GUIDELINES.md → Types and casts) apply to our code only: third-party
 # sources compiled into our targets are silenced, their headers included as SYSTEM.
@@ -181,7 +179,7 @@ else()
     set(NAM_WARNING_FLAGS -Wall -Wextra -Wconversion -Wsign-conversion -Wsuggest-override -Werror)
     set(NAM_THIRD_PARTY_FLAGS -w)
 endif()
-set_source_files_properties(${NAM_SOURCES} ${WAV_SOURCES} PROPERTIES COMPILE_OPTIONS "${NAM_THIRD_PARTY_FLAGS}")
+set_source_files_properties(${NAM_SOURCES} PROPERTIES COMPILE_OPTIONS "${NAM_THIRD_PARTY_FLAGS}")
 
 # On Windows we want a GUI app (no console window). Linux ignores WIN32.
 set_target_properties(NAMPlayer PROPERTIES WIN32_EXECUTABLE TRUE)
@@ -190,7 +188,6 @@ target_include_directories(NAMPlayer SYSTEM PRIVATE
     ${NAM_ROOT}
     ${NAM_DEPS_PATH}/eigen
     ${NAM_DEPS_PATH}/nlohmann
-    ${AUDIO_DSP_TOOLS_DIR}/dsp
 )
 target_include_directories(NAMPlayer PRIVATE
     src/dsp
@@ -320,14 +317,21 @@ if(NAM_BUILD_TESTS)
     target_link_libraries(MidiMapperTest PRIVATE Qt6::Core Qt6::Gui Qt6::Widgets)
     add_test(NAME MidiMapperTest COMMAND MidiMapperTest)
 
+    # The IR WAV reader against hand-built good and damaged files (review 01/10/11).
+    add_executable(WavReaderTest tests/WavReaderTest.cpp src/dsp/WavReader.cpp)
+    target_include_directories(WavReaderTest PRIVATE src/dsp)
+    target_compile_options(WavReaderTest PRIVATE ${NAM_WARNING_FLAGS})
+    target_link_libraries(WavReaderTest PRIVATE Qt6::Core)
+    add_test(NAME WavReaderTest COMMAND WavReaderTest)
+
     # Bit-exact effect outputs (tests/DspGoldenTest.cpp): guards DSP refactors.
     find_package(Qt6 REQUIRED COMPONENTS Test)
     find_package(Threads REQUIRED)
     set(GOLDEN_DSP_SOURCES ${GUI_SOURCES})
     list(FILTER GOLDEN_DSP_SOURCES INCLUDE REGEX "^src/dsp/.*\\.cpp$")
     list(FILTER GOLDEN_DSP_SOURCES EXCLUDE REGEX "(AudioEngine|JackBackend|WasapiBackend|NamProcessor)\\.cpp$")
-    add_executable(DspGoldenTest tests/DspGoldenTest.cpp ${GOLDEN_DSP_SOURCES} ${WAV_SOURCES})
-    target_include_directories(DspGoldenTest SYSTEM PRIVATE ${NAM_DEPS_PATH}/eigen ${AUDIO_DSP_TOOLS_DIR}/dsp)
+    add_executable(DspGoldenTest tests/DspGoldenTest.cpp ${GOLDEN_DSP_SOURCES})
+    target_include_directories(DspGoldenTest SYSTEM PRIVATE ${NAM_DEPS_PATH}/eigen)
     target_include_directories(DspGoldenTest PRIVATE src/dsp)
     target_compile_definitions(DspGoldenTest PRIVATE NAM_SAMPLE_FLOAT)
     target_compile_options(DspGoldenTest PRIVATE ${NAM_WARNING_FLAGS})
@@ -344,9 +348,9 @@ if(NAM_BUILD_BENCH)
     set(BENCH_DSP_SOURCES ${GUI_SOURCES})
     list(FILTER BENCH_DSP_SOURCES INCLUDE REGEX "^src/dsp/.*\\.cpp$")
     list(FILTER BENCH_DSP_SOURCES EXCLUDE REGEX "(AudioEngine|JackBackend|WasapiBackend)\\.cpp$")
-    add_executable(NAMPlayerBench bench/NAMPlayerBench.cpp ${BENCH_DSP_SOURCES} ${NAM_SOURCES} ${WAV_SOURCES})
+    add_executable(NAMPlayerBench bench/NAMPlayerBench.cpp ${BENCH_DSP_SOURCES} ${NAM_SOURCES})
     target_include_directories(NAMPlayerBench SYSTEM PRIVATE
-        ${NAM_ROOT} ${NAM_DEPS_PATH}/eigen ${NAM_DEPS_PATH}/nlohmann ${AUDIO_DSP_TOOLS_DIR}/dsp)
+        ${NAM_ROOT} ${NAM_DEPS_PATH}/eigen ${NAM_DEPS_PATH}/nlohmann)
     target_include_directories(NAMPlayerBench PRIVATE src/dsp)
     target_compile_definitions(NAMPlayerBench PRIVATE NAM_SAMPLE_FLOAT NAM_ENABLE_A2_FAST)
     target_link_libraries(NAMPlayerBench PRIVATE Qt6::Core) # Log.cpp: QLoggingCategory

@@ -112,7 +112,7 @@ no separate audio dependency — the Windows SDK already ships them.
 git clone --recursive https://github.com/silvercobraa/NeuralAmpModelerGUI.git nam-player
 cd nam-player
 
-# The GUI depends on two git submodules (Eigen and AudioDSPTools)
+# The GUI needs the Eigen submodule (AudioDSPTools is only used by the upstream CLI tools)
 git submodule update --init --recursive
 ```
 

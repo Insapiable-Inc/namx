@@ -9,7 +9,7 @@ This repo is a fork of [NeuralAmpModelerCore](https://github.com/sdatkinson/Neur
 ```
 nam-linux-gui/
 ├── NAM/           # Core DSP library: neural net inference (WaveNet, LSTM, ConvNet, Linear)
-├── Dependencies/  # Git submodules: Eigen (linear algebra), AudioDSPTools (WAV I/O), nlohmann (JSON)
+├── Dependencies/  # Git submodules: Eigen (linear algebra), nlohmann (JSON), AudioDSPTools (upstream tools only — the GUI reads WAVs with its own `WavReader`)
 ├── tools/         # Upstream CLI tools: loadmodel, benchmodel, run_tests
 ├── LICENSE        # Upstream MIT (NAM core) — the app itself is GPL-3.0-or-later, see gui/LICENSE
 ├── ROADMAP.md     # Public-release plan — phased checklist, worked one phase at a time
@@ -133,6 +133,7 @@ All effects inherit `EffectBase` (`src/dsp/EffectBase.h` — the header comment 
 | `JackBackend` | `src/dsp/JackBackend.h/cpp` | Linux JACK/PipeWire-JACK backend |
 | `WasapiBackend` | `src/dsp/WasapiBackend.h/cpp` | Windows WASAPI shared-mode backend (float32 mix format only) |
 | `NamProcessor` | `src/dsp/NamProcessor.h/cpp` | NAM model hosting; independent L/R instances for stereo |
+| `WavReader` | `src/dsp/WavReader.h/cpp` | Strict mono WAV reader for IRs (PCM 16/24/32, float 32/64, extensible); every length checked before reading — damaged files are errors (`tests/WavReaderTest`) |
 | `IRLoader` / `IRProcessor` | `src/dsp/IRLoader.h/cpp`, `IRProcessor.h/cpp` | FIR cab sim, energy-normalized, RtSlot kernel swap; `IRProcessor` = two loaders (slots A/B) with level/pan/phase/blend + cuts — the UI exposes slot A only (advanced options commented out 2026-10-01; slot B is neither restored nor loaded from presets) |
 | `EQProcessor` | `src/dsp/EQProcessor.h/cpp` | 4-band semi-parametric biquad EQ + low/high cut (Audio EQ Cookbook) |
 | `TunerProcessor` | `src/dsp/TunerProcessor.h/cpp` | NSDF pitch detect; audio thread fills, GUI timer reads |

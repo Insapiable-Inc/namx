@@ -5,10 +5,10 @@
 #include <cstring>
 
 #include <Eigen/Dense>
-#include <wav.h> // AudioDSPTools
 
 #include "Common.h"
 #include "Log.h"
+#include "WavReader.h"
 
 namespace npl
 {
@@ -103,26 +103,16 @@ unique_ptr<IRLoader::Kernel> IRLoader::build_kernel() const {
 }
 
 bool IRLoader::load(const string& path) {
-    vector<float> raw_samples;
-    double sample_rate = 0.0;
-
-    dsp::wav::LoadReturnCode result = dsp::wav::Load(path.c_str(), raw_samples, sample_rate);
+    expected<wav::MonoAudio, string> audio = wav::read_mono(path);
     std::lock_guard<std::mutex> lock(load_mutex);
-    if (result != dsp::wav::LoadReturnCode::SUCCESS) {
-        last_error = dsp::wav::GetMsgForLoadReturnCode(result);
-        if (result == dsp::wav::LoadReturnCode::ERROR_NOT_MONO) {
-            last_error += " Stereo IRs are not supported; convert the file to mono.";
-        }
-        return false;
-    }
-
-    if (raw_samples.empty()) {
-        last_error = "IR file contains no samples.";
+    if (!audio) {
+        last_error = audio.error();
         return false;
     }
     last_error.clear();
 
-    raw = std::move(raw_samples);
+    const double sample_rate = audio->sample_rate;
+    raw = std::move(audio->samples);
     raw_rate = sample_rate;
     if (target_rate > 0.0 && sample_rate > 0.0 && sample_rate != target_rate) {
         qCInfo(lc_audio, "[IRLoader] Resampling IR from %.0f Hz to %.0f Hz", sample_rate,

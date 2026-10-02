@@ -892,7 +892,7 @@ fix; regression tests use fixed, hand-made inputs (never random), in temp dirs.
 for the backend work (Phase 21), and a second full review follows the big changes.
 
 **Now — P1, platform-independent:**
-- [ ] **01** Malformed WAV data lengths overrun the heap (`AudioDSPTools/dsp/wav.cpp`) —
+- [x] **01** (done 2026-10-02 with 10 and 11: the GUI reads IRs with its own strict `WavReader`, no longer compiling AudioDSPTools' `wav.cpp`; `WavReaderTest`, clean under ASan/UBSan) Malformed WAV data lengths overrun the heap (`AudioDSPTools/dsp/wav.cpp`) —
       reachable by loading any IR, including downloads. Validate chunk sizes first.
 - [ ] **02** Truncated model weights are read past the end (`NAM/lstm.cpp`, ConvNet,
       WaveNet) — validate the weight count before construction.
@@ -917,8 +917,7 @@ for the backend work (Phase 21), and a second full review follows the big change
       instances), before any major release.
 
 **P2 — fold into the phase they touch, or fix here when small:**
-- [ ] Small and standalone: 09 (A/B can't restore an unloaded model/IR), 10–11 (WAV: truncated audio
-      accepted; 32-bit PCM polarity inverted), 12 (download paths not unique per
+- [ ] Small and standalone: 09 (A/B can't restore an unloaded model/IR), ~~10–11~~ (done with 01), 12 (download paths not unique per
       model), 13 (downloads/images buffered whole in memory), 14 (closing waits for
       the library scan), 16–17 (JACK: client not closed on shutdown; sample-rate
       changes not propagated), 18 (EQ contention bypasses a whole block),
