@@ -177,7 +177,7 @@ Everything restores on relaunch exactly as you left it. Nearly free once Phase 2
   - [x] model path and IR path (already at QSettings `files/lastNAM`/`lastIR` — kept),
   - [x] window geometry (`saveGeometry` in the destructor, restored before show),
   - [x] device & port-connection keys (already working — kept).
-- [ ] **Preset schema v2** (started 2026-08-10):
+- [x] **Preset schema v2** (started 2026-08-10; all parts landed):
   - [x] add a `version` field (presets now write `version: 2`); v1 files still load,
   - [x] fix the asymmetry: `namEnabled` saved alongside `irEnabled`,
   - [x] add `effectOrder` (list of stable effect IDs; unknown/missing IDs fall back to
@@ -440,22 +440,20 @@ Make every knob feel right across its whole travel, not just near the default.
 - [x] **No schema impact** — presets and the session store real units; the taper only
       changes the dial mapping.
 
-## Phase 10 — Tempo sync → done inside Phase 15 (2026-10-01)
+## Phase 10 — Tempo sync ✅ (done inside Phase 15, 2026-10-01)
 
 Global tempo, so time-based parameters can be set in note values.
 
-- [ ] **Global tempo (BPM)** control in the top bar; persisted in session and
-      preset (schema bump). Tap tempo and MIDI clock become natural extensions
-      once MIDI lands (see parameter registry hook).
-- [ ] **Sync mode for time-based params:** delay time, and the tremolo / chorus /
-      flanger / phaser LFO rates. Each gets free (ms / Hz, as today) vs. synced
-      (note-fraction) mode — fractions like 1/1, 1/2, 1/3, 1/4, 1/8 plus dotted /
-      triplet variants.
-- [ ] **Engine stays dumb:** sync is a GUI-layer mapping — tempo × fraction is
-      converted to the existing ms/Hz atomics, and a tempo change re-pushes every
-      synced parameter. No DSP or RT changes needed.
-- [ ] **Persistence:** per-param mode + fraction and the BPM join the session and
-      preset schema (versioned, so old files keep loading).
+- [x] **Global tempo (BPM)** in the tempo bar, with Tap and MIDI clock. *Changed in
+      Phase 15:* tempo is a **session** setting, not stored in presets (presets keep
+      note values and follow the tempo you play at).
+- [x] **Sync mode for time-based params:** delay time and the tremolo / chorus /
+      flanger / phaser rates — `Sync` switch + note-value knob (4 bars … 1/32 incl.
+      dotted / triplet).
+- [x] **Engine stays dumb:** the GUI pushes tempo × note as ms / Hz
+      (`MainWindow::push_synced`); no DSP or RT changes.
+- [x] **Persistence:** `<fx>/sync` and `<fx>/syncNote` are registry params (session +
+      preset); old presets load with Sync off. No schema bump was needed.
 
 ## Phase 11 — Library (v1.0) ✅ (completed 2026-09-17, code; manual verification below)
 
