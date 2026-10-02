@@ -33,8 +33,18 @@ struct Applied
     QString ir_path_b; // "" with hasIrPathB = slot B empty in the preset
 };
 
+// Newest schema this build reads and writes.
+inline constexpr int VERSION = 2;
+
+// Checks that `obj` is a preset this build can apply, before anything changes:
+// a supported `version` (absent = v1), at least one known setting, and the right
+// JSON type for every known key (groups are objects, knobs numbers, switches
+// booleans, paths strings, effectOrder a list of strings). Unknown keys are allowed.
+// The error says what's wrong, for the user.
+expected<void, QString> validate(const QJsonObject& obj, const ParamRegistry& params);
+
 // Applies all registry parameters to their widgets (the engine follows via
-// the registry's signal connections) and returns the rest.
+// the registry's signal connections) and returns the rest. Call validate() first.
 Applied apply(const QJsonObject& obj, const ParamRegistry& params);
 
 } // namespace PresetSerializer

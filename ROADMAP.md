@@ -903,8 +903,9 @@ for the backend work (Phase 21), and a second full review follows the big change
 - [x] **06** (done 2026-10-02: `QSaveFile` for presets, `.nammidi`, the library cache; test in `MidiMapperTest`) Preset and MIDI saves truncate the old file and report success even on a
       failed write → `QSaveFile` + check, dirty state only after success (before
       Phase 24 rewrites saving).
-- [ ] **08** (P2, same reason) Preset version/schema validated before anything is
-      applied.
+- [x] **08** (P2, same reason; done 2026-10-02: `PresetSerializer::validate` — version,
+      types, "is it a preset at all" — before anything changes; all 29 presets on disk pass)
+      Preset version/schema validated before anything is applied.
 - [ ] **15** A model's training sample rate is ignored (a 48 kHz model at 44.1/96 kHz
       sounds wrong, silently) → resample around the model, or warn.
 - [ ] 01–03 live in upstream code (`NAM/`, `Dependencies/AudioDSPTools`): offer the

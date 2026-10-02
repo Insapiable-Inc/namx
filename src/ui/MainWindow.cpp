@@ -3404,6 +3404,14 @@ bool MainWindow::load_preset_file(const QString& path_in) {
                 (doc.isNull() ? err.errorString() : QStringLiteral("not a JSON object")));
         return false;
     }
+    // Checked before anything changes: a rejected file leaves the current sound,
+    // the recents and the last-preset setting as they were.
+    if (const expected<void, QString> valid = PresetSerializer::validate(doc.object(), params);
+        !valid) {
+        QMessageBox::critical(this, "Preset",
+                              "This preset can't be loaded:\n" + path + "\n\n" + valid.error());
+        return false;
+    }
     QSettings settings;
     settings.setValue("files/lastPreset", path);
     library->note_used(path);
