@@ -175,13 +175,14 @@ void TunerDisplay::paintEvent(QPaintEvent*) {
         {SC, {digit_x + w - t, digit_y + 2 * t + half, t, half}},
     };
 
-    const int lit = segments_for(note.isEmpty() ? QChar('-') : note.at(0));
+    // No reading: every segment unlit, like the panel of a switched-off unit.
+    const int lit = valid && !note.isEmpty() ? segments_for(note.at(0)) : 0;
     for (const auto& s : segs) {
         if (lit & s.seg) {
             draw_glow_rect(p, s.r, digit_color, t / 2.0);
         } else {
-            QColor ghost = digit_color;
-            ghost.setAlpha(22);
+            QColor ghost = red; // unlit segments are always dark red, like the LEDs
+            ghost.setAlpha(16);
             p.setPen(Qt::NoPen);
             p.setBrush(ghost);
             p.drawRoundedRect(s.r, t / 2.0, t / 2.0);
