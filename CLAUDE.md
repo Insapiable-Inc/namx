@@ -145,7 +145,7 @@ All effects inherit `EffectBase` (`src/dsp/EffectBase.h` — the header comment 
 | `DriveProcessor`, `VolumeProcessor`, `TransposeProcessor` | `src/dsp/…` | Phase 17 stages: TS-style drive, volume pedal with mid-point, ±12 st transpose |
 | `PitchShifter` | `src/dsp/PitchShifter.h` | Two-tap Hann delay-line shifter with WSOLA re-alignment (Transpose; Shimmer and Crystals are in the DSP with their knobs disabled) |
 | `OutputLimiter` | `src/dsp/OutputLimiter.h/cpp` | Output-stage look-ahead limiter (not an effect; registry key `limiter`) |
-| `MainWindow` | `src/ui/MainWindow.h/cpp` | Window assembly, parameter registry, effect strip + DnD reorder, session state |
+| `MainWindow` | `src/ui/MainWindow.h/cpp` | Window assembly, parameter registry, effect strip + DnD reorder, session state; the status bar's red middle zone is for problems worth seeing — post with `set_notice(key, text, tip)`, clear with an empty text (first user: model/device sample-rate mismatch) |
 | `ParamRegistry.h` | `src/ui/` | `ParamDesc` — one entry per user-facing parameter (shared by MainWindow + PresetSerializer) |
 | `PresetBar` | `src/ui/PresetBar.h/cpp` | Bar above the rack: preset name menu, ‹ ›, `*`, Save/Save As, quick slots 1–8 (owns `presets/slots`), A/B buttons; MainWindow owns the preset state (`preset_path` + baseline) |
 | `PresetSerializer` | `src/ui/PresetSerializer.h/cpp` | Preset schema v2 JSON ↔ registry/engine (v1 files load too) |

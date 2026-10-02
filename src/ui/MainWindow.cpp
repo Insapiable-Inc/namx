@@ -294,6 +294,13 @@ MainWindow::MainWindow(QWidget* parent)
     register_parameters();
     setup_midi(midi_menu);
 
+    // Status bar middle (after the left items, before the permanent right ones):
+    // problems worth seeing, posted with set_notice().
+    lbl_notice = new QLabel;
+    lbl_notice->setObjectName("statusNotice");
+    lbl_notice->setAlignment(Qt::AlignCenter);
+    statusBar()->addWidget(lbl_notice, 1);
+
     // Debounced session save — every registry widget change restarts it, so
     // the session survives a crash without a write per knob tick. Created
     // before restoreSessionState so the restore's widget signals find it.
@@ -2861,12 +2868,57 @@ void MainWindow::hideEvent(QHideEvent* ev) {
     update_meter_timer();
 }
 
+// "48 kHz", "44.1 kHz".
+static QString format_rate(double hz) {
+    const double khz = hz / 1000.0;
+    return QString("%1 kHz").arg(khz, 0, 'f', std::fmod(khz, 1.0) == 0.0 ? 0 : 1);
+}
+
 void MainWindow::update_status() {
     audio_bar->update_metrics(); // PipeWire can change the quantum while running
     if (audio_ok && !engine->is_running()) {
         audio_ok = false;
         audio_bar->set_error("Disconnected");
     }
+
+    const double model_rate = engine->get_nam().get_resampled_model_rate();
+    const double device_rate = engine->sample_rate();
+    if (model_rate > 0.0 && device_rate > 0.0) {
+        set_notice("sampleRate",
+                   QString("Model sample rate (%1) doesn't match the device (%2): resampling "
+                           "uses more CPU")
+                       .arg(format_rate(model_rate), format_rate(device_rate)),
+                   QString("The amp model was trained at %1. Set the audio device to %1 for the "
+                           "lowest CPU use and latency.")
+                       .arg(format_rate(model_rate)));
+    } else {
+        set_notice("sampleRate", {});
+    }
+}
+
+void MainWindow::set_notice(const QString& key, const QString& text, const QString& tip) {
+    const auto it = std::find_if(notices.begin(), notices.end(), [&](const Notice& n) {
+        return n.key == key;
+    });
+    const bool present = it != notices.end();
+    if ((present && it->text == text && it->tip == tip) || (!present && text.isEmpty())) {
+        return; // polled every 50 ms: only touch the label on a change
+    }
+    if (present) {
+        notices.erase(it);
+    }
+    if (!text.isEmpty()) {
+        notices.push_back({key, text, tip});
+    }
+    QStringList texts, tips;
+    for (const Notice& n : notices) {
+        texts << n.text;
+        if (!n.tip.isEmpty()) {
+            tips << n.tip;
+        }
+    }
+    lbl_notice->setText(texts.join("  ·  "));
+    lbl_notice->setToolTip(tips.join("\n"));
 }
 
 void MainWindow::update_tuner() {

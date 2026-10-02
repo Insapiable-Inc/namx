@@ -38,6 +38,12 @@ public:
         return model_path;
     }
 
+    // While the model is resampled (engine rate ≠ the model's training rate): the
+    // model's rate; 0 when it runs directly or nothing is loaded. Any thread.
+    double get_resampled_model_rate() const {
+        return resampled_model_rate.load(std::memory_order_relaxed);
+    }
+
     // Human-readable reason the last loadModel() returned false (GUI thread only).
     string get_last_error() const {
         return last_error;
@@ -110,6 +116,7 @@ private:
     string model_path; // GUI thread only
     string last_error; // GUI thread only
     atomic<size_t> max_buf{0};
+    atomic<double> resampled_model_rate{0.0}; // see get_resampled_model_rate()
     atomic<bool> stereo_amp{false};
     double model_rate{0.0}; // engine SR as last propagated (guarded by model_mutex)
     vector<float> scratch_l, scratch_r;

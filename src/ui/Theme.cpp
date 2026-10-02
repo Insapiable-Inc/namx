@@ -290,6 +290,11 @@ QLabel#statusItem, QLabel#statusAction {
     padding: 2px 8px;
     border-radius: 4px;
 }
+QLabel#statusNotice {
+    color: #ff5252;
+    font-weight: 600;
+    padding: 2px 8px;
+}
 QLabel#statusAction:hover {
     background-color: #2f3744;
     color: #d8dee9;

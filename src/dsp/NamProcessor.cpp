@@ -100,6 +100,7 @@ bool NamProcessor::load_model(const string& path) {
         if (cur_buf > pair->reset_buf || cur_rate != pair->reset_rate) {
             pair->reset(cur_rate, std::max(cur_buf, pair->reset_buf));
         }
+        resampled_model_rate.store(pair->resampler_l ? pair->native_rate() : 0.0);
         slot.publish(std::move(pair));
         model_path = path;
     }
@@ -112,6 +113,7 @@ void NamProcessor::unload_model() {
         std::lock_guard<std::mutex> lock(model_mutex);
         slot.publish(nullptr);
         model_path = "";
+        resampled_model_rate.store(0.0);
     }
     fade_pending.store(true, std::memory_order_release);
 }
@@ -137,6 +139,7 @@ void NamProcessor::prepare_buffer(size_t new_max_buf) {
     if (new_max_buf > p->reset_buf || rate != p->reset_rate) {
         p->reset(rate, std::max(new_max_buf, p->reset_buf));
     }
+    resampled_model_rate.store(p->resampler_l ? p->native_rate() : 0.0);
 }
 
 void NamProcessor::on_sample_rate_changed(double sr) {

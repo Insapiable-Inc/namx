@@ -95,7 +95,11 @@ private slots:
     void restart_audio_with_current_devices();
 
     void update_meters();
-    void update_status(); // status bar metrics + disconnect watchdog
+    void update_status(); // status bar metrics + disconnect watchdog + notices
+    // The red notice zone in the middle of the status bar: one message per key
+    // ("sampleRate", …) with an optional tooltip; an empty text removes it. Shown
+    // joined, in posting order.
+    void set_notice(const QString& key, const QString& text, const QString& tip = {});
     void update_tuner();
 
 private:
@@ -427,6 +431,12 @@ private:
     QHash<QString, QWidget*> library_arrows; // hero ‹ › by MIDI action id
     QString learn_target;
     QLabel* lbl_midi = nullptr; // status bar activity light
+    QLabel* lbl_notice = nullptr; // status bar middle: problems worth seeing (set_notice)
+    struct Notice
+    {
+        QString key, text, tip;
+    };
+    vector<Notice> notices; // in posting order
     QMenu* midi_menu = nullptr;
     QTimer* midi_blink = nullptr;
 };
