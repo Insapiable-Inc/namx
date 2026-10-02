@@ -37,7 +37,8 @@ Decisions:
 - **Execution order:** 7 → 11 → 12 → 8 (packaging) → **tag v1.0** → 13 → 14 →
   15 (absorbs Phase 10 tempo) → 16 → 17 → 20 (C++ guidelines, decided 2026-10-01)
   → 18 → 22 (DSP quality, added 2026-10-01 as the immediate next milestone) → 23
-  (expression pedals, added 2026-10-02) → 19
+  (expression pedals, added 2026-10-02) → 24 (multiple effect instances, added
+  2026-10-02) → 19
   → 21 (ASIO, last: needs a Windows machine); Phase 9 (knob tapers) slots in
   wherever a knob-heavy phase touches the widgets (17 at the latest).
 
@@ -930,6 +931,61 @@ the Volume pedal — get the controls a real expression setup has. MIDI multi-as
       crossfade wobble on sweeps, and re-check with the Phase 22 shifter.
 - [ ] Manual check with a real pedal: wah stopped short of the toe, 0…+12 st whammy,
       reversed volume, a crossfade volume ↔ wah on one pedal.
+
+## Phase 24 — Multiple effect instances (added 2026-10-02; big; after 23, before 19)
+
+Any effect can appear more than once (two delays, a drive before and after the amp,
+two amps blended later…), and effects can be added and removed instead of all 16
+always sitting in the strip. Today everything assumes one instance per effect: the
+stable ID table (`AudioEngine::effect_table`), the chain sanitizer (unknown/duplicate
+IDs dropped, missing ones re-inserted), one named card + `sw_*`/`knob_*` member per
+effect in `MainWindow`, registry groups = effect IDs (`delay/mix`), the session keys
+(`session/delay/mix`), MIDI targets (`param:delay/mix`) and the preset's top-level
+`namPath`/`irPath`.
+
+**Decide with the user first (not designed yet):**
+- [ ] How adding/removing looks: a "+ Add effect" row at the end of the strip, a `+`
+      between cards, right-click a card → Duplicate / Remove, a palette of effect
+      types… Remove needs an undo or a confirmation.
+- [ ] Which effects can repeat. Singletons by nature: Tuner (and the Input/Output
+      stages, limiter and metronome, which aren't chain effects). The Amplifier and
+      Cabinet can repeat in principle (CPU: each NAM instance is one model run), which
+      overlaps Phase 22's "second NAM slot before the amp" — one design for both.
+- [ ] Naming: "Delay", "Delay 2"…, and maybe a user label per card.
+- [ ] A cap on instances per effect / total (CPU budget, `NAMPlayerBench`).
+
+**Data formats (must land before any UI):**
+- [ ] **Instance IDs:** the first instance keeps today's ID (`delay`), more get a
+      numbered one (`delay-2`, `delay-3`; the separator must be safe in QSettings
+      keys, JSON keys and MIDI target IDs). An instance's ID never changes while it
+      exists (removing `delay-2` doesn't renumber `delay-3`), so MIDI mappings and
+      presets keep pointing at the right card. The effect type is part of the ID.
+- [ ] **Preset schema v3:** the same layout as v2 with instance IDs as group keys and
+      in `effectOrder` — a v2 file *is* a valid single-instance v3 file. Difference
+      in meaning: in v3 `effectOrder` is authoritative (an effect missing from it is
+      removed); v2 files keep today's "missing effects re-enter at their default
+      slot". Per-instance file paths (`namPath`/`irPath`) move into the amp/cab
+      groups when those can repeat; the top-level keys stay readable. Starter
+      presets and `PresetSerializer` tests cover v1, v2 and v3 loading.
+- [ ] **Session** (`session/effectOrder` + `session/<id>/<key>`): same rules as the
+      preset; an old session restores unchanged.
+- [ ] **MIDI** (`midi/mappings`, `.nammidi`): targets use instance IDs
+      (`param:delay-2/mix`); a mapping whose instance is gone stays in the table,
+      marked missing, instead of being deleted silently (it comes back if the
+      instance does). `MidiMapperTest` covers it; multi-assign keeps working.
+
+**Engine and UI:**
+- [ ] `AudioEngine` creates and destroys effect instances on the GUI thread and
+      publishes them through the chain's `RtSlot` (no allocation on the audio
+      thread; removed instances retire like old chains). Golden test: per instance,
+      and a two-delay chain.
+- [ ] `MainWindow`: cards built per instance from one factory per effect type
+      (replacing the named `sw_*`/`knob_*` members), registered in the parameter
+      registry with the instance ID as the group — still the single source of truth.
+- [ ] Effect shortcuts, drag-reorder, the bypass dimming and the card accents work
+      per instance; `EffectShortcuts` already keys on position.
+- [ ] Manual check: two delays in series, a removed effect staying removed after a
+      preset reload, an old v2 preset and an old session loading as before.
 
 ## Phase 21 — Windows audio: WASAPI exclusive + ASIO (added 2026-10-01; last — no Windows machine to test on yet)
 
