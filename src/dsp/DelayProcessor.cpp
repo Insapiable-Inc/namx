@@ -19,6 +19,7 @@ void DelayProcessor::on_sample_rate_changed(double sr) {
         s.prepare(sr, 60.0f);
         s.set_semitones(12.0f);
     }
+    glide_k = 1.0f - std::exp(-1.0f / (0.08f * static_cast<float>(sr)));
     reset();
 }
 
@@ -28,9 +29,16 @@ void DelayProcessor::reset() {
         l.hp_x = l.hp_y = l.lp = 0.0f;
     }
     mod_phase = 0.0f;
+    del_now[0] = del_now[1] = -1.0f;
     for (auto& s : shift) {
         s.reset();
     }
+}
+
+float DelayProcessor::glide(int line, float target) {
+    float& d = del_now[line];
+    d = d < 0.0f ? target : d + (target - d) * glide_k; // exact once it has arrived
+    return d;
 }
 
 float DelayProcessor::loop(int line, float d, const Params& p) {
@@ -91,7 +99,7 @@ void DelayProcessor::process_block_mono(float* buf, size_t nframes) {
             mod_phase -= 1.0f;
         }
 
-        const float d = tone(l, l.read(p.del_l + mod), p);
+        const float d = tone(l, l.read(glide(0, p.del_l) + mod), p);
         l.push(saturate(buf[i] + p.fb * loop(0, d, p), p.sat_drive));
         buf[i] = buf[i] * (1.0f - p.mix) + d * p.mix;
     }
@@ -110,8 +118,8 @@ void DelayProcessor::process_block_dual(float* l, float* r, size_t nframes) {
             mod_phase -= 1.0f;
         }
 
-        const float d_l = tone(lines[0], lines[0].read(p.del_l + mod), p);
-        const float d_r = tone(lines[1], lines[1].read(p.del_r - mod), p);
+        const float d_l = tone(lines[0], lines[0].read(glide(0, p.del_l) + mod), p);
+        const float d_r = tone(lines[1], lines[1].read(glide(1, p.del_r) - mod), p);
         lines[0].push(saturate(l[i] + p.fb * loop(0, d_l, p), p.sat_drive));
         lines[1].push(saturate(r[i] + p.fb * loop(1, d_r, p), p.sat_drive));
         l[i] = l[i] * (1.0f - p.mix) + d_l * p.mix;
@@ -135,8 +143,8 @@ void DelayProcessor::process_block_stereo_out(float* l, float* r, size_t nframes
         }
 
         const float x = l[i];
-        const float d_l = tone(lines[0], lines[0].read(p.del_l + mod), p);
-        const float d_r = tone(lines[1], lines[1].read(p.del_r - mod), p);
+        const float d_l = tone(lines[0], lines[0].read(glide(0, p.del_l) + mod), p);
+        const float d_r = tone(lines[1], lines[1].read(glide(1, p.del_r) - mod), p);
         const float f_l = loop(0, d_l, p), f_r = loop(1, d_r, p);
         lines[0].push(saturate(x + p.fb * ((1.0f - c) * f_l + c * f_r), p.sat_drive));
         lines[1].push(saturate((1.0f - c) * x + p.fb * ((1.0f - c) * f_r + c * f_l), p.sat_drive));

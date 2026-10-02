@@ -118,6 +118,13 @@ private:
     Line lines[2];
     float mod_phase = 0.0f;
 
+    // Read delays actually used (samples), gliding toward the targets so a Time change
+    // bends the repeats like tape instead of jumping the read position (a click, review
+    // item 22). Negative = start at the target (after reset).
+    float glide(int line, float target);
+    float del_now[2]{-1.0f, -1.0f};
+    float glide_k = 1.0f; // per-sample step, ~80 ms time constant
+
     // Longest Time × the longest R Time (200 %), plus headroom for the modulation.
     static constexpr float MAX_DELAY_MS =
         static_cast<float>(NAMConstants::DELAY_TIME_MAX * NAMConstants::DELAY_RIGHT_MAX / 100.0) +
