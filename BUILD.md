@@ -483,7 +483,7 @@ switch is on, which runs the model once per channel at twice the CPU.
 | Transpose | Semitones (±12), Mix | — |
 | Drive | Drive, Tone, Level (TS-style: clipping on the mids/highs, clean lows kept) | — |
 | Dynamic Wah | Mix, Sensitivity, Resonance, Mode (Auto / Pedal), Position | — |
-| Flanger / Phaser / Chorus | Mix, Rate (Sync), Depth, Feedback | Flanger Range · Phaser Mode (Classic / Vibe) · Chorus Mode (Normal / Tri / Vintage / Spatial) |
+| Flanger / Phaser / Chorus | Mix, Rate (Sync), Depth, Feedback (not Chorus); Flanger **Range**; Phaser **Vibe** switch (off = classic) | — |
 | Equalizer | Bass, Middle, High-Mid, Treble (±12 dB) | the four band frequencies, Low Cut, High Cut |
 | Delay | Mix, Time (Sync), Feedback | R Time, Cross-feed, Low/High Cut, Saturation, Modulation, Crystals |
 | Reverb | Mix, Decay, Damping, Width | Pre-delay, Low/High Cut, Shimmer |

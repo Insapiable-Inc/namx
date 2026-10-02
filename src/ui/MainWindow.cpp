@@ -156,6 +156,19 @@ static QHBoxLayout* row_layout(QWidget* card) {
         card->findChild<QWidget*>("cardRow", Qt::FindDirectChildrenOnly)->layout());
 }
 
+// A switch with a fixed caption beside it ("Vibe"), for an either/or mode.
+static QWidget* make_caption_switch(ToggleSwitch* sw, const QString& caption) {
+    auto* w = new QWidget;
+    auto* lay = new QHBoxLayout(w);
+    lay->setContentsMargins(0, 0, 0, 0);
+    lay->setSpacing(6);
+    auto* label = new QLabel(caption);
+    label->setObjectName("toggleCaption");
+    lay->addWidget(sw, 0, Qt::AlignVCenter);
+    lay->addWidget(label, 0, Qt::AlignVCenter);
+    return w;
+}
+
 // Adds `w` at the end of a card's main row, after its knobs.
 static void append_to_row(QWidget* card, QWidget* w) {
     QHBoxLayout* lay = row_layout(card);
@@ -430,10 +443,11 @@ static QString format_blend(double v) {
                     : QString("B %1").arg(b);
 }
 
-static QString format_chorus_mode(double v) {
-    static const char* names[] = {"Normal", "Tri", "Vintage", "Spatial"};
-    return QString(names[std::clamp(static_cast<int>(std::lround(v)), 0, 3)]);
-}
+// GUIDELINE EXCEPTION (commented-out code): used by the disabled Chorus Mode knob.
+// static QString format_chorus_mode(double v) {
+//     static const char* names[] = {"Normal", "Tri", "Vintage", "Spatial"};
+//     return QString(names[std::clamp(static_cast<int>(std::lround(v)), 0, 3)]);
+// }
 
 static QString format_semitones(double v) {
     const int s = static_cast<int>(std::lround(v));
@@ -869,17 +883,25 @@ void MainWindow::setup_ui() {
                        PHASER_RATE_MAX, [this](double v) {
                            engine->get_phaser().set_rate_hz(static_cast<float>(v));
                        });
-        KnobWidget* mode =
-            late_knob("phaser", "mode", new KnobWidget("Mode", 0, 1, 0), [this](double v) {
-                engine->get_phaser().set_vibe(v > 0.5);
-            });
-        mode->set_snap(1.0);
-        mode->set_value_formatter([](double v) {
-            return v > 0.5 ? QString("Vibe") : QString("Classic");
-        });
-        mode->setToolTip(
-            "Classic phaser, or Vibe: staggered stages, lamp-shaped sweep, no feedback");
-        append_to_row(col, mode);
+        // Mode: Classic, or Vibe when switched on (registered as "phaser/mode").
+        sw_phaser_vibe = new ToggleSwitch;
+        sw_phaser_vibe->setCheckable(true);
+        sw_phaser_vibe->setToolTip(
+            "Vibe: staggered stages, lamp-shaped sweep, no feedback (off = classic phaser)");
+        append_to_row(col, make_caption_switch(sw_phaser_vibe, "Vibe"));
+        // GUIDELINE EXCEPTION (commented-out code, user's call 2026-10-01): the Mode knob
+        // this switch replaced, kept for reference.
+        // KnobWidget* mode =
+        //     late_knob("phaser", "mode", new KnobWidget("Mode", 0, 1, 0), [this](double v) {
+        //         engine->get_phaser().set_vibe(v > 0.5);
+        //     });
+        // mode->set_snap(1.0);
+        // mode->set_value_formatter([](double v) {
+        //     return v > 0.5 ? QString("Vibe") : QString("Classic");
+        // });
+        // mode->setToolTip(
+        //     "Classic phaser, or Vibe: staggered stages, lamp-shaped sweep, no feedback");
+        // append_to_row(col, mode);
         Theme::tag_card(col, "phaser");
 
         fx_cols[&engine->get_phaser()] = col;
@@ -905,15 +927,17 @@ void MainWindow::setup_ui() {
                        CHORUS_RATE_MAX, [this](double v) {
                            engine->get_chorus().set_rate_hz(static_cast<float>(v));
                        });
-        KnobWidget* mode =
-            late_knob("chorus", "mode", new KnobWidget("Mode", 0, 3, 0), [this](double v) {
-                engine->get_chorus().set_mode(static_cast<int>(std::lround(v)));
-            });
-        mode->set_snap(1.0);
-        mode->set_value_formatter(&format_chorus_mode);
-        mode->setToolTip("Normal · Tri (three voices) · Vintage (darker, triangle LFO) · Spatial "
-                         "(wider stereo)");
-        append_to_row(col, mode);
+        // GUIDELINE EXCEPTION (commented-out code, user's call 2026-10-01): Chorus modes are
+        // off for now; the chorus stays in its first mode, Normal (the engine default).
+        // KnobWidget* mode =
+        //     late_knob("chorus", "mode", new KnobWidget("Mode", 0, 3, 0), [this](double v) {
+        //         engine->get_chorus().set_mode(static_cast<int>(std::lround(v)));
+        //     });
+        // mode->set_snap(1.0);
+        // mode->set_value_formatter(&format_chorus_mode);
+        // mode->setToolTip("Normal · Tri (three voices) · Vintage (darker, triangle LFO) · "
+        //                  "Spatial (wider stereo)");
+        // append_to_row(col, mode);
         Theme::tag_card(col, "chorus");
 
         fx_cols[&engine->get_chorus()] = col;
@@ -2499,6 +2523,9 @@ void MainWindow::register_parameters() {
     });
     toggle_param("phaser", "stereo", sw_phaser_stereo, [e](bool b) {
         e->get_phaser().set_stereo_mode(b);
+    });
+    toggle_param("phaser", "mode", sw_phaser_vibe, [e](bool b) {
+        e->get_phaser().set_vibe(b);
     });
     knob_param("phaser", "rate", knob_ph_rate, synced_handler(knob_ph_rate));
     toggle_param("phaser", "sync", sync_of(knob_ph_rate).sync, synced_handler(knob_ph_rate));
