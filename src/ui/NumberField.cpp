@@ -17,7 +17,7 @@ namespace npl
 static constexpr qreal NUMBER_PT = 12.0;
 static constexpr qreal LABEL_PT = 7.5;
 static constexpr int PAD = 7; // inner margin, both sides
-static constexpr int GAP = 4; // between the number and its caption / unit
+static constexpr int GAP = 4; // between the number and its unit
 
 static QFont sized(QFont f, qreal pt, bool bold) {
     f.setPointSizeF(pt);
@@ -42,9 +42,6 @@ QSize NumberField::sizeHint() const {
     int w = 2 * PAD + number_fm.horizontalAdvance(widest);
     if (!spec.unit.isEmpty()) {
         w += GAP + label_fm.horizontalAdvance(spec.unit);
-    }
-    if (!spec.caption.isEmpty()) {
-        w += GAP + label_fm.horizontalAdvance(spec.caption);
     }
     return {std::max(w, 72), 30};
 }
@@ -85,9 +82,6 @@ void NumberField::paintEvent(QPaintEvent*) {
     if (!spec.unit.isEmpty()) {
         p.drawText(inner, Qt::AlignRight | Qt::AlignVCenter, spec.unit);
         right -= QFontMetrics(label_font).horizontalAdvance(spec.unit) + GAP;
-    }
-    if (!spec.caption.isEmpty()) {
-        p.drawText(inner, Qt::AlignLeft | Qt::AlignVCenter, spec.caption);
     }
     p.setFont(sized(font(), NUMBER_PT, true));
     p.setPen(Theme::generic_accent());

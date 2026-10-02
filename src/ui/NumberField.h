@@ -9,7 +9,7 @@ class QLineEdit;
 namespace npl
 {
 
-// Numeric readout in a well: "[caption]  value  unit". Drag vertically, scroll
+// Numeric readout in a well: "value unit". Drag vertically, scroll
 // or click to type; Shift makes drag and scroll ten times finer. The tempo BPM
 // and the tuner's reference pitch use it, so both look and behave the same.
 class NumberField : public QWidget
@@ -23,7 +23,6 @@ public:
         int decimals; // values round to this many places
         double step; // one scroll notch; four pixels of drag
         QString unit; // dim, right of the number ("BPM", "Hz")
-        QString caption = {}; // dim, left of the number ("A4")
     };
 
     explicit NumberField(const Spec& new_spec, QWidget* parent = nullptr);
