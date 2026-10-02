@@ -612,6 +612,10 @@ void MainWindow::setup_ui() {
         lay->addWidget(ref, 0, Qt::AlignVCenter);
         lay->addStretch();
 
+        // Off, the display would be an empty dark box: show it only while tuning.
+        tuner_display->setVisible(sw_tuner_enable->isChecked());
+        connect(sw_tuner_enable, &ToggleSwitch::toggled, tuner_display, &QWidget::setVisible);
+
         Theme::tag_card(col, "tuner"); // after children — pushes accents to them
         fx_cols[&engine->get_tuner()] = col;
     }
@@ -1583,7 +1587,7 @@ void MainWindow::update_card_bypass_state(EffectBase* effect, bool enabled) {
         return;
     }
     auto* opacity = new QGraphicsOpacityEffect(card);
-    opacity->setOpacity(0.48);
+    opacity->setOpacity(0.62); // dimmer reads as off; lower and dark accents vanish
     card->setGraphicsEffect(opacity);
 }
 
