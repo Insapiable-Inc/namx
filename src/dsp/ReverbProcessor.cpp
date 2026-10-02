@@ -147,7 +147,9 @@ void ReverbProcessor::process_mono_bank(float* buf, size_t nframes, int bank,
     const float shim = std::clamp(shimmer_pct.load(), 0.0f, 100.0f) / 100.0f * 0.45f;
 
     for (size_t i = 0; i < nframes; ++i) {
-        float in_sig = pre_delay(bank, buf[i] * 0.015f, cut.pre) + shim * shim_fb[bank];
+        // 0.03 = the stereo-out path's (L + R) × 0.015 for one channel: same wet level
+        // whether or not a stereo effect feeds the reverb (review item 23).
+        float in_sig = pre_delay(bank, buf[i] * 0.03f, cut.pre) + shim * shim_fb[bank];
         float out = 0.0f;
         for (CombFilter& comb : combs) {
             out += comb.process(in_sig, feedback, damp);
