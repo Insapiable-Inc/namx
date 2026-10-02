@@ -83,7 +83,7 @@ static constexpr int GRIP_COLUMN_WIDTH = 22; // "≡" drag handle
 static constexpr int NAME_COLUMN_WIDTH = 120; // fits "Dynamic Wah"
 static constexpr int ENABLE_SLOT_WIDTH = 74; // toggle + "On"/"Off" caption
 static constexpr int STEREO_SLOT_WIDTH = 96; // toggle + "Stereo" caption
-static constexpr int SYNC_SLOT_WIDTH = 80; // toggle + "Sync" caption
+static constexpr int SYNC_SLOT_WIDTH = 96; // toggle + "Sync" / "Manual" caption
 // Every row is exactly as tall as a knob row (40 px dial + knob margins +
 // card margins + border), so knob-less rows and the tuner match the rest.
 static constexpr int ROW_CARD_HEIGHT = 62;
@@ -699,11 +699,11 @@ void MainWindow::setup_ui() {
         knob_wah_res->set_scroll_step(1.0);
         knob_wah_mix->set_scroll_step(1.0);
 
-        // Mode: Auto, or Pedal when switched on (registered as "dynamicWah/mode").
-        sw_wah_pedal = new ToggleSwitch;
-        sw_wah_pedal->setCheckable(true);
-        sw_wah_pedal->setToolTip("Pedal: Position sweeps the wah (map an expression pedal) · "
-                                 "off = Auto: the playing envelope sweeps it");
+        // Mode: Auto, or Manual when switched on (registered as "dynamicWah/mode").
+        sw_wah_manual = new ToggleSwitch;
+        sw_wah_manual->setCheckable(true);
+        sw_wah_manual->setToolTip("Manual: Position sweeps the wah (map an expression pedal) · "
+                                  "off = Auto: your playing sweeps it");
         // GUIDELINE EXCEPTION (commented-out code, user's call 2026-10-01): the Mode knob
         // this switch replaced, kept for reference.
         // KnobWidget* mode =
@@ -725,7 +725,7 @@ void MainWindow::setup_ui() {
         pos->set_scroll_step(1.0);
         QWidget* col = make_effect_row("Dynamic Wah", sw_wah_enable,
                                        {knob_wah_mix, knob_wah_sens, knob_wah_res, pos});
-        put_in_sync_column(col, make_caption_switch(sw_wah_pedal, "Pedal"));
+        put_in_sync_column(col, make_caption_switch(sw_wah_manual, "Manual"));
         Theme::tag_card(col, "wah");
 
         fx_cols[&engine->get_wah()] = col;
@@ -2534,7 +2534,7 @@ void MainWindow::register_parameters() {
     toggle_param("dynamicWah", "enabled", sw_wah_enable, [e](bool b) {
         e->get_wah().set_enabled(b);
     });
-    toggle_param("dynamicWah", "mode", sw_wah_pedal, [e](bool b) {
+    toggle_param("dynamicWah", "mode", sw_wah_manual, [e](bool b) {
         e->get_wah().set_pedal_mode(b);
     });
     knob_param("dynamicWah", "sensitivity", knob_wah_sens, [e](double v) {

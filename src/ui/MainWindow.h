@@ -351,7 +351,7 @@ private:
     ToggleSwitch* sw_phaser_enable = nullptr;
     ToggleSwitch* sw_phaser_stereo = nullptr;
     ToggleSwitch* sw_phaser_vibe = nullptr; // Mode: Classic / Vibe
-    ToggleSwitch* sw_wah_pedal = nullptr; // Mode: Auto / Pedal
+    ToggleSwitch* sw_wah_manual = nullptr; // Mode: Auto / Manual
     KnobWidget* knob_ph_rate = nullptr;
     KnobWidget* knob_ph_depth = nullptr;
     KnobWidget* knob_ph_feedback = nullptr;

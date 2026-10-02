@@ -907,7 +907,7 @@ it for the one it replaces, and is measured with `NAMPlayerBench`.
 
 ## Phase 23 — Expression pedals: range, reverse, whammy (added 2026-10-02; after 22, before 19)
 
-The pedal-like effects — Dynamic Wah (Position, Pedal mode), Transpose (Semitones) and
+The pedal-like effects — Dynamic Wah (Position, Manual mode), Transpose (Semitones) and
 the Volume pedal — get the controls a real expression setup has. MIDI multi-assign
 (one pedal → several targets, Min above Max reverses a sweep; tested in
 `MidiMapperTest`) already works and must keep working.
