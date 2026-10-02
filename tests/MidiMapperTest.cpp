@@ -1,8 +1,9 @@
 // Headless test of MidiMapper (Phase 16): learn, CC absolute / relative,
 // footswitch toggle edges, momentary, program change → action, note
-// toggles, channel filtering, default mappings, file round trip, and MIDI
-// clock → tempo. Messages are fed straight into handle(), so no MIDI
-// hardware or sequencer is needed; the platform input is a thin parser.
+// toggles, channel filtering, one control → many targets (multi-assign),
+// default mappings, file round trip, and MIDI clock → tempo. Messages are
+// fed straight into handle(), so no MIDI hardware or sequencer is needed; the
+// platform input is a thin parser.
 //
 // Runs with a temporary QSettings scope — never touches the user's config.
 
@@ -154,6 +155,66 @@ int run(int argc, char** argv) {
         CHECK(slot_fired[0] == 0, "disabled mapping does nothing");
         mapper.forget("param:delay/mix");
         CHECK(!mapper.has_mapping("param:delay/mix"), "forget removes the mapping");
+    }
+
+    // One control, many targets (a user-facing feature): learn replaces only the
+    // learned target's own binding, so a CC learned on a second control drives both.
+    // Min > Max inverts a sweep: one pedal crossfades a volume up and a wah down.
+    std::printf("multi-assign\n");
+    {
+        KnobWidget volume("Volume", 0.0, 100.0, 0.0, "%");
+        KnobWidget wah("Position", 0.0, 100.0, 0.0, "%");
+        ToggleSwitch chorus_on;
+        chorus_on.setCheckable(true);
+        ToggleSwitch reverb_on;
+        reverb_on.setCheckable(true);
+        reverb_on.setChecked(true);
+        mapper.add_knob("param:volume/volume", "Volume", "Volume", &volume);
+        mapper.add_knob("param:dynamicWah/position", "Wah", "Position", &wah);
+        mapper.add_toggle("param:chorus/enabled", "Chorus", "On / Off", &chorus_on);
+        mapper.add_toggle("param:reverb/enabled", "Reverb", "On / Off", &reverb_on);
+
+        mapper.learn("param:volume/volume");
+        mapper.handle(cc(0, 7, 64));
+        mapper.learn("param:dynamicWah/position");
+        mapper.handle(cc(0, 7, 64));
+        CHECK(mapper.has_mapping("param:volume/volume") &&
+                  mapper.has_mapping("param:dynamicWah/position"),
+              "learning CC 7 on a second knob keeps the first");
+        QList<MidiMapping> list = mapper.get_mappings();
+        for (auto& m : list) {
+            if (m.target == "param:dynamicWah/position") {
+                m.min = 1.0;
+                m.max = 0.0;
+            }
+        }
+        mapper.set_mappings(list);
+        mapper.handle(cc(0, 7, 127));
+        CHECK(std::abs(volume.value() - 100.0) < 0.05 && std::abs(wah.value()) < 0.05,
+              "pedal down: volume max, inverted wah min");
+        mapper.handle(cc(0, 7, 0));
+        CHECK(std::abs(volume.value()) < 0.05 && std::abs(wah.value() - 100.0) < 0.05,
+              "pedal up: volume min, inverted wah max");
+
+        mapper.learn("param:chorus/enabled");
+        mapper.handle(cc(0, 81, 127));
+        mapper.handle(cc(0, 81, 0));
+        mapper.learn("param:reverb/enabled");
+        mapper.handle(cc(0, 81, 127));
+        mapper.handle(cc(0, 81, 0));
+        mapper.handle(cc(0, 81, 127));
+        CHECK(chorus_on.isChecked() && !reverb_on.isChecked(),
+              "one footswitch alternates chorus (was off) and reverb (was on)");
+
+        mapper.learn("param:volume/volume");
+        mapper.handle(cc(0, 8, 64));
+        CHECK(mapper.mapping_summary("param:volume/volume") == "CC 8 ch 1" &&
+                  mapper.has_mapping("param:dynamicWah/position"),
+              "re-learning a target replaces only its own binding");
+        for (const char* id : {"param:volume/volume", "param:dynamicWah/position",
+                               "param:chorus/enabled", "param:reverb/enabled"}) {
+            mapper.forget(id); // the widgets go out of scope
+        }
     }
 
     std::printf("file round trip + persistence\n");

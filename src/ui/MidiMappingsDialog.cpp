@@ -320,7 +320,8 @@ void MidiMappingsDialog::add_percent_cell(int row, int column, double value) {
     auto* sp = new QSpinBox;
     sp->setRange(0, 100);
     sp->setValue(qRound(value * 100.0));
-    sp->setToolTip("Share of the knob's range the controller sweeps (knobs only)");
+    sp->setToolTip("Share of the knob's range the controller sweeps (knobs only); "
+                   "Min above Max reverses the sweep");
     connect(sp, &QSpinBox::valueChanged, this, [this, row] {
         commit_row(row);
     });

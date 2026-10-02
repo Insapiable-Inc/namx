@@ -388,6 +388,13 @@ expression pedal over part of a knob), **Relative** (endless encoders: 1–63 up
 footswitches), **Momentary** (on while held). Learn picks Absolute for a knob moved by a
 CC and Toggle for everything else.
 
+**One control, many targets.** Learning a control replaces only *that control's*
+previous binding, so the same knob, pedal or footswitch can be learned on several
+controls and drives them all at once. A footswitch learned on two effects flips both;
+if one starts off and the other on, each press alternates between them. On an
+expression pedal, setting **Min** above **Max** in Mappings… reverses that row's
+sweep: volume 0→100 % and wah 100→0 % on one pedal crossfade the two.
+
 Out of the box, program changes 0–7 recall quick slots 1–8. The mappings are
 machine settings (QSettings `midi/*`), not part of presets.
 
