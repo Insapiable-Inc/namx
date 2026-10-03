@@ -989,7 +989,7 @@ for the backend work (Phase 21), and a second full review follows the big change
       a background loader only if big models still stutter), ~~22~~ (done 2026-10-02),
       ~~23~~ (done 2026-10-02), ~~24~~ (IR truncation: faded and at 1 s since 2026-10-03; still only logged),
       26 (limiter scans the whole look-ahead per sample), ~~27~~ (done 2026-10-02), ~~28~~ (done 2026-10-02).
-- [ ] Belong elsewhere: 20 (bypass cuts tails → "Trails", with Phase 22),
+- [ ] Belong elsewhere: ~~20~~ (bypass cuts tails → "Trails": **not wanted**, user 2026-10-03),
       ~~25~~ (done 2026-10-03 with Phase 22's FFT convolution), 29–31 (WASAPI
       device loss, clock drift, capture averaging → Phase 21), 12–13 also touch
       Phase 25 (TONE3000).
@@ -1032,6 +1032,10 @@ machine, in `gui/BENCHMARKS.md`.
       DAW at the same buffer — if a license is at hand.
 
 ## Phase 22 — DSP quality: state-of-the-art effects (added 2026-10-01; next, after the Phase 27 benchmarks)
+
+**Order for the rest (user, 2026-10-03):** Shimmer + Crystals (Signalsmith) → built-in
+Drive (WDF Tube Screamer) → analog modulation (BBD, Uni-Vibe) → Wah last (it already
+sounds good). No Trails.
 
 Research in `gui/DSP_RESEARCH.md` (options per effect, real-time flags, licenses,
 sources). Each step keeps the golden test green for effects it doesn't touch, re-records
