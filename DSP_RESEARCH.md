@@ -77,7 +77,9 @@ partial's shift, beating at (1 − ratio) × their spacing (4.5 Hz on an E5 at �
 **Signalsmith Stretch** was measured too: at playable block sizes (20–60 ms) the bass
 comes out at the wrong pitch (82 → 67 Hz at −2 st with 60 ms blocks; correct only at
 ~250 ms), so it's out for Transpose — but a good fit for Shimmer/Crystals, where latency
-doesn't matter.
+doesn't matter: since 2026-10-03 they run on it (`StretchShifter`, 120 ms block, 150 ms
+latency; octave up within ~1 cent at 110/440 Hz, +16 cents on a low E; Crystals repeats
+compensated to land on time), approved by ear ("sound amazing").
 
 **Recommendation (before the outcome above):**
 1. **Quick win:** wrap Signalsmith Stretch (MIT, header-only) behind the existing

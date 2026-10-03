@@ -470,8 +470,8 @@ switch is on, which runs the model once per channel at twice the CPU.
 | Dynamic Wah | **Manual** switch (off = Auto: your playing sweeps it), **Reverse** (pedal heel ↔ toe), Mix, Sensitivity, Resonance, Position (the sweep in Manual mode — map an expression pedal) | — |
 | Flanger / Phaser / Chorus | Mix, Rate (Sync), Depth, Feedback (not Chorus); Flanger **Range**; Phaser **Vibe** switch (off = classic) | — |
 | Equalizer | Bass, Middle, High-Mid, Treble (±12 dB) | the four band frequencies, Low Cut, High Cut |
-| Delay | Mix, Time (Sync), Feedback (ping-pong in stereo) | R Time, Low/High Cut, Saturation |
-| Reverb | Type (Plate / Hall / Room), Mix, Decay (0.2–10 s), Damping, Width | Pre-delay (0–250 ms; with the main row's **Sync** on, a note value at the tempo, up to 2 s), Low/High Cut |
+| Delay | Mix, Time (Sync), Feedback (ping-pong in stereo) | R Time, Low/High Cut, Saturation, Crystals (octave-up repeats) |
+| Reverb | Type (Plate / Hall / Room), Mix, Decay (0.2–10 s), Damping, Width | Pre-delay (0–250 ms; with the main row's **Sync** on, a note value at the tempo, up to 2 s), Low/High Cut, Shimmer (octave-up feedback into the tail) |
 | Cabinet | IR (library, ‹ ›; click the name to browse) | — |
 | Volume Pedal | Volume, Mid (level at half travel), **Reverse** (pedal heel ↔ toe) | — |
 | Output | Gain, **Limit** (look-ahead limiter at −0.3 dBFS) | — |

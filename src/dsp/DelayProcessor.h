@@ -6,7 +6,7 @@
 #include "Constants.h"
 #include "DelayLine.h"
 #include "EffectBase.h"
-#include "PitchShifter.h"
+#include "StretchShifter.h"
 
 namespace namx
 {
@@ -100,7 +100,10 @@ private:
     };
     Params params() const;
     float tone(Line& l, float x, const Params& p) const; // feedback-loop cuts
-    float loop(int line, float d, const Params& p); // what re-enters the line (crystals)
+    // What re-enters the line: the repeat `d` (read `read_delay` samples back), blended
+    // toward its octave-up (Crystals). The shifter is fed from `latency` samples earlier
+    // in the line, so its output lands on the repeat instead of 150 ms after it.
+    float loop(int line, float d, float read_delay, const Params& p);
     static float saturate(float x, float amount);
 
     atomic<float> time_ms{250.0f};
@@ -113,7 +116,7 @@ private:
     atomic<float> sat_pct{0.0f};
     atomic<float> mod_pct{0.0f};
     atomic<float> crystals_pct{0.0f};
-    PitchShifter shift[2];
+    StretchShifter shift[2]; // +12 st, per line (Crystals)
 
     Line lines[2];
     float mod_phase = 0.0f;

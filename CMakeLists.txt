@@ -130,7 +130,7 @@ set(GUI_SOURCES
     src/dsp/Common.h
     src/dsp/DelayLine.h
     src/dsp/Denormals.h
-    src/dsp/PitchShifter.h
+    src/dsp/StretchShifter.h
     src/dsp/TransposeProcessor.h
     src/dsp/Metronome.h
 )
@@ -178,6 +178,7 @@ target_include_directories(namx SYSTEM PRIVATE
     ${NAM_DEPS_PATH}/eigen
     ${NAM_DEPS_PATH}/nlohmann
     ${NAM_DEPS_PATH}/signalsmith-linear/include
+    ${NAM_DEPS_PATH}/signalsmith-stretch/include
     # Header-only Lanczos resampler (NamProcessor: models at their training rate).
     ${NAM_DEPS_PATH}/AudioDSPTools/dsp/ResamplingContainer
 )
@@ -308,7 +309,8 @@ if(NAM_BUILD_TESTS)
     list(FILTER GOLDEN_DSP_SOURCES EXCLUDE REGEX "(AudioEngine|JackBackend|WasapiBackend|NamProcessor)\\.cpp$")
     add_executable(DspGoldenTest tests/DspGoldenTest.cpp ${GOLDEN_DSP_SOURCES})
     target_include_directories(DspGoldenTest SYSTEM PRIVATE ${NAM_DEPS_PATH}/eigen
-        ${NAM_DEPS_PATH}/signalsmith-linear/include)
+        ${NAM_DEPS_PATH}/signalsmith-linear/include
+    ${NAM_DEPS_PATH}/signalsmith-stretch/include)
     target_include_directories(DspGoldenTest PRIVATE src/dsp)
     target_compile_definitions(DspGoldenTest PRIVATE NAM_SAMPLE_FLOAT
                                NAM_GOLDEN_FILE="${CMAKE_CURRENT_SOURCE_DIR}/tests/dsp-golden.txt")
@@ -330,6 +332,7 @@ if(NAM_BUILD_BENCH)
     target_include_directories(namx-bench SYSTEM PRIVATE
         ${NAM_ROOT} ${NAM_DEPS_PATH}/eigen ${NAM_DEPS_PATH}/nlohmann
         ${NAM_DEPS_PATH}/signalsmith-linear/include
+    ${NAM_DEPS_PATH}/signalsmith-stretch/include
         ${NAM_DEPS_PATH}/AudioDSPTools/dsp/ResamplingContainer)
     target_include_directories(namx-bench PRIVATE src/dsp)
     target_compile_definitions(namx-bench PRIVATE NAM_SAMPLE_FLOAT NAM_ENABLE_A2_FAST)
@@ -346,6 +349,7 @@ if(NAM_BUILD_BENCH)
     target_include_directories(namx-quality SYSTEM PRIVATE
         ${NAM_ROOT} ${NAM_DEPS_PATH}/eigen ${NAM_DEPS_PATH}/nlohmann
         ${NAM_DEPS_PATH}/signalsmith-linear/include
+    ${NAM_DEPS_PATH}/signalsmith-stretch/include
         ${NAM_DEPS_PATH}/AudioDSPTools/dsp/ResamplingContainer)
     target_include_directories(namx-quality PRIVATE src/dsp)
     target_compile_definitions(namx-quality PRIVATE NAM_SAMPLE_FLOAT NAM_ENABLE_A2_FAST)

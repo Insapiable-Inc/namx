@@ -1098,9 +1098,10 @@ it for the one it replaces, and is measured with `NAMPlayerBench`.
       Uni-Vibe (lamp + photocells + 4 staggered stages).
 - [ ] **Wah:** Crybaby nodal-DK model; **Delay:** tape mode (ChowTape model);
       **Compressor:** smooth-branching detector + soft knee.
-- [ ] Re-enable Shimmer and Crystals on a high-quality shifter (latency is irrelevant
-      inside tails): Signalsmith Stretch with long blocks (it's right at ~250 ms); they
-      still run on the old WSOLA `PitchShifter` meanwhile.
+- [x] Re-enable Shimmer and Crystals on a high-quality shifter (done 2026-10-03, "sound
+      amazing"): Signalsmith Stretch 1.4.0 submodule (`StretchShifter`, default 120 ms
+      block); Crystals fed 150 ms early so repeats stay on the beat; both knobs back in
+      the ▾ rows, default 0 % (a knob, not a switch — user). WSOLA `PitchShifter` deleted.
 
 ## Phase 23 — Expression pedals: range, reverse, whammy (added 2026-10-02; code done 2026-10-02, pedal check pending)
 

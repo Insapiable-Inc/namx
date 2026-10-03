@@ -13,8 +13,7 @@ ReverbProcessor::ReverbProcessor() {
 }
 
 void ReverbProcessor::on_sample_rate_changed(double sr) {
-    shift.prepare(sr, 80.0f);
-    shift.set_semitones(12.0f);
+    shift.prepare(sr, 12.0f);
     for (auto& p : pre) {
         p.resize(static_cast<size_t>(sr * MAX_PRE_DELAY_MS / 1000.0) + 2);
     }

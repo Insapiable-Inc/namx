@@ -7,8 +7,8 @@
 #include "Common.h"
 #include "DelayLine.h"
 #include "EffectBase.h"
-#include "PitchShifter.h"
 #include "ReverbAlgorithms.h"
+#include "StretchShifter.h"
 
 namespace namx
 {
@@ -101,7 +101,7 @@ private:
     atomic<float> low_cut_hz{20.0f};
     atomic<float> high_cut_hz{20000.0f};
     atomic<float> shimmer_pct{0.0f};
-    PitchShifter shift; // +12 st, for the shimmer
+    StretchShifter shift; // +12 st, for the shimmer
     float shim_fb = 0.0f; // shifted wet fed into the next input sample
 
     static constexpr float MAX_PRE_DELAY_MS = 2000.0f; // a synced note value can be long

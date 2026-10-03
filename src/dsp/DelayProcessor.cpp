@@ -16,8 +16,7 @@ void DelayProcessor::on_sample_rate_changed(double sr) {
         l.samples.resize(n);
     }
     for (auto& s : shift) {
-        s.prepare(sr, 60.0f);
-        s.set_semitones(12.0f);
+        s.prepare(sr, 12.0f);
     }
     glide_k = 1.0f - std::exp(-1.0f / (0.08f * static_cast<float>(sr)));
     reset();
@@ -41,11 +40,15 @@ float DelayProcessor::glide(int line, float target) {
     return d;
 }
 
-float DelayProcessor::loop(int line, float d, const Params& p) {
+float DelayProcessor::loop(int line, float d, float read_delay, const Params& p) {
     if (p.crystals <= 0.0f) {
         return d;
     }
-    return d + p.crystals * (shift[line].process(d) - d);
+    // A repeat shorter than the shifter's latency can't be compensated: its octave
+    // arrives late (and it's fed the repeat itself).
+    const float early_delay = read_delay - static_cast<float>(shift[line].latency_samples());
+    const float early = early_delay >= 1.0f ? lines[line].read(early_delay) : d;
+    return d + p.crystals * (shift[line].process(early) - d);
 }
 
 DelayProcessor::Params DelayProcessor::params() const {
@@ -99,8 +102,9 @@ void DelayProcessor::process_block_mono(float* buf, size_t nframes) {
             mod_phase -= 1.0f;
         }
 
-        const float d = tone(l, l.read(glide(0, p.del_l) + mod), p);
-        l.push(saturate(buf[i] + p.fb * loop(0, d, p), p.sat_drive));
+        const float rd = glide(0, p.del_l) + mod;
+        const float d = tone(l, l.read(rd), p);
+        l.push(saturate(buf[i] + p.fb * loop(0, d, rd, p), p.sat_drive));
         buf[i] = buf[i] * (1.0f - p.mix) + d * p.mix;
     }
 }
@@ -118,10 +122,11 @@ void DelayProcessor::process_block_dual(float* l, float* r, size_t nframes) {
             mod_phase -= 1.0f;
         }
 
-        const float d_l = tone(lines[0], lines[0].read(glide(0, p.del_l) + mod), p);
-        const float d_r = tone(lines[1], lines[1].read(glide(1, p.del_r) - mod), p);
-        lines[0].push(saturate(l[i] + p.fb * loop(0, d_l, p), p.sat_drive));
-        lines[1].push(saturate(r[i] + p.fb * loop(1, d_r, p), p.sat_drive));
+        const float rd_l = glide(0, p.del_l) + mod, rd_r = glide(1, p.del_r) - mod;
+        const float d_l = tone(lines[0], lines[0].read(rd_l), p);
+        const float d_r = tone(lines[1], lines[1].read(rd_r), p);
+        lines[0].push(saturate(l[i] + p.fb * loop(0, d_l, rd_l, p), p.sat_drive));
+        lines[1].push(saturate(r[i] + p.fb * loop(1, d_r, rd_r, p), p.sat_drive));
         l[i] = l[i] * (1.0f - p.mix) + d_l * p.mix;
         r[i] = r[i] * (1.0f - p.mix) + d_r * p.mix;
     }
@@ -143,9 +148,10 @@ void DelayProcessor::process_block_stereo_out(float* l, float* r, size_t nframes
         }
 
         const float x = l[i];
-        const float d_l = tone(lines[0], lines[0].read(glide(0, p.del_l) + mod), p);
-        const float d_r = tone(lines[1], lines[1].read(glide(1, p.del_r) - mod), p);
-        const float f_l = loop(0, d_l, p), f_r = loop(1, d_r, p);
+        const float rd_l = glide(0, p.del_l) + mod, rd_r = glide(1, p.del_r) - mod;
+        const float d_l = tone(lines[0], lines[0].read(rd_l), p);
+        const float d_r = tone(lines[1], lines[1].read(rd_r), p);
+        const float f_l = loop(0, d_l, rd_l, p), f_r = loop(1, d_r, rd_r, p);
         lines[0].push(saturate(x + p.fb * ((1.0f - c) * f_l + c * f_r), p.sat_drive));
         lines[1].push(saturate((1.0f - c) * x + p.fb * ((1.0f - c) * f_r + c * f_l), p.sat_drive));
         l[i] = x * (1.0f - p.mix) + d_l * p.mix;

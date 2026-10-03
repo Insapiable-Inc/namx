@@ -1131,14 +1131,12 @@ void MainWindow::setup_ui() {
                 //         engine->get_delay().set_modulation(static_cast<float>(v));
                 //     },
                 //     "Wobble on the repeats (tape flutter / chorused echoes)"),
-                // GUIDELINE EXCEPTION (commented-out code, user's call 2026-10-01): Crystals is off
-                // (pitch shifter quality); repeats stay at their pitch.
-                // make_delay_pct_knob(
-                //     "crystals", "Crystals", 0.0, 100.0, 0.0,
-                //     [this](double v) {
-                //         engine->get_delay().set_crystals(static_cast<float>(v));
-                //     },
-                //     "Octave-up repeats: each echo climbs higher"),
+                make_delay_pct_knob(
+                    "crystals", "Crystals", 0.0, 100.0, 0.0,
+                    [this](double v) {
+                        engine->get_delay().set_crystals(static_cast<float>(v));
+                    },
+                    "Octave-up repeats: each echo climbs higher"),
             });
         sw_delay_stereo->setChecked(true);
         Theme::tag_card(col, "delay");
@@ -1206,15 +1204,13 @@ void MainWindow::setup_ui() {
             });
         high_cut->set_log_taper(true);
         high_cut->set_value_formatter(hz_label(-(HIGH_CUT_MAX - 1.0)));
-        // GUIDELINE EXCEPTION (commented-out code, user's call 2026-10-01): Shimmer is off
-        // for now (the pitch shifter isn't good enough); the reverb runs without it.
-        // KnobWidget* shimmer = late_knob(
-        //     "reverb", "shimmer", new KnobWidget("Shimmer", 0.0, 100.0, 0.0, "%"), [this](double v) {
-        //         engine->get_reverb().set_shimmer_pct(static_cast<float>(v));
-        //     });
-        // shimmer->set_scroll_step(1.0);
-        // shimmer->setToolTip("Octave-up feedback into the tail — the shimmer reverb");
-        add_detail_row(col, {pre, low_cut, high_cut});
+        KnobWidget* shimmer = late_knob(
+            "reverb", "shimmer", new KnobWidget("Shimmer", 0.0, 100.0, 0.0, "%"), [this](double v) {
+                engine->get_reverb().set_shimmer_pct(static_cast<float>(v));
+            });
+        shimmer->set_scroll_step(1.0);
+        shimmer->setToolTip("Octave-up feedback into the tail — the shimmer reverb");
+        add_detail_row(col, {pre, low_cut, high_cut, shimmer});
         add_tempo_sync(col, pre, "Pre-delay", true, 13 /* 1/16 */, REVERB_PRE_DELAY_MIN,
                        REVERB_PRE_DELAY_SYNC_MAX, [this](double v) {
                            engine->get_reverb().set_pre_delay(static_cast<float>(v));

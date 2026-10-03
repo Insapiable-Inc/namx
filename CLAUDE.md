@@ -9,7 +9,7 @@ This repo is a fork of [NeuralAmpModelerCore](https://github.com/sdatkinson/Neur
 ```
 nam-x/
 ├── NAM/           # Core DSP library: neural net inference (WaveNet, LSTM, ConvNet, Linear)
-├── Dependencies/  # Git submodules: Eigen (linear algebra), nlohmann (JSON), AudioDSPTools (upstream tools only — the GUI reads WAVs with its own `WavReader`), signalsmith-linear (MIT FFT for the cab convolution)
+├── Dependencies/  # Git submodules: Eigen (linear algebra), nlohmann (JSON), AudioDSPTools (upstream tools only — the GUI reads WAVs with its own `WavReader`), signalsmith-linear (MIT FFT for the cab convolution), signalsmith-stretch (MIT pitch shifter for Shimmer/Crystals)
 ├── tools/         # Upstream CLI tools: loadmodel, benchmodel, run_tests
 ├── LICENSE        # Upstream MIT (NAM core) — the app itself is GPL-3.0-or-later, see gui/LICENSE
 ├── ROADMAP.md     # Public-release plan — phased checklist, worked one phase at a time
@@ -144,10 +144,10 @@ All effects inherit `EffectBase` (`src/dsp/EffectBase.h` — the header comment 
 | `NoiseGateProcessor`, `CompressorProcessor`, `DynamicWahProcessor` | `src/dsp/…` | Mono dynamics (envelope gate, feedforward comp, envelope wah) |
 | `ChorusProcessor`, `FlangerProcessor`, `PhaserProcessor`, `TremoloProcessor` | `src/dsp/…` | Modulation effects; stereo variants use LFO phase offsets |
 | `DelayProcessor` | `src/dsp/DelayProcessor.h/cpp` | Ping-pong stereo delay |
-| `ReverbProcessor` | `src/dsp/ReverbProcessor.h/cpp`, `ReverbAlgorithms.h` | Plate (Dattorro), Hall and Room (8- / 16-line FDNs) + pre-delay (tempo-syncable), wet cuts, level-matched types; Decay keeps its 0–100 preset key `roomSize` and shows 0.2–10 s (`decay_seconds`); shimmer in the DSP, its knob disabled |
+| `ReverbProcessor` | `src/dsp/ReverbProcessor.h/cpp`, `ReverbAlgorithms.h` | Plate (Dattorro), Hall and Room (8- / 16-line FDNs) + pre-delay (tempo-syncable), wet cuts, level-matched types; Decay keeps its 0–100 preset key `roomSize` and shows 0.2–10 s (`decay_seconds`); Shimmer (octave-up feedback, `StretchShifter`) |
 | `DriveProcessor`, `VolumeProcessor`, `TransposeProcessor` | `src/dsp/…` | Phase 17 stages: TS-style drive, volume pedal with mid-point, ±12 st transpose |
 | `FilterBankShifter` | `src/dsp/FilterBankShifter.h` | Transpose's shifter: complex gammatone bank (2 bands/ERB) → per-band rotation at (ratio − 1) × its spectral peak's frequency → Hohmann delay/phase-aligned resynthesis; ~20 ms at the low E, ~4 ms above; band state in 8-lane blocks so the loop vectorizes. Chosen by ear 2026-10-03 (the variants tried are listed in its header) |
-| `PitchShifter` | `src/dsp/PitchShifter.h` | Two-tap Hann delay-line shifter with WSOLA re-alignment — the old Transpose engine; now only Shimmer and Crystals use it (in the DSP, knobs disabled) |
+| `StretchShifter` | `src/dsp/StretchShifter.h` | Octave shifter for the tails (Reverb Shimmer, Delay Crystals): Signalsmith Stretch (`Dependencies/signalsmith-stretch`, MIT) at its default 120 ms block, accurate pitch, 150 ms latency — the Delay feeds it 150 ms earlier in the line so Crystals repeats land on time. Replaced the WSOLA `PitchShifter` (deleted 2026-10-03) |
 | `OutputLimiter` | `src/dsp/OutputLimiter.h/cpp` | Output-stage look-ahead limiter (not an effect; registry key `limiter`) |
 | `MainWindow` | `src/ui/MainWindow.h/cpp` | Window assembly, parameter registry, effect strip + DnD reorder, session state; the status bar's red middle zone is for problems worth seeing — post with `set_notice(key, text, tip)`, clear with an empty text (first user: model/device sample-rate mismatch) |
 | `ParamRegistry.h` | `src/ui/` | `ParamDesc` — one entry per user-facing parameter (shared by MainWindow + PresetSerializer) |
