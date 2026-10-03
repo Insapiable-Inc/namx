@@ -389,7 +389,7 @@ dropout.
   - The chain-order sanitizer.
   - `RtSlot`.
   - `MidiMapper`.
-  - `Tone3000Client` against the local mock.
+  - The IR WAV reader against good and damaged files.
   - Targeted DSP checks: bypass is bit-exact, `reset()` clears state, no NaN on fixed
     extreme settings.
 

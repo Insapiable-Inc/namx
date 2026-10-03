@@ -20,8 +20,6 @@ Other parts of this repository keep their own licenses:
   ../LICENSE. It is included in this GPL-licensed program under those terms, and that
   notice is preserved.
 - Dependencies/ are git submodules under their own licenses.
-- gui/resources/tone3000/: TONE3000 brand assets, used under TONE3000's terms (see the
-  README there), not covered by the GPL.
 
 --------------------------------------------------------------------------------
 

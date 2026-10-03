@@ -47,8 +47,7 @@ jobs:
           cmake -S . -B build-release `
                 -G Ninja `
                 -DCMAKE_BUILD_TYPE=Release `
-                -DCMAKE_PREFIX_PATH="$env:QT_ROOT_DIR" `
-                -DNAM_TONE3000_CLIENT_ID="${{ secrets.TONE3000_CLIENT_ID }}"
+                -DCMAKE_PREFIX_PATH="$env:QT_ROOT_DIR"
 
       - name: Build
         working-directory: gui

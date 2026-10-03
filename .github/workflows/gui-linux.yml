@@ -66,7 +66,6 @@ jobs:
           # window still has to come up, scan the library and exit 0.
           ./build-release/NAMPlayer --version
           timeout 30 ./build-release/NAMPlayer --self-test-and-exit
-          ./build-release/Tone3000ClientTest
           ./build-release/MidiMapperTest
           ./build-release/DspGoldenTest
           ./build-release/WavReaderTest

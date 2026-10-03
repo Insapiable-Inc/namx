@@ -22,7 +22,6 @@
 #include <QtEndian>
 
 #include "Common.h"
-#include "Tone3000Client.h"
 
 namespace npl
 {
@@ -40,18 +39,6 @@ LibraryRoots LibraryRoots::defaults() {
 QString LibraryRoots::default_preset_dir() {
     return QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) +
            "/NAM Player/Presets";
-}
-
-LibraryRoots LibraryRoots::with_tone3000_dir() const {
-    LibraryRoots r = *this;
-    const QString t3k = Tone3000Client::download_dir();
-    if (!r.models.contains(t3k)) {
-        r.models << t3k;
-    }
-    if (!r.irs.contains(t3k)) {
-        r.irs << t3k;
-    }
-    return r;
 }
 
 static LibraryRoots load_roots() {
@@ -78,35 +65,6 @@ static QString khz(double sr) {
         return {};
     }
     return QString::number(sr / 1000.0, 'g', 4) + " kHz";
-}
-
-// TONE3000 sidecar next to a downloaded model/IR: origin for the list, the
-// hero row marker and preset linkage.
-static void read_sidecar(const QString& path, LibraryEntry& e) {
-    QFile f(Tone3000Client::sidecar_path(path));
-    if (!f.open(QIODevice::ReadOnly)) {
-        return;
-    }
-    const QJsonObject o = QJsonDocument::fromJson(f.readAll()).object();
-    e.t3k_tone_id = o.value("tone_id").toInt();
-    e.t3k_model_id = o.value("model_id").toInt();
-    e.t3k_title = o.value("tone_title").toString();
-    e.t3k_creator = o.value("creator").toString();
-}
-
-static void append_sidecar_info(LibraryEntry& e) {
-    if (!e.from_tone3000()) {
-        return;
-    }
-    QString who =
-        e.t3k_creator.isEmpty() ? QStringLiteral("TONE3000") : "TONE3000 · @" + e.t3k_creator;
-    e.summary = e.summary.isEmpty() ? who : e.summary + " · " + who;
-    QString line =
-        "From TONE3000: " + (e.t3k_title.isEmpty() ? QStringLiteral("tone") : e.t3k_title);
-    if (!e.t3k_creator.isEmpty()) {
-        line += " by @" + e.t3k_creator;
-    }
-    e.details = e.details.isEmpty() ? line : e.details + "\n" + line;
 }
 
 // A text field from a model's metadata. The trainer's placeholder strings
@@ -368,10 +326,6 @@ public slots:
                     c->kind == kind) {
                     e.summary = c->summary;
                     e.details = c->details;
-                    e.t3k_tone_id = c->t3k_tone_id;
-                    e.t3k_model_id = c->t3k_model_id;
-                    e.t3k_title = c->t3k_title;
-                    e.t3k_creator = c->t3k_creator;
                 } else {
                     switch (kind) {
                         case LibraryEntry::Kind::MODEL:
@@ -384,8 +338,6 @@ public slots:
                             describe_preset(p, e);
                             break;
                     }
-                    read_sidecar(p, e);
-                    append_sidecar_info(e);
                     cache_dirty = true;
                 }
                 out << e;
@@ -410,7 +362,8 @@ private:
             return h;
         }
         const QJsonObject root = QJsonDocument::fromJson(f.readAll()).object();
-        if (root.value("version").toInt() != 2) {
+        // v3: no TONE3000 fields (removed 2026-10-02) — v2 summaries carried them.
+        if (root.value("version").toInt() != 3) {
             return h;
         }
         for (const QJsonValue v : root.value("entries").toArray()) {
@@ -422,10 +375,6 @@ private:
             e.mtime_ms = static_cast<qint64>(o.value("mtime").toDouble());
             e.summary = o.value("summary").toString();
             e.details = o.value("details").toString();
-            e.t3k_tone_id = o.value("t3kTone").toInt();
-            e.t3k_model_id = o.value("t3kModel").toInt();
-            e.t3k_title = o.value("t3kTitle").toString();
-            e.t3k_creator = o.value("t3kCreator").toString();
             if (!e.path.isEmpty()) {
                 h.insert(e.path, e);
             }
@@ -443,16 +392,10 @@ private:
             o["mtime"] = static_cast<double>(e.mtime_ms);
             o["summary"] = e.summary;
             o["details"] = e.details;
-            if (e.from_tone3000()) {
-                o["t3kTone"] = e.t3k_tone_id;
-                o["t3kModel"] = e.t3k_model_id;
-                o["t3kTitle"] = e.t3k_title;
-                o["t3kCreator"] = e.t3k_creator;
-            }
             arr.append(o);
         }
         QJsonObject root;
-        root["version"] = 2;
+        root["version"] = 3;
         root["entries"] = arr;
         QDir().mkpath(QFileInfo(path).absolutePath());
         QSaveFile f(path); // atomic: an interrupted write keeps the previous cache
@@ -511,7 +454,7 @@ void LibraryIndex::request_scan() {
     emit scan_started();
     QMetaObject::invokeMethod(
         worker,
-        [w = worker, roots = roots.with_tone3000_dir(), cache = cache_path] {
+        [w = worker, roots = roots, cache = cache_path] {
             w->scan(roots, cache);
         },
         Qt::QueuedConnection);
@@ -572,33 +515,7 @@ LibraryEntry LibraryIndex::describe(const QString& path) {
             describe_preset(e.path, e);
             break;
     }
-    read_sidecar(e.path, e);
-    append_sidecar_info(e);
     return e;
-}
-
-const LibraryEntry* LibraryIndex::find_tone3000_model(int model_id) const {
-    if (model_id == 0) {
-        return nullptr;
-    }
-    for (const auto& e : entries) {
-        if (e.t3k_model_id == model_id) {
-            return &e;
-        }
-    }
-    return nullptr;
-}
-
-bool LibraryIndex::has_tone3000_tone(int tone_id) const {
-    if (tone_id == 0) {
-        return false;
-    }
-    for (const auto& e : entries) {
-        if (e.t3k_tone_id == tone_id) {
-            return true;
-        }
-    }
-    return false;
 }
 
 LibraryEntry::Kind LibraryIndex::kind_for_path(const QString& path, bool* ok) {

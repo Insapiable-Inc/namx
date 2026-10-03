@@ -13,7 +13,6 @@
 #include <QVBoxLayout>
 
 #include "Common.h"
-#include "Tone3000Client.h"
 
 namespace npl
 {
@@ -317,18 +316,9 @@ QWidget* SettingsDialog::build_library_page() {
         lay->addLayout(row);
     }
 
-    tone3000_dir = new QLabel;
-    tone3000_dir->setTextInteractionFlags(Qt::TextSelectableByMouse);
-    auto* change = new QPushButton("Change…");
-    connect(change, &QPushButton::clicked, this, &SettingsDialog::choose_tone3000_dir);
     auto* rescan = new QPushButton("Rescan library");
     connect(rescan, &QPushButton::clicked, &targets.library_index, &LibraryIndex::rescan);
 
-    auto* t3k = new QHBoxLayout;
-    t3k->addWidget(tone3000_dir, 1);
-    t3k->addWidget(change);
-    lay->addWidget(new QLabel("TONE3000 downloads (always part of the library)"));
-    lay->addLayout(t3k);
     auto* last = new QHBoxLayout;
     last->addStretch();
     last->addWidget(rescan);
@@ -345,7 +335,6 @@ void SettingsDialog::refresh_library() {
         folder_lists[section]->clear();
         folder_lists[section]->addItems(*lists[section]);
     }
-    tone3000_dir->setText(QDir::toNativeSeparators(Tone3000Client::download_dir()));
 }
 
 void SettingsDialog::add_folder(size_t section) {
@@ -381,17 +370,6 @@ void SettingsDialog::apply_folders() {
     roots.irs = lists[1];
     roots.presets = lists[2];
     targets.library_index.set_roots(roots);
-}
-
-void SettingsDialog::choose_tone3000_dir() {
-    const QString dir = QFileDialog::getExistingDirectory(this, "TONE3000 download folder",
-                                                          Tone3000Client::download_dir());
-    if (dir.isEmpty()) {
-        return;
-    }
-    QSettings().setValue("library/tone3000Dir", QDir::cleanPath(dir));
-    targets.library_index.rescan();
-    refresh_library();
 }
 
 // Tuner: drives the tuner card's own controls, which persist the values.

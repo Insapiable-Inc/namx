@@ -2,7 +2,6 @@
 * Linux first, but windows supported
 * Native, no DAW required, no virtual machine, wine or anything
 * free (as in freedom and free of charge) and open source
-* explore tone3000 effects from the interface
 * batteries included:tuner, metronome, midi support
 * no subscriptions
 * no pro paid plan

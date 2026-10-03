@@ -113,9 +113,6 @@ expected<void, QString> validate(const QJsonObject& obj, const ParamRegistry& pa
         }
         known = true;
     }
-    if (obj.contains("tone3000") && !obj["tone3000"].isObject()) {
-        return type_error("tone3000", "a group of settings");
-    }
     if (!known) {
         return std::unexpected(QString("It doesn't contain any NAM Player settings."));
     }

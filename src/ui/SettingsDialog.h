@@ -84,7 +84,6 @@ private:
     void add_folder(size_t section);
     void remove_folder(size_t section);
     void apply_folders();
-    void choose_tone3000_dir();
 
     SettingsTargets targets;
     QListWidget* page_list = nullptr;
@@ -103,7 +102,6 @@ private:
     QCheckBox* follow_clock = nullptr;
 
     array<QListWidget*, 3> folder_lists{}; // models, IRs, presets
-    QLabel* tone3000_dir = nullptr;
 
     QSpinBox* reference_box = nullptr;
     QCheckBox* show_hz_box = nullptr;

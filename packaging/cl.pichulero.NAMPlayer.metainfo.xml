@@ -19,9 +19,8 @@
     </p>
     <p>
       A library panel keeps models, IRs and presets one click away, with search,
-      favorites and recents; the TONE3000 tab browses the community catalog with your
-      own account and downloads captures straight into the library. Presets carry the
-      whole rig and remember where their models came from.
+      favorites and recents. Presets carry the whole rig: every setting, the effect
+      order and the model and IR they use.
     </p>
     <p>
       Audio goes through JACK or PipeWire on Linux and WASAPI on Windows. NAM Player is

@@ -147,8 +147,7 @@ Optional CMake variables:
 | Variable | Purpose |
 |----------|---------|
 | `-DNAM_NATIVE_OPT=OFF` | Portable AVX2/FMA instead of `-march=native` (required for release builds) |
-| `-DNAM_TONE3000_CLIENT_ID=t3k_pub_…` | Bake your TONE3000 publishable key into the build (see §6, *TONE3000*) |
-| `-DNAM_BUILD_TESTS=ON` | Also build `Tone3000ClientTest` (needs `python3`; run it directly or via `ctest`) |
+| `-DNAM_BUILD_TESTS=ON` | Also build the tests (`MidiMapperTest`, `DspGoldenTest`, `WavReaderTest`; run them directly or via `ctest`) |
 
 ### Linux — install / packages
 
@@ -218,7 +217,7 @@ cmake --build build-release --parallel
 | `-DCMAKE_BUILD_TYPE=Release` | Release | `Debug` for symbols, `Release` for optimization |
 | `-DCMAKE_PREFIX_PATH=...` | none | Qt install root on Windows |
 | `-DNAM_NATIVE_OPT=OFF` | ON | Portable AVX2/FMA instead of `-march=native` (release/CI builds) |
-| `-DNAM_BUILD_TESTS=ON` | OFF | `Tone3000ClientTest` |
+| `-DNAM_BUILD_TESTS=ON` | OFF | `MidiMapperTest`, `DspGoldenTest`, `WavReaderTest` |
 | `-DNAM_BUILD_BENCH=ON` | OFF | `NAMPlayerBench`, the chain benchmark (see Troubleshooting → High CPU usage) |
 
 ---
@@ -320,8 +319,7 @@ Gain changes are sample-accurate smoothed (no clicks or zipper noise).
 ### Presets
 
 The bar above the rack holds the current preset. A preset recalls every effect
-setting, the effect order, the input/output gains, and the model and IR (by path, plus
-the TONE3000 ids when they came from there).
+setting, the effect order, the input/output gains, and the model and IR (by path).
 
 | Control | Action |
 |---------|--------|
@@ -334,7 +332,7 @@ the TONE3000 ids when they came from there).
 | **⋯** (same as the **Preset** menu) | Open…, Import… (copies files into the presets folder), Export… (writes a copy elsewhere), Show in Folder, Delete… (to the trash), Reset All to Defaults… |
 
 **Not part of a preset:** audio devices and port connections, the tuner (on/off,
-reference pitch), the tempo and the metronome, MIDI mappings and devices, the library and TONE3000 state,
+reference pitch), the tempo and the metronome, MIDI mappings and devices, the library state,
 window layout, and the quick-slot assignments. These
 belong to the machine or the session, so loading a preset never changes them.
 
@@ -411,7 +409,7 @@ change applies immediately.
 |---|---|
 | Audio | Input / output device (same as the status bar's In: / Out:), the server's sample rate, buffer and round-trip latency (read-only: PipeWire/JACK own them), xruns + reset |
 | MIDI | Input devices on/off, Follow MIDI clock, **Mappings…** |
-| Library | Model / IR / preset folders, the TONE3000 download folder, rescan |
+| Library | Model / IR / preset folders, rescan |
 | Tuner | Reference pitch, show the detected frequency (also on the tuner card) |
 | Shortcuts | Every keyboard shortcut, read from the window (**Settings → Keyboard Shortcuts…**) |
 
@@ -439,37 +437,6 @@ library in its current visible order; clicking the file name focuses the matchin
 also be dropped onto the window, imported through **Library → Import…**, or unloaded
 from the row's right-click menu. The **On/Off** toggle bypasses the stage without
 unloading it.
-
-### TONE3000
-
-The Library dock's second tab browses [TONE3000](https://www.tone3000.com), the
-community catalog of NAM captures and IRs. It uses your own TONE3000 account: sign-in
-happens in the browser (TONE3000 e-mails a code), and the app only ever holds the
-OAuth tokens it is issued (stored in the app's settings; **Sign out** clears them).
-
-| What | How |
-|------|-----|
-| First use | **Continue** on the splash opens TONE3000 in the browser. Sign in, pick a tone, and you are sent back to the app with that tone open. |
-| Browse | **Trending**, **Latest**, **Favorites**, **Downloads** and **Mine** are lists from your account. **Browse TONE3000…** opens the full catalog (search, filters) in the browser and brings the picked tone back. |
-| Tone page | Image, gear type, format, license, creator, description, the model list. Click a model to download it into the library; click again (**Load**) to put it in the rig. **Download all** fetches the rest. **★** favorites the tone on TONE3000. |
-| Where files go | `~/Documents/NAM Player/TONE3000/<creator>/<tone>/` (change it from the account menu). The folder is always part of the library, so downloads show up in the local tab too, tagged *TONE3000 · @creator*. Each file gets a `.t3k.json` sidecar with the tone/model ids, creator and license. |
-| Origin mark | The Amplifier / Cabinet row shows the T3K mark when the loaded file came from TONE3000; click it to open that tone. |
-| Presets | A preset saved with a TONE3000 model remembers its model id. Loading it on a machine where the file is missing finds the model elsewhere in the library, or offers to download it. |
-| Offline | The tab says so; the local library keeps working. |
-
-**App key.** TONE3000 identifies integrations by a *publishable key* (`t3k_pub_…`, not
-a secret). Packaged builds carry one via `-DNAM_TONE3000_CLIENT_ID=…`. Building from
-source without it, the tab shows a setup page: create a key on
-[tone3000.com → Settings → API Keys](https://www.tone3000.com/settings), register the
-redirect URI `http://localhost:51731/callback` (ports 51732–51734 are tried if that
-one is busy), and paste it in. The key can be changed later from the account menu.
-
-NAM Player uses TONE3000's free non-commercial API tier: the bounded lists above and
-the browser-based catalog picker. Catalog search is deliberately not done in-app.
-
-Development: `NAM_TONE3000_API_BASE=http://127.0.0.1:8765/api/v1` points the client at
-`tests/mock_tone3000.py`, and `NAM_TONE3000_NO_BROWSER=1` logs the sign-in URL instead
-of opening it.
 
 ---
 
@@ -512,9 +479,8 @@ shifter, which adds about 30 ms of latency while it's active.
 | Format | Details |
 |--------|---------|
 | `.nam`  | Neural Amp Modeler model file. Supported architectures: WaveNet, LSTM, ConvNet, Linear. Version 0.5–0.7 supported. |
-| `.wav`  | Impulse response / cab simulation. Mono or stereo (first channel used). Any sample rate. Truncated to 4096 taps (~93 ms at 44.1 kHz). |
-| `.nampreset` | Preset, JSON (schema v2): `version`, every effect group (`noiseGate`, `compressor`, …) with its parameters, `effectOrder` (stable effect IDs), `namPath` / `irPath`, optional `tone3000` linkage. A group missing from the file leaves that effect untouched; a missing key inside a group takes its default. |
-| `.t3k.json` | Sidecar written next to a TONE3000 download: tone/model ids, title, creator, license, URL. Read by the library; safe to delete (the file just loses its origin). |
+| `.wav`  | Impulse response / cab simulation. Mono; PCM 16/24/32-bit or float 32/64-bit. Any sample rate. Truncated to 4096 taps (~93 ms at 44.1 kHz). |
+| `.nampreset` | Preset, JSON (schema v2): `version`, every effect group (`noiseGate`, `compressor`, …) with its parameters, `effectOrder` (stable effect IDs), `namPath` / `irPath` (older files may carry a `tone3000` object; it is ignored). A group missing from the file leaves that effect untouched; a missing key inside a group takes its default. |
 
 NAM models are available from the [NAM community model library](https://www.neuralampmodeler.com).
 IR files are compatible with any standard cab sim WAV (e.g., from OwnHammer, Celestion, Rosen Digital, etc.).

@@ -25,12 +25,11 @@ nam-linux-gui/
     └── src/
         ├── main.cpp       # QApplication setup (org/app name → QSettings path), Theme::apply
         ├── ui/            # Qt widgets
-        ├── net/           # Tone3000Client (Qt Network; no widgets)
         ├── midi/          # MidiInput (ALSA / WinMM), MidiMapper (no widgets beyond the target pointers)
         └── dsp/           # AudioEngine, backends, effect processors (no Qt dependencies)
-    ├── resources/         # resources.qrc, app icon (icons/), starter presets (presets/), TONE3000 brand assets (see its README)
+    ├── resources/         # resources.qrc, app icon (icons/), starter presets (presets/)
     ├── packaging/         # desktop file, AppStream, mime, PKGBUILD, Windows .rc (no AppImage/Flatpak — decision 2026-09-17)
-    └── tests/             # Tone3000ClientTest + mock_tone3000.py (-DNAM_BUILD_TESTS=ON)
+    └── tests/             # MidiMapperTest, DspGoldenTest, WavReaderTest (-DNAM_BUILD_TESTS=ON)
 ```
 
 ## Release plan workflow
@@ -63,12 +62,16 @@ Release builds default to `-march=native` via the `NAM_NATIVE_OPT` CMake option 
 
 `cmake --install <build> --prefix /usr` installs the binary plus the desktop/mime/AppStream/icon files (app id `cl.pichulero.NAMPlayer`); `.github/workflows/release.yml` runs on `v*` tags (Ubuntu + Arch build and tests, Windows zip, source tarball, GitHub release). **No AppImage, Flatpak or other bundle** (user decision 2026-09-17): Linux users are assumed to have Qt 6 and JACK installed. `NAMPlayer --version`, `--help`, `--self-test-and-exit` (headless CI check) and `NAMPlayer file…` (opens .nam/.wav/.nampreset) are handled in `main.cpp`; the version comes from `PROJECT_VERSION` via the `NAM_VERSION` define.
 
-`-DNAM_TONE3000_CLIENT_ID=t3k_pub_…` bakes the TONE3000 publishable key into the build (runtime override: QSettings `tone3000/clientId`, editable from the TONE3000 tab). `-DNAM_BUILD_TESTS=ON` adds `Tone3000ClientTest`, which spawns `tests/mock_tone3000.py` with `python3` and drives the whole client (PKCE sign-in over the loopback server, refresh, 429, lists, download + sidecar) headlessly:
+`-DNAM_BUILD_TESTS=ON` adds `MidiMapperTest`, `DspGoldenTest` and `WavReaderTest` (all headless):
 
 ```bash
 cmake -S gui -B gui/build-test -DCMAKE_BUILD_TYPE=Debug -DNAM_BUILD_TESTS=ON
-cmake --build gui/build-test --target Tone3000ClientTest && gui/build-test/Tone3000ClientTest
+cmake --build gui/build-test && gui/build-test/MidiMapperTest && gui/build-test/WavReaderTest
 ```
+
+**TONE3000** (the community catalog integration) was removed on 2026-10-02 — the user
+wasn't convinced by it; the working integration lives on the `experiment/tone3000`
+branch. Don't reintroduce it on `main` without asking.
 
 `DspGoldenTest` (same option) renders every effect over a fixed signal and compares a hash of the exact output bits — any DSP refactor that must not change the sound has to keep it green; re-record with `NAM_GOLDEN_PRINT=1` only when a change is meant to alter the sound.
 
@@ -153,9 +156,6 @@ All effects inherit `EffectBase` (`src/dsp/EffectBase.h` — the header comment 
 | `AudioStatusBar` | `src/ui/AudioStatusBar.h/cpp` | Bottom status bar: backend state, rate/buffer/latency (round trip = server I/O + `AudioEngine::processing_latency()`, from each effect's `latency_ms()` and the limiter; breakdown in the tooltip), device pickers; persists IDs, emits `device_selection_changed` |
 | `LibraryIndex` | `src/ui/LibraryIndex.h/cpp` | Library scan: worker thread over the root folders, metadata cache (`AppDataLocation/library-index.json`), `QFileSystemWatcher` rescans; `LibraryEntry` carries a pre-built `summary`/`details` per file |
 | `LibraryPanel` | `src/ui/LibraryPanel.h/cpp` | Local library tab: Models/IRs/Presets sections, search, favorites, recents, sort, two-line list; emits `activated(kind, path)`, owner reports back via `set_loaded_path` |
-| `LibraryDock` | `src/ui/LibraryDock.h/cpp` | Dock content: Library / TONE3000 tab switch over `LibraryPanel` + `Tone3000Panel` |
-| `Tone3000Client` | `src/net/Tone3000Client.h/cpp` | TONE3000 API: OAuth 2.0 + PKCE via system browser + loopback `QTcpServer` (`http://localhost:51731/callback`), Bearer requests with pre-emptive/401 refresh, 5-min listing cache, 429 back-off, model download → `download_dir()/<creator>/<tone>/` + `.t3k.json` sidecar, disk-cached images. Env: `NAM_TONE3000_API_BASE`, `NAM_TONE3000_NO_BROWSER` |
-| `Tone3000Panel` | `src/ui/Tone3000Panel.h/cpp` | TONE3000 tab: setup (no key) → splash (signed out) → bounded lists (Trending/Latest/Favorites/Downloads/Mine) + "Browse TONE3000" (select_tone flow) → tone detail with per-model download/load; emits `load_requested(kind, path)` |
 | `TempoBar` | `src/ui/TempoBar.h/cpp` | Tempo + metronome strip: BPM `NumberField`, Tap, play (Space), `BeatLeds` accent editor, meter/subdivision/sound/count-in menus, level/pan; emits `bpm_changed`; `poll()` from the meter timer |
 | `NumberField` | `src/ui/NumberField.h/cpp` | Drag / scroll / click-to-type numeric readout with a unit (tempo BPM, tuner A4 reference) |
 | `TempoSync.h` | `src/ui/` | Note-value table (index order is a preset contract — append only) + ms/Hz conversions; `MainWindow::add_tempo_sync`/`push_synced` wire the Sync switches |
@@ -178,7 +178,7 @@ Code follows `gui/CPP_GUIDELINES.md` (Phase 20, 2026-10-01): `snake_case` functi
 variables and members with no prefixes, `UPPER_CASE` constants, `PascalCase` types; no
 parameter or local reuses a member's name (`new_<x>` / `current_<x>` / `<x>_per_channel`).
 Settings keys, preset JSON keys and effect IDs are data and keep their spelling
-(`effectOrder`, `tone3000/clientId`, …). `gui/.clang-tidy` encodes the naming rules.
+(`effectOrder`, `session/presetPath`, …). `gui/.clang-tidy` encodes the naming rules.
 
 ### Parameter registry
 
@@ -201,23 +201,10 @@ already-loaded path, persist `files/last*`, bump the library recents and mark th
 entry, and refresh the Amplifier/Cabinet hero rows (`update_hero_cards`). Don't call
 `AudioEngine::load_model`/`load_ir` from the UI directly.
 
-### TONE3000 constraints (free non-commercial tier)
-
-Only the bounded list endpoints (trending, latest, favorited, downloaded, created) and
-the OAuth prompt flows are allowed — **never call `/tones/search`**; catalog search is
-the browser-based `select_tone` flow, which returns a `tone_id` to `auth_finished`.
-Branding rules are implemented deliberately: full logo on the splash and list header
-before the compact T3K mark appears (Browse button, hero-row origin mark); every card
-shows image, title, gear type, format and creator; the signed-in user is visible.
-The TONE3000 download folder is always scanned by `LibraryIndex` (`with_tone3000_dir`),
-and entries carry `t3k_tone_id`/`t3k_model_id` from the sidecar, which `PresetSerializer`'s
-caller writes into the preset's `tone3000` object for cross-machine resolution
-(`MainWindow::resolve_tone3000_model`).
-
 ### Persistence
 
-- **QSettings** (org `pichulero.cl`, app name set in `main.cpp` — drives the config path): last model/IR/preset paths, audio device IDs, JACK port connections, window geometry + dock state (`window/state`), the library (`library/{model,ir,preset}Roots`, `favorites`, `recents`, `section`, `mode`, `sort`, `tab`, `tone3000Dir`), TONE3000 (`tone3000/clientId`, `accessToken`, `refreshToken`, `expiresAt`, `user/*`, `list`), and the full registry state plus `session/effectOrder` under `session/` (saved on exit + debounced 1 s after any widget change; restored on launch through the widgets). First run auto-connects `system:capture_1`/`playback_{1,2}`.
-- **Presets** (8 starters in `gui/resources/presets/`, seeded once into `<presets>/Starter`) are `.nampreset` JSON files via `QJsonDocument`, schema v2: all registry parameters plus `version`, `namEnabled`, `effectOrder` (stable-ID list), embedded `namPath`/`irPath` (applied on load when the file exists; otherwise a warning, current model/IR kept), and an optional `tone3000` object (`model`/`ir` → `toneId`, `modelId`, `title`, `creator`) used to find or fetch a missing file. v1 files (no `version`) still load. Loading applies values through the widgets, so the UI and engine can't drift.
+- **QSettings** (org `pichulero.cl`, app name set in `main.cpp` — drives the config path): last model/IR/preset paths, audio device IDs, JACK port connections, window geometry + dock state (`window/state`), the library (`library/{model,ir,preset}Roots`, `favorites`, `recents`, `section`, `mode`, `sort`), and the full registry state plus `session/effectOrder` under `session/` (saved on exit + debounced 1 s after any widget change; restored on launch through the widgets). First run auto-connects `system:capture_1`/`playback_{1,2}`.
+- **Presets** (8 starters in `gui/resources/presets/`, seeded once into `<presets>/Starter`) are `.nampreset` JSON files via `QJsonDocument`, schema v2: all registry parameters plus `version`, `namEnabled`, `effectOrder` (stable-ID list), embedded `namPath`/`irPath` (applied on load when the file exists; otherwise a warning, current model/IR kept); older presets may carry a `tone3000` object from the removed integration, which is ignored. v1 files (no `version`) still load. Loading applies values through the widgets, so the UI and engine can't drift.
 
 ## NAM core library
 

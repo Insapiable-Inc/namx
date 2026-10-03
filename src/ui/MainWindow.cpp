@@ -51,7 +51,6 @@
 #include "Constants.h"
 #include "EffectShortcuts.h"
 #include "GainReductionMeter.h"
-#include "LibraryDock.h"
 #include "LibraryPanel.h"
 #include "MidiInput.h"
 #include "MidiMapper.h"
@@ -61,8 +60,6 @@
 #include "TempoBar.h"
 #include "TempoSync.h"
 #include "Theme.h"
-#include "Tone3000Client.h"
-#include "Tone3000Panel.h"
 #include "TunerDisplay.h"
 #include "TunerProcessor.h"
 #include "VUMeter.h"
@@ -287,7 +284,14 @@ MainWindow::MainWindow(QWidget* parent)
     // The index starts its first scan immediately (worker thread); the panel
     // created in setupUI picks the entries up when they land.
     library_index = new LibraryIndex(this);
-    tone3000 = new Tone3000Client(this);
+    {
+        // The TONE3000 integration was removed (2026-10-02; it lives on the
+        // experiment/tone3000 branch): drop its saved sign-in tokens and settings.
+        QSettings s;
+        s.remove("tone3000");
+        s.remove("library/tone3000Dir");
+        s.remove("library/tab");
+    }
     midi_mapper = new MidiMapper(this); // targets fill in as parameters register
 
     setup_ui();
@@ -638,8 +642,6 @@ void MainWindow::setup_ui() {
     lbl_rig_status->setObjectName("statusItem");
     lbl_rig_status->setTextFormat(Qt::RichText);
     statusBar()->addWidget(lbl_rig_status);
-    connect(tone3000, &Tone3000Client::auth_changed, this, &MainWindow::update_rig_status);
-    connect(tone3000, &Tone3000Client::user_changed, this, &MainWindow::update_rig_status);
     connect(audio_bar, &AudioStatusBar::device_selection_changed, this,
             &MainWindow::restart_audio_with_current_devices);
     connect(audio_bar, &AudioStatusBar::reconnect_requested, this,
@@ -851,8 +853,7 @@ void MainWindow::setup_ui() {
         sw_nam_stereo->setToolTip("Stereo input: run the amp per channel (twice the CPU).\n"
                                   "Off: a stereo effect before the amp is summed to mono first.");
         sw_nam_enable->setChecked(true);
-        make_hero_controls(col, LibraryEntry::Kind::MODEL, lbl_nam_status, lbl_nam_meta,
-                           lbl_nam_origin);
+        make_hero_controls(col, LibraryEntry::Kind::MODEL, lbl_nam_status, lbl_nam_meta);
 
         Theme::tag_card(col, "nam");
         fx_cols[&engine->get_nam()] = col;
@@ -1209,7 +1210,7 @@ void MainWindow::setup_ui() {
     {
         QWidget* col = make_effect_row("Cabinet", sw_ir_enable, {});
         sw_ir_enable->setChecked(true);
-        make_hero_controls(col, LibraryEntry::Kind::IR, lbl_ir_status, lbl_ir_meta, lbl_ir_origin);
+        make_hero_controls(col, LibraryEntry::Kind::IR, lbl_ir_status, lbl_ir_meta);
 
         // GUIDELINE EXCEPTION (commented-out code, user's call 2026-10-01): the Cabinet's
         // advanced options (per-IR level/pan/phase, blend, cuts, slot B) are off; it is a
@@ -1328,8 +1329,6 @@ void MainWindow::setup_ui() {
     }
     input_card->installEventFilter(this); // context menu only — not draggable
     output_card->installEventFilter(this);
-    lbl_nam_origin->installEventFilter(this); // T3K mark click
-    lbl_ir_origin->installEventFilter(this);
     strip->setAcceptDrops(true);
     strip->installEventFilter(this);
 
@@ -1347,25 +1346,17 @@ void MainWindow::setup_ui() {
     root_layout->addLayout(rack_row, 1);
 
     // Library dock (left of the rig; closable, movable, remembers state)
-    library_tabs = new LibraryDock(*library_index, *tone3000);
-    library = library_tabs->get_local();
-    t3k_panel = library_tabs->tone3000();
+    library = new LibraryPanel(*library_index);
     connect(library, &LibraryPanel::activated, this, &MainWindow::load_library_entry);
-    connect(t3k_panel, &Tone3000Panel::load_requested, this, &MainWindow::load_library_entry);
-    connect(tone3000, &Tone3000Client::auth_finished, this, [this](bool ok, const QString&, int) {
-        if (ok) {
-            library_dock->show();
-            library_tabs->set_tab(LibraryDock::TONE3000);
-        }
-    });
 
     library_dock = new QDockWidget("Library", this);
     library_dock->setObjectName("libraryDock"); // saveState() needs a name
     library_dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-    // No title bar: the Library / TONE3000 tabs head the dock; Ctrl+L shows and hides it.
+    // No title bar: the panel's Models / IRs / Presets row heads the dock; Ctrl+L shows
+    // and hides it.
     library_dock->setTitleBarWidget(new QWidget(library_dock));
     library_dock->setFeatures(QDockWidget::DockWidgetClosable);
-    library_dock->setWidget(library_tabs);
+    library_dock->setWidget(library);
     addDockWidget(Qt::LeftDockWidgetArea, library_dock);
     resizeDocks({library_dock}, {320}, Qt::Horizontal);
 
@@ -1379,12 +1370,6 @@ void MainWindow::setup_ui() {
         find->setShortcut(QKeySequence::Find); // Ctrl+F
         connect(find, &QAction::triggered, this, [this] {
             find_in_library();
-        });
-        QAction* t3k = library_menu->addAction("Browse TONE3000…");
-        t3k->setIcon(
-            QIcon(QPixmap(":/tone3000/t3k-mark.png").scaledToHeight(14, Qt::SmoothTransformation)));
-        connect(t3k, &QAction::triggered, this, [this] {
-            browse_tone3000();
         });
         library_menu->addSeparator();
         connect(library_menu->addAction("Folders…"), &QAction::triggered, this, [this] {
@@ -1558,20 +1543,11 @@ QWidget* MainWindow::make_gain_column(const QString& title, KnobWidget*& knob, V
 
 void MainWindow::find_in_library() {
     library_dock->show();
-    library_tabs->set_tab(LibraryDock::LOCAL);
     library->focus_search();
 }
 
-void MainWindow::browse_tone3000() {
-    library_dock->show();
-    library_tabs->set_tab(LibraryDock::TONE3000);
-    if (tone3000->is_signed_in()) {
-        t3k_panel->browse_catalog();
-    }
-}
-
 void MainWindow::make_hero_controls(QWidget* card, LibraryEntry::Kind kind, QLabel*& name_out,
-                                    QLabel*& meta_out, QLabel*& origin_out) {
+                                    QLabel*& meta_out) {
     QHBoxLayout* lay = row_layout(card);
     const bool model = kind == LibraryEntry::Kind::MODEL;
 
@@ -1580,15 +1556,6 @@ void MainWindow::make_hero_controls(QWidget* card, LibraryEntry::Kind kind, QLab
         "‹", -1, model ? "Previous model in the library" : "Previous IR in the library", kind);
     QToolButton* next = make_library_arrow(
         "›", +1, model ? "Next model in the library" : "Next IR in the library", kind);
-
-    // TONE3000 origin marker (the compact T3K mark), shown only when the
-    // loaded file carries a download sidecar.
-    origin_out = new QLabel;
-    origin_out->setObjectName("heroOrigin");
-    origin_out->setPixmap(
-        QPixmap(":/tone3000/t3k-mark.png").scaledToHeight(13, Qt::SmoothTransformation));
-    origin_out->setCursor(Qt::PointingHandCursor);
-    origin_out->hide();
 
     // The file name opens the Library on this row's section: the library is where
     // models and IRs are browsed (and imported).
@@ -1606,7 +1573,6 @@ void MainWindow::make_hero_controls(QWidget* card, LibraryEntry::Kind kind, QLab
     put_in_sync_column(card, prev);
     put_in_sync_column(card, next);
     int i = lay->indexOf(card->findChild<QWidget*>("syncSlot")) + 1;
-    lay->insertWidget(i++, origin_out, 0, Qt::AlignVCenter);
     lay->insertWidget(i++, name_out, 0, Qt::AlignVCenter);
     lay->insertWidget(i++, meta_out, 1, Qt::AlignVCenter);
 }
@@ -1643,7 +1609,6 @@ QString MainWindow::library_step_action(LibraryEntry::Kind kind, int step) {
 
 void MainWindow::show_library_section(LibraryEntry::Kind kind) {
     library_dock->show();
-    library_tabs->set_tab(LibraryDock::LOCAL);
     library->show_section(kind);
 }
 
@@ -1869,16 +1834,6 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* ev) {
             }
             if (const QVariant kind = obj->property("heroKind"); kind.isValid()) {
                 show_library_section(static_cast<LibraryEntry::Kind>(kind.toInt()));
-                return true;
-            }
-            if (obj == lbl_nam_origin || obj == lbl_ir_origin) {
-                // T3K mark on a hero row: open that tone in the TONE3000 tab.
-                const int tone_id = static_cast<QWidget*>(obj)->property("toneId").toInt();
-                if (tone_id > 0) {
-                    library_dock->show();
-                    library_tabs->set_tab(LibraryDock::TONE3000);
-                    t3k_panel->show_tone(tone_id);
-                }
                 return true;
             }
             break;
@@ -3002,9 +2957,9 @@ void MainWindow::save_connections() {
 }
 
 void MainWindow::update_hero_cards() {
-    show_file_status(lbl_nam_status, lbl_nam_meta, lbl_nam_origin, engine->is_model_loaded(),
+    show_file_status(lbl_nam_status, lbl_nam_meta, engine->is_model_loaded(),
                      QString::fromStdString(engine->model_path()), "No model loaded");
-    show_file_status(lbl_ir_status, lbl_ir_meta, lbl_ir_origin, engine->is_ir_loaded(),
+    show_file_status(lbl_ir_status, lbl_ir_meta, engine->is_ir_loaded(),
                      QString::fromStdString(engine->ir_path()), "No impulse response loaded");
     if (lbl_irb_status) {
         const bool b = engine->is_irb_loaded();
@@ -3024,16 +2979,15 @@ void MainWindow::update_hero_cards() {
     update_rig_status();
 }
 
-// Fills one hero row (name, metadata, TONE3000 origin) for a loaded file or its empty state.
-void MainWindow::show_file_status(QLabel* name, QLabel* meta, QLabel* origin, bool loaded,
-                                  const QString& path, const QString& empty_text) {
+// Fills one hero row (name, metadata) for a loaded file or its empty state.
+void MainWindow::show_file_status(QLabel* name, QLabel* meta, bool loaded, const QString& path,
+                                  const QString& empty_text) {
     if (!loaded) {
         name->setText(empty_text);
         name->setObjectName("fileStatus");
         name->setToolTip({});
         meta->clear();
         meta->setToolTip({});
-        origin->hide();
     } else {
         // Metadata comes from the index when the file is in the library,
         // otherwise it is read now (one-off imports, dropped files).
@@ -3045,12 +2999,6 @@ void MainWindow::show_file_status(QLabel* name, QLabel* meta, QLabel* origin, bo
         name->setToolTip(QDir::toNativeSeparators(fresh.path));
         meta->setText(fresh.summary);
         meta->setToolTip(fresh.details);
-        origin->setVisible(fresh.from_tone3000());
-        origin->setProperty("toneId", fresh.t3k_tone_id);
-        origin->setToolTip(fresh.from_tone3000()
-                               ? QString("From TONE3000: %1 by @%2 (click to open)")
-                                     .arg(fresh.t3k_title, fresh.t3k_creator)
-                               : QString());
     }
     name->style()->unpolish(name);
     name->style()->polish(name);
@@ -3063,21 +3011,14 @@ void MainWindow::update_rig_status() {
     };
     const bool model = engine->is_model_loaded();
     const bool ir = engine->is_ir_loaded();
-    const bool t3k = tone3000->is_signed_in();
-    QString t3k_text = "TONE3000";
-    if (t3k && tone3000->get_user().is_valid()) {
-        t3k_text += " @" + tone3000->get_user().username;
-    }
 
-    lbl_rig_status->setText(item(model, "Model") + "&nbsp;&nbsp;&nbsp;" + item(ir, "IR") +
-                            "&nbsp;&nbsp;&nbsp;" + item(t3k, t3k_text));
+    lbl_rig_status->setText(item(model, "Model") + "&nbsp;&nbsp;&nbsp;" + item(ir, "IR"));
     lbl_rig_status->setToolTip(
-        QString("Model: %1\nIR: %2\nTONE3000: %3")
+        QString("Model: %1\nIR: %2")
             .arg(model ? QFileInfo(QString::fromStdString(engine->model_path())).completeBaseName()
                        : "none",
                  ir ? QFileInfo(QString::fromStdString(engine->ir_path())).completeBaseName()
-                    : "none",
-                 t3k ? "signed in" : "signed out"));
+                    : "none"));
 }
 
 void MainWindow::seed_starter_presets() {
@@ -3102,38 +3043,7 @@ void MainWindow::seed_starter_presets() {
 }
 
 QJsonObject MainWindow::current_preset_json() const {
-    QJsonObject obj = PresetSerializer::to_json(params, *engine);
-    // TONE3000 linkage: lets the preset find its model on another machine.
-    QJsonObject t3k;
-    if (engine->is_model_loaded()) {
-        const QJsonObject m = tone3000_linkage(engine->model_path());
-        if (!m.isEmpty()) {
-            t3k["model"] = m;
-        }
-    }
-    if (engine->is_ir_loaded()) {
-        const QJsonObject m = tone3000_linkage(engine->ir_path());
-        if (!m.isEmpty()) {
-            t3k["ir"] = m;
-        }
-    }
-    if (!t3k.isEmpty()) {
-        obj["tone3000"] = t3k;
-    }
-    return obj;
-}
-
-// TONE3000 linkage of a loaded file, so a preset can find it on another machine.
-QJsonObject MainWindow::tone3000_linkage(const string& p) const {
-    QJsonObject o;
-    if (const LibraryEntry* e = library_index->find(QString::fromStdString(p));
-        e && e->from_tone3000()) {
-        o["toneId"] = e->t3k_tone_id;
-        o["modelId"] = e->t3k_model_id;
-        o["title"] = e->t3k_title;
-        o["creator"] = e->t3k_creator;
-    }
-    return o;
+    return PresetSerializer::to_json(params, *engine);
 }
 
 // Atomic: the old file stays untouched unless the new one was written completely
@@ -3473,51 +3383,16 @@ bool MainWindow::load_preset_file(const QString& path_in) {
     // v2 presets embed the model/IR paths. Only a non-empty path acts — a
     // preset saved without a model must not unload the current one — and when
     // the referenced file is missing or fails to load, the current one stays.
-    // A referenced file that isn't there: the TONE3000 linkage can still find
-    // it (same model id elsewhere in the library) or fetch it.
-    const QJsonObject t3k = doc.object().value("tone3000").toObject();
-    // A TONE3000 fetch can land after this returns: the fetched model is
-    // part of the preset, not an edit, so it moves the baseline.
-    auto rebaseline = [this, path] {
-        if (preset_path == path) {
-            set_current_preset(path);
-        }
-    };
-
+    // (Presets saved with the TONE3000 integration also carry a "tone3000" object;
+    // it is ignored.)
     QStringList failed;
     if (!applied.nam_path.isEmpty() &&
         !try_load_referenced_file(applied.nam_path, LibraryEntry::Kind::MODEL)) {
-        const QJsonObject link = t3k.value("model").toObject();
-        const int model_id = link.value("modelId").toInt();
-        if (model_id > 0) {
-            const QString title = link.value("title").toString().isEmpty()
-                                      ? QFileInfo(applied.nam_path).completeBaseName()
-                                      : link.value("title").toString();
-            resolve_tone3000_model(model_id, title, [this, rebaseline](const QString& p) {
-                if (!p.isEmpty() && try_load_referenced_file(p, LibraryEntry::Kind::MODEL)) {
-                    rebaseline();
-                }
-            });
-        } else {
-            failed << applied.nam_path;
-        }
+        failed << applied.nam_path;
     }
     if (!applied.ir_path.isEmpty() &&
         !try_load_referenced_file(applied.ir_path, LibraryEntry::Kind::IR)) {
-        const QJsonObject link = t3k.value("ir").toObject();
-        const int model_id = link.value("modelId").toInt();
-        if (model_id > 0) {
-            const QString title = link.value("title").toString().isEmpty()
-                                      ? QFileInfo(applied.ir_path).completeBaseName()
-                                      : link.value("title").toString();
-            resolve_tone3000_model(model_id, title, [this, rebaseline](const QString& p) {
-                if (!p.isEmpty() && try_load_referenced_file(p, LibraryEntry::Kind::IR)) {
-                    rebaseline();
-                }
-            });
-        } else {
-            failed << applied.ir_path;
-        }
+        failed << applied.ir_path;
     }
     // GUIDELINE EXCEPTION (commented-out code, user's call 2026-10-01): slot B has no
     // controls while the Cabinet's advanced options are off, so presets don't load it.
@@ -3551,89 +3426,6 @@ PresetSerializer::Applied MainWindow::apply_preset_params(const QJsonObject& obj
         apply_chain_order(applied.effect_order);
     }
     return applied;
-}
-
-void MainWindow::resolve_tone3000_model(int model_id, const QString& title,
-                                        std::function<void(const QString&)> then) {
-    // 1. Already in the library under another path (downloaded on this machine).
-    if (const LibraryEntry* e = library_index->find_tone3000_model(model_id)) {
-        then(e->path);
-        return;
-    }
-
-    // 2. Offer to fetch it.
-    if (!Tone3000Client::has_client_id()) {
-        QMessageBox::warning(this, "Preset",
-                             "This preset uses \"" + title +
-                                 "\" from TONE3000, which isn't on this computer, "
-                                 "and TONE3000 isn't set up in this build (Library → TONE3000).");
-        then({});
-        return;
-    }
-    if (!tone3000->is_signed_in()) {
-        QMessageBox::information(
-            this, "Preset",
-            "This preset uses \"" + title +
-                "\" from TONE3000, which isn't on this computer.\n\n"
-                "Sign in on the Library's TONE3000 tab, then load the preset again to fetch it.");
-        library_dock->show();
-        library_tabs->set_tab(LibraryDock::TONE3000);
-        then({});
-        return;
-    }
-    if (QMessageBox::question(this, "Preset",
-                              "This preset uses \"" + title +
-                                  "\" from TONE3000, which isn't on this computer.\n\n"
-                                  "Download it into the library now?") != QMessageBox::Yes) {
-        then({});
-        return;
-    }
-
-    tone3000->fetch_model(model_id, [this, then, title](const Tone3000Client::Result& r) {
-        on_t3k_model_fetched(then, title, r);
-    });
-}
-
-// resolve_tone3000_model, step 1 of 3: model → its tone → download.
-void MainWindow::on_t3k_model_fetched(const std::function<void(const QString&)>& then,
-                                      const QString& title, const Tone3000Client::Result& r) {
-    if (!r.ok) {
-        QMessageBox::warning(this, "TONE3000", "Could not look up \"" + title + "\": " + r.error);
-        then({});
-        return;
-    }
-    const T3kModel model = Tone3000Client::parse_model(r.object());
-    tone3000->fetch_tone(model.tone_id,
-                         [this, then, title, model](const Tone3000Client::Result& tr) {
-                             on_t3k_tone_fetched(then, title, model, tr);
-                         });
-}
-
-void MainWindow::on_t3k_tone_fetched(const std::function<void(const QString&)>& then,
-                                     const QString& title, const T3kModel& model,
-                                     const Tone3000Client::Result& tr) {
-    if (!tr.ok) {
-        QMessageBox::warning(this, "TONE3000",
-                             "Could not look up the tone of \"" + title + "\": " + tr.error);
-        then({});
-        return;
-    }
-    const T3kTone tone = Tone3000Client::parse_tone(tr.object());
-    tone3000->download_model(model, tone, [this, then, title](bool ok, QString path, QString err) {
-        on_t3k_model_downloaded(then, title, ok, path, err);
-    });
-}
-
-void MainWindow::on_t3k_model_downloaded(const std::function<void(const QString&)>& then,
-                                         const QString& title, bool ok, const QString& path,
-                                         const QString& err) {
-    if (!ok) {
-        QMessageBox::warning(this, "TONE3000", "Download of \"" + title + "\" failed: " + err);
-        then({});
-        return;
-    }
-    library_index->rescan();
-    then(path);
 }
 
 // A model/IR path a preset references: loaded if the file is there.

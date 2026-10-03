@@ -13,13 +13,7 @@ set(CMAKE_AUTOUIC ON)
 # Dependencies
 # ---------------------------------------------------------------------------
 
-find_package(Qt6 REQUIRED COMPONENTS Core Widgets Network)
-
-# TONE3000 publishable key (client_id for the OAuth flows). Not a secret — it
-# only identifies the app — but it belongs to whoever ships the build:
-#   cmake -DNAM_TONE3000_CLIENT_ID=t3k_pub_… 
-# Users can also paste one at runtime (Library → TONE3000).
-set(NAM_TONE3000_CLIENT_ID "" CACHE STRING "TONE3000 publishable key baked into the build")
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets)
 
 # JACK is the Linux audio backend. On Windows we use WASAPI via the system
 # DLLs (ole32, mmdevapi) — no external package needed.
@@ -59,12 +53,6 @@ set(GUI_SOURCES
     src/ui/LibraryIndex.h
     src/ui/LibraryPanel.cpp
     src/ui/LibraryPanel.h
-    src/ui/LibraryDock.cpp
-    src/ui/LibraryDock.h
-    src/ui/Tone3000Panel.cpp
-    src/ui/Tone3000Panel.h
-    src/net/Tone3000Client.cpp
-    src/net/Tone3000Client.h
     resources/resources.qrc
     src/ui/ParamRegistry.h
     src/ui/PresetSerializer.cpp
@@ -195,7 +183,6 @@ target_include_directories(NAMPlayer SYSTEM PRIVATE
 target_include_directories(NAMPlayer PRIVATE
     src/dsp
     src/ui
-    src/net
     src/midi
 )
 
@@ -206,14 +193,12 @@ endif()
 target_compile_definitions(NAMPlayer PRIVATE
     NAM_SAMPLE_FLOAT
     NAM_ENABLE_A2_FAST
-    NAM_TONE3000_CLIENT_ID="${NAM_TONE3000_CLIENT_ID}"
     NAM_VERSION="${PROJECT_VERSION}"
 )
 
 target_link_libraries(NAMPlayer PRIVATE
     Qt6::Core
     Qt6::Widgets
-    Qt6::Network
 )
 
 if(WIN32)
@@ -292,19 +277,6 @@ endif()
 option(NAM_BUILD_TESTS "Build the test executables" OFF)
 if(NAM_BUILD_TESTS)
     enable_testing()
-    add_executable(Tone3000ClientTest
-        tests/Tone3000ClientTest.cpp
-        src/net/Tone3000Client.cpp
-        src/net/Tone3000Client.h
-        src/dsp/Log.cpp
-    )
-    target_include_directories(Tone3000ClientTest PRIVATE src/net src/dsp)
-    target_compile_options(Tone3000ClientTest PRIVATE ${NAM_WARNING_FLAGS})
-    target_compile_definitions(Tone3000ClientTest PRIVATE
-        MOCK_SERVER_PY="${CMAKE_CURRENT_SOURCE_DIR}/tests/mock_tone3000.py")
-    target_link_libraries(Tone3000ClientTest PRIVATE Qt6::Core Qt6::Gui Qt6::Network)
-    add_test(NAME Tone3000ClientTest COMMAND Tone3000ClientTest)
-
     add_executable(MidiMapperTest
         tests/MidiMapperTest.cpp
         src/midi/MidiMapper.cpp

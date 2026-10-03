@@ -20,7 +20,6 @@
 #include "PresetSerializer.h"
 #include "SettingsDialog.h"
 #include "ToggleSwitch.h"
-#include "Tone3000Client.h"
 
 class QDockWidget;
 class QDragEnterEvent;
@@ -41,13 +40,11 @@ namespace npl
 
 class AudioStatusBar;
 class GainReductionMeter;
-class LibraryDock;
 class LibraryPanel;
 class PresetBar;
 class MidiInput;
 class MidiMapper;
 class TempoBar;
-class Tone3000Panel;
 class TunerDisplay;
 class VUMeter;
 
@@ -110,7 +107,7 @@ private:
     void save_connections();
     // Amplifier / Cabinet hero rows: file name + metadata line.
     void update_hero_cards();
-    // Status bar, left: model / IR / TONE3000 sign-in at a glance.
+    // Status bar, left: model / IR loaded at a glance.
     void update_rig_status();
 
     // Loading (every path in: dialogs, library, drops, session, presets)
@@ -124,14 +121,9 @@ private:
     void load_library_entry(LibraryEntry::Kind kind, const QString& path);
     // ‹ › on the hero rows: next/previous entry in the library's visible order.
     void step_library(LibraryEntry::Kind kind, int step);
-    // Hero row scaffold: ‹ › Browse + origin mark + name + metadata labels.
+    // Hero row scaffold: ‹ › Browse + name + metadata labels.
     void make_hero_controls(QWidget* card, LibraryEntry::Kind kind, QLabel*& name_out,
-                            QLabel*& meta_out, QLabel*& origin_out);
-    // Preset references a TONE3000 model that isn't on disk: find it in the
-    // library by model id, else offer to download it. Calls `then(path)`
-    // with an empty path when nothing could be resolved.
-    void resolve_tone3000_model(int model_id, const QString& title,
-                                std::function<void(const QString&)> then);
+                            QLabel*& meta_out);
 
     // Row-card scaffold: [≡ grip | name label]. The caller appends its
     // controls to the card's QHBoxLayout.
@@ -181,7 +173,6 @@ private:
     void clear_ir_b();
     QWidget* make_gain_column(const QString& title, KnobWidget*& knob, VUMeter*& meter);
     void find_in_library();
-    void browse_tone3000();
     QToolButton* make_library_arrow(const QString& glyph, int step, const QString& tip,
                                     LibraryEntry::Kind kind);
     // MIDI action id of a hero ‹ › arrow ("action:modelNext", …).
@@ -193,17 +184,9 @@ private:
     // Shows the settings window (created on first use) on `page`.
     void open_settings(SettingsDialog::Page page);
     void populate_midi_devices_menu(QMenu* devices);
-    void show_file_status(QLabel* name, QLabel* meta, QLabel* origin, bool loaded,
-                          const QString& path, const QString& empty_text);
-    QJsonObject tone3000_linkage(const string& p) const;
+    void show_file_status(QLabel* name, QLabel* meta, bool loaded, const QString& path,
+                          const QString& empty_text);
     bool try_load_referenced_file(const QString& path, LibraryEntry::Kind kind);
-    void on_t3k_model_fetched(const std::function<void(const QString&)>& then, const QString& title,
-                              const Tone3000Client::Result& r);
-    void on_t3k_tone_fetched(const std::function<void(const QString&)>& then, const QString& title,
-                             const T3kModel& model, const Tone3000Client::Result& tr);
-    void on_t3k_model_downloaded(const std::function<void(const QString&)>& then,
-                                 const QString& title, bool ok, const QString& path,
-                                 const QString& err);
 
     // Effect strip / chain reordering
     // Lays the cards out in the given order: dividers follow NAM/EQ.
@@ -234,8 +217,7 @@ private:
                       const std::function<void(bool)>& apply);
 
     // Current preset: name, `*` state, A/B
-    // Serialized state written by Save (registry + order + model/IR + the
-    // TONE3000 linkage).
+    // Serialized state written by Save (registry + order + model/IR).
     QJsonObject current_preset_json() const;
     bool write_preset_file(const QString& path);
     // Makes `path` the current preset with the live state as its baseline
@@ -296,13 +278,8 @@ private:
     QLabel* lbl_irb_status = nullptr; // Cabinet slot B (detail row)
 
     LibraryIndex* library_index = nullptr;
-    Tone3000Client* tone3000 = nullptr;
-    LibraryDock* library_tabs = nullptr;
-    LibraryPanel* library = nullptr; // local tab (owned by library_tabs)
-    Tone3000Panel* t3k_panel = nullptr; // community tab
+    LibraryPanel* library = nullptr; // the Library dock's content
     QDockWidget* library_dock = nullptr;
-    QLabel* lbl_nam_origin = nullptr; // T3K mark when the model came from TONE3000
-    QLabel* lbl_ir_origin = nullptr;
 
     AudioStatusBar* audio_bar = nullptr;
     QLabel* lbl_rig_status = nullptr;

@@ -5,7 +5,7 @@ name: Release
 # JACK — no bundled AppImage/Flatpak, decision 2026-09-17), a Windows
 # windeployqt zip, a source tarball with the submodules vendored (for the
 # AUR PKGBUILD), and a GitHub release. Every build uses -DNAM_NATIVE_OPT=OFF
-# (portable AVX2/FMA) and the TONE3000 key from the TONE3000_CLIENT_ID secret.
+# (portable AVX2/FMA).
 
 on:
   push:
@@ -14,9 +14,6 @@ on:
 
 permissions:
   contents: write
-
-env:
-  T3K_KEY: ${{ secrets.TONE3000_CLIENT_ID }}
 
 jobs:
   source:
@@ -66,8 +63,7 @@ jobs:
           cmake -S . -B build-release -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
             -DNAM_NATIVE_OPT=OFF \
-            -DNAM_BUILD_TESTS=ON \
-            -DNAM_TONE3000_CLIENT_ID="$T3K_KEY"
+            -DNAM_BUILD_TESTS=ON
       - name: Build
         working-directory: gui
         run: cmake --build build-release --parallel
@@ -78,7 +74,6 @@ jobs:
         run: |
           ./build-release/NAMPlayer --version
           timeout 30 ./build-release/NAMPlayer --self-test-and-exit
-          ./build-release/Tone3000ClientTest
           ./build-release/MidiMapperTest
           ./build-release/DspGoldenTest
           ./build-release/WavReaderTest
@@ -108,8 +103,7 @@ jobs:
           cmake -S . -B build-release -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
             -DNAM_NATIVE_OPT=OFF \
-            -DNAM_BUILD_TESTS=ON \
-            -DNAM_TONE3000_CLIENT_ID="$T3K_KEY"
+            -DNAM_BUILD_TESTS=ON
           cmake --build build-release --parallel
       - name: Smoke test + client test + install layout
         working-directory: gui
@@ -118,7 +112,6 @@ jobs:
         run: |
           ./build-release/NAMPlayer --version
           timeout 30 ./build-release/NAMPlayer --self-test-and-exit
-          ./build-release/Tone3000ClientTest
           ./build-release/MidiMapperTest
           ./build-release/DspGoldenTest
           ./build-release/WavReaderTest
@@ -151,8 +144,7 @@ jobs:
           cmake -S . -B build-release `
                 -G Ninja `
                 -DCMAKE_BUILD_TYPE=Release `
-                -DCMAKE_PREFIX_PATH="$env:QT_ROOT_DIR" `
-                -DNAM_TONE3000_CLIENT_ID="$env:T3K_KEY"
+                -DCMAKE_PREFIX_PATH="$env:QT_ROOT_DIR"
       - name: Build
         working-directory: gui
         run: cmake --build build-release --parallel

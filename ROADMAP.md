@@ -21,7 +21,10 @@ Decisions:
   everything that makes this app worth having is standalone-shaped. `src/dsp` stays
   Qt-free and all parameters stay in the registry, but that's hygiene, not a plugin plan.
 - **Library + TONE3000 ship in v1.0** (2026-08-22). A NAM player whose first-run
-  experience is a file dialog is not done. ~~The `v1.0` tag moves from Phase 8 to the end
+  experience is a file dialog is not done. **TONE3000 part reversed 2026-10-02:** after
+  a live run the user wasn't convinced (its one real gain: downloads land in the
+  library folder) and its API terms add upkeep — the integration was removed from
+  `main` and kept on the `experiment/tone3000` branch (Phase 25). The library stays. ~~The `v1.0` tag moves from Phase 8 to the end
   of Phase 12.~~ Superseded 2026-09-12, see next.
 - **Packaging goes last** (2026-09-12). Phase 8 runs *after* Phase 12, right before
   release, so the desktop file and CI jobs are built once against the final v1.0
@@ -528,7 +531,7 @@ Manual verification (2026-09-17 — needs a human at the keyboard):
 - [ ] Close the dock, quit, relaunch: still closed; `Ctrl+L` brings it back at the
       same width.
 
-## Phase 12 — TONE3000 integration ✅ (code complete 2026-09-17; live run 2026-10-02: sign-in, select flow, download, favorites, sign-out/in work; future decided in Phase 25)
+## Phase 12 — TONE3000 integration — removed from main 2026-10-02 (Phase 25); the work lives on the `experiment/tone3000` branch
 
 A second tab of the Library that looks and behaves exactly like the local one but is
 the community. API verified 2026-08-22 (tone3000.com/api): OAuth 2.0 + PKCE for
@@ -919,15 +922,15 @@ for the backend work (Phase 21), and a second full review follows the big change
 - [ ] 01–03 live in upstream code (`NAM/`, `Dependencies/AudioDSPTools`): offer the
       fixes upstream too.
 
-**Deferred:** 07 (late download replaces a newer preset's model) → Phase 25;
+**Moot:** 07, 12, 13 (TONE3000 download issues) — the integration was removed (Phase 25).
+**Deferred:**
 05 (JACK buffer-size race), 16, 17 → Phase 21 with the backend work.
 
 - [ ] **Second full code review** after Phases 21 and 24 (new backends, effect
       instances), before any major release.
 
 **P2 — fold into the phase they touch, or fix here when small:**
-- [ ] Small and standalone: 09 (A/B can't restore an unloaded model/IR), ~~10–11~~ (done with 01), 12 (download paths not unique per
-      model), 13 (downloads/images buffered whole in memory), 14 (closing waits for
+- [ ] Small and standalone: 09 (A/B can't restore an unloaded model/IR), ~~10–11~~ (done with 01), ~~12, 13~~ (moot: TONE3000 removed), 14 (closing waits for
       the library scan), 16–17 (JACK: client not closed on shutdown; sample-rate
       changes not propagated), ~~18~~ (done with 04),
       19 (mono→stereo exposes stale right-channel state), 21 (model change freezes
@@ -1097,7 +1100,7 @@ effect in `MainWindow`, registry groups = effect IDs (`delay/mix`), the session 
 - [ ] Manual check: two delays in series, a removed effect staying removed after a
       preset reload, an old v2 preset and an old session loading as before.
 
-## Phase 25 — TONE3000: compliance or removal (added 2026-10-02; decide before the v0.6.0 release)
+## Phase 25 — TONE3000: compliance or removal ✅ (removed 2026-10-02; kept on the `experiment/tone3000` branch)
 
 TONE3000's API page (https://www.tone3000.com/api#design-requirements) sets design
 requirements for apps using it. Checked 2026-10-02: the OAuth select flow, the
@@ -1109,6 +1112,8 @@ order already comply. **Decide first: bring the gaps into compliance, or remove 
 integration** (2026-10-02, after the live run: the user is "not very excited about this
 integration" — its one real gain is that downloads land in the library folder; leaning
 removal, not decided) (it reverses the north-star decision "Library + TONE3000 ship in v1.0").
+**Decided 2026-10-02: removal (Path B)**, done the same day; the full integration is kept
+on the `experiment/tone3000` branch.
 
 **Path A — compliance (the four gaps):**
 - [ ] **Entry point in the signal block:** "the TONE3000 entry point is associated
@@ -1128,17 +1133,17 @@ removal, not decided) (it reverses the north-star decision "Library + TONE3000 s
       their commercial agreement and sign-off before release.
 
 **Path B — removal:**
-- [ ] Remove `Tone3000Client`, `Tone3000Panel`, the dock's TONE3000 tab, the
+- [x] Remove `Tone3000Client`, `Tone3000Panel`, the dock's TONE3000 tab, the
       Library → Browse TONE3000… action, the hero-row T3K origin mark, the TONE3000
       folder scan (`with_tone3000_dir`) and sidecar fields, `resources/tone3000/`,
       `Tone3000ClientTest` + `mock_tone3000.py`, the `NAM_TONE3000_CLIENT_ID` option,
       and the BUILD.md / CLAUDE.md / ROADMAP sections about it.
-- [ ] Keep old data harmless: presets with a `tone3000` object still load (the object
+- [x] Keep old data harmless: presets with a `tone3000` object still load (the object
       is ignored; the embedded `namPath`/`irPath` keep working); already downloaded
       models stay in the library as plain files (the user's download folder can be
       added as a normal library root); stale `tone3000/*` QSettings keys (including
       tokens) are deleted once.
-- [ ] Update the north star (decision reversed, with the date and the reason).
+- [x] Update the north star (decision reversed, with the date and the reason).
 
 ## Phase 28 — Cleanup & documentation (added 2026-10-02; before the release, after naming)
 

@@ -1,8 +1,6 @@
 <!DOCTYPE RCC>
 <RCC version="1.0">
     <qresource prefix="/">
-        <file>tone3000/tone3000-logo.png</file>
-        <file>tone3000/t3k-mark.png</file>
         <file>icons/NAMPlayer-256.png</file>
         <file>icons/down-arrow.png</file>
         <file>icons/down-arrow@2x.png</file>

@@ -35,6 +35,3 @@ appstreamcli validate --pedantic gui/packaging/cl.pichulero.NAMPlayer.metainfo.x
 xmllint --noout gui/packaging/cl.pichulero.NAMPlayer.xml
 ```
 
-The TONE3000 publishable key is a build input (`-DNAM_TONE3000_CLIENT_ID=…`, CI
-secret `TONE3000_CLIENT_ID`); packages built without it still work, the TONE3000 tab
-just asks for a key.

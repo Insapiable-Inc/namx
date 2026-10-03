@@ -4,7 +4,7 @@
 pkgname=nam-player
 pkgver=1.0.0
 pkgrel=1
-pkgdesc="Standalone Neural Amp Modeler player: models, IRs, effects chain, library, TONE3000"
+pkgdesc="Standalone Neural Amp Modeler player: models, IRs, effects chain, library"
 arch=('x86_64')
 url="https://github.com/silvercobraa/NeuralAmpModelerGUI"
 license=('GPL-3.0-or-later' 'MIT') # app GPL; bundled NAM core MIT
@@ -21,8 +21,7 @@ build() {
     cmake -S gui -B build -G Ninja \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX=/usr \
-        -DNAM_NATIVE_OPT=OFF \
-        -DNAM_TONE3000_CLIENT_ID="${NAM_TONE3000_CLIENT_ID:-}"
+        -DNAM_NATIVE_OPT=OFF
     cmake --build build
 }
 
