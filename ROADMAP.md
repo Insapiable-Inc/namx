@@ -425,7 +425,7 @@ app id in hicolor, `setWindowIcon` from the qrc, Windows exe icon + version bloc
 - [x] About dialog / `--version` flag verified: both read `PROJECT_VERSION` (1.0.0)
       through the `NAM_VERSION` define; `--help` lists the flags. On Windows the
       console flags print nothing (GUI subsystem) — About is the way there.
-- [ ] **Tag v1.0.** (Was moved to Phase 12 on 2026-08-22; back here since 2026-09-12
+- [ ] **Tag v0.6.0** — the first release (0.x, not 1.0 — 2026-10-02). (Was moved to Phase 12 on 2026-08-22; back here since 2026-09-12
       because packaging itself now runs last.) **User action**, in this order: add
       the `TONE3000_CLIENT_ID` repository secret (Phase 12 prerequisite), make the
       GitHub repo public / rename it (Phase 7), then `git tag v1.0.0 && git push
@@ -889,7 +889,7 @@ place where the numbers are edited. Options weighed on 2026-10-01:
 - Whichever is picked: golden test bit-identical at every step, plus a test that the
   8 starter presets load to the same values.
 
-## Phase 26 — Hardening: the 2026-10-01 code review (added 2026-10-02; P1s run now)
+## Phase 26 — Hardening: the 2026-10-01 code review (added 2026-10-02; P1 pass + six P2s done 2026-10-02)
 
 From the review in `ISSUES.md` (repo root, untracked — 34 findings with locations and
 suggested fixes; some reproduced with AddressSanitizer). Re-check each finding against
@@ -942,7 +942,7 @@ for the backend work (Phase 21), and a second full review follows the big change
 - [ ] P3: 32 (MainWindow too big), 33 (naming leftovers), 34 (loader/transition test
       coverage — grows with the fixes above).
 
-## Phase 27 — Benchmarking: measured against the best (added 2026-10-02; after 26, before 22)
+## Phase 27 — Benchmarking: measured against the best (added 2026-10-02; done 2026-10-02 except the loopback latency)
 
 "The world's best" has to be measured. What exists: `NAMPlayerBench` (per-stage time
 against the block budget), `--self-test-and-exit` (cold start, peak RSS), the DSP %
@@ -977,7 +977,7 @@ machine, in `gui/BENCHMARKS.md`.
 - [ ] Optional: CPU and features vs Archetype: Petrucci X (the feature baseline), in a
       DAW at the same buffer — if a license is at hand.
 
-## Phase 22 — DSP quality: state-of-the-art effects (added 2026-10-01; runs next, before 19)
+## Phase 22 — DSP quality: state-of-the-art effects (added 2026-10-01; next, after the Phase 27 benchmarks)
 
 Research in `gui/DSP_RESEARCH.md` (options per effect, real-time flags, licenses,
 sources). Each step keeps the golden test green for effects it doesn't touch, re-records
@@ -1012,7 +1012,7 @@ it for the one it replaces, and is measured with `NAMPlayerBench`.
 - [ ] Re-enable Shimmer and Crystals on the new high-quality shifter (latency is
       irrelevant inside tails).
 
-## Phase 23 — Expression pedals: range, reverse, whammy (added 2026-10-02; after 22, before 19)
+## Phase 23 — Expression pedals: range, reverse, whammy (added 2026-10-02; code done 2026-10-02, pedal check pending)
 
 The pedal-like effects — Dynamic Wah (Position, Manual mode), Transpose (Semitones) and
 the Volume pedal — get the controls a real expression setup has. MIDI multi-assign
@@ -1097,7 +1097,7 @@ effect in `MainWindow`, registry groups = effect IDs (`delay/mix`), the session 
 - [ ] Manual check: two delays in series, a removed effect staying removed after a
       preset reload, an old v2 preset and an old session loading as before.
 
-## Phase 25 — TONE3000: compliance or removal (added 2026-10-02; decide before the v1.0 tag)
+## Phase 25 — TONE3000: compliance or removal (added 2026-10-02; decide before the v0.6.0 release)
 
 TONE3000's API page (https://www.tone3000.com/api#design-requirements) sets design
 requirements for apps using it. Checked 2026-10-02: the OAuth select flow, the
@@ -1165,7 +1165,7 @@ carries the final name.
 - [ ] Repo tidy: `AUDIT.md` / `ISSUES.md` (archive or keep private), stale notes,
       `CMakeLists.txt` project version → 0.6.0, CLAUDE.md / ROADMAP current.
 
-## Phase 21 — Windows audio: WASAPI exclusive + ASIO (added 2026-10-01; last — no Windows machine to test on yet)
+## Phase 21 — Windows audio: WASAPI exclusive + ASIO (added 2026-10-01; before the release only if a Windows machine is available)
 
 - [ ] **WASAPI exclusive mode** (from Phase 18): shared mode's 10–20 ms is not a guitar
       latency; keep shared as fallback.
