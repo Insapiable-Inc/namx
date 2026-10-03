@@ -581,7 +581,7 @@ Manual verification (2026-09-17 — needs the real key and a human):
 - [x] (confirmed 2026-10-02) With the key: Continue → browser sign-in → pick a tone → back in the app on that
       tone's page. Does TONE3000 accept the unregistered `localhost` redirect URI
       (their docs say localhost is allowed in development)? If not, register it.
-- [ ] Trending / Latest show real cards with images; Favorites reflects ★ toggles made
+- [ ] (2026-10-02: Favorites lists the user's ★ tones) Trending / Latest show real cards with images; Favorites reflects ★ toggles made
       in the app and on the site; Downloads lists what was fetched.
 - [ ] (2026-10-02: an IR pack downloaded — 4 files + sidecars under TONE3000/<creator>/<tone>/,
       all decode; the rest below still to check) Download a model: file + sidecar land in the TONE3000 folder, the local tab shows
@@ -590,7 +590,7 @@ Manual verification (2026-09-17 — needs the real key and a human):
 - [ ] Save a preset with that model, delete the file, load the preset → download offer
       → model back and loaded.
 - [ ] Pull the network: lists say offline, the local library works; reconnect and ↻.
-- [ ] Sign out, sign in again; wait > 1 h and use a list (refresh path).
+- [ ] (2026-10-02: sign out / in works; the > 1 h refresh path not checked) Sign out, sign in again; wait > 1 h and use a list (refresh path).
 
 ## Phase 13 — Presets as the live unit ✅ (completed 2026-10-01, code; manual verification below)
 
@@ -1091,7 +1091,9 @@ wording, verbatim), the list cards (image, title, gear type, format, creator +
 avatar), the signed-in user, the persistent "Browse TONE3000…" path, the tone detail
 (image, creator, description, per-model load/download) and the logo-before-mark
 order already comply. **Decide first: bring the gaps into compliance, or remove the
-integration** (it reverses the north-star decision "Library + TONE3000 ship in v1.0").
+integration** (2026-10-02, after the live run: the user is "not very excited about this
+integration" — its one real gain is that downloads land in the library folder; leaning
+removal, not decided) (it reverses the north-star decision "Library + TONE3000 ship in v1.0").
 
 **Path A — compliance (the four gaps):**
 - [ ] **Entry point in the signal block:** "the TONE3000 entry point is associated
