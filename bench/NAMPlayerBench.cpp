@@ -58,8 +58,12 @@ static void usage() {
     std::puts("usage: NAMPlayerBench [--model file.nam] [--ir file.wav] [--ir-b file.wav] "
               "[--frames N] [--rate HZ]\n"
               "                      [--blocks N] [--no-fast-tanh] [--only NAME[,NAME…]]\n"
+              "                      [--stereo-modes on|off] [--stereo-input] [--stereo-amp]\n"
               "Without --model/--ir the amp/cab stages are skipped. --only limits the\n"
-              "enabled stages (names as printed, case-insensitive).");
+              "enabled stages (names as printed, case-insensitive). --stereo-modes forces\n"
+              "every effect's Stereo switch (default: the app's — Chorus, Tremolo, Delay,\n"
+              "Reverb on). --stereo-input feeds different L/R from the first stage, so every\n"
+              "effect runs per channel; --stereo-amp then runs the amp per channel too.");
 }
 
 static double percentile(vector<double> v, double p) {
@@ -110,6 +114,9 @@ int run(int argc, char** argv) {
     double rate = 48000.0;
     size_t blocks = 4000;
     bool fast_tanh = true;
+    string stereo_modes; // "", "on" or "off"
+    bool stereo_input = false;
+    bool stereo_amp = false;
 
     for (int i = 1; i < argc; ++i) {
         const string a = argv[i];
@@ -129,6 +136,16 @@ int run(int argc, char** argv) {
             only = option_value(i, argc, argv);
         } else if (a == "--no-fast-tanh") {
             fast_tanh = false;
+        } else if (a == "--stereo-modes") {
+            stereo_modes = option_value(i, argc, argv);
+            if (stereo_modes != "on" && stereo_modes != "off") {
+                usage();
+                return 2;
+            }
+        } else if (a == "--stereo-input") {
+            stereo_input = true;
+        } else if (a == "--stereo-amp") {
+            stereo_amp = true;
         } else {
             usage();
             return a == "--help" || a == "-h" ? 0 : 2;
@@ -162,6 +179,16 @@ int run(int argc, char** argv) {
     OutputLimiter limiter;
     TransposeProcessor transpose;
     transpose.set_semitones(-2.0f); // a drop tuning: the shifter's real cost
+    // Worst case the UI can reach for the effects that skip idle work: all six EQ bands
+    // engaged (flat bands are skipped), the delay's modulation and saturation on.
+    for (const EQProcessor::Band b :
+         {EQProcessor::BASS, EQProcessor::MIDDLE, EQProcessor::HIGH_MID, EQProcessor::TREBLE}) {
+        eq.set_gain(b, 3.0);
+    }
+    eq.set_freq(EQProcessor::LOW_CUT, 80.0);
+    eq.set_freq(EQProcessor::HIGH_CUT, 8000.0);
+    delay.set_modulation(30.0f);
+    delay.set_saturation(30.0f);
 
     // Same defaults as AudioEngine's constructor.
     chorus.set_stereo_mode(true);
@@ -183,7 +210,11 @@ int run(int argc, char** argv) {
     for (auto& s : chain) {
         s.fx->set_sample_rate(rate);
         s.fx->set_enabled(listed(only, s.name));
+        if (!stereo_modes.empty()) {
+            s.fx->set_stereo_mode(stereo_modes == "on"); // ignored by mono-only effects
+        }
     }
+    nam.set_stereo_amp(stereo_amp);
     nam.prepare_buffer(frames);
     if (!model.empty() && !nam.load_model(model)) {
         std::fprintf(stderr, "model: %s\n", nam.get_last_error().c_str());
@@ -225,9 +256,10 @@ int run(int argc, char** argv) {
     using Clock = std::chrono::steady_clock;
     for (size_t b = 0; b < warmup + blocks; ++b) {
         for (size_t i = 0; i < frames; ++i) {
-            l[i] = r[i] = noise(rng);
+            l[i] = noise(rng);
+            r[i] = stereo_input ? noise(rng) : l[i];
         }
-        bool stereo = false;
+        bool stereo = stereo_input;
         double block_us = 0.0;
         for (auto& s : chain) {
             const Clock::time_point t0 = Clock::now();
@@ -259,8 +291,11 @@ int run(int argc, char** argv) {
 
     const double budget_us = static_cast<double>(frames) / rate * 1e6;
     std::printf(
-        "NAMPlayerBench  %zu frames @ %.0f Hz  budget %.1f µs/block  %zu blocks  fast tanh %s\n",
-        frames, rate, budget_us, blocks, fast_tanh ? "on" : "off");
+        "NAMPlayerBench  %zu frames @ %.0f Hz  budget %.1f µs/block  %zu blocks  fast tanh %s\n"
+        "routing: stereo switches %s, %s input%s\n",
+        frames, rate, budget_us, blocks, fast_tanh ? "on" : "off",
+        stereo_modes.empty() ? "as in the app" : stereo_modes.c_str(),
+        stereo_input ? "stereo" : "mono", stereo_amp ? ", amp per channel" : "");
     if (!model.empty()) {
         std::printf("model  %s\n", model.c_str());
     }

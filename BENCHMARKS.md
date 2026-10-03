@@ -76,7 +76,8 @@ load fade-in).
 | Slimmable (A2) | −135.4 dB | −135.4 dB |
 
 - With exact tanh the host adds nothing: the residual is float rounding (below 24-bit).
-- **Fast tanh** (the core's approximation, enabled by `AudioEngine`) is what limits
+- **Fast tanh** (the core's approximation, enabled by `AudioEngine` since Phase 14 —
+  2026-10-01, for CPU: 166 → 67 µs; accuracy wasn't measured then) is what limits
   accuracy: the error is 46–65 dB below the signal. **The official NAM plugin enables
   it unconditionally too** (`NeuralAmpModeler.cpp`, constructor), so this matches the
   official plugin's accuracy. A2/slimmable models use their own activation and are exact.
@@ -90,6 +91,55 @@ load fade-in).
 | 4×8 ch (XR) | 87 µs · 3.3 % | 163 µs · 6.1 % |
 | 32+8 ch | 307 µs · 11.5 % | 635 µs · 23.8 % |
 | Slimmable (A2) | 60 µs · 2.2 % | 60 µs · 2.2 % |
+
+## Every effect, every routing
+
+Each effect alone (`--only`), 128 frames at 48 kHz, standard WaveNet (16+8 ch) and a
+V30 IR, in three routings: mono in with its Stereo switch off; mono in with the switch on
+(the six effects that have one); and a stereo signal in (every effect per channel — what
+happens after an earlier stereo effect). Settings: defaults, except the worst case the UI
+can reach for effects that skip idle work — all six EQ bands engaged, the delay's
+modulation and saturation on, Transpose at −2 st.
+
+| Effect | Mono | Stereo switch on | Stereo input |
+|---|---|---|---|
+| Tuner | 0.1 µs · 0.00 % | — | 0.1 µs · 0.00 % |
+| Transpose | 1.4 µs · 0.05 % | — | 2.7 µs · 0.10 % |
+| Gate | 0.4 µs · 0.01 % | — | 0.8 µs · 0.03 % |
+| Compressor | 1.4 µs · 0.05 % | — | 2.7 µs · 0.10 % |
+| Wah | 0.6 µs · 0.02 % | — | 1.2 µs · 0.04 % |
+| Flanger | 1.0 µs · 0.04 % | 1.9 µs · 0.07 % | 1.9 µs · 0.07 % |
+| Phaser | 1.3 µs · 0.05 % | 1.3 µs · 0.05 % | 1.3 µs · 0.05 % |
+| Drive | 0.3 µs · 0.01 % | — | 0.6 µs · 0.02 % |
+| Amp | 66.7 µs · 2.50 % | — | 67.3 µs · 2.52 % (summed) · 145.5 µs · 5.46 % (Stereo on) |
+| Volume | 0.3 µs · 0.01 % | — | 0.3 µs · 0.01 % |
+| EQ | 1.2 µs · 0.04 % | — | 2.3 µs · 0.09 % |
+| Chorus | 0.9 µs · 0.03 % | 1.8 µs · 0.07 % | 1.7 µs · 0.06 % |
+| Tremolo | 0.4 µs · 0.01 % | 0.7 µs · 0.03 % | 0.4 µs · 0.01 % |
+| Delay | 1.2 µs · 0.05 % | 2.1 µs · 0.08 % | 2.0 µs · 0.07 % |
+| Reverb | 0.9 µs · 0.04 % | 2.0 µs · 0.08 % | 1.9 µs · 0.07 % |
+| Cab | 17.3 µs · 0.65 % | — | 37.8 µs · 1.42 % |
+| Limiter | 2.4 µs · 0.09 % | — | 2.4 µs · 0.09 % |
+
+- Everything except the amp and the cab is noise: each under 0.1 % of the budget, stereo
+  included. The stereo cost is about twice the mono one, as expected.
+- The **cab** doubles with stereo input (two convolutions): 17 → 38 µs. Partitioned FFT
+  convolution (Phase 22, review item 25) is the fix if it ever matters.
+- The **amp** with stereo input is summed to mono by default (same cost); its Stereo switch
+  runs two models (2.2×).
+
+**Whole chain** — every stage on at once, same settings and model:
+
+| Routing | 128 frames | 32 frames |
+|---|---|---|
+| app default | 122 µs · 4.6 % (p99 135 µs) | 33 µs · 5.0 % (p99 37 µs) |
+| all stereo switches off | 100 µs · 3.8 % (p99 114 µs) | 28 µs · 4.2 % (p99 31 µs) |
+| all stereo switches on | 126 µs · 4.7 % (p99 144 µs) | 34 µs · 5.2 % (p99 51 µs) |
+| stereo input, amp summed | 129 µs · 4.8 % (p99 156 µs) | 35 µs · 5.2 % (p99 38 µs) |
+| stereo input, amp per channel | 207 µs · 7.8 % (p99 232 µs) | 54 µs · 8.2 % (p99 63 µs) |
+
+Reproduce: `gui/bench/bench_effects.py --bench gui/build-bench/NAMPlayerBench --cpu 2
+--model amp.nam --ir cab.wav`; totals with `NAMPlayerBench --model … --ir … [routing flags]`.
 
 ## Resampling
 
