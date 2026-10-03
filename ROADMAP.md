@@ -366,6 +366,12 @@ newest legacy store ("NAM Player", else "NAM Linux") into an empty `namx` one.
       (`0.5.4-NNN-g…`). New non-fork `nam-x` repo with our history, without upstream's
       tags; then pick the first version (0.6.0 or a fresh series) and set it in
       `project(namx VERSION …)` (still 1.0.0).
+      **Shape chosen 2026-10-03 (user): NeuralAmpModelerCore as a submodule** — the new
+      repo holds our app (today's `gui/`) and pulls the core in like Eigen. Our one
+      change to the core (3be052e, review fixes 02/03: checked weight iterator, LSTM
+      dimension checks) then needs a home: offer it upstream (Phase 26 item) and point
+      the submodule at our own core fork until it's merged. Also moves: the upstream
+      `tools/` tests we touched, CI paths, `NAM_DEPS_PATH`, docs that say "fork".
 - [x] Clone URLs in README/BUILD.md now point at the *current* GitHub name with
       `… nam-player` as the checkout dir (2026-08-22) — valid before and after the
       rename thanks to the redirect; flip them to the new name once it lands.
