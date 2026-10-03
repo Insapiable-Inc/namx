@@ -11,11 +11,12 @@
 
 #include "Common.h"
 #include "EffectBase.h"
-#include "ModelResampler.h"
 #include "RtSlot.h"
 
 namespace namx
 {
+
+class ModelResampler; // ModelResampler.h — not included here, see Resampler below
 
 // Wraps the NAM DSP model as an EffectBase.
 //
@@ -88,7 +89,9 @@ protected:
 private:
     // Runs a model at its training rate inside an engine running at another one
     // (Lanczos, A = 12 — the same resampler the official NAM plugin uses).
-    using Resampler = dsp::ResamplingContainer<float, 1, 12>;
+    // Defined in ModelResampler.h, included only by NamProcessor.cpp (it brings
+    // <windows.h> on Windows). ModelPair's constructor/destructor are out of line for it.
+    using Resampler = ModelResampler;
 
     // One published unit: both channels loaded from the same file so they
     // apply identical non-linearity; their recurrent states evolve
@@ -101,6 +104,9 @@ private:
         unique_ptr<Resampler> resampler_l, resampler_r;
         size_t reset_buf{0};
         double reset_rate{0.0};
+
+        ModelPair();
+        ~ModelPair();
 
         // The rate the model was trained at; models that don't say are 48 kHz (as
         // in the official plugin).

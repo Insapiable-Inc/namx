@@ -9,12 +9,17 @@
 
 #include "Common.h"
 #include "Log.h"
+#include "ModelResampler.h" // only here: it brings <windows.h> on Windows
 
 namespace namx
 {
 
 NamProcessor::NamProcessor() {
 }
+
+// Out of line: ModelResampler is complete only in this file.
+NamProcessor::ModelPair::ModelPair() = default;
+NamProcessor::ModelPair::~ModelPair() = default;
 
 void NamProcessor::ModelPair::reset(double rate, size_t max_frames) {
     const double native = native_rate();
