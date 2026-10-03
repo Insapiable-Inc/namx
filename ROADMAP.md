@@ -1,4 +1,4 @@
-# NAM Player — Public Release Plan
+# NAM-X — Public Release Plan
 
 Goal: take the app from "works on my machine" to a public v1.0 anyone can install on
 Linux or Windows. Phases are ordered for execution — work top to bottom, one phase at a
@@ -343,11 +343,27 @@ Decision: **standardize on "NAM Player"** — already the user-facing title, acc
 platform-neutral. (Shortlisted alternatives if a more distinctive name is ever wanted:
 NAM Rig, NAM Stage.)
 
-- [ ] **Repo rename → `nam-player` on GitHub** (canonical home; currently
+**Renamed again 2026-10-03: the app is NAM-X** (user's pick, 2026-10-01; the
+similarity to Reinarc's "Nam XT" is an accepted coincidence). Display name **NAM-X**;
+binary / QSettings app name **`namx`** (config `…/pichulero.cl/namx.conf`); app id
+**`cl.pichulero.namx`**; C++ namespace **`namx`**; JACK and ALSA MIDI client **NAM-X**
+(ports `NAM-X:input`, `NAM-X:output_L/R`; saved connections store only the other end, so
+routing survives); Documents folder `NAM-X/` (an existing `NAM Player/` keeps being
+used until `NAM-X/` exists); repo **`nam-x`**. The one-time migration now copies the
+newest legacy store ("NAM Player", else "NAM Linux") into an empty `namx` one.
+
+- [ ] **Repo rename → `nam-x` on GitHub** (canonical home; currently
       `silvercobraa/NeuralAmpModelerGUI`; GitHub auto-redirects the old URL). Optionally
       rename the Forgejo mirror (`nam-linux-gui`) to match. **User action** (no `gh` on
       this machine): GitHub → repo Settings → General → Repository name. Then
-      `git remote set-url github https://github.com/silvercobraa/nam-player.git`.
+      `git remote set-url github https://github.com/silvercobraa/nam-x.git`. (Docs and
+      packaging already point at `nam-x`.)
+- [ ] **Leave the fork network** (user, 2026-10-03): the GitHub repo is technically a fork
+      of `sdatkinson/NeuralAmpModelerCore` — PRs default to upstream, search ranks it low,
+      it reads as a copy of the core. Preferred: ask GitHub Support to detach it (keeps
+      URL, stars, releases, redirects). Fallback: a fresh non-fork `nam-x` repo with every
+      branch and tag pushed (history kept; stars/issues/redirects lost). Do it with the
+      rename, before the release.
 - [x] Clone URLs in README/BUILD.md now point at the *current* GitHub name with
       `… nam-player` as the checkout dir (2026-08-22) — valid before and after the
       rename thanks to the redirect; flip them to the new name once it lands.
@@ -1225,19 +1241,7 @@ carries the final name.
   drop tunings. A 25–30 ms window would give ~13–15 ms at the cost of more artifacts on
   low notes; a lower-latency algorithm is a bigger project. Chords not evaluated.
 
-- **A catchy name for the app** (2026-10-01): "NAM Player" is a placeholder.
-  **Candidate: NAM-X**, namespace `namx` (user's pick, 2026-10-01 — not applied yet).
-  Before committing to it:
-  - "Nam XT" (Reinarc, iOS/macOS NAM player) is close in sound and search results;
-  - the "X" echoes Neural DSP's *Archetype: Petrucci X* line (our feature baseline);
-  - "NAM" in third-party names is common (NAM Live, Nam XT, Ampz) and the project
-    is open source, but no naming policy was found — ask Steven Atkinson.
-  The rename itself: namespace `npl` → `namx` (mechanical), app id
-  `cl.pichulero.NAMPlayer`, binary, window title, desktop/AppStream/mime/PKGBUILD,
-  Windows .rc and release artifacts. The QSettings app name decides the config
-  path, so it needs a one-time **settings migration** (session, library roots,
-  favorites/recents, TONE3000 tokens) or users lose their setup.
-
+- ~~**A catchy name for the app**~~ → done 2026-10-03: **NAM-X** (see Phase 7).
 - **Experiment — activity bar for the library** (2026-10-02): a VS Code–style icon
   strip at the window edge (Models / IRs / Presets / TONE3000) replacing both tab rows
   of the dock; clicking the active icon collapses the panel (the dock lost its close

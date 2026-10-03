@@ -11,7 +11,7 @@ class QWidget;
 namespace namx
 {
 
-// Centralised palette and stylesheet for NAMPlayer — every color lives here
+// Centralised palette and stylesheet for NAM-X — every color lives here
 // (or in the stylesheet in Theme.cpp); widgets never hardcode hex values.
 //
 // Each effect card is tagged with its effect ID (same IDs as

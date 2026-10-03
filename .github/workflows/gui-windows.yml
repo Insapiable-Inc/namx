@@ -57,7 +57,7 @@ jobs:
         working-directory: gui
         shell: pwsh
         run: |
-          $exe = "build-release\NAMPlayer.exe"
+          $exe = "build-release\namx.exe"
           if (-not (Test-Path $exe)) { throw "Missing $exe" }
           $windeployqt = Join-Path "$env:QT_ROOT_DIR" "bin\windeployqt.exe"
           & $windeployqt $exe --release --no-translations --no-system-d3d-compiler --no-opengl-sw
@@ -67,9 +67,9 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: NAMPlayer-windows-x64
+          name: namx-windows-x64
           path: |
-            gui/build-release/NAMPlayer.exe
+            gui/build-release/namx.exe
             gui/build-release/*.dll
             gui/build-release/platforms/
             gui/build-release/styles/

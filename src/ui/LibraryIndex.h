@@ -46,6 +46,9 @@ struct LibraryRoots
 
     // ~/NAM for models and IRs, ~/Music/IRs, and the app's own presets dir.
     static LibraryRoots defaults();
+    // The app's folder in Documents: "NAM-X", or the pre-rename "NAM Player" while
+    // only that one exists (so an upgrade keeps saving where its presets already are).
+    static QString app_documents_dir();
     // The folder presets are written to by default (first presets root).
     static QString default_preset_dir();
 };

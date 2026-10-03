@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- shared-mime-info: file types NAM Player opens (installed to
+<!-- shared-mime-info: file types NAM-X opens (installed to
      share/mime/packages; run update-mime-database after installing). -->
 <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
   <mime-type type="application/x-nam">
     <comment>Neural Amp Modeler profile</comment>
     <sub-class-of type="application/json"/>
     <glob pattern="*.nam"/>
-    <icon name="cl.pichulero.NAMPlayer"/>
+    <icon name="cl.pichulero.namx"/>
   </mime-type>
   <mime-type type="application/x-nampreset">
-    <comment>NAM Player preset</comment>
+    <comment>NAM-X preset</comment>
     <sub-class-of type="application/json"/>
     <glob pattern="*.nampreset"/>
-    <icon name="cl.pichulero.NAMPlayer"/>
+    <icon name="cl.pichulero.namx"/>
   </mime-type>
 </mime-info>

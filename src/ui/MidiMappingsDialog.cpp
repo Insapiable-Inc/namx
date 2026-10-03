@@ -23,6 +23,7 @@
 
 #include "Common.h"
 #include "KnobWidget.h"
+#include "LibraryIndex.h"
 #include "MidiInput.h"
 #include "MidiMapper.h"
 
@@ -45,7 +46,7 @@ enum Col
 };
 
 static QString mapping_dir() {
-    return QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/NAM Player/MIDI";
+    return LibraryRoots::app_documents_dir() + "/MIDI";
 }
 
 MidiMappingsDialog::MidiMappingsDialog(MidiMapper& new_mapper, MidiInput* new_input,

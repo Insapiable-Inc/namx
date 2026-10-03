@@ -271,7 +271,7 @@ static std::function<QString(double)> hz_label(double off_at = 0.0) {
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , engine(make_unique<AudioEngine>()) {
-    setWindowTitle("NAM Player");
+    setWindowTitle("NAM-X");
     // Laptop-friendly minimum; the effect strip scrolls when it doesn't fit.
     // The default size still shows the full strip — window managers clamp it
     // on smaller screens, and the session restores the user's geometry.
@@ -604,10 +604,10 @@ void MainWindow::setup_ui() {
         });
 
         QMenu* help_menu = mb->addMenu("Help");
-        connect(help_menu->addAction("About NAM Player"), &QAction::triggered, this, [this] {
+        connect(help_menu->addAction("About NAM-X"), &QAction::triggered, this, [this] {
             QMessageBox::about(
-                this, "About NAM Player",
-                QString("<b>NAM Player</b> v%1<br><br>"
+                this, "About NAM-X",
+                QString("<b>NAM-X</b> v%1<br><br>"
                         "Standalone player for Neural Amp Modeler profiles.<br>"
                         "Built on <a href=\"https://github.com/sdatkinson/NeuralAmpModelerCore\">"
                         "NeuralAmpModelerCore</a> by Steven Atkinson.<br><br>"
@@ -1939,7 +1939,7 @@ void MainWindow::setup_audio() {
         started = engine->start_with_devices(saved_in.toStdString(), saved_out.toStdString());
     }
     if (!started) {
-        started = engine->start("NAMPlayer");
+        started = engine->start("NAM-X");
     }
 
     audio_ok = started;
@@ -3245,8 +3245,8 @@ void MainWindow::update_preset_state() {
                           !same_state(PresetSerializer::to_json(params, *engine), preset_baseline);
     preset_bar->set_preset(preset_path, modified);
     setWindowTitle(preset_path.isEmpty()
-                       ? QString("NAM Player")
-                       : QString("%1%2 — NAM Player")
+                       ? QString("NAM-X")
+                       : QString("%1%2 — NAM-X")
                              .arg(QFileInfo(preset_path).completeBaseName(), modified ? "*" : ""));
 }
 

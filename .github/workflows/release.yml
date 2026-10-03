@@ -33,9 +33,9 @@ jobs:
         run: |
           V="${{ steps.ver.outputs.version }}"
           mkdir -p out
-          tar --exclude-vcs --exclude='./out' --transform "s,^\.,nam-player-$V," \
-              -czf "out/nam-player-$V-src.tar.gz" .
-          (cd out && sha256sum "nam-player-$V-src.tar.gz" > "nam-player-$V-src.tar.gz.sha256")
+          tar --exclude-vcs --exclude='./out' --transform "s,^\.,namx-$V," \
+              -czf "out/namx-$V-src.tar.gz" .
+          (cd out && sha256sum "namx-$V-src.tar.gz" > "namx-$V-src.tar.gz.sha256")
       - uses: actions/upload-artifact@v4
         with:
           name: source
@@ -71,17 +71,17 @@ jobs:
         env:
           QT_QPA_PLATFORM: offscreen
         run: |
-          ./build-release/NAMPlayer --version
-          timeout 30 ./build-release/NAMPlayer --self-test-and-exit
+          ./build-release/namx --version
+          timeout 30 ./build-release/namx --self-test-and-exit
           ./build-release/MidiMapperTest
           ./build-release/DspGoldenTest
           ./build-release/WavReaderTest
       - name: Validate packaging files + install layout
         working-directory: gui
         run: |
-          desktop-file-validate packaging/cl.pichulero.NAMPlayer.desktop
-          appstreamcli validate --no-net packaging/cl.pichulero.NAMPlayer.metainfo.xml || true
-          xmllint --noout packaging/cl.pichulero.NAMPlayer.xml
+          desktop-file-validate packaging/cl.pichulero.namx.desktop
+          appstreamcli validate --no-net packaging/cl.pichulero.namx.metainfo.xml || true
+          xmllint --noout packaging/cl.pichulero.namx.xml
           DESTDIR="$PWD/stage" cmake --install build-release --prefix /usr
           find stage -type f | sort
 
@@ -109,8 +109,8 @@ jobs:
         env:
           QT_QPA_PLATFORM: offscreen
         run: |
-          ./build-release/NAMPlayer --version
-          timeout 30 ./build-release/NAMPlayer --self-test-and-exit
+          ./build-release/namx --version
+          timeout 30 ./build-release/namx --self-test-and-exit
           ./build-release/MidiMapperTest
           ./build-release/DspGoldenTest
           ./build-release/WavReaderTest
@@ -151,21 +151,21 @@ jobs:
         working-directory: gui
         shell: pwsh
         run: |
-          $exe = "build-release\NAMPlayer.exe"
+          $exe = "build-release\namx.exe"
           if (-not (Test-Path $exe)) { throw "Missing $exe" }
           $windeployqt = Join-Path "$env:QT_ROOT_DIR" "bin\windeployqt.exe"
           & $windeployqt $exe --release --no-translations --no-system-d3d-compiler --no-opengl-sw
           if ($LASTEXITCODE -ne 0) { throw "windeployqt failed" }
-          New-Item -ItemType Directory -Force dist\NAMPlayer | Out-Null
-          Copy-Item build-release\NAMPlayer.exe, build-release\*.dll dist\NAMPlayer\
+          New-Item -ItemType Directory -Force dist\namx | Out-Null
+          Copy-Item build-release\namx.exe, build-release\*.dll dist\namx\
           foreach ($d in 'platforms','styles','imageformats','iconengines','tls','networkinformation') {
-            if (Test-Path "build-release\$d") { Copy-Item -Recurse "build-release\$d" "dist\NAMPlayer\$d" }
+            if (Test-Path "build-release\$d") { Copy-Item -Recurse "build-release\$d" "dist\namx\$d" }
           }
-          Copy-Item LICENSE dist\NAMPlayer\LICENSE.txt
-          Copy-Item ..\LICENSE dist\NAMPlayer\LICENSE-MIT.txt
+          Copy-Item LICENSE dist\namx\LICENSE.txt
+          Copy-Item ..\LICENSE dist\namx\LICENSE-MIT.txt
           $v = "${env:GITHUB_REF_NAME}" -replace '^v',''
-          Compress-Archive -Path dist\NAMPlayer -DestinationPath "dist\NAMPlayer-$v-windows-x64.zip"
-          Get-FileHash "dist\NAMPlayer-$v-windows-x64.zip" -Algorithm SHA256 | ForEach-Object { "$($_.Hash.ToLower())  NAMPlayer-$v-windows-x64.zip" } | Set-Content "dist\NAMPlayer-$v-windows-x64.zip.sha256"
+          Compress-Archive -Path dist\namx -DestinationPath "dist\namx-$v-windows-x64.zip"
+          Get-FileHash "dist\namx-$v-windows-x64.zip" -Algorithm SHA256 | ForEach-Object { "$($_.Hash.ToLower())  namx-$v-windows-x64.zip" } | Set-Content "dist\namx-$v-windows-x64.zip.sha256"
       - uses: actions/upload-artifact@v4
         with:
           name: windows
@@ -186,7 +186,7 @@ jobs:
         run: find artifacts -type f | sort
       - uses: softprops/action-gh-release@v2
         with:
-          name: NAM Player ${{ github.ref_name }}
+          name: NAM-X ${{ github.ref_name }}
           generate_release_notes: true
           prerelease: ${{ contains(github.ref_name, '-') }}
           files: |

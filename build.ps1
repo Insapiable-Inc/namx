@@ -1,7 +1,7 @@
 ﻿#requires -Version 5.1
 <#
 .SYNOPSIS
-    Build NAMPlayer on Windows (MSVC + Qt6).
+    Build namx on Windows (MSVC + Qt6).
 
 .PARAMETER BuildType
     Release (default) or Debug.
@@ -116,9 +116,9 @@ if ($LASTEXITCODE -ne 0) { throw "cmake build failed" }
 # windeployqt — copies Qt6Core.dll, Qt6Widgets.dll, platforms\qwindows.dll, etc.
 # ---------------------------------------------------------------------------
 if ($Generator -eq 'Ninja') {
-    $ExePath = Join-Path $BuildDir 'NAMPlayer.exe'
+    $ExePath = Join-Path $BuildDir 'namx.exe'
 } else {
-    $ExePath = Join-Path $BuildDir "$BuildType\NAMPlayer.exe"
+    $ExePath = Join-Path $BuildDir "$BuildType\namx.exe"
 }
 
 if (-not $NoDeploy -and (Test-Path $ExePath)) {

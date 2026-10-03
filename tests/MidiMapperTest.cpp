@@ -55,7 +55,7 @@ int run(int argc, char** argv) {
     qputenv("QT_QPA_PLATFORM", "offscreen");
     QApplication app(argc, argv); // widgets (knob/toggle targets)
     app.setOrganizationName("pichulero.cl");
-    app.setApplicationName("NAM Player Test");
+    app.setApplicationName("NAM-X Test");
     QTemporaryDir tmp;
     QSettings::setPath(QSettings::NativeFormat, QSettings::UserScope, tmp.path() + "/cfg");
     QSettings().clear();

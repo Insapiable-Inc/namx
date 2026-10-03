@@ -39,7 +39,7 @@ public:
             seq = nullptr;
             return false;
         }
-        snd_seq_set_client_name(seq, "NAM Player");
+        snd_seq_set_client_name(seq, "NAM-X");
         client = snd_seq_client_id(seq);
         port = snd_seq_create_simple_port(
             seq, "MIDI In", SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE,

@@ -365,7 +365,7 @@ dropout.
   change), never on demand.
 - **Denormals are flushed** (FTZ/DAZ at the top of the callback, done by the
   backends).
-- **Every new or changed DSP stage is measured with `NAMPlayerBench`** against the
+- **Every new or changed DSP stage is measured with `namx-bench`** against the
   block budget before it lands.
 - **Functions that run on the audio thread say so** with an `// audio thread`
   comment.

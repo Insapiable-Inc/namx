@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-  <!-- NAM Player app icon: flat rack tile, amp knob in the Amplifier accent,
+  <!-- NAM-X app icon: flat rack tile, amp knob in the Amplifier accent,
        signal trace in the meter green. No skeuomorphism. -->
   <defs>
     <clipPath id="tile"><rect x="24" y="24" width="464" height="464" rx="96"/></clipPath>

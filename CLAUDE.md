@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 This repo is a fork of [NeuralAmpModelerCore](https://github.com/sdatkinson/NeuralAmpModelerCore) with a standalone cross-platform GUI added under `gui/`. The root-level code (`NAM/`, `tools/`, `Dependencies/`) is the upstream C++ DSP library. All GUI work lives exclusively in `gui/`.
 
 ```
-nam-linux-gui/
+nam-x/
 ├── NAM/           # Core DSP library: neural net inference (WaveNet, LSTM, ConvNet, Linear)
 ├── Dependencies/  # Git submodules: Eigen (linear algebra), nlohmann (JSON), AudioDSPTools (upstream tools only — the GUI reads WAVs with its own `WavReader`)
 ├── tools/         # Upstream CLI tools: loadmodel, benchmodel, run_tests
@@ -41,8 +41,8 @@ nam-linux-gui/
 ```bash
 # Linux
 cd gui
-bash build.sh          # Release (default) → gui/build-release/NAMPlayer
-bash build.sh Debug    # Debug → gui/build-debug/NAMPlayer
+bash build.sh          # Release (default) → gui/build-release/namx
+bash build.sh Debug    # Debug → gui/build-debug/namx
 
 # Windows (PowerShell; needs MSVC + Qt6 + vcpkg — see gui/BUILD.md)
 cd gui; ./build.ps1
@@ -60,7 +60,7 @@ cmake --build gui/build-release --parallel $(nproc)
 
 Release builds default to `-march=native` via the `NAM_NATIVE_OPT` CMake option (ON). **CI/release builds must configure with `-DNAM_NATIVE_OPT=OFF`** → portable `-mavx2 -mfma`.
 
-`cmake --install <build> --prefix /usr` installs the binary plus the desktop/mime/AppStream/icon files (app id `cl.pichulero.NAMPlayer`); `.github/workflows/release.yml` runs on `v*` tags (Ubuntu + Arch build and tests, Windows zip, source tarball, GitHub release). **Linux distribution** (user decision 2026-10-02, reversing 2026-09-17's "no bundles"): AUR PKGBUILD + an AppImage + a Flatpak on Flathub (Phase 8); no Snap. Bundles must never include `libjack`. `NAMPlayer --version`, `--help`, `--self-test-and-exit` (headless CI check) and `NAMPlayer file…` (opens .nam/.wav/.nampreset) are handled in `main.cpp`; the version comes from `PROJECT_VERSION` via the `NAM_VERSION` define.
+`cmake --install <build> --prefix /usr` installs the binary plus the desktop/mime/AppStream/icon files (app id `cl.pichulero.namx`); `.github/workflows/release.yml` runs on `v*` tags (Ubuntu + Arch build and tests, Windows zip, source tarball, GitHub release). **Linux distribution** (user decision 2026-10-02, reversing 2026-09-17's "no bundles"): AUR PKGBUILD + an AppImage + a Flatpak on Flathub (Phase 8); no Snap. Bundles must never include `libjack`. `namx --version`, `--help`, `--self-test-and-exit` (headless CI check) and `namx file…` (opens .nam/.wav/.nampreset) are handled in `main.cpp`; the version comes from `PROJECT_VERSION` via the `NAM_VERSION` define.
 
 `-DNAM_BUILD_TESTS=ON` adds `MidiMapperTest`, `DspGoldenTest` and `WavReaderTest` (all headless):
 
@@ -75,20 +75,20 @@ branch. Don't reintroduce it on `main` without asking.
 
 `DspGoldenTest` (same option) renders every effect over a fixed signal and compares a hash of the exact output bits — any DSP refactor that must not change the sound has to keep it green; re-record with `NAM_GOLDEN_PRINT=1` only when a change is meant to alter the sound.
 
-`-DNAM_BUILD_BENCH=ON` adds `NAMPlayerBench` (`gui/bench/`): the DSP chain timed per stage against the block budget (`--model`, `--ir`, `--frames`, `--rate`, `--no-fast-tanh`, `--only`). The Phase 14 efficiency budget and reference numbers are in `gui/BUILD.md` → High CPU usage; re-run the bench after DSP changes. `--self-test-and-exit` also prints cold-start time and peak RSS.
+`-DNAM_BUILD_BENCH=ON` adds `namx-bench` (`gui/bench/`): the DSP chain timed per stage against the block budget (`--model`, `--ir`, `--frames`, `--rate`, `--no-fast-tanh`, `--only`). The Phase 14 efficiency budget and reference numbers are in `gui/BUILD.md` → High CPU usage; re-run the bench after DSP changes. `--self-test-and-exit` also prints cold-start time and peak RSS.
 
 ## Running
 
 ```bash
 # Linux, PipeWire-JACK (modern distros) — just launch:
-gui/build-release/NAMPlayer
+gui/build-release/namx
 
 # Classic jackd:
 jackd -d alsa -r 44100 -p 256 &
-gui/build-release/NAMPlayer
+gui/build-release/namx
 ```
 
-JACK ports: `NAMPlayer:input`, `NAMPlayer:output_L`, `NAMPlayer:output_R`. Connect with `jack_connect`, qjackctl, or qpwgraph. Devices are also selectable from the status bar at the bottom of the window (click the In:/Out: items), and connections persist via QSettings. On Windows the WASAPI backend picks devices directly — no server needed.
+JACK ports: `NAM-X:input`, `NAM-X:output_L`, `NAM-X:output_R`. Connect with `jack_connect`, qjackctl, or qpwgraph. Devices are also selectable from the status bar at the bottom of the window (click the In:/Out: items), and connections persist via QSettings. On Windows the WASAPI backend picks devices directly — no server needed.
 
 ## GUI architecture
 

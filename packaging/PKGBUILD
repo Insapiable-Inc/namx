@@ -1,23 +1,23 @@
 # Maintainer: silvercobraa <claude@pichulero.cl>
-# AUR package for NAM Player. Builds from the tagged source tree (submodules
+# AUR package for NAM-X. Builds from the tagged source tree (submodules
 # vendored through the release tarball produced by .github/workflows/release.yml).
-pkgname=nam-player
+pkgname=namx
 pkgver=1.0.0
 pkgrel=1
 pkgdesc="Standalone Neural Amp Modeler player: models, IRs, effects chain, library"
 arch=('x86_64')
-url="https://github.com/silvercobraa/NeuralAmpModelerGUI"
+url="https://github.com/silvercobraa/nam-x"
 license=('GPL-3.0-or-later' 'MIT') # app GPL; bundled NAM core MIT
 depends=('qt6-base' 'jack' 'alsa-lib') # jack = jack2 or pipewire-jack; alsa-lib = MIDI input
 optdepends=('pipewire-jack: run without a JACK daemon'
             'qpwgraph: patch the JACK ports graphically')
 makedepends=('cmake' 'ninja' 'git')
 provides=('namplayer')
-source=("$pkgname-$pkgver.tar.gz::$url/releases/download/v$pkgver/nam-player-$pkgver-src.tar.gz")
+source=("$pkgname-$pkgver.tar.gz::$url/releases/download/v$pkgver/namx-$pkgver-src.tar.gz")
 sha256sums=('SKIP') # filled in by the release job / maintainer at publish time
 
 build() {
-    cd "$srcdir/nam-player-$pkgver"
+    cd "$srcdir/namx-$pkgver"
     cmake -S gui -B build -G Ninja \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX=/usr \
@@ -26,7 +26,7 @@ build() {
 }
 
 package() {
-    cd "$srcdir/nam-player-$pkgver"
+    cd "$srcdir/namx-$pkgver"
     DESTDIR="$pkgdir" cmake --install build
     install -Dm644 gui/LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
     install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE-MIT"

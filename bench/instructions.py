@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """CPU regression check by instruction count (Phase 27).
 
-Runs every stage of NAMPlayerBench under valgrind's callgrind and counts the CPU
+Runs every stage of namx-bench under valgrind's callgrind and counts the CPU
 instructions one 128-frame block costs. Instruction counts are nearly deterministic for
 a given binary, unlike wall time on shared CI machines. Startup (model load, IR build)
 is cancelled out by running each stage for two block counts and taking the difference.
@@ -10,7 +10,7 @@ Counts depend on the compiler, so the baseline file keeps one entry per compiler
 bench prints which one built it). Without an entry for this compiler the check only
 reports; with one, a stage more than --tolerance above its baseline fails.
 
-    gui/bench/instructions.py --bench gui/build-release/NAMPlayerBench \
+    gui/bench/instructions.py --bench gui/build-release/namx-bench \
         --baseline gui/bench/instructions-baseline.json [--update]
 
 The amp runs example_models/wavenet_a1_standard.nam (a standard 16+8 ch WaveNet); the

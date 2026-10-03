@@ -1,7 +1,7 @@
 // Windows resources: executable icon + version block.
 #include <windows.h>
 
-IDI_ICON1 ICON "../resources/icons/NAMPlayer.ico"
+IDI_ICON1 ICON "../resources/icons/namx.ico"
 
 #ifndef NAM_VERSION
 #define NAM_VERSION "1.0.0"
@@ -21,11 +21,11 @@ BEGIN
         BLOCK "040904B0"
         BEGIN
             VALUE "CompanyName",      "pichulero.cl"
-            VALUE "FileDescription",  "NAM Player"
+            VALUE "FileDescription",  "NAM-X"
             VALUE "FileVersion",      NAM_VERSION
-            VALUE "InternalName",     "NAMPlayer"
-            VALUE "OriginalFilename", "NAMPlayer.exe"
-            VALUE "ProductName",      "NAM Player"
+            VALUE "InternalName",     "namx"
+            VALUE "OriginalFilename", "namx.exe"
+            VALUE "ProductName",      "NAM-X"
             VALUE "ProductVersion",   NAM_VERSION
         END
     END

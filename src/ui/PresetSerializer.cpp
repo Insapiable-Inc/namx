@@ -57,8 +57,8 @@ expected<void, QString> validate(const QJsonObject& obj, const ParamRegistry& pa
         }
         if (version > VERSION) {
             return std::unexpected(
-                QString("It was saved by a newer NAM Player (preset format %1; this version "
-                        "reads up to %2). Update NAM Player to load it.")
+                QString("It was saved by a newer NAM-X (preset format %1; this version "
+                        "reads up to %2). Update NAM-X to load it.")
                     .arg(static_cast<int>(version))
                     .arg(VERSION));
         }
@@ -114,7 +114,7 @@ expected<void, QString> validate(const QJsonObject& obj, const ParamRegistry& pa
         known = true;
     }
     if (!known) {
-        return std::unexpected(QString("It doesn't contain any NAM Player settings."));
+        return std::unexpected(QString("It doesn't contain any NAM-X settings."));
     }
     return {};
 }

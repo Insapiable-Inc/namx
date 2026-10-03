@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20) # CXX_STANDARD 23
-project(NAMPlayer VERSION 1.0.0 LANGUAGES CXX)
+project(namx VERSION 1.0.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -141,7 +141,7 @@ if(WIN32)
     list(APPEND GUI_SOURCES
         src/dsp/WasapiBackend.cpp
         src/dsp/WasapiBackend.h
-        packaging/NAMPlayer.rc   # exe icon + version block
+        packaging/namx.rc   # exe icon + version block
         src/midi/WinMidiInput.cpp
     )
 else()
@@ -156,7 +156,7 @@ endif()
 # Target
 # ---------------------------------------------------------------------------
 
-add_executable(NAMPlayer ${GUI_SOURCES} ${NAM_SOURCES})
+add_executable(namx ${GUI_SOURCES} ${NAM_SOURCES})
 
 # Warnings (CPP_GUIDELINES.md → Types and casts) apply to our code only: third-party
 # sources compiled into our targets are silenced, their headers included as SYSTEM.
@@ -171,42 +171,42 @@ endif()
 set_source_files_properties(${NAM_SOURCES} PROPERTIES COMPILE_OPTIONS "${NAM_THIRD_PARTY_FLAGS}")
 
 # On Windows we want a GUI app (no console window). Linux ignores WIN32.
-set_target_properties(NAMPlayer PROPERTIES WIN32_EXECUTABLE TRUE)
+set_target_properties(namx PROPERTIES WIN32_EXECUTABLE TRUE)
 
-target_include_directories(NAMPlayer SYSTEM PRIVATE
+target_include_directories(namx SYSTEM PRIVATE
     ${NAM_ROOT}
     ${NAM_DEPS_PATH}/eigen
     ${NAM_DEPS_PATH}/nlohmann
     # Header-only Lanczos resampler (NamProcessor: models at their training rate).
     ${NAM_DEPS_PATH}/AudioDSPTools/dsp/ResamplingContainer
 )
-target_include_directories(NAMPlayer PRIVATE
+target_include_directories(namx PRIVATE
     src/dsp
     src/ui
     src/midi
 )
 
 if(NOT WIN32)
-    target_include_directories(NAMPlayer PRIVATE ${JACK_INCLUDE_DIRS} ${ALSA_INCLUDE_DIRS})
+    target_include_directories(namx PRIVATE ${JACK_INCLUDE_DIRS} ${ALSA_INCLUDE_DIRS})
 endif()
 
-target_compile_definitions(NAMPlayer PRIVATE
+target_compile_definitions(namx PRIVATE
     NAM_SAMPLE_FLOAT
     NAM_ENABLE_A2_FAST
     NAM_VERSION="${PROJECT_VERSION}"
 )
 
-target_link_libraries(NAMPlayer PRIVATE
+target_link_libraries(namx PRIVATE
     Qt6::Core
     Qt6::Widgets
 )
 
 if(WIN32)
     # WASAPI lives in these system DLLs.
-    target_link_libraries(NAMPlayer PRIVATE ole32 mmdevapi avrt winmm)
-    target_compile_definitions(NAMPlayer PRIVATE NOMINMAX WIN32_LEAN_AND_MEAN)
+    target_link_libraries(namx PRIVATE ole32 mmdevapi avrt winmm)
+    target_compile_definitions(namx PRIVATE NOMINMAX WIN32_LEAN_AND_MEAN)
 else()
-    target_link_libraries(NAMPlayer PRIVATE ${JACK_LIBRARIES} ${ALSA_LIBRARIES})
+    target_link_libraries(namx PRIVATE ${JACK_LIBRARIES} ${ALSA_LIBRARIES})
 endif()
 
 # ---------------------------------------------------------------------------
@@ -223,7 +223,7 @@ option(NAM_NATIVE_OPT "Optimize for the build machine's CPU (-march=native); OFF
 if(MSVC)
     # MSVC has no -march=native equivalent; /arch:AVX2 is both the fast and
     # the portable choice, so NAM_NATIVE_OPT has no effect here.
-    target_compile_options(NAMPlayer PRIVATE
+    target_compile_options(namx PRIVATE
         ${NAM_WARNING_FLAGS} /permissive- /EHsc
         $<$<CONFIG:Release>:/O2 /arch:AVX2>
         $<$<CONFIG:Debug>:/Od /Zi>
@@ -234,7 +234,7 @@ else()
     else()
         set(NAM_SIMD_FLAGS -mavx2 -mfma)
     endif()
-    target_compile_options(NAMPlayer PRIVATE
+    target_compile_options(namx PRIVATE
         ${NAM_WARNING_FLAGS}
         $<$<CONFIG:Release>:-O3 ${NAM_SIMD_FLAGS}>
         $<$<CONFIG:Debug>:-Og -g>
@@ -243,7 +243,7 @@ endif()
 
 # stdc++fs is libstdc++-only — MSVC ships <filesystem> in the runtime.
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    target_link_libraries(NAMPlayer PRIVATE stdc++fs)
+    target_link_libraries(namx PRIVATE stdc++fs)
 endif()
 
 # ---------------------------------------------------------------------------
@@ -252,9 +252,9 @@ endif()
 # packaging/README.md). Windows deploys with windeployqt instead.
 # ---------------------------------------------------------------------------
 include(GNUInstallDirs)
-install(TARGETS NAMPlayer RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(TARGETS namx RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 if(UNIX AND NOT APPLE)
-    set(NAM_APP_ID "cl.pichulero.NAMPlayer")
+    set(NAM_APP_ID "cl.pichulero.namx")
     install(FILES packaging/${NAM_APP_ID}.desktop
             DESTINATION ${CMAKE_INSTALL_DATADIR}/applications)
     install(FILES packaging/${NAM_APP_ID}.metainfo.xml
@@ -262,11 +262,11 @@ if(UNIX AND NOT APPLE)
     install(FILES packaging/${NAM_APP_ID}.xml
             DESTINATION ${CMAKE_INSTALL_DATADIR}/mime/packages)
     foreach(size 16 32 48 64 128 256 512)
-        install(FILES resources/icons/NAMPlayer-${size}.png
+        install(FILES resources/icons/namx-${size}.png
                 DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/${size}x${size}/apps
                 RENAME ${NAM_APP_ID}.png)
     endforeach()
-    install(FILES resources/icons/NAMPlayer.svg
+    install(FILES resources/icons/namx.svg
             DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps
             RENAME ${NAM_APP_ID}.svg)
 endif()
@@ -315,39 +315,39 @@ if(NAM_BUILD_TESTS)
 endif()
 
 # ---------------------------------------------------------------------------
-# Benchmark (opt-in): -DNAM_BUILD_BENCH=ON → NAMPlayerBench, the chain timer
-# that checks the Phase 14 efficiency budget (see bench/NAMPlayerBench.cpp).
+# Benchmark (opt-in): -DNAM_BUILD_BENCH=ON → namx-bench, the chain timer
+# that checks the Phase 14 efficiency budget (see bench/NamxBench.cpp).
 # ---------------------------------------------------------------------------
-option(NAM_BUILD_BENCH "Build the NAMPlayerBench chain benchmark" OFF)
+option(NAM_BUILD_BENCH "Build the namx-bench chain benchmark" OFF)
 if(NAM_BUILD_BENCH)
     set(BENCH_DSP_SOURCES ${GUI_SOURCES})
     list(FILTER BENCH_DSP_SOURCES INCLUDE REGEX "^src/dsp/.*\\.cpp$")
     list(FILTER BENCH_DSP_SOURCES EXCLUDE REGEX "(AudioEngine|JackBackend|WasapiBackend)\\.cpp$")
-    add_executable(NAMPlayerBench bench/NAMPlayerBench.cpp ${BENCH_DSP_SOURCES} ${NAM_SOURCES})
-    target_include_directories(NAMPlayerBench SYSTEM PRIVATE
+    add_executable(namx-bench bench/NamxBench.cpp ${BENCH_DSP_SOURCES} ${NAM_SOURCES})
+    target_include_directories(namx-bench SYSTEM PRIVATE
         ${NAM_ROOT} ${NAM_DEPS_PATH}/eigen ${NAM_DEPS_PATH}/nlohmann
         ${NAM_DEPS_PATH}/AudioDSPTools/dsp/ResamplingContainer)
-    target_include_directories(NAMPlayerBench PRIVATE src/dsp)
-    target_compile_definitions(NAMPlayerBench PRIVATE NAM_SAMPLE_FLOAT NAM_ENABLE_A2_FAST)
-    target_link_libraries(NAMPlayerBench PRIVATE Qt6::Core) # Log.cpp: QLoggingCategory
+    target_include_directories(namx-bench PRIVATE src/dsp)
+    target_compile_definitions(namx-bench PRIVATE NAM_SAMPLE_FLOAT NAM_ENABLE_A2_FAST)
+    target_link_libraries(namx-bench PRIVATE Qt6::Core) # Log.cpp: QLoggingCategory
     if(MSVC)
-        target_compile_options(NAMPlayerBench PRIVATE ${NAM_WARNING_FLAGS} /O2 /arch:AVX2 /EHsc)
+        target_compile_options(namx-bench PRIVATE ${NAM_WARNING_FLAGS} /O2 /arch:AVX2 /EHsc)
     else()
-        target_compile_options(NAMPlayerBench PRIVATE ${NAM_WARNING_FLAGS} -O3 ${NAM_SIMD_FLAGS})
+        target_compile_options(namx-bench PRIVATE ${NAM_WARNING_FLAGS} -O3 ${NAM_SIMD_FLAGS})
     endif()
 
-    # Effect quality numbers (bench/NAMPlayerQuality.cpp): aliasing, pitch error, decay,
+    # Effect quality numbers (bench/NamxQuality.cpp): aliasing, pitch error, decay,
     # EQ response, limiter overshoot — the yardstick for Phase 22.
-    add_executable(NAMPlayerQuality bench/NAMPlayerQuality.cpp ${BENCH_DSP_SOURCES} ${NAM_SOURCES})
-    target_include_directories(NAMPlayerQuality SYSTEM PRIVATE
+    add_executable(namx-quality bench/NamxQuality.cpp ${BENCH_DSP_SOURCES} ${NAM_SOURCES})
+    target_include_directories(namx-quality SYSTEM PRIVATE
         ${NAM_ROOT} ${NAM_DEPS_PATH}/eigen ${NAM_DEPS_PATH}/nlohmann
         ${NAM_DEPS_PATH}/AudioDSPTools/dsp/ResamplingContainer)
-    target_include_directories(NAMPlayerQuality PRIVATE src/dsp)
-    target_compile_definitions(NAMPlayerQuality PRIVATE NAM_SAMPLE_FLOAT NAM_ENABLE_A2_FAST)
-    target_link_libraries(NAMPlayerQuality PRIVATE Qt6::Core)
+    target_include_directories(namx-quality PRIVATE src/dsp)
+    target_compile_definitions(namx-quality PRIVATE NAM_SAMPLE_FLOAT NAM_ENABLE_A2_FAST)
+    target_link_libraries(namx-quality PRIVATE Qt6::Core)
     if(MSVC)
-        target_compile_options(NAMPlayerQuality PRIVATE ${NAM_WARNING_FLAGS} /O2 /arch:AVX2 /EHsc)
+        target_compile_options(namx-quality PRIVATE ${NAM_WARNING_FLAGS} /O2 /arch:AVX2 /EHsc)
     else()
-        target_compile_options(NAMPlayerQuality PRIVATE ${NAM_WARNING_FLAGS} -O3 ${NAM_SIMD_FLAGS})
+        target_compile_options(namx-quality PRIVATE ${NAM_WARNING_FLAGS} -O3 ${NAM_SIMD_FLAGS})
     endif()
 endif()

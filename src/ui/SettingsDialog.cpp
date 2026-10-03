@@ -197,7 +197,7 @@ QWidget* SettingsDialog::build_audio_page() {
         exclusive_box = new QCheckBox("Exclusive mode");
         exclusive_box->setToolTip(
             "Take the devices over: the lowest latency WASAPI offers, but no other app can "
-            "play or record through them while NAM Player runs. Falls back to shared mode "
+            "play or record through them while NAM-X runs. Falls back to shared mode "
             "when a device refuses.");
         connect(exclusive_box, &QCheckBox::toggled, this, [this](bool on) {
             QSettings().setValue("audio/exclusive", on);

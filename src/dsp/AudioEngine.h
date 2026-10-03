@@ -42,11 +42,11 @@ public:
     AudioEngine();
     ~AudioEngine() override;
 
-    bool start(const string& client_name = "NAMPlayer");
+    bool start(const string& client_name = "NAM-X");
     void stop();
 
     bool start_with_devices(const string& input_device_id, const string& output_device_id,
-                            const string& client_name = "NAMPlayer");
+                            const string& client_name = "NAM-X");
 
     // Exclusive device access (see IAudioBackend); applies on the next start.
     bool supports_exclusive_mode() const;

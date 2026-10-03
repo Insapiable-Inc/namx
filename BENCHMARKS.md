@@ -1,6 +1,6 @@
 # Benchmarks
 
-Measured, dated numbers for NAM Player (Phase 27). Every figure says how it was taken so
+Measured, dated numbers for NAM-X (Phase 27). Every figure says how it was taken so
 it can be re-run after a change; deterministic inputs only (fixed signals, real models).
 
 **Machine (2026-10-02):** Intel Core i9-12900K, Linux 7.2.7 (Arch), GCC 16.2, Release
@@ -10,7 +10,7 @@ status bar reads higher under `powersave` (see BUILD.md → High CPU usage).
 
 ## Amplifier CPU
 
-Mean time per block of the Amp stage (`NAMPlayerBench --only Amp`) and its share of the
+Mean time per block of the Amp stage (`namx-bench --only Amp`) and its share of the
 real-time budget, fast tanh on (the default). One model per architecture from a real
 library. ¹ Not 48 kHz: the model runs at its 48 kHz training rate behind the resampler.
 
@@ -35,7 +35,7 @@ library. ¹ Not 48 kHz: the model runs at its 48 kHz training rate behind the re
 | Slimmable (A2) | 48 kHz | 19 µs · 2.9 % | 34 µs · 2.6 % | 63 µs · 2.4 % | 122 µs · 2.3 % |
 | Slimmable (A2) | 96 kHz ¹ | 13 µs · 4.0 % | 22 µs · 3.2 % | 38 µs · 2.8 % | 69 µs · 2.6 % |
 
-Reproduce: `gui/bench/bench_matrix.py --bench gui/build-bench/NAMPlayerBench --cpu 2
+Reproduce: `gui/bench/bench_matrix.py --bench gui/build-bench/namx-bench --cpu 2
 --model "Label=path.nam" …`
 
 **Release builds are as fast:** the portable build (`-DNAM_NATIVE_OPT=OFF`, AVX2 + FMA, what
@@ -46,7 +46,7 @@ CI ships) is within ~1 µs of `-march=native` on every model at 64 frames.
 Same models through upstream's own `tools/benchmodel` (Release, `double` samples, default
 flags — the core as it ships upstream), 64-frame blocks at 48 kHz, per block:
 
-| Model | Upstream core | NAM Player | Speed-up |
+| Model | Upstream core | NAM-X | Speed-up |
 |---|---|---|---|
 | Standard (16+8 ch) | 73 µs | 34 µs | 2.1× |
 | Lite (12+6 ch) | 53 µs | 42 µs | 1.3× |
@@ -139,8 +139,8 @@ modulation and saturation on, Transpose at −2 st.
 | stereo input, amp summed | 129 µs · 4.8 % (p99 156 µs) | 35 µs · 5.2 % (p99 38 µs) |
 | stereo input, amp per channel | 207 µs · 7.8 % (p99 232 µs) | 54 µs · 8.2 % (p99 63 µs) |
 
-Reproduce: `gui/bench/bench_effects.py --bench gui/build-bench/NAMPlayerBench --cpu 2
---model amp.nam --ir cab.wav`; totals with `NAMPlayerBench --model … --ir … [routing flags]`.
+Reproduce: `gui/bench/bench_effects.py --bench gui/build-bench/namx-bench --cpu 2
+--model amp.nam --ir cab.wav`; totals with `namx-bench --model … --ir … [routing flags]`.
 
 ## Resampling
 
@@ -151,7 +151,7 @@ resampler): harmonics 1–5 of a 220 Hz sine at 44.1 and 96 kHz match the 48 kHz
 
 ## Effect quality
 
-`NAMPlayerQuality` (built with `-DNAM_BUILD_BENCH=ON`; `--model amp.nam` adds the amp
+`namx-quality` (built with `-DNAM_BUILD_BENCH=ON`; `--model amp.nam` adds the amp
 column) drives each processor with fixed test signals and measures the output. The amp
 column uses the standard (16+8 ch) model with fast tanh, as in the app. These are the
 numbers Phase 22 has to beat.

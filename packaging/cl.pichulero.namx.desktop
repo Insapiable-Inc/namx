@@ -1,14 +1,14 @@
 [Desktop Entry]
 Type=Application
-Name=NAM Player
+Name=NAM-X
 GenericName=Guitar amp modeler
 Comment=Play Neural Amp Modeler profiles and impulse responses live
-Exec=NAMPlayer %F
-TryExec=NAMPlayer
-Icon=cl.pichulero.NAMPlayer
+Exec=namx %F
+TryExec=namx
+Icon=cl.pichulero.namx
 Terminal=false
 Categories=AudioVideo;Audio;Music;
 Keywords=guitar;amp;NAM;neural;impulse;response;cab;JACK;PipeWire;
 MimeType=application/x-nam;application/x-nampreset;
 StartupNotify=true
-StartupWMClass=NAMPlayer
+StartupWMClass=namx

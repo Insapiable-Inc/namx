@@ -36,9 +36,15 @@ LibraryRoots LibraryRoots::defaults() {
     return r;
 }
 
+QString LibraryRoots::app_documents_dir() {
+    const QString docs = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+    const QString current = docs + "/NAM-X";
+    const QString legacy = docs + "/NAM Player";
+    return !QDir(current).exists() && QDir(legacy).exists() ? legacy : current;
+}
+
 QString LibraryRoots::default_preset_dir() {
-    return QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) +
-           "/NAM Player/Presets";
+    return app_documents_dir() + "/Presets";
 }
 
 static LibraryRoots load_roots() {

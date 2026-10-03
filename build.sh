@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build NAMPlayer GUI
+# Build namx GUI
 # Usage: ./build.sh [Release|Debug]
 set -e
 
@@ -20,8 +20,8 @@ echo "==> Building…"
 cmake --build "${BUILD_DIR}" --parallel "$(nproc)"
 
 echo ""
-echo "Done. Binary: ${BUILD_DIR}/NAMPlayer"
+echo "Done. Binary: ${BUILD_DIR}/namx"
 echo ""
 echo "Run with:"
 echo "  jackd -d alsa &   # start JACK if not already running"
-echo "  ${BUILD_DIR}/NAMPlayer"
+echo "  ${BUILD_DIR}/namx"

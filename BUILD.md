@@ -1,6 +1,6 @@
-# NAM Player — Build & Usage Guide
+# NAM-X — Build & Usage Guide
 
-NAM Player (binary `NAMPlayer`) is a standalone Qt6 desktop application that loads `.nam` neural amp models
+NAM-X (binary `namx`) is a standalone Qt6 desktop application that loads `.nam` neural amp models
 and `.wav` impulse responses, processes live audio, and exposes a full pedal-style
 effects chain plus a 3-band EQ.
 
@@ -88,7 +88,7 @@ Three things to install:
 WASAPI links against the system DLLs (`ole32`, `mmdevapi`, `avrt`), so there's
 no separate audio dependency — the Windows SDK already ships them.
 
-> **Exclusive mode** (*Settings → Audio → Exclusive mode*): NAM Player takes the
+> **Exclusive mode** (*Settings → Audio → Exclusive mode*): NAM-X takes the
 > input and output devices over — the lowest latency WASAPI offers (the devices'
 > minimum period, typically 3 ms), at the cost that no other app can use them while
 > it runs. It picks a format both devices take natively (float32, int32, 24-in-32,
@@ -116,8 +116,8 @@ no separate audio dependency — the Windows SDK already ships them.
 ## 2. Get the source & submodules
 
 ```bash
-git clone --recursive https://github.com/silvercobraa/NeuralAmpModelerGUI.git nam-player
-cd nam-player
+git clone --recursive https://github.com/silvercobraa/nam-x.git
+cd nam-x
 
 # The GUI needs the Eigen submodule (AudioDSPTools is only used by the upstream CLI tools)
 git submodule update --init --recursive
@@ -139,7 +139,7 @@ chmod +x build.sh
 ./build.sh Debug    # Debug
 ```
 
-Binary lands at `gui/build-release/NAMPlayer` (or `build-debug/`).
+Binary lands at `gui/build-release/namx` (or `build-debug/`).
 
 ### Linux — manual CMake
 
@@ -165,7 +165,7 @@ cmake --build build-release --parallel
 sudo cmake --install build-release --prefix /usr/local
 ```
 
-This installs the binary, the launcher (`cl.pichulero.NAMPlayer.desktop`, with `.nam`
+This installs the binary, the launcher (`cl.pichulero.namx.desktop`, with `.nam`
 and `.nampreset` file associations), the AppStream metadata and the icon theme files.
 Run `update-desktop-database` / `update-mime-database` afterwards if your distro
 doesn't hook them.
@@ -173,7 +173,7 @@ doesn't hook them.
 An AUR-style `PKGBUILD` lives in [`packaging/`](packaging/README.md). An AppImage and
 a Flatpak (Flathub) are planned for the first release (ROADMAP Phase 8).
 
-Command-line flags: `NAMPlayer [file…]` opens `.nam` / `.wav` / `.nampreset` files;
+Command-line flags: `namx [file…]` opens `.nam` / `.wav` / `.nampreset` files;
 `--version`; `--self-test-and-exit` (headless CI check: window up, library scanned,
 exit 0 after 1.5 s).
 
@@ -189,7 +189,7 @@ cd gui
 .\build.ps1 -Generator Ninja                         # Ninja for faster builds
 ```
 
-Binary lands at `gui\build-release\Release\NAMPlayer.exe`. `windeployqt`
+Binary lands at `gui\build-release\Release\namx.exe`. `windeployqt`
 runs automatically at the end of the build to copy Qt DLLs next to the .exe.
 
 > If you see *"Could not find a package configuration file provided by Qt6"*,
@@ -204,7 +204,7 @@ cmake -S . -B build-release `
       -G "Visual Studio 17 2022" -A x64 `
       -DCMAKE_PREFIX_PATH="C:\Qt\6.7.0\msvc2019_64"
 cmake --build build-release --config Release --parallel
-& "C:\Qt\6.7.0\msvc2019_64\bin\windeployqt.exe" .\build-release\Release\NAMPlayer.exe
+& "C:\Qt\6.7.0\msvc2019_64\bin\windeployqt.exe" .\build-release\Release\namx.exe
 ```
 
 With Ninja (faster):
@@ -224,7 +224,7 @@ cmake --build build-release --parallel
 | `-DCMAKE_PREFIX_PATH=...` | none | Qt install root on Windows |
 | `-DNAM_NATIVE_OPT=OFF` | ON | Portable AVX2/FMA instead of `-march=native` (release/CI builds) |
 | `-DNAM_BUILD_TESTS=ON` | OFF | `MidiMapperTest`, `DspGoldenTest`, `WavReaderTest` |
-| `-DNAM_BUILD_BENCH=ON` | OFF | `NAMPlayerBench`, the chain benchmark (see Troubleshooting → High CPU usage) |
+| `-DNAM_BUILD_BENCH=ON` | OFF | `namx-bench`, the chain benchmark (see Troubleshooting → High CPU usage) |
 
 ---
 
@@ -236,8 +236,8 @@ cmake --build build-release --parallel
 # Start JACK daemon (44.1 kHz, 256-frame buffer, ALSA backend)
 jackd -d alsa -r 44100 -p 256 &
 
-# Launch NAMPlayer
-./build-release/NAMPlayer
+# Launch namx
+./build-release/namx
 ```
 
 Common `jackd` driver options:
@@ -254,7 +254,7 @@ Common `jackd` driver options:
 Just launch the app — no daemon needed:
 
 ```bash
-./build-release/NAMPlayer
+./build-release/namx
 ```
 
 PipeWire exposes a JACK-compatible socket automatically.
@@ -263,20 +263,20 @@ Use **qpwgraph** or **Carla** to patch ports visually.
 ### With QjackCtl
 
 1. Open **QjackCtl**, configure your interface, click **Start**.
-2. Launch `NAMPlayer`.
+2. Launch `namx`.
 3. Use the **Graph** or **Connect** panel to wire ports.
 
 ---
 
 ## 5. Connect audio ports
 
-NAMPlayer registers three JACK ports (mono in, stereo out):
+namx registers three JACK ports (mono in, stereo out):
 
 | Port | Direction |
 |------|-----------|
-| `NAMPlayer:input`    | Audio input (mono) |
-| `NAMPlayer:output_L` | Audio output, left |
-| `NAMPlayer:output_R` | Audio output, right |
+| `NAM-X:input`    | Audio input (mono) |
+| `NAM-X:output_L` | Audio output, left |
+| `NAM-X:output_R` | Audio output, right |
 
 On first run the app connects `system:capture_1` → `input` and `output_L/R` →
 `system:playback_1/2` itself; connections you change afterwards are remembered.
@@ -284,10 +284,10 @@ On first run the app connects `system:capture_1` → `input` and `output_L/R` �
 ### Command-line connection
 
 ```bash
-# Guitar interface → NAMPlayer → speakers
-jack_connect system:capture_1    NAMPlayer:input
-jack_connect NAMPlayer:output_L  system:playback_1
-jack_connect NAMPlayer:output_R  system:playback_2
+# Guitar interface → namx → speakers
+jack_connect system:capture_1    NAM-X:input
+jack_connect NAM-X:output_L  system:playback_1
+jack_connect NAM-X:output_R  system:playback_2
 ```
 
 ### GUI connection tools
@@ -343,7 +343,7 @@ window layout, and the quick-slot assignments. These
 belong to the machine or the session, so loading a preset never changes them.
 
 **Starter presets.** On first run eight starter presets are copied to
-`<Documents>/NAM Player/Presets/Starter` (Clean Chorus, Tight Rhythm, Lead Delay,
+`<Documents>/NAM-X/Presets/Starter` (Clean Chorus, Tight Rhythm, Lead Delay,
 Ambient Swell, Surf Tremolo, Funk Wah, Jet Flanger, Vibe Phaser). They contain no
 model or IR, so they apply over whatever amp and cab are loaded. If you delete them
 they stay deleted.
@@ -424,7 +424,7 @@ change applies immediately.
 The **Library** dock (left of the rack; `Ctrl+L` shows/hides it) lists every `.nam`
 model, `.wav` IR and `.nampreset` preset found under the configured folders
 (**Library → Folders…**, which opens the Library page of **Settings**; defaults: `~/NAM` for models and IRs, `~/Music/IRs`, and
-`~/Documents/NAM Player/Presets`). Folders are scanned recursively on a background
+`~/Documents/NAM-X/Presets`). Folders are scanned recursively on a background
 thread, metadata is cached, and the list follows changes on disk.
 
 | Control | Action |
@@ -537,16 +537,16 @@ IR files are compatible with any standard cab sim WAV (e.g., from OwnHammer, Cel
   so DSP % reads several times higher than the benchmark below. `performance`
   (or `cpupower frequency-set -g performance`) trades power for headroom.
 
-**Measuring.** `NAMPlayerBench` times every effect in chain order, block by block,
+**Measuring.** `namx-bench` times every effect in chain order, block by block,
 against the real-time budget:
 
 ```bash
 cmake -S gui -B gui/build-bench -DCMAKE_BUILD_TYPE=Release -DNAM_BUILD_BENCH=ON
-cmake --build gui/build-bench --target NAMPlayerBench
-gui/build-bench/NAMPlayerBench --model amp.nam --ir cab.wav   # --frames 128 --rate 48000 by default
+cmake --build gui/build-bench --target namx-bench
+gui/build-bench/namx-bench --model amp.nam --ir cab.wav   # --frames 128 --rate 48000 by default
 ```
 
-`NAMPlayer --self-test-and-exit` prints the cold-start time and peak memory.
+`namx --self-test-and-exit` prints the cold-start time and peak memory.
 
 **Budget** (checked with the tools above): the default chain with a standard
 WaveNet and an IR stays under **10 %** of a 128-frame block on one core; the idle UI

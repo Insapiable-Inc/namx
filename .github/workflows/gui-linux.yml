@@ -64,8 +64,8 @@ jobs:
         run: |
           # No JACK on the runner: the backend reports "Not connected" and the
           # window still has to come up, scan the library and exit 0.
-          ./build-release/NAMPlayer --version
-          timeout 30 ./build-release/NAMPlayer --self-test-and-exit
+          ./build-release/namx --version
+          timeout 30 ./build-release/namx --self-test-and-exit
           ./build-release/MidiMapperTest
           ./build-release/DspGoldenTest
           ./build-release/WavReaderTest
@@ -76,23 +76,23 @@ jobs:
         # the script with --update on the same toolchain and committing the file.
         run: |
           python3 gui/bench/instructions.py \
-            --bench gui/build-release/NAMPlayerBench \
+            --bench gui/build-release/namx-bench \
             --baseline gui/bench/instructions-baseline.json
 
       - name: Packaging files + install layout
         working-directory: gui
         run: |
-          desktop-file-validate packaging/cl.pichulero.NAMPlayer.desktop
-          appstreamcli validate --no-net packaging/cl.pichulero.NAMPlayer.metainfo.xml || true
-          xmllint --noout packaging/cl.pichulero.NAMPlayer.xml
+          desktop-file-validate packaging/cl.pichulero.namx.desktop
+          appstreamcli validate --no-net packaging/cl.pichulero.namx.metainfo.xml || true
+          xmllint --noout packaging/cl.pichulero.namx.xml
           DESTDIR="$PWD/stage" cmake --install build-release --prefix /usr
-          test -f stage/usr/bin/NAMPlayer
-          test -f stage/usr/share/applications/cl.pichulero.NAMPlayer.desktop
+          test -f stage/usr/bin/namx
+          test -f stage/usr/share/applications/cl.pichulero.namx.desktop
 
       - name: Upload binary
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: NAMPlayer-linux-x64
-          path: gui/build-release/NAMPlayer
+          name: namx-linux-x64
+          path: gui/build-release/namx
           retention-days: 14

@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """Per-effect CPU in every routing, for BENCHMARKS.md (Phase 27).
 
-Each effect runs alone (NAMPlayerBench --only NAME), pinned to one CPU, in three
+Each effect runs alone (namx-bench --only NAME), pinned to one CPU, in three
 routings: mono in with its Stereo switch off, mono in with the switch on (only effects
 that have one), and stereo in (every effect per channel; the amp both summed to mono
 and per channel). Prints a Markdown table of mean µs per block and % of the budget.
 
-    gui/bench/bench_effects.py --bench gui/build-bench/NAMPlayerBench --cpu 2 \
+    gui/bench/bench_effects.py --bench gui/build-bench/namx-bench --cpu 2 \
         --model amp.nam --ir cab.wav [--frames 128] [--rate 48000]
 """
 

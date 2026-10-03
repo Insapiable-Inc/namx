@@ -1,12 +1,12 @@
-// NAMPlayerBench — times the NAMPlayer effect chain block by block, the way
+// namx-bench — times the namx effect chain block by block, the way
 // the audio callback runs it, and reports each stage against the real-time
 // budget. The Phase 14 efficiency budget is checked with this tool:
 //
 //   DSP ≤ 10 % of a 128-frame block for the default chain on one core.
 //
 // Build: cmake -S gui -B gui/build-bench -DCMAKE_BUILD_TYPE=Release -DNAM_BUILD_BENCH=ON
-//        cmake --build gui/build-bench --target NAMPlayerBench
-// Run:   gui/build-bench/NAMPlayerBench --model amp.nam --ir cab.wav [options]
+//        cmake --build gui/build-bench --target namx-bench
+// Run:   gui/build-bench/namx-bench --model amp.nam --ir cab.wav [options]
 //
 // Every effect is enabled with its default settings (stereo effects in their
 // default stereo mode) and fed white noise at -12 dBFS, so data-dependent
@@ -55,7 +55,7 @@ struct Stage
 };
 
 static void usage() {
-    std::puts("usage: NAMPlayerBench [--model file.nam] [--ir file.wav] [--ir-b file.wav] "
+    std::puts("usage: namx-bench [--model file.nam] [--ir file.wav] [--ir-b file.wav] "
               "[--frames N] [--rate HZ]\n"
               "                      [--blocks N] [--no-fast-tanh] [--only NAME[,NAME…]]\n"
               "                      [--stereo-modes on|off] [--stereo-input] [--stereo-amp]\n"
@@ -306,7 +306,7 @@ int run(int argc, char** argv) {
 
     const double budget_us = static_cast<double>(frames) / rate * 1e6;
     std::printf(
-        "NAMPlayerBench  %zu frames @ %.0f Hz  budget %.1f µs/block  %zu blocks  fast tanh %s\n"
+        "namx-bench  %zu frames @ %.0f Hz  budget %.1f µs/block  %zu blocks  fast tanh %s\n"
         "routing: stereo switches %s, %s input%s\n"
         "compiler: %s\n",
         frames, rate, budget_us, blocks, fast_tanh ? "on" : "off",

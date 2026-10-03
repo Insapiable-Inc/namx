@@ -20,29 +20,31 @@ namespace namx
 #define NAM_VERSION "0.0.0"
 #endif
 
-// The app was registered with QSettings as "NAM Linux" before v1.0 — a misnomer
-// that also baked "Linux" into the Windows registry path. Copy that store into
-// the "NAM Player" one exactly once, so upgrading keeps saved port connections,
-// device IDs, session state and window geometry. The legacy store is left in
-// place (harmless, and a downgrade still finds it).
+// The app's QSettings store was "NAM Player" until the NAM-X rename (2026-10-03) and
+// "NAM Linux" before that. On the first start of an empty "namx" store, copy the
+// newest legacy store that has anything in it, exactly once, so upgrading keeps saved
+// port connections, device IDs, the library, MIDI mappings, session state and window
+// geometry. Legacy stores are left in place (harmless, and a downgrade still finds them).
 static void migrate_legacy_settings() {
     QSettings current; // org/app from QCoreApplication → the new location
     if (!current.allKeys().isEmpty()) {
         return;
     }
 
-    QSettings legacy(QStringLiteral("pichulero.cl"), QStringLiteral("NAM Linux"));
-    const QStringList keys = legacy.allKeys();
-    if (keys.isEmpty()) {
+    for (const char* name : {"NAM Player", "NAM Linux"}) {
+        QSettings legacy(QStringLiteral("pichulero.cl"), QString::fromUtf8(name));
+        const QStringList keys = legacy.allKeys();
+        if (keys.isEmpty()) {
+            continue;
+        }
+        for (const QString& key : keys) {
+            current.setValue(key, legacy.value(key));
+        }
+        current.sync();
+        qInfo("[NAM-X] Migrated %lld settings keys from the legacy \"%s\" store",
+              static_cast<long long>(keys.size()), name);
         return;
     }
-
-    for (const QString& key : keys) {
-        current.setValue(key, legacy.value(key));
-    }
-    current.sync();
-    qInfo("[NAM Player] Migrated %lld settings keys from the legacy \"NAM Linux\" store",
-          static_cast<long long>(keys.size()));
 }
 
 // Self-test end: report peak memory and quit with success.
@@ -72,12 +74,12 @@ int run(int argc, char* argv[]) {
     QStringList files;
     for (int i = 1; i < argc; ++i) {
         if (!std::strcmp(argv[i], "--version") || !std::strcmp(argv[i], "-v")) {
-            std::printf("NAM Player %s\n", NAM_VERSION);
+            std::printf("NAM-X %s\n", NAM_VERSION);
             return 0;
         }
         if (!std::strcmp(argv[i], "--help") || !std::strcmp(argv[i], "-h")) {
             std::printf(
-                "Usage: NAMPlayer [options] [file...]\n"
+                "Usage: namx [options] [file...]\n"
                 "  file                 .nam model, .wav impulse response or .nampreset to open\n"
                 "  -v, --version        print the version and exit\n"
                 "  --self-test-and-exit build the window, scan the library, print the\n"
@@ -106,13 +108,14 @@ int run(int argc, char* argv[]) {
 #endif
 
     QApplication app(argc, argv);
-    // Application name drives the QSettings path — keep in sync with migrateLegacySettings().
-    app.setApplicationName("NAM Player");
-    app.setApplicationDisplayName("NAM Player");
+    // Application name drives the QSettings path (…/pichulero.cl/namx.conf) — keep in
+    // sync with migrate_legacy_settings(). The display name is what windows show.
+    app.setApplicationName("namx");
+    app.setApplicationDisplayName("NAM-X");
     app.setApplicationVersion(NAM_VERSION);
     app.setOrganizationName("pichulero.cl");
-    app.setDesktopFileName("cl.pichulero.NAMPlayer");
-    app.setWindowIcon(QIcon(":/icons/NAMPlayer-256.png"));
+    app.setDesktopFileName("cl.pichulero.namx");
+    app.setWindowIcon(QIcon(":/icons/namx-256.png"));
 
     migrate_legacy_settings();
     Theme::apply(app);

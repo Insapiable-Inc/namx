@@ -4,7 +4,7 @@
 // time, frequency response against an independent Audio EQ Cookbook implementation,
 // limiter overshoot. Prints Markdown.
 //
-//   NAMPlayerQuality [--model amp.nam]
+//   namx-quality [--model amp.nam]
 
 #include <algorithm>
 #include <cmath>
