@@ -987,10 +987,10 @@ for the backend work (Phase 21), and a second full review follows the big change
       19 (mono→stereo exposes stale right-channel state), 21 (model change freezes
       the GUI — halved 2026-10-02: one parse, no double prewarm, 27 → 13.5 ms per switch;
       a background loader only if big models still stutter), ~~22~~ (done 2026-10-02),
-      ~~23~~ (done 2026-10-02), 24 (IR truncation silent/abrupt),
+      ~~23~~ (done 2026-10-02), ~~24~~ (IR truncation: faded and at 1 s since 2026-10-03; still only logged),
       26 (limiter scans the whole look-ahead per sample), ~~27~~ (done 2026-10-02), ~~28~~ (done 2026-10-02).
 - [ ] Belong elsewhere: 20 (bypass cuts tails → "Trails", with Phase 22),
-      25 (direct IR convolution cost → Phase 22's FFT convolution), 29–31 (WASAPI
+      ~~25~~ (done 2026-10-03 with Phase 22's FFT convolution), 29–31 (WASAPI
       device loss, clock drift, capture averaging → Phase 21), 12–13 also touch
       Phase 25 (TONE3000).
 - [ ] P3: 32 (MainWindow too big), 33 (naming leftovers), 34 (loader/transition test
@@ -1055,8 +1055,10 @@ it for the one it replaces, and is measured with `NAMPlayerBench`.
       picked by ear over WSOLA and a dozen variants; ~20 ms in the bass, ~4 ms above.
       Signalsmith Stretch measured: wrong bass pitch at playable latencies — kept for
       Shimmer/Crystals (below). Details in `DSP_RESEARCH.md` §1.
-- [ ] **Partitioned FFT convolution** for the cabinet (lifts the IR length cap, cuts
-      CPU) — the engine IR reverbs need.
+- [x] **Partitioned FFT convolution** for the cabinet (2026-10-03): 64 direct taps +
+      uniformly partitioned FFT convolution (`signalsmith-linear` submodule, MIT); zero
+      added latency, IRs up to 1 s (faded beyond, instead of cut at 4,096 taps), 3× less
+      CPU on a typical cab IR. IR reverbs will add non-uniform partitions on top.
 - [ ] **Reverb:** Freeverb → Dattorro plate + FDN hall/room; then IR reverb. Fix the Decay
       spread on the way (BENCHMARKS.md: 0–75 % = 0.19–0.83 s, 100 % = 9 s).
 - [ ] **Drive:** a second NAM slot ("Pedal") before the amp for OD/boost captures;
@@ -1246,7 +1248,12 @@ carries the final name.
 
 ## Ideas parking lot (not committed)
 
-- **Transpose latency** (measured 2026-10-01): pitch is accurate (median within ±0.3 cents
+- **Card badges** (user, 2026-10-03, nice to have): a small text tag after an effect's
+  title — "Beta", "Experimental", "Deprecated", … — with a tooltip saying why (e.g.
+  Transpose: the faint beat on long held chords). One optional flag on
+  `make_effect_row`, colors from `Theme`. The whole app being pre-1.0 already says
+  "experimental", so this is for individual features once that's no longer true.
+- *(Superseded 2026-10-03: Transpose runs on the filter-bank shifter — Phase 22.)* **Transpose latency** (measured 2026-10-01): pitch is accurate (median within ±0.3 cents
   over 110–330 Hz, −12…+12 st; brief ±10–15 cent wobble at crossfades when shifting up),
   but a shift costs ~30 ms of latency (50 ms window; 3 ms at 0 st) — noticeable for
   drop tunings. A 25–30 ms window would give ~13–15 ms at the cost of more artifacts on
@@ -1265,7 +1272,6 @@ carries the final name.
 - Song mode: cue list of preset changes on a song timeline, clock from an external
   player (MPRIS / SMTC) or an in-app file player with A/B loop, slow-down, pitch.
 - Headless CLAP was discussed and **rejected** with the no-plugin decision.
-- Partitioned FFT convolution for full-length IRs at flat cost.
 - Sample-rate renegotiation while running (effect SR is cached at start).
 
 ## Deferred — superseded

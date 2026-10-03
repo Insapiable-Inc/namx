@@ -119,13 +119,17 @@ modulation and saturation on, Transpose at −2 st.
 | Tremolo | 0.4 µs · 0.01 % | 0.7 µs · 0.03 % | 0.4 µs · 0.01 % |
 | Delay | 1.2 µs · 0.05 % | 2.1 µs · 0.08 % | 2.0 µs · 0.07 % |
 | Reverb | 0.9 µs · 0.04 % | 2.0 µs · 0.08 % | 1.9 µs · 0.07 % |
-| Cab | 17.3 µs · 0.65 % | — | 37.8 µs · 1.42 % |
+| Cab | 5.5 µs · 0.21 % | — | 10.8 µs · 0.40 % |
 | Limiter | 2.4 µs · 0.09 % | — | 2.4 µs · 0.09 % |
 
 - Everything except the amp and the cab is noise: each under 0.1 % of the budget, stereo
   included. The stereo cost is about twice the mono one, as expected.
-- The **cab** doubles with stereo input (two convolutions): 17 → 38 µs. Partitioned FFT
-  convolution (Phase 22, review item 25) is the fix if it ever matters.
+- The **cab** doubles with stereo input (two convolutions). Re-measured 2026-10-03 after
+  the partitioned FFT convolution (Phase 22) with a 200 ms V30 IR (1960-V30, ~9,600 taps
+  at 48 kHz): 5.5 / 10.8 µs. A full 1 s IR (the new cap) costs 19.5 / 39.5 µs — what
+  4,096 taps (85 ms, the old cap) cost before: 17.3 / 37.8 µs. Accuracy: −133…−138 dB
+  against an exact double-precision convolution, odd host block sizes and mono → stereo
+  switches included; 0 heap allocations on the audio thread.
 - The **amp** with stereo input is summed to mono by default (same cost); its Stereo switch
   runs two models (2.2×).
 

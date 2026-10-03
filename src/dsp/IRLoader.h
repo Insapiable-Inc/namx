@@ -1,10 +1,13 @@
 #pragma once
 
 #include <atomic>
+#include <complex>
 #include <memory>
 #include <mutex>
 #include <string>
 #include <vector>
+
+#include <signalsmith-linear/fft.h>
 
 #include "Common.h"
 #include "RtSlot.h"
@@ -12,13 +15,21 @@
 namespace namx
 {
 
-// Loads an IR (Impulse Response) WAV file and applies it as a convolution
-// cab simulator using a simple brute-force FIR convolution.
-// The IR is resampled to the engine rate, then truncated to MAX_IR_LENGTH.
+// Loads an IR (Impulse Response) WAV file and applies it as a convolution cab simulator.
+// The IR is resampled to the engine rate and capped at MAX_IR_SECONDS (a longer one is
+// faded out over its last FADE_MS instead of cut).
+//
+// Convolution with no added latency (Gardner-style split): the first HEAD taps run
+// directly, sample by sample; the rest runs as uniformly partitioned FFT convolution
+// (overlap-save, partitions of HEAD samples, a frequency-domain delay line). The tail
+// starts HEAD samples in, so each block's FFT work produces output for the *next* block
+// — on time. The FFT runs once per HEAD samples, whatever the host block size.
 class IRLoader
 {
 public:
-    static constexpr size_t MAX_IR_LENGTH = 4096;
+    static constexpr size_t HEAD = 64; // direct taps = partition size
+    static constexpr double MAX_IR_SECONDS = 1.0;
+    static constexpr double FADE_MS = 10.0;
 
     IRLoader();
     ~IRLoader();
@@ -66,15 +77,32 @@ public:
     void reset();
 
 private:
+    using Complex = std::complex<float>;
+
+    // One channel's convolution state.
+    struct Channel
+    {
+        // Head: delay line of 2 × HEAD, each sample written twice (pos and pos + HEAD) so
+        // the last HEAD samples are always contiguous.
+        vector<float> head_line;
+        size_t head_pos = 0;
+        vector<float> frame; // 2 × HEAD: previous block, then the block being filled
+        vector<Complex> fdl; // partitions × HEAD spectra of past frames (a ring)
+        size_t fdl_newest = 0;
+        vector<float> tail_out; // HEAD: the tail's output for the block being filled
+        size_t pos = 0; // samples into the current block
+    };
+
     struct Kernel
     {
-        vector<float> ir; // stored REVERSED so the convolution is a forward dot product
-        // Per-channel delay line, 2 * MAX_IR_LENGTH: each sample is written twice
-        // (write_pos and write_pos + ir_len) so the last ir_len samples are always
-        // contiguous — no wrap in the loop.
-        vector<float> buffers[2];
-        int write_pos[2] = {0, 0};
-        int ir_len = 0;
+        vector<float> head_ir; // first HEAD taps, REVERSED (a forward dot product)
+        vector<Complex> tail_spectra; // partitions × HEAD: the rest of the IR, per partition
+        size_t partitions = 0;
+        signalsmith::linear::RealFFT<float> fft{2 * HEAD};
+        vector<Complex> spectrum; // HEAD: scratch for one block's computation
+        vector<float> time; // 2 × HEAD: scratch
+        Channel channels[2];
+        bool right_in_sync = false; // false while mono blocks run the left channel only
         double built_rate = 0.0; // engine rate this kernel was resampled to
     };
 
@@ -90,11 +118,9 @@ private:
 
     unique_ptr<Kernel> build_kernel() const;
 
-    // Per-sample steps for one channel: push the input into the delay line,
-    // dot it with the (reversed) IR, advance the write position.
-    static void push_sample(Kernel& k, int ch, float in);
-    static float convolve_at(const Kernel& k, int ch);
-    static void advance(Kernel& k, int ch);
+    static float process_sample(Kernel& k, Channel& c, float in);
+    static void compute_tail(Kernel& k, Channel& c);
+    static void clear(Channel& c);
 };
 
 } // namespace namx

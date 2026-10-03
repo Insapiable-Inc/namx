@@ -22,7 +22,7 @@ all be used. That reopens Rubber Band, which Phase 17 avoided while the app was 
 |---|---|---|---|---|
 | **Transpose** (pitch) | Filter-bank shifter (was two-tap WSOLA) | ~20 ms in the bass, ~4 ms above; faint beat on long held chords | Done 2026-10-03 (see §1); Signalsmith for Shimmer/Crystals | ✅ |
 | **Reverb** | Freeverb (8 combs + 4 all-passes) | Metallic, dated, sparse early echoes | Dattorro plate + FDN hall; convolution reverb with IRs | ✅ |
-| **Cabinet / convolution** | Brute-force FIR | CPU grows with IR length; long IRs truncated | Partitioned FFT convolution (also needed for IR reverbs) | ✅ |
+| **Cabinet / convolution** | Partitioned FFT convolution (was brute-force FIR) | Uniform partitions: fine for 1 s cab IRs; multi-second reverb IRs will want non-uniform ones | Done 2026-10-03 (see §3) | ✅ |
 | **Drive** | Digital TS approximation | Approximate circuit, aliasing | A NAM "pedal" capture slot before the amp; WDF Tube Screamer | ✅ |
 | **Chorus / Flanger** | Modulated delay lines | Clean and digital | Bucket-brigade (BBD) model | ✅ |
 | **Phaser / Vibe** | 4-stage all-pass | Generic sweep; Vibe is an approximation | Grey-box / virtual-analog phaser and Uni-Vibe | ✅ |
@@ -108,8 +108,15 @@ presets offline to favorite IRs.
 
 ## 3. Cabinet and convolution engine
 
-**Today:** brute-force FIR convolution (`IRLoader`), with the IR truncated to
-`MAX_IR_LENGTH`. CPU cost grows linearly with IR length.
+**Done (2026-10-03):** `IRLoader` runs the first 64 taps directly and the rest as uniformly
+partitioned FFT convolution (overlap-save, 64-sample partitions, a frequency-domain delay
+line; FFT from `signalsmith-linear`, MIT). Zero added latency; IRs up to 1 s (faded out
+beyond); 3× cheaper than the old 4,096-tap brute force on a typical cab IR, and a whole
+second costs what 85 ms did. For multi-second reverb IRs, add larger partitions further
+out (non-uniform, Gardner) on the same engine.
+
+**Before:** brute-force FIR convolution, with the IR truncated to 4,096 taps (no fade).
+CPU cost grew linearly with IR length.
 
 **Better:** **uniformly or non-uniformly partitioned FFT convolution**
 ([Wefers thesis][wefers], [Gardner's zero-latency non-uniform scheme][wefers],

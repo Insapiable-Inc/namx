@@ -13,13 +13,6 @@
 namespace namx
 {
 
-static void clear_kernel_buffers(vector<float> buffers[2], int write_pos[2]) {
-    for (int ch = 0; ch < 2; ++ch) {
-        std::fill(buffers[ch].begin(), buffers[ch].end(), 0.0f);
-        write_pos[ch] = 0;
-    }
-}
-
 // Windowed-sinc resampler. Produces at most maxOut output samples at fsOut
 // from `in` at fsIn, band-limited to the lower of the two Nyquist rates.
 static vector<float> resample_sinc(const vector<float>& in, double fs_in, double fs_out,
@@ -66,38 +59,66 @@ IRLoader::~IRLoader() {
 unique_ptr<IRLoader::Kernel> IRLoader::build_kernel() const {
     auto k = make_unique<Kernel>();
 
-    vector<float> samples;
     const bool resample = target_rate > 0.0 && raw_rate > 0.0 && target_rate != raw_rate;
-    if (resample) {
-        samples = resample_sinc(raw, raw_rate, target_rate, MAX_IR_LENGTH);
-    } else {
-        samples = raw;
-        samples.resize(std::min(samples.size(), MAX_IR_LENGTH));
-    }
+    const double rate = resample ? target_rate : raw_rate;
+    const size_t cap = static_cast<size_t>(MAX_IR_SECONDS * rate);
+    const size_t full_length =
+        resample ? static_cast<size_t>(std::ceil(static_cast<double>(raw.size()) * rate / raw_rate))
+                 : raw.size();
+    vector<float> ir = resample ? resample_sinc(raw, raw_rate, target_rate, cap) : raw;
+    ir.resize(std::min(ir.size(), cap));
+    k->built_rate = rate;
 
-    k->ir_len = static_cast<int>(samples.size());
-    k->built_rate = resample ? target_rate : raw_rate;
-    k->ir = std::move(samples);
+    // Longer than the cap: fade the end out (raised cosine) rather than cut it.
+    if (full_length > cap && !ir.empty()) {
+        const size_t fade = std::min(ir.size(), static_cast<size_t>(FADE_MS * 0.001 * rate));
+        for (size_t i = 0; i < fade; ++i) {
+            const double x = static_cast<double>(i + 1) / static_cast<double>(fade);
+            ir[ir.size() - fade + i] *= static_cast<float>(0.5 + 0.5 * std::cos(M_PI * x));
+        }
+        qCInfo(lc_audio, "[IRLoader] IR is %.2f s long: faded out at %.1f s",
+               static_cast<double>(full_length) / rate, MAX_IR_SECONDS);
+    }
 
     // Normalize energy (L2) to 1.0 so the convolution is roughly unity-gain;
     // peak-sample normalization would leave several dB of broadband boost.
-    float energy = 0.0f;
-    for (float s : k->ir) {
-        energy += s * s;
+    double energy = 0.0; // a float sum drifts by ~1e-5 over a long IR
+    for (float s : ir) {
+        energy += static_cast<double>(s) * s;
     }
-    if (energy > 1e-12f) {
-        const float scale = 1.0f / std::sqrt(energy);
-        for (float& s : k->ir) {
+    if (energy > 1e-12) {
+        const float scale = static_cast<float>(1.0 / std::sqrt(energy));
+        for (float& s : ir) {
             s *= scale;
         }
     }
 
-    // Store reversed: the delay line is read oldest→newest, so a reversed IR
-    // turns the convolution into a single forward dot product.
-    std::reverse(k->ir.begin(), k->ir.end());
+    // Head: the first HEAD taps, reversed (the delay line is read oldest → newest).
+    k->head_ir.assign(HEAD, 0.0f);
+    for (size_t i = 0; i < std::min(HEAD, ir.size()); ++i) {
+        k->head_ir[HEAD - 1 - i] = ir[i];
+    }
+    // Tail: the rest in partitions of HEAD taps, each zero-padded to 2 × HEAD and
+    // transformed once here.
+    const size_t tail = ir.size() > HEAD ? ir.size() - HEAD : 0;
+    k->partitions = (tail + HEAD - 1) / HEAD;
+    k->tail_spectra.assign(k->partitions * HEAD, Complex{});
+    vector<float> padded(2 * HEAD);
+    for (size_t p = 0; p < k->partitions; ++p) {
+        std::fill(padded.begin(), padded.end(), 0.0f);
+        for (size_t i = 0; i < HEAD && HEAD + p * HEAD + i < ir.size(); ++i) {
+            padded[i] = ir[HEAD + p * HEAD + i];
+        }
+        k->fft.fft(padded.data(), &k->tail_spectra[p * HEAD]);
+    }
 
-    for (int ch = 0; ch < 2; ++ch) {
-        k->buffers[ch].assign(2 * MAX_IR_LENGTH, 0.0f);
+    k->spectrum.assign(HEAD, Complex{});
+    k->time.assign(2 * HEAD, 0.0f);
+    for (Channel& c : k->channels) {
+        c.head_line.assign(2 * HEAD, 0.0f);
+        c.frame.assign(2 * HEAD, 0.0f);
+        c.fdl.assign(k->partitions * HEAD, Complex{});
+        c.tail_out.assign(HEAD, 0.0f);
     }
     return k;
 }
@@ -143,28 +164,69 @@ void IRLoader::set_target_sample_rate(double sr) {
     slot.publish(build_kernel());
 }
 
-/*static*/ void IRLoader::push_sample(Kernel& k, int ch, float in) {
-    float* buf = k.buffers[ch].data();
-    const int wp = k.write_pos[ch];
-    buf[wp] = in;
-    buf[wp + k.ir_len] = in; // mirror write keeps the window below contiguous
-}
-
-/*static*/ float IRLoader::convolve_at(const Kernel& k, int ch) {
-    const float* buf = k.buffers[ch].data();
-    const int wp = k.write_pos[ch];
-
-    // buf[wp+1 .. wp+irLen] is the last irLen samples, oldest→newest;
-    // k.ir is reversed, so this dot product is the convolution sum.
-    Eigen::Map<const Eigen::VectorXf> ir(k.ir.data(), k.ir_len);
-    Eigen::Map<const Eigen::VectorXf> sig(buf + wp + 1, k.ir_len);
-    return ir.dot(sig);
-}
-
-/*static*/ void IRLoader::advance(Kernel& k, int ch) {
-    if (++k.write_pos[ch] >= k.ir_len) {
-        k.write_pos[ch] = 0;
+/*static*/ float IRLoader::process_sample(Kernel& k, Channel& c, float in) {
+    // Head: the last HEAD samples (oldest → newest) dotted with the reversed taps.
+    c.head_line[c.head_pos] = in;
+    c.head_line[c.head_pos + HEAD] = in;
+    Eigen::Map<const Eigen::VectorXf> taps(k.head_ir.data(), HEAD);
+    Eigen::Map<const Eigen::VectorXf> recent(c.head_line.data() + c.head_pos + 1, HEAD);
+    float out = taps.dot(recent);
+    if (++c.head_pos == HEAD) {
+        c.head_pos = 0;
     }
+    if (k.partitions == 0) {
+        return out;
+    }
+    // Tail: computed a block ahead (it starts HEAD samples in).
+    out += c.tail_out[c.pos];
+    c.frame[HEAD + c.pos] = in;
+    if (++c.pos == HEAD) {
+        compute_tail(k, c);
+        c.pos = 0;
+    }
+    return out;
+}
+
+// One block in: its frame's spectrum joins the delay line, every partition's product is
+// summed, and the inverse transform's second half (overlap-save) is the tail's output
+// for the next HEAD samples.
+/*static*/ void IRLoader::compute_tail(Kernel& k, Channel& c) {
+    const size_t parts = k.partitions;
+    c.fdl_newest = c.fdl_newest + 1 == parts ? 0 : c.fdl_newest + 1;
+    k.fft.fft(c.frame.data(), &c.fdl[c.fdl_newest * HEAD]);
+    std::copy(c.frame.begin() + HEAD, c.frame.end(), c.frame.begin());
+
+    std::fill(k.spectrum.begin(), k.spectrum.end(), Complex{});
+    float* const acc = reinterpret_cast<float*>(k.spectrum.data());
+    size_t frame_index = c.fdl_newest;
+    for (size_t p = 0; p < parts; ++p) {
+        const float* const x = reinterpret_cast<const float*>(&c.fdl[frame_index * HEAD]);
+        const float* const h = reinterpret_cast<const float*>(&k.tail_spectra[p * HEAD]);
+        // Bin 0 packs DC (real) and Nyquist (imaginary): two real products.
+        acc[0] += x[0] * h[0];
+        acc[1] += x[1] * h[1];
+        for (size_t b = 1; b < HEAD; ++b) { // complex multiply-accumulate, spelled out
+            const float xr = x[2 * b], xi = x[2 * b + 1], hr = h[2 * b], hi = h[2 * b + 1];
+            acc[2 * b] += xr * hr - xi * hi;
+            acc[2 * b + 1] += xr * hi + xi * hr;
+        }
+        frame_index = frame_index == 0 ? parts - 1 : frame_index - 1;
+    }
+    k.fft.ifft(k.spectrum.data(), k.time.data());
+    const float scale = 1.0f / static_cast<float>(2 * HEAD);
+    for (size_t i = 0; i < HEAD; ++i) {
+        c.tail_out[i] = k.time[HEAD + i] * scale;
+    }
+}
+
+/*static*/ void IRLoader::clear(Channel& c) {
+    for (auto* v : {&c.head_line, &c.frame, &c.tail_out}) {
+        std::fill(v->begin(), v->end(), 0.0f);
+    }
+    std::fill(c.fdl.begin(), c.fdl.end(), Complex{});
+    c.head_pos = 0;
+    c.fdl_newest = 0;
+    c.pos = 0;
 }
 
 void IRLoader::process_block(float* l, float* r, size_t num_frames, bool input_is_stereo,
@@ -179,43 +241,49 @@ void IRLoader::process_block(float* l, float* r, size_t num_frames, bool input_i
 
     // One snapshot per block; the kernel stays alive until endBlock() runs.
     Kernel* kp = slot.acquire();
-    if (!enabled || !kp || kp->ir_len <= 0) {
+    if (!enabled || !kp) {
         return;
     }
     Kernel& k = *kp;
+    Channel& left = k.channels[0];
+    Channel& right = k.channels[1];
 
     if (input_is_stereo) {
+        if (!k.right_in_sync) {
+            // Mono until now: L and R had the same history, so R starts as a copy of L
+            // (same sizes — copies, no allocation).
+            std::copy(left.head_line.begin(), left.head_line.end(), right.head_line.begin());
+            std::copy(left.frame.begin(), left.frame.end(), right.frame.begin());
+            std::copy(left.fdl.begin(), left.fdl.end(), right.fdl.begin());
+            std::copy(left.tail_out.begin(), left.tail_out.end(), right.tail_out.begin());
+            right.head_pos = left.head_pos;
+            right.fdl_newest = left.fdl_newest;
+            right.pos = left.pos;
+            k.right_in_sync = true;
+        }
         for (size_t i = 0; i < num_frames; ++i) {
-            push_sample(k, 0, l[i]);
-            push_sample(k, 1, r[i]);
-            l[i] = convolve_at(k, 0);
-            r[i] = convolve_at(k, 1);
-            advance(k, 0);
-            advance(k, 1);
+            l[i] = process_sample(k, left, l[i]);
+            r[i] = process_sample(k, right, r[i]);
         }
         return;
     }
 
-    // Mono: L == R, so the two delay lines hold identical history. Feed both
-    // (a few stores) but run the 4096-tap dot product only once — the R line
-    // stays valid for the moment an upstream effect goes stereo.
+    // Mono: L == R, so only L runs; R catches up by copy when a stereo block arrives.
+    k.right_in_sync = false;
     for (size_t i = 0; i < num_frames; ++i) {
-        const float in = l[i];
-        push_sample(k, 0, in);
-        push_sample(k, 1, in);
-        const float out = convolve_at(k, 0);
+        const float out = process_sample(k, left, l[i]);
         l[i] = out;
         r[i] = out;
-        advance(k, 0);
-        advance(k, 1);
     }
 }
 
 void IRLoader::reset() {
-    // Audio thread (chain reorder): clear the delay lines of whatever kernel
-    // is live. std::fill only — no allocation.
+    // Audio thread (chain reorder): clear the state of whatever kernel is live. std::fill
+    // only — no allocation.
     if (Kernel* k = slot.acquire()) {
-        clear_kernel_buffers(k->buffers, k->write_pos);
+        clear(k->channels[0]);
+        clear(k->channels[1]);
+        k->right_in_sync = false;
     }
 }
 

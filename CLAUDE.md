@@ -9,7 +9,7 @@ This repo is a fork of [NeuralAmpModelerCore](https://github.com/sdatkinson/Neur
 ```
 nam-x/
 ├── NAM/           # Core DSP library: neural net inference (WaveNet, LSTM, ConvNet, Linear)
-├── Dependencies/  # Git submodules: Eigen (linear algebra), nlohmann (JSON), AudioDSPTools (upstream tools only — the GUI reads WAVs with its own `WavReader`)
+├── Dependencies/  # Git submodules: Eigen (linear algebra), nlohmann (JSON), AudioDSPTools (upstream tools only — the GUI reads WAVs with its own `WavReader`), signalsmith-linear (MIT FFT for the cab convolution)
 ├── tools/         # Upstream CLI tools: loadmodel, benchmodel, run_tests
 ├── LICENSE        # Upstream MIT (NAM core) — the app itself is GPL-3.0-or-later, see gui/LICENSE
 ├── ROADMAP.md     # Public-release plan — phased checklist, worked one phase at a time
@@ -137,7 +137,7 @@ All effects inherit `EffectBase` (`src/dsp/EffectBase.h` — the header comment 
 | `WasapiBackend` | `src/dsp/WasapiBackend.h/cpp` | Windows WASAPI backend: shared mode (float32 mix format only) or opt-in exclusive mode (native format search + conversion, minimum period, falls back to shared; `audio/exclusive`). No Windows machine here: compile-checked with MinGW, not run |
 | `NamProcessor` | `src/dsp/NamProcessor.h/cpp` | NAM model hosting; independent L/R instances for stereo; a model runs at its training rate (48 kHz when unstated) — at another engine rate it sits behind AudioDSPTools' Lanczos `ResamplingContainer` (via `ModelResampler.h`), like the official plugin |
 | `WavReader` | `src/dsp/WavReader.h/cpp` | Strict mono WAV reader for IRs (PCM 16/24/32, float 32/64, extensible); every length checked before reading — damaged files are errors (`tests/WavReaderTest`) |
-| `IRLoader` / `IRProcessor` | `src/dsp/IRLoader.h/cpp`, `IRProcessor.h/cpp` | FIR cab sim, energy-normalized, RtSlot kernel swap; `IRProcessor` = two loaders (slots A/B) with level/pan/phase/blend + cuts — the UI exposes slot A only (advanced options commented out 2026-10-01; slot B is neither restored nor loaded from presets) |
+| `IRLoader` / `IRProcessor` | `src/dsp/IRLoader.h/cpp`, `IRProcessor.h/cpp` | Cab convolution: 64 direct taps + uniformly partitioned FFT convolution (overlap-save, `signalsmith-linear` FFT — the `Dependencies/signalsmith-linear` submodule), zero added latency, IRs up to 1 s (longer ones faded out); energy-normalized, RtSlot kernel swap; `IRProcessor` = two loaders (slots A/B) with level/pan/phase/blend + cuts — the UI exposes slot A only (advanced options commented out 2026-10-01; slot B is neither restored nor loaded from presets) |
 | `EQProcessor` | `src/dsp/EQProcessor.h/cpp` | 4-band semi-parametric biquad EQ + low/high cut (Audio EQ Cookbook) |
 | `TunerProcessor` | `src/dsp/TunerProcessor.h/cpp` | NSDF pitch detect; audio thread fills, GUI timer reads |
 | `TunerDisplay` | `src/ui/TunerDisplay.h/cpp` | TU-3-style readout: LED ladder, glowing seven-segment note, signed cents |

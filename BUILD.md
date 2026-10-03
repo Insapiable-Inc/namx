@@ -486,7 +486,7 @@ about 4 ms higher up, where the pick attack is.
 | Format | Details |
 |--------|---------|
 | `.nam`  | Neural Amp Modeler model file. Supported architectures: WaveNet, LSTM, ConvNet, Linear. Version 0.5–0.7 supported. |
-| `.wav`  | Impulse response / cab simulation. Mono; PCM 16/24/32-bit or float 32/64-bit. Any sample rate. Truncated to 4096 taps (~93 ms at 44.1 kHz). |
+| `.wav`  | Impulse response / cab simulation. Mono; PCM 16/24/32-bit or float 32/64-bit. Any sample rate. Up to 1 s is used; a longer file is faded out over its last 10 ms there. |
 | `.nampreset` | Preset, JSON (schema v2): `version`, every effect group (`noiseGate`, `compressor`, …) with its parameters, `effectOrder` (stable effect IDs), `namPath` / `irPath` (older files may carry a `tone3000` object; it is ignored). A group missing from the file leaves that effect untouched; a missing key inside a group takes its default. |
 
 NAM models are available from the [NAM community model library](https://www.neuralampmodeler.com).
