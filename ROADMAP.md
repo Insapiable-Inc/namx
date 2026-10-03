@@ -967,7 +967,7 @@ machine, in `gui/BENCHMARKS.md`.
       pitch error / latency / crossfade artefacts, reverb tail decay vs Decay, delay
       modulation smoothness, EQ response vs the Audio EQ Cookbook curves, limiter
       ceiling overshoot.
-- [ ] **Whole app:** cold start, peak RSS, model-load time (no GUI freeze — review
+- [x] **Whole app** (done 2026-10-02, BENCHMARKS.md → Whole app; 22.6 % idle CPU with a rig loaded under `powersave` — the governor, not the code)**:** cold start, peak RSS, model-load time (no GUI freeze — review
       item 21), idle CPU with the window open (the LED meters repaint at up to
       60 fps), CPU with every effect on.
 - [ ] **No regressions:** a CI job runs the bench and compares against a stored

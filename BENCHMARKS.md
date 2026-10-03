@@ -227,8 +227,29 @@ Ceiling −0.3 dBFS. Worst overshoot over four brutal inputs (sine bursts at +6 
 - **EQ** matches the Audio EQ Cookbook to 0.03 dB; the **limiter** never exceeds its
   ceiling (0.000 dB worst overshoot, sample peaks).
 
+## Whole app
+
+Offscreen window (`QT_QPA_PLATFORM=offscreen`), isolated config, audio running through
+PipeWire-JACK at 48 kHz / 128 frames, no input signal, `powersave` governor.
+
+| What | Measured |
+|---|---|
+| Cold start (`--self-test-and-exit`, window shown) | 94–96 ms (3 runs) |
+| Peak memory, nothing loaded | 96–105 MB |
+| Memory with a standard model + IR loaded | 101 MB |
+| Model switch (parse + build + warm both channels) | 13.5 ms (was 26.7 before review item 21) |
+| Idle CPU, nothing loaded (process, all threads) | 1.2 % of one core |
+| Idle CPU, standard model + IR loaded, silence in | 22.6 % of one core |
+
+- The amp and cab keep running on silence (NAM models carry state), so a loaded rig costs
+  CPU even when you're not playing — as in the official plugin.
+- That 22.6 % is ~7× the bench's 3.2 % for amp + cab: with `powersave` the cores clock down
+  between the short bursts of work (and the audio thread may land on an E-core). The
+  `performance` governor should bring it close to the bench figure (not measured: needs
+  root). Ideas if it matters: skip the amp/cab after a long silence (careful with tails).
+- Not covered: a real compositor's painting cost (offscreen renders without one).
+
 ## Still to measure (Phase 27)
 
-Whole-app numbers (cold start, RSS, model-load
-time, idle CPU with the window open), measured round-trip latency with a loopback cable
+Measured round-trip latency with a loopback cable
 (needs `jack_iodelay`, package `jack-example-tools`), and the CI regression check.
