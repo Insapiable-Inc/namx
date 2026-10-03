@@ -73,7 +73,7 @@ cmake --build gui/build-test && gui/build-test/MidiMapperTest && gui/build-test/
 wasn't convinced by it; the working integration lives on the `experiment/tone3000`
 branch. Don't reintroduce it on `main` without asking.
 
-`DspGoldenTest` (same option) renders every effect over a fixed signal and compares a hash of the exact output bits — any DSP refactor that must not change the sound has to keep it green; re-record with `NAM_GOLDEN_PRINT=1` only when a change is meant to alter the sound.
+`DspGoldenTest` (same option) renders every effect over a fixed signal and compares a signature of the output (per quarter second and channel: RMS plus level/phase at 440.5 Hz and 2 kHz) against `gui/tests/dsp-golden.txt`, within 0.1 % of the window's RMS — any DSP refactor that must not change the sound has to keep it green. Deliberately not bit-exact: glibc versions round `tanf` & co. differently (CI's Ubuntu vs. local Arch), while a one-sample shift or a missed `reset()` still fails. Re-record (command in the test's header comment) only when a change is meant to alter the sound.
 
 `-DNAM_BUILD_BENCH=ON` adds `namx-bench` (`gui/bench/`): the DSP chain timed per stage against the block budget (`--model`, `--ir`, `--frames`, `--rate`, `--no-fast-tanh`, `--only`). The Phase 14 efficiency budget and reference numbers are in `gui/BUILD.md` → High CPU usage; re-run the bench after DSP changes. `--self-test-and-exit` also prints cold-start time and peak RSS.
 

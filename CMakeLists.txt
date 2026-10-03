@@ -299,7 +299,7 @@ if(NAM_BUILD_TESTS)
     target_link_libraries(WavReaderTest PRIVATE Qt6::Core)
     add_test(NAME WavReaderTest COMMAND WavReaderTest)
 
-    # Bit-exact effect outputs (tests/DspGoldenTest.cpp): guards DSP refactors.
+    # Recorded effect outputs (tests/DspGoldenTest.cpp, tests/dsp-golden.txt): guards DSP refactors.
     find_package(Qt6 REQUIRED COMPONENTS Test)
     find_package(Threads REQUIRED)
     set(GOLDEN_DSP_SOURCES ${GUI_SOURCES})
@@ -308,7 +308,8 @@ if(NAM_BUILD_TESTS)
     add_executable(DspGoldenTest tests/DspGoldenTest.cpp ${GOLDEN_DSP_SOURCES})
     target_include_directories(DspGoldenTest SYSTEM PRIVATE ${NAM_DEPS_PATH}/eigen)
     target_include_directories(DspGoldenTest PRIVATE src/dsp)
-    target_compile_definitions(DspGoldenTest PRIVATE NAM_SAMPLE_FLOAT)
+    target_compile_definitions(DspGoldenTest PRIVATE NAM_SAMPLE_FLOAT
+                               NAM_GOLDEN_FILE="${CMAKE_CURRENT_SOURCE_DIR}/tests/dsp-golden.txt")
     target_compile_options(DspGoldenTest PRIVATE ${NAM_WARNING_FLAGS})
     target_link_libraries(DspGoldenTest PRIVATE Qt6::Core Qt6::Test Threads::Threads)
     add_test(NAME DspGoldenTest COMMAND DspGoldenTest)

@@ -1,25 +1,32 @@
 // Golden-output test for the DSP effects: every effect renders a fixed synthetic
-// signal with fixed settings, and a hash of the exact output bits must match the
-// value recorded below. It guards refactors that must not change the sound (Phase 20:
-// DelayLine, size_t indices, renames): any change to the arithmetic changes a hash.
+// signal with fixed settings, and a signature of the output must match the one
+// recorded in tests/dsp-golden.txt. It guards refactors that must not change the sound
+// (Phase 20: DelayLine, size_t indices, renames).
 //
-// When a change is MEANT to alter the sound, re-record the table:
-//   NAM_GOLDEN_PRINT=1 ./DspGoldenTest
-// and paste the printed lines over GOLDEN below.
+// The signature, per quarter second and channel: RMS, and the level and phase at
+// 440.5 Hz (the test signal's main partial) and 2 kHz. Values must match within 0.1 %
+// of that window's RMS. Not bit-exact on purpose: system math libraries round sinf,
+// tanf… differently between versions (glibc 2.39 vs 2.44 changed tanf), which moves
+// the output by ~1e-7 — while a one-sample shift moves the 440 Hz phase by ~6 %.
+//
+// When a change is MEANT to alter the sound, re-record the file (from gui/):
+//   NAM_GOLDEN_PRINT=1 build-test/DspGoldenTest | sed -n 's/^golden: //p' > tests/dsp-golden.txt
 //
 // Deterministic by construction: the input is a sum of sines with fixed envelopes,
 // the IR is a fixed decaying cosine, and nothing reads the clock or random sources.
 // The only file written is the IR, inside a QTemporaryDir.
 
 #include <algorithm>
-#include <bit>
 #include <cmath>
 #include <cstdint>
 #include <cstdio>
+#include <format>
+#include <fstream>
 #include <functional>
 #include <map>
 #include <memory>
 #include <numbers>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -54,62 +61,17 @@ static constexpr size_t TOTAL_FRAMES = 96000; // 2 s
 // Irregular block sizes, cycled: exercises partial blocks and chunking.
 static constexpr size_t BLOCK_SIZES[] = {128, 64, 37, 256, 1, 200};
 
-// Recorded from the code at the start of Phase 20 (before DelayLine).
-static const std::map<string, std::uint64_t> GOLDEN = {
-    {"cabinet/mono", 0x580a0e82b8397b41ull},
-    {"cabinet/stereo", 0x93c47996373aa3c7ull},
-    {"chorus-0/mono", 0xf0234e463d73a65aull},
-    {"chorus-0/stereo", 0x25f5016796d7189cull},
-    {"chorus-1/mono", 0xcc59c79019def1acull},
-    {"chorus-1/stereo", 0x03463f3c84ebd8c4ull},
-    {"chorus-2/mono", 0x60f20c4f7ae79ea4ull},
-    {"chorus-2/stereo", 0xce952092ea7a780full},
-    {"chorus-3/mono", 0x00e03a45c4ef09f8ull},
-    {"chorus-3/stereo", 0x25f5016796d7189cull},
-    {"chorus-mono-mode/mono", 0xf8b548e4ff56c311ull},
-    {"chorus-mono-mode/stereo", 0x25f5016796d7189cull},
-    {"compressor/mono", 0x16400d75fe01cb2dull},
-    {"compressor/stereo", 0xe2a2a9e6e3ebe7d1ull},
-    {"delay-crystals/mono", 0xc93f7f6ff621338aull},
-    {"delay-crystals/stereo", 0x79c50102f62a50bbull},
-    {"delay-stereo-mod-sat/mono", 0x0617596bbd88afb7ull},
-    {"delay-stereo-mod-sat/stereo", 0xb7dfb4e8d47a5ee1ull},
-    {"delay/mono", 0x78f0426cf3c35cadull},
-    {"delay/stereo", 0x918f8f162e6ea7b2ull},
-    {"drive/mono", 0x735229383a5a3f31ull},
-    {"drive/stereo", 0xc9dba72e9bc7abe9ull},
-    {"eq/mono", 0x454f5b66d4a3d135ull},
-    {"eq/stereo", 0x6bb6116234213fc9ull},
-    {"flanger-stereo/mono", 0xbf7a61437dde2633ull},
-    {"flanger-stereo/stereo", 0x8c4c0e8eea811b90ull},
-    {"flanger/mono", 0xdfc562c48b73d049ull},
-    {"flanger/stereo", 0x16767fbcf4380fa2ull},
-    {"gate/mono", 0xab6881363a899381ull},
-    {"gate/stereo", 0x2d537811b7610f95ull},
-    {"limiter", 0x0136dae446dc2881ull},
-    {"phaser-vibe-stereo/mono", 0x8da13e2193258d72ull},
-    {"phaser-vibe-stereo/stereo", 0x6cba34bf9debfec7ull},
-    {"phaser/mono", 0x95df8bc0228135cdull},
-    {"phaser/stereo", 0x45a0e03a43eb6929ull},
-    {"reverb-stereo-shimmer/mono", 0x1dbc41a288ee02f3ull},
-    {"reverb-stereo-shimmer/stereo", 0xad67b6bf9e1382f6ull},
-    {"reverb/mono", 0xba399f92706cc369ull},
-    {"reverb/stereo", 0x6f0e72b5de0c8581ull},
-    {"transpose-down/mono", 0xadc68edcd84f8e45ull},
-    {"transpose-down/stereo", 0xbf8288a519dbad74ull},
-    {"transpose-up/mono", 0x0f9a8dc7d21f009dull},
-    {"transpose-up/stereo", 0xbc6c9b1fe5654a5eull},
-    {"tremolo-stereo/mono", 0xaf15c0b379c3fdb0ull},
-    {"tremolo-stereo/stereo", 0xcabf380bd28ab05cull},
-    {"tremolo/mono", 0xc221fd4f5d497a5dull},
-    {"tremolo/stereo", 0xcabf380bd28ab05cull},
-    {"volume/mono", 0xb823ca0c94e93179ull},
-    {"volume/stereo", 0xcdebe42bf5f5a1b7ull},
-    {"wah-pedal/mono", 0x6348ba2bd3941e75ull},
-    {"wah-pedal/stereo", 0x42338be964ecfffeull},
-    {"wah/mono", 0x1e854b8c9962da75ull},
-    {"wah/stereo", 0x9eacba8fbd7a37b4ull},
-};
+// The signature: per window, per channel (L then R), these values.
+static constexpr size_t WINDOWS = 8; // quarter seconds
+static constexpr size_t WINDOW_FRAMES = TOTAL_FRAMES / WINDOWS;
+static constexpr double PROBE_HZ[] = {440.5, 2000.0};
+static constexpr size_t VALUES_PER_CHANNEL = 1 + 2 * std::size(PROBE_HZ); // RMS, re/im…
+static constexpr size_t VALUES_PER_WINDOW = 2 * VALUES_PER_CHANNEL;
+using Signature = vector<double>; // WINDOWS × VALUES_PER_WINDOW
+
+// Allowed difference: 0.1 % of the window's RMS, and never below -120 dBFS (silence).
+static constexpr double RELATIVE_TOLERANCE = 1e-3;
+static constexpr double ABSOLUTE_TOLERANCE = 1e-6;
 
 // Guitar-like test signal: plucks every 0.5 s on two partials, silent for the last
 // quarter of each second (so the gate and the reverb/delay tails get exercised).
@@ -133,24 +95,43 @@ static float input_right(size_t frame) {
     return static_cast<float>(0.25 * std::sin(two_pi * 165.0 * t) * std::exp(-std::fmod(t, 0.7)));
 }
 
-// FNV-1a over the bit patterns of the samples.
-static void hash_samples(std::uint64_t& hash, const float* samples, size_t count) {
-    for (size_t i = 0; i < count; ++i) {
-        std::uint32_t bits = std::bit_cast<std::uint32_t>(samples[i]);
-        for (int byte = 0; byte < 4; ++byte) {
-            hash ^= bits & 0xffu;
-            hash *= 0x100000001b3ull;
-            bits >>= 8;
+// Running sums for one window of one channel.
+struct WindowSums
+{
+    double squares = 0.0;
+    array<double, std::size(PROBE_HZ)> re{}, im{};
+
+    void add(const float* samples, size_t first_frame, size_t count) {
+        for (size_t i = 0; i < count; ++i) {
+            const double x = samples[i];
+            const double t = static_cast<double>(first_frame + i) / SAMPLE_RATE;
+            squares += x * x;
+            for (size_t k = 0; k < std::size(PROBE_HZ); ++k) {
+                const double phase = 2.0 * std::numbers::pi * PROBE_HZ[k] * t;
+                re[k] += x * std::cos(phase);
+                im[k] += x * std::sin(phase);
+            }
         }
     }
-}
 
-// Runs `process` over the whole signal in irregular blocks and hashes L and R.
+    // RMS, then each probe's re/im as an amplitude (a full-scale sine there → 1).
+    void append_to(Signature& signature) const {
+        const auto frames = static_cast<double>(WINDOW_FRAMES);
+        signature.push_back(std::sqrt(squares / frames));
+        for (size_t k = 0; k < std::size(PROBE_HZ); ++k) {
+            signature.push_back(2.0 * re[k] / frames);
+            signature.push_back(2.0 * im[k] / frames);
+        }
+    }
+};
+
+// Runs `process` over the whole signal in irregular blocks and returns the signature.
 // Halfway through, `on_halfway` runs (used to exercise reset()).
-static std::uint64_t render(bool stereo_input,
-                            const std::function<void(float*, float*, size_t)>& process,
-                            const std::function<void()>& on_halfway = {}) {
-    std::uint64_t hash = 0xcbf29ce484222325ull;
+static Signature render(bool stereo_input,
+                        const std::function<void(float*, float*, size_t)>& process,
+                        const std::function<void()>& on_halfway = {}) {
+    Signature signature;
+    WindowSums sums_left, sums_right;
     vector<float> left(256);
     vector<float> right(256);
     size_t frame = 0;
@@ -164,8 +145,20 @@ static std::uint64_t render(bool stereo_input,
             right[i] = stereo_input ? input_right(frame + i) : left[i];
         }
         process(left.data(), right.data(), frames);
-        hash_samples(hash, left.data(), frames);
-        hash_samples(hash, right.data(), frames);
+        // Blocks may straddle a window boundary: split them there.
+        for (size_t done = 0; done < frames;) {
+            const size_t start = frame + done;
+            const size_t chunk = std::min(frames - done, WINDOW_FRAMES - start % WINDOW_FRAMES);
+            sums_left.add(left.data() + done, start, chunk);
+            sums_right.add(right.data() + done, start, chunk);
+            done += chunk;
+            if ((start + chunk) % WINDOW_FRAMES == 0) {
+                sums_left.append_to(signature);
+                sums_right.append_to(signature);
+                sums_left = {};
+                sums_right = {};
+            }
+        }
         frame += frames;
         ++block;
         if (!halfway_done && frame >= TOTAL_FRAMES / 2) {
@@ -175,11 +168,11 @@ static std::uint64_t render(bool stereo_input,
             }
         }
     }
-    return hash;
+    return signature;
 }
 
 // Renders one effect, with a reset() halfway through.
-static std::uint64_t render_effect(EffectBase& fx, bool stereo_input) {
+static Signature render_effect(EffectBase& fx, bool stereo_input) {
     fx.set_sample_rate(SAMPLE_RATE);
     fx.set_enabled(true);
     return render(
@@ -373,13 +366,33 @@ static void drive_and_limit(OutputLimiter& limiter, float* left, float* right, s
     limiter.process(left, right, frames);
 }
 
-static std::uint64_t render_limiter() {
+static Signature render_limiter() {
     OutputLimiter limiter;
     limiter.set_sample_rate(SAMPLE_RATE);
     limiter.set_enabled(true);
     return render(false, [&limiter](float* left, float* right, size_t frames) {
         drive_and_limit(limiter, left, right, frames);
     });
+}
+
+// One line per case: the name, then the signature's values.
+static std::map<string, Signature> read_golden(const char* path) {
+    std::map<string, Signature> table;
+    std::ifstream file(path);
+    string line;
+    while (std::getline(file, line)) {
+        std::istringstream fields(line);
+        string name;
+        fields >> name;
+        Signature values;
+        for (double value = 0.0; fields >> value;) {
+            values.push_back(value);
+        }
+        if (!name.empty()) {
+            table[name] = std::move(values);
+        }
+    }
+    return table;
 }
 
 class DspGoldenTest : public QObject
@@ -393,8 +406,9 @@ private slots:
     void tuner_detects_pitch();
 
 private:
-    using Case = std::function<std::uint64_t()>;
+    using Case = std::function<Signature()>;
     std::map<string, Case> cases;
+    std::map<string, Signature> golden; // from tests/dsp-golden.txt
     QTemporaryDir temp_dir;
     bool print_mode = false;
 };
@@ -402,6 +416,8 @@ private:
 void DspGoldenTest::initTestCase() {
     enable_flush_to_zero(); // same MXCSR as the backends' audio threads
     print_mode = qEnvironmentVariableIsSet("NAM_GOLDEN_PRINT");
+    golden = read_golden(NAM_GOLDEN_FILE);
+    QVERIFY2(print_mode || !golden.empty(), "no golden signatures in " NAM_GOLDEN_FILE);
     QVERIFY(temp_dir.isValid());
     const QString ir_a = temp_dir.filePath("ir_a.wav");
     const QString ir_b = temp_dir.filePath("ir_b.wav");
@@ -467,15 +483,36 @@ void DspGoldenTest::effects_data() {
 
 void DspGoldenTest::effects() {
     QFETCH(QString, name);
-    const std::uint64_t hash = cases.at(name.toStdString())();
+    const Signature actual = cases.at(name.toStdString())();
+    QCOMPARE(actual.size(), WINDOWS * VALUES_PER_WINDOW);
     if (print_mode) {
-        std::printf("    {\"%s\", 0x%016llxull},\n", qPrintable(name),
-                    static_cast<unsigned long long>(hash));
+        // std::format, not printf: always a decimal point, whatever the locale.
+        string line = "golden: " + name.toStdString();
+        for (const double value : actual) {
+            line += std::format(" {:.9g}", value);
+        }
+        std::printf("%s\n", line.c_str());
         return;
     }
-    const auto expected = GOLDEN.find(name.toStdString());
-    QVERIFY2(expected != GOLDEN.end(), "no golden value recorded for this case");
-    QCOMPARE(hash, expected->second);
+    const auto expected = golden.find(name.toStdString());
+    QVERIFY2(expected != golden.end(), "no golden signature recorded for this case");
+    QCOMPARE(expected->second.size(), actual.size());
+    for (size_t i = 0; i < actual.size(); ++i) {
+        const size_t window = i / VALUES_PER_WINDOW;
+        const size_t channel = i % VALUES_PER_WINDOW / VALUES_PER_CHANNEL; // 0 = L, 1 = R
+        const size_t value = i % VALUES_PER_CHANNEL; // 0 = RMS, then probe re/im
+        const size_t rms_index = i - value;
+        const double tolerance =
+            ABSOLUTE_TOLERANCE + RELATIVE_TOLERANCE * expected->second[rms_index];
+        const double difference = std::abs(actual[i] - expected->second[i]);
+        QVERIFY2(difference <= tolerance,
+                 qPrintable(QString("window %1, %2, value %3: %4, recorded %5")
+                                .arg(window)
+                                .arg(channel == 0 ? "L" : "R")
+                                .arg(value)
+                                .arg(actual[i], 0, 'g', 9)
+                                .arg(expected->second[i], 0, 'g', 9)));
+    }
 }
 
 // The tuner's output is a passthrough; what matters is its pitch readout. Its

@@ -992,7 +992,7 @@ for the backend work (Phase 21), and a second full review follows the big change
 
 "The world's best" has to be measured. What exists: `NAMPlayerBench` (per-stage time
 against the block budget), `--self-test-and-exit` (cold start, peak RSS), the DSP %
-and xrun counters, `DspGoldenTest` (bit-exactness, not quality). This phase adds the
+and xrun counters, `DspGoldenTest` (unchanged output within 0.1 %, not quality — bit-exact until 2026-10-03). This phase adds the
 comparisons and the quality numbers, and keeps them from regressing. Measurements are
 deterministic (fixed signals and models, no random input); results are dated, with the
 machine, in `gui/BENCHMARKS.md`.
