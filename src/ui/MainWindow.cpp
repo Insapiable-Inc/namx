@@ -2465,7 +2465,6 @@ void MainWindow::add_tempo_sync(QWidget* card, KnobWidget* free_knob, const QStr
                                 std::function<void(double)> push) {
     // The free knob's own row: the card's main row, or one of its ▾ detail rows.
     auto* lay = static_cast<QHBoxLayout*>(free_knob->parentWidget()->layout());
-    const bool main_row = lay == row_layout(card);
 
     // Note knob in the free knob's place, shown while synced.
     auto* note =
@@ -2482,23 +2481,18 @@ void MainWindow::add_tempo_sync(QWidget* card, KnobWidget* free_knob, const QStr
     note->hide();
     lay->insertWidget(lay->indexOf(free_knob) + 1, note, 0, Qt::AlignVCenter);
 
-    // Sync switch: in the main row's Sync column, right of Stereo; for a knob in a detail
-    // row, right beside it (the main row's column belongs to the main row).
+    // Sync switch in the main row's Sync column, right of Stereo — also for a knob that
+    // sits in a ▾ detail row (Reverb Pre-delay).
     auto* sw = new ToggleSwitch;
     sw->setCheckable(true);
     sw->setToolTip(QString("Sync %1 to the global tempo").arg(label));
-    if (main_row) {
-        auto* cap = new QLabel("Sync");
-        cap->setObjectName("toggleCaption");
-        QWidget* slot = card->findChild<QWidget*>("syncSlot");
-        auto* sl = static_cast<QHBoxLayout*>(slot->layout());
-        sl->addWidget(sw, 0, Qt::AlignVCenter);
-        sl->addWidget(cap, 0, Qt::AlignVCenter);
-        sl->addStretch();
-    } else {
-        lay->insertWidget(lay->indexOf(note) + 1, make_caption_switch(sw, "Sync"), 0,
-                          Qt::AlignVCenter);
-    }
+    auto* cap = new QLabel("Sync");
+    cap->setObjectName("toggleCaption");
+    QWidget* slot = card->findChild<QWidget*>("syncSlot");
+    auto* sl = static_cast<QHBoxLayout*>(slot->layout());
+    sl->addWidget(sw, 0, Qt::AlignVCenter);
+    sl->addWidget(cap, 0, Qt::AlignVCenter);
+    sl->addStretch();
 
     connect(sw, &ToggleSwitch::toggled, this, [free_knob, note](bool on) {
         show_synced_knob(free_knob, note, on);
