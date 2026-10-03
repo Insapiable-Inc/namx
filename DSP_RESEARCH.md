@@ -20,7 +20,7 @@ all be used. That reopens Rubber Band, which Phase 17 avoided while the app was 
 
 | Effect | Today | Gap | First pick | RT |
 |---|---|---|---|---|
-| **Transpose** (pitch) | Two-tap WSOLA shifter | ~30 ms latency; wobble on upward shifts; chords untested; "not professional grade" | Signalsmith Stretch now; a <10 ms filter-bank shifter as the research track | ⚠️ |
+| **Transpose** (pitch) | Filter-bank shifter (was two-tap WSOLA) | ~20 ms in the bass, ~4 ms above; faint beat on long held chords | Done 2026-10-03 (see §1); Signalsmith for Shimmer/Crystals | ✅ |
 | **Reverb** | Freeverb (8 combs + 4 all-passes) | Metallic, dated, sparse early echoes | Dattorro plate + FDN hall; convolution reverb with IRs | ✅ |
 | **Cabinet / convolution** | Brute-force FIR | CPU grows with IR length; long IRs truncated | Partitioned FFT convolution (also needed for IR reverbs) | ✅ |
 | **Drive** | Digital TS approximation | Approximate circuit, aliasing | A NAM "pedal" capture slot before the amp; WDF Tube Screamer | ✅ |
@@ -62,7 +62,24 @@ monophonic; frequency-domain methods are polyphonic and higher quality but cost 
 and reviewers describe its latency as "a tiny bit … felt but not really heard" at the
 largest drops ([Sweetwater review][drop]). That is the bar.
 
-**Recommendation:**
+**Outcome (2026-10-03):** Transpose now uses the filter-bank shifter
+(`FilterBankShifter.h`): a complex 4th-order gammatone bank (2 bands per ERB, 0.7 ×
+Hohmann's bandwidth), each band rotated at (ratio − 1) × the frequency of the spectral
+peak it belongs to, Hohmann's delay/phase-aligned resynthesis. ~20 ms latency at the low
+E string, ~4 ms above; ±0.1 cents; −68…−76 dB artifacts on sines in both directions. The
+user preferred it to WSOLA by ear, especially after distortion. Tried and rejected by
+ear: one-pole (zero-delay) bands (couldn't separate partials), 1 and 1.5 bands per ERB
+(9 Hz tremolo on single notes), 3 narrow bands per ERB (40 ms bass, smeared fast notes),
+smoothed control, phase reset at attacks, and leak correction (half the chord tremolo,
+but cracks on fast notes and +45 % CPU). Known limit: a faint beat on long held chords
+— some of each partial leaks into the neighbouring partial's bands and gets that
+partial's shift, beating at (1 − ratio) × their spacing (4.5 Hz on an E5 at −2 st).
+**Signalsmith Stretch** was measured too: at playable block sizes (20–60 ms) the bass
+comes out at the wrong pitch (82 → 67 Hz at −2 st with 60 ms blocks; correct only at
+~250 ms), so it's out for Transpose — but a good fit for Shimmer/Crystals, where latency
+doesn't matter.
+
+**Recommendation (before the outcome above):**
 1. **Quick win:** wrap Signalsmith Stretch (MIT, header-only) behind the existing
    `PitchShifter` interface. A/B it against today's WSOLA on distorted chords. Measure
    latency at small block sizes with the same scratch harness used on 2026-10-01.

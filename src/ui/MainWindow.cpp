@@ -717,7 +717,7 @@ void MainWindow::setup_ui() {
         semis->set_scroll_step(0.1); // used in continuous mode
         semis->set_value_formatter(&format_semitones);
         semis->setToolTip("Pitch shift in semitones: −1 / −2 for drop tunings, ±12 for octaves "
-                          "(adds ~25 ms latency when not 0)");
+                          "(when not 0, adds ~20 ms latency in the bass, ~4 ms higher up)");
         KnobWidget* mix = late_knob(
             "transpose", "mix", new KnobWidget("Mix", 0.0, 100.0, 100.0, "%"), [this](double v) {
                 engine->get_transpose().set_mix_pct(static_cast<float>(v));

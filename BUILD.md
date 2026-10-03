@@ -475,8 +475,9 @@ switch is on, which runs the model once per channel at twice the CPU.
 | Volume Pedal | Volume, Mid (level at half travel), **Reverse** (pedal heel ↔ toe) | — |
 | Output | Gain, **Limit** (look-ahead limiter at −0.3 dBFS) | — |
 
-Times, rates and frequencies use logarithmic knobs. Transpose uses the built-in pitch
-shifter, which adds about 30 ms of latency while it's active.
+Times, rates and frequencies use logarithmic knobs. Transpose uses a filter-bank pitch
+shifter: while it's active it adds about 20 ms of latency in the bass (low E string) and
+about 4 ms higher up, where the pick attack is.
 
 ---
 

@@ -1050,9 +1050,11 @@ it for the one it replaces, and is measured with `NAMPlayerBench`.
       with BENCHMARKS.md's null test and matrix. Decision 2026-10-02: **keep fast tanh
       for now**; no runtime switch (it's a core-wide global: layers capture the
       activation at model build, and the LSTM reads a plain static bool per sample).
-- [ ] **Pitch shifter:** Signalsmith Stretch (MIT) behind `PitchShifter`, A/B'd against
-      today's WSOLA on distorted chords; latency measured. Then a < 10 ms
-      filter-bank shifter (Juillerat 2008) as a "Low latency" mode for drop tuning.
+- [x] **Pitch shifter** (2026-10-03): Transpose runs on a filter-bank shifter
+      (`FilterBankShifter.h`, gammatone bank + per-band rotation + Hohmann resynthesis),
+      picked by ear over WSOLA and a dozen variants; ~20 ms in the bass, ~4 ms above.
+      Signalsmith Stretch measured: wrong bass pitch at playable latencies — kept for
+      Shimmer/Crystals (below). Details in `DSP_RESEARCH.md` §1.
 - [ ] **Partitioned FFT convolution** for the cabinet (lifts the IR length cap, cuts
       CPU) — the engine IR reverbs need.
 - [ ] **Reverb:** Freeverb → Dattorro plate + FDN hall/room; then IR reverb. Fix the Decay
@@ -1063,8 +1065,9 @@ it for the one it replaces, and is measured with `NAMPlayerBench`.
       Uni-Vibe (lamp + photocells + 4 staggered stages).
 - [ ] **Wah:** Crybaby nodal-DK model; **Delay:** tape mode (ChowTape model);
       **Compressor:** smooth-branching detector + soft knee.
-- [ ] Re-enable Shimmer and Crystals on the new high-quality shifter (latency is
-      irrelevant inside tails).
+- [ ] Re-enable Shimmer and Crystals on a high-quality shifter (latency is irrelevant
+      inside tails): Signalsmith Stretch with long blocks (it's right at ~250 ms); they
+      still run on the old WSOLA `PitchShifter` meanwhile.
 
 ## Phase 23 — Expression pedals: range, reverse, whammy (added 2026-10-02; code done 2026-10-02, pedal check pending)
 

@@ -105,7 +105,7 @@ modulation and saturation on, Transpose at −2 st.
 | Effect | Mono | Stereo switch on | Stereo input |
 |---|---|---|---|
 | Tuner | 0.1 µs · 0.00 % | — | 0.1 µs · 0.00 % |
-| Transpose | 1.4 µs · 0.05 % | — | 2.7 µs · 0.10 % |
+| Transpose | 26.8 µs · 1.01 % | — | 54.1 µs · 2.03 % |
 | Gate | 0.4 µs · 0.01 % | — | 0.8 µs · 0.03 % |
 | Compressor | 1.4 µs · 0.05 % | — | 2.7 µs · 0.10 % |
 | Wah | 0.6 µs · 0.02 % | — | 1.2 µs · 0.04 % |
@@ -173,12 +173,17 @@ A 220 Hz sine at −10 dBFS, mix 100 %. Pitch error of the spectral peak, artifa
 
 | Shift | Pitch error | Artifacts | Latency |
 |---|---|---|---|
-| -12 st | -0.1 cents | -66.2 dB | 14–45 ms |
-| -5 st | +0.0 cents | -79.3 dB | 14–62 ms |
-| -2 st | -0.1 cents | -85.1 dB | 14–32 ms |
-| +2 st | +0.1 cents | -84.6 dB | 18–24 ms |
-| +5 st | +0.1 cents | -34.1 dB | 18–29 ms |
-| +12 st | +0.1 cents | -22.6 dB | 16–24 ms |
+| -12 st | -0.1 cents | -74.0 dB | 28–32 ms |
+| -5 st | +0.1 cents | -70.9 dB | 22–23 ms |
+| -2 st | -0.0 cents | -67.6 dB | 18–20 ms |
+| +2 st | +0.1 cents | -72.5 dB | 16–16 ms |
+| +5 st | +0.1 cents | -73.4 dB | 13–14 ms |
+| +12 st | +0.0 cents | -75.7 dB | 10–10 ms |
+
+Re-measured 2026-10-03 with the filter-bank shifter (Phase 22), which replaced the WSOLA
+one; the Transpose CPU row above too. The old shifter measured −66…−85 dB artifacts for
+downward shifts, −34 / −23 dB at +5 / +12 st, and 14–62 ms latency depending on where
+the note started.
 
 ### Reverb decay
 
@@ -216,10 +221,11 @@ Ceiling −0.3 dBFS. Worst overshoot over four brutal inputs (sine bursts at +6 
   (−137 dB) and modest above. Phase 22's anti-aliased WDF Tube Screamer is the fix.
 - **The amp model aliases too** (−59 dB at 3 kHz, −13 dB at 7 kHz): a NAM capture runs at
   48 kHz without oversampling — the same in the official plugin.
-- **Transpose is perfectly in tune** (±0.1 cents) and clean for small shifts (−80 dB),
-  but **upward shifts of +5 and +12 st have strong artifacts** (−34 / −23 dB), and its
-  **latency varies 14–62 ms** with where the note starts — worst for downward shifts.
-  Both are Phase 22's pitch-shifter item.
+- **Transpose is in tune** (±0.1 cents) and clean in both directions (−68…−76 dB) with
+  the filter-bank shifter (Phase 22, 2026-10-03), with a steady latency set by the note's
+  pitch: ~20 ms at 220 Hz for −2 st, shorter going up, longer for big drops (the bass
+  bands are the slow ones). Was: strong artifacts on upward shifts and 14–62 ms latency
+  depending on where the note started (WSOLA).
 - **Reverb Decay is badly spread over the knob:** 0–75 % covers only 0.19–0.83 s, the
   last quarter jumps to 9 s. A taper (or a Decay knob in seconds) would fix it.
 - **Delay modulation** is clean (off-note energy −64 dB, the linear interpolation's own
