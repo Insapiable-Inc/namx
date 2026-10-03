@@ -24,7 +24,7 @@
 #include "KnobWidget.h"
 #include "ToggleSwitch.h"
 
-namespace npl
+namespace namx
 {
 
 static int gFailures = 0;
@@ -287,8 +287,8 @@ int run(int argc, char** argv) {
     return gFailures ? 1 : 0;
 }
 
-} // namespace npl
+} // namespace namx
 
 int main(int argc, char** argv) {
-    return npl::run(argc, argv);
+    return namx::run(argc, argv);
 }

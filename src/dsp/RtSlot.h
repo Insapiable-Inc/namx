@@ -8,7 +8,7 @@
 
 #include "Common.h"
 
-namespace npl
+namespace namx
 {
 
 // Single-writer / single-reader publication slot for objects that a
@@ -96,4 +96,4 @@ private:
     vector<Retired> retired; // owner thread only
 };
 
-} // namespace npl
+} // namespace namx

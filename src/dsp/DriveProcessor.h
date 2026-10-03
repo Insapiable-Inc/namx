@@ -5,7 +5,7 @@
 #include "Common.h"
 #include "EffectBase.h"
 
-namespace npl
+namespace namx
 {
 
 // Overdrive / boost in front of the amp, Tube-Screamer style: only the
@@ -50,4 +50,4 @@ private:
     float hp_x1[2]{}, hp_y1[2]{}, lp_per_channel[2]{};
 };
 
-} // namespace npl
+} // namespace namx

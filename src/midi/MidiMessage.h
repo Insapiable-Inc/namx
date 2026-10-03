@@ -5,7 +5,7 @@
 
 #include "Common.h"
 
-namespace npl
+namespace namx
 {
 
 // One incoming MIDI event, already parsed by the platform backend. Only
@@ -105,6 +105,6 @@ struct MidiMessage
     }
 };
 
-} // namespace npl
+} // namespace namx
 
-Q_DECLARE_METATYPE(npl::MidiMessage)
+Q_DECLARE_METATYPE(namx::MidiMessage)

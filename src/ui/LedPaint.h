@@ -6,7 +6,7 @@
 
 #include "Common.h"
 
-namespace npl
+namespace namx
 {
 
 // Painting for the LED-style displays (tuner, level meters).
@@ -33,4 +33,4 @@ inline void draw_unlit_led(QPainter& p, const QRectF& r, QColor c, qreal radius,
     p.drawRoundedRect(r, radius, radius);
 }
 
-} // namespace npl
+} // namespace namx

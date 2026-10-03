@@ -8,7 +8,7 @@
 #include "EffectBase.h"
 #include "PitchShifter.h"
 
-namespace npl
+namespace namx
 {
 
 // Stereo delay.
@@ -131,4 +131,4 @@ private:
         100.0f;
 };
 
-} // namespace npl
+} // namespace namx

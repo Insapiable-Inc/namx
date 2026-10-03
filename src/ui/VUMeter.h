@@ -5,7 +5,7 @@
 
 #include "Common.h"
 
-namespace npl
+namespace namx
 {
 
 // LED bar-graph peak meter (vertical fills bottom→top, horizontal fills
@@ -59,4 +59,4 @@ private:
     static constexpr float CLIP_VALUE = (0.0f - MIN_DB) / (MAX_DB - MIN_DB) * 100.0f;
 };
 
-} // namespace npl
+} // namespace namx

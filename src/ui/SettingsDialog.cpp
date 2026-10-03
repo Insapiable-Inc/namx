@@ -14,7 +14,7 @@
 
 #include "Common.h"
 
-namespace npl
+namespace namx
 {
 
 static const char* const FOLDER_SECTIONS[3] = {"Models", "Impulse responses", "Presets"};
@@ -451,4 +451,4 @@ void SettingsDialog::refresh_shortcuts() {
     shortcuts->resizeColumnToContents(0);
 }
 
-} // namespace npl
+} // namespace namx

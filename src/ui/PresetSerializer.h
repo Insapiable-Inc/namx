@@ -7,7 +7,7 @@
 #include "Common.h"
 #include "ParamRegistry.h"
 
-namespace npl
+namespace namx
 {
 
 class AudioEngine;
@@ -49,4 +49,4 @@ Applied apply(const QJsonObject& obj, const ParamRegistry& params);
 
 } // namespace PresetSerializer
 
-} // namespace npl
+} // namespace namx

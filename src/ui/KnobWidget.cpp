@@ -21,7 +21,7 @@
 #include "Common.h"
 #include "Theme.h"
 
-namespace npl
+namespace namx
 {
 
 class VerticalDial : public QDial
@@ -351,4 +351,4 @@ void KnobWidget::set_log_taper(bool on) {
     update_label();
 }
 
-} // namespace npl
+} // namespace namx

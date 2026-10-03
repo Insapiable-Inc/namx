@@ -9,7 +9,7 @@ class QLabel;
 class QTableWidget;
 class QVBoxLayout;
 
-namespace npl
+namespace namx
 {
 
 class MidiInput;
@@ -47,4 +47,4 @@ private:
     bool rebuilding = false;
 };
 
-} // namespace npl
+} // namespace namx

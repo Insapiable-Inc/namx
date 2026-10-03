@@ -11,7 +11,7 @@
 #include "Common.h"
 #include "EffectBase.h"
 
-namespace npl
+namespace namx
 {
 
 // Chromatic tuner using NSDF (YIN-style) pitch detection.
@@ -85,4 +85,4 @@ private:
     atomic<float> fs{44100.0f}; // worker-safe copy of the sample rate
 };
 
-} // namespace npl
+} // namespace namx

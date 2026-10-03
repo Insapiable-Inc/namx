@@ -5,7 +5,7 @@
 
 #include "Common.h"
 
-namespace npl
+namespace namx
 {
 
 static constexpr float PI = 3.14159265358979323846f;
@@ -73,4 +73,4 @@ void DynamicWahProcessor::process_block_dual(float* l, float* r, size_t nframes)
     process_channel(r, nframes, 1);
 }
 
-} // namespace npl
+} // namespace namx

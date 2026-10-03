@@ -5,7 +5,7 @@
 
 #include "Common.h"
 
-namespace npl::wav
+namespace namx::wav
 {
 
 // Mono WAV reader for impulse responses: PCM 16 / 24 / 32-bit, IEEE float 32 / 64-bit,
@@ -28,4 +28,4 @@ expected<MonoAudio, string> read_mono(const std::filesystem::path& path);
 // Decodes a whole file already in memory (what read_mono() does after reading it).
 expected<MonoAudio, string> parse_mono(span<const std::byte> data);
 
-} // namespace npl::wav
+} // namespace namx::wav

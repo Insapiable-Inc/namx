@@ -13,7 +13,7 @@
 class QMenu;
 class QToolButton;
 
-namespace npl
+namespace namx
 {
 
 class KnobWidget;
@@ -113,4 +113,4 @@ private:
     void on_pan_changed(double pct);
 };
 
-} // namespace npl
+} // namespace namx

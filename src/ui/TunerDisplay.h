@@ -5,7 +5,7 @@
 
 #include "Common.h"
 
-namespace npl
+namespace namx
 {
 
 // Boss-TU-3-inspired tuner readout: a horizontal LED ladder (the center LED
@@ -51,4 +51,4 @@ private:
     static constexpr float IN_TUNE_CENTS = 3.0f; // |cents| at or below: green
 };
 
-} // namespace npl
+} // namespace namx

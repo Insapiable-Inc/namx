@@ -5,7 +5,7 @@
 
 #include "Common.h"
 
-namespace npl
+namespace namx
 {
 
 static constexpr double TWO_PI = 6.283185307179586;
@@ -228,4 +228,4 @@ void Metronome::process(float* l, float* r, size_t n) {
     until_next = until - frames;
 }
 
-} // namespace npl
+} // namespace namx

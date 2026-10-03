@@ -6,7 +6,7 @@
 
 #include "Common.h"
 
-namespace npl
+namespace namx
 {
 
 TunerProcessor::TunerProcessor() {
@@ -243,4 +243,4 @@ float TunerProcessor::cents_offset(float freq, float ref_hz) {
     return std::max(-50.0f, std::min(50.0f, 1200.0f * std::log2(freq / note_freq)));
 }
 
-} // namespace npl
+} // namespace namx

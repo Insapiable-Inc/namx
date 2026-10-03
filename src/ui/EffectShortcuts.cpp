@@ -4,7 +4,7 @@
 
 #include "Common.h"
 
-namespace npl
+namespace namx
 {
 
 // Digits, then the row below: keys that exist on every Latin keyboard layout.
@@ -45,4 +45,4 @@ void EffectShortcuts::clear() {
     next_key = 0;
 }
 
-} // namespace npl
+} // namespace namx

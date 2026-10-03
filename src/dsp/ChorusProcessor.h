@@ -6,7 +6,7 @@
 #include "DelayLine.h"
 #include "EffectBase.h"
 
-namespace npl
+namespace namx
 {
 
 // Chorus: LFO-modulated delay. Modes: Normal (one voice), Tri (three voices
@@ -77,4 +77,4 @@ private:
     static constexpr float MAX_DEPTH_MS = 5.0f;
 };
 
-} // namespace npl
+} // namespace namx

@@ -64,7 +64,7 @@
 #include "TunerProcessor.h"
 #include "VUMeter.h"
 
-namespace npl
+namespace namx
 {
 
 // Mime type carrying the effect ID of a dragged strip card.
@@ -3468,4 +3468,4 @@ void MainWindow::on_midi_activity(const QString& what) {
     lbl_midi->setToolTip("Last MIDI message: " + what);
 }
 
-} // namespace npl
+} // namespace namx

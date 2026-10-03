@@ -13,7 +13,7 @@ class QLabel;
 class QMenu;
 class QToolButton;
 
-namespace npl
+namespace namx
 {
 
 class LibraryIndex;
@@ -84,4 +84,4 @@ private:
     void on_ab_clicked(int side);
 };
 
-} // namespace npl
+} // namespace namx

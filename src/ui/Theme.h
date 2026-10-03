@@ -8,7 +8,7 @@
 class QApplication;
 class QWidget;
 
-namespace npl
+namespace namx
 {
 
 // Centralised palette and stylesheet for NAMPlayer — every color lives here
@@ -74,4 +74,4 @@ void apply_to(QWidget& root);
 
 } // namespace Theme
 
-} // namespace npl
+} // namespace namx

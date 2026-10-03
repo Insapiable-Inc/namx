@@ -5,7 +5,7 @@
 
 #include "Common.h"
 
-namespace npl
+namespace namx
 {
 
 static constexpr float DB_PER_OCTAVE = 6.0205999f; // 20·log10(2)
@@ -68,4 +68,4 @@ void CompressorProcessor::process_block_dual(float* l, float* r, size_t nframes)
     process_channel(r, nframes, 1);
 }
 
-} // namespace npl
+} // namespace namx

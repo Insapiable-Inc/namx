@@ -46,7 +46,7 @@
 #include "TunerProcessor.h"
 #include "VolumeProcessor.h"
 
-namespace npl
+namespace namx
 {
 
 static constexpr double SAMPLE_RATE = 48000.0;
@@ -501,7 +501,7 @@ void DspGoldenTest::tuner_detects_pitch() {
     QVERIFY2(std::abs(pitch - 110.0f) <= 0.2f, qPrintable(QString::number(pitch)));
 }
 
-} // namespace npl
+} // namespace namx
 
-QTEST_GUILESS_MAIN(npl::DspGoldenTest)
+QTEST_GUILESS_MAIN(namx::DspGoldenTest)
 #include "DspGoldenTest.moc"

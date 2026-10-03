@@ -7,7 +7,7 @@
 #include "Common.h"
 #include "IAudioBackend.h"
 
-namespace npl
+namespace namx
 {
 
 // JACK implementation of IAudioBackend.
@@ -73,4 +73,4 @@ private:
     int buffer_size = 0;
 };
 
-} // namespace npl
+} // namespace namx

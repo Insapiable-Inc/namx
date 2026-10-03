@@ -11,7 +11,7 @@
 
 #include "Theme.h"
 
-namespace npl
+namespace namx
 {
 
 static constexpr qreal NUMBER_PT = 12.0;
@@ -165,4 +165,4 @@ void NumberField::end_edit(bool commit) {
     update();
 }
 
-} // namespace npl
+} // namespace namx

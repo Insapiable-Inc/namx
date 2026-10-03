@@ -44,7 +44,7 @@
 #include "TunerProcessor.h"
 #include "VolumeProcessor.h"
 
-namespace npl
+namespace namx
 {
 
 struct Stage
@@ -342,8 +342,8 @@ int run(int argc, char** argv) {
     return finite ? 0 : 1;
 }
 
-} // namespace npl
+} // namespace namx
 
 int main(int argc, char** argv) {
-    return npl::run(argc, argv);
+    return namx::run(argc, argv);
 }

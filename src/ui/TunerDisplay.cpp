@@ -10,7 +10,7 @@
 #include "LedPaint.h"
 #include "Theme.h"
 
-namespace npl
+namespace namx
 {
 
 // Seven-segment bits: A top, B top-right, C bottom-right, D bottom,
@@ -218,4 +218,4 @@ void TunerDisplay::paintEvent(QPaintEvent*) {
     }
 }
 
-} // namespace npl
+} // namespace namx

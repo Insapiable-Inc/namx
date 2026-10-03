@@ -10,7 +10,7 @@
 #include "KnobWidget.h"
 #include "ToggleSwitch.h"
 
-namespace npl
+namespace namx
 {
 
 namespace PresetSerializer
@@ -158,4 +158,4 @@ Applied apply(const QJsonObject& obj, const ParamRegistry& params) {
 
 } // namespace PresetSerializer
 
-} // namespace npl
+} // namespace namx

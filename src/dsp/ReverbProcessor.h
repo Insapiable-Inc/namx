@@ -8,7 +8,7 @@
 #include "EffectBase.h"
 #include "PitchShifter.h"
 
-namespace npl
+namespace namx
 {
 
 // Freeverb-based stereo reverb (8 comb + 4 all-pass filters).
@@ -143,4 +143,4 @@ private:
                            array<AllPassFilter, NUM_ALL_PASSES>& aps);
 };
 
-} // namespace npl
+} // namespace namx

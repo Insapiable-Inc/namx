@@ -6,7 +6,7 @@
 
 #include "Common.h"
 
-namespace npl
+namespace namx
 {
 
 class KnobWidget;
@@ -30,4 +30,4 @@ struct ParamDesc
 
 using ParamRegistry = vector<ParamDesc>;
 
-} // namespace npl
+} // namespace namx

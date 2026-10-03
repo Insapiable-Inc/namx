@@ -5,7 +5,7 @@
 
 #include "Common.h"
 
-namespace npl
+namespace namx
 {
 
 static constexpr float TWO_PI = 6.28318530718f;
@@ -153,4 +153,4 @@ void DelayProcessor::process_block_stereo_out(float* l, float* r, size_t nframes
     }
 }
 
-} // namespace npl
+} // namespace namx

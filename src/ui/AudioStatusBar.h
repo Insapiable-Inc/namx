@@ -7,7 +7,7 @@
 
 class QLabel;
 
-namespace npl
+namespace namx
 {
 
 class AudioEngine;
@@ -76,4 +76,4 @@ private:
     int shown_xruns = -2;
 };
 
-} // namespace npl
+} // namespace namx

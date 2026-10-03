@@ -9,7 +9,7 @@
 #include "KnobWidget.h"
 #include "ToggleSwitch.h"
 
-namespace npl
+namespace namx
 {
 
 namespace Theme
@@ -730,4 +730,4 @@ void apply_to(QWidget& root) {
 
 } // namespace Theme
 
-} // namespace npl
+} // namespace namx

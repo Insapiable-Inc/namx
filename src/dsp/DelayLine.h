@@ -7,7 +7,7 @@
 
 #include "Common.h"
 
-namespace npl
+namespace namx
 {
 
 // Circular buffer of past samples, the building block of every delay-based effect.
@@ -83,4 +83,4 @@ private:
     size_t next = 0; // where the next push() writes
 };
 
-} // namespace npl
+} // namespace namx

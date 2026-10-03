@@ -9,7 +9,7 @@
 #include "LedPaint.h"
 #include "Theme.h"
 
-namespace npl
+namespace namx
 {
 
 VUMeter::VUMeter(Qt::Orientation orientation, QWidget* parent)
@@ -118,4 +118,4 @@ void VUMeter::paintEvent(QPaintEvent*) {
     }
 }
 
-} // namespace npl
+} // namespace namx

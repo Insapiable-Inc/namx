@@ -25,7 +25,7 @@
 #include "ReverbProcessor.h"
 #include "TransposeProcessor.h"
 
-namespace npl
+namespace namx
 {
 
 namespace
@@ -482,8 +482,8 @@ int run(int argc, char** argv) {
     return 0;
 }
 
-} // namespace npl
+} // namespace namx
 
 int main(int argc, char** argv) {
-    return npl::run(argc, argv);
+    return namx::run(argc, argv);
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-// Names every file in gui/ uses. They are imported into npl once, here, so our code
+// Names every file in gui/ uses. They are imported into namx once, here, so our code
 // writes `string` and `vector` instead of `std::string` and `std::vector`
 // (CPP_GUIDELINES.md → Namespaces). The list grows deliberately.
 
@@ -14,10 +14,10 @@
 #include <string_view>
 #include <vector>
 
-namespace npl
+namespace namx
 {
 
 using std::array, std::atomic, std::expected, std::make_unique, std::size_t, std::span, std::string,
     std::string_view, std::unique_ptr, std::vector;
 
-} // namespace npl
+} // namespace namx

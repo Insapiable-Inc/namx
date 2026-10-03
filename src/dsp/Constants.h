@@ -1,7 +1,7 @@
 #pragma once
 #include "Common.h"
 
-namespace npl
+namespace namx
 {
 
 // All knob parameter constants in one place.
@@ -212,4 +212,4 @@ constexpr double WAH_POSITION_MIN = 0.0, WAH_POSITION_MAX = 100.0, WAH_POSITION_
 
 } // namespace NAMConstants
 
-} // namespace npl
+} // namespace namx

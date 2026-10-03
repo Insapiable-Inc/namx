@@ -5,7 +5,7 @@
 
 #include "Common.h"
 
-namespace npl
+namespace namx
 {
 
 constexpr int ReverbProcessor::COMB_LENGTHS[NUM_COMBS];
@@ -176,4 +176,4 @@ void ReverbProcessor::process_block_dual(float* l, float* r, size_t nframes) {
     process_mono_bank(r, nframes, 1, comb_r, ap_r);
 }
 
-} // namespace npl
+} // namespace namx

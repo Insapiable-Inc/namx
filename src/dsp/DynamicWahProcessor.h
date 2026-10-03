@@ -5,7 +5,7 @@
 #include "Common.h"
 #include "EffectBase.h"
 
-namespace npl
+namespace namx
 {
 
 // Wah: a resonant SVF band-pass swept either by an envelope follower (Auto)
@@ -68,4 +68,4 @@ private:
     float svf_bp[2]{0.0f, 0.0f};
 };
 
-} // namespace npl
+} // namespace namx

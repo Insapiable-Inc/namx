@@ -9,7 +9,7 @@
 #include "Common.h"
 #include "Log.h"
 
-namespace npl
+namespace namx
 {
 
 AudioEngine::AudioEngine() {
@@ -389,4 +389,4 @@ vector<AudioEngine::LatencySource> AudioEngine::processing_latency() const {
     return out;
 }
 
-} // namespace npl
+} // namespace namx

@@ -13,7 +13,7 @@
 #include "Common.h"
 #include "Theme.h"
 
-namespace npl
+namespace namx
 {
 
 // Label that fires a callback on left click; used for the interactive items
@@ -302,4 +302,4 @@ void AudioStatusBar::set_device(bool input, const QString& id) {
     emit device_selection_changed();
 }
 
-} // namespace npl
+} // namespace namx

@@ -6,7 +6,7 @@
 
 #include "Common.h"
 
-namespace npl
+namespace namx
 {
 
 // Abstract base for all audio effect processors.
@@ -137,4 +137,4 @@ protected:
     atomic<bool> reset_pending{false};
 };
 
-} // namespace npl
+} // namespace namx

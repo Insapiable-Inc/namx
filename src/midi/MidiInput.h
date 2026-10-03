@@ -8,7 +8,7 @@
 #include "Common.h"
 #include "MidiMessage.h"
 
-namespace npl
+namespace namx
 {
 
 // Platform MIDI input (Phase 16): ALSA sequencer on Linux (USB, DIN through
@@ -54,4 +54,4 @@ protected:
     QSet<QString> disabled;
 };
 
-} // namespace npl
+} // namespace namx

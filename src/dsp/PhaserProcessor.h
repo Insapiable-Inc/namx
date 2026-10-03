@@ -6,7 +6,7 @@
 #include "Common.h"
 #include "EffectBase.h"
 
-namespace npl
+namespace namx
 {
 
 // 4-stage all-pass phaser. Stereo uses 180° LFO offset.
@@ -88,4 +88,4 @@ private:
                           float& fb_state, float fb_amt, float mix) const;
 };
 
-} // namespace npl
+} // namespace namx

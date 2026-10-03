@@ -5,7 +5,7 @@
 
 #include "Common.h"
 
-namespace npl
+namespace namx
 {
 
 static constexpr float PI = 3.14159265358979323846f;
@@ -51,4 +51,4 @@ void DriveProcessor::process_channel(float* buf, size_t n, int ch) {
     lp_per_channel[ch] = lp;
 }
 
-} // namespace npl
+} // namespace namx

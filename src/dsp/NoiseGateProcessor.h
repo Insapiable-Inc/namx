@@ -5,7 +5,7 @@
 #include "Common.h"
 #include "EffectBase.h"
 
-namespace npl
+namespace namx
 {
 
 // Simple envelope-following noise gate.
@@ -63,4 +63,4 @@ private:
     atomic<float> gr_peak_db{0.0f};
 };
 
-} // namespace npl
+} // namespace namx

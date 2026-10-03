@@ -5,7 +5,7 @@
 
 #include "Common.h"
 
-namespace npl
+namespace namx
 {
 
 void NoiseGateProcessor::reset() {
@@ -61,4 +61,4 @@ void NoiseGateProcessor::process_block_dual(float* l, float* r, size_t nframes) 
     process_channel(r, nframes, 1);
 }
 
-} // namespace npl
+} // namespace namx

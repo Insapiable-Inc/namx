@@ -6,7 +6,7 @@
 #include "Common.h"
 #include "ToggleSwitch.h"
 
-namespace npl
+namespace namx
 {
 
 // Keyboard shortcuts for the effects' on/off switches, by position in the strip:
@@ -34,4 +34,4 @@ private:
     vector<QShortcut*> shortcuts;
 };
 
-} // namespace npl
+} // namespace namx

@@ -9,9 +9,9 @@
 
 #include "Common.h"
 
-namespace npl
+namespace namx
 {
 
 Q_DECLARE_LOGGING_CATEGORY(lc_audio)
 
-} // namespace npl
+} // namespace namx

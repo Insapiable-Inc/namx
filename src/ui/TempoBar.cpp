@@ -19,7 +19,7 @@
 #include "TempoSync.h"
 #include "Theme.h"
 
-namespace npl
+namespace namx
 {
 
 BeatLeds::BeatLeds(QWidget* parent)
@@ -430,4 +430,4 @@ void TempoBar::on_pan_changed(double pct) {
     QSettings().setValue("metronome/pan", pct);
 }
 
-} // namespace npl
+} // namespace namx

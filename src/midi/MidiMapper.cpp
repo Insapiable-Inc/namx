@@ -14,7 +14,7 @@
 #include "KnobWidget.h"
 #include "ToggleSwitch.h"
 
-namespace npl
+namespace namx
 {
 
 static const char* const SOURCE_NAMES[] = {"cc", "note", "program"};
@@ -438,4 +438,4 @@ void MidiMapper::handle_clock(const MidiMessage& m) {
     }
 }
 
-} // namespace npl
+} // namespace namx

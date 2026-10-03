@@ -4,7 +4,7 @@
 
 #include "Common.h"
 
-namespace npl
+namespace namx
 {
 
 #ifndef M_PI
@@ -184,4 +184,4 @@ void EQProcessor::reset_filters() {
     }
 }
 
-} // namespace npl
+} // namespace namx

@@ -10,7 +10,7 @@
 #include "Common.h"
 #include "Log.h"
 
-namespace npl
+namespace namx
 {
 
 NamProcessor::NamProcessor() {
@@ -238,4 +238,4 @@ bool NamProcessor::process(float* l, float* r, size_t n, bool input_is_stereo) {
     return input_is_stereo;
 }
 
-} // namespace npl
+} // namespace namx

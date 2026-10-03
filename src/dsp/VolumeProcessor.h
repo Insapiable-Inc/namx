@@ -5,7 +5,7 @@
 #include "Common.h"
 #include "EffectBase.h"
 
-namespace npl
+namespace namx
 {
 
 // Volume pedal: Position 0–100 % (heel = silence, toe = unity) on a curve
@@ -36,4 +36,4 @@ private:
     float gain = 1.0f;
 };
 
-} // namespace npl
+} // namespace namx

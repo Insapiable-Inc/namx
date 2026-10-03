@@ -10,7 +10,7 @@
 #include "Log.h"
 #include "WavReader.h"
 
-namespace npl
+namespace namx
 {
 
 static void clear_kernel_buffers(vector<float> buffers[2], int write_pos[2]) {
@@ -219,4 +219,4 @@ void IRLoader::reset() {
     }
 }
 
-} // namespace npl
+} // namespace namx

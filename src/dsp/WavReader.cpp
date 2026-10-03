@@ -6,7 +6,7 @@
 #include <fstream>
 #include <system_error>
 
-namespace npl::wav
+namespace namx::wav
 {
 
 namespace
@@ -193,4 +193,4 @@ expected<MonoAudio, string> read_mono(const std::filesystem::path& path) {
     return parse_mono(bytes);
 }
 
-} // namespace npl::wav
+} // namespace namx::wav

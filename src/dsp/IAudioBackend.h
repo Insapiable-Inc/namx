@@ -6,7 +6,7 @@
 
 #include "Common.h"
 
-namespace npl
+namespace namx
 {
 
 // Platform-agnostic audio backend interface.
@@ -136,4 +136,4 @@ public:
     static unique_ptr<IAudioBackend> create();
 };
 
-} // namespace npl
+} // namespace namx

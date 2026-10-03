@@ -4,7 +4,7 @@
 
 #include "Common.h"
 
-namespace npl
+namespace namx
 {
 
 MidiInput::MidiInput(QObject* parent)
@@ -29,4 +29,4 @@ void MidiInput::set_enabled(const QString& device, bool on) {
     sync_connections();
 }
 
-} // namespace npl
+} // namespace namx

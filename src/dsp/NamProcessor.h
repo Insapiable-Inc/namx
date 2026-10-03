@@ -14,7 +14,7 @@
 #include "ModelResampler.h"
 #include "RtSlot.h"
 
-namespace npl
+namespace namx
 {
 
 // Wraps the NAM DSP model as an EffectBase.
@@ -138,4 +138,4 @@ private:
                           vector<float>& scratch);
 };
 
-} // namespace npl
+} // namespace namx

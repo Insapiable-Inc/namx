@@ -7,7 +7,7 @@
 #include "EffectBase.h"
 #include "PitchShifter.h"
 
-namespace npl
+namespace namx
 {
 
 // Transpose ±12 semitones (drop tunings, octave effects) at the front of
@@ -74,4 +74,4 @@ private:
     PitchShifter shift[2];
 };
 
-} // namespace npl
+} // namespace namx

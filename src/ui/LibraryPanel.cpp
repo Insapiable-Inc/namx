@@ -29,7 +29,7 @@
 #include "Common.h"
 #include "Theme.h"
 
-namespace npl
+namespace namx
 {
 
 constexpr int ROW_HEIGHT = 42;
@@ -683,4 +683,4 @@ void LibraryPanel::set_sort_key(int key) {
     restore_current_from_loaded();
 }
 
-} // namespace npl
+} // namespace namx

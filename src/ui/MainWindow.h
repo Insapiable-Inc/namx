@@ -35,7 +35,7 @@ class QToolButton;
 class QMenu;
 class QShortcut;
 
-namespace npl
+namespace namx
 {
 
 class AudioStatusBar;
@@ -419,4 +419,4 @@ private:
     QTimer* midi_blink = nullptr;
 };
 
-} // namespace npl
+} // namespace namx

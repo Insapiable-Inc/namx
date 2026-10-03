@@ -20,7 +20,7 @@
 
 #include "Common.h"
 
-namespace npl
+namespace namx
 {
 
 static int failures = 0;
@@ -239,8 +239,8 @@ int run() {
     return failures ? 1 : 0;
 }
 
-} // namespace npl
+} // namespace namx
 
 int main() {
-    return npl::run();
+    return namx::run();
 }

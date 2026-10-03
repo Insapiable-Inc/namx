@@ -4,7 +4,7 @@
 
 #include "Common.h"
 
-namespace npl
+namespace namx
 {
 
 static constexpr float PI = 3.14159265358979323846f;
@@ -63,4 +63,4 @@ void TremoloProcessor::process_block_stereo_out(float* l, float* r, size_t nfram
     }
 }
 
-} // namespace npl
+} // namespace namx

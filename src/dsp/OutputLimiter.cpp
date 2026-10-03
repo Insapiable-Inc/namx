@@ -5,7 +5,7 @@
 
 #include "Common.h"
 
-namespace npl
+namespace namx
 {
 
 static constexpr float CEILING = 0.96605f; // −0.3 dBFS
@@ -75,4 +75,4 @@ void OutputLimiter::process(float* l, float* r, size_t n) {
     }
 }
 
-} // namespace npl
+} // namespace namx

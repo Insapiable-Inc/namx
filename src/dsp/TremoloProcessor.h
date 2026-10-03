@@ -5,7 +5,7 @@
 #include "Common.h"
 #include "EffectBase.h"
 
-namespace npl
+namespace namx
 {
 
 // Tremolo: amplitude modulation. Stereo uses a 180° LFO offset (auto-pan, like the other
@@ -49,4 +49,4 @@ private:
     float phase{0.0f};
 };
 
-} // namespace npl
+} // namespace namx

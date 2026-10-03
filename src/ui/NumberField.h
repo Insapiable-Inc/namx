@@ -6,7 +6,7 @@
 
 class QLineEdit;
 
-namespace npl
+namespace namx
 {
 
 // Numeric readout in a well: "value unit". Drag vertically, scroll
@@ -64,4 +64,4 @@ private:
     double press_value = 0.0;
 };
 
-} // namespace npl
+} // namespace namx

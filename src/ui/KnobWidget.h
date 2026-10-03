@@ -12,7 +12,7 @@ class QContextMenuEvent;
 class QLabel;
 class QMenu;
 
-namespace npl
+namespace namx
 {
 
 class VerticalDial;
@@ -134,4 +134,4 @@ private:
     void update_label();
 };
 
-} // namespace npl
+} // namespace namx

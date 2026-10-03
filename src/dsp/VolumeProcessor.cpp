@@ -5,7 +5,7 @@
 
 #include "Common.h"
 
-namespace npl
+namespace namx
 {
 
 float VolumeProcessor::target_gain() const {
@@ -41,4 +41,4 @@ bool VolumeProcessor::process(float* l, float* r, size_t n, bool input_is_stereo
     return input_is_stereo;
 }
 
-} // namespace npl
+} // namespace namx

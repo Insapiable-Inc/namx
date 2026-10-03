@@ -273,7 +273,7 @@ It overrides the upstream root `.clang-format`, which `NAM/` and `tools/` keep.
   - No implicit mixing of signed and unsigned: convert explicitly.
   - Spell them with `std::` and include `<cstdint>` / `<cstddef>`. The bare names
     (`uint64_t`) are the same types, but they're only guaranteed to exist through the
-    C headers. `size_t` is the exception: it is in the `npl` using-list (see
+    C headers. `size_t` is the exception: it is in the `namx` using-list (see
     Namespaces), so it is written bare.
 - **Casts:**
   - No C-style casts (`(int)x`). Use the named casts, so each one says what it does.
@@ -285,17 +285,17 @@ It overrides the upstream root `.clang-format`, which `NAM/` and `tools/` keep.
 
 ## Namespaces
 
-- **All of `gui/` lives in one namespace, `npl`.** No nesting to mirror directories
-  (`npl::dsp::`, `npl::ui::`). A small named group of free functions and constants
+- **All of `gui/` lives in one namespace, `namx`.** No nesting to mirror directories
+  (`namx::dsp::`, `namx::ui::`). A small named group of free functions and constants
   that has no state is a nested namespace, not a class: `Theme::track()`,
   `TempoSync::note_ms()`, `PresetSerializer::save()`, `NAMConstants::…`
   (decided 2026-10-01). When it gains state, it becomes a class.
-  `npl` is a placeholder until the app gets its final name; the namespace is renamed
-  with it. It can't be `nam`: the NAM core uses `nam::`.
-- **Common std names are imported once, inside `npl`,** in a shared header, so our
+  The namespace follows the app's name, NAM-X (renamed from the placeholder `namx` on
+  2026-10-03). It can't be `nam`: the NAM core uses `nam::`.
+- **Common std names are imported once, inside `namx`,** in a shared header, so our
   code writes `string` and `vector` instead of `std::string` and `std::vector`:
   ```cpp
-  namespace npl
+  namespace namx
   {
   using std::array, std::atomic, std::expected, std::make_unique, std::size_t, std::span,
       std::string, std::string_view, std::unique_ptr, std::vector;
@@ -303,7 +303,7 @@ It overrides the upstream root `.clang-format`, which `NAM/` and `tools/` keep.
   ```
   The list grows deliberately. Anything not on it keeps its `std::` prefix.
   `using namespace std;` is never allowed, anywhere.
-- **Constants go in `npl`** or in the class they belong to (`NoiseGate::MAX_GR_DB`).
+- **Constants go in `namx`** or in the class they belong to (`NoiseGate::MAX_GR_DB`).
   No constants at global scope.
 - **Helper functions local to a `.cpp` are `static`.** No anonymous namespaces.
 

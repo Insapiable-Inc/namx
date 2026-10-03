@@ -18,7 +18,7 @@ struct IAudioCaptureClient;
 struct IAudioRenderClient;
 #endif
 
-namespace npl
+namespace namx
 {
 
 // WASAPI implementation of IAudioBackend (Windows-only).
@@ -137,4 +137,4 @@ private:
     bool exclusive = false; // the running stream is exclusive
 };
 
-} // namespace npl
+} // namespace namx

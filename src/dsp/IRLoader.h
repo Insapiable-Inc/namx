@@ -9,7 +9,7 @@
 #include "Common.h"
 #include "RtSlot.h"
 
-namespace npl
+namespace namx
 {
 
 // Loads an IR (Impulse Response) WAV file and applies it as a convolution
@@ -97,4 +97,4 @@ private:
     static void advance(Kernel& k, int ch);
 };
 
-} // namespace npl
+} // namespace namx

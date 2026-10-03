@@ -10,7 +10,7 @@
 #include "Common.h"
 #include "Theme.h"
 
-namespace npl
+namespace namx
 {
 
 ToggleSwitch::ToggleSwitch(QWidget* parent)
@@ -109,4 +109,4 @@ void ToggleSwitch::leaveEvent(QEvent* e) {
     QAbstractButton::leaveEvent(e);
 }
 
-} // namespace npl
+} // namespace namx

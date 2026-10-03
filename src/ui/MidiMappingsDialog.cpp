@@ -26,7 +26,7 @@
 #include "MidiInput.h"
 #include "MidiMapper.h"
 
-namespace npl
+namespace namx
 {
 
 enum Col
@@ -372,4 +372,4 @@ void MidiMappingsDialog::add_range_cell(int row, int column, double share,
     table->setCellWidget(row, column, sp);
 }
 
-} // namespace npl
+} // namespace namx

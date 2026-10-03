@@ -7,7 +7,7 @@
 #include "Common.h"
 #include "DelayLine.h"
 
-namespace npl
+namespace namx
 {
 
 // Delay-line pitch shifter (mono, one per channel): two read taps sweep a
@@ -154,4 +154,4 @@ private:
     float prev[2]{0.0f, 0.5f}; // last phase per tap (wrap detection)
 };
 
-} // namespace npl
+} // namespace namx

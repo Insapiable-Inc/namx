@@ -6,7 +6,7 @@
 
 #include "Common.h"
 
-namespace npl
+namespace namx
 {
 
 // Gain-reduction meter for the Compressor / Gate rows: a caption with the
@@ -41,4 +41,4 @@ private:
     QElapsedTimer clock;
 };
 
-} // namespace npl
+} // namespace namx

@@ -13,7 +13,7 @@
 #include "MainWindow.h"
 #include "Theme.h"
 
-namespace npl
+namespace namx
 {
 
 #ifndef NAM_VERSION
@@ -135,8 +135,8 @@ int run(int argc, char* argv[]) {
     return app.exec();
 }
 
-} // namespace npl
+} // namespace namx
 
 int main(int argc, char* argv[]) {
-    return npl::run(argc, argv);
+    return namx::run(argc, argv);
 }

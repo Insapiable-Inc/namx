@@ -23,7 +23,7 @@
 #include "NumberField.h"
 #include "TunerDisplay.h"
 
-namespace npl
+namespace namx
 {
 
 // What the settings dialog edits. Each page drives the same objects the rest of the
@@ -111,4 +111,4 @@ private:
     QTableWidget* shortcuts = nullptr;
 };
 
-} // namespace npl
+} // namespace namx

@@ -5,7 +5,7 @@
 
 #include "Common.h"
 
-namespace npl
+namespace namx
 {
 
 static constexpr float PI = 3.14159265358979323846f;
@@ -135,4 +135,4 @@ bool IRProcessor::process_chunk(float* l, float* r, size_t n, bool input_is_ster
     return stereo;
 }
 
-} // namespace npl
+} // namespace namx

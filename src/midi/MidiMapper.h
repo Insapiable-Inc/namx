@@ -15,7 +15,7 @@
 
 class QWidget;
 
-namespace npl
+namespace namx
 {
 
 class KnobWidget;
@@ -149,4 +149,4 @@ private:
     double last_clock_bpm = 0.0;
 };
 
-} // namespace npl
+} // namespace namx

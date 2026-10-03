@@ -6,7 +6,7 @@
 #include "Denormals.h"
 #include "Log.h"
 
-namespace npl
+namespace namx
 {
 
 unique_ptr<IAudioBackend> IAudioBackend::create() {
@@ -233,4 +233,4 @@ int JackBackend::process_audio(jack_nframes_t nframes) {
     return 0;
 }
 
-} // namespace npl
+} // namespace namx

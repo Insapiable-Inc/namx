@@ -5,7 +5,7 @@
 
 #include "Common.h"
 
-namespace npl
+namespace namx
 {
 
 #endif
@@ -23,4 +23,4 @@ inline void enable_flush_to_zero() {
 #endif
 }
 
-} // namespace npl
+} // namespace namx

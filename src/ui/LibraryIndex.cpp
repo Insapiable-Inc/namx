@@ -23,7 +23,7 @@
 
 #include "Common.h"
 
-namespace npl
+namespace namx
 {
 
 LibraryRoots LibraryRoots::defaults() {
@@ -538,6 +538,6 @@ LibraryEntry::Kind LibraryIndex::kind_for_path(const QString& path, bool* ok) {
     return LibraryEntry::Kind::MODEL;
 }
 
-} // namespace npl
+} // namespace namx
 
 #include "LibraryIndex.moc"

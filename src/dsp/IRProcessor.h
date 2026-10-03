@@ -9,7 +9,7 @@
 #include "EffectBase.h"
 #include "IRLoader.h"
 
-namespace npl
+namespace namx
 {
 
 // Cabinet: two IR slots (A, B), each with level, pan and phase, a Blend
@@ -121,4 +121,4 @@ private:
     float designed_low = -1.0f, designed_high = -1.0f;
 };
 
-} // namespace npl
+} // namespace namx

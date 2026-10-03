@@ -6,7 +6,7 @@
 #include "DelayLine.h"
 #include "EffectBase.h"
 
-namespace npl
+namespace namx
 {
 
 // Flanger: short modulated delay with feedback. Stereo uses 180° LFO offset.
@@ -73,4 +73,4 @@ private:
                         float fb_amt, float mix, float& out) const;
 };
 
-} // namespace npl
+} // namespace namx

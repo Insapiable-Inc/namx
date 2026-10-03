@@ -7,7 +7,7 @@
 
 #include "Common.h"
 
-namespace npl
+namespace namx
 {
 
 // Practice metronome (Phase 15). Not an effect: AudioEngine mixes it into
@@ -155,4 +155,4 @@ private:
     array<Voice, 2> voices{};
 };
 
-} // namespace npl
+} // namespace namx

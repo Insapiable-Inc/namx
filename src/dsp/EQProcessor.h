@@ -7,7 +7,7 @@
 #include "Common.h"
 #include "EffectBase.h"
 
-namespace npl
+namespace namx
 {
 
 // 4-band semi-parametric EQ + low/high cut (Audio EQ Cookbook biquads):
@@ -101,4 +101,4 @@ private:
     array<bool, BANDS> band_on{}; // band changes the signal (skip flat ones)
 };
 
-} // namespace npl
+} // namespace namx

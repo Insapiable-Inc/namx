@@ -17,7 +17,7 @@
 #include "Log.h"
 #include "MidiInput.h"
 
-namespace npl
+namespace namx
 {
 
 class AlsaMidiInput final : public MidiInput
@@ -280,4 +280,4 @@ MidiInput* MidiInput::create(QObject* parent) {
     return new AlsaMidiInput(parent);
 }
 
-} // namespace npl
+} // namespace namx

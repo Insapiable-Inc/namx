@@ -5,7 +5,7 @@
 
 #include "Common.h"
 
-namespace npl
+namespace namx
 {
 
 // Stereo-linked look-ahead peak limiter on the output stage (after the
@@ -49,4 +49,4 @@ private:
     bool was_enabled = false;
 };
 
-} // namespace npl
+} // namespace namx

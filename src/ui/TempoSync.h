@@ -8,7 +8,7 @@
 
 #include "Common.h"
 
-namespace npl
+namespace namx
 {
 
 // Note values for tempo-synced parameters (Phase 15). The engine stays
@@ -72,4 +72,4 @@ inline double note_hz(double bpm, double index) {
 
 } // namespace TempoSync
 
-} // namespace npl
+} // namespace namx

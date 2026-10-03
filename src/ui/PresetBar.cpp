@@ -19,7 +19,7 @@
 #include "Common.h"
 #include "LibraryIndex.h"
 
-namespace npl
+namespace namx
 {
 
 static void repolish(QWidget* w) {
@@ -325,4 +325,4 @@ void PresetBar::update_slots() {
     }
 }
 
-} // namespace npl
+} // namespace namx

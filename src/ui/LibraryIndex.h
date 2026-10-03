@@ -11,7 +11,7 @@ class QFileSystemWatcher;
 class QThread;
 class QTimer;
 
-namespace npl
+namespace namx
 {
 
 class LibraryScanWorker;
@@ -100,4 +100,4 @@ private:
     QString cache_path;
 };
 
-} // namespace npl
+} // namespace namx

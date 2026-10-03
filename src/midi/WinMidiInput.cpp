@@ -19,7 +19,7 @@
 
 #include "Common.h"
 
-namespace npl
+namespace namx
 {
 
 class WinMidiInput final : public MidiInput
@@ -155,4 +155,4 @@ MidiInput* MidiInput::create(QObject* parent) {
     return new WinMidiInput(parent);
 }
 
-} // namespace npl
+} // namespace namx

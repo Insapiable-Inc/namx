@@ -5,7 +5,7 @@
 
 #include "Common.h"
 
-namespace npl
+namespace namx
 {
 
 // iOS-style toggle switch.
@@ -39,4 +39,4 @@ private:
     bool hovered{false};
 };
 
-} // namespace npl
+} // namespace namx

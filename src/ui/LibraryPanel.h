@@ -17,7 +17,7 @@ class QLineEdit;
 class QToolButton;
 class QTimer;
 
-namespace npl
+namespace namx
 {
 
 // All library entries (every kind) as a flat list model. Favorites, recents
@@ -201,4 +201,4 @@ private:
     QStringList recents;
 };
 
-} // namespace npl
+} // namespace namx

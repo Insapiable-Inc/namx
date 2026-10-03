@@ -8,7 +8,7 @@
 #include "Common.h"
 #include "Theme.h"
 
-namespace npl
+namespace namx
 {
 
 GainReductionMeter::GainReductionMeter(float new_range_db, const QColor& new_accent,
@@ -73,4 +73,4 @@ void GainReductionMeter::paintEvent(QPaintEvent*) {
     }
 }
 
-} // namespace npl
+} // namespace namx

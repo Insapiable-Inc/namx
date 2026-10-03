@@ -29,7 +29,7 @@
 #pragma comment(lib, "mmdevapi.lib")
 #pragma comment(lib, "avrt.lib")
 
-namespace npl
+namespace namx
 {
 
 constexpr int STOP_EVENT_INDEX = 0;
@@ -274,11 +274,11 @@ static vector<IAudioBackend::DeviceInfo> enumerate_wasapi_devices(EDataFlow dire
     return result;
 }
 
-} // namespace npl
+} // namespace namx
 
 #endif // _WIN32
 
-namespace npl
+namespace namx
 {
 
 unique_ptr<IAudioBackend> IAudioBackend::create() {
@@ -1050,4 +1050,4 @@ bool WasapiBackend::start_with_devices(const string&, Callback*, const string&, 
 
 #endif // _WIN32
 
-} // namespace npl
+} // namespace namx

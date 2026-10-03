@@ -30,7 +30,7 @@
 #include "TunerProcessor.h"
 #include "VolumeProcessor.h"
 
-namespace npl
+namespace namx
 {
 
 // Platform-agnostic audio engine. Owns the signal chain and all DSP
@@ -330,4 +330,4 @@ private:
     }
 };
 
-} // namespace npl
+} // namespace namx
