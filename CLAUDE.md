@@ -101,7 +101,7 @@ Qt6 application with a platform audio backend behind the `IAudioBackend` interfa
 ```
 mono input → input gain (smoothed)
   → Tuner → Transpose → Gate → Compressor → Wah → Flanger → Phaser → Drive   (mono section)
-  → NAM model (sums a stereo input unless the Amplifier's Stereo switch is on)
+  → NAM model (a stereo input runs one model per channel — never summed to mono)
   → Volume pedal (first in the effects loop) → EQ
   → Chorus → Tremolo → Delay → Reverb                              (stereo-capable)
   → Cabinet (one IR in the UI; the DSP has a second slot, its controls disabled)

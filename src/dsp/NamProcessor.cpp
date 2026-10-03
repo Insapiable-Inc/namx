@@ -251,13 +251,7 @@ bool NamProcessor::process(float* l, float* r, size_t n, bool input_is_stereo) {
         return input_is_stereo;
     }
 
-    // A stereo pre-effect feeding a mono amp: sum, run one model.
-    if (input_is_stereo && !stereo_amp.load(std::memory_order_relaxed)) {
-        for (size_t i = 0; i < n; ++i) {
-            l[i] = 0.5f * (l[i] + r[i]);
-        }
-        input_is_stereo = false;
-    }
+    // A stereo input stays stereo: one model per channel, never summed (user, 2026-10-03).
 
     // One snapshot per block: both channels run the same pair even if a load
     // lands mid-block.

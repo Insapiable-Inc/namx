@@ -1082,7 +1082,11 @@ it for the one it replaces, and is measured with `NAMPlayerBench`.
       the model per channel vs sum to mono). The Cabinet has none and works fine — one IR
       can't widen a mono signal, and a stereo input already gets per-channel convolution.
       Decide per card: keep, drop (always stereo, like Reverb), or rename where the
-      meaning differs (Amplifier).
+      meaning differs. **Amplifier done 2026-10-03 (user):** always stereo — a stereo
+      input runs one model per channel, never summed; its switch is gone (old presets'
+      `namStereo` is ignored). Also decide: Gate and Compressor detect each side
+      separately, so a loud note on one side compresses only that side (stereo
+      compressors usually link both sides to one detector).
 - [ ] **Drive:** a second NAM slot ("Pedal") before the amp for OD/boost captures;
       later a WDF Tube Screamer with anti-aliasing for the built-in Drive.
 - [ ] **Modulation:** BBD core for Chorus/Flanger (+ analog Delay mode); virtual-analog

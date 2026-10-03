@@ -130,7 +130,8 @@ modulation and saturation on, Transpose at −2 st.
   4,096 taps (85 ms, the old cap) cost before: 17.3 / 37.8 µs. Accuracy: −133…−138 dB
   against an exact double-precision convolution, odd host block sizes and mono → stereo
   switches included; 0 heap allocations on the audio thread.
-- The **amp** with stereo input is summed to mono by default (same cost); its Stereo switch
+- *(2026-10-03: the amp no longer sums — a stereo input always runs it per channel, the
+  "Stereo on" figure; the switch was removed.)* The **amp** with stereo input is summed to mono by default (same cost); its Stereo switch
   runs two models (2.2×).
 
 **Whole chain** — every stage on at once, same settings and model:

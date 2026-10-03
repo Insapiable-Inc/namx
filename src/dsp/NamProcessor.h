@@ -88,12 +88,6 @@ public:
     void reset() override {
     }
 
-    // Stereo input → run the model per channel (on) or sum to mono and run
-    // it once (off, the default: half the CPU, and an amp is mono anyway).
-    void set_stereo_amp(bool on) {
-        stereo_amp.store(on);
-    }
-
     // Overrides the default EffectBase dispatch so that stereo input is
     // processed through independent L and R model instances rather than
     // calling the single-state process_block_mono twice per block.
@@ -149,7 +143,6 @@ private:
     atomic<double> resampled_model_rate{0.0}; // see get_resampled_model_rate()
     atomic<double> resample_latency_ms{0.0}; // see latency_ms()
     void publish_resampling(const ModelPair* p); // updates the two atomics above
-    atomic<bool> stereo_amp{false};
     atomic<bool> normalize{true};
     // Audio thread only: the output gain as it glides to its target, and the pair it
     // last applied to (a new pair takes its gain at once; the swap fade-in hides it).

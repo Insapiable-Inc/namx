@@ -58,12 +58,12 @@ static void usage() {
     std::puts("usage: namx-bench [--model file.nam] [--ir file.wav] [--ir-b file.wav] "
               "[--frames N] [--rate HZ]\n"
               "                      [--blocks N] [--no-fast-tanh] [--only NAME[,NAME…]]\n"
-              "                      [--stereo-modes on|off] [--stereo-input] [--stereo-amp]\n"
+              "                      [--stereo-modes on|off] [--stereo-input]\n"
               "Without --model/--ir the amp/cab stages are skipped. --only limits the\n"
               "enabled stages (names as printed, case-insensitive). --stereo-modes forces\n"
               "every effect's Stereo switch (default: the app's — Chorus, Tremolo, Delay,\n"
               "Reverb on). --stereo-input feeds different L/R from the first stage, so every\n"
-              "effect runs per channel; --stereo-amp then runs the amp per channel too.");
+              "effect runs per channel (the amp included: it never sums to mono).");
 }
 
 // Which compiler built this (instruction-count baselines are per compiler).
@@ -131,7 +131,6 @@ int run(int argc, char** argv) {
     bool fast_tanh = true;
     string stereo_modes; // "", "on" or "off"
     bool stereo_input = false;
-    bool stereo_amp = false;
 
     for (int i = 1; i < argc; ++i) {
         const string a = argv[i];
@@ -159,8 +158,6 @@ int run(int argc, char** argv) {
             }
         } else if (a == "--stereo-input") {
             stereo_input = true;
-        } else if (a == "--stereo-amp") {
-            stereo_amp = true;
         } else {
             usage();
             return a == "--help" || a == "-h" ? 0 : 2;
@@ -229,7 +226,6 @@ int run(int argc, char** argv) {
             s.fx->set_stereo_mode(stereo_modes == "on"); // ignored by mono-only effects
         }
     }
-    nam.set_stereo_amp(stereo_amp);
     nam.prepare_buffer(frames);
     if (!model.empty() && !nam.load_model(model)) {
         std::fprintf(stderr, "model: %s\n", nam.get_last_error().c_str());
@@ -306,12 +302,11 @@ int run(int argc, char** argv) {
 
     const double budget_us = static_cast<double>(frames) / rate * 1e6;
     std::printf("namx-bench  %zu frames @ %.0f Hz  budget %.1f µs/block  %zu blocks  fast tanh %s\n"
-                "routing: stereo switches %s, %s input%s\n"
+                "routing: stereo switches %s, %s input\n"
                 "compiler: %s\n",
                 frames, rate, budget_us, blocks, fast_tanh ? "on" : "off",
                 stereo_modes.empty() ? "as in the app" : stereo_modes.c_str(),
-                stereo_input ? "stereo" : "mono", stereo_amp ? ", amp per channel" : "",
-                compiler_id());
+                stereo_input ? "stereo" : "mono", compiler_id());
     if (!model.empty()) {
         std::printf("model  %s\n", model.c_str());
     }

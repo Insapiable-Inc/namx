@@ -849,9 +849,7 @@ void MainWindow::setup_ui() {
 
     // Amp (NAM)
     {
-        QWidget* col = make_effect_row("Amplifier", sw_nam_enable, {}, &sw_nam_stereo);
-        sw_nam_stereo->setToolTip("Stereo input: run the amp per channel (twice the CPU).\n"
-                                  "Off: a stereo effect before the amp is summed to mono first.");
+        QWidget* col = make_effect_row("Amplifier", sw_nam_enable, {});
         sw_nam_enable->setChecked(true);
         make_hero_controls(col, LibraryEntry::Kind::MODEL, lbl_nam_status, lbl_nam_meta);
 
@@ -2726,9 +2724,6 @@ void MainWindow::register_parameters() {
 
     toggle_param("", "namEnabled", sw_nam_enable, [e](bool b) {
         e->get_nam().set_enabled(b);
-    });
-    toggle_param("", "namStereo", sw_nam_stereo, [e](bool b) {
-        e->get_nam().set_stereo_amp(b);
     });
 
     toggle_param("eq", "enabled", sw_eq_enable, [e](bool b) {

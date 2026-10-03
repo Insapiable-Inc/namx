@@ -380,7 +380,6 @@ private:
     KnobWidget* knob_vol_mid = nullptr;
 
     ToggleSwitch* sw_limiter = nullptr; // Output card
-    ToggleSwitch* sw_nam_stereo = nullptr; // Amplifier row: per-channel amp
 
     ToggleSwitch* sw_nam_enable = nullptr;
     ToggleSwitch* sw_ir_enable = nullptr;
