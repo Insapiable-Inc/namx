@@ -30,8 +30,12 @@ Decisions:
   release, so the desktop file and CI jobs are built once against the final v1.0
   feature set (Library + TONE3000 + `Qt6::Network`) instead of being redone. The
   `v1.0` tag is back at the end of Phase 8.
-- **No AppImage, Flatpak or other bundle** (2026-09-17). Linux users are assumed to
-  have Qt 6 and JACK installed; distribution is source + distro packages (PKGBUILD).
+- ~~**No AppImage, Flatpak or other bundle** (2026-09-17).~~ **Reversed 2026-10-02: ship
+  both an AppImage and a Flatpak (Flathub)** next to the AUR PKGBUILD (and a Windows
+  setup `.exe` next to the zip) — the AppImage as
+  "try it on any distro", Flathub for store visibility and automatic updates. No Snap.
+  Both wrap the same `cmake --install` layout; neither may bundle `libjack` (they use the
+  system's or PipeWire's).
 - **The app is GPL** (2026-10-01). MIT had only been inherited from upstream's root
   `LICENSE`, never chosen. `gui/` becomes GPLv3 with the user's copyright; the
   upstream NAM core keeps its MIT notice (MIT code may be included in GPL code). This
@@ -414,10 +418,31 @@ app id in hicolor, `setWindowIcon` from the qrc, Windows exe icon + version bloc
 - [x] AUR PKGBUILD (`qt6-base jack`; `pipewire-jack` as optdepend — both provide
       `jack`). Source: the release job's submodule-vendored tarball; `sha256sums`
       to be filled at publish time. *Not run through makepkg yet (needs the tarball).*
-- [x] ~~AppImage via linuxdeploy-qt.~~ **Dropped (decision 2026-09-17): no AppImage.**
-- [x] ~~Flatpak manifest (`--socket=pipewire`).~~ **Dropped (decision 2026-09-17): no
-      Flatpak.** Linux users are assumed to have Qt 6 and JACK installed; they build
-      from source or a distro package.
+- [ ] **AppImage** (back 2026-10-02, reversing the 2026-09-17 drop): built in
+      `release.yml` with `linuxdeploy` + its Qt plugin on an old base (Ubuntu 22.04-ish,
+      for glibc reach) with a newer GCC for C++23, bundling `libstdc++` but **not
+      `libjack`**; update information (zsync) for AppImageUpdate / Gear Lever; attached
+      to the GitHub release. The new static type-2 runtime (no `libfuse2` needed).
+- [ ] **First-run self-integration** for the AppImage: offer to add NAM Player to the
+      applications menu (writes the `.desktop` file, icon and MIME types — `.nam`,
+      `.nampreset` — into `~/.local/share`), with a matching "remove" option; only when
+      running as an AppImage (`$APPIMAGE` set) and nothing integrated it already.
+- [ ] **Windows installer** (user request 2026-10-02): `NAMPlayer-<v>-setup.exe` built in
+      the release workflow's Windows job (Inno Setup, available on the GitHub Windows
+      runners) from the same windeployqt folder as the zip — Program Files install,
+      Start-menu entry, uninstaller, `.nam` / `.nampreset` associations, per-user or
+      machine-wide. The portable zip stays. Unsigned at first: Windows SmartScreen will
+      warn ("unknown publisher") — code signing (e.g. SignPath's free plan for open
+      source) is a later step.
+- [ ] **Flatpak / Flathub** (back 2026-10-02): manifest `cl.pichulero.NAMPlayer.yml` on the
+      KDE runtime (Qt 6); permissions `--socket=pipewire` (JACK through PipeWire),
+      `--filesystem=home` (the library scans folders and presets store real paths — the
+      document portal's paths would break them), `--device=all` (ALSA MIDI),
+      `--share=ipc`, `--socket=wayland`/`x11`; CI builds a test `.flatpak` bundle; then
+      submit to Flathub (its own repo under flathub/, bumped each release). Known limit:
+      classic `jackd` (non-PipeWire) setups are awkward from the sandbox — point them to
+      the AUR/source build. Config lives in `~/.var/app/cl.pichulero.NAMPlayer/` (document
+      it in the manual).
 - [x] CI release job on tag push: `.github/workflows/release.yml` — Ubuntu 22.04 and
       Arch container (build + tests + install layout), Windows (windeployqt zip),
       source tarball, GitHub release with the artifacts;

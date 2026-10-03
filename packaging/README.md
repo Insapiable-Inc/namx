@@ -10,8 +10,9 @@ Everything a distribution or a release job needs, all fed by `cmake --install`:
 | `PKGBUILD` | Arch / AUR package (`nam-player`) |
 | `NAMPlayer.rc` | Windows icon + version resource (compiled into the exe on MSVC) |
 
-No AppImage, Flatpak or other bundle (decision 2026-09-17): Linux users install from
-source or a distro package against the Qt and JACK they already have.
+An AppImage and a Flatpak (Flathub) are planned for the first release (ROADMAP
+Phase 8; decision 2026-10-02, reversing 2026-09-17's "no bundles"). Neither may bundle
+`libjack`: they use the system's or PipeWire's.
 
 Icons live in `../resources/icons` (`NAMPlayer.svg` source, PNG sizes 16–512,
 `NAMPlayer.ico`) and install as `cl.pichulero.NAMPlayer` in the hicolor theme.

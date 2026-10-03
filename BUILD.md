@@ -163,9 +163,8 @@ and `.nampreset` file associations), the AppStream metadata and the icon theme f
 Run `update-desktop-database` / `update-mime-database` afterwards if your distro
 doesn't hook them.
 
-An AUR-style `PKGBUILD` lives in [`packaging/`](packaging/README.md). There is no
-AppImage or Flatpak on purpose: the app expects the system's Qt 6 and JACK
-(jackd2 or PipeWire-JACK).
+An AUR-style `PKGBUILD` lives in [`packaging/`](packaging/README.md). An AppImage and
+a Flatpak (Flathub) are planned for the first release (ROADMAP Phase 8).
 
 Command-line flags: `NAMPlayer [file…]` opens `.nam` / `.wav` / `.nampreset` files;
 `--version`; `--self-test-and-exit` (headless CI check: window up, library scanned,

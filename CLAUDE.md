@@ -28,7 +28,7 @@ nam-linux-gui/
         ├── midi/          # MidiInput (ALSA / WinMM), MidiMapper (no widgets beyond the target pointers)
         └── dsp/           # AudioEngine, backends, effect processors (no Qt dependencies)
     ├── resources/         # resources.qrc, app icon (icons/), starter presets (presets/)
-    ├── packaging/         # desktop file, AppStream, mime, PKGBUILD, Windows .rc (no AppImage/Flatpak — decision 2026-09-17)
+    ├── packaging/         # desktop file, AppStream, mime, PKGBUILD, Windows .rc (AppImage + Flatpak planned in Phase 8 — decision 2026-10-02, reversing 2026-09-17)
     └── tests/             # MidiMapperTest, DspGoldenTest, WavReaderTest (-DNAM_BUILD_TESTS=ON)
 ```
 
@@ -60,7 +60,7 @@ cmake --build gui/build-release --parallel $(nproc)
 
 Release builds default to `-march=native` via the `NAM_NATIVE_OPT` CMake option (ON). **CI/release builds must configure with `-DNAM_NATIVE_OPT=OFF`** → portable `-mavx2 -mfma`.
 
-`cmake --install <build> --prefix /usr` installs the binary plus the desktop/mime/AppStream/icon files (app id `cl.pichulero.NAMPlayer`); `.github/workflows/release.yml` runs on `v*` tags (Ubuntu + Arch build and tests, Windows zip, source tarball, GitHub release). **No AppImage, Flatpak or other bundle** (user decision 2026-09-17): Linux users are assumed to have Qt 6 and JACK installed. `NAMPlayer --version`, `--help`, `--self-test-and-exit` (headless CI check) and `NAMPlayer file…` (opens .nam/.wav/.nampreset) are handled in `main.cpp`; the version comes from `PROJECT_VERSION` via the `NAM_VERSION` define.
+`cmake --install <build> --prefix /usr` installs the binary plus the desktop/mime/AppStream/icon files (app id `cl.pichulero.NAMPlayer`); `.github/workflows/release.yml` runs on `v*` tags (Ubuntu + Arch build and tests, Windows zip, source tarball, GitHub release). **Linux distribution** (user decision 2026-10-02, reversing 2026-09-17's "no bundles"): AUR PKGBUILD + an AppImage + a Flatpak on Flathub (Phase 8); no Snap. Bundles must never include `libjack`. `NAMPlayer --version`, `--help`, `--self-test-and-exit` (headless CI check) and `NAMPlayer file…` (opens .nam/.wav/.nampreset) are handled in `main.cpp`; the version comes from `PROJECT_VERSION` via the `NAM_VERSION` define.
 
 `-DNAM_BUILD_TESTS=ON` adds `MidiMapperTest`, `DspGoldenTest` and `WavReaderTest` (all headless):
 

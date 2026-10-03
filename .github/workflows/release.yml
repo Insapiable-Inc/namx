@@ -1,8 +1,7 @@
 name: Release
 
 # Tag push (v1.0.0, v1.1.0-rc1, …) → build + tests on Ubuntu 24.04 and Arch
-# (Linux users install from source or the PKGBUILD against their own Qt and
-# JACK — no bundled AppImage/Flatpak, decision 2026-09-17), a Windows
+# (the AppImage and Flatpak jobs come with ROADMAP Phase 8), a Windows
 # windeployqt zip, a source tarball with the submodules vendored (for the
 # AUR PKGBUILD), and a GitHub release. Every build uses -DNAM_NATIVE_OPT=OFF
 # (portable AVX2/FMA).
