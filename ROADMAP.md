@@ -35,14 +35,19 @@ Decisions:
   also clears the way for the GPLv3 ASIO SDK on Windows. **GPL-3.0-or-later**; applied
   the same day: `gui/LICENSE`, PKGBUILD, AppStream, Windows zip, README.
 - **Execution order** (revised 2026-10-02 — **shipping is last**: everything else, hardening,
-  naming and packaging included, comes before the v1.0 tag). Done so far: 0–6, 9–18, 20,
-  the 2026-10-02 hardening pass of 26 and the code of 23. Remaining, in order:
+  naming, docs and packaging included, comes before the release tag). **The first release
+  is v0.6.0, not 1.0** (after the existing v0.5.x tags), and it leaves out **themes (19)
+  and multiple effect instances (24)** — those come after it, on the way to 1.0.
+  Done so far: 0–6, 9–18, 20, the 2026-10-02 hardening pass of 26 and the code of 23.
+  Remaining before the release, in order:
   27 (benchmarks — the baseline before any DSP change) → 22 (DSP quality, incl. the
-  low-latency Transpose) → 24 (multiple effect instances; its UI questions first) →
-  25 (TONE3000: compliance or removal) → 19 (themes & community) → 21 (Windows audio,
-  needs a Windows machine) → 26's second full code review → 7 (naming: repo rename +
-  app name) → 8 (packaging — built in 2026-09; re-checked after the rename) → **tag v1.0**. Manual checks (13–17, 23, 12) happen
-  whenever the user is at the guitar.
+  low-latency Transpose) → 25 (TONE3000: compliance or removal) → 21 (Windows audio —
+  only if a Windows machine is available; otherwise after the release, Linux-first) →
+  26's second full code review → 7 (naming: repo rename + app name) → 28 (cleanup &
+  docs — after naming, so screenshots and docs carry the final name) → 8 (packaging —
+  built in 2026-09; re-checked after the rename) → **tag v0.6.0**.
+  After the release: 24 (multiple effect instances), 19 (themes & community), 21 if it
+  waited, … → 1.0. Manual checks (12–17, 23) happen whenever the user is at the guitar.
 
 ---
 
@@ -384,7 +389,7 @@ Phase-list fallout is annotated inline below: parts of Phase 14 are built,
 most Phase 18 layout/visual fixes landed or became obsolete, and Phase 5's
 pending palette revision shipped.
 
-## Phase 8 — Packaging & ship → tag **v1.0** at the end (the very last step — order revised 2026-10-02)
+## Phase 8 — Packaging & ship → tag **v0.6.0** at the end (the very last step; the first release is 0.x, not 1.0 — 2026-10-02)
 
 Landed 2026-09-17 (everything but the tag). App id `cl.pichulero.NAMPlayer`; the
 desktop file is named after it (AppStream wants the launchable id to match) rather
@@ -811,7 +816,7 @@ acoustic models. UI: cards gained ▾ detail rows for advanced knobs (`addDetail
 - [~] Windows: **WASAPI exclusive mode** → moved to Phase 21 (2026-10-01): no Windows
       machine to test on; all untestable Windows audio work waits together.
 
-## Phase 19 — Themes & community
+## Phase 19 — Themes & community (after the v0.6.0 release)
 
 - [ ] **Theme files** (palette + per-effect accents as JSON in the config dir),
       built-in Dark / Light / High-contrast stage; user themes shareable; `Theme` is
@@ -1029,7 +1034,7 @@ the Volume pedal — get the controls a real expression setup has. MIDI multi-as
 - [ ] Manual check with a real pedal: wah stopped short of the toe, 0…+12 st whammy,
       reversed volume, a crossfade volume ↔ wah on one pedal.
 
-## Phase 24 — Multiple effect instances (added 2026-10-02; big; after 23, before 19)
+## Phase 24 — Multiple effect instances (added 2026-10-02; big; after the v0.6.0 release)
 
 Any effect can appear more than once (two delays, a drive before and after the amp,
 two amps blended later…), and effects can be added and removed instead of all 16
@@ -1126,6 +1131,31 @@ removal, not decided) (it reverses the north-star decision "Library + TONE3000 s
       added as a normal library root); stale `tone3000/*` QSettings keys (including
       tokens) are deleted once.
 - [ ] Update the north star (decision reversed, with the date and the reason).
+
+## Phase 28 — Cleanup & documentation (added 2026-10-02; before the release, after naming)
+
+The repo and its docs have to describe the app as it is. After Phase 7 so everything
+carries the final name.
+
+- [ ] **README** rewritten for the current app: what it is, the features as they are now
+      (it still says "3-band EQ"; no MIDI, metronome, library, LED meters…), platform
+      status, install, screenshots, license, credits.
+- [ ] **Mission / vision**, stated up front: "the world's best" free, open-source, native
+      NAM player — Linux first, no DAW, no subscriptions, batteries included (tuner,
+      metronome, MIDI). Draft points are in `MARKETING.md`.
+- [ ] **Fresh screenshots** (offscreen grab workflow): main window, library, a preset,
+      MIDI mappings, settings; stored in the repo (e.g. `docs/screenshots/`), referenced
+      from the README and the AppStream metadata.
+- [ ] **Build instructions** checked and updated: `gui/BUILD.md` per distro (Arch,
+      Ubuntu 24.04+, Fedora), Windows (MSVC 2022 + Qt + vcpkg), CMake options, tests;
+      the AudioDSPTools submodule is now only needed for the resampler header.
+- [ ] **User manual**: split the "how to use" half of `gui/BUILD.md` into its own
+      manual (getting started, routing audio, the rack, presets & slots, library, MIDI
+      incl. multi-assign / Reverse / ranges, tuner & metronome, settings, shortcuts,
+      troubleshooting); linked from Help.
+- [ ] **Changelog** since v0.5.4.
+- [ ] Repo tidy: `AUDIT.md` / `ISSUES.md` (archive or keep private), stale notes,
+      `CMakeLists.txt` project version → 0.6.0, CLAUDE.md / ROADMAP current.
 
 ## Phase 21 — Windows audio: WASAPI exclusive + ASIO (added 2026-10-01; last — no Windows machine to test on yet)
 
