@@ -989,6 +989,13 @@ it for the one it replaces, and is measured with `NAMPlayerBench`.
       type (Plate / Hall / Room / Spring / IR), Chorus modes (to bring back Tri /
       Vintage / Spatial), Phaser/Flanger modes. Replaces the "continuous knob with
       snap" workaround; registered like a knob (integer value, preset key unchanged).
+- [ ] **Accurate fast tanh** (from the 2026-10-02 benchmarks): the core's fast tanh
+      keeps the amp 46–65 dB off the exact reference (same as the official plugin);
+      exact tanh is −118…−139 dB but costs 1.7–2.5× amp CPU. A vectorized tanh accurate
+      to ~1e-7 (Eigen-style rational / SIMD) could give both — measure accuracy and CPU
+      with BENCHMARKS.md's null test and matrix. Decision 2026-10-02: **keep fast tanh
+      for now**; no runtime switch (it's a core-wide global: layers capture the
+      activation at model build, and the LSTM reads a plain static bool per sample).
 - [ ] **Pitch shifter:** Signalsmith Stretch (MIT) behind `PitchShifter`, A/B'd against
       today's WSOLA on distorted chords; latency measured. Then a < 10 ms
       filter-bank shifter (Juillerat 2008) as a "Low latency" mode for drop tuning.

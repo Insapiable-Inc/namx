@@ -81,7 +81,8 @@ load fade-in).
   accuracy: the error is 46–65 dB below the signal. **The official NAM plugin enables
   it unconditionally too** (`NeuralAmpModeler.cpp`, constructor), so this matches the
   official plugin's accuracy. A2/slimmable models use their own activation and are exact.
-- Exact tanh costs 1.7–2.5× the amp CPU (128 frames, 48 kHz):
+- Decision (2026-10-02): **fast tanh stays the default**; a fast *and* accurate tanh is a
+  Phase 22 item. Exact tanh costs 1.7–2.5× the amp CPU (128 frames, 48 kHz):
 
 | Model | Fast tanh | Exact tanh |
 |---|---|---|
