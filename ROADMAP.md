@@ -358,12 +358,14 @@ newest legacy store ("NAM Player", else "NAM Linux") into an empty `namx` one.
       this machine): GitHub → repo Settings → General → Repository name. Then
       `git remote set-url github https://github.com/silvercobraa/nam-x.git`. (Docs and
       packaging already point at `nam-x`.)
-- [ ] **Leave the fork network** (user, 2026-10-03): the GitHub repo is technically a fork
-      of `sdatkinson/NeuralAmpModelerCore` — PRs default to upstream, search ranks it low,
-      it reads as a copy of the core. Preferred: ask GitHub Support to detach it (keeps
-      URL, stars, releases, redirects). Fallback: a fresh non-fork `nam-x` repo with every
-      branch and tag pushed (history kept; stars/issues/redirects lost). Do it with the
-      rename, before the release.
+- [ ] **Clean repo init** (user decision 2026-10-03, "some other day", before the
+      release): the GitHub repo is a fork of `sdatkinson/NeuralAmpModelerCore` — PRs
+      default to upstream, search ranks it low, it reads as a copy of the core — and it
+      carries upstream's tags `v0.0.0`…`v0.5.4`, so our planned `v0.6.0` would look like
+      the core's next version and manual release runs get named from `git describe`
+      (`0.5.4-NNN-g…`). New non-fork `nam-x` repo with our history, without upstream's
+      tags; then pick the first version (0.6.0 or a fresh series) and set it in
+      `project(namx VERSION …)` (still 1.0.0).
 - [x] Clone URLs in README/BUILD.md now point at the *current* GitHub name with
       `… nam-player` as the checkout dir (2026-08-22) — valid before and after the
       rename thanks to the redirect; flip them to the new name once it lands.
