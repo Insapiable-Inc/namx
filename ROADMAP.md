@@ -1059,8 +1059,13 @@ it for the one it replaces, and is measured with `NAMPlayerBench`.
       uniformly partitioned FFT convolution (`signalsmith-linear` submodule, MIT); zero
       added latency, IRs up to 1 s (faded beyond, instead of cut at 4,096 taps), 3× less
       CPU on a typical cab IR. IR reverbs will add non-uniform partitions on top.
-- [ ] **Reverb:** Freeverb → Dattorro plate + FDN hall/room; then IR reverb. Fix the Decay
+- [ ] **Reverb:** Freeverb → Dattorro plate + FDN hall/room. Fix the Decay
       spread on the way (BENCHMARKS.md: 0–75 % = 0.19–0.83 s, 100 % = 9 s).
+      Decided 2026-10-03 (user): types **Plate, Hall, Room** (no Spring for now); Decay in
+      seconds, the same scale for every type; **old presets are mapped** onto the new
+      controls (option A — no "Classic" Freeverb kept); new algorithms uncommitted until
+      heard, as with Transpose. **No IR reverb inside Reverb** — if ever, a separate effect
+      with amp/cab-style file loading.
 - [ ] **Drive:** a second NAM slot ("Pedal") before the amp for OD/boost captures;
       later a WDF Tube Screamer with anti-aliasing for the built-in Drive.
 - [ ] **Modulation:** BBD core for Chorus/Flanger (+ analog Delay mode); virtual-analog
