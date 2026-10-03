@@ -35,6 +35,7 @@ QColor track_hover(); // hovered track
 QColor knob_body_top(); // knob body gradient, light end
 QColor knob_body_bot(); // knob body gradient, dark end
 QColor bezel(); // outline around the knob body
+QColor detent(); // a stepped knob's unlit position dots
 QColor well(); // recessed dial well
 QColor dim_text(); // secondary labels (knob names, "Stereo", cents)
 QColor thumb_top(); // switch thumb gradient, light end

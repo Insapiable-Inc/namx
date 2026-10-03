@@ -75,11 +75,9 @@ public:
     }
 
     // Discrete knob: value() and valueChanged snap to multiples of `step`
-    // (e.g. 1.0 for a list index); 0 = continuous.
-    void set_snap(double step) {
-        snap = step;
-        update_label();
-    }
+    // (e.g. 1.0 for a list index); 0 = continuous. A discrete knob with up to
+    // MAX_DRAWN_POSITIONS positions also looks stepped: a dot per position on its ring.
+    void set_snap(double step);
     // Custom value label (e.g. note names for a sync knob); replaces the
     // number + unit text. Pass {} to restore the default.
     void set_value_formatter(std::function<QString(double)> f) {
@@ -127,6 +125,7 @@ private:
     double last_emitted{0.0}; // snapped knobs emit only on a step change
     std::function<QString(double)> formatter;
 
+    static constexpr int MAX_DRAWN_POSITIONS = 32;
     static constexpr int STEPS = 100000; // fine enough that log-taper round trips stay exact at 0.1
 
     double dial_to_value(int d) const;

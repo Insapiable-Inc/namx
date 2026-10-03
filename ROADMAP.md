@@ -1037,7 +1037,12 @@ Research in `gui/DSP_RESEARCH.md` (options per effect, real-time flags, licenses
 sources). Each step keeps the golden test green for effects it doesn't touch, re-records
 it for the one it replaces, and is measured with `NAMPlayerBench`.
 
-- [ ] **Discrete selector widget** (user request 2026-10-01): a stepped, rotary-switch
+- [x] **Discrete selector widget** (user request 2026-10-01; done 2026-10-03 as a *look*,
+      not a new widget — "simple and effective"): every snapped KnobWidget with ≤ 32
+      positions draws a dot per position on its ring, the current one lit, instead of the
+      sweep arc (Reverb Type, Sync note values, Transpose Discrete). Presets, MIDI,
+      drag/scroll unchanged; click-to-advance skipped (it would fight double-click
+      reset). Original plan: a stepped, rotary-switch
       style control with N labelled positions (detents, the current label shown,
       click/scroll/drag steps one position, MIDI maps to positions). For the reverb
       type (Plate / Hall / Room / Spring / IR), Chorus modes (to bring back Tri /

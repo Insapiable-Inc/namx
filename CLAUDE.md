@@ -167,7 +167,7 @@ All effects inherit `EffectBase` (`src/dsp/EffectBase.h` — the header comment 
 | `VUMeter` | `src/ui/VUMeter.h/cpp` | Vertical LED bar-graph peak meter (glowing segments, green/yellow/red zones, peak-hold LED; drawn with `LedPaint.h`, shared with `TunerDisplay`); `set_peak(linear)` on a 66 dB scale, time-based ballistics, repaints only on movement (fed at ~60 fps, paused while minimized) |
 | `GainReductionMeter` | `src/ui/GainReductionMeter.h/cpp` | Compressor/Gate reduction readout in the rows' stereo slot; fed from `take_gain_reduction_db()` |
 | `Log.h` | `src/dsp/` | `nam.audio` logging category — use `qCWarning(lc_audio, …)`, never `std::cerr` (invisible on Windows) |
-| `KnobWidget` | `src/ui/KnobWidget.h/cpp` | `QDial` wrapper: float range, scroll step, label |
+| `KnobWidget` | `src/ui/KnobWidget.h/cpp` | `QDial` wrapper: float range, scroll step, label; `set_snap` makes it discrete, and with ≤ 32 positions it draws position dots (`Theme::detent`) instead of the sweep arc |
 | `ToggleSwitch` | `src/ui/ToggleSwitch.h/cpp` | Custom-painted on/off switch |
 | `Theme` | `src/ui/Theme.h/cpp` | Fusion + dark palette + app stylesheet; per-effect accents (`tag_card(card, fx_id)`) + chrome color accessors — **all colors live here** |
 | `EffectShortcuts` | `src/ui/EffectShortcuts.h/cpp` | Keyboard toggles for effects (user has Latin American layout) |

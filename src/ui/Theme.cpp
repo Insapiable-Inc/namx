@@ -59,6 +59,9 @@ QColor knob_body_bot() {
 QColor bezel() {
     return QColor("#0e1015");
 }
+QColor detent() {
+    return QColor("#6b7280");
+}
 QColor well() {
     return QColor("#181b22");
 }

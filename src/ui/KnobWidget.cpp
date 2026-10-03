@@ -38,6 +38,13 @@ public:
         update();
     }
 
+    // Discrete knobs (`positions` ≥ 2) draw one dot per position on the ring, the
+    // current one lit, instead of a value arc: a switch, not a sweep. 0 = continuous.
+    void set_positions(int n) {
+        positions = n;
+        update();
+    }
+
 protected:
     void mousePressEvent(QMouseEvent* e) override {
         if (e->button() == Qt::LeftButton) {
@@ -88,20 +95,36 @@ protected:
         const int start_angle = 225 * 16;
         const int sweep_total = -270 * 16;
 
-        // Faded background track.
-        QPen track_pen(Theme::track(), arc_width);
-        track_pen.setCapStyle(Qt::FlatCap);
-        p.setPen(track_pen);
-        p.drawArc(arc_rect, start_angle, sweep_total);
-
-        // Value arc.
-        const QColor color = accent;
         const double range = std::max(1, maximum() - minimum());
-        const double t = (value() - minimum()) / range;
-        QPen value_pen(color, arc_width);
-        value_pen.setCapStyle(Qt::RoundCap);
-        p.setPen(value_pen);
-        p.drawArc(arc_rect, start_angle, static_cast<int>(sweep_total * t));
+        double t = (value() - minimum()) / range;
+        if (positions >= 2) {
+            // Stepped: a dot per position along the 270° sweep, the current one lit
+            // and larger; the pointer sits exactly on a position.
+            const int current = static_cast<int>(std::lround(t * (positions - 1)));
+            t = static_cast<double>(current) / (positions - 1);
+            const double ring_r = arc_rect.width() / 2.0;
+            const double dot_r = positions > 12 ? 1.3 : 2.0;
+            p.setPen(Qt::NoPen);
+            for (int i = 0; i < positions; ++i) {
+                const double a = qDegreesToRadians(225.0 - 270.0 * i / (positions - 1));
+                const QPointF dot(c.x() + ring_r * std::cos(a), c.y() - ring_r * std::sin(a));
+                p.setBrush(i == current ? accent : Theme::detent());
+                const double r = i == current ? dot_r + 0.9 : dot_r;
+                p.drawEllipse(dot, r, r);
+            }
+        } else {
+            // Faded background track.
+            QPen track_pen(Theme::track(), arc_width);
+            track_pen.setCapStyle(Qt::FlatCap);
+            p.setPen(track_pen);
+            p.drawArc(arc_rect, start_angle, sweep_total);
+
+            // Value arc.
+            QPen value_pen(accent, arc_width);
+            value_pen.setCapStyle(Qt::RoundCap);
+            p.setPen(value_pen);
+            p.drawArc(arc_rect, start_angle, static_cast<int>(sweep_total * t));
+        }
 
         // Knob body — neutral flat-ish disc with a subtle top→bottom gradient.
         // The effect accent lives only on the outer value ring and the tick.
@@ -144,6 +167,7 @@ protected:
 
 private:
     QColor accent{Theme::generic_accent()};
+    int positions{0};
     int drag_start_y{0};
     int drag_start_val{0};
 };
@@ -223,6 +247,13 @@ KnobWidget::KnobWidget(const QString& new_label, double min_val, double max_val,
     update_label();
     dial->installEventFilter(this);
     connect(dial, &QDial::valueChanged, this, &KnobWidget::on_dial_changed);
+}
+
+void KnobWidget::set_snap(double step) {
+    snap = step;
+    const int positions = step > 0.0 ? static_cast<int>(std::lround((max - min) / step)) + 1 : 0;
+    dial->set_positions(positions >= 2 && positions <= MAX_DRAWN_POSITIONS ? positions : 0);
+    update_label();
 }
 
 void KnobWidget::set_accent(const QColor& new_accent) {
