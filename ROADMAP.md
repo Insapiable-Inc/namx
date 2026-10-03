@@ -537,7 +537,7 @@ catalog with search/filters, in the browser) and the picked tone comes back into
 app. Downloads use each model's `model_url` (the archive endpoint is partners-only).
 No unauthenticated endpoint exists, so everything sits behind sign-in.
 
-- [ ] **Prerequisite (user action):** register the app on TONE3000 to obtain a
+- [x] **Prerequisite (user action):** (done 2026-10-02: key verified against /oauth/authorize; kept out of the repo) register the app on TONE3000 to obtain a
       `client_id`. No secret ships in the binary (PKCE + loopback redirect).
       *(tone3000.com → Settings → API Keys; redirect URI
       `http://localhost:51731/callback`. Pass it as `-DNAM_TONE3000_CLIENT_ID=…` for
