@@ -149,9 +149,86 @@ resampler): harmonics 1–5 of a 220 Hz sine at 44.1 and 96 kHz match the 48 kHz
 0.01 dB; 0 heap allocations on the audio thread over 2000 blocks; ~+25 % amp CPU at
 44.1 kHz (table above).
 
+## Effect quality
+
+`NAMPlayerQuality` (built with `-DNAM_BUILD_BENCH=ON`; `--model amp.nam` adds the amp
+column) drives each processor with fixed test signals and measures the output. The amp
+column uses the standard (16+8 ch) model with fast tanh, as in the app. These are the
+numbers Phase 22 has to beat.
+
+### Aliasing
+
+A sine at −6 dBFS, 2 s; energy *off* the harmonic series of the input (aliases folded back from above Nyquist, as inharmonic tones) relative to the whole output. 48 kHz, no oversampling. Lower is cleaner.
+
+| Input | Drive 100 % | Drive 30 % (default) | Amp (model) |
+|---|---|---|---|
+| 1000 Hz | -30.8 dB | -137.3 dB | -95.4 dB |
+| 3000 Hz | -21.1 dB | -89.7 dB | -59.0 dB |
+| 5000 Hz | -14.3 dB | -49.7 dB | -30.6 dB |
+| 7000 Hz | -9.0 dB | -43.1 dB | -13.1 dB |
+
+### Transpose
+
+A 220 Hz sine at −10 dBFS, mix 100 %. Pitch error of the spectral peak, artifact level (energy off the target note's harmonics), and latency (input start → the output's 5 ms RMS envelope reaching half its steady level; range over eight onset times).
+
+| Shift | Pitch error | Artifacts | Latency |
+|---|---|---|---|
+| -12 st | -0.1 cents | -66.2 dB | 14–45 ms |
+| -5 st | +0.0 cents | -79.3 dB | 14–62 ms |
+| -2 st | -0.1 cents | -85.1 dB | 14–32 ms |
+| +2 st | +0.1 cents | -84.6 dB | 18–24 ms |
+| +5 st | +0.1 cents | -34.1 dB | 18–29 ms |
+| +12 st | +0.1 cents | -22.6 dB | 16–24 ms |
+
+### Reverb decay
+
+Impulse response at mix 100 %, damping 50 %, width 100 %; RT60 from Schroeder backward integration (T20: the −5 → −25 dB slope, extrapolated to 60 dB).
+
+| Decay | RT60 |
+|---|---|
+| 0 % | 0.19 s |
+| 25 % | 0.25 s |
+| 50 % | 0.39 s |
+| 75 % | 0.83 s |
+| 100 % | 9.14 s |
+
+### Delay modulation
+
+A 1 kHz sine through the delay (250 ms, feedback 0, mix 100 %). The modulation's wanted sidebands sit within ±50 Hz of the note; the energy further away (zipper noise, interpolation artifacts) relative to the total:
+
+| Modulation | Off-note energy |
+|---|---|
+| 0 % | -124.4 dB |
+| 30 % | -63.9 dB |
+| 100 % | -63.9 dB |
+
+### EQ response
+
+All six bands engaged (Bass +6 dB @ 250 Hz, Middle −6 @ 1 k, High-Mid +3 @ 3 k, Treble −3 @ 4 k, Low Cut 80 Hz, High Cut 8 kHz), 40 sine probes 30 Hz–16 kHz against an independent Audio EQ Cookbook evaluation: **largest deviation 0.026 dB** (at 16000 Hz).
+
+### Limiter
+
+Ceiling −0.3 dBFS. Worst overshoot over four brutal inputs (sine bursts at +6 and +20 dBFS, +12 dBFS single-sample spikes, a +12 dBFS square): **+0.000 dB** relative to the ceiling (sine burst at +6 dBFS). Sample peaks; inter-sample peaks aren't measured.
+
+**What they say:**
+- **Drive aliases hard at full drive** (no oversampling): a 3 kHz sine leaves aliases
+  21 dB below the output, 7 kHz only 9 dB. At the default 30 % it's clean below ~1 kHz
+  (−137 dB) and modest above. Phase 22's anti-aliased WDF Tube Screamer is the fix.
+- **The amp model aliases too** (−59 dB at 3 kHz, −13 dB at 7 kHz): a NAM capture runs at
+  48 kHz without oversampling — the same in the official plugin.
+- **Transpose is perfectly in tune** (±0.1 cents) and clean for small shifts (−80 dB),
+  but **upward shifts of +5 and +12 st have strong artifacts** (−34 / −23 dB), and its
+  **latency varies 14–62 ms** with where the note starts — worst for downward shifts.
+  Both are Phase 22's pitch-shifter item.
+- **Reverb Decay is badly spread over the knob:** 0–75 % covers only 0.19–0.83 s, the
+  last quarter jumps to 9 s. A taper (or a Decay knob in seconds) would fix it.
+- **Delay modulation** is clean (off-note energy −64 dB, the linear interpolation's own
+  images); without modulation, −124 dB.
+- **EQ** matches the Audio EQ Cookbook to 0.03 dB; the **limiter** never exceeds its
+  ceiling (0.000 dB worst overshoot, sample peaks).
+
 ## Still to measure (Phase 27)
 
-Effect quality (Drive aliasing, Transpose pitch error / latency, reverb decay, delay
-modulation, EQ curves, limiter overshoot), whole-app numbers (cold start, RSS, model-load
+Whole-app numbers (cold start, RSS, model-load
 time, idle CPU with the window open), measured round-trip latency with a loopback cable
 (needs `jack_iodelay`, package `jack-example-tools`), and the CI regression check.

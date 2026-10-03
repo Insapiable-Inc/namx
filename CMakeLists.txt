@@ -363,4 +363,19 @@ if(NAM_BUILD_BENCH)
     else()
         target_compile_options(NAMPlayerBench PRIVATE ${NAM_WARNING_FLAGS} -O3 ${NAM_SIMD_FLAGS})
     endif()
+
+    # Effect quality numbers (bench/NAMPlayerQuality.cpp): aliasing, pitch error, decay,
+    # EQ response, limiter overshoot — the yardstick for Phase 22.
+    add_executable(NAMPlayerQuality bench/NAMPlayerQuality.cpp ${BENCH_DSP_SOURCES} ${NAM_SOURCES})
+    target_include_directories(NAMPlayerQuality SYSTEM PRIVATE
+        ${NAM_ROOT} ${NAM_DEPS_PATH}/eigen ${NAM_DEPS_PATH}/nlohmann
+        ${NAM_DEPS_PATH}/AudioDSPTools/dsp/ResamplingContainer)
+    target_include_directories(NAMPlayerQuality PRIVATE src/dsp)
+    target_compile_definitions(NAMPlayerQuality PRIVATE NAM_SAMPLE_FLOAT NAM_ENABLE_A2_FAST)
+    target_link_libraries(NAMPlayerQuality PRIVATE Qt6::Core)
+    if(MSVC)
+        target_compile_options(NAMPlayerQuality PRIVATE ${NAM_WARNING_FLAGS} /O2 /arch:AVX2 /EHsc)
+    else()
+        target_compile_options(NAMPlayerQuality PRIVATE ${NAM_WARNING_FLAGS} -O3 ${NAM_SIMD_FLAGS})
+    endif()
 endif()

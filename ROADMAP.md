@@ -951,18 +951,18 @@ comparisons and the quality numbers, and keeps them from regressing. Measurement
 deterministic (fixed signals and models, no random input); results are dated, with the
 machine, in `gui/BENCHMARKS.md`.
 
-- [ ] **NAM CPU vs the official plugin:** the same models (standard / lite / feather /
+- [~] **NAM CPU vs the official plugin:** (2026-10-02: vs the upstream core's benchmodel instead — the official plugin isn't on Linux; same core, so the core comparison is the meaningful one) the same models (standard / lite / feather /
       nano WaveNet, an A2 model, an LSTM) at 32 / 64 / 128 / 256 frames and 44.1 / 48 /
       96 kHz, ours vs NeuralAmpModelerPlugin (and the upstream core's `benchmodel`
       for the inference alone). Same machine, `performance` governor.
-- [ ] **NAM accuracy vs the official plugin:** render the same input through both and
+- [x] **NAM accuracy vs the official plugin:** (done 2026-10-02 against upstream's reference renderer; fast tanh = the official plugin's accuracy) render the same input through both and
       null them; ours must match within float tolerance at the model's own rate, and
       report how each handles other rates (ties to Phase 26 item 15).
 - [ ] **Latency:** measured round trip with a loopback cable (`jack_iodelay`) against
       what the status bar reports, ours vs the official plugin in a host at the same
       buffer; plus each effect's added latency (Transpose, limiter look-ahead) — ties
       to review item 28.
-- [ ] **Effect quality numbers** (the yardstick Phase 22 needs before replacing
+- [x] **Effect quality numbers** (done 2026-10-02: `NAMPlayerQuality`, BENCHMARKS.md → Effect quality) (the yardstick Phase 22 needs before replacing
       anything): Drive aliasing (sine sweep, energy outside the harmonics), Transpose
       pitch error / latency / crossfade artefacts, reverb tail decay vs Decay, delay
       modulation smoothness, EQ response vs the Audio EQ Cookbook curves, limiter
@@ -1001,7 +1001,8 @@ it for the one it replaces, and is measured with `NAMPlayerBench`.
       filter-bank shifter (Juillerat 2008) as a "Low latency" mode for drop tuning.
 - [ ] **Partitioned FFT convolution** for the cabinet (lifts the IR length cap, cuts
       CPU) — the engine IR reverbs need.
-- [ ] **Reverb:** Freeverb → Dattorro plate + FDN hall/room; then IR reverb.
+- [ ] **Reverb:** Freeverb → Dattorro plate + FDN hall/room; then IR reverb. Fix the Decay
+      spread on the way (BENCHMARKS.md: 0–75 % = 0.19–0.83 s, 100 % = 9 s).
 - [ ] **Drive:** a second NAM slot ("Pedal") before the amp for OD/boost captures;
       later a WDF Tube Screamer with anti-aliasing for the built-in Drive.
 - [ ] **Modulation:** BBD core for Chorus/Flanger (+ analog Delay mode); virtual-analog
