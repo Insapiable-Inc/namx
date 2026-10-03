@@ -1081,19 +1081,13 @@ it for the one it replaces, and is measured with `NAMPlayerBench`.
       controls (option A — no "Classic" Freeverb kept); new algorithms uncommitted until
       heard, as with Transpose. **No IR reverb inside Reverb** — if ever, a separate effect
       with amp/cab-style file loading.
-- [ ] **Revisit the Stereo switches** (user, 2026-10-03): which cards really need one,
-      and does it make an audible difference on each? Today: Flanger, Phaser, Chorus,
-      Tremolo and Delay have a Stereo switch (each can *make* stereo from a mono input:
-      LFO phase offsets, ping-pong); Reverb has none but is always stereo (forced in
-      `AudioEngine`, with Width instead); the Amplifier's Stereo means something else (run
-      the model per channel vs sum to mono). The Cabinet has none and works fine — one IR
-      can't widen a mono signal, and a stereo input already gets per-channel convolution.
-      Decide per card: keep, drop (always stereo, like Reverb), or rename where the
-      meaning differs. **Amplifier done 2026-10-03 (user):** always stereo — a stereo
-      input runs one model per channel, never summed; its switch is gone (old presets'
-      `namStereo` is ignored). Also decide: Gate and Compressor detect each side
-      separately, so a loud note on one side compresses only that side (stereo
-      compressors usually link both sides to one detector).
+- [x] **Revisit the Stereo switches** (user, 2026-10-03 — decided the same day): Delay,
+      Flanger, Phaser, Tremolo and Chorus keep their switch as is (each can make stereo
+      from mono, and mono before the amp is a real choice); Reverb stays always stereo;
+      Cabinet needs none (one IR can't widen mono; stereo input is convolved per side);
+      Amplifier always stereo (switch removed). Gate and Compressor stay **unlinked** on
+      purpose: each side is gated/compressed on its own — e.g. two guitars on L and R
+      stay independent all the way through two amp instances.
 - [ ] **Drive:** a second NAM slot ("Pedal") before the amp for OD/boost captures;
       later a WDF Tube Screamer with anti-aliasing for the built-in Drive.
 - [ ] **Modulation:** BBD core for Chorus/Flanger (+ analog Delay mode); virtual-analog
@@ -1280,6 +1274,11 @@ carries the final name.
 - [ ] Release workflow: decide whether the official Windows zip ships with ASIO.
 
 ## Ideas parking lot (not committed)
+
+- **Two inputs / stereo input** (from the Stereo review, 2026-10-03): today there is one
+  input port (`NAM-X:input`) and the chain starts mono. A stereo mode with two input
+  ports feeding L and R from the start would let two guitars (or a stereo source) run
+  independently through the unlinked Gate/Compressor and the per-side amp.
 
 - **Card badges** (user, 2026-10-03, nice to have): a small text tag after an effect's
   title — "Beta", "Experimental", "Deprecated", … — with a tooltip saying why (e.g.
