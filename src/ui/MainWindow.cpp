@@ -1218,7 +1218,7 @@ void MainWindow::setup_ui() {
         // shimmer->setToolTip("Octave-up feedback into the tail — the shimmer reverb");
         add_detail_row(col, {pre, low_cut, high_cut});
         add_tempo_sync(col, pre, "Pre-delay", true, 13 /* 1/16 */, REVERB_PRE_DELAY_MIN,
-                       REVERB_PRE_DELAY_MAX, [this](double v) {
+                       REVERB_PRE_DELAY_SYNC_MAX, [this](double v) {
                            engine->get_reverb().set_pre_delay(static_cast<float>(v));
                        });
         Theme::tag_card(col, "reverb");

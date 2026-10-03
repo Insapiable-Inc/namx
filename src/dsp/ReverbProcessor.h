@@ -59,7 +59,7 @@ public:
     }
     void set_pre_delay(float ms) {
         pre_delay_ms.store(ms);
-    } // 0–250 ms before the tail
+    } // before the tail: 0–250 ms on the knob, up to 2 s synced
     void set_low_cut(float hz) {
         low_cut_hz.store(hz);
     } // on the wet signal
@@ -103,7 +103,7 @@ private:
     PitchShifter shift; // +12 st, for the shimmer
     float shim_fb = 0.0f; // shifted wet fed into the next input sample
 
-    static constexpr float MAX_PRE_DELAY_MS = 250.0f;
+    static constexpr float MAX_PRE_DELAY_MS = 2000.0f; // a synced note value can be long
     // Pre-delay line per input channel + wet filters per output channel.
     DelayLine pre[2];
     float hp_x[2]{}, hp_y[2]{}, lp[2]{};

@@ -201,6 +201,9 @@ constexpr double DELAY_SAT_MIN = 0.0, DELAY_SAT_MAX = 100.0, DELAY_SAT_DEFAULT =
 constexpr double DELAY_MOD_MIN = 0.0, DELAY_MOD_MAX = 100.0, DELAY_MOD_DEFAULT = 0.0;
 
 // Phase 17: Reverb
+// The knob goes to 250 ms; a synced note value may reach REVERB_PRE_DELAY_SYNC_MAX (2 s:
+// every note value from 1/32 to 1/2 at 60 BPM plays as shown).
+constexpr double REVERB_PRE_DELAY_SYNC_MAX = 2000.0;
 constexpr double REVERB_PRE_DELAY_MIN = 0.0, REVERB_PRE_DELAY_MAX = 250.0,
                  REVERB_PRE_DELAY_DEFAULT = 0.0;
 constexpr double REVERB_LOW_CUT_MAX = 1000.0;
