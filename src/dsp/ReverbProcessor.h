@@ -36,8 +36,9 @@ public:
     void reset() override;
 
     // Decay knob position (0–100 %; the preset key keeps its old name, roomSize) → RT60
-    // in seconds, 0.2 s … 10 s on a log scale. Measured within ~10 % in the mids for
-    // every type and damping (BENCHMARKS.md).
+    // in seconds, 0.2 s … 10 s on a log scale. Measured within ~10 % in the mids at the
+    // default Damping (BENCHMARKS.md); strong Damping also shortens short Hall/Room tails
+    // in the mids (its strength is the one chosen by ear, 2026-10-03).
     static float decay_seconds(float pct) {
         return 0.2f * std::pow(50.0f, std::clamp(pct, 0.0f, 100.0f) / 100.0f);
     }

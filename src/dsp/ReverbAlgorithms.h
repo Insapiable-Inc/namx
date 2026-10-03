@@ -286,7 +286,7 @@ public:
     }
 
     void set_decay(float rt60_seconds, float damping) {
-        const float rt_high = rt60_seconds * (1.0f - 0.75f * std::clamp(damping, 0.0f, 1.0f));
+        const float rt_high = rt60_seconds * (1.0f - 0.9f * std::clamp(damping, 0.0f, 1.0f));
         for (size_t i = 0; i < count; ++i) {
             const float g_dc = std::pow(10.0f, -3.0f * base_length[i] / (rate * rt60_seconds));
             const float g_hf = std::pow(10.0f, -3.0f * base_length[i] / (rate * rt_high));
