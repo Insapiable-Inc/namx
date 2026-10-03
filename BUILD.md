@@ -110,6 +110,7 @@ no separate audio dependency — the Windows SDK already ships them.
 | JACK       | 1.9.17 (jackd2) or PipeWire-JACK — Linux only |
 | GCC / Clang| GCC 14 / Clang 18 (C++23 required) |
 | MSVC       | Visual Studio 2022 (17.10+) |
+| CPU        | x86-64 with **AVX2 + FMA** for the official binaries (Intel Haswell 2013+, AMD Excavator 2015+ / any Ryzen; many Pentium/Celeron/Atom models lack it). Older CPUs: a source build with the default `NAM_NATIVE_OPT=ON` targets the building machine and works, slower — **unsupported** |
 
 ---
 
@@ -532,11 +533,18 @@ IR files are compatible with any standard cab sim WAV (e.g., from OwnHammer, Cel
 - A model always runs at the rate it was trained at (usually 48 kHz). With the audio
   device at another rate (44.1 or 96 kHz) the Amplifier resamples around it, which
   costs roughly 30 % more amp CPU and ~1 ms; running the device at 48 kHz avoids both.
-- Large NAM models (e.g., standard WaveNet) are CPU-heavy by design, and a stereo
-  effect placed *before* the Amplifier runs the model twice (one per channel).
+- Large NAM models (e.g., standard WaveNet) are CPU-heavy by design. With a stereo
+  signal reaching the Amplifier, its **Stereo** switch runs the model twice (one per
+  channel); off (the default) sums to mono and runs it once.
 - With the `powersave` CPU governor, cores idle at low clock between audio buffers,
   so DSP % reads several times higher than the benchmark below. `performance`
   (or `cpupower frequency-set -g performance`) trades power for headroom.
+- **Laptops:** plug in and pick the performance power mode — battery-saver clocks are
+  the usual cause of crackles, more than the CPU itself; thin laptops also throttle
+  after a few minutes of load. If it still crackles, use 256 frames and the mono amp.
+  For scale: every effect on in stereo with the amp per channel measured ~10 % of the
+  128-frame budget on average on an i9-12900K (2026-10-03); a 2017-era laptop CPU is
+  roughly twice that, the slowest AVX2 laptops (2014 low-voltage) about four times.
 
 **Measuring.** `namx-bench` times every effect in chain order, block by block,
 against the real-time budget:
