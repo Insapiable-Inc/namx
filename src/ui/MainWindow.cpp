@@ -1930,6 +1930,7 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* ev) {
 
 void MainWindow::setup_audio() {
     QSettings s;
+    engine->set_exclusive_mode(s.value("audio/exclusive", false).toBool());
     const QString saved_in = s.value("audio/inputDeviceId").toString();
     const QString saved_out = s.value("audio/outputDeviceId").toString();
 
@@ -1950,6 +1951,19 @@ void MainWindow::setup_audio() {
     } else {
         audio_bar->set_error("Not connected");
     }
+    update_exclusive_notice();
+}
+
+// Exclusive mode asked for but the devices refused it: say so (the stream is shared).
+void MainWindow::update_exclusive_notice() {
+    const bool fell_back = audio_ok && engine->is_exclusive_wanted() && !engine->exclusive_active();
+    set_notice("exclusive",
+               fell_back ? QString("Exclusive mode isn't available for these devices: using "
+                                   "shared mode")
+                         : QString(),
+               fell_back ? QString("Another app may be using the device, or it supports no "
+                                   "format exclusive mode can use.")
+                         : QString());
 }
 
 void MainWindow::restart_audio_with_current_devices() {
@@ -1965,6 +1979,7 @@ void MainWindow::restart_audio_with_current_devices() {
     } else {
         audio_bar->set_error("Not connected");
     }
+    update_exclusive_notice();
 }
 
 void MainWindow::on_import_nam() {
@@ -2301,6 +2316,10 @@ void MainWindow::open_settings(SettingsDialog::Page page) {
             .open_midi_mappings =
                 [this] {
                     open_midi_mappings();
+                },
+            .restart_audio =
+                [this] {
+                    restart_audio_with_current_devices();
                 },
         };
         settings_dialog = new SettingsDialog(std::move(targets), this);

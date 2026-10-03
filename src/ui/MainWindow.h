@@ -97,6 +97,7 @@ private slots:
     // ("sampleRate", …) with an optional tooltip; an empty text removes it. Shown
     // joined, in posting order.
     void set_notice(const QString& key, const QString& text, const QString& tip = {});
+    void update_exclusive_notice();
     void update_tuner();
 
 private:

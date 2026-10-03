@@ -46,6 +46,8 @@ Decisions:
   is v0.6.0, not 1.0** (after the existing v0.5.x tags), and it leaves out **themes (19)
   and multiple effect instances (24)** — those come after it, on the way to 1.0.
   Done so far: 0–6, 9–18, 20, the 2026-10-02 hardening pass of 26 and the code of 23.
+  **Next, set by the user 2026-10-02:** 21's WASAPI exclusive mode → 7 (naming: **NAM-X**)
+  → 8 (packaging). The rest of the order below follows after.
   Remaining before the release, in order:
   27 (benchmarks — the baseline before any DSP change) → 22 (DSP quality, incl. the
   low-latency Transpose) → 25 (TONE3000: compliance or removal) → 21 (Windows audio —
@@ -1197,8 +1199,14 @@ carries the final name.
 
 ## Phase 21 — Windows audio: WASAPI exclusive + ASIO (added 2026-10-01; before the release only if a Windows machine is available)
 
-- [ ] **WASAPI exclusive mode** (from Phase 18): shared mode's 10–20 ms is not a guitar
-      latency; keep shared as fallback.
+- [x] **WASAPI exclusive mode** (from Phase 18; code 2026-10-03): shared mode's 10–20 ms
+      is not a guitar latency; keep shared as fallback. Settings → Audio → Exclusive mode
+      (`audio/exclusive`); native format search (float32 / int32 / 24-in-32 / int24 /
+      int16) at a common rate, the devices' minimum period with the
+      BUFFER_SIZE_NOT_ALIGNED retry, full-buffer writes per render event, fallback to
+      shared with a status-bar notice. **Compile-checked only** (MinGW + CI's MSVC) —
+      needs a run on real Windows hardware: latency, a USB interface, a busy device,
+      int formats.
 
 - [ ] **Verify the license first:** Steinberg's ASIO SDK is believed to be dual-licensed
       (proprietary / GPLv3) since late 2025. Confirm the terms and the trademark/logo

@@ -7,7 +7,7 @@ effects chain plus a 3-band EQ.
 | Platform | Audio backend | Status |
 |----------|---------------|--------|
 | Linux    | JACK (jackd2 or PipeWire-JACK) | Stable |
-| Windows  | WASAPI shared mode (native, MSVC) | Functional first cut — float32 mix format only |
+| Windows  | WASAPI shared or exclusive mode (native, MSVC) | Shared: float32 mix format only; exclusive: new, not yet tested on hardware |
 
 ---
 
@@ -88,11 +88,18 @@ Three things to install:
 WASAPI links against the system DLLs (`ole32`, `mmdevapi`, `avrt`), so there's
 no separate audio dependency — the Windows SDK already ships them.
 
-> **Audio caveat:** the current WASAPI backend only handles **float32 mix format**
-> (the modern Windows default). If your default capture or render device is
-> configured for 16-bit PCM, the app will log "mix format not float32" and bail
-> out of `start()`. Workaround: in *Sound Settings → device properties → Advanced*,
-> pick a 24-bit or 32-bit format. PCM-to-float conversion is on the roadmap.
+> **Exclusive mode** (*Settings → Audio → Exclusive mode*): NAM Player takes the
+> input and output devices over — the lowest latency WASAPI offers (the devices'
+> minimum period, typically 3 ms), at the cost that no other app can use them while
+> it runs. It picks a format both devices take natively (float32, int32, 24-in-32,
+> packed 24-bit or 16-bit) at the output device's rate (or 48 / 44.1 / 96 / 88.2 kHz)
+> and converts. If a device refuses (busy, or no usable format) it falls back to
+> shared mode and says so in the status bar.
+>
+> **Shared-mode caveat:** shared mode only handles the **float32 mix format** (the
+> modern Windows default). If a device is configured for 16-bit PCM, the app logs
+> "mix format not float32" and won't start; pick a 24-bit or 32-bit format in *Sound
+> Settings → device properties → Advanced*, or use exclusive mode.
 
 ### Minimum versions
 

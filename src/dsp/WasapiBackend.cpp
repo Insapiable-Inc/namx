@@ -1,6 +1,9 @@
 #include "WasapiBackend.h"
 
 #include <algorithm>
+#include <cmath>
+#include <cstdint>
+#include <cstring>
 #include <sstream>
 
 #include "Log.h"
@@ -59,6 +62,118 @@ static bool is_float32(const WAVEFORMATEX* wfx) {
         return IsEqualGUID(ext->SubFormat, KSDATAFORMAT_SUBTYPE_IEEE_FLOAT);
     }
     return false;
+}
+
+using SampleType = WasapiBackend::SampleType;
+
+// Exclusive-mode format candidates, best first: the container size and how many of
+// its bits carry the sample.
+struct SampleLayout
+{
+    SampleType type;
+    WORD container_bits;
+    WORD valid_bits;
+};
+constexpr SampleLayout EXCLUSIVE_LAYOUTS[] = {
+    {SampleType::FLOAT32, 32, 32}, {SampleType::INT32, 32, 32}, {SampleType::INT32, 32, 24},
+    {SampleType::INT24, 24, 24},   {SampleType::INT16, 16, 16},
+};
+
+static int bytes_of(SampleType t) {
+    switch (t) {
+        case SampleType::INT24:
+            return 3;
+        case SampleType::INT16:
+            return 2;
+        default:
+            return 4;
+    }
+}
+
+// A WAVEFORMATEXTENSIBLE for `layout`, with the channel count and speaker mask of
+// the device's own mix format.
+static WAVEFORMATEXTENSIBLE make_format(const SampleLayout& layout, const WAVEFORMATEX* mix,
+                                        DWORD rate) {
+    WAVEFORMATEXTENSIBLE f{};
+    f.Format.wFormatTag = WAVE_FORMAT_EXTENSIBLE;
+    f.Format.nChannels = mix->nChannels;
+    f.Format.nSamplesPerSec = rate;
+    f.Format.wBitsPerSample = layout.container_bits;
+    f.Format.nBlockAlign = static_cast<WORD>(mix->nChannels * layout.container_bits / 8);
+    f.Format.nAvgBytesPerSec = rate * f.Format.nBlockAlign;
+    f.Format.cbSize = sizeof(WAVEFORMATEXTENSIBLE) - sizeof(WAVEFORMATEX);
+    f.Samples.wValidBitsPerSample = layout.valid_bits;
+    if (mix->wFormatTag == WAVE_FORMAT_EXTENSIBLE) {
+        f.dwChannelMask = reinterpret_cast<const WAVEFORMATEXTENSIBLE*>(mix)->dwChannelMask;
+    } else {
+        f.dwChannelMask = mix->nChannels == 1   ? SPEAKER_FRONT_CENTER
+                          : mix->nChannels == 2 ? (SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT)
+                                                : 0;
+    }
+    f.SubFormat = layout.type == SampleType::FLOAT32 ? KSDATAFORMAT_SUBTYPE_IEEE_FLOAT
+                                                     : KSDATAFORMAT_SUBTYPE_PCM;
+    return f;
+}
+
+// One sample at `p` as float (-1…1). INT32 also reads 24-in-32: the sample is
+// left-justified, so the 32-bit scale is right for both.
+static float read_sample(const BYTE* p, SampleType t) {
+    switch (t) {
+        case SampleType::FLOAT32: {
+            float v;
+            std::memcpy(&v, p, 4);
+            return v;
+        }
+        case SampleType::INT32: {
+            std::int32_t v;
+            std::memcpy(&v, p, 4);
+            return static_cast<float>(static_cast<double>(v) / 2147483648.0);
+        }
+        case SampleType::INT24: {
+            const std::int32_t v =
+                static_cast<std::int32_t>(static_cast<std::uint32_t>(p[0]) << 8 |
+                                          static_cast<std::uint32_t>(p[1]) << 16 |
+                                          static_cast<std::uint32_t>(p[2]) << 24) >>
+                8;
+            return static_cast<float>(v) / 8388608.0f;
+        }
+        case SampleType::INT16: {
+            std::int16_t v;
+            std::memcpy(&v, p, 2);
+            return static_cast<float>(v) / 32768.0f;
+        }
+    }
+    return 0.0f;
+}
+
+// Writes `v` (clamped to -1…1) at `p` in layout `t`.
+static void write_sample(BYTE* p, SampleType t, float v) {
+    const double x = std::clamp(static_cast<double>(v), -1.0, 1.0);
+    switch (t) {
+        case SampleType::FLOAT32: {
+            const float f = static_cast<float>(x);
+            std::memcpy(p, &f, 4);
+            return;
+        }
+        case SampleType::INT32: {
+            const std::int32_t i = static_cast<std::int32_t>(
+                std::clamp(x * 2147483648.0, -2147483648.0, 2147483647.0));
+            std::memcpy(p, &i, 4);
+            return;
+        }
+        case SampleType::INT24: {
+            const std::int32_t i = static_cast<std::int32_t>(std::lround(x * 8388607.0));
+            p[0] = static_cast<BYTE>(i & 0xFF);
+            p[1] = static_cast<BYTE>((i >> 8) & 0xFF);
+            p[2] = static_cast<BYTE>((i >> 16) & 0xFF);
+            return;
+        }
+        case SampleType::INT16: {
+            const std::int16_t i = static_cast<std::int16_t>(std::lround(x * 32767.0));
+            std::memcpy(p, &i, 2);
+            return;
+        }
+    }
 }
 
 static string friendly_device_name(IMMDevice* dev) {
@@ -185,7 +300,7 @@ string WasapiBackend::status_string() const {
         return "WASAPI  \xe2\x97\x8f  not started";
     }
     std::ostringstream o;
-    o << "WASAPI  \xe2\x97\x8f  ";
+    o << (exclusive ? "WASAPI exclusive  \xe2\x97\x8f  " : "WASAPI shared  \xe2\x97\x8f  ");
     if (!device_name.empty()) {
         o << device_name << "  \xe2\x97\x8f  ";
     }
@@ -194,6 +309,12 @@ string WasapiBackend::status_string() const {
 #else
     return "WASAPI  \xe2\x97\x8f  not supported on this platform";
 #endif
+}
+
+int WasapiBackend::io_latency_frames() const {
+    // Exclusive: one capture period in, one render buffer out (the driver's own
+    // latency on top isn't known). Shared mode adds the system mixer: unknown.
+    return exclusive ? buffer_size + render_buffer_frames : -1;
 }
 
 vector<IAudioBackend::DeviceInfo> WasapiBackend::enumerate_input_devices() const {
@@ -289,13 +410,25 @@ bool WasapiBackend::start_with_devices(const string& /*clientName*/, Callback* c
     qCInfo(lc_audio, "[WasapiBackend] Render device: %s",
            friendly_device_name(render_device).c_str());
 
-    if (!init_capture() || !init_render()) {
+    // Exclusive when asked for and the devices accept it; shared otherwise.
+    exclusive = false;
+    capture_type = render_type = SampleType::FLOAT32;
+    if (exclusive_wanted) {
+        exclusive = init_exclusive();
+        if (!exclusive) {
+            qCWarning(lc_audio, "[WasapiBackend] Exclusive mode unavailable; using shared mode");
+            release_streams();
+            capture_type = render_type = SampleType::FLOAT32;
+        }
+    }
+    if (!exclusive && (!init_capture() || !init_render())) {
         teardown();
         return false;
     }
 
-    // Capture and render must share a sample rate in shared mode (both use the
-    // engine mix rate). If they ever diverge we bail rather than resample.
+    // Capture and render must share a sample rate (shared: both use the engine
+    // mix rate; exclusive: init_exclusive picks one rate for both). If they ever
+    // diverge we bail rather than resample.
     if (static_cast<int>(sample_rate) <= 0) {
         qCWarning(lc_audio, "[WasapiBackend] Invalid sample rate after Initialize");
         teardown();
@@ -325,13 +458,16 @@ bool WasapiBackend::start_with_devices(const string& /*clientName*/, Callback* c
     }
 
     // Pre-fill render buffer with silence so the first audio-thread cycle has
-    // something to push without waiting for input to arrive.
+    // something to push without waiting for input to arrive. (Exclusive event mode
+    // requires it: the first buffer must be written before Start.)
     {
         BYTE* buf = nullptr;
         UINT32 frames = 0;
         if (SUCCEEDED(render_client->GetBufferSize(&frames)) &&
             SUCCEEDED(render->GetBuffer(frames, &buf)) && buf) {
-            const size_t bytes = static_cast<size_t>(frames) * render_channels * sizeof(float);
+            const size_t bytes = static_cast<size_t>(frames) *
+                                 static_cast<size_t>(render_channels) *
+                                 static_cast<size_t>(bytes_of(render_type));
             std::fill_n(buf, bytes, 0);
             render->ReleaseBuffer(frames, AUDCLNT_BUFFERFLAGS_SILENT);
         }
@@ -345,8 +481,8 @@ bool WasapiBackend::start_with_devices(const string& /*clientName*/, Callback* c
 
     running.store(true);
     audio_thread = std::thread(&WasapiBackend::audio_thread_main, this);
-    qCInfo(lc_audio, "[WasapiBackend] WASAPI started at %.0f Hz, buffer %d frames", sample_rate,
-           static_cast<int>(buffer_size));
+    qCInfo(lc_audio, "[WasapiBackend] WASAPI %s started at %.0f Hz, buffer %d frames",
+           exclusive ? "exclusive" : "shared", sample_rate, static_cast<int>(buffer_size));
     return true;
 }
 
@@ -479,6 +615,130 @@ bool WasapiBackend::init_render() {
     return true;
 }
 
+// Initializes `client` (activated on `dev`) for an exclusive event-driven stream of
+// `format` with one period of buffer. A device that wants a different period size
+// answers AUDCLNT_E_BUFFER_SIZE_NOT_ALIGNED: the documented fix is to read the size
+// it would accept, release the client, activate a fresh one and initialize again.
+static bool init_exclusive_stream(IMMDevice* dev, IAudioClient*& client,
+                                  const WAVEFORMATEXTENSIBLE& format, REFERENCE_TIME period,
+                                  UINT32& frames) {
+    HRESULT hr = client->Initialize(AUDCLNT_SHAREMODE_EXCLUSIVE, AUDCLNT_STREAMFLAGS_EVENTCALLBACK,
+                                    period, period, &format.Format, nullptr);
+    if (hr == AUDCLNT_E_BUFFER_SIZE_NOT_ALIGNED) {
+        UINT32 aligned = 0;
+        if (FAILED(client->GetBufferSize(&aligned))) {
+            return false;
+        }
+        period = static_cast<REFERENCE_TIME>(
+            static_cast<double>(REF_TIMES_PER_SEC) * aligned / format.Format.nSamplesPerSec + 0.5);
+        client->Release();
+        client = nullptr;
+        if (FAILED(dev->Activate(__uuidof(IAudioClient), CLSCTX_ALL, nullptr,
+                                 reinterpret_cast<void**>(&client))) ||
+            !client) {
+            return false;
+        }
+        hr = client->Initialize(AUDCLNT_SHAREMODE_EXCLUSIVE, AUDCLNT_STREAMFLAGS_EVENTCALLBACK,
+                                period, period, &format.Format, nullptr);
+    }
+    if (FAILED(hr)) {
+        qCWarning(lc_audio, "[WasapiBackend] Exclusive Initialize: 0x%08lx",
+                  static_cast<unsigned long>(hr));
+        return false;
+    }
+    return SUCCEEDED(client->GetBufferSize(&frames)) && frames > 0;
+}
+
+bool WasapiBackend::init_exclusive() {
+    if (FAILED(capture_device->Activate(__uuidof(IAudioClient), CLSCTX_ALL, nullptr,
+                                        reinterpret_cast<void**>(&capture_client))) ||
+        !capture_client ||
+        FAILED(render_device->Activate(__uuidof(IAudioClient), CLSCTX_ALL, nullptr,
+                                       reinterpret_cast<void**>(&render_client))) ||
+        !render_client) {
+        return false;
+    }
+
+    // Channel counts and speaker masks come from the devices' mix formats.
+    WAVEFORMATEX* capture_mix_raw = nullptr;
+    WAVEFORMATEX* render_mix_raw = nullptr;
+    if (FAILED(capture_client->GetMixFormat(&capture_mix_raw)) || !capture_mix_raw ||
+        FAILED(render_client->GetMixFormat(&render_mix_raw)) || !render_mix_raw) {
+        CoTaskMemFree(capture_mix_raw);
+        CoTaskMemFree(render_mix_raw);
+        return false;
+    }
+    const unique_ptr<WAVEFORMATEX, CoMemFree> capture_mix{capture_mix_raw};
+    const unique_ptr<WAVEFORMATEX, CoMemFree> render_mix{render_mix_raw};
+
+    // The first rate both devices take, each with its best supported layout.
+    const DWORD rates[] = {render_mix->nSamplesPerSec, 48000, 44100, 96000, 88200};
+    auto best_layout = [](IAudioClient* client, const WAVEFORMATEX* mix,
+                          DWORD rate) -> const SampleLayout* {
+        for (const SampleLayout& layout : EXCLUSIVE_LAYOUTS) {
+            const WAVEFORMATEXTENSIBLE f = make_format(layout, mix, rate);
+            if (client->IsFormatSupported(AUDCLNT_SHAREMODE_EXCLUSIVE, &f.Format, nullptr) ==
+                S_OK) {
+                return &layout;
+            }
+        }
+        return nullptr;
+    };
+    DWORD rate = 0;
+    const SampleLayout* capture_layout = nullptr;
+    const SampleLayout* render_layout = nullptr;
+    for (const DWORD r : rates) {
+        capture_layout = best_layout(capture_client, capture_mix.get(), r);
+        render_layout = best_layout(render_client, render_mix.get(), r);
+        if (capture_layout && render_layout) {
+            rate = r;
+            break;
+        }
+    }
+    if (rate == 0) {
+        qCWarning(lc_audio, "[WasapiBackend] No exclusive format both devices accept");
+        return false;
+    }
+
+    // The smallest period both devices allow.
+    REFERENCE_TIME default_period = 0, capture_min = 0, render_min = 0;
+    if (FAILED(capture_client->GetDevicePeriod(&default_period, &capture_min)) ||
+        FAILED(render_client->GetDevicePeriod(&default_period, &render_min))) {
+        return false;
+    }
+    const REFERENCE_TIME period = std::max(capture_min, render_min);
+
+    const WAVEFORMATEXTENSIBLE capture_format =
+        make_format(*capture_layout, capture_mix.get(), rate);
+    const WAVEFORMATEXTENSIBLE render_format = make_format(*render_layout, render_mix.get(), rate);
+    UINT32 capture_frames = 0, render_frames = 0;
+    if (!init_exclusive_stream(capture_device, capture_client, capture_format, period,
+                               capture_frames) ||
+        !init_exclusive_stream(render_device, render_client, render_format, period,
+                               render_frames)) {
+        return false;
+    }
+    if (FAILED(capture_client->GetService(__uuidof(IAudioCaptureClient),
+                                          reinterpret_cast<void**>(&capture))) ||
+        FAILED(render_client->GetService(__uuidof(IAudioRenderClient),
+                                         reinterpret_cast<void**>(&render)))) {
+        return false;
+    }
+
+    sample_rate = rate;
+    capture_channels = capture_mix->nChannels;
+    render_channels = render_mix->nChannels;
+    capture_type = capture_layout->type;
+    render_type = render_layout->type;
+    buffer_size = static_cast<int>(capture_frames);
+    render_buffer_frames = static_cast<int>(render_frames);
+    qCInfo(lc_audio, "[WasapiBackend] Exclusive: %lu Hz, %u/%u-bit in, %u/%u-bit out, %u/%u frames",
+           static_cast<unsigned long>(rate), capture_layout->valid_bits,
+           capture_layout->container_bits, render_layout->valid_bits, render_layout->container_bits,
+           capture_frames, render_frames);
+    return true;
+}
+
 void WasapiBackend::audio_thread_main() {
     // Pro Audio thread characteristics — bumps priority, registers with the
     // scheduler so we get a slice every audio quantum.
@@ -510,6 +770,8 @@ void WasapiBackend::audio_thread_main() {
     if (FAILED(render_client->GetBufferSize(&renderBufSize))) {
         renderBufSize = static_cast<UINT32>(buffer_size);
     }
+    const int render_bytes = bytes_of(render_type);
+    const int capture_bytes = bytes_of(capture_type);
     vector<float> fifoL, fifoR;
     size_t fifoCap = 0, fifoHead = 0, fifoCount = 0;
     auto resize_fifo = [&](size_t blockFrames) {
@@ -542,7 +804,39 @@ void WasapiBackend::audio_thread_main() {
         fifoCount += n;
     };
 
-    // Write as many pending frames as the render endpoint has room for.
+    // Moves `frames` pending frames (silence past what's pending) into `dst`, in the
+    // render endpoint's channel layout and sample format.
+    auto write_frames = [&](BYTE* dst, UINT32 frames) {
+        const int rc = render_channels;
+        const size_t from_fifo = std::min<size_t>(frames, fifoCount);
+        size_t src = fifoHead;
+        for (UINT32 i = 0; i < frames; ++i) {
+            float l = 0.0f, r = 0.0f;
+            if (i < from_fifo) {
+                l = fifoL[src];
+                r = fifoR[src];
+                if (++src == fifoCap) {
+                    src = 0;
+                }
+            }
+            for (int c = 0; c < rc; ++c) {
+                // Stereo: L, R. Mono: their mix. 5.1/7.1: L, R, the rest silent.
+                const float v = rc == 1 ? 0.5f * (l + r) : c == 0 ? l : c == 1 ? r : 0.0f;
+                BYTE* p = dst + (static_cast<size_t>(i) * static_cast<size_t>(rc) +
+                                 static_cast<size_t>(c)) *
+                                    static_cast<size_t>(render_bytes);
+                if (render_type == SampleType::FLOAT32) {
+                    std::memcpy(p, &v, 4);
+                } else {
+                    write_sample(p, render_type, v);
+                }
+            }
+        }
+        fifoHead = src;
+        fifoCount -= from_fifo;
+    };
+
+    // Shared mode: write as many pending frames as the render endpoint has room for.
     auto drain_to_render = [&]() {
         if (fifoCount == 0) {
             return;
@@ -561,44 +855,38 @@ void WasapiBackend::audio_thread_main() {
         if (FAILED(render->GetBuffer(toWrite, &dst)) || !dst) {
             return;
         }
-
-        float* fdst = reinterpret_cast<float*>(dst);
-        const int rc = render_channels;
-        size_t src = fifoHead;
-        for (UINT32 i = 0; i < toWrite; ++i) {
-            const float l = fifoL[src], r = fifoR[src];
-            if (++src == fifoCap) {
-                src = 0;
-            }
-            if (rc == 2) {
-                fdst[i * 2 + 0] = l;
-                fdst[i * 2 + 1] = r;
-            } else if (rc == 1) {
-                fdst[i] = 0.5f * (l + r);
-            } else {
-                // 5.1/7.1: fill L,R, zero the rest. Lazy but valid.
-                for (int c = 0; c < rc; ++c) {
-                    fdst[i * rc + c] = (c == 0) ? l : (c == 1) ? r : 0.0f;
-                }
-            }
-        }
+        write_frames(dst, toWrite);
         render->ReleaseBuffer(toWrite, 0);
-        fifoHead = src;
-        fifoCount -= toWrite;
+    };
+
+    // Exclusive event mode: every render event takes exactly one whole buffer; what
+    // isn't pending yet goes out as silence.
+    auto render_full_buffer = [&]() {
+        BYTE* dst = nullptr;
+        if (FAILED(render->GetBuffer(renderBufSize, &dst)) || !dst) {
+            return;
+        }
+        write_frames(dst, renderBufSize);
+        render->ReleaseBuffer(renderBufSize, 0);
     };
 
     HANDLE waitHandles[3] = {stop_event, capture_event, render_event};
 
     while (running.load()) {
-        // Wake on capture data (the normal case) or on render space freeing
-        // up while output is still pending.
-        const DWORD nHandles = fifoCount > 0 ? 3 : 2;
+        // Wake on capture data (the normal case) or on render space freeing up
+        // while output is still pending. Exclusive mode must answer every render
+        // event, pending output or not.
+        const DWORD nHandles = (exclusive || fifoCount > 0) ? 3 : 2;
         DWORD wait = WaitForMultipleObjects(nHandles, waitHandles, FALSE, 2000);
         if (wait == WAIT_OBJECT_0 + STOP_EVENT_INDEX) {
             break;
         }
         if (wait == WAIT_OBJECT_0 + RENDER_EVENT_INDEX) {
-            drain_to_render();
+            if (exclusive) {
+                render_full_buffer();
+            } else {
+                drain_to_render();
+            }
             continue;
         }
         if (wait != WAIT_OBJECT_0 + CAPTURE_EVENT_INDEX) {
@@ -637,7 +925,7 @@ void WasapiBackend::audio_thread_main() {
             // Down-mix capture to mono float.
             if (flags & AUDCLNT_BUFFERFLAGS_SILENT) {
                 std::fill_n(mono_in.data(), frames, 0.0f);
-            } else {
+            } else if (capture_type == SampleType::FLOAT32) {
                 const float* src = reinterpret_cast<const float*>(data);
                 const int ch = capture_channels;
                 if (ch == 1) {
@@ -652,6 +940,20 @@ void WasapiBackend::audio_thread_main() {
                         mono_in[i] = s * invCh;
                     }
                 }
+            } else {
+                // Exclusive mode, integer samples: convert while down-mixing.
+                const int ch = capture_channels;
+                const float invCh = 1.0f / static_cast<float>(ch);
+                for (UINT32 i = 0; i < frames; ++i) {
+                    float s = 0.0f;
+                    for (int c = 0; c < ch; ++c) {
+                        s += read_sample(data + (static_cast<size_t>(i) * static_cast<size_t>(ch) +
+                                                 static_cast<size_t>(c)) *
+                                                    static_cast<size_t>(capture_bytes),
+                                         capture_type);
+                    }
+                    mono_in[i] = s * invCh;
+                }
             }
             capture->ReleaseBuffer(frames);
 
@@ -662,9 +964,12 @@ void WasapiBackend::audio_thread_main() {
 
             // Queue the whole processed block, then push whatever fits. The
             // remainder stays pending and drains on the next capture or
-            // render event — nothing is discarded.
+            // render event — nothing is discarded. (Exclusive mode writes only on
+            // render events, whole buffers at a time.)
             fifo_push(out_l.data(), out_r.data(), frames);
-            drain_to_render();
+            if (!exclusive) {
+                drain_to_render();
+            }
         }
     }
 
@@ -673,7 +978,7 @@ void WasapiBackend::audio_thread_main() {
     }
 }
 
-void WasapiBackend::teardown() {
+void WasapiBackend::release_streams() {
     if (capture) {
         capture->Release();
         capture = nullptr;
@@ -690,6 +995,10 @@ void WasapiBackend::teardown() {
         render_client->Release();
         render_client = nullptr;
     }
+}
+
+void WasapiBackend::teardown() {
+    release_streams();
     if (capture_device) {
         capture_device->Release();
         capture_device = nullptr;

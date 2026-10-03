@@ -40,6 +40,7 @@ struct SettingsTargets
     std::function<void(bool)> set_tuner_show_hz; // applies and persists
     QMainWindow& window; // its menus and shortcuts fill the Shortcuts page
     std::function<void()> open_midi_mappings;
+    std::function<void()> restart_audio; // after a change that needs a new stream
 };
 
 // Settings window: one page per area, every change applied immediately (no OK/Cancel).
@@ -105,6 +106,7 @@ private:
 
     QSpinBox* reference_box = nullptr;
     QCheckBox* show_hz_box = nullptr;
+    QCheckBox* exclusive_box = nullptr; // only where the backend supports it (WASAPI)
 
     QTableWidget* shortcuts = nullptr;
 };

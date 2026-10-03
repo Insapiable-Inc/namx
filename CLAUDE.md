@@ -134,7 +134,7 @@ All effects inherit `EffectBase` (`src/dsp/EffectBase.h` — the header comment 
 | `AudioEngine` | `src/dsp/AudioEngine.h/cpp` | Owns backend + processors, runs the chain, VU peaks |
 | `IAudioBackend` | `src/dsp/IAudioBackend.h` | Backend interface: start/stop, device enumeration, port routing |
 | `JackBackend` | `src/dsp/JackBackend.h/cpp` | Linux JACK/PipeWire-JACK backend |
-| `WasapiBackend` | `src/dsp/WasapiBackend.h/cpp` | Windows WASAPI shared-mode backend (float32 mix format only) |
+| `WasapiBackend` | `src/dsp/WasapiBackend.h/cpp` | Windows WASAPI backend: shared mode (float32 mix format only) or opt-in exclusive mode (native format search + conversion, minimum period, falls back to shared; `audio/exclusive`). No Windows machine here: compile-checked with MinGW, not run |
 | `NamProcessor` | `src/dsp/NamProcessor.h/cpp` | NAM model hosting; independent L/R instances for stereo; a model runs at its training rate (48 kHz when unstated) — at another engine rate it sits behind AudioDSPTools' Lanczos `ResamplingContainer` (via `ModelResampler.h`), like the official plugin |
 | `WavReader` | `src/dsp/WavReader.h/cpp` | Strict mono WAV reader for IRs (PCM 16/24/32, float 32/64, extensible); every length checked before reading — damaged files are errors (`tests/WavReaderTest`) |
 | `IRLoader` / `IRProcessor` | `src/dsp/IRLoader.h/cpp`, `IRProcessor.h/cpp` | FIR cab sim, energy-normalized, RtSlot kernel swap; `IRProcessor` = two loaders (slots A/B) with level/pan/phase/blend + cuts — the UI exposes slot A only (advanced options commented out 2026-10-01; slot B is neither restored nor loaded from presets) |

@@ -197,6 +197,7 @@ bool AudioEngine::start(const string& client_name) {
         qCWarning(lc_audio, "[AudioEngine] No audio backend available for this platform");
         return false;
     }
+    backend->set_exclusive_mode(exclusive_wanted);
 
     // Sample rate and buffer size reach the effects via on_buffer_size_changed,
     // which the backend invokes BEFORE activating the stream — configuring
@@ -218,6 +219,7 @@ bool AudioEngine::start_with_devices(const string& input_device_id, const string
         qCWarning(lc_audio, "[AudioEngine] No audio backend available for this platform");
         return false;
     }
+    backend->set_exclusive_mode(exclusive_wanted);
 
     if (!backend->start_with_devices(client_name, this, input_device_id, output_device_id)) {
         backend.reset();
@@ -234,6 +236,14 @@ void AudioEngine::stop() {
     }
     // No callback can run now — drop everything retired while it was live.
     reclaim_retired();
+}
+
+bool AudioEngine::supports_exclusive_mode() const {
+    if (backend) {
+        return backend->supports_exclusive_mode();
+    }
+    const unique_ptr<IAudioBackend> temp = IAudioBackend::create();
+    return temp && temp->supports_exclusive_mode();
 }
 
 vector<IAudioBackend::DeviceInfo> AudioEngine::enumerate_input_devices() const {

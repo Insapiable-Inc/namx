@@ -48,6 +48,18 @@ public:
     bool start_with_devices(const string& input_device_id, const string& output_device_id,
                             const string& client_name = "NAMPlayer");
 
+    // Exclusive device access (see IAudioBackend); applies on the next start.
+    bool supports_exclusive_mode() const;
+    void set_exclusive_mode(bool on) {
+        exclusive_wanted = on;
+    }
+    bool is_exclusive_wanted() const {
+        return exclusive_wanted;
+    }
+    bool exclusive_active() const {
+        return backend && backend->exclusive_active();
+    }
+
     bool is_running() const {
         return backend && backend->is_running();
     }
@@ -258,6 +270,7 @@ public:
 
 private:
     unique_ptr<IAudioBackend> backend;
+    bool exclusive_wanted = false; // GUI thread; handed to each new backend
 
     // Signal chain — published through an RtSlot. The audio thread binds
     // one vector per callback; setChainOrder() publishes a new one and the

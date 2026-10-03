@@ -137,6 +137,10 @@ void SettingsDialog::refresh_current_page() {
         case Page::AUDIO:
             refresh_audio_devices();
             refresh_audio_info();
+            if (exclusive_box) {
+                const QSignalBlocker block(exclusive_box);
+                exclusive_box->setChecked(targets.engine.is_exclusive_wanted());
+            }
             break;
         case Page::MIDI:
             refresh_midi_devices();
@@ -189,6 +193,22 @@ QWidget* SettingsDialog::build_audio_page() {
     form->addRow("Buffer", buffer_label);
     form->addRow("Round-trip latency", latency_label);
     form->addRow("Xruns", xruns);
+    if (targets.engine.supports_exclusive_mode()) {
+        exclusive_box = new QCheckBox("Exclusive mode");
+        exclusive_box->setToolTip(
+            "Take the devices over: the lowest latency WASAPI offers, but no other app can "
+            "play or record through them while NAM Player runs. Falls back to shared mode "
+            "when a device refuses.");
+        connect(exclusive_box, &QCheckBox::toggled, this, [this](bool on) {
+            QSettings().setValue("audio/exclusive", on);
+            targets.engine.set_exclusive_mode(on);
+            if (targets.restart_audio) {
+                targets.restart_audio();
+            }
+            refresh_audio_info();
+        });
+        form->addRow("", exclusive_box);
+    }
     return make_page("The same choice as the In: / Out: items in the status bar. Sample rate "
                      "and buffer size are set by the audio server (PipeWire or JACK) and "
                      "shared by every application using it.",

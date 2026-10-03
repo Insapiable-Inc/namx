@@ -118,6 +118,19 @@ public:
     virtual void apply_connections(const PortConnections& /*c*/) {
     }
 
+    // Exclusive device access (WASAPI): the app owns the device, picks its format and
+    // the smallest period — the lowest latency, but no other app can use the device.
+    // set_exclusive_mode() applies on the next start; if the device refuses, the
+    // backend falls back to shared mode and exclusive_active() stays false.
+    virtual bool supports_exclusive_mode() const {
+        return false;
+    }
+    virtual void set_exclusive_mode(bool /*on*/) {
+    }
+    virtual bool exclusive_active() const {
+        return false;
+    }
+
     // Factory: returns the right backend for this build's target platform.
     // Defined in JackBackend.cpp (Linux) or WasapiBackend.cpp (Windows).
     static unique_ptr<IAudioBackend> create();

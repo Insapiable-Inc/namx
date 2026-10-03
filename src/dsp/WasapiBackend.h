@@ -23,11 +23,16 @@ namespace npl
 
 // WASAPI implementation of IAudioBackend (Windows-only).
 //
-// Shared-mode, event-driven. Captures from a user-selectable or default
-// input device and renders to a user-selectable or default output device.
-// Internal sample format is float32 (the WASAPI mix format on modern
-// Windows is almost always 32-bit float, so no resampling is needed in
-// the common path).
+// Event-driven. Captures from a user-selectable or default input device and
+// renders to a user-selectable or default output device.
+//
+// Shared mode (the default): Windows mixes, the stream uses the device's mix
+// format (float32 on modern Windows) and the system's ~10 ms period.
+// Exclusive mode (opt-in, set_exclusive_mode): the app owns both devices, picks
+// a format they take natively (float32, int32, 24-in-32, packed int24 or int16,
+// converted here) at the render device's rate, and the devices' minimum period —
+// the lowest latency WASAPI offers. If either device refuses, the stream falls
+// back to shared mode (exclusive_active() then reports false).
 //
 // Threading: an internal `audio_thread` runs the capture+render loop. The
 // thread blocks on the capture-ready event, pulls a block, hands it to the
@@ -68,11 +73,34 @@ public:
     // WASAPI has no port graph — defaults from base (supports_port_routing=false)
     // and empty current_connections/apply_connections apply.
 
+    bool supports_exclusive_mode() const override {
+        return true;
+    }
+    void set_exclusive_mode(bool on) override {
+        exclusive_wanted = on;
+    }
+    bool exclusive_active() const override {
+        return exclusive;
+    }
+    // Exclusive mode: capture + render buffers (an estimate; -1 in shared mode).
+    int io_latency_frames() const override;
+
+    // Sample layouts a stream can use (exclusive mode converts; shared is FLOAT32).
+    enum class SampleType
+    {
+        FLOAT32,
+        INT32, // also 24-bit samples left-justified in 32-bit containers
+        INT24, // packed, 3 bytes
+        INT16
+    };
+
 private:
 #ifdef _WIN32
     void audio_thread_main();
     bool init_capture();
     bool init_render();
+    bool init_exclusive();
+    void release_streams(); // the clients and services, keeping the devices
     void teardown();
 
     IMMDevice* open_device_by_id(const string& deviceId) const;
@@ -102,6 +130,11 @@ private:
     int buffer_size = 0;
     int capture_channels = 0;
     int render_channels = 0;
+    SampleType capture_type = SampleType::FLOAT32;
+    SampleType render_type = SampleType::FLOAT32;
+    int render_buffer_frames = 0; // exclusive: frames written per render event
+    bool exclusive_wanted = false;
+    bool exclusive = false; // the running stream is exclusive
 };
 
 } // namespace npl
