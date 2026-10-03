@@ -104,8 +104,10 @@ def main():
 
     base = baselines.get(compiler)
     if base is None:
-        print(f"\nno baseline for '{compiler}' — reporting only "
-              f"(record one with --update)")
+        print(f"\nno baseline for '{compiler}' — reporting only. To record it, add this "
+              f"entry to {os.path.basename(a.baseline)} (or run with --update on this "
+              f"toolchain):")
+        print(json.dumps({compiler: per_block}, indent=2, sort_keys=True))
         return 0
     failed = False
     print(f"\nagainst the baseline for {compiler} (tolerance {a.tolerance:.0%}):")
