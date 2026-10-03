@@ -141,6 +141,10 @@ void SettingsDialog::refresh_current_page() {
                 const QSignalBlocker block(exclusive_box);
                 exclusive_box->setChecked(targets.engine.is_exclusive_wanted());
             }
+            {
+                const QSignalBlocker block(normalize_box);
+                normalize_box->setChecked(targets.engine.get_nam().get_normalize());
+            }
             break;
         case Page::MIDI:
             refresh_midi_devices();
@@ -209,6 +213,13 @@ QWidget* SettingsDialog::build_audio_page() {
         });
         form->addRow("", exclusive_box);
     }
+    normalize_box = new QCheckBox("Normalize model loudness");
+    normalize_box->setToolTip(
+        "Bring every model that states its loudness to the same level (-18 dB, like the "
+        "official NAM plugin), so switching models or presets doesn't jump in volume. "
+        "Models without a loudness value play as they are.");
+    connect(normalize_box, &QCheckBox::toggled, this, targets.set_normalize_models);
+    form->addRow("", normalize_box);
     return make_page("The same choice as the In: / Out: items in the status bar. Sample rate "
                      "and buffer size are set by the audio server (PipeWire or JACK) and "
                      "shared by every application using it.",

@@ -4,6 +4,7 @@
 #include <filesystem>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -48,6 +49,21 @@ public:
     // The resampler's delay while resampling (see get_resampled_model_rate).
     double latency_ms() const override {
         return enabled.load() ? resample_latency_ms.load(std::memory_order_relaxed) : 0.0;
+    }
+
+    // Loudness normalization (on by default, like the official plugin's "Normalized"
+    // output mode): models that state their loudness are brought to -18 dB, so
+    // switching models doesn't jump in level. Models without it play as they are.
+    void set_normalize(bool on) {
+        normalize.store(on, std::memory_order_relaxed);
+    }
+    bool get_normalize() const {
+        return normalize.load(std::memory_order_relaxed);
+    }
+    // The gain normalization applies to the loaded model, in dB; empty when it's off
+    // or the model doesn't state its loudness (GUI thread only).
+    std::optional<double> get_normalization_db() const {
+        return get_normalize() ? model_normalization_db : std::nullopt;
     }
 
     // Human-readable reason the last loadModel() returned false (GUI thread only).
@@ -104,6 +120,8 @@ private:
         unique_ptr<Resampler> resampler_l, resampler_r;
         size_t reset_buf{0};
         double reset_rate{0.0};
+        // Linear gain to the normalization target (1 when the model's loudness is unknown).
+        float loudness_gain{1.0f};
 
         ModelPair();
         ~ModelPair();
@@ -126,11 +144,17 @@ private:
     std::mutex model_mutex; // serializes publish vs. prepareBuffer / SR change
     string model_path; // GUI thread only
     string last_error; // GUI thread only
+    std::optional<double> model_normalization_db; // GUI thread only
     atomic<size_t> max_buf{0};
     atomic<double> resampled_model_rate{0.0}; // see get_resampled_model_rate()
     atomic<double> resample_latency_ms{0.0}; // see latency_ms()
     void publish_resampling(const ModelPair* p); // updates the two atomics above
     atomic<bool> stereo_amp{false};
+    atomic<bool> normalize{true};
+    // Audio thread only: the output gain as it glides to its target, and the pair it
+    // last applied to (a new pair takes its gain at once; the swap fade-in hides it).
+    float output_gain{1.0f};
+    const ModelPair* gain_pair{nullptr};
     double model_rate{0.0}; // engine SR as last propagated (guarded by model_mutex)
     vector<float> scratch_l, scratch_r;
 
@@ -140,6 +164,7 @@ private:
     size_t fade_total{1}; // samples; audio thread only
     size_t fade_remaining{0}; // audio thread only
 
+    void apply_output_gain(const ModelPair* p, float* l, float* r, size_t n);
     static void run_model(nam::DSP* model, Resampler* resampler, float* buf, size_t n,
                           vector<float>& scratch);
 };

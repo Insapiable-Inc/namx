@@ -1931,6 +1931,7 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* ev) {
 void MainWindow::setup_audio() {
     QSettings s;
     engine->set_exclusive_mode(s.value("audio/exclusive", false).toBool());
+    engine->get_nam().set_normalize(s.value("audio/normalizeModels", true).toBool());
     const QString saved_in = s.value("audio/inputDeviceId").toString();
     const QString saved_out = s.value("audio/outputDeviceId").toString();
 
@@ -2320,6 +2321,12 @@ void MainWindow::open_settings(SettingsDialog::Page page) {
             .restart_audio =
                 [this] {
                     restart_audio_with_current_devices();
+                },
+            .set_normalize_models =
+                [this](bool on) {
+                    QSettings().setValue("audio/normalizeModels", on);
+                    engine->get_nam().set_normalize(on);
+                    update_hero_cards();
                 },
         };
         settings_dialog = new SettingsDialog(std::move(targets), this);
@@ -2978,6 +2985,11 @@ void MainWindow::save_connections() {
 void MainWindow::update_hero_cards() {
     show_file_status(lbl_nam_status, lbl_nam_meta, engine->is_model_loaded(),
                      QString::fromStdString(engine->model_path()), "No model loaded");
+    if (const std::optional<double> db = engine->get_nam().get_normalization_db()) {
+        lbl_nam_meta->setToolTip(
+            lbl_nam_meta->toolTip() +
+            QString("\nNormalized: %1%2 dB").arg(*db >= 0.0 ? "+" : "").arg(*db, 0, 'f', 1));
+    }
     show_file_status(lbl_ir_status, lbl_ir_meta, engine->is_ir_loaded(),
                      QString::fromStdString(engine->ir_path()), "No impulse response loaded");
     if (lbl_irb_status) {

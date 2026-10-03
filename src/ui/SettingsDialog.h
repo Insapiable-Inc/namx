@@ -41,6 +41,7 @@ struct SettingsTargets
     QMainWindow& window; // its menus and shortcuts fill the Shortcuts page
     std::function<void()> open_midi_mappings;
     std::function<void()> restart_audio; // after a change that needs a new stream
+    std::function<void(bool)> set_normalize_models; // applies and persists
 };
 
 // Settings window: one page per area, every change applied immediately (no OK/Cancel).
@@ -107,6 +108,7 @@ private:
     QSpinBox* reference_box = nullptr;
     QCheckBox* show_hz_box = nullptr;
     QCheckBox* exclusive_box = nullptr; // only where the backend supports it (WASAPI)
+    QCheckBox* normalize_box = nullptr;
 
     QTableWidget* shortcuts = nullptr;
 };

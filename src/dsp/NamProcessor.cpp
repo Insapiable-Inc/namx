@@ -14,6 +14,11 @@
 namespace namx
 {
 
+// The official plugin's "Normalized" output level. Our own clamp keeps a model with a
+// nonsense loudness value from jumping by more than this either way.
+static constexpr double NORMALIZE_TARGET_DB = -18.0;
+static constexpr double NORMALIZE_MAX_DB = 24.0;
+
 NamProcessor::NamProcessor() {
 }
 
@@ -90,6 +95,13 @@ bool NamProcessor::load_model(const string& path) {
     }
     last_error.clear();
 
+    std::optional<double> normalization_db;
+    if (pair->l->HasLoudness()) {
+        normalization_db = std::clamp(NORMALIZE_TARGET_DB - pair->l->GetLoudness(),
+                                      -NORMALIZE_MAX_DB, NORMALIZE_MAX_DB);
+        pair->loudness_gain = static_cast<float>(std::pow(10.0, *normalization_db / 20.0));
+    }
+
     // Prewarm outside the lock (slow), then re-check inside it: the buffer
     // size or sample rate may have moved meanwhile.
     size_t current_max_buf;
@@ -111,6 +123,7 @@ bool NamProcessor::load_model(const string& path) {
         publish_resampling(pair.get());
         slot.publish(std::move(pair));
         model_path = path;
+        model_normalization_db = normalization_db;
     }
     fade_pending.store(true, std::memory_order_release);
     return true;
@@ -121,6 +134,7 @@ void NamProcessor::unload_model() {
         std::lock_guard<std::mutex> lock(model_mutex);
         slot.publish(nullptr);
         model_path = "";
+        model_normalization_db.reset();
         publish_resampling(nullptr);
     }
     fade_pending.store(true, std::memory_order_release);
@@ -189,6 +203,40 @@ void NamProcessor::on_sample_rate_changed(double sr) {
     std::copy(scratch.data(), scratch.data() + n, buf);
 }
 
+// Loudness normalization. A newly bound pair takes its gain at once (the load fade-in
+// hides the step); toggling normalization glides over ~20 ms.
+void NamProcessor::apply_output_gain(const ModelPair* p, float* l, float* r, size_t n) {
+    const float target = normalize.load(std::memory_order_relaxed) ? p->loudness_gain : 1.0f;
+    if (p != gain_pair) {
+        gain_pair = p;
+        output_gain = target;
+    }
+    if (output_gain == target) {
+        if (target != 1.0f) {
+            for (size_t i = 0; i < n; ++i) {
+                l[i] *= target;
+            }
+            if (r) {
+                for (size_t i = 0; i < n; ++i) {
+                    r[i] *= target;
+                }
+            }
+        }
+        return;
+    }
+    const float coeff = 1.0f - std::exp(-1.0f / (0.02f * static_cast<float>(sample_rate)));
+    for (size_t i = 0; i < n; ++i) {
+        output_gain += (target - output_gain) * coeff;
+        l[i] *= output_gain;
+        if (r) {
+            r[i] *= output_gain;
+        }
+    }
+    if (std::abs(output_gain - target) < 1e-4f * target) {
+        output_gain = target;
+    }
+}
+
 bool NamProcessor::process(float* l, float* r, size_t n, bool input_is_stereo) {
     // Every exit path must count the block so retired pairs get reclaimed.
     struct BlockGuard
@@ -223,6 +271,7 @@ bool NamProcessor::process(float* l, float* r, size_t n, bool input_is_stereo) {
         if (input_is_stereo) {
             run_model(p->r.get(), p->resampler_r.get(), r, n, scratch_r);
         }
+        apply_output_gain(p, l, input_is_stereo ? r : nullptr, n);
     }
     if (!input_is_stereo) {
         std::copy(l, l + n, r);
