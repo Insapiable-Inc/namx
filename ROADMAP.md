@@ -1088,8 +1088,8 @@ it for the one it replaces, and is measured with `NAMPlayerBench`.
       Amplifier always stereo (switch removed). Gate and Compressor stay **unlinked** on
       purpose: each side is gated/compressed on its own — e.g. two guitars on L and R
       stay independent all the way through two amp instances.
-- [ ] **Drive:** a second NAM slot ("Pedal") before the amp for OD/boost captures;
-      later a WDF Tube Screamer with anti-aliasing for the built-in Drive.
+- [ ] **Drive:** a WDF Tube Screamer with anti-aliasing for the built-in Drive. (The NAM
+      "Pedal" slot moved to Phase 24, 2026-10-03: it's a second Amplifier instance.)
 - [ ] **Modulation:** BBD core for Chorus/Flanger (+ analog Delay mode); virtual-analog
       Uni-Vibe (lamp + photocells + 4 staggered stages).
 - [ ] **Wah:** Crybaby nodal-DK model; **Delay:** tape mode (ChowTape model);
@@ -1138,6 +1138,16 @@ IDs dropped, missing ones re-inserted), one named card + `sw_*`/`knob_*` member 
 effect in `MainWindow`, registry groups = effect IDs (`delay/mix`), the session keys
 (`session/delay/mix`), MIDI targets (`param:delay/mix`) and the preset's top-level
 `namPath`/`irPath`.
+
+**First user: a NAM "Pedal" before the amp** (moved here from Phase 22, user 2026-10-03).
+A pedal capture is the same `.nam` file and engine as an amp — no special slot, just a
+second Amplifier instance. What it needs beyond instancing:
+- [ ] Per-instance **loudness normalization**, defaulting from the file's `gear_type`
+      metadata: on for amps (−18 dB), **off for pedals** — a boost or Tube Screamer works
+      by its level into the amp, which normalizing to −18 dB would flatten.
+- [ ] Per-instance model file in presets (today's single `namPath`), and the library /
+      ‹ › / drag-and-drop loading into the selected instance.
+- [ ] The library can show and sort by gear type (amp / pedal / pedal + amp).
 
 **Decide with the user first (not designed yet):**
 - [ ] How adding/removing looks: a "+ Add effect" row at the end of the strip, a `+`
