@@ -34,13 +34,15 @@ Decisions:
   upstream NAM core keeps its MIT notice (MIT code may be included in GPL code). This
   also clears the way for the GPLv3 ASIO SDK on Windows. **GPL-3.0-or-later**; applied
   the same day: `gui/LICENSE`, PKGBUILD, AppStream, Windows zip, README.
-- **Execution order:** 7 → 11 → 12 → 8 (packaging) → **tag v1.0** → 13 → 14 →
-  15 (absorbs Phase 10 tempo) → 16 → 17 → 20 (C++ guidelines, decided 2026-10-01)
-  → 18 → 22 (DSP quality, added 2026-10-01 as the immediate next milestone) → 23
-  (expression pedals, added 2026-10-02) → 24 (multiple effect instances, added
-  2026-10-02) → 19
-  → 21 (ASIO, last: needs a Windows machine); Phase 9 (knob tapers) slots in
-  wherever a knob-heavy phase touches the widgets (17 at the latest).
+- **Execution order** (revised 2026-10-02 — **shipping is last**: everything else, hardening,
+  naming and packaging included, comes before the v1.0 tag). Done so far: 0–6, 9–18, 20,
+  the 2026-10-02 hardening pass of 26 and the code of 23. Remaining, in order:
+  27 (benchmarks — the baseline before any DSP change) → 22 (DSP quality, incl. the
+  low-latency Transpose) → 24 (multiple effect instances; its UI questions first) →
+  25 (TONE3000: compliance or removal) → 19 (themes & community) → 21 (Windows audio,
+  needs a Windows machine) → 26's second full code review → 7 (naming: repo rename +
+  app name) → 8 (packaging — built in 2026-09; re-checked after the rename) → **tag v1.0**. Manual checks (13–17, 23, 12) happen
+  whenever the user is at the guitar.
 
 ---
 
@@ -382,7 +384,7 @@ Phase-list fallout is annotated inline below: parts of Phase 14 are built,
 most Phase 18 layout/visual fixes landed or became obsolete, and Phase 5's
 pending palette revision shipped.
 
-## Phase 8 — Packaging & ship (runs after Phase 12 — decision 2026-09-12) → tag **v1.0** at the end
+## Phase 8 — Packaging & ship → tag **v1.0** at the end (the very last step — order revised 2026-10-02)
 
 Landed 2026-09-17 (everything but the tag). App id `cl.pichulero.NAMPlayer`; the
 desktop file is named after it (AppStream wants the launchable id to match) rather
@@ -521,7 +523,7 @@ Manual verification (2026-09-17 — needs a human at the keyboard):
 - [ ] Close the dock, quit, relaunch: still closed; `Ctrl+L` brings it back at the
       same width.
 
-## Phase 12 — TONE3000 integration (v1.0) ✅ (code complete 2026-09-17; needs the key + a live run) → then Phase 8 (packaging) → tag **v1.0**
+## Phase 12 — TONE3000 integration ✅ (code complete 2026-09-17; live run 2026-10-02: sign-in, select flow, download, favorites, sign-out/in work; future decided in Phase 25)
 
 A second tab of the Library that looks and behaves exactly like the local one but is
 the community. API verified 2026-08-22 (tone3000.com/api): OAuth 2.0 + PKCE for
