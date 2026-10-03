@@ -432,8 +432,8 @@ thread, metadata is cached, and the list follows changes on disk.
 |---------|--------|
 | **Models / IRs / Presets** | Switch section |
 | Search field (`Ctrl+F`) | Filter as you type (name, folder, metadata) |
-| **All / ★ / Recent** | Everything, favorites only, or recently used |
-| **Name / Newest** | Sort order |
+| **All / ★ / Recent** | Everything, favorites only, or recently used — each section (Models, IRs, Presets) remembers its own |
+| **Name / Newest** | Sort order, per section too |
 | Click, arrows, PgUp/PgDn, Return | Load the entry under the cursor |
 | ★ on a row | Toggle favorite |
 | **Folders…** / ↻ | Configure the scanned folders / rescan now |

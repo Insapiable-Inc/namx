@@ -473,13 +473,18 @@ LibraryPanel::LibraryPanel(LibraryIndex& new_index, QWidget* parent)
     connect(&library_index, &LibraryIndex::entries_changed, this,
             &LibraryPanel::on_entries_changed);
 
-    const int mode = std::clamp(s.value("library/mode", 0).toInt(), 0, 2);
-    mode_btn[mode]->setChecked(true);
-    for (auto* p : proxies) {
-        p->set_mode(static_cast<LibraryFilterProxy::Mode>(mode));
+    // Mode and sort per section (library/modes, library/sorts: one entry per section);
+    // the single global library/mode and library/sort of older versions seed all three.
+    const QVariantList modes = s.value("library/modes").toList();
+    const QVariantList sorts = s.value("library/sorts").toList();
+    for (int i = 0; i < 3; ++i) {
+        const int mode =
+            std::clamp((i < modes.size() ? modes[i] : s.value("library/mode", 0)).toInt(), 0, 2);
+        const int sort =
+            std::clamp((i < sorts.size() ? sorts[i] : s.value("library/sort", 0)).toInt(), 0, 1);
+        proxies[i]->set_mode(static_cast<LibraryFilterProxy::Mode>(mode));
+        proxies[i]->set_sort_key(static_cast<LibraryFilterProxy::Sort>(sort));
     }
-    sort_box->setCurrentIndex(std::clamp(s.value("library/sort", 0).toInt(), 0, 1));
-    sort_box->setEnabled(mode != 2);
 
     set_section(std::clamp(s.value("library/section", 0).toInt(), 0, 2), false);
     on_entries_changed();
@@ -497,6 +502,7 @@ void LibraryPanel::set_section(int new_section, bool focus_list) {
         disconnect(view->selectionModel(), nullptr, this, nullptr);
     }
     view->setModel(proxies[new_section]);
+    show_mode_and_sort();
     connect(view->selectionModel(), &QItemSelectionModel::currentChanged, this,
             &LibraryPanel::on_current_changed);
     syncing = false;
@@ -663,24 +669,38 @@ void LibraryPanel::apply_search(const QString& text) {
 }
 
 void LibraryPanel::set_mode(int mode) {
-    for (int k = 0; k < 3; ++k) {
-        mode_btn[k]->setChecked(k == mode);
-    }
-    for (auto* p : proxies) {
-        p->set_mode(static_cast<LibraryFilterProxy::Mode>(mode));
-    }
-    sort_box->setEnabled(mode != 2);
-    QSettings().setValue("library/mode", mode);
+    proxies[section]->set_mode(static_cast<LibraryFilterProxy::Mode>(mode));
+    show_mode_and_sort();
+    save_modes_and_sorts();
     update_counts();
     restore_current_from_loaded();
 }
 
 void LibraryPanel::set_sort_key(int key) {
-    for (auto* p : proxies) {
-        p->set_sort_key(static_cast<LibraryFilterProxy::Sort>(key));
-    }
-    QSettings().setValue("library/sort", key);
+    proxies[section]->set_sort_key(static_cast<LibraryFilterProxy::Sort>(key));
+    save_modes_and_sorts();
     restore_current_from_loaded();
+}
+
+void LibraryPanel::show_mode_and_sort() {
+    const int mode = static_cast<int>(proxies[section]->get_mode());
+    for (int k = 0; k < 3; ++k) {
+        mode_btn[k]->setChecked(k == mode);
+    }
+    const QSignalBlocker block(sort_box);
+    sort_box->setCurrentIndex(static_cast<int>(proxies[section]->get_sort_key()));
+    sort_box->setEnabled(mode != 2); // Recent always sorts by recency
+}
+
+void LibraryPanel::save_modes_and_sorts() const {
+    QVariantList modes, sorts;
+    for (const LibraryFilterProxy* p : proxies) {
+        modes << static_cast<int>(p->get_mode());
+        sorts << static_cast<int>(p->get_sort_key());
+    }
+    QSettings s;
+    s.setValue("library/modes", modes);
+    s.setValue("library/sorts", sorts);
 }
 
 } // namespace namx

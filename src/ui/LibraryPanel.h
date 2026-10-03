@@ -93,6 +93,12 @@ public:
     }
     void set_mode(Mode m);
     void set_sort_key(Sort s);
+    Mode get_mode() const {
+        return mode;
+    }
+    Sort get_sort_key() const {
+        return sort_order;
+    }
 
 protected:
     bool filterAcceptsRow(int row, const QModelIndex& parent) const override;
@@ -179,8 +185,11 @@ private:
     void update_counts();
     void restore_current_from_loaded();
     void apply_search(const QString& text);
+    // The current section's mode and sort (each section keeps its own).
     void set_mode(int mode); // 0 All, 1 Favorites, 2 Recent (the mode buttons)
     void set_sort_key(int key); // index into the sort box
+    void show_mode_and_sort(); // the buttons and box follow the current section
+    void save_modes_and_sorts() const;
     LibraryFilterProxy* proxy(LibraryEntry::Kind kind) const {
         return proxies[static_cast<int>(kind)];
     }
