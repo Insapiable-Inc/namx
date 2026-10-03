@@ -578,12 +578,13 @@ No unauthenticated endpoint exists, so everything sits behind sign-in.
 
 Manual verification (2026-09-17 — needs the real key and a human):
 
-- [ ] With the key: Continue → browser sign-in → pick a tone → back in the app on that
+- [x] (confirmed 2026-10-02) With the key: Continue → browser sign-in → pick a tone → back in the app on that
       tone's page. Does TONE3000 accept the unregistered `localhost` redirect URI
       (their docs say localhost is allowed in development)? If not, register it.
 - [ ] Trending / Latest show real cards with images; Favorites reflects ★ toggles made
       in the app and on the site; Downloads lists what was fetched.
-- [ ] Download a model: file + sidecar land in the TONE3000 folder, the local tab shows
+- [ ] (2026-10-02: an IR pack downloaded — 4 files + sidecars under TONE3000/<creator>/<tone>/,
+      all decode; the rest below still to check) Download a model: file + sidecar land in the TONE3000 folder, the local tab shows
       it with "TONE3000 · @creator", Load puts it in the rig, the Amplifier row shows
       the T3K mark and clicking it opens the tone.
 - [ ] Save a preset with that model, delete the file, load the preset → download offer
