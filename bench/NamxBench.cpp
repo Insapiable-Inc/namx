@@ -305,13 +305,13 @@ int run(int argc, char** argv) {
     }
 
     const double budget_us = static_cast<double>(frames) / rate * 1e6;
-    std::printf(
-        "namx-bench  %zu frames @ %.0f Hz  budget %.1f µs/block  %zu blocks  fast tanh %s\n"
-        "routing: stereo switches %s, %s input%s\n"
-        "compiler: %s\n",
-        frames, rate, budget_us, blocks, fast_tanh ? "on" : "off",
-        stereo_modes.empty() ? "as in the app" : stereo_modes.c_str(),
-        stereo_input ? "stereo" : "mono", stereo_amp ? ", amp per channel" : "", compiler_id());
+    std::printf("namx-bench  %zu frames @ %.0f Hz  budget %.1f µs/block  %zu blocks  fast tanh %s\n"
+                "routing: stereo switches %s, %s input%s\n"
+                "compiler: %s\n",
+                frames, rate, budget_us, blocks, fast_tanh ? "on" : "off",
+                stereo_modes.empty() ? "as in the app" : stereo_modes.c_str(),
+                stereo_input ? "stereo" : "mono", stereo_amp ? ", amp per channel" : "",
+                compiler_id());
     if (!model.empty()) {
         std::printf("model  %s\n", model.c_str());
     }
