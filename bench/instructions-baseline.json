@@ -1,0 +1,21 @@
+{
+  "gcc 16.2.1 20260810": {
+    "Amp": 1730007,
+    "Cab": 108095,
+    "Chorus": 35377,
+    "Compressor": 22242,
+    "Delay": 37404,
+    "Drive": 11182,
+    "EQ": 20544,
+    "Flanger": 43157,
+    "Gate": 11661,
+    "Limiter": 51169,
+    "Phaser": 18519,
+    "Reverb": 66782,
+    "TOTAL": 2203751,
+    "Transpose": 31553,
+    "Tremolo": 20535,
+    "Volume": 9300,
+    "Wah": 12527
+  }
+}

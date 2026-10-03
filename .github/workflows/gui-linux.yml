@@ -32,7 +32,7 @@ jobs:
             qt6-base-dev qt6-base-dev-tools \
             libjack-jackd2-dev libasound2-dev pkg-config \
             libgl1-mesa-dev \
-            desktop-file-utils appstream python3
+            desktop-file-utils appstream python3 valgrind
 
       - name: Check formatting (gui/.clang-format)
         run: |
@@ -50,7 +50,8 @@ jobs:
                 -G Ninja \
                 -DCMAKE_BUILD_TYPE=Release \
                 -DNAM_NATIVE_OPT=OFF \
-                -DNAM_BUILD_TESTS=ON
+                -DNAM_BUILD_TESTS=ON \
+                -DNAM_BUILD_BENCH=ON
 
       - name: Build
         working-directory: gui
@@ -69,6 +70,15 @@ jobs:
           ./build-release/MidiMapperTest
           ./build-release/DspGoldenTest
           ./build-release/WavReaderTest
+
+      - name: CPU regression (instructions per block, callgrind)
+        # Counts per compiler (gui/bench/instructions-baseline.json). Until this
+        # runner's compiler has an entry the step only reports; record one by running
+        # the script with --update on the same toolchain and committing the file.
+        run: |
+          python3 gui/bench/instructions.py \
+            --bench gui/build-release/NAMPlayerBench \
+            --baseline gui/bench/instructions-baseline.json
 
       - name: Packaging files + install layout
         working-directory: gui

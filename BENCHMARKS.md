@@ -249,7 +249,24 @@ PipeWire-JACK at 48 kHz / 128 frames, no input signal, `powersave` governor.
   root). Ideas if it matters: skip the amp/cab after a long silence (careful with tails).
 - Not covered: a real compositor's painting cost (offscreen renders without one).
 
+## CPU regression check (CI)
+
+`gui/bench/instructions.py` counts the CPU instructions one 128-frame block costs in each
+stage, under valgrind's callgrind: nearly deterministic for a given binary, unlike wall
+time on shared CI runners. Each stage runs for 50 and 150 blocks and the difference is
+taken, so startup (model load) cancels out. The amp uses the repo's
+`example_models/wavenet_a1_standard.nam`; the cab a small IR the script writes into its own
+temporary directory. Baselines are per compiler (`gui/bench/instructions-baseline.json`);
+CI (`gui-linux.yml`) fails when a stage grows more than 3 %, and only reports until its
+compiler (GCC 14 on Ubuntu 24.04) has an entry — record one with `--update` on that
+toolchain. Repeat runs agree within ±0.3 %; a deliberate +10 % fails. The tuner is left
+out: its pitch detection runs on a worker thread woken by wall time.
+
+Each figure includes ~9,000 instructions of the bench's own per-block work (test signal,
+timing). GCC 16.2 baseline (2026-10-02): amp 1.73 M instructions/block, cab 108 k, every
+other effect 9–67 k, whole chain 2.20 M.
+
 ## Still to measure (Phase 27)
 
 Measured round-trip latency with a loopback cable
-(needs `jack_iodelay`, package `jack-example-tools`), and the CI regression check.
+(needs `jack_iodelay`, package `jack-example-tools`).

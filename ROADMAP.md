@@ -970,7 +970,7 @@ machine, in `gui/BENCHMARKS.md`.
 - [x] **Whole app** (done 2026-10-02, BENCHMARKS.md → Whole app; 22.6 % idle CPU with a rig loaded under `powersave` — the governor, not the code)**:** cold start, peak RSS, model-load time (no GUI freeze — review
       item 21), idle CPU with the window open (the LED meters repaint at up to
       60 fps), CPU with every effect on.
-- [ ] **No regressions:** a CI job runs the bench and compares against a stored
+- [x] **No regressions** (done 2026-10-02: `gui/bench/instructions.py` + gui-linux.yml step; per-compiler baselines — CI's GCC 14 entry still to record)**:** a CI job runs the bench and compares against a stored
       baseline — instruction counts (e.g. `valgrind --tool=callgrind` on a short render)
       rather than wall time, since CI machines are noisy; the budget in BUILD.md
       becomes a checked number.
