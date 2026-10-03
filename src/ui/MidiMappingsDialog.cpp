@@ -351,7 +351,11 @@ void MidiMappingsDialog::add_range_cell(int row, int column, double share,
     const double lo = k->minimum(), hi = k->maximum();
     const double span = hi - lo;
     const double snap = k->get_snap();
-    const int decimals = snap >= 1.0 ? 0 : snap > 0.0 ? 1 : span >= 100.0 ? 0 : span >= 10.0 ? 1 : 2;
+    const int decimals = snap >= 1.0     ? 0
+                         : snap > 0.0    ? 1
+                         : span >= 100.0 ? 0
+                         : span >= 10.0  ? 1
+                                         : 2;
     sp->setDecimals(decimals);
     sp->setRange(lo, hi);
     sp->setSingleStep(snap > 0.0 ? snap : std::pow(10.0, -decimals));
