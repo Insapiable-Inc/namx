@@ -71,7 +71,7 @@ Write-Host "==> Qt: $QtDir"
 # ---------------------------------------------------------------------------
 # Submodules
 # ---------------------------------------------------------------------------
-Write-Host "==> Initialising git submodules (eigen, AudioDSPTools, signalsmith-linear)..."
+Write-Host "==> Initialising git submodules (eigen, AudioDSPTools, signalsmith-linear, signalsmith-stretch)..."
 Push-Location $RepoRoot
 try {
     & git submodule update --init --recursive

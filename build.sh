@@ -7,7 +7,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 BUILD_TYPE="${1:-Release}"
 BUILD_DIR="${SCRIPT_DIR}/build-${BUILD_TYPE,,}"
 
-echo "==> Initialising git submodules (eigen, AudioDSPTools, signalsmith-linear)…"
+echo "==> Initialising git submodules (eigen, AudioDSPTools, signalsmith-linear, signalsmith-stretch)…"
 cd "${SCRIPT_DIR}/.."
 git submodule update --init --recursive
 
