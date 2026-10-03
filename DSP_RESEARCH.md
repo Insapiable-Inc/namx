@@ -21,7 +21,7 @@ all be used. That reopens Rubber Band, which Phase 17 avoided while the app was 
 | Effect | Today | Gap | First pick | RT |
 |---|---|---|---|---|
 | **Transpose** (pitch) | Filter-bank shifter (was two-tap WSOLA) | ~20 ms in the bass, ~4 ms above; faint beat on long held chords | Done 2026-10-03 (see §1); Signalsmith for Shimmer/Crystals | ✅ |
-| **Reverb** | Freeverb (8 combs + 4 all-passes) | Metallic, dated, sparse early echoes | Dattorro plate + FDN hall; convolution reverb with IRs | ✅ |
+| **Reverb** | Plate (Dattorro), Hall and Room (FDN) — was Freeverb | Decay can't go very short on Plate (~0.6 s) | Done 2026-10-03 (see §2) | ✅ |
 | **Cabinet / convolution** | Partitioned FFT convolution (was brute-force FIR) | Uniform partitions: fine for 1 s cab IRs; multi-second reverb IRs will want non-uniform ones | Done 2026-10-03 (see §3) | ✅ |
 | **Drive** | Digital TS approximation | Approximate circuit, aliasing | A NAM "pedal" capture slot before the amp; WDF Tube Screamer | ✅ |
 | **Chorus / Flanger** | Modulated delay lines | Clean and digital | Bucket-brigade (BBD) model | ✅ |
@@ -91,7 +91,14 @@ doesn't matter.
 
 ## 2. Reverb
 
-**Today:** Freeverb (8 parallel combs + 4 series all-passes). It's cheap and well known,
+**Done (2026-10-03):** Plate (Dattorro, the paper's lengths and taps), Hall (8-line FDN,
+44–109 ms, Hadamard feedback, per-line Jot shelves, 0.6 ms modulation, sparse early
+reflections) and Room (16 lines, 11–48 ms, 0.5 ms modulation — 8 short lines rang
+metallic behind a long pre-delay: tail colouration 8.8 → 6.8 dB against ~5.6 dB for an
+ideal diffuse tail; Plate 6.2, Hall 6.4). Level-matched, Decay in seconds (BENCHMARKS).
+Chosen by ear; no IR reverb inside Reverb (user: a separate effect if ever).
+
+**Before:** Freeverb (8 parallel combs + 4 series all-passes). It's cheap and well known,
 but its tail is metallic and grainy, and its early echoes are sparse.
 
 | Candidate | What it is | Notes | RT |

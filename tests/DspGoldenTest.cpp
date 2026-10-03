@@ -313,6 +313,20 @@ static unique_ptr<ReverbProcessor> make_reverb() {
     return fx;
 }
 
+static unique_ptr<ReverbProcessor> make_reverb_hall() {
+    auto fx = make_unique<ReverbProcessor>();
+    fx->set_type(static_cast<int>(ReverbProcessor::Type::HALL));
+    fx->set_stereo_mode(true);
+    return fx;
+}
+
+static unique_ptr<ReverbProcessor> make_reverb_room() {
+    auto fx = make_unique<ReverbProcessor>();
+    fx->set_type(static_cast<int>(ReverbProcessor::Type::ROOM));
+    fx->set_pre_delay(120.0f);
+    return fx;
+}
+
 static unique_ptr<ReverbProcessor> make_reverb_stereo_shimmer() {
     auto fx = make_unique<ReverbProcessor>();
     fx->set_stereo_mode(true);
@@ -463,6 +477,8 @@ void DspGoldenTest::initTestCase() {
     both("delay-stereo-mod-sat", &make_delay_stereo_mod_sat);
     both("delay-crystals", &make_delay_crystals);
     both("reverb", &make_reverb);
+    both("reverb-hall", &make_reverb_hall);
+    both("reverb-room", &make_reverb_room);
     both("reverb-stereo-shimmer", &make_reverb_stereo_shimmer);
     both("transpose-down", &make_transpose_down);
     both("transpose-up", &make_transpose_up);

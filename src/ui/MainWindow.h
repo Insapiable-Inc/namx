@@ -363,6 +363,7 @@ private:
     KnobWidget* knob_rev_damping = nullptr;
     KnobWidget* knob_rev_width = nullptr;
     KnobWidget* knob_rev_mix = nullptr;
+    KnobWidget* knob_rev_pre = nullptr;
 
     ToggleSwitch* sw_transpose_enable = nullptr;
     ToggleSwitch* sw_transpose_reverse = nullptr;

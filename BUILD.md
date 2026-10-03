@@ -471,7 +471,7 @@ switch is on, which runs the model once per channel at twice the CPU.
 | Flanger / Phaser / Chorus | Mix, Rate (Sync), Depth, Feedback (not Chorus); Flanger **Range**; Phaser **Vibe** switch (off = classic) | — |
 | Equalizer | Bass, Middle, High-Mid, Treble (±12 dB) | the four band frequencies, Low Cut, High Cut |
 | Delay | Mix, Time (Sync), Feedback (ping-pong in stereo) | R Time, Low/High Cut, Saturation |
-| Reverb | Mix, Decay, Damping, Width | Pre-delay, Low/High Cut |
+| Reverb | Type (Plate / Hall / Room), Mix, Decay (0.2–10 s), Damping, Width | Pre-delay (with its own **Sync**: a note value at the tempo, max 250 ms), Low/High Cut |
 | Cabinet | IR (library, ‹ ›; click the name to browse) | — |
 | Volume Pedal | Volume, Mid (level at half travel), **Reverse** (pedal heel ↔ toe) | — |
 | Output | Gain, **Limit** (look-ahead limiter at −0.3 dBFS) | — |

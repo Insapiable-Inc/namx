@@ -1,20 +1,33 @@
 #pragma once
 
-#include <array>
+#include <algorithm>
 #include <atomic>
+#include <cmath>
 
 #include "Common.h"
 #include "DelayLine.h"
 #include "EffectBase.h"
 #include "PitchShifter.h"
+#include "ReverbAlgorithms.h"
 
 namespace namx
 {
 
-// Freeverb-based stereo reverb (8 comb + 4 all-pass filters).
+// Stereo reverb with three tanks (ReverbAlgorithms.h): Plate (Dattorro), Hall and Room
+// (feedback delay networks). Around them: pre-delay, Low/High Cut on the wet signal,
+// Width, Mix, and the shimmer feedback (octave-up wet back into the input).
+// Phase 22, 2026-10-03: replaced Freeverb (metallic, and its Decay squeezed 0.2–0.8 s
+// into three quarters of the knob, then 9 s in the last).
 class ReverbProcessor : public EffectBase
 {
 public:
+    enum class Type
+    {
+        PLATE,
+        HALL,
+        ROOM
+    };
+
     ReverbProcessor();
 
     bool supports_stereo_out() const override {
@@ -22,6 +35,16 @@ public:
     }
     void reset() override;
 
+    // Decay knob position (0–100 %; the preset key keeps its old name, roomSize) → RT60
+    // in seconds, 0.2 s … 10 s on a log scale. Measured within ~10 % in the mids for
+    // every type and damping (BENCHMARKS.md).
+    static float decay_seconds(float pct) {
+        return 0.2f * std::pow(50.0f, std::clamp(pct, 0.0f, 100.0f) / 100.0f);
+    }
+
+    void set_type(int t) {
+        type.store(std::clamp(t, 0, 2));
+    }
     void set_room_size_pct(float pct) {
         room_size_pct.store(pct);
     }
@@ -68,6 +91,7 @@ protected:
     void process_block_stereo_out(float* l, float* r, size_t nframes) override;
 
 private:
+    atomic<int> type{static_cast<int>(Type::PLATE)};
     atomic<float> room_size_pct{50.0f};
     atomic<float> damping_pct{50.0f};
     atomic<float> width_pct{100.0f};
@@ -76,71 +100,27 @@ private:
     atomic<float> low_cut_hz{20.0f};
     atomic<float> high_cut_hz{20000.0f};
     atomic<float> shimmer_pct{0.0f};
-    PitchShifter shift[2]; // per bank, +12 st
-    float shim_fb[2]{}; // shifted wet fed into the next input sample
+    PitchShifter shift; // +12 st, for the shimmer
+    float shim_fb = 0.0f; // shifted wet fed into the next input sample
 
     static constexpr float MAX_PRE_DELAY_MS = 250.0f;
-    // Pre-delay line per input bank ([0] mono/L/sum, [1] R) + wet filters per output.
+    // Pre-delay line per input channel + wet filters per output channel.
     DelayLine pre[2];
     float hp_x[2]{}, hp_y[2]{}, lp[2]{};
 
-    float pre_delay(int bank, float x, size_t delay_samples);
+    reverb_tanks::Plate plate;
+    reverb_tanks::Fdn hall, room;
+    int active_type = 0; // audio thread: the tank that ran last
+    // Level match between the tanks (and to the old Freeverb) at equal decay: wet energy
+    // of a unit impulse at 0.83 s.
+    static constexpr float PLATE_TRIM = 0.616f, HALL_TRIM = 2.21f, ROOM_TRIM = 1.148f;
+
+    float pre_delay(int ch, float x, size_t delay_samples);
     float wet_filter(int ch, float x, float hp_a, float lp_k);
-
-    struct CombFilter
-    {
-        DelayLine line;
-        float filter_store{0.0f};
-
-        void resize(size_t n) {
-            line.resize(n);
-        }
-        void reset() {
-            line.clear();
-            filter_store = 0.0f;
-        }
-
-        float process(float in, float feedback, float damp) {
-            const float out = line.oldest();
-            filter_store = out * (1.0f - damp) + filter_store * damp;
-            line.push(in + filter_store * feedback);
-            return out;
-        }
-    };
-
-    struct AllPassFilter
-    {
-        DelayLine line;
-        static constexpr float FEEDBACK = 0.5f;
-
-        void resize(size_t n) {
-            line.resize(n);
-        }
-        void reset() {
-            line.clear();
-        }
-
-        float process(float in) {
-            const float buf_out = line.oldest();
-            line.push(in + buf_out * FEEDBACK);
-            return -in + buf_out;
-        }
-    };
-
-    static constexpr size_t NUM_COMBS = 8;
-    static constexpr size_t NUM_ALL_PASSES = 4;
-
-    array<CombFilter, NUM_COMBS> comb_l, comb_r;
-    array<AllPassFilter, NUM_ALL_PASSES> ap_l, ap_r;
-
-    static constexpr int COMB_LENGTHS[NUM_COMBS] = {1116, 1188, 1277, 1356, 1422, 1491, 1557, 1617};
-    static constexpr int AP_LENGTHS[NUM_ALL_PASSES] = {556, 441, 341, 225};
-    static constexpr int STEREO_OFFSET = 23;
-
-    void allocate();
-    void process_mono_bank(float* buf, size_t nframes, int bank,
-                           array<CombFilter, NUM_COMBS>& combs,
-                           array<AllPassFilter, NUM_ALL_PASSES>& aps);
+    void configure_tank(int t);
+    void tank(int t, float in_l, float in_r, float& out_l, float& out_r);
+    // Stereo in (L == R for mono), stereo wet out; mono out = the mean of the two.
+    void run(float* l, float* r, size_t nframes, bool stereo_in, bool stereo_out);
 };
 
 } // namespace namx

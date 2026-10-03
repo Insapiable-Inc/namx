@@ -118,7 +118,7 @@ modulation and saturation on, Transpose at −2 st.
 | Chorus | 0.9 µs · 0.03 % | 1.8 µs · 0.07 % | 1.7 µs · 0.06 % |
 | Tremolo | 0.4 µs · 0.01 % | 0.7 µs · 0.03 % | 0.4 µs · 0.01 % |
 | Delay | 1.2 µs · 0.05 % | 2.1 µs · 0.08 % | 2.0 µs · 0.07 % |
-| Reverb | 0.9 µs · 0.04 % | 2.0 µs · 0.08 % | 1.9 µs · 0.07 % |
+| Reverb | 7.8 µs · 0.29 % (Plate) | — | 8.2 µs · 0.31 % (Plate) |
 | Cab | 5.5 µs · 0.21 % | — | 10.8 µs · 0.40 % |
 | Limiter | 2.4 µs · 0.09 % | — | 2.4 µs · 0.09 % |
 
@@ -191,15 +191,19 @@ the note started.
 
 ### Reverb decay
 
-Impulse response at mix 100 %, damping 50 %, width 100 %; RT60 from Schroeder backward integration (T20: the −5 → −25 dB slope, extrapolated to 60 dB).
+Impulse response at mix 100 %, damping 50 %, width 100 %, band-passed to 500 Hz – 2 kHz (where decay is quoted and heard); RT60 from Schroeder backward integration (T20, extrapolated to 60 dB), against the time the Decay knob shows.
 
-| Decay | RT60 |
-|---|---|
-| 0 % | 0.19 s |
-| 25 % | 0.25 s |
-| 50 % | 0.39 s |
-| 75 % | 0.83 s |
-| 100 % | 9.14 s |
+| Decay | Shown | Plate | Hall | Room |
+|---|---|---|---|---|
+| 0 % | 0.20 s | 0.58 s | 0.32 s | 0.21 s |
+| 25 % | 0.53 s | 0.67 s | 0.55 s | 0.50 s |
+| 50 % | 1.41 s | 1.55 s | 1.37 s | 1.39 s |
+| 75 % | 3.76 s | 3.83 s | 3.64 s | 3.56 s |
+| 100 % | 10.00 s | 9.71 s | 9.66 s | 8.98 s |
+
+Re-measured 2026-10-03 for the Phase 22 reverbs (the CPU row above too: the Plate,
+the default; Hall ~0.4 % and Room ~0.8 % of a core per channel in the scratch harness).
+Freeverb measured 0.19 / 0.25 / 0.39 / 0.83 / 9.14 s at these knob positions.
 
 ### Delay modulation
 
@@ -230,8 +234,9 @@ Ceiling −0.3 dBFS. Worst overshoot over four brutal inputs (sine bursts at +6 
   pitch: ~20 ms at 220 Hz for −2 st, shorter going up, longer for big drops (the bass
   bands are the slow ones). Was: strong artifacts on upward shifts and 14–62 ms latency
   depending on where the note started (WSOLA).
-- **Reverb Decay is badly spread over the knob:** 0–75 % covers only 0.19–0.83 s, the
-  last quarter jumps to 9 s. A taper (or a Decay knob in seconds) would fix it.
+- **Reverb Decay** now shows seconds and means them: within ~10 % in the mids from
+  0.5 s up for all three types (Plate can't go below ~0.6 s, Hall ~0.3 s). Was:
+  Freeverb's 0–75 % covered only 0.19–0.83 s and the last quarter jumped to 9 s.
 - **Delay modulation** is clean (off-note energy −64 dB, the linear interpolation's own
   images); without modulation, −124 dB.
 - **EQ** matches the Audio EQ Cookbook to 0.03 dB; the **limiter** never exceeds its

@@ -1059,8 +1059,12 @@ it for the one it replaces, and is measured with `NAMPlayerBench`.
       uniformly partitioned FFT convolution (`signalsmith-linear` submodule, MIT); zero
       added latency, IRs up to 1 s (faded beyond, instead of cut at 4,096 taps), 3× less
       CPU on a typical cab IR. IR reverbs will add non-uniform partitions on top.
-- [ ] **Reverb:** Freeverb → Dattorro plate + FDN hall/room. Fix the Decay
-      spread on the way (BENCHMARKS.md: 0–75 % = 0.19–0.83 s, 100 % = 9 s).
+- [x] **Reverb:** Freeverb → Dattorro plate + FDN hall/room (done 2026-10-03, chosen by
+      ear: "all 3 of them"). Type knob (Plate / Hall / Room — a snapped, labelled knob
+      until the selector widget above exists), Decay shown in seconds (0.2–10 s, log,
+      within ~10 % from 0.5 s up; Plate bottoms out at ~0.6 s, Hall ~0.3 s), Pre-delay
+      sync (its own switch in the detail row), Room on 16 lines (8 rang metallic behind
+      a long pre-delay). Was: Decay spread 0–75 % = 0.19–0.83 s, 100 % = 9 s.
       Decided 2026-10-03 (user): types **Plate, Hall, Room** (no Spring for now); Decay in
       seconds, the same scale for every type; **old presets are mapped** onto the new
       controls (option A — no "Classic" Freeverb kept); new algorithms uncommitted until

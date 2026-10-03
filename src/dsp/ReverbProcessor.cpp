@@ -8,60 +8,36 @@
 namespace namx
 {
 
-constexpr int ReverbProcessor::COMB_LENGTHS[NUM_COMBS];
-constexpr int ReverbProcessor::AP_LENGTHS[NUM_ALL_PASSES];
-
 ReverbProcessor::ReverbProcessor() {
-    allocate();
-}
-
-void ReverbProcessor::allocate() {
-    double scale = sample_rate / 44100.0;
-    for (auto& p : pre) {
-        p.resize(static_cast<size_t>(sample_rate * MAX_PRE_DELAY_MS / 1000.0) + 2);
-    }
-    for (size_t i = 0; i < NUM_COMBS; ++i) {
-        comb_l[i].resize(static_cast<size_t>(COMB_LENGTHS[i] * scale));
-        comb_r[i].resize(static_cast<size_t>((COMB_LENGTHS[i] + STEREO_OFFSET) * scale));
-    }
-    for (size_t i = 0; i < NUM_ALL_PASSES; ++i) {
-        ap_l[i].resize(static_cast<size_t>(AP_LENGTHS[i] * scale));
-        ap_r[i].resize(static_cast<size_t>((AP_LENGTHS[i] + STEREO_OFFSET) * scale));
-    }
+    on_sample_rate_changed(sample_rate);
 }
 
 void ReverbProcessor::on_sample_rate_changed(double sr) {
-    for (auto& s : shift) {
-        s.prepare(sr, 80.0f);
-        s.set_semitones(12.0f);
+    shift.prepare(sr, 80.0f);
+    shift.set_semitones(12.0f);
+    for (auto& p : pre) {
+        p.resize(static_cast<size_t>(sr * MAX_PRE_DELAY_MS / 1000.0) + 2);
     }
-    allocate();
+    plate.prepare(sr);
+    hall.prepare(sr, reverb_tanks::Fdn::HALL);
+    room.prepare(sr, reverb_tanks::Fdn::ROOM);
     reset();
 }
 
 void ReverbProcessor::reset() {
-    for (auto& c : comb_l) {
-        c.reset();
+    plate.reset();
+    hall.reset();
+    room.reset();
+    for (int ch = 0; ch < 2; ++ch) {
+        pre[ch].clear();
+        hp_x[ch] = hp_y[ch] = lp[ch] = 0.0f;
     }
-    for (auto& c : comb_r) {
-        c.reset();
-    }
-    for (auto& a : ap_l) {
-        a.reset();
-    }
-    for (auto& a : ap_r) {
-        a.reset();
-    }
-    for (int b = 0; b < 2; ++b) {
-        pre[b].clear();
-        hp_x[b] = hp_y[b] = lp[b] = 0.0f;
-        shift[b].reset();
-        shim_fb[b] = 0.0f;
-    }
+    shift.reset();
+    shim_fb = 0.0f;
 }
 
-float ReverbProcessor::pre_delay(int bank, float x, size_t d) {
-    DelayLine& line = pre[bank];
+float ReverbProcessor::pre_delay(int ch, float x, size_t d) {
+    DelayLine& line = pre[ch];
     if (d == 0 || line.empty()) {
         return x;
     }
@@ -94,86 +70,88 @@ static Cuts cuts_for(double sr, float low_hz, float high_hz, float pre_ms, float
     return c;
 }
 
-void ReverbProcessor::process_block_stereo_out(float* l, float* r, size_t nframes) {
-    const float room_size = room_size_pct.load() / 100.0f;
+void ReverbProcessor::configure_tank(int t) {
+    const float rt60 = decay_seconds(room_size_pct.load());
     const float damping = damping_pct.load() / 100.0f;
-    const float width = width_pct.load() / 100.0f;
-    const float mix = mix_pct.load() / 100.0f;
-    const float feedback = 0.28f + room_size * 0.7f;
-    const float damp = damping * 0.4f;
-    const Cuts cut = cuts_for(sample_rate, low_cut_hz.load(), high_cut_hz.load(),
-                              pre_delay_ms.load(), MAX_PRE_DELAY_MS);
-
-    // Shimmer loop gain stays well under 1 — the comb feedback adds its own.
-    const float shim = std::clamp(shimmer_pct.load(), 0.0f, 100.0f) / 100.0f * 0.45f;
-
-    for (size_t i = 0; i < nframes; ++i) {
-        float in_mono = pre_delay(0, (l[i] + r[i]) * 0.015f, cut.pre) + shim * shim_fb[0];
-
-        float out_l = 0.0f, out_r = 0.0f;
-        for (size_t c = 0; c < NUM_COMBS; ++c) {
-            out_l += comb_l[c].process(in_mono, feedback, damp);
-            out_r += comb_r[c].process(in_mono, feedback, damp);
-        }
-        for (size_t a = 0; a < NUM_ALL_PASSES; ++a) {
-            out_l = ap_l[a].process(out_l);
-            out_r = ap_r[a].process(out_r);
-        }
-
-        out_l = wet_filter(0, out_l, cut.hp_a, cut.lp_k);
-        out_r = wet_filter(1, out_r, cut.hp_a, cut.lp_k);
-        if (shim > 0.0f) {
-            shim_fb[0] = shift[0].process(0.5f * (out_l + out_r) * 0.015f);
-        }
-
-        float wet1 = width * 0.5f + 0.5f;
-        float wet2 = (1.0f - width) * 0.5f;
-        l[i] = l[i] * (1.0f - mix) + (out_l * wet1 + out_r * wet2) * mix;
-        r[i] = r[i] * (1.0f - mix) + (out_r * wet1 + out_l * wet2) * mix;
+    if (t != active_type) {
+        active_type = t; // a fresh tank: no stale tail from the last time it ran
+        plate.reset();
+        hall.reset();
+        room.reset();
+    }
+    switch (static_cast<Type>(t)) {
+        case Type::PLATE:
+            plate.set_decay(rt60, damping);
+            break;
+        case Type::HALL:
+            hall.set_decay(rt60, damping);
+            break;
+        case Type::ROOM:
+            room.set_decay(rt60, damping);
+            break;
     }
 }
 
-void ReverbProcessor::process_mono_bank(float* buf, size_t nframes, int bank,
-                                        array<CombFilter, NUM_COMBS>& combs,
-                                        array<AllPassFilter, NUM_ALL_PASSES>& aps) {
-    const float room_size = room_size_pct.load() / 100.0f;
-    const float damping = damping_pct.load() / 100.0f;
+void ReverbProcessor::tank(int t, float in_l, float in_r, float& out_l, float& out_r) {
+    float trim = 1.0f;
+    switch (static_cast<Type>(t)) {
+        case Type::PLATE:
+            plate.process(in_l, in_r, out_l, out_r);
+            trim = PLATE_TRIM;
+            break;
+        case Type::HALL:
+            hall.process(in_l, in_r, out_l, out_r);
+            trim = HALL_TRIM;
+            break;
+        case Type::ROOM:
+            room.process(in_l, in_r, out_l, out_r);
+            trim = ROOM_TRIM;
+            break;
+    }
+    out_l *= trim;
+    out_r *= trim;
+}
+
+void ReverbProcessor::run(float* l, float* r, size_t nframes, bool stereo_in, bool stereo_out) {
+    const int t = type.load(std::memory_order_relaxed);
+    configure_tank(t);
+    const float width = width_pct.load() / 100.0f;
     const float mix = mix_pct.load() / 100.0f;
-    const float feedback = 0.28f + room_size * 0.7f;
-    const float damp = damping * 0.4f;
     const Cuts cut = cuts_for(sample_rate, low_cut_hz.load(), high_cut_hz.load(),
                               pre_delay_ms.load(), MAX_PRE_DELAY_MS);
-
     const float shim = std::clamp(shimmer_pct.load(), 0.0f, 100.0f) / 100.0f * 0.45f;
-
+    const float wet1 = width * 0.5f + 0.5f, wet2 = (1.0f - width) * 0.5f;
     for (size_t i = 0; i < nframes; ++i) {
-        // 0.03 = the stereo-out path's (L + R) × 0.015 for one channel: same wet level
-        // whether or not a stereo effect feeds the reverb (review item 23).
-        float in_sig = pre_delay(bank, buf[i] * 0.03f, cut.pre) + shim * shim_fb[bank];
-        float out = 0.0f;
-        for (CombFilter& comb : combs) {
-            out += comb.process(in_sig, feedback, damp);
-        }
-        for (AllPassFilter& ap : aps) {
-            out = ap.process(out);
-        }
-        out = wet_filter(bank, out, cut.hp_a, cut.lp_k);
+        const float dry_l = l[i];
+        const float dry_r = stereo_in ? r[i] : l[i];
+        const float in_l = pre_delay(0, dry_l, cut.pre) + shim * shim_fb;
+        const float in_r = stereo_in ? pre_delay(1, dry_r, cut.pre) + shim * shim_fb : in_l;
+        float wl = 0.0f, wr = 0.0f;
+        tank(t, in_l, in_r, wl, wr);
+        wl = wet_filter(0, wl, cut.hp_a, cut.lp_k);
+        wr = wet_filter(1, wr, cut.hp_a, cut.lp_k);
         if (shim > 0.0f) {
-            shim_fb[bank] = shift[bank].process(out * 0.015f);
+            shim_fb = shift.process(0.5f * (wl + wr));
         }
-        buf[i] = buf[i] * (1.0f - mix) + out * mix;
+        if (stereo_out) {
+            l[i] = dry_l * (1.0f - mix) + (wl * wet1 + wr * wet2) * mix;
+            r[i] = dry_r * (1.0f - mix) + (wr * wet1 + wl * wet2) * mix;
+        } else {
+            l[i] = dry_l * (1.0f - mix) + 0.5f * (wl + wr) * mix;
+        }
     }
 }
 
 void ReverbProcessor::process_block_mono(float* buf, size_t nframes) {
-    process_mono_bank(buf, nframes, 0, comb_l, ap_l);
+    run(buf, buf, nframes, false, false);
 }
 
 void ReverbProcessor::process_block_dual(float* l, float* r, size_t nframes) {
-    // Stereo input: independent mono reverb per channel, each on its own
-    // comb/all-pass bank so the tails don't share state.
-    process_mono_bank(l, nframes, 0, comb_l, ap_l);
-    process_mono_bank(r, nframes, 1, comb_r, ap_r);
+    run(l, r, nframes, true, true);
+}
+
+void ReverbProcessor::process_block_stereo_out(float* l, float* r, size_t nframes) {
+    run(l, r, nframes, false, true);
 }
 
 } // namespace namx

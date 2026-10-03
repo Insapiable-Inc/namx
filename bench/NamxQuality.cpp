@@ -264,45 +264,80 @@ void transpose() {
 
 // ---- Reverb ----------------------------------------------------------------------------
 
-void reverb() {
-    std::printf("\n## Reverb decay\n\nImpulse response at mix 100 %%, damping 50 %%, width 100 %%; "
-                "RT60 from Schroeder backward integration (T20: the −5 → −25 dB slope, "
-                "extrapolated to 60 dB).\n\n| Decay | RT60 |\n|---|---|\n");
-    for (const float decay : {0.0f, 25.0f, 50.0f, 75.0f, 100.0f}) {
-        ReverbProcessor rv;
-        rv.set_sample_rate(SR);
-        rv.set_enabled(true);
-        rv.set_stereo_mode(true);
-        rv.set_mix_pct(100.0f);
-        rv.set_room_size_pct(decay);
-        const vector<float> y = render(
-            size_t(20 * SR),
-            [](size_t t) {
-                return t == 0 ? 1.0 : 0.0;
-            },
-            [&](float* l, float* r, size_t n) {
-                rv.process(l, r, n, false);
-            });
-        vector<double> edc(y.size());
-        double acc = 0.0;
-        for (size_t i = y.size(); i-- > 0;) {
-            acc += static_cast<double>(y[i]) * y[i];
-            edc[i] = acc;
-        }
-        auto time_at = [&](double drop_db) {
-            for (size_t i = 0; i < edc.size(); ++i) {
-                if (db(edc[i] / edc[0]) <= drop_db) {
-                    return static_cast<double>(i) / SR;
-                }
+// Second-order Butterworth high- or low-pass, in place (for the reverb's mid-band RT60).
+void butterworth(vector<float>& v, double hz, bool high) {
+    const double w = 2.0 * M_PI * hz / SR, alpha = std::sin(w) / std::sqrt(2.0), c = std::cos(w);
+    const double b0 = high ? (1.0 + c) / 2.0 : (1.0 - c) / 2.0;
+    const double b1 = high ? -(1.0 + c) : 1.0 - c, b2 = b0;
+    const double a0 = 1.0 + alpha, a1 = -2.0 * c, a2 = 1.0 - alpha;
+    double x1 = 0.0, x2 = 0.0, y1 = 0.0, y2 = 0.0;
+    for (float& s : v) {
+        const double y = (b0 * s + b1 * x1 + b2 * x2 - a1 * y1 - a2 * y2) / a0;
+        x2 = x1;
+        x1 = s;
+        y2 = y1;
+        y1 = y;
+        s = static_cast<float>(y);
+    }
+}
+
+// T20 (the −5 → −25 dB slope of the Schroeder curve, extrapolated to 60 dB); < 0 if the
+// response never falls 25 dB.
+double rt60_t20(const vector<float>& y) {
+    vector<double> edc(y.size());
+    double acc = 0.0;
+    for (size_t i = y.size(); i-- > 0;) {
+        acc += static_cast<double>(y[i]) * y[i];
+        edc[i] = acc;
+    }
+    auto time_at = [&](double drop_db) {
+        for (size_t i = 0; i < edc.size(); ++i) {
+            if (db(edc[i] / edc[0]) <= drop_db) {
+                return static_cast<double>(i) / SR;
             }
-            return -1.0;
-        };
-        const double t5 = time_at(-5.0), t25 = time_at(-25.0);
-        if (t25 < 0.0) {
-            std::printf("| %.0f %% | > 20 s |\n", decay);
-        } else {
-            std::printf("| %.0f %% | %.2f s |\n", decay, 3.0 * (t25 - t5));
         }
+        return -1.0;
+    };
+    const double t5 = time_at(-5.0), t25 = time_at(-25.0);
+    return t25 < 0.0 ? -1.0 : 3.0 * (t25 - t5);
+}
+
+void reverb() {
+    std::printf("\n## Reverb decay\n\nImpulse response at mix 100 %%, damping 50 %%, width 100 "
+                "%%, band-passed to 500 Hz – 2 kHz (where decay is quoted and heard); RT60 from "
+                "Schroeder backward integration (T20, extrapolated to 60 dB), against the time "
+                "the Decay knob shows.\n\n| Decay | Shown | Plate | Hall | Room |\n"
+                "|---|---|---|---|---|\n");
+    for (const float decay : {0.0f, 25.0f, 50.0f, 75.0f, 100.0f}) {
+        std::printf("| %.0f %% | %.2f s |", decay, ReverbProcessor::decay_seconds(decay));
+        for (int type = 0; type < 3; ++type) {
+            ReverbProcessor rv;
+            rv.set_sample_rate(SR);
+            rv.set_enabled(true);
+            rv.set_stereo_mode(true);
+            rv.set_mix_pct(100.0f);
+            rv.set_type(type);
+            rv.set_room_size_pct(decay);
+            vector<float> y = render(
+                size_t(20 * SR),
+                [](size_t t) {
+                    return t == 0 ? 1.0 : 0.0;
+                },
+                [&](float* l, float* r, size_t n) {
+                    rv.process(l, r, n, false);
+                });
+            for (int pass = 0; pass < 2; ++pass) {
+                butterworth(y, 500.0, true);
+                butterworth(y, 2000.0, false);
+            }
+            const double t = rt60_t20(y);
+            if (t < 0.0) {
+                std::printf(" > 20 s |");
+            } else {
+                std::printf(" %.2f s |", t);
+            }
+        }
+        std::printf("\n");
     }
 }
 

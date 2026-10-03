@@ -1164,16 +1164,32 @@ void MainWindow::setup_ui() {
         knob_rev_width->set_scroll_step(1.0);
         knob_rev_mix->set_scroll_step(1.0);
 
-        QWidget* col =
-            make_effect_row("Reverb", sw_reverb_enable,
-                            {knob_rev_mix, knob_rev_room, knob_rev_damping, knob_rev_width});
-        KnobWidget* pre =
-            late_knob("reverb", "preDelay",
-                      new KnobWidget("Pre-delay", REVERB_PRE_DELAY_MIN, REVERB_PRE_DELAY_MAX,
-                                     REVERB_PRE_DELAY_DEFAULT, "ms"),
-                      [this](double v) {
-                          engine->get_reverb().set_pre_delay(static_cast<float>(v));
-                      });
+        KnobWidget* rev_type = late_knob(
+            "reverb", "type", new KnobWidget("Type", 0.0, 2.0, 0.0, ""), [this](double v) {
+                engine->get_reverb().set_type(static_cast<int>(std::lround(v)));
+            });
+        rev_type->set_snap(1.0);
+        rev_type->set_scroll_step(1.0);
+        rev_type->set_value_formatter([](double v) {
+            static const char* const names[] = {"Plate", "Hall", "Room"};
+            return QString(names[std::clamp(static_cast<int>(std::lround(v)), 0, 2)]);
+        });
+        rev_type->setToolTip("Plate: dense, bright studio plate · Hall: a big space, distinct "
+                             "early echoes · Room: a smaller space, quick dense echoes");
+        // Decay keeps its 0–100 position (the preset key roomSize) and shows the decay time.
+        knob_rev_room->set_value_formatter([](double v) {
+            const double s = ReverbProcessor::decay_seconds(static_cast<float>(v));
+            return QString("%1 s").arg(s, 0, 'f', s < 1.0 ? 2 : 1);
+        });
+        knob_rev_room->setToolTip("Decay: how long the tail takes to fade by 60 dB, 0.2–10 s "
+                                  "(the shortest settings bottom out at ~0.6 s on Plate and "
+                                  "~0.3 s on Hall)");
+        QWidget* col = make_effect_row(
+            "Reverb", sw_reverb_enable,
+            {rev_type, knob_rev_mix, knob_rev_room, knob_rev_damping, knob_rev_width});
+        knob_rev_pre = new KnobWidget("Pre-delay", REVERB_PRE_DELAY_MIN, REVERB_PRE_DELAY_MAX,
+                                      REVERB_PRE_DELAY_DEFAULT, "ms");
+        KnobWidget* pre = knob_rev_pre;
         pre->set_scroll_step(5.0);
         pre->setToolTip("Gap before the tail starts: keeps the note clear of the room");
         KnobWidget* low_cut = late_knob(
@@ -1201,6 +1217,10 @@ void MainWindow::setup_ui() {
         // shimmer->set_scroll_step(1.0);
         // shimmer->setToolTip("Octave-up feedback into the tail — the shimmer reverb");
         add_detail_row(col, {pre, low_cut, high_cut});
+        add_tempo_sync(col, pre, "Pre-delay", true, 13 /* 1/16 */, REVERB_PRE_DELAY_MIN,
+                       REVERB_PRE_DELAY_MAX, [this](double v) {
+                           engine->get_reverb().set_pre_delay(static_cast<float>(v));
+                       });
         Theme::tag_card(col, "reverb");
 
         fx_cols[&engine->get_reverb()] = col;
@@ -2443,7 +2463,9 @@ void MainWindow::on_learn_changed() {
 void MainWindow::add_tempo_sync(QWidget* card, KnobWidget* free_knob, const QString& label,
                                 bool is_time, int default_note, double min, double max,
                                 std::function<void(double)> push) {
-    QHBoxLayout* lay = row_layout(card);
+    // The free knob's own row: the card's main row, or one of its ▾ detail rows.
+    auto* lay = static_cast<QHBoxLayout*>(free_knob->parentWidget()->layout());
+    const bool main_row = lay == row_layout(card);
 
     // Note knob in the free knob's place, shown while synced.
     auto* note =
@@ -2460,17 +2482,23 @@ void MainWindow::add_tempo_sync(QWidget* card, KnobWidget* free_knob, const QStr
     note->hide();
     lay->insertWidget(lay->indexOf(free_knob) + 1, note, 0, Qt::AlignVCenter);
 
-    // Sync switch in the row's Sync column, right of Stereo.
+    // Sync switch: in the main row's Sync column, right of Stereo; for a knob in a detail
+    // row, right beside it (the main row's column belongs to the main row).
     auto* sw = new ToggleSwitch;
     sw->setCheckable(true);
     sw->setToolTip(QString("Sync %1 to the global tempo").arg(label));
-    auto* cap = new QLabel("Sync");
-    cap->setObjectName("toggleCaption");
-    QWidget* slot = card->findChild<QWidget*>("syncSlot");
-    auto* sl = static_cast<QHBoxLayout*>(slot->layout());
-    sl->addWidget(sw, 0, Qt::AlignVCenter);
-    sl->addWidget(cap, 0, Qt::AlignVCenter);
-    sl->addStretch();
+    if (main_row) {
+        auto* cap = new QLabel("Sync");
+        cap->setObjectName("toggleCaption");
+        QWidget* slot = card->findChild<QWidget*>("syncSlot");
+        auto* sl = static_cast<QHBoxLayout*>(slot->layout());
+        sl->addWidget(sw, 0, Qt::AlignVCenter);
+        sl->addWidget(cap, 0, Qt::AlignVCenter);
+        sl->addStretch();
+    } else {
+        lay->insertWidget(lay->indexOf(note) + 1, make_caption_switch(sw, "Sync"), 0,
+                          Qt::AlignVCenter);
+    }
 
     connect(sw, &ToggleSwitch::toggled, this, [free_knob, note](bool on) {
         show_synced_knob(free_knob, note, on);
@@ -2784,6 +2812,11 @@ void MainWindow::register_parameters() {
     knob_param("reverb", "mix", knob_rev_mix, [e](double v) {
         e->get_reverb().set_mix_pct(static_cast<float>(v));
     });
+    knob_param("reverb", "preDelay", knob_rev_pre, synced_handler(knob_rev_pre));
+    toggle_param("reverb", "preDelaySync", sync_of(knob_rev_pre).sync,
+                 synced_handler(knob_rev_pre));
+    knob_param("reverb", "preDelaySyncNote", sync_of(knob_rev_pre).note_knob,
+               synced_handler(knob_rev_pre));
 
     toggle_param("", "irEnabled", sw_ir_enable, [e](bool b) {
         e->get_ir().set_enabled(b);
