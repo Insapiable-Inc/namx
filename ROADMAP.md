@@ -1043,6 +1043,10 @@ it for the one it replaces, and is measured with `NAMPlayerBench`.
       type (Plate / Hall / Room / Spring / IR), Chorus modes (to bring back Tri /
       Vintage / Spatial), Phaser/Flanger modes. Replaces the "continuous knob with
       snap" workaround; registered like a knob (integer value, preset key unchanged).
+      **Must look clearly different from a continuous knob** (user, 2026-10-03): today's
+      stepped controls — Reverb Type, every Sync note value, Transpose's Discrete
+      semitones — are plain knobs that only snap, so nothing tells you they click
+      between positions (e.g. tick marks per position, the positions' labels around it).
 - [ ] **Accurate fast tanh** (from the 2026-10-02 benchmarks): the core's fast tanh
       keeps the amp 46–65 dB off the exact reference (same as the official plugin);
       exact tanh is −118…−139 dB but costs 1.7–2.5× amp CPU. A vectorized tanh accurate
@@ -1070,6 +1074,15 @@ it for the one it replaces, and is measured with `NAMPlayerBench`.
       controls (option A — no "Classic" Freeverb kept); new algorithms uncommitted until
       heard, as with Transpose. **No IR reverb inside Reverb** — if ever, a separate effect
       with amp/cab-style file loading.
+- [ ] **Revisit the Stereo switches** (user, 2026-10-03): which cards really need one,
+      and does it make an audible difference on each? Today: Flanger, Phaser, Chorus,
+      Tremolo and Delay have a Stereo switch (each can *make* stereo from a mono input:
+      LFO phase offsets, ping-pong); Reverb has none but is always stereo (forced in
+      `AudioEngine`, with Width instead); the Amplifier's Stereo means something else (run
+      the model per channel vs sum to mono). The Cabinet has none and works fine — one IR
+      can't widen a mono signal, and a stereo input already gets per-channel convolution.
+      Decide per card: keep, drop (always stereo, like Reverb), or rename where the
+      meaning differs (Amplifier).
 - [ ] **Drive:** a second NAM slot ("Pedal") before the amp for OD/boost captures;
       later a WDF Tube Screamer with anti-aliasing for the built-in Drive.
 - [ ] **Modulation:** BBD core for Chorus/Flanger (+ analog Delay mode); virtual-analog
