@@ -260,9 +260,10 @@ Requires BUG-06 fixed (Phase 1).
 - [ ] Order survives relaunch, and a preset saved with a custom order restores it.
       Loading a v1 preset leaves the order untouched.
       (Relaunch confirmed 2026-10-04, MIDI mappings too; the preset parts not yet.)
-- [ ] **BUG-06 exercise (finally reachable):** put Gate/Comp/Wah *after* a
+- [x] **BUG-06 exercise (finally reachable):** put Gate/Comp/Wah *after* a
       stereo-mode Delay or Chorus and play — both channels behave identically
       (per-channel envelopes, no mono collapse, no channel pumping).
+      (User, 2026-10-04: all three fine after a stereo Delay and the like.)
 
 ## Phase 5 — Aesthetics ✅ (completed 2026-08-10, code; icon moved to Phase 8)
 
