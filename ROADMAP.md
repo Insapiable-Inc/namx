@@ -255,11 +255,13 @@ Requires BUG-06 fixed (Phase 1).
       (2026-10-04: readout confirmed — after Transpose it shows the shifted note. The
       Mute switch had been lost in the 2026-08-23 rack redesign; back on the Tuner row,
       on by default, session-only. Mute still to check.)
-- [ ] Digit shortcuts now map to the new left-to-right order; Q/W/E stereo keys too.
-      (Digits confirmed 2026-10-04 — they follow positions; Q/W/E not yet.)
-- [ ] Order survives relaunch, and a preset saved with a custom order restores it.
+- [x] Digit shortcuts now map to the new left-to-right order; Q/W/E stereo keys too.
+      (Confirmed 2026-10-04: digits and Q/W/E toggle the effects' On switches by
+      position; the Stereo switches have no shortcuts any more.)
+- [x] Order survives relaunch, and a preset saved with a custom order restores it.
       Loading a v1 preset leaves the order untouched.
-      (Relaunch confirmed 2026-10-04, MIDI mappings too; the preset parts not yet.)
+      (Confirmed 2026-10-04: relaunch, MIDI mappings, preset save/load. The v1-preset
+      case wasn't tried.)
 - [x] **BUG-06 exercise (finally reachable):** put Gate/Comp/Wah *after* a
       stereo-mode Delay or Chorus and play — both channels behave identically
       (per-channel envelopes, no mono collapse, no channel pumping).
