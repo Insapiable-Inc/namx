@@ -387,7 +387,12 @@ void MidiMapper::apply(MidiMapping& mp, int index, const MidiMessage& m) {
             }
             case MidiMapping::TOGGLE:
                 if (pressed) {
-                    k->set_value(std::abs(k->value() - hi) < 1e-9 ? lo : hi);
+                    // The knob quantizes what it is set to (dial steps, log taper,
+                    // snap), so "is it at hi" is "is it nearer hi than lo" (audit
+                    // 2026-10-04, Fable item 05).
+                    const double v = k->value();
+                    const bool at_hi = std::abs(v - hi) < std::abs(v - lo);
+                    k->set_value(at_hi ? lo : hi);
                 }
                 break;
             case MidiMapping::MOMENTARY:

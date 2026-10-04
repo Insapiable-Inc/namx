@@ -198,6 +198,30 @@ int run(int argc, char** argv) {
         CHECK(std::abs(volume.value()) < 0.05 && std::abs(wah.value() - 100.0) < 0.05,
               "pedal up: volume min, inverted wah max");
 
+        // Toggle on a knob the dial quantizes (log taper, a Max off its steps): the
+        // second press must come back down (audit 2026-10-04, Fable item 05).
+        KnobWidget cut("Low cut", 20.0, 2000.0, 20.0, "Hz");
+        cut.set_log_taper(true);
+        mapper.add_knob("param:eq/lowCut", "EQ", "Low cut", &cut);
+        mapper.learn("param:eq/lowCut");
+        mapper.handle(cc(0, 81, 127));
+        mapper.handle(cc(0, 81, 0));
+        list = mapper.get_mappings();
+        for (auto& m : list) {
+            if (m.target == "param:eq/lowCut") {
+                m.mode = MidiMapping::TOGGLE;
+                m.min = 0.0;
+                m.max = 0.25; // 515 Hz, between two dial steps on the log taper
+            }
+        }
+        mapper.set_mappings(list);
+        mapper.handle(cc(0, 81, 127));
+        mapper.handle(cc(0, 81, 0));
+        CHECK(std::abs(cut.value() - 515.0) < 0.5, "toggle press: knob at Max");
+        mapper.handle(cc(0, 81, 127));
+        mapper.handle(cc(0, 81, 0));
+        CHECK(std::abs(cut.value() - 20.0) < 0.5, "second press: back at Min");
+
         // The card's Reverse switch swaps heel and toe on top of the mapping range.
         ToggleSwitch volume_reverse;
         volume_reverse.setCheckable(true);
