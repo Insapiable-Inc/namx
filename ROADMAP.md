@@ -511,7 +511,7 @@ app id in hicolor, `setWindowIcon` from the qrc, Windows exe icon + version bloc
 - [~] **Flatpak / Flathub** (back 2026-10-02): manifest `io.github.Insapiable_Inc.namx.yml` on the
       KDE runtime (Qt 6). **2026-10-04:** `packaging/flatpak/…yml` on KDE 6.11 +
       `.github/workflows/flatpak.yml` (test bundle, checks no libjack) — written without a
-      local build (user: CI only), so the first CI run is its test; then the Flathub
+      local build (user: CI only); **CI green 2026-10-04**. Left: the Flathub
       submission (user: PR to flathub/flathub, `new-pr` branch; the Flathub copy uses a
       git source at the tag). There is no `--socket=pipewire`: PipeWire comes in through
       `--filesystem=xdg-run/pipewire-0`. Planned permissions were `--socket=pipewire` (JACK through PipeWire),
