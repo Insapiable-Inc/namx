@@ -203,18 +203,10 @@ void NamProcessor::on_sample_rate_changed(double sr) {
     std::copy(scratch.data(), scratch.data() + n, buf);
 }
 
-// Loudness normalization × the user's gain. A newly bound pair takes its gain at once
-// (the load fade-in hides the step); toggling normalization or turning Gain glides over
-// ~20 ms.
-void NamProcessor::apply_output_gain(const ModelPair* p, float* l, float* r, size_t n) {
-    const float trim = std::pow(10.0f, gain_db.load(std::memory_order_relaxed) / 20.0f);
-    const float target =
-        (normalize.load(std::memory_order_relaxed) ? p->loudness_gain : 1.0f) * trim;
-    if (p != gain_pair) {
-        gain_pair = p;
-        output_gain = target;
-    }
-    if (output_gain == target) {
+// Scales l (and r, if given) by `gain`, gliding it to `target` over ~20 ms.
+static void glide_gain(float& gain, float target, double sample_rate, float* l, float* r,
+                       size_t n) {
+    if (gain == target) {
         if (target != 1.0f) {
             for (size_t i = 0; i < n; ++i) {
                 l[i] *= target;
@@ -229,15 +221,34 @@ void NamProcessor::apply_output_gain(const ModelPair* p, float* l, float* r, siz
     }
     const float coeff = 1.0f - std::exp(-1.0f / (0.02f * static_cast<float>(sample_rate)));
     for (size_t i = 0; i < n; ++i) {
-        output_gain += (target - output_gain) * coeff;
-        l[i] *= output_gain;
+        gain += (target - gain) * coeff;
+        l[i] *= gain;
         if (r) {
-            r[i] *= output_gain;
+            r[i] *= gain;
         }
     }
-    if (std::abs(output_gain - target) < 1e-4f * target) {
+    if (std::abs(gain - target) < 1e-4f * target) {
+        gain = target;
+    }
+}
+
+// The user's Input, before the model.
+void NamProcessor::apply_input_gain(float* l, float* r, size_t n) {
+    const float target = std::pow(10.0f, input_db.load(std::memory_order_relaxed) / 20.0f);
+    glide_gain(input_gain, target, sample_rate, l, r, n);
+}
+
+// Loudness normalization × the user's Output. A newly bound pair takes its gain at once
+// (the load fade-in hides the step); toggling normalization or turning Output glides.
+void NamProcessor::apply_output_gain(const ModelPair* p, float* l, float* r, size_t n) {
+    const float trim = std::pow(10.0f, output_db.load(std::memory_order_relaxed) / 20.0f);
+    const float target =
+        (normalize.load(std::memory_order_relaxed) ? p->loudness_gain : 1.0f) * trim;
+    if (p != gain_pair) {
+        gain_pair = p;
         output_gain = target;
     }
+    glide_gain(output_gain, target, sample_rate, l, r, n);
 }
 
 bool NamProcessor::process(float* l, float* r, size_t n, bool input_is_stereo) {
@@ -264,6 +275,7 @@ bool NamProcessor::process(float* l, float* r, size_t n, bool input_is_stereo) {
     // would overrun the core's buffers — bypass instead (see prepareBuffer).
     const bool can_run = p && n <= p->reset_buf && n <= scratch_l.size();
     if (can_run) {
+        apply_input_gain(l, input_is_stereo ? r : nullptr, n);
         run_model(p->l.get(), p->resampler_l.get(), l, n, scratch_l);
         if (input_is_stereo) {
             run_model(p->r.get(), p->resampler_r.get(), r, n, scratch_r);

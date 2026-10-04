@@ -850,11 +850,18 @@ void MainWindow::setup_ui() {
     // Amp (NAM)
     {
         using namespace NAMConstants;
-        knob_nam_gain = new KnobWidget("Gain", NAM_GAIN_MIN, NAM_GAIN_MAX, NAM_GAIN_DEFAULT, "dB");
-        knob_nam_gain->set_scroll_step(0.5);
-        knob_nam_gain->setToolTip("Output level after the model, on top of the loudness "
-                                  "normalization — for models that sit too quiet or loud");
-        QWidget* col = make_effect_row("Amplifier", sw_nam_enable, {knob_nam_gain});
+        knob_nam_input =
+            new KnobWidget("Input", NAM_INPUT_MIN, NAM_INPUT_MAX, NAM_INPUT_DEFAULT, "dB");
+        knob_nam_input->set_scroll_step(0.5);
+        knob_nam_input->setToolTip("Level into the model: more or less breakup, without "
+                                   "changing the pedals before it");
+        knob_nam_output =
+            new KnobWidget("Output", NAM_OUTPUT_MIN, NAM_OUTPUT_MAX, NAM_OUTPUT_DEFAULT, "dB");
+        knob_nam_output->set_scroll_step(0.5);
+        knob_nam_output->setToolTip("Level after the model, on top of the loudness "
+                                    "normalization — for models that sit too quiet or loud");
+        QWidget* col =
+            make_effect_row("Amplifier", sw_nam_enable, {knob_nam_input, knob_nam_output});
         sw_nam_enable->setChecked(true);
         make_hero_controls(col, LibraryEntry::Kind::MODEL, lbl_nam_status, lbl_nam_meta);
 
@@ -2729,8 +2736,11 @@ void MainWindow::register_parameters() {
     toggle_param("", "namEnabled", sw_nam_enable, [e](bool b) {
         e->get_nam().set_enabled(b);
     });
-    knob_param("nam", "gain", knob_nam_gain, [e](double v) {
-        e->get_nam().set_gain_db(static_cast<float>(v));
+    knob_param("nam", "input", knob_nam_input, [e](double v) {
+        e->get_nam().set_input_db(static_cast<float>(v));
+    });
+    knob_param("nam", "output", knob_nam_output, [e](double v) {
+        e->get_nam().set_output_db(static_cast<float>(v));
     });
 
     toggle_param("eq", "enabled", sw_eq_enable, [e](bool b) {

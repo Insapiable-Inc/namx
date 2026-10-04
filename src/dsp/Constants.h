@@ -160,10 +160,14 @@ constexpr double WAH_MIX_MIN = 0.0;
 constexpr double WAH_MIX_MAX = 100.0;
 constexpr double WAH_MIX_DEFAULT = 100.0;
 
-// Amplifier output gain (a trim on top of the loudness normalization)
-constexpr double NAM_GAIN_MIN = -20.0;
-constexpr double NAM_GAIN_MAX = 20.0;
-constexpr double NAM_GAIN_DEFAULT = 0.0;
+// Amplifier Input (how hard the model is hit) and Output (a trim on top of the loudness
+// normalization)
+constexpr double NAM_INPUT_MIN = -20.0;
+constexpr double NAM_INPUT_MAX = 20.0;
+constexpr double NAM_INPUT_DEFAULT = 0.0;
+constexpr double NAM_OUTPUT_MIN = -20.0;
+constexpr double NAM_OUTPUT_MAX = 20.0;
+constexpr double NAM_OUTPUT_DEFAULT = 0.0;
 
 // Drive (Phase 17)
 constexpr double DRIVE_MIN = 0.0;

@@ -370,7 +370,8 @@ private:
     ToggleSwitch* sw_transpose_continuous = nullptr;
     KnobWidget* knob_transpose_semis = nullptr;
     ToggleSwitch* sw_drive_enable = nullptr;
-    KnobWidget* knob_nam_gain = nullptr;
+    KnobWidget* knob_nam_input = nullptr;
+    KnobWidget* knob_nam_output = nullptr;
     KnobWidget* knob_drive = nullptr;
     KnobWidget* knob_drive_tone = nullptr;
     KnobWidget* knob_drive_level = nullptr;

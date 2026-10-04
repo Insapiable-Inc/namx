@@ -60,9 +60,13 @@ public:
     bool get_normalize() const {
         return normalize.load(std::memory_order_relaxed);
     }
+    // The level into the model: more or less breakup, the pedals before it untouched.
+    void set_input_db(float db) {
+        input_db.store(db, std::memory_order_relaxed);
+    }
     // The user's output trim on top of the normalization (clean models can sit quiet).
-    void set_gain_db(float db) {
-        gain_db.store(db, std::memory_order_relaxed);
+    void set_output_db(float db) {
+        output_db.store(db, std::memory_order_relaxed);
     }
     // The gain normalization applies to the loaded model, in dB; empty when it's off
     // or the model doesn't state its loudness (GUI thread only).
@@ -148,9 +152,12 @@ private:
     atomic<double> resample_latency_ms{0.0}; // see latency_ms()
     void publish_resampling(const ModelPair* p); // updates the two atomics above
     atomic<bool> normalize{true};
-    atomic<float> gain_db{0.0f};
-    // Audio thread only: the output gain as it glides to its target, and the pair it
-    // last applied to (a new pair takes its gain at once; the swap fade-in hides it).
+    atomic<float> input_db{0.0f};
+    atomic<float> output_db{0.0f};
+    // Audio thread only: the input and output gains as they glide to their targets, and
+    // the pair the output gain last applied to (a new pair takes its gain at once; the
+    // swap fade-in hides it).
+    float input_gain{1.0f};
     float output_gain{1.0f};
     const ModelPair* gain_pair{nullptr};
     double model_rate{0.0}; // engine SR as last propagated (guarded by model_mutex)
@@ -162,6 +169,7 @@ private:
     size_t fade_total{1}; // samples; audio thread only
     size_t fade_remaining{0}; // audio thread only
 
+    void apply_input_gain(float* l, float* r, size_t n);
     void apply_output_gain(const ModelPair* p, float* l, float* r, size_t n);
     static void run_model(nam::DSP* model, Resampler* resampler, float* buf, size_t n,
                           vector<float>& scratch);
