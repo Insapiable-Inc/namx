@@ -742,7 +742,7 @@ The "at the speed of a cockpit" part. Also where *efficient* stops being a sloga
       doubles); kill/restart the server → xruns count; click resets.
 - [x] Meters: smooth at 60 fps, hold line waits 1 s then falls; minimize → the GUI
       thread goes quiet (`top -H`).
-- [ ] GR meters move with the compressor/gate working; bypass → 0.
+- [x] GR meters move with the compressor/gate working; bypass → 0.
 - [x] Tuner: A4 = 432 makes a 440 Hz A read about +32¢; Hz toggle shows the
       frequency; both survive relaunch and preset loads.
 - [ ] Fast tanh: A/B a high-gain model against an older build — no audible change.
