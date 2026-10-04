@@ -419,7 +419,9 @@ private:
     {
         QString key, text, tip;
     };
-    vector<Notice> notices; // in posting order
+    vector<Notice> notices;
+    int non_finite_total =
+        0; // blocks scrubbed since launch (status-bar notice) // in posting order
     QMenu* midi_menu = nullptr;
     QTimer* midi_blink = nullptr;
 };

@@ -2900,6 +2900,17 @@ void MainWindow::update_status() {
         audio_bar->set_error("Disconnected");
     }
 
+    if (const int blocks = engine->take_non_finite_blocks(); blocks > 0) {
+        non_finite_total += blocks;
+        set_notice("nonFinite",
+                   QString("Invalid audio (NaN/inf) scrubbed %1 time(s): effects were reset")
+                       .arg(non_finite_total),
+                   "A sample that wasn't a number reached the output. It came from the "
+                   "input, the amp model or an effect; it was replaced with silence and "
+                   "every effect's state cleared so it couldn't stick in echoes and "
+                   "reverb tails.");
+    }
+
     const double model_rate = engine->get_nam().get_resampled_model_rate();
     const double device_rate = engine->sample_rate();
     if (model_rate > 0.0 && device_rate > 0.0) {

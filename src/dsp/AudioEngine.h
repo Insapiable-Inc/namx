@@ -246,6 +246,11 @@ public:
     int xrun_count() const {
         return backend ? backend->xrun_count() : -1;
     }
+    // Blocks in which a non-finite sample was scrubbed since the last take
+    // (process_block step 5).
+    int take_non_finite_blocks() {
+        return non_finite_blocks.exchange(0, std::memory_order_relaxed);
+    }
     void reset_xruns() {
         if (backend) {
             backend->reset_xruns();
@@ -314,6 +319,7 @@ private:
     atomic<float> input_peak{0.0f};
     atomic<float> output_peak{0.0f};
     atomic<float> dsp_load_peak{0.0f};
+    atomic<int> non_finite_blocks{0};
 
     // on_audio = timing around this.
     void process_block(const float* in, float* out_l, float* out_r, size_t nframes);

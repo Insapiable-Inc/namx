@@ -365,7 +365,27 @@ void AudioEngine::process_block(const float* in, float* out_l, float* out_r, siz
         output_peak.store(out_peak, std::memory_order_relaxed);
     }
 
-    // 5. Metronome (own volume/pan), then the limiter (look-ahead; a no-op when
+    // 5. A non-finite sample — from the capture port, a model overflowing in
+    //    inference, an effect — would latch in every feedback path (delay lines,
+    //    reverb tanks, biquads) and pass the limiter to the hardware (audit
+    //    2026-10-04, Fable item 03). Scrub it, reset every effect once, and count it
+    //    for the status bar.
+    bool finite = true;
+    for (size_t i = 0; i < n; ++i) {
+        finite = finite && std::isfinite(out_l[i]) && std::isfinite(out_r[i]);
+    }
+    if (!finite) {
+        for (size_t i = 0; i < n; ++i) {
+            out_l[i] = std::isfinite(out_l[i]) ? out_l[i] : 0.0f;
+            out_r[i] = std::isfinite(out_r[i]) ? out_r[i] : 0.0f;
+        }
+        for (auto* fx : chain) {
+            fx->request_reset();
+        }
+        non_finite_blocks.fetch_add(1, std::memory_order_relaxed);
+    }
+
+    // 6. Metronome (own volume/pan), then the limiter (look-ahead; a no-op when
     //    off) as the very last stage, so it guards everything that leaves the app —
     //    guitar plus click (review item 27).
     metronome.process(out_l, out_r, n);
