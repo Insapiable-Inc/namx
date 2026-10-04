@@ -127,6 +127,8 @@ All effects inherit `EffectBase` (`src/dsp/EffectBase.h` — the header comment 
 - `process_block_dual` — stereo input, mono effect per channel (**stateful effects must override with per-channel state**; the default reuses one state — see BUG-06);
 - `process_block_stereo_out` — true stereo from mono (only if `supports_stereo_out()`).
 
+- `sync_right_channel` — called by `process` on the first stereo-input block after mono ones (only the left state advanced): copy the left state to the right where cheap, clear it where not (review item 19; effects that override `process` wholesale — EQ, NAM — run the edge themselves).
+
 `set_sample_rate` is non-virtual; effects hook `on_sample_rate_changed`.
 
 ### Thread-safety patterns
