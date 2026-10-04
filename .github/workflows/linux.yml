@@ -26,7 +26,7 @@ jobs:
             qt6-base-dev qt6-base-dev-tools \
             libjack-jackd2-dev libasound2-dev pkg-config \
             libgl1-mesa-dev \
-            desktop-file-utils appstream python3 valgrind
+            desktop-file-utils appstream libxml2-utils python3 valgrind
 
       - name: Check formatting (.clang-format)
         run: |

@@ -63,7 +63,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y cmake ninja-build g++-14 qt6-base-dev qt6-base-dev-tools \
             libjack-jackd2-dev libasound2-dev pkg-config libgl1-mesa-dev \
-            desktop-file-utils appstream python3
+            desktop-file-utils appstream libxml2-utils python3
       - name: Configure (portable, tests on)
         env:
           CXX: g++-14 # C++23; 24.04 defaults to GCC 13
