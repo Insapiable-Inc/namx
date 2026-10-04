@@ -305,7 +305,7 @@ Requires BUG-06 fixed (Phase 1).
 - [ ] New accent colors: stripes, titles, knob rings/ticks, and toggle "on" states
       all show the palette hex verbatim (revised palette values to come from the
       user for the near-white and very dark entries).
-- [ ] Ctrl+S / Ctrl+O open the save/load dialogs; About shows v1.0.
+- [ ] Ctrl+S / Ctrl+O open the save/load dialogs; About shows the build's version.
 - [ ] Load a model while playing: no click, a soft ~15 ms fade-in instead. Same on
       unload and when switching between two models.
 
@@ -828,15 +828,17 @@ acoustic models. UI: cards gained ▾ detail rows for advanced knobs (`addDetail
 
 ### Phase 17 — manual verification pending
 
-- [ ] Drive in front of a clean/crunch model: tighter, mid-forward; Tone/Level sane.
+- [x] Drive in front of a clean/crunch model: tighter, mid-forward; Tone/Level sane.
+      (Checked on the WDF circuit Drive, 2026-10-04.)
 - [ ] Stereo switch: flanger-stereo before the amp sounds mono with it off (default!
       — this changed the sound of sessions that had a stereo effect before the amp),
       wide with it on.
 - [ ] EQ: sweep each frequency; Low/High Cut "Off" at the ends; an old 3-band preset
       sounds identical.
-- [ ] Delay: Cross-feed 100 → 0, R Time 75 %, Saturation, Modulation, Crystals.
+- [ ] Delay: Cross-feed 100 → 0, R Time 75 %, Saturation, Modulation, Shimmer.
 - [ ] Reverb Shimmer stays stable at 100 % with long Decay.
-- [ ] Cabinet: two IRs, Blend, Ø B (thin when out of phase), pans → stereo.
+- [ ] ~~Cabinet: two IRs, Blend, Ø B (thin when out of phase), pans → stereo.~~ Not
+      reachable: the dual-cab controls are hidden since 2026-10-01 (only Level is back).
 - [ ] Transpose −1/−2 (drop tuning feel) and ±12; Tuner before it reads the real string.
 - [ ] Limiter catches peaks with Output +20 dB; no pumping at normal levels.
 - [ ] Wah Pedal mode with a MIDI expression pedal on Position.
