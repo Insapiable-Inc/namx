@@ -505,12 +505,34 @@ void LibraryIndex::on_scan_finished(QList<LibraryEntry> new_entries, QStringList
 
     // Watch every scanned directory (new files, deletions, new subfolders);
     // a burst of changes collapses into one rescan through the debounce.
+    // Only the delta: one inotify call per directory each way otherwise (audit
+    // 2026-10-04, Fable item 33). addPaths returns the ones it couldn't watch —
+    // past fs.inotify.max_user_watches, or a filesystem without notification.
+    const QSet<QString> wanted(dirs.cbegin(), dirs.cend());
     const QStringList old = watcher->directories();
-    if (!old.isEmpty()) {
-        watcher->removePaths(old);
+    const QSet<QString> had(old.cbegin(), old.cend());
+    QStringList gone, added;
+    for (const QString& d : old) {
+        if (!wanted.contains(d)) {
+            gone << d;
+        }
     }
-    if (!dirs.isEmpty()) {
-        watcher->addPaths(dirs);
+    for (const QString& d : dirs) {
+        if (!had.contains(d)) {
+            added << d;
+        }
+    }
+    if (!gone.isEmpty()) {
+        watcher->removePaths(gone);
+    }
+    if (!added.isEmpty()) {
+        const QStringList failed = watcher->addPaths(added);
+        if (!failed.isEmpty() && failed.size() != unwatched) {
+            qWarning("[Library] %lld folder(s) can't be watched for changes (inotify limit or "
+                     "filesystem); edits there show after a manual rescan",
+                     static_cast<long long>(failed.size()));
+        }
+        unwatched = failed.size();
     }
 
     emit entries_changed();

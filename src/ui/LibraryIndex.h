@@ -100,6 +100,7 @@ private:
     QTimer* debounce = nullptr; // coalesces watcher bursts
     bool scanning = false;
     bool rescan_queued = false;
+    qsizetype unwatched = 0; // folders the watcher refused last time (logged once)
     QString cache_path;
 };
 
