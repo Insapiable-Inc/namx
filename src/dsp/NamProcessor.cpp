@@ -25,6 +25,10 @@ static constexpr double NORMALIZE_MAX_DB = 24.0;
 static constexpr double MIN_MODEL_RATE = 8000.0;
 static constexpr double MAX_MODEL_RATE = 384000.0;
 
+// The core reads the whole file into memory and the JSON tree costs several times
+// that; the biggest real models are a few MB (audit 2026-10-04 item 09).
+static constexpr std::uintmax_t MAX_MODEL_FILE_BYTES = 256ull * 1024 * 1024;
+
 NamProcessor::NamProcessor() {
 }
 
@@ -74,6 +78,13 @@ bool NamProcessor::load_model(const string& path) {
     // so L and R can diverge (e.g. after a pre-NAM stereo effect).
     auto pair = make_unique<ModelPair>();
     try {
+        std::error_code ec;
+        const std::uintmax_t bytes = std::filesystem::file_size(utf8_path(path), ec);
+        if (!ec && bytes > MAX_MODEL_FILE_BYTES) {
+            throw std::runtime_error("Model file is " + std::to_string(bytes / (1024 * 1024)) +
+                                     " MB; the limit is " +
+                                     std::to_string(MAX_MODEL_FILE_BYTES / (1024 * 1024)) + " MB.");
+        }
         // Read and parse the file once; build both instances from it (review item 21).
         nam::dspData parsed;
         pair->l = nam::get_dsp(utf8_path(path), parsed);

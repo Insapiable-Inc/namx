@@ -211,6 +211,14 @@ bool MidiMapper::load_file(const QString& path, QString* error) {
         }
         return false;
     }
+    // A mapping file is a few KB (audit 2026-10-04 item 09: read budgets).
+    constexpr qint64 MAX_MAPPING_FILE_BYTES = 4 * 1024 * 1024;
+    if (f.size() > MAX_MAPPING_FILE_BYTES) {
+        if (error) {
+            *error = QString("larger than %1 MB").arg(MAX_MAPPING_FILE_BYTES / (1024 * 1024));
+        }
+        return false;
+    }
     QJsonParseError pe;
     const QJsonDocument doc = QJsonDocument::fromJson(f.readAll(), &pe);
     if (!doc.isObject() || !doc.object().value("mappings").isArray()) {

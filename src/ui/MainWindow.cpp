@@ -3448,6 +3448,16 @@ bool MainWindow::load_preset_file(const QString& path_in) {
         QMessageBox::critical(this, "Preset", "Cannot read preset:\n" + path);
         return false;
     }
+    // A preset is a few KB; whatever is bigger than this isn't one (audit 2026-10-04
+    // item 09 — the parse costs several times the file).
+    constexpr qint64 MAX_PRESET_BYTES = 4 * 1024 * 1024;
+    if (f.size() > MAX_PRESET_BYTES) {
+        QMessageBox::critical(this, "Preset",
+                              QString("Invalid preset:\n%1\n\nlarger than %2 MB")
+                                  .arg(path)
+                                  .arg(MAX_PRESET_BYTES / (1024 * 1024)));
+        return false;
+    }
     QJsonParseError err;
     QJsonDocument doc = QJsonDocument::fromJson(f.readAll(), &err);
     if (!doc.isObject()) {

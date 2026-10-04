@@ -82,9 +82,23 @@ static QString metadata_field(const QJsonObject& metadata, const char* key) {
 
 // Model metadata from the .nam JSON. Files carry the full weight array, so
 // this is the one expensive step of a scan — the cache keeps it one-time.
+// The scan reads and parses every model and preset under the roots, whether or not
+// they are ever loaded, so each read has a budget (audit 2026-10-04 item 09): the
+// JSON tree costs several times the file. The biggest real models are a few MB.
+static constexpr qint64 MAX_MODEL_DESCRIBE_BYTES = 64 * 1024 * 1024;
+static constexpr qint64 MAX_PRESET_DESCRIBE_BYTES = 4 * 1024 * 1024;
+
+static QString too_large(const char* what, qint64 bytes) {
+    return QString("%1 too large to index (%2 MB)").arg(what).arg(bytes / (1024 * 1024));
+}
+
 static void describe_model(const QString& path, LibraryEntry& e) {
     QFile f(path);
     if (!f.open(QIODevice::ReadOnly)) {
+        return;
+    }
+    if (f.size() > MAX_MODEL_DESCRIBE_BYTES) {
+        e.summary = too_large("Model file", f.size());
         return;
     }
     const QJsonDocument doc = QJsonDocument::fromJson(f.readAll());
@@ -228,6 +242,10 @@ static void describe_ir(const QString& path, LibraryEntry& e) {
 static void describe_preset(const QString& path, LibraryEntry& e) {
     QFile f(path);
     if (!f.open(QIODevice::ReadOnly)) {
+        return;
+    }
+    if (f.size() > MAX_PRESET_DESCRIBE_BYTES) {
+        e.summary = too_large("Preset", f.size());
         return;
     }
     const QJsonDocument doc = QJsonDocument::fromJson(f.readAll());
