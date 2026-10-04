@@ -861,7 +861,7 @@ void MainWindow::setup_ui() {
         knob_drive->set_scroll_step(1.0);
         knob_drive_tone->set_scroll_step(1.0);
         knob_drive_level->set_scroll_step(0.5);
-        QWidget* col = make_effect_row("Drive", sw_drive_enable,
+        QWidget* col = make_effect_row("Overdrive", sw_drive_enable,
                                        {knob_drive, knob_drive_tone, knob_drive_level});
         Theme::tag_card(col, "drive");
         fx_cols[&engine->get_drive()] = col;

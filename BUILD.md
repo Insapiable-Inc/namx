@@ -457,7 +457,7 @@ Default order (drag the ≡ grips to reorder any effect). The Volume Pedal sits 
 the effects loop, after the amp, so it swells the level without changing the amp's gain:
 
 ```
-input ─▶ Input Gain ─▶ Tuner ─▶ Transpose ─▶ Noise Gate ─▶ Compressor ─▶ Wah ─▶ Flanger ─▶ Phaser ─▶ Drive
+input ─▶ Input Gain ─▶ Tuner ─▶ Transpose ─▶ Noise Gate ─▶ Compressor ─▶ Wah ─▶ Flanger ─▶ Phaser ─▶ Overdrive
       ─▶ Amplifier (NAM) ─▶ Volume Pedal ─▶ Equalizer ─▶ Chorus ─▶ Tremolo ─▶ Delay ─▶ Reverb
       ─▶ Cabinet (IR) ─▶ Output Gain ─▶ (+ metronome) ─▶ Limiter ─▶ output L/R
 ```
@@ -470,7 +470,7 @@ twice the CPU — it is never summed to mono.
 | Stage | Main controls | ▾ More |
 |-------|---------------|--------|
 | Transpose | Semitones (±12), Mix; **Reverse** (pedal heel ↔ toe), **Continuous** switch (off = Discrete: whole semitones; on = smooth whammy-style glides, the shifter then stays active at 0 st) | — |
-| Drive | Drive, Tone, Level — a Tube Screamer circuit model (the op-amp + diode clipper as a wave digital filter, oversampled) | — |
+| Overdrive | Drive, Tone, Level — a Tube Screamer circuit model (the op-amp + diode clipper as a wave digital filter, oversampled) | — |
 | Amplifier | On/Off, ‹ › through the library, Input, Output (see Parameters); the row shows the model and its metadata | — |
 | Dynamic Wah | **Manual** switch (off = Auto: your playing sweeps it), **Reverse** (pedal heel ↔ toe), Mix, Sensitivity, Resonance, Position (the sweep in Manual mode — map an expression pedal) | — |
 | Flanger / Phaser / Chorus | Mix, Rate (Sync), Depth, Feedback (not Chorus; Phaser up to 90 %); Flanger **Range**. The Phaser is an MXR Phase 90 model: Depth 50 % and Mix 50 % are the pedal, Feedback 0 % the original "script" circuit | — |

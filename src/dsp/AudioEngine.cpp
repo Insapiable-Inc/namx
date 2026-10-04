@@ -402,7 +402,7 @@ static string latency_source_name(const string& id) {
         {"wah", "Wah"},
         {"flanger", "Flanger"},
         {"phaser", "Phaser"},
-        {"drive", "Drive"},
+        {"drive", "Overdrive"},
         {"nam", "Amplifier resampling"},
         {"volume", "Volume"},
         {"eq", "EQ"},
