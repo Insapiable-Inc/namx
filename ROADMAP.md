@@ -46,8 +46,9 @@ Decisions:
   v0.6.0 below only existed to sort after the old fork's upstream `v0.5.x` tags) and
   leaves out the rest of Phase 22 (BBD chorus/flanger, Uni-Vibe, wah/tape/compressor —
   the Phase 90 phaser made it in) as well as 19 and 24. Remaining before the tag, in
-  order: **28 (cleanup & docs) → 26 (bug fixes: the small P2s, P3s, the second full
-  code review) → 27 (benchmarking: loopback latency) → 8 (packaging) → tag v0.0.0.**
+  order: **26 (bug fixes: the second full code review — an outside audit, by Astra and
+  Fable — plus the small P2s and P3s) → 28 (cleanup & docs) → 27 (benchmarking:
+  loopback latency) → 8 (packaging) → tag v0.0.0.**
   After it: the rest of 22, 21 (Windows audio), 24, 19 → 1.0. Manual checks (1, 11–17,
   23) whenever the user is at the guitar.
 - ~~**Execution order** (revised 2026-10-02 — **shipping is last**: everything else, hardening,
