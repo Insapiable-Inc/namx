@@ -59,6 +59,9 @@ public:
     // Command-line / file-manager arguments: .nam, .wav, .nampreset (a preset
     // first, then a model/IR given alongside overrides the preset's own).
     void open_paths(const QStringList& paths);
+    // Knobs and switches outside the tempo bar that presets would miss (not in the
+    // registry); --self-test-and-exit fails on any.
+    QStringList controls_missing_from_presets() const;
 
 protected:
     // Drag-and-drop reordering of the effect strip (filter installed on the

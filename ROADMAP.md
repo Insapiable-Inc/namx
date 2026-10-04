@@ -704,7 +704,10 @@ file, `*` on unsaved changes, folders/subfolders, and a defined set of things pr
 - [ ] A/B: tweak on B, switch to A and back — both states survive; A→B copies.
 - [ ] Import a file from Downloads → copied into the presets folder and loaded;
       Export doesn't change the current name; Delete moves to the trash → Untitled.
-- [ ] Tuner state survives loading any preset.
+      (2026-10-04: Import and Export confirmed; Delete not yet.)
+- [ ] ~~Tuner state survives loading any preset.~~ Reversed 2026-10-04 (user): the
+      Tuner's On and Mute are saved in presets like every other control. Check: they
+      change with the preset.
 
 ## Phase 14 — Cockpit: status bar, meters, tuner, efficiency ✅ (completed 2026-10-01, code; manual verification below)
 

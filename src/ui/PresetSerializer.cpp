@@ -32,9 +32,6 @@ QJsonObject to_json(const ParamRegistry& params, AudioEngine& engine) {
     obj["effectOrder"] = order_arr;
 
     for (const auto& p : params) {
-        if (!p.in_preset) {
-            continue;
-        }
         const QJsonValue v =
             p.knob ? QJsonValue(p.knob->value()) : QJsonValue(p.toggle->isChecked());
         if (p.group.isEmpty()) {
@@ -124,9 +121,6 @@ Applied apply(const QJsonObject& obj, const ParamRegistry& params) {
     // added after the file was saved — falls back to the registered default (effects
     // off). Leaving such effects untouched made them keep the previous preset's state.
     for (const auto& p : params) {
-        if (!p.in_preset) {
-            continue;
-        }
         const QJsonObject src = p.group.isEmpty() ? obj : obj[p.group].toObject();
         if (p.knob) {
             p.knob->set_value(src.contains(p.key) ? src[p.key].toDouble(p.knob_default)

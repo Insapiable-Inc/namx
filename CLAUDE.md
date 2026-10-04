@@ -139,7 +139,7 @@ All effects inherit `EffectBase` (`src/dsp/EffectBase.h` — the header comment 
 | `WavReader` | `src/dsp/WavReader.h/cpp` | Strict mono WAV reader for IRs (PCM 16/24/32, float 32/64, extensible); every length checked before reading — damaged files are errors (`tests/WavReaderTest`) |
 | `IRLoader` / `IRProcessor` | `src/dsp/IRLoader.h/cpp`, `IRProcessor.h/cpp` | Cab convolution: 64 direct taps + uniformly partitioned FFT convolution (overlap-save, `signalsmith-linear` FFT — the `Dependencies/signalsmith-linear` submodule), zero added latency, IRs up to 1 s (longer ones faded out); energy-normalized, RtSlot kernel swap; `IRProcessor` = two loaders (slots A/B) with level/pan/phase/blend + cuts — the UI exposes slot A only, with its Level on the row (`ir/levelA`, ±20 dB, ramped per block; restored 2026-10-04 — the other advanced options stay commented out since 2026-10-01; slot B is neither restored nor loaded from presets) |
 | `EQProcessor` | `src/dsp/EQProcessor.h/cpp` | 4-band semi-parametric biquad EQ + low/high cut (Audio EQ Cookbook) |
-| `TunerProcessor` | `src/dsp/TunerProcessor.h/cpp` | NSDF pitch detect; audio thread fills, GUI timer reads; Mute (on by default, `tuner/mute`, session-only like `tuner/enabled`) silences the output while it runs |
+| `TunerProcessor` | `src/dsp/TunerProcessor.h/cpp` | NSDF pitch detect; audio thread fills, GUI timer reads; Mute (on by default, `tuner/mute`, saved in presets like `tuner/enabled`) silences the output while it runs |
 | `TunerDisplay` | `src/ui/TunerDisplay.h/cpp` | TU-3-style readout: LED ladder, glowing seven-segment note, signed cents |
 | `NoiseGateProcessor`, `CompressorProcessor`, `DynamicWahProcessor` | `src/dsp/…` | Mono dynamics (envelope gate, feedforward comp, envelope wah) |
 | `ChorusProcessor`, `FlangerProcessor`, `PhaserProcessor`, `TremoloProcessor` | `src/dsp/…` | Modulation effects; stereo variants use LFO phase offsets |
@@ -186,13 +186,14 @@ Settings keys, preset JSON keys and effect IDs are data and keep their spelling
 
 `MainWindow::register_parameters()` is the **single source of truth for every user-facing
 parameter**: one `knob_param`/`toggle_param` line per control builds `params`
-(`ParamDesc { group, key, widget, defaults, in_preset }`) and wires the widget to the
+(`ParamDesc { group, key, widget, defaults }`) and wires the widget to the
 engine via a lambda connect. Preset save/load are single loops over this table; Phase 3
 session persistence and future MIDI mapping consume it too. **When adding an effect
 parameter, register it here — never add hand-written connects, slots, or preset keys.**
 `group`+`key` mirror the preset JSON schema (empty group = top-level key).
-`in_preset = false` keeps a parameter session-only (the tuner): presets neither save nor
-apply it, and it doesn't count toward the preset `*`.
+Every rack knob and switch is in presets, the Tuner's On and Mute included (user,
+2026-10-04); `--self-test-and-exit` fails if a rack control (outside the tempo bar) is
+missing from the registry.
 
 ### Loading files
 

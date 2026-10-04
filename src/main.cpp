@@ -133,6 +133,15 @@ int run(int argc, char* argv[]) {
             std::printf("self-test: window shown after %lld ms\n",
                         static_cast<long long>(startup.elapsed()));
         });
+        // Every rack control must be in the registry, so presets save it.
+        const QStringList missing = w.controls_missing_from_presets();
+        for (const QString& m : missing) {
+            std::printf("self-test: not saved in presets: %s\n", qPrintable(m));
+        }
+        if (!missing.isEmpty()) {
+            std::fflush(stdout);
+            return 1;
+        }
         QTimer::singleShot(1500, &app, &finish_self_test);
     }
     return app.exec();

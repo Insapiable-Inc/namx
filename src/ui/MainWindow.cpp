@@ -36,6 +36,7 @@
 #include <QPushButton>
 #include <QSaveFile>
 #include <QScrollArea>
+#include <QSet>
 #include <QSettings>
 #include <QShortcut>
 #include <QStandardPaths>
@@ -2630,11 +2631,9 @@ void MainWindow::register_parameters() {
     toggle_param("tuner", "enabled", sw_tuner_enable, [e](bool b) {
         e->get_tuner().set_enabled(b);
     });
-    params.back().in_preset = false; // a practice tool, not part of the sound
     toggle_param("tuner", "mute", sw_tuner_mute, [e](bool b) {
         e->get_tuner().set_mute(b);
     });
-    params.back().in_preset = false;
 
     toggle_param("transpose", "enabled", sw_transpose_enable, [e](bool b) {
         e->get_transpose().set_enabled(b);
@@ -3515,6 +3514,37 @@ PresetSerializer::Applied MainWindow::apply_preset_params(const QJsonObject& obj
         apply_chain_order(applied.effect_order);
     }
     return applied;
+}
+
+QStringList MainWindow::controls_missing_from_presets() const {
+    QSet<const QWidget*> saved;
+    for (const auto& p : params) {
+        saved.insert(p.knob ? static_cast<const QWidget*>(p.knob) : p.toggle);
+    }
+    // The tempo bar (BPM, metronome) is a machine setting, not part of a sound.
+    auto missing = [&](const QWidget* w) {
+        return !saved.contains(w) && !tempo_bar->isAncestorOf(w);
+    };
+    auto card_of = [](const QWidget* w) {
+        for (; w; w = w->parentWidget()) {
+            if (w->property("displayName").isValid()) {
+                return w->property("displayName").toString();
+            }
+        }
+        return QString("(no card)");
+    };
+    QStringList out;
+    for (const KnobWidget* k : findChildren<KnobWidget*>()) {
+        if (missing(k)) {
+            out << card_of(k) + ": knob " + k->get_label();
+        }
+    }
+    for (const ToggleSwitch* t : findChildren<ToggleSwitch*>()) {
+        if (missing(t)) {
+            out << card_of(t) + ": switch \"" + t->toolTip() + "\"";
+        }
+    }
+    return out;
 }
 
 // A model/IR path a preset references: loaded if the file is there.
