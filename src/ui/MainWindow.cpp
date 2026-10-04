@@ -3487,10 +3487,11 @@ bool MainWindow::load_preset_file(const QString& path_in) {
 PresetSerializer::Applied MainWindow::apply_preset_params(const QJsonObject& obj) {
     // Widgets first (engine follows via the registry connections), then the
     // chain order (engine-side sanitizer handles unknown/missing IDs).
+    // A preset without an order (v1 files) gets the default one, like a missing
+    // group gets its defaults — not whatever the previous preset left (audit
+    // 2026-10-04 item 07); the sanitizer fills an empty list with every effect.
     const PresetSerializer::Applied applied = PresetSerializer::apply(obj, params);
-    if (!applied.effect_order.isEmpty()) {
-        apply_chain_order(applied.effect_order);
-    }
+    apply_chain_order(applied.effect_order);
     return applied;
 }
 
