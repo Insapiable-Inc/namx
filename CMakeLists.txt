@@ -308,6 +308,19 @@ if(NAM_BUILD_TESTS)
     target_link_libraries(WavReaderTest PRIVATE Qt6::Core)
     add_test(NAME WavReaderTest COMMAND WavReaderTest)
 
+    # The model loader's boundaries: no block size yet, far-off and absurd model rates
+    # (audit 2026-10-04 items 01/02).
+    add_executable(NamProcessorTest tests/NamProcessorTest.cpp src/dsp/NamProcessor.cpp
+                   src/dsp/Log.cpp ${NAM_SOURCES})
+    target_include_directories(NamProcessorTest SYSTEM PRIVATE
+        ${NAM_ROOT} ${NAM_DEPS_PATH}/eigen ${NAM_DEPS_PATH}/nlohmann
+        ${NAM_DEPS_PATH}/AudioDSPTools/dsp/ResamplingContainer)
+    target_include_directories(NamProcessorTest PRIVATE src/dsp)
+    target_compile_definitions(NamProcessorTest PRIVATE NAM_SAMPLE_FLOAT NAM_ENABLE_A2_FAST)
+    target_compile_options(NamProcessorTest PRIVATE ${NAM_WARNING_FLAGS})
+    target_link_libraries(NamProcessorTest PRIVATE Qt6::Core)
+    add_test(NAME NamProcessorTest COMMAND NamProcessorTest)
+
     # Recorded effect outputs (tests/DspGoldenTest.cpp, tests/dsp-golden.txt): guards DSP refactors.
     find_package(Qt6 REQUIRED COMPONENTS Test)
     find_package(Threads REQUIRED)

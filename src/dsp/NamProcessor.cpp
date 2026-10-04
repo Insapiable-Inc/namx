@@ -19,6 +19,12 @@ namespace namx
 static constexpr double NORMALIZE_TARGET_DB = -18.0;
 static constexpr double NORMALIZE_MAX_DB = 24.0;
 
+// A model's stated training rate is file data: outside this range it is rejected
+// (audit 2026-10-04 item 02 — an absurd rate drives the resampler's buffer arithmetic).
+// Models that state no rate (≤ 0) are 48 kHz, as in the official plugin.
+static constexpr double MIN_MODEL_RATE = 8000.0;
+static constexpr double MAX_MODEL_RATE = 384000.0;
+
 NamProcessor::NamProcessor() {
 }
 
@@ -93,6 +99,15 @@ bool NamProcessor::load_model(const string& path) {
         qCWarning(lc_audio, "[NamProcessor] %s (%s)", last_error.c_str(), path.c_str());
         return false;
     }
+    const double stated_rate = pair->l->GetExpectedSampleRate();
+    if (!std::isfinite(stated_rate) ||
+        (stated_rate > 0.0 && (stated_rate < MIN_MODEL_RATE || stated_rate > MAX_MODEL_RATE))) {
+        last_error = "Model states a sample rate of " + std::to_string(stated_rate) +
+                     " Hz; supported: " + std::to_string(static_cast<int>(MIN_MODEL_RATE)) + "-" +
+                     std::to_string(static_cast<int>(MAX_MODEL_RATE)) + " Hz.";
+        qCWarning(lc_audio, "[NamProcessor] %s (%s)", last_error.c_str(), path.c_str());
+        return false;
+    }
     last_error.clear();
 
     std::optional<double> normalization_db;
@@ -111,14 +126,28 @@ bool NamProcessor::load_model(const string& path) {
         current_max_buf = max_buf.load();
         rate = model_rate > 0.0 ? model_rate : sample_rate;
     }
-    pair->reset(rate, current_max_buf);
+    // Preparation can throw too (the resampler's warm-up, allocation): a failure here
+    // is a load error, and the model playing stays (audit 2026-10-04 item 02).
+    try {
+        pair->reset(rate, current_max_buf);
+    } catch (const std::exception& e) {
+        last_error = string("Preparing the model failed: ") + e.what();
+        qCWarning(lc_audio, "[NamProcessor] %s (%s)", last_error.c_str(), path.c_str());
+        return false;
+    }
 
     {
         std::lock_guard<std::mutex> lock(model_mutex);
         const size_t cur_buf = max_buf.load();
         const double cur_rate = model_rate > 0.0 ? model_rate : sample_rate;
         if (cur_buf > pair->reset_buf || cur_rate != pair->reset_rate) {
-            pair->reset(cur_rate, std::max(cur_buf, pair->reset_buf));
+            try {
+                pair->reset(cur_rate, std::max(cur_buf, pair->reset_buf));
+            } catch (const std::exception& e) {
+                last_error = string("Preparing the model failed: ") + e.what();
+                qCWarning(lc_audio, "[NamProcessor] %s (%s)", last_error.c_str(), path.c_str());
+                return false;
+            }
         }
         publish_resampling(pair.get());
         slot.publish(std::move(pair));
