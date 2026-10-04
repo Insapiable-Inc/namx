@@ -88,7 +88,7 @@ static constexpr int STEREO_SLOT_WIDTH = 96; // toggle + "Stereo" caption
 static constexpr int SYNC_SLOT_WIDTH = 112; // toggle + "Sync" / "Manual" / "Continuous"
 // Every row is exactly as tall as a knob row (40 px dial + knob margins +
 // card margins + border), so knob-less rows and the tuner match the rest.
-static constexpr int ROW_CARD_HEIGHT = 62;
+static constexpr int ROW_CARD_HEIGHT = 48;
 static constexpr int DETAIL_ROW_HEIGHT = 54; // the ▾ row of advanced knobs
 // Loaded file name on the Amplifier/Cabinet rows elides beyond this.
 static constexpr int HERO_NAME_MAX_WIDTH = 420;
@@ -387,7 +387,7 @@ QFrame* MainWindow::make_row_card(const QString& title) {
     outer->addWidget(row);
     outer->addStretch();
     auto* lay = new QHBoxLayout(row);
-    lay->setContentsMargins(10, 6, 10, 6);
+    lay->setContentsMargins(10, 3, 10, 3);
     lay->setSpacing(10);
 
     // Grip column: the ≡ handle is the only place a reorder drag can start,

@@ -30,10 +30,10 @@ public:
     void set_reference(int new_hz);
 
     QSize sizeHint() const override {
-        return {380, 48};
+        return {380, 40};
     }
     QSize minimumSizeHint() const override {
-        return {260, 48};
+        return {260, 40};
     }
 
 protected:

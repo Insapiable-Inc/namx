@@ -142,7 +142,8 @@ void TunerDisplay::paintEvent(QPaintEvent*) {
     const qreal w = 18.0, h = 26.0, t = 3.5;
     const qreal half = (h - 3 * t) / 2.0;
     const qreal digit_x = panel.center().x() - w / 2.0 - 12.0;
-    const qreal digit_y = panel.top() + 15.0;
+    // Below the LED ladder; closer to it when the row is short.
+    const qreal digit_y = panel.top() + std::min(15.0, panel.height() - h - 1.0);
 
     const struct
     {

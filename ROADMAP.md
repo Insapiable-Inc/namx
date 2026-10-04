@@ -311,9 +311,10 @@ Requires BUG-06 fixed (Phase 1).
 
 ### Phase 5 — manual verification pending
 
-- [ ] Resize the window down to 1280×720: everything stays usable, the strip scrolls.
-      (2026-10-04: at 1080p the bottom 3 effects need scrolling — user wants that
-      addressed; options under discussion.)
+- [x] Resize the window down to 1280×720: everything stays usable, the strip scrolls.
+      (2026-10-04: at 1080p the bottom 3 effects needed scrolling → rows 62 → 48 px.
+      User: fits 1080p at 100 %; 2K has room to spare up to 125 %, scrolls above —
+      fine.)
 - [x] New accent colors: stripes, titles, knob rings/ticks, and toggle "on" states
       all show the palette hex verbatim (revised palette values to come from the
       user for the near-white and very dark entries).
