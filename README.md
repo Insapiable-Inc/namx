@@ -2,7 +2,7 @@
 
 A standalone Qt6 desktop application that loads [Neural Amp Modeler](https://www.neuralampmodeler.com)
 `.nam` profiles and `.wav` impulse responses, processes live audio in real time, and
-exposes a full pedal-style effects chain plus a 3-band EQ.
+exposes a full pedal-style effects chain plus a 4-band EQ with low and high cuts.
 
 It is built on [NeuralAmpModelerCore](https://github.com/sdatkinson/NeuralAmpModelerCore),
 the C++ DSP library behind NAM, which this repository pulls in as a git submodule.
@@ -16,9 +16,10 @@ the C++ DSP library behind NAM, which this repository pulls in as a git submodul
 
 - Loads `.nam` neural amp models (WaveNet, LSTM, ConvNet, Linear; versions 0.5–0.7)
 - FIR cab simulation from any `.wav` impulse response
-- Effects chain, freely reorderable by drag-and-drop: Tuner, Noise Gate, Compressor,
-  Dynamic Wah, Flanger, Phaser, NAM model, 3-band EQ, Chorus, Tremolo, Delay (ping-pong),
-  Reverb, IR cab sim — stereo-capable from the first stereo effect onwards
+- Effects chain, freely reorderable by drag-and-drop: Tuner, Transpose, Noise Gate,
+  Compressor, Dynamic Wah, Flanger, Phaser, Drive (Tube Screamer), NAM model, Volume
+  pedal, 4-band EQ, Chorus, Tremolo, Delay (ping-pong), Reverb, IR cab sim —
+  stereo-capable from the first stereo effect onwards
 - Library panel: every model, IR and preset under your folders, with search, favorites,
   recents and ‹ › browsing from the Amplifier and Cabinet rows; drag-and-drop loading
 - Presets (`.nampreset` JSON) that embed the model and IR paths; full session state

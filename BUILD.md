@@ -2,7 +2,7 @@
 
 NAM-X (binary `namx`) is a standalone Qt6 desktop application that loads `.nam` neural amp models
 and `.wav` impulse responses, processes live audio, and exposes a full pedal-style
-effects chain plus a 3-band EQ.
+effects chain plus a 4-band EQ with low and high cuts.
 
 | Platform | Audio backend | Status |
 |----------|---------------|--------|
@@ -59,7 +59,7 @@ sudo pacman -S git cmake ninja qt6-base jack2 alsa-lib qjackctl
 ### Fedora / RHEL
 
 ```bash
-sudo dnf install git cmake ninja-build qt6-qtbase-devel jack-audio-connection-kit-devel alsa-lib-devel qjackctl
+sudo dnf install git gcc-c++ cmake ninja-build qt6-qtbase-devel jack-audio-connection-kit-devel alsa-lib-devel qjackctl
 ```
 
 ### Windows (MSVC)
@@ -306,8 +306,8 @@ jack_connect NAM-X:output_R  system:playback_2
 |--------|--------|
 | Click + drag up | Increase value |
 | Click + drag down | Decrease value |
-| Scroll wheel | Fine adjustment |
-| Double-click | Reset to 0 dB |
+| Scroll wheel | One step per notch: the knob's own step size, or 1 % of its range |
+| Double-click | Reset to the knob's default |
 
 ### Parameters
 
@@ -337,10 +337,11 @@ setting, the effect order, the input/output gains, and the model and IR (by path
 | **A / B**, **A→B** | Two working states of the current preset: switch between them to compare, or copy the active one over the other. Loading a preset clears both |
 | **⋯** (same as the **Preset** menu) | Open…, Import… (copies files into the presets folder), Export… (writes a copy elsewhere), Show in Folder, Delete… (to the trash), Reset All to Defaults… |
 
-**Not part of a preset:** audio devices and port connections, the tuner (on/off,
-reference pitch), the tempo and the metronome, MIDI mappings and devices, the library state,
-window layout, and the quick-slot assignments. These
-belong to the machine or the session, so loading a preset never changes them.
+**Not part of a preset:** audio devices and port connections, the tuner's reference
+pitch (its On and Mute switches are saved, like every rack control), the tempo and the
+metronome, MIDI mappings and devices, the library state, window layout, and the
+quick-slot assignments. These belong to the machine or the session, so loading a preset
+never changes them.
 
 **Starter presets.** On first run eight starter presets are copied to
 `<Documents>/NAM-X/Presets/Starter` (Clean Chorus, Tight Rhythm, Lead Delay,
@@ -487,7 +488,7 @@ about 4 ms higher up, where the pick attack is.
 |--------|---------|
 | `.nam`  | Neural Amp Modeler model file. Supported architectures: WaveNet, LSTM, ConvNet, Linear. Version 0.5–0.7 supported. |
 | `.wav`  | Impulse response / cab simulation. Mono; PCM 16/24/32-bit or float 32/64-bit. Any sample rate. Up to 1 s is used; a longer file is faded out over its last 10 ms there. |
-| `.nampreset` | Preset, JSON (schema v2): `version`, every effect group (`noiseGate`, `compressor`, …) with its parameters, `effectOrder` (stable effect IDs), `namPath` / `irPath` (older files may carry a `tone3000` object; it is ignored). A group missing from the file leaves that effect untouched; a missing key inside a group takes its default. |
+| `.nampreset` | Preset, JSON (schema v2): `version`, every effect group (`noiseGate`, `compressor`, …) with its parameters, `effectOrder` (stable effect IDs), `namPath` / `irPath` (older files may carry a `tone3000` object; it is ignored). An effect group missing from the file loads at its defaults, as does a missing key inside a group; a missing `effectOrder` loads the default order. |
 
 NAM models are available from the [NAM community model library](https://www.neuralampmodeler.com).
 IR files are compatible with any standard cab sim WAV (e.g., from OwnHammer, Celestion, Rosen Digital, etc.).
