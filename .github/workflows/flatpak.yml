@@ -38,4 +38,4 @@ jobs:
           flatpak install --user -y --noninteractive namx.flatpak
           files="$(flatpak info --show-location --user io.github.Insapiable_Inc.namx)/files"
           find "$files" -type f | sort
-          ! find "$files" -name 'libjack*' | grep .
+          if find "$files" -name 'libjack*' | grep .; then echo 'libjack is bundled'; exit 1; fi

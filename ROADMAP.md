@@ -476,7 +476,13 @@ app id in hicolor, `setWindowIcon` from the qrc, Windows exe icon + version bloc
       (layout verified with a DESTDIR install).
 - ~~AUR PKGBUILD~~ **Dropped 2026-10-04 (user): no AUR package.** The PKGBUILD and the
       release job's PKGBUILD asset are gone; Arch users build from source.
-- [ ] **AppImage** (back 2026-10-02, reversing the 2026-09-17 drop): built in
+- [~] **AppImage** (2026-10-04: the `appimage` job in `release.yml`, written without a
+      local run — user: CI only — so the first tag/dispatch run is its test. Built on
+      **Ubuntu 24.04, not 22.04**: 24.04's libstdc++ is GCC 14's, so nothing C++ gets
+      bundled; a bundled libstdc++ breaks hosts whose GL drivers need a newer one. Reach:
+      glibc 2.39 — Ubuntu 24.04, Debian 13, Fedora 40 and newer. xcb + Wayland + offscreen
+      platform plugins, zsync update info, `NAM-X-<v>-x86_64.AppImage`, fails if any
+      libjack lands in the AppDir, smoke-tested headless.) Was planned (back 2026-10-02, reversing the 2026-09-17 drop): built in
       `release.yml` with `linuxdeploy` + its Qt plugin on an old base (Ubuntu 22.04-ish,
       for glibc reach) with a newer GCC for C++23, bundling `libstdc++` but **not
       `libjack`**; update information (zsync) for AppImageUpdate / Gear Lever; attached

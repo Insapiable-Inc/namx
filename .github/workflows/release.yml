@@ -1,7 +1,7 @@
 name: Release
 
-# Tag push (v0.0.0, v0.1.0-rc1, …) → build + tests on Ubuntu 24.04 and Arch
-# (the AppImage and Flatpak jobs come with ROADMAP Phase 8), a Windows
+# Tag push (v0.0.0, v0.1.0-rc1, …) → build + tests on Ubuntu 24.04 and Arch, an
+# AppImage (the Flatpak goes through Flathub; flatpak.yml test-builds it), a Windows
 # windeployqt zip, a source tarball with the submodules vendored, and a GitHub
 # release. Every build uses -DNAM_NATIVE_OPT=OFF
 # (portable AVX2/FMA).
@@ -94,6 +94,70 @@ jobs:
           DESTDIR="$PWD/stage" cmake --install build-release --prefix /usr
           find stage -type f | sort
 
+  appimage:
+    name: AppImage (x86_64)
+    # Built on 24.04: its libstdc++ is GCC 14's, so the C++23 build needs no bundled
+    # libstdc++ (bundling one breaks hosts whose GL drivers want a newer one). The
+    # price is glibc 2.39: Ubuntu 24.04, Debian 13, Fedora 40 and newer.
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build g++-14 qt6-base-dev qt6-base-dev-tools \
+            qt6-wayland libjack-jackd2-dev libasound2-dev pkg-config libgl1-mesa-dev \
+            libfuse2t64 file
+      - name: Configure + build (portable)
+        env:
+          CXX: g++-14
+        run: |
+          cmake -S . -B build-release -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DNAM_NATIVE_OPT=OFF \
+            -DNAM_WERROR=ON
+          cmake --build build-release --parallel
+          DESTDIR="$PWD/AppDir" cmake --install build-release --prefix /usr
+      - name: linuxdeploy + Qt plugin
+        run: |
+          base=https://github.com/linuxdeploy
+          wget -q "$base/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage"
+          wget -q "$base/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage"
+          wget -q "$base/linuxdeploy-plugin-appimage/releases/download/continuous/linuxdeploy-plugin-appimage-x86_64.AppImage"
+          chmod +x linuxdeploy*.AppImage
+      - name: Build the AppImage
+        env:
+          QMAKE: /usr/lib/qt6/bin/qmake
+          # Wayland next to the default xcb; offscreen for the headless smoke test.
+          EXTRA_PLATFORM_PLUGINS: libqwayland-egl.so;libqwayland-generic.so;libqoffscreen.so
+          EXTRA_QT_PLUGINS: wayland-shell-integration;wayland-decoration-client;wayland-graphics-integration-client
+          # AppImageUpdate / Gear Lever find updates in the GitHub releases.
+          LDAI_UPDATE_INFORMATION: gh-releases-zsync|Insapiable-Inc|namx|latest|NAM-X-*-x86_64.AppImage.zsync
+        run: |
+          V="${GITHUB_REF_NAME#v}"
+          export LDAI_OUTPUT="NAM-X-$V-x86_64.AppImage"
+          ./linuxdeploy-x86_64.AppImage --appdir AppDir \
+            --desktop-file AppDir/usr/share/applications/io.github.Insapiable_Inc.namx.desktop \
+            --icon-file AppDir/usr/share/icons/hicolor/256x256/apps/io.github.Insapiable_Inc.namx.png \
+            --plugin qt --output appimage
+          # libjack must come from the host (JACK or PipeWire), never from the bundle.
+          if find AppDir -name 'libjack*' | grep .; then echo 'libjack is bundled'; exit 1; fi
+          mkdir -p dist && mv NAM-X-*.AppImage NAM-X-*.zsync dist/
+          (cd dist && sha256sum NAM-X-*.AppImage > "$LDAI_OUTPUT.sha256")
+      - name: Smoke test the AppImage
+        env:
+          QT_QPA_PLATFORM: offscreen
+          APPIMAGE_EXTRACT_AND_RUN: 1 # no FUSE needed on the runner
+        run: |
+          ./dist/NAM-X-*-x86_64.AppImage --version
+          timeout 30 ./dist/NAM-X-*-x86_64.AppImage --self-test-and-exit
+      - uses: actions/upload-artifact@v4
+        with:
+          name: appimage
+          path: dist/*
+
   arch:
     name: Arch Linux (build + tests)
     runs-on: ubuntu-latest
@@ -185,7 +249,7 @@ jobs:
 
   release:
     name: GitHub release
-    needs: [source, linux, arch, windows]
+    needs: [source, linux, appimage, arch, windows]
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     permissions:
@@ -207,4 +271,5 @@ jobs:
           prerelease: ${{ contains(github.ref_name, '-') }}
           files: |
             artifacts/source/*
+            artifacts/appimage/*
             artifacts/windows/*
