@@ -5,6 +5,12 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# A bare `cmake -S . -B build` is a Release build: an unset type compiles without
+# optimization or SIMD, several times slower than the budget, with no warning.
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type (Release, Debug, RelWithDebInfo)" FORCE)
+endif()
+
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
@@ -166,12 +172,18 @@ add_executable(namx ${GUI_SOURCES} ${NAM_SOURCES})
 
 # Warnings (CPP_GUIDELINES.md → Types and casts) apply to our code only: third-party
 # sources compiled into our targets are silenced, their headers included as SYSTEM.
-# Errors on GCC/Clang; MSVC stays at /W4 without /WX until a Windows build is clean.
+# NAM_WERROR (CI and build.sh turn it on) makes them errors on GCC/Clang; off by
+# default so a package built by a future compiler with new -Wall diagnostics still
+# builds. MSVC stays at /W4 without /WX until a Windows build is clean.
+option(NAM_WERROR "Treat compiler warnings as errors (CI)" OFF)
 if(MSVC)
     set(NAM_WARNING_FLAGS /W4)
     set(NAM_THIRD_PARTY_FLAGS /w)
 else()
-    set(NAM_WARNING_FLAGS -Wall -Wextra -Wconversion -Wsign-conversion -Wsuggest-override -Werror)
+    set(NAM_WARNING_FLAGS -Wall -Wextra -Wconversion -Wsign-conversion -Wsuggest-override)
+    if(NAM_WERROR)
+        list(APPEND NAM_WARNING_FLAGS -Werror)
+    endif()
     set(NAM_THIRD_PARTY_FLAGS -w)
 endif()
 set_source_files_properties(${NAM_SOURCES} PROPERTIES COMPILE_OPTIONS "${NAM_THIRD_PARTY_FLAGS}")
@@ -203,6 +215,10 @@ target_compile_definitions(namx PRIVATE
     NAM_SAMPLE_FLOAT
     NAM_ENABLE_A2_FAST
     NAM_VERSION="${PROJECT_VERSION}"
+    # packaging/namx.rc builds its numeric FILEVERSION from these.
+    NAM_VERSION_MAJOR=${PROJECT_VERSION_MAJOR}
+    NAM_VERSION_MINOR=${PROJECT_VERSION_MINOR}
+    NAM_VERSION_PATCH=${PROJECT_VERSION_PATCH}
 )
 
 target_link_libraries(namx PRIVATE
@@ -234,7 +250,8 @@ if(MSVC)
     # the portable choice, so NAM_NATIVE_OPT has no effect here.
     target_compile_options(namx PRIVATE
         ${NAM_WARNING_FLAGS} /permissive- /EHsc
-        $<$<CONFIG:Release>:/O2 /arch:AVX2>
+        $<$<CONFIG:Release>:/O2>
+        $<$<NOT:$<CONFIG:Debug>>:/arch:AVX2>
         $<$<CONFIG:Debug>:/Od /Zi>
     )
 else()
@@ -243,16 +260,13 @@ else()
     else()
         set(NAM_SIMD_FLAGS -mavx2 -mfma)
     endif()
+    # Every non-Debug config gets the SIMD flags (RelWithDebInfo included).
     target_compile_options(namx PRIVATE
         ${NAM_WARNING_FLAGS}
-        $<$<CONFIG:Release>:-O3 ${NAM_SIMD_FLAGS}>
+        $<$<CONFIG:Release>:-O3>
+        $<$<NOT:$<CONFIG:Debug>>:${NAM_SIMD_FLAGS}>
         $<$<CONFIG:Debug>:-Og -g>
     )
-endif()
-
-# stdc++fs is libstdc++-only — MSVC ships <filesystem> in the runtime.
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    target_link_libraries(namx PRIVATE stdc++fs)
 endif()
 
 # ---------------------------------------------------------------------------
