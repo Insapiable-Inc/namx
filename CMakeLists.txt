@@ -321,6 +321,14 @@ if(NAM_BUILD_TESTS)
     target_link_libraries(NamProcessorTest PRIVATE Qt6::Core)
     add_test(NAME NamProcessorTest COMMAND NamProcessorTest)
 
+    # The library scan's file descriptions against hand-built WAV headers (audit 2026-10-04).
+    add_executable(LibraryIndexTest tests/LibraryIndexTest.cpp src/ui/LibraryIndex.cpp
+                   src/ui/LibraryIndex.h)
+    target_include_directories(LibraryIndexTest PRIVATE src/ui src/dsp)
+    target_compile_options(LibraryIndexTest PRIVATE ${NAM_WARNING_FLAGS})
+    target_link_libraries(LibraryIndexTest PRIVATE Qt6::Core)
+    add_test(NAME LibraryIndexTest COMMAND LibraryIndexTest)
+
     # Recorded effect outputs (tests/DspGoldenTest.cpp, tests/dsp-golden.txt): guards DSP refactors.
     find_package(Qt6 REQUIRED COMPONENTS Test)
     find_package(Threads REQUIRED)

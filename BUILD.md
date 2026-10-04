@@ -154,7 +154,7 @@ Optional CMake variables:
 | Variable | Purpose |
 |----------|---------|
 | `-DNAM_NATIVE_OPT=OFF` | Portable AVX2/FMA instead of `-march=native` (required for release builds) |
-| `-DNAM_BUILD_TESTS=ON` | Also build the tests (`MidiMapperTest`, `DspGoldenTest`, `WavReaderTest`, `NamProcessorTest`; run them directly or via `ctest`) |
+| `-DNAM_BUILD_TESTS=ON` | Also build the tests (`MidiMapperTest`, `DspGoldenTest`, `WavReaderTest`, `NamProcessorTest`, `LibraryIndexTest`; run them directly or via `ctest`) |
 
 ### Linux — install / packages
 
@@ -220,7 +220,7 @@ cmake --build build-release --parallel
 | `-DCMAKE_BUILD_TYPE=Release` | Release | `Debug` for symbols, `Release` for optimization |
 | `-DCMAKE_PREFIX_PATH=...` | none | Qt install root on Windows |
 | `-DNAM_NATIVE_OPT=OFF` | ON | Portable AVX2/FMA instead of `-march=native` (release/CI builds) |
-| `-DNAM_BUILD_TESTS=ON` | OFF | `MidiMapperTest`, `DspGoldenTest`, `WavReaderTest`, `NamProcessorTest` |
+| `-DNAM_BUILD_TESTS=ON` | OFF | `MidiMapperTest`, `DspGoldenTest`, `WavReaderTest`, `NamProcessorTest`, `LibraryIndexTest` |
 | `-DNAM_BUILD_BENCH=ON` | OFF | `namx-bench`, the chain benchmark (see Troubleshooting → High CPU usage) |
 
 ---

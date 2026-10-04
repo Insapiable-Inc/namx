@@ -74,6 +74,7 @@ jobs:
           ./build-release/DspGoldenTest
           ./build-release/WavReaderTest
           ./build-release/NamProcessorTest
+          ./build-release/LibraryIndexTest
       - name: Validate packaging files + install layout
         run: |
           desktop-file-validate packaging/cl.pichulero.namx.desktop
@@ -110,6 +111,7 @@ jobs:
           ./build-release/DspGoldenTest
           ./build-release/WavReaderTest
           ./build-release/NamProcessorTest
+          ./build-release/LibraryIndexTest
           DESTDIR="$PWD/stage" cmake --install build-release --prefix /usr
           find stage -type f | sort
 

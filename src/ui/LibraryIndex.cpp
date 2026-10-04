@@ -203,8 +203,11 @@ static void describe_ir(const QString& path, LibraryEntry& e) {
     if (channels > 0) {
         sum << (channels == 1 ? "mono" : channels == 2 ? "stereo" : QString("%1 ch").arg(channels));
     }
-    if (data_bytes > 0 && channels > 0 && bits > 0 && rate > 0) {
-        const qint64 frames = data_bytes / (channels * bits / 8);
+    // The header is untrusted: 4-bit (ADPCM) files have a zero-byte frame size, and a
+    // damaged one any product (audit 2026-10-04 item 02) — no length line for those.
+    const qint64 frame_bytes = static_cast<qint64>(channels) * bits / 8;
+    if (data_bytes > 0 && frame_bytes > 0 && rate > 0) {
+        const qint64 frames = data_bytes / frame_bytes;
         const double ms = 1000.0 * static_cast<double>(frames) / static_cast<double>(rate);
         sum << QString("%1 ms").arg(ms, 0, 'f', ms < 10 ? 1 : 0);
         det << QString("Length: %1 ms").arg(ms, 0, 'f', 1);

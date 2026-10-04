@@ -58,6 +58,7 @@ jobs:
           ./build-release/DspGoldenTest
           ./build-release/WavReaderTest
           ./build-release/NamProcessorTest
+          ./build-release/LibraryIndexTest
 
       - name: CPU regression (instructions per block, callgrind)
         # Counts per compiler (bench/instructions-baseline.json). Until this

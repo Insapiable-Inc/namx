@@ -28,7 +28,7 @@ namx/
 │   └── dsp/           # AudioEngine, backends, effect processors (no Qt dependencies)
 ├── resources/         # resources.qrc, app icon (icons/), starter presets (presets/)
 ├── packaging/         # desktop file, AppStream, mime, PKGBUILD, Windows .rc (AppImage + Flatpak planned in Phase 8 — decision 2026-10-02, reversing 2026-09-17)
-├── tests/             # MidiMapperTest, DspGoldenTest, WavReaderTest, NamProcessorTest (-DNAM_BUILD_TESTS=ON)
+├── tests/             # MidiMapperTest, DspGoldenTest, WavReaderTest, NamProcessorTest, LibraryIndexTest (-DNAM_BUILD_TESTS=ON)
 ├── bench/             # namx-bench, instructions.py (CPU regression) (-DNAM_BUILD_BENCH=ON)
 └── external/          # Git submodules (CMake: EXTERNAL_DIR, NAM_ROOT, NAM_DEPS_PATH)
     ├── NeuralAmpModelerCore/  # NAM core — our fork (Insapiable-Inc), branch `namx` = upstream 3cde95c + our weight-check fix; brings Eigen, nlohmann/json, AudioDSPTools in its Dependencies/
@@ -71,7 +71,7 @@ Release builds default to `-march=native` via the `NAM_NATIVE_OPT` CMake option 
 
 `cmake --install <build> --prefix /usr` installs the binary plus the desktop/mime/AppStream/icon files (app id `cl.pichulero.namx`); `.github/workflows/release.yml` runs on `v*` tags (Ubuntu + Arch build and tests, Windows zip, source tarball, GitHub release). **Linux distribution** (user decision 2026-10-02, reversing 2026-09-17's "no bundles"): AUR PKGBUILD + an AppImage + a Flatpak on Flathub (Phase 8); no Snap. Bundles must never include `libjack`. `namx --version`, `--help`, `--self-test-and-exit` (headless CI check) and `namx file…` (opens .nam/.wav/.nampreset) are handled in `main.cpp`; the version comes from `PROJECT_VERSION` via the `NAM_VERSION` define.
 
-`-DNAM_BUILD_TESTS=ON` adds `MidiMapperTest`, `DspGoldenTest`, `WavReaderTest` and `NamProcessorTest` (all headless):
+`-DNAM_BUILD_TESTS=ON` adds `MidiMapperTest`, `DspGoldenTest`, `WavReaderTest`, `NamProcessorTest` and `LibraryIndexTest` (all headless):
 
 ```bash
 cmake -S . -B build-test -DCMAKE_BUILD_TYPE=Debug -DNAM_BUILD_TESTS=ON
