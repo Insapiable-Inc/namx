@@ -117,6 +117,7 @@ private:
     string last_error;
     vector<float> raw; // native samples of the loaded file
     double raw_rate{0.0}; // their sample rate
+    size_t raw_full{0}; // the file's length in samples (raw keeps only what the kernel uses)
     double target_rate{0.0};
 
     unique_ptr<Kernel> build_kernel() const;

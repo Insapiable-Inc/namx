@@ -63,8 +63,8 @@ unique_ptr<IRLoader::Kernel> IRLoader::build_kernel() const {
     const double rate = resample ? target_rate : raw_rate;
     const size_t cap = static_cast<size_t>(MAX_IR_SECONDS * rate);
     const size_t full_length =
-        resample ? static_cast<size_t>(std::ceil(static_cast<double>(raw.size()) * rate / raw_rate))
-                 : raw.size();
+        resample ? static_cast<size_t>(std::ceil(static_cast<double>(raw_full) * rate / raw_rate))
+                 : raw_full;
     vector<float> ir = resample ? resample_sinc(raw, raw_rate, target_rate, cap) : raw;
     ir.resize(std::min(ir.size(), cap));
     k->built_rate = rate;
@@ -135,6 +135,15 @@ bool IRLoader::load(const string& path) {
     const double sample_rate = audio->sample_rate;
     raw = std::move(audio->samples);
     raw_rate = sample_rate;
+    raw_full = raw.size();
+    // Keep what a kernel can use (MAX_IR_SECONDS plus the resampler's reach), not
+    // the whole file: a long tail recording would otherwise stay resident for as
+    // long as it is loaded (audit 2026-10-04, Fable item 13).
+    const size_t keep = static_cast<size_t>(std::ceil(MAX_IR_SECONDS * raw_rate)) + 64;
+    if (raw.size() > keep) {
+        raw.resize(keep);
+        raw.shrink_to_fit();
+    }
     if (target_rate > 0.0 && sample_rate > 0.0 && sample_rate != target_rate) {
         qCInfo(lc_audio, "[IRLoader] Resampling IR from %.0f Hz to %.0f Hz", sample_rate,
                target_rate);
@@ -150,6 +159,7 @@ void IRLoader::unload() {
     slot.publish(nullptr);
     file_path = "";
     raw.clear();
+    raw_full = 0;
     raw_rate = 0.0;
 }
 
