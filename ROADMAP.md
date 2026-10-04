@@ -312,11 +312,14 @@ Requires BUG-06 fixed (Phase 1).
 ### Phase 5 — manual verification pending
 
 - [ ] Resize the window down to 1280×720: everything stays usable, the strip scrolls.
-- [ ] New accent colors: stripes, titles, knob rings/ticks, and toggle "on" states
+      (2026-10-04: at 1080p the bottom 3 effects need scrolling — user wants that
+      addressed; options under discussion.)
+- [x] New accent colors: stripes, titles, knob rings/ticks, and toggle "on" states
       all show the palette hex verbatim (revised palette values to come from the
       user for the near-white and very dark entries).
-- [ ] Ctrl+S / Ctrl+O open the save/load dialogs; About shows the build's version.
-- [ ] Load a model while playing: no click, a soft ~15 ms fade-in instead. Same on
+- [x] Ctrl+S / Ctrl+O open the save/load dialogs; About shows the build's version.
+      (2026-10-04: Ctrl+S, Ctrl+Shift+S, Ctrl+O confirmed; About not looked at.)
+- [x] Load a model while playing: no click, a soft ~15 ms fade-in instead. Same on
       unload and when switching between two models.
 
 ## Phase 6 — Source tree & code cleanup ✅ (completed 2026-08-10)
@@ -420,7 +423,8 @@ driven by new requirements rather than this list:
 - **REAPER-style meters** (absolute zones on a -60..+6 dB scale, red only for
   the part above 0 dBFS, falling peak-hold line) and a **TU-3-style tuner
   display** (`TunerDisplay`: LED ladder, glowing seven-segment note, signed
-  cents). **Tuner mute removed** (decision 2026-08-23).
+  cents). **Tuner mute removed** (decision 2026-08-23; reversed 2026-10-04 — back on
+  the Tuner row, on by default).
 - Full labels everywhere (Noise Gate, Amplifier, Equalizer, Cabinet,
   Threshold, Sensitivity, Resonance, Makeup Gain, Room Size,
   Bass/Middle/Treble); no em dashes in UI strings; Chorus gained its missing
