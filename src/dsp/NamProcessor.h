@@ -95,6 +95,11 @@ public:
 
     void reset() override {
     }
+    // The right model's recurrent state can't be copied from the left's: its first
+    // stereo block is masked by the load fade instead (review item 19).
+    void sync_right_channel() override {
+        fade_pending.store(true, std::memory_order_release);
+    }
 
     // Overrides the default EffectBase dispatch so that stereo input is
     // processed through independent L and R model instances rather than

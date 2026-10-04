@@ -22,6 +22,19 @@ void DelayProcessor::on_sample_rate_changed(double sr) {
     reset();
 }
 
+void DelayProcessor::sync_right_channel() {
+    // The right line takes the left's history (the repeats keep going) and glides
+    // from there to its own delay time; its shifter starts over.
+    if (!lines[0].samples.empty()) {
+        lines[1].samples.copy_from(lines[0].samples);
+    }
+    lines[1].hp_x = lines[0].hp_x;
+    lines[1].hp_y = lines[0].hp_y;
+    lines[1].lp = lines[0].lp;
+    del_now[1] = del_now[0];
+    shift[1].reset();
+}
+
 void DelayProcessor::reset() {
     for (auto& l : lines) {
         l.samples.clear();

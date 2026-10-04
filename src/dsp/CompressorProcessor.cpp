@@ -10,6 +10,11 @@ namespace namx
 
 static constexpr float DB_PER_OCTAVE = 6.0205999f; // 20·log10(2)
 
+void CompressorProcessor::sync_right_channel() {
+    env_db_per_channel[1] = env_db_per_channel[0];
+    gain_db_per_channel[1] = gain_db_per_channel[0];
+}
+
 void CompressorProcessor::reset() {
     env_db_per_channel[0] = env_db_per_channel[1] = -120.0f;
     gain_db_per_channel[0] = gain_db_per_channel[1] = 0.0f;

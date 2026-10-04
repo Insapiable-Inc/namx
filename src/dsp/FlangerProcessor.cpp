@@ -17,6 +17,13 @@ void FlangerProcessor::on_sample_rate_changed(double sr) {
     reset();
 }
 
+void FlangerProcessor::sync_right_channel() {
+    if (!line_l.empty()) {
+        line_r.copy_from(line_l);
+    }
+    fb_r = fb_l;
+}
+
 void FlangerProcessor::reset() {
     line_l.clear();
     line_r.clear();

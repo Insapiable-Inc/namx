@@ -26,6 +26,14 @@ public:
         next = 0;
     }
 
+    // Takes the other line's contents and position (same length). Allocation-free:
+    // for bringing a right channel in line with the left on the audio thread.
+    void copy_from(const DelayLine& other) {
+        assert(samples.size() == other.samples.size());
+        std::copy(other.samples.begin(), other.samples.end(), samples.begin());
+        next = other.next;
+    }
+
     // Zeroes the samples, keeping the length.
     void clear() {
         std::fill(samples.begin(), samples.end(), 0.0f);

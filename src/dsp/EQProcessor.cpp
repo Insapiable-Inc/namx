@@ -148,6 +148,10 @@ bool EQProcessor::process(float* l, float* r, size_t n, bool input_is_stereo) {
     }
 
     apply_changes();
+    if (input_is_stereo && !right_fed) {
+        sync_right_channel(); // see EffectBase::process
+    }
+    right_fed = input_is_stereo;
 
     for (size_t b = 0; b < BANDS; ++b) {
         if (!band_on[b]) {
@@ -169,6 +173,10 @@ bool EQProcessor::process(float* l, float* r, size_t n, bool input_is_stereo) {
     }
 
     return input_is_stereo;
+}
+
+void EQProcessor::sync_right_channel() {
+    filters_r = filters_l; // the same coefficients; now the same history too
 }
 
 void EQProcessor::reset() { // audio thread (chain reorder), like process()

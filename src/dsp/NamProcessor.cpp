@@ -317,6 +317,10 @@ bool NamProcessor::process(float* l, float* r, size_t n, bool input_is_stereo) {
     // RT-safety guard: a block larger than what the pair was prepared for
     // would overrun the core's buffers — bypass instead (see prepareBuffer).
     const bool can_run = p && n <= p->reset_buf && n <= scratch_l.size();
+    if (input_is_stereo && !right_fed) {
+        sync_right_channel(); // see EffectBase::process
+    }
+    right_fed = input_is_stereo;
     if (can_run) {
         apply_input_gain(l, input_is_stereo ? r : nullptr, n);
         run_model(p->l.get(), p->resampler_l.get(), l, n, scratch_l);

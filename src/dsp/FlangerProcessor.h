@@ -17,6 +17,7 @@ public:
         return true;
     }
     void reset() override;
+    void sync_right_channel() override;
 
     void set_rate_hz(float hz) {
         rate_hz.store(hz);

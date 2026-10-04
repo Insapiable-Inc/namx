@@ -18,6 +18,7 @@ class DriveProcessor : public EffectBase
 {
 public:
     void reset() override;
+    void sync_right_channel() override;
 
     void set_drive_pct(float pct) {
         drive_pct.store(pct);

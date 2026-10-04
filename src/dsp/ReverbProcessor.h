@@ -34,6 +34,7 @@ public:
         return true;
     }
     void reset() override;
+    void sync_right_channel() override;
 
     // Decay knob position (0–100 %; the preset key keeps its old name, roomSize) → RT60
     // in seconds, 0.2 s … 10 s on a log scale. Measured within ~10 % in the mids at the

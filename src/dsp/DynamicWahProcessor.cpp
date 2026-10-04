@@ -16,6 +16,13 @@ void DynamicWahProcessor::on_sample_rate_changed(double sr) {
     reset();
 }
 
+void DynamicWahProcessor::sync_right_channel() {
+    pos_smooth[1] = pos_smooth[0];
+    env_per_channel[1] = env_per_channel[0];
+    svf_lp[1] = svf_lp[0];
+    svf_bp[1] = svf_bp[0];
+}
+
 void DynamicWahProcessor::reset() {
     env_per_channel[0] = env_per_channel[1] = 0.0f;
     svf_lp[0] = svf_lp[1] = 0.0f;

@@ -35,6 +35,13 @@ void ReverbProcessor::reset() {
     shim_fb = 0.0f;
 }
 
+void ReverbProcessor::sync_right_channel() {
+    // Only the pre-delay line is per input channel; the tank is always stereo.
+    if (!pre[0].empty()) {
+        pre[1].copy_from(pre[0]);
+    }
+}
+
 float ReverbProcessor::pre_delay(int ch, float x, size_t d) {
     // Always fed, so raising Pre-delay later reads recent audio, not whatever the
     // line held when it was last used (audit 2026-10-04, Fable item 15).

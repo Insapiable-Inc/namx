@@ -13,6 +13,7 @@ class NoiseGateProcessor : public EffectBase
 {
 public:
     void reset() override;
+    void sync_right_channel() override;
 
     void set_threshold(float db) {
         threshold_db.store(db);

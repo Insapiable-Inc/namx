@@ -8,6 +8,11 @@
 namespace namx
 {
 
+void NoiseGateProcessor::sync_right_channel() {
+    envelope[1] = envelope[0];
+    gain_per_channel[1] = gain_per_channel[0];
+}
+
 void NoiseGateProcessor::reset() {
     envelope[0] = envelope[1] = 0.0f;
     gain_per_channel[0] = gain_per_channel[1] = 0.0f;

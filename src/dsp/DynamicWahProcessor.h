@@ -14,6 +14,7 @@ class DynamicWahProcessor : public EffectBase
 {
 public:
     void reset() override;
+    void sync_right_channel() override;
 
     void set_sensitivity_pct(float pct) {
         sensitivity_pct.store(pct);

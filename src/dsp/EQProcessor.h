@@ -39,6 +39,7 @@ public:
 
     bool process(float* l, float* r, size_t n, bool input_is_stereo) override;
     void reset() override;
+    void sync_right_channel() override;
 
     void set_gain(Band b, double db);
     void set_freq(Band b, double hz);

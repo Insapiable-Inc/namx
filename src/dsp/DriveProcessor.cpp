@@ -10,6 +10,13 @@ namespace namx
 
 static constexpr float PI = 3.14159265358979323846f;
 
+void DriveProcessor::sync_right_channel() {
+    // The WDF network holds references between its elements, so it can't be copied:
+    // a cleared clipper settles within a few samples and has no tail.
+    circuit[1].reset();
+    lp_per_channel[1] = lp_per_channel[0];
+}
+
 void DriveProcessor::reset() {
     for (int c = 0; c < 2; ++c) {
         lp_per_channel[c] = 0.0f;

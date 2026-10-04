@@ -422,6 +422,7 @@ private slots:
     void initTestCase();
     void effects_data();
     void effects();
+    void mono_to_stereo_edge();
     void tuner_detects_pitch();
 
 private:
@@ -562,6 +563,53 @@ void DspGoldenTest::tuner_detects_pitch() {
         pitch = tuner.get_last_pitch();
     }
     QVERIFY2(std::abs(pitch - 110.0f) <= 0.2f, qPrintable(QString::number(pitch)));
+}
+
+// Review item 19: after mono blocks (only the left channel's state advanced), the
+// first stereo block must find the right channel in line with the left — for the
+// effects whose state is copied exactly, identical L and R input then give identical
+// output, not a cold or stale right channel.
+void DspGoldenTest::mono_to_stereo_edge() {
+    const std::map<string, std::function<unique_ptr<EffectBase>()>> makers = {
+        {"gate", make_gate},
+        {"compressor", make_compressor},
+        {"wah", make_wah_pedal},
+        {"flanger", make_flanger},
+        {"phaser", make_phaser_feedback},
+        {"eq", make_eq},
+        {"chorus",
+         [] {
+             return make_chorus(0);
+         }},
+    };
+    constexpr size_t FRAMES = 128;
+    constexpr size_t MONO_BLOCKS = 60; // 160 ms: tails and envelopes well under way
+    vector<float> left(FRAMES), right(FRAMES);
+    for (const auto& [name, make] : makers) {
+        unique_ptr<EffectBase> fx = make();
+        fx->set_sample_rate(SAMPLE_RATE);
+        fx->set_enabled(true);
+        fx->set_stereo_mode(false);
+        size_t frame = 0;
+        for (size_t b = 0; b < MONO_BLOCKS; ++b, frame += FRAMES) {
+            for (size_t i = 0; i < FRAMES; ++i) {
+                left[i] = input_left(frame + i);
+            }
+            fx->process(left.data(), right.data(), FRAMES, false);
+        }
+        for (size_t i = 0; i < FRAMES; ++i) {
+            left[i] = right[i] = input_left(frame + i);
+        }
+        fx->process(left.data(), right.data(), FRAMES, true);
+        float worst = 0.0f;
+        for (size_t i = 0; i < FRAMES; ++i) {
+            worst = std::max(worst, std::abs(left[i] - right[i]));
+        }
+        QVERIFY2(worst < 1e-5f,
+                 qPrintable(QString("%1: L and R differ by %2 on the first stereo block")
+                                .arg(name.c_str())
+                                .arg(static_cast<double>(worst))));
+    }
 }
 
 } // namespace namx

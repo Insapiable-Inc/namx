@@ -9,6 +9,10 @@
 namespace namx
 {
 
+void PhaserProcessor::sync_right_channel() {
+    circuit_r = circuit_l; // plain state, same design
+}
+
 void PhaserProcessor::reset() {
     lfo_phase = 0.0f;
     circuit_l.reset();

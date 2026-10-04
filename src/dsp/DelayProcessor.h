@@ -27,6 +27,7 @@ public:
         return true;
     }
     void reset() override;
+    void sync_right_channel() override;
 
     void set_time(float ms) {
         time_ms.store(ms);
