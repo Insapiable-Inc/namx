@@ -117,6 +117,8 @@ private:
     atomic<float> mod_pct{0.0f};
     atomic<float> shimmer_pct{0.0f};
     StretchShifter shift[2]; // +12 st, per line (Shimmer)
+    bool shim_on = false; // last block's Shimmer > 0 (audio thread)
+    void shimmer_edge(float shimmer);
 
     Line lines[2];
     float mod_phase = 0.0f;

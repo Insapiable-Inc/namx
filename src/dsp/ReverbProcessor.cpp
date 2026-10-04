@@ -36,12 +36,14 @@ void ReverbProcessor::reset() {
 }
 
 float ReverbProcessor::pre_delay(int ch, float x, size_t d) {
+    // Always fed, so raising Pre-delay later reads recent audio, not whatever the
+    // line held when it was last used (audit 2026-10-04, Fable item 15).
     DelayLine& line = pre[ch];
-    if (d == 0 || line.empty()) {
+    if (line.empty()) {
         return x;
     }
     line.push(x);
-    return line.at(d);
+    return d == 0 ? x : line.at(d);
 }
 
 float ReverbProcessor::wet_filter(int ch, float x, float hp_a, float lp_k) {
@@ -119,6 +121,13 @@ void ReverbProcessor::run(float* l, float* r, size_t nframes, bool stereo_in, bo
     const Cuts cut = cuts_for(sample_rate, low_cut_hz.load(), high_cut_hz.load(),
                               pre_delay_ms.load(), MAX_PRE_DELAY_MS);
     const float shim = std::clamp(shimmer_pct.load(), 0.0f, 100.0f) / 100.0f * 0.45f;
+    // The shifter only runs while Shimmer is up: on the way back up it would replay
+    // the tail it held when it was last on (audit 2026-10-04, Fable item 16).
+    if (shim > 0.0f && !shim_on) {
+        shift.reset();
+        shim_fb = 0.0f;
+    }
+    shim_on = shim > 0.0f;
     const float wet1 = width * 0.5f + 0.5f, wet2 = (1.0f - width) * 0.5f;
     for (size_t i = 0; i < nframes; ++i) {
         const float dry_l = l[i];

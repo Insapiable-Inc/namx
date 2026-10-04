@@ -103,6 +103,7 @@ private:
     atomic<float> shimmer_pct{0.0f};
     StretchShifter shift; // +12 st, for the shimmer
     float shim_fb = 0.0f; // shifted wet fed into the next input sample
+    bool shim_on = false; // last block's Shimmer > 0 (audio thread)
 
     static constexpr float MAX_PRE_DELAY_MS = 2000.0f; // a synced note value can be long
     // Pre-delay line per input channel + wet filters per output channel.

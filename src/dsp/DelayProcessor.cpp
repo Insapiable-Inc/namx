@@ -51,6 +51,16 @@ float DelayProcessor::loop(int line, float d, float read_delay, const Params& p)
     return d + p.shimmer * (shift[line].process(early) - d);
 }
 
+// The shifters only run while Shimmer is up: on the way back up they would replay
+// the repeats they held when last on (audit 2026-10-04, Fable item 16).
+void DelayProcessor::shimmer_edge(float shimmer) {
+    if (shimmer > 0.0f && !shim_on) {
+        shift[0].reset();
+        shift[1].reset();
+    }
+    shim_on = shimmer > 0.0f;
+}
+
 DelayProcessor::Params DelayProcessor::params() const {
     const float fs = static_cast<float>(sample_rate);
     Params p;
@@ -94,6 +104,7 @@ void DelayProcessor::process_block_mono(float* buf, size_t nframes) {
         return;
     }
     const Params p = params();
+    shimmer_edge(p.shimmer);
     Line& l = lines[0];
     for (size_t i = 0; i < nframes; ++i) {
         const float mod = p.mod_depth * std::sin(TWO_PI * mod_phase);
@@ -115,6 +126,7 @@ void DelayProcessor::process_block_dual(float* l, float* r, size_t nframes) {
         return;
     }
     const Params p = params();
+    shimmer_edge(p.shimmer);
     for (size_t i = 0; i < nframes; ++i) {
         const float mod = p.mod_depth * std::sin(TWO_PI * mod_phase);
         mod_phase += p.ph_inc;
@@ -139,6 +151,7 @@ void DelayProcessor::process_block_stereo_out(float* l, float* r, size_t nframes
         return;
     }
     const Params p = params();
+    shimmer_edge(p.shimmer);
     const float c = p.cross;
     for (size_t i = 0; i < nframes; ++i) {
         const float mod = p.mod_depth * std::sin(TWO_PI * mod_phase);
