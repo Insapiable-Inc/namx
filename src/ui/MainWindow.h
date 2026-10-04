@@ -62,6 +62,9 @@ public:
     // Knobs and switches outside the tempo bar that presets would miss (not in the
     // registry); --self-test-and-exit fails on any.
     QStringList controls_missing_from_presets() const;
+    // Running as an AppImage that no launcher starts yet: offer once to add it to the
+    // applications menu (Settings → Add to Applications Menu does it any time).
+    void offer_desktop_integration();
 
 protected:
     // Drag-and-drop reordering of the effect strip (filter installed on the

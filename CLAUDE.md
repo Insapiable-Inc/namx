@@ -183,6 +183,7 @@ All effects inherit `EffectBase` (`src/dsp/EffectBase.h` — the header comment 
 | `KnobWidget` | `src/ui/KnobWidget.h/cpp` | `QDial` wrapper: float range, scroll step, label; `set_snap` makes it discrete, and with ≤ 32 positions it draws position dots (`Theme::detent`) instead of the sweep arc |
 | `ToggleSwitch` | `src/ui/ToggleSwitch.h/cpp` | Custom-painted on/off switch |
 | `Theme` | `src/ui/Theme.h/cpp` | Fusion + dark palette + app stylesheet; per-effect accents (`tag_card(card, fx_id)`) + chrome color accessors — **all colors live here** |
+| `AppImageIntegration` | `src/ui/AppImageIntegration.h/cpp` | AppImage only (`$APPIMAGE`): add/remove the launcher, icon and MIME types under `~/.local/share` (marker key `X-NAMX-AppImage-Integration`), first-run offer from `MainWindow::offer_desktop_integration` (skipped in `--self-test-and-exit`), Settings menu entry |
 | `EffectShortcuts` | `src/ui/EffectShortcuts.h/cpp` | Keyboard toggles for effects (user has Latin American layout) |
 | `Constants.h` | `src/dsp/` | DSP parameter ranges and defaults for all effects |
 

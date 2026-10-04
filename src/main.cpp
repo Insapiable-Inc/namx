@@ -171,6 +171,9 @@ int run(int argc, char* argv[]) {
             return 1;
         }
         QTimer::singleShot(1500, &app, &finish_self_test);
+    } else {
+        // After the window is up, so the question has a parent on screen.
+        QTimer::singleShot(0, &w, &MainWindow::offer_desktop_integration);
     }
     return app.exec();
 }

@@ -47,6 +47,7 @@
 #include <QUrl>
 #include <QVBoxLayout>
 
+#include "AppImageIntegration.h"
 #include "AudioStatusBar.h"
 #include "Common.h"
 #include "Constants.h"
@@ -611,6 +612,24 @@ void MainWindow::setup_ui() {
         connect(settings_menu->addAction("Keyboard Shortcuts…"), &QAction::triggered, this, [this] {
             open_settings(SettingsDialog::Page::SHORTCUTS);
         });
+        if (appimage::is_running_as_appimage()) {
+            // Add / remove the AppImage's launcher; the label follows the current state.
+            settings_menu->addSeparator();
+            QAction* act_menu_entry = settings_menu->addAction(QString());
+            connect(settings_menu, &QMenu::aboutToShow, this, [act_menu_entry] {
+                act_menu_entry->setText(appimage::is_added_to_menu()
+                                            ? "Remove from Applications Menu"
+                                            : "Add to Applications Menu");
+            });
+            connect(act_menu_entry, &QAction::triggered, this, [this] {
+                expected<void, QString> done = appimage::is_added_to_menu()
+                                                   ? appimage::remove_from_menu()
+                                                   : appimage::add_to_menu();
+                if (!done) {
+                    QMessageBox::warning(this, "Applications Menu", done.error());
+                }
+            });
+        }
 
         QMenu* help_menu = mb->addMenu("Help");
         connect(help_menu->addAction("About NAM-X"), &QAction::triggered, this, [this] {
@@ -3593,6 +3612,30 @@ PresetSerializer::Applied MainWindow::apply_preset_params(const QJsonObject& obj
     const PresetSerializer::Applied applied = PresetSerializer::apply(obj, params);
     apply_chain_order(applied.effect_order);
     return applied;
+}
+
+void MainWindow::offer_desktop_integration() {
+    if (!appimage::is_running_as_appimage()) {
+        return;
+    }
+    appimage::refresh_launcher_path(); // the file moved or was updated since
+    QSettings settings;
+    if (settings.value("appimage/offerAnswered").toBool() || appimage::is_integrated_by_anyone()) {
+        return;
+    }
+    QMessageBox box(QMessageBox::Question, "Applications Menu",
+                    "Add NAM-X to your applications menu?", QMessageBox::NoButton, this);
+    box.setInformativeText("It will start from the menu and open .nam and .nampreset files. "
+                           "Settings → Remove from Applications Menu undoes it.");
+    QPushButton* add = box.addButton("Add to Menu", QMessageBox::AcceptRole);
+    box.addButton("Not Now", QMessageBox::RejectRole);
+    box.exec();
+    settings.setValue("appimage/offerAnswered", true);
+    if (box.clickedButton() == add) {
+        if (expected<void, QString> done = appimage::add_to_menu(); !done) {
+            QMessageBox::warning(this, "Applications Menu", done.error());
+        }
+    }
 }
 
 QStringList MainWindow::controls_missing_from_presets() const {

@@ -50,6 +50,8 @@ file(GLOB_RECURSE NAM_SOURCES
 
 set(GUI_SOURCES
     src/main.cpp
+    src/ui/AppImageIntegration.cpp
+    src/ui/AppImageIntegration.h
     src/ui/MainWindow.cpp
     src/ui/MainWindow.h
     src/ui/KnobWidget.cpp

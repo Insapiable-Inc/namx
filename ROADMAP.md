@@ -487,7 +487,12 @@ app id in hicolor, `setWindowIcon` from the qrc, Windows exe icon + version bloc
       for glibc reach) with a newer GCC for C++23, bundling `libstdc++` but **not
       `libjack`**; update information (zsync) for AppImageUpdate / Gear Lever; attached
       to the GitHub release. The new static type-2 runtime (no `libfuse2` needed).
-- [ ] **First-run self-integration** for the AppImage: offer to add NAM Player to the
+- [x] **First-run self-integration** (2026-10-04: `src/ui/AppImageIntegration`; the offer
+      is asked once — `appimage/offerAnswered` — and skipped when any launcher already
+      runs this file or carries the app ID; Settings → Add to / Remove from Applications
+      Menu; a moved or updated AppImage re-points our launcher on start; remove deletes
+      only files under our marker key. Checked against a fake AppDir in an isolated
+      home, launcher passes desktop-file-validate) for the AppImage: offer to add NAM Player to the
       applications menu (writes the `.desktop` file, icon and MIME types — `.nam`,
       `.nampreset` — into `~/.local/share`), with a matching "remove" option; only when
       running as an AppImage (`$APPIMAGE` set) and nothing integrated it already.
