@@ -49,6 +49,7 @@ protected:
     void mouseMoveEvent(QMouseEvent* ev) override;
     void mouseReleaseEvent(QMouseEvent* ev) override;
     void wheelEvent(QWheelEvent* ev) override;
+    bool eventFilter(QObject* watched, QEvent* ev) override; // Escape cancels the edit
 
 private:
     QString number_text() const;

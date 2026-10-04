@@ -4,6 +4,7 @@
 #include <cmath>
 
 #include <QFontMetrics>
+#include <QKeyEvent>
 #include <QLineEdit>
 #include <QMouseEvent>
 #include <QPainter>
@@ -139,6 +140,7 @@ void NumberField::begin_edit() {
     edit->setGeometry(rect().adjusted(2, 2, -2, -2));
     edit->setAlignment(Qt::AlignCenter);
     edit->selectAll();
+    edit->installEventFilter(this);
     edit->show();
     edit->setFocus();
     connect(edit, &QLineEdit::returnPressed, this, [this] {
@@ -148,6 +150,15 @@ void NumberField::begin_edit() {
         end_edit(true);
     });
     update();
+}
+
+bool NumberField::eventFilter(QObject* watched, QEvent* ev) {
+    if (watched == edit && ev->type() == QEvent::KeyPress &&
+        static_cast<QKeyEvent*>(ev)->key() == Qt::Key_Escape) {
+        end_edit(false);
+        return true;
+    }
+    return QWidget::eventFilter(watched, ev);
 }
 
 void NumberField::end_edit(bool commit) {
