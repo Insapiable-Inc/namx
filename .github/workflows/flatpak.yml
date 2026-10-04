@@ -12,6 +12,11 @@ on:
       - '.github/workflows/flatpak.yml'
   workflow_dispatch:
 
+# A newer push stops the run it supersedes.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
