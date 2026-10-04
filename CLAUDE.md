@@ -9,7 +9,7 @@ This repo is a fork of [NeuralAmpModelerCore](https://github.com/sdatkinson/Neur
 ```
 nam-x/
 ├── NAM/           # Core DSP library: neural net inference (WaveNet, LSTM, ConvNet, Linear)
-├── Dependencies/  # Git submodules: Eigen (linear algebra), nlohmann (JSON), AudioDSPTools (upstream tools only — the GUI reads WAVs with its own `WavReader`), signalsmith-linear (MIT FFT for the cab convolution), signalsmith-stretch (MIT pitch shifter for Shimmer/Crystals)
+├── Dependencies/  # Git submodules: Eigen (linear algebra), nlohmann (JSON), AudioDSPTools (upstream tools only — the GUI reads WAVs with its own `WavReader`), signalsmith-linear (MIT FFT for the cab convolution), signalsmith-stretch (MIT pitch shifter for the Shimmers), chowdsp_wdf (BSD-3 wave digital filters for the Drive)
 ├── tools/         # Upstream CLI tools: loadmodel, benchmodel, run_tests
 ├── LICENSE        # Upstream MIT (NAM core) — the app itself is GPL-3.0-or-later, see gui/LICENSE
 ├── ROADMAP.md     # Public-release plan — phased checklist, worked one phase at a time
@@ -145,7 +145,8 @@ All effects inherit `EffectBase` (`src/dsp/EffectBase.h` — the header comment 
 | `ChorusProcessor`, `FlangerProcessor`, `PhaserProcessor`, `TremoloProcessor` | `src/dsp/…` | Modulation effects; stereo variants use LFO phase offsets |
 | `DelayProcessor` | `src/dsp/DelayProcessor.h/cpp` | Ping-pong stereo delay |
 | `ReverbProcessor` | `src/dsp/ReverbProcessor.h/cpp`, `ReverbAlgorithms.h` | Plate (Dattorro), Hall and Room (8- / 16-line FDNs) + pre-delay (tempo-syncable), wet cuts, level-matched types; Decay keeps its 0–100 preset key `roomSize` and shows 0.2–10 s (`decay_seconds`); Shimmer (octave-up feedback, `StretchShifter`) |
-| `DriveProcessor`, `VolumeProcessor`, `TransposeProcessor` | `src/dsp/…` | Phase 17 stages: TS-style drive, volume pedal with mid-point, ±12 st transpose |
+| `DriveProcessor`, `VolumeProcessor`, `TransposeProcessor` | `src/dsp/…` | Phase 17 stages: Tube Screamer drive, volume pedal with mid-point, ±12 st transpose |
+| `TubeScreamerClipper` | `src/dsp/TubeScreamerClipper.h` | The Drive's clipping stage: the TS808/TS9 op-amp + diode circuit as a wave digital filter (`Dependencies/chowdsp_wdf`, BSD-3), 4× oversampled with half-band FIRs (small latency, reported). Replaced the digital TS approximation ("Classic") 2026-10-04 — approved by ear |
 | `FilterBankShifter` | `src/dsp/FilterBankShifter.h` | Transpose's shifter: complex gammatone bank (2 bands/ERB) → per-band rotation at (ratio − 1) × its spectral peak's frequency → Hohmann delay/phase-aligned resynthesis; ~20 ms at the low E, ~4 ms above; band state in 8-lane blocks so the loop vectorizes. Chosen by ear 2026-10-03 (the variants tried are listed in its header) |
 | `StretchShifter` | `src/dsp/StretchShifter.h` | Octave shifter for the tails (Reverb Shimmer, Delay Shimmer — keys `reverb/shimmer`, `delay/shimmer`; the Delay's was `crystals` until 2026-10-03): Signalsmith Stretch (`Dependencies/signalsmith-stretch`, MIT) at its default 120 ms block, accurate pitch, 150 ms latency — the Delay feeds it 150 ms earlier in the line so the Delay's octave repeats land on time. Replaced the WSOLA `PitchShifter` (deleted 2026-10-03) |
 | `OutputLimiter` | `src/dsp/OutputLimiter.h/cpp` | Output-stage look-ahead limiter (not an effect; registry key `limiter`) |

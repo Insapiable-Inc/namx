@@ -4,14 +4,15 @@
 
 #include "Common.h"
 #include "EffectBase.h"
+#include "TubeScreamerClipper.h"
 
 namespace namx
 {
 
-// Overdrive / boost in front of the amp, Tube-Screamer style: only the
-// high-passed part of the signal (above ~720 Hz) goes through the gain +
-// soft-clip stage and is added back to the clean signal — the mid hump and
-// tight lows every high-gain rig wants — then a tone low-pass and level.
+// Overdrive / boost in front of the amp: the Tube Screamer's clipping stage modelled as a
+// circuit (TubeScreamerClipper — only what's above ~720 Hz gets the gain and the diodes,
+// the clean signal is added back: the mid hump and tight lows every high-gain rig wants),
+// then a tone low-pass and level.
 class DriveProcessor : public EffectBase
 {
 public:
@@ -26,9 +27,16 @@ public:
     void set_level(float db) {
         level_db.store(db);
     }
+    double latency_ms() const override {
+        return enabled.load() && sample_rate > 0.0
+                   ? TubeScreamerClipper::latency_samples() / sample_rate * 1000.0
+                   : 0.0;
+    }
 
 protected:
-    void on_sample_rate_changed(double) override {
+    void on_sample_rate_changed(double sr) override {
+        circuit[0].prepare(sr);
+        circuit[1].prepare(sr);
         reset();
     }
     void process_block_mono(float* buf, size_t n) override {
@@ -46,8 +54,12 @@ private:
     atomic<float> tone_pct{50.0f};
     atomic<float> level_db{0.0f};
 
-    // Per-channel state: input high-pass, tone low-pass.
-    float hp_x1[2]{}, hp_y1[2]{}, lp_per_channel[2]{};
+    static constexpr float CIRCUIT_VOLTS = 1.0f; // digital full scale at the pedal's input
+    static constexpr float MAKEUP = 0.255f; // output level at Level 0 dB
+
+    // Per-channel state: the circuit, the tone low-pass.
+    TubeScreamerClipper circuit[2];
+    float lp_per_channel[2]{};
 };
 
 } // namespace namx

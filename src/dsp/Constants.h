@@ -163,13 +163,13 @@ constexpr double WAH_MIX_DEFAULT = 100.0;
 // Drive (Phase 17)
 constexpr double DRIVE_MIN = 0.0;
 constexpr double DRIVE_MAX = 100.0;
-constexpr double DRIVE_DEFAULT = 30.0;
+constexpr double DRIVE_DEFAULT = 25.0;
 constexpr double DRIVE_TONE_MIN = 0.0;
 constexpr double DRIVE_TONE_MAX = 100.0;
-constexpr double DRIVE_TONE_DEFAULT = 50.0;
+constexpr double DRIVE_TONE_DEFAULT = 55.0;
 constexpr double DRIVE_LEVEL_MIN = -20.0;
 constexpr double DRIVE_LEVEL_MAX = 20.0;
-constexpr double DRIVE_LEVEL_DEFAULT = 0.0;
+constexpr double DRIVE_LEVEL_DEFAULT = 6.0;
 
 // Volume pedal
 constexpr double VOLUME_POS_MIN = 0.0;

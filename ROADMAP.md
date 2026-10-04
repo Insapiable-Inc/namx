@@ -1092,8 +1092,12 @@ it for the one it replaces, and is measured with `NAMPlayerBench`.
       Amplifier always stereo (switch removed). Gate and Compressor stay **unlinked** on
       purpose: each side is gated/compressed on its own — e.g. two guitars on L and R
       stay independent all the way through two amp instances.
-- [ ] **Drive:** a WDF Tube Screamer with anti-aliasing for the built-in Drive. (The NAM
+- [x] **Drive:** a WDF Tube Screamer with anti-aliasing for the built-in Drive. (The NAM
       "Pedal" slot moved to Phase 24, 2026-10-03: it's a second Amplifier instance.)
+      Done 2026-10-04 (user: "sounds amazing"): `TubeScreamerClipper` (chowdsp_wdf
+      submodule, BSD-3), 4× oversampled; the old approximation ("Classic") removed. New
+      defaults: Drive 25 %, Tone 55 %, Level +6 dB — a boost into the amp (~+4 dB over
+      bypass). Accent: TS green.
 - [ ] **Modulation:** BBD core for Chorus/Flanger (+ analog Delay mode); virtual-analog
       Uni-Vibe (lamp + photocells + 4 staggered stages).
 - [ ] **Wah:** Crybaby nodal-DK model; **Delay:** tape mode (ChowTape model);
