@@ -136,10 +136,11 @@ TempoBar::TempoBar(Metronome& metronome, QWidget* parent)
                            .maximum = TempoSync::MAX_BPM,
                            .decimals = 1,
                            .step = 1.0,
-                           .unit = "BPM"},
+                           .unit = "BPM",
+                           .reset_value = TempoSync::DEFAULT_BPM},
                           this);
     bpm->setToolTip("Tempo (quarter notes per minute): drag up/down or scroll to change "
-                    "(Shift = fine), click to type");
+                    "(Shift = fine), click to type, double-click for 120");
     bpm->set_value(s.value("tempo/bpm", TempoSync::DEFAULT_BPM).toDouble());
     metro.set_bpm(bpm->value());
     connect(bpm, &NumberField::value_changed, this, &TempoBar::on_bpm_field_changed);
@@ -216,11 +217,11 @@ TempoBar::TempoBar(Metronome& metronome, QWidget* parent)
                 });
         }
         m->addSeparator();
-        QAction* silent = m->addAction("Silent after count-in (lights only)");
-        silent->setCheckable(true);
-        silent->setChecked(s.value("metronome/silentAfter", false).toBool());
-        connect(silent, &QAction::toggled, this, &TempoBar::choose_silent_after_count_in);
-        metro.set_silent_after_count_in(silent->isChecked());
+        silent_action = m->addAction("Silent after count-in (lights only)");
+        silent_action->setCheckable(true);
+        silent_action->setChecked(s.value("metronome/silentAfter", false).toBool());
+        connect(silent_action, &QAction::toggled, this, &TempoBar::choose_silent_after_count_in);
+        metro.set_silent_after_count_in(silent_action->isChecked());
     }
     lay->addWidget(count_in_btn);
 
@@ -255,6 +256,19 @@ TempoBar::TempoBar(Metronome& metronome, QWidget* parent)
         leds->set_pattern(metro.get_beats(), acc);
     }
     update_labels();
+}
+
+void TempoBar::reset_to_defaults() {
+    // Through the same handlers the controls use, so the engine, the labels and the
+    // settings follow. The transport is left as it is.
+    bpm->set_value(TempoSync::DEFAULT_BPM);
+    set_meter(4, 4, true);
+    choose_subdivision(1);
+    choose_sound(0);
+    choose_count_in(0);
+    silent_action->setChecked(false);
+    volume->set_value(-6.0);
+    pan->set_value(0.0);
 }
 
 double TempoBar::get_bpm() const {

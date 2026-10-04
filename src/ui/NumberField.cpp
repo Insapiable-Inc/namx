@@ -158,6 +158,13 @@ bool NumberField::eventFilter(QObject* watched, QEvent* ev) {
         end_edit(false);
         return true;
     }
+    // The first click of a double-click opened the editor, so the second lands on
+    // it: a double-click restores the reset value, as it does on a knob.
+    if (watched == edit && ev->type() == QEvent::MouseButtonDblClick && spec.reset_value) {
+        end_edit(false);
+        set_value(*spec.reset_value);
+        return true;
+    }
     return QWidget::eventFilter(watched, ev);
 }
 

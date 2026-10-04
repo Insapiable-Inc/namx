@@ -1,5 +1,7 @@
 #pragma once
 
+#include <optional>
+
 #include <QWidget>
 
 #include "Common.h"
@@ -23,6 +25,7 @@ public:
         int decimals; // values round to this many places
         double step; // one scroll notch; four pixels of drag
         QString unit; // dim, right of the number ("BPM", "Hz")
+        std::optional<double> reset_value; // double-click restores it (like a knob's default)
     };
 
     explicit NumberField(const Spec& new_spec, QWidget* parent = nullptr);

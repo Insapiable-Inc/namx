@@ -64,6 +64,9 @@ public:
     explicit TempoBar(Metronome& metronome, QWidget* parent = nullptr);
 
     double get_bpm() const;
+    // Tempo 120, 4/4, no subdivision, Click, no count-in, Level -6 dB, Pan centre
+    // (Preset → Reset All to Defaults).
+    void reset_to_defaults();
     void set_bpm(double new_bpm); // MIDI clock follow
     void toggle_play();
     void tap_tempo() {
@@ -95,6 +98,7 @@ private:
     QToolButton* subdiv_btn = nullptr;
     QToolButton* sound_btn = nullptr;
     QToolButton* count_in_btn = nullptr;
+    QAction* silent_action = nullptr; // in the count-in menu
     KnobWidget* volume = nullptr;
     KnobWidget* pan = nullptr;
     QElapsedTimer tap_clock;

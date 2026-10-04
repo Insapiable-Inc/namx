@@ -692,12 +692,16 @@ void MainWindow::setup_ui() {
         // not part of presets or the registry.
         QSettings s;
         tuner_ref_hz = std::clamp(s.value("tuner/reference", 440).toInt(), 420, 460);
-        tuner_reference_box = new NumberField(
-            {.minimum = 420, .maximum = 460, .decimals = 0, .step = 1, .unit = "Hz"});
+        tuner_reference_box = new NumberField({.minimum = 420,
+                                               .maximum = 460,
+                                               .decimals = 0,
+                                               .step = 1,
+                                               .unit = "Hz",
+                                               .reset_value = 440});
         NumberField* ref = tuner_reference_box;
         ref->set_value(tuner_ref_hz);
         ref->setToolTip("Reference pitch (concert pitch is 440 Hz): drag up/down or scroll to "
-                        "change, click to type");
+                        "change, click to type, double-click for 440");
         connect(ref, &NumberField::value_changed, this, [this](double hz) {
             set_tuner_reference(qRound(hz));
         });
@@ -3453,7 +3457,8 @@ void MainWindow::copy_ab() {
 
 void MainWindow::on_reset_all() {
     if (QMessageBox::question(this, "Reset All",
-                              "Reset all effects, gains, and the chain order to their defaults?\n"
+                              "Reset all effects, gains, the chain order, the tempo and "
+                              "metronome, and the tuner reference to their defaults?\n"
                               "The loaded model and IR are kept.") != QMessageBox::Yes) {
         return;
     }
@@ -3473,6 +3478,9 @@ void MainWindow::on_reset_all() {
         order << QString::fromStdString(id);
     }
     apply_chain_order(order);
+    // Not in presets, but "all" means all (user, 2026-10-04: a 7/8 left behind).
+    tempo_bar->reset_to_defaults();
+    tuner_reference_box->set_value(440); // its handler → set_tuner_reference
     schedule_session_save();
 }
 

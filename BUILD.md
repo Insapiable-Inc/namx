@@ -335,7 +335,7 @@ setting, the effect order, the input/output gains, and the model and IR (by path
 | **Save** (`Ctrl+S`) / **Save As…** (`Ctrl+Shift+S`) | Overwrite the current file / write a new one (an untitled state always asks) |
 | **Slots 1–8** (`Ctrl+1…8`) | Load the preset stored in a slot. Clicking an empty slot stores the current preset there; right-click to store or clear |
 | **A / B**, **A→B** | Two working states of the current preset: switch between them to compare, or copy the active one over the other. Loading a preset clears both |
-| **⋯** (same as the **Preset** menu) | Open…, Import… (copies files into the presets folder), Export… (writes a copy elsewhere), Show in Folder, Delete… (to the trash), Reset All to Defaults… |
+| **⋯** (same as the **Preset** menu) | Open…, Import… (copies files into the presets folder), Export… (writes a copy elsewhere), Show in Folder, Delete… (to the trash), Reset All to Defaults… (every effect, the gains, the chain order, the tempo and metronome, the tuner reference; the model and IR stay) |
 
 **Not part of a preset:** audio devices and port connections, the tuner's reference
 pitch (its On and Mute switches are saved, like every rack control), the tempo and the
