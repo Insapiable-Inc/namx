@@ -59,8 +59,11 @@ public:
     // with no audio callback in flight (backend buffer-size hook).
     void set_target_sample_rate(double sr);
 
-    // Free retired kernels; `audioStopped` frees unconditionally.
+    // Free retired kernels; `audioStopped` frees unconditionally. Under the load
+    // mutex: set_target_sample_rate publishes from the backend's notification thread
+    // while the GUI reclaims (audit 2026-10-04, Fable item 06).
     void reclaim_retired(bool audio_stopped) {
+        std::lock_guard<std::mutex> lock(load_mutex);
         slot.reclaim(audio_stopped);
     }
 
