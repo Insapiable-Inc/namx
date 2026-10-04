@@ -492,8 +492,13 @@ app id in hicolor, `setWindowIcon` from the qrc, Windows exe icon + version bloc
       machine-wide. The portable zip stays. Unsigned at first: Windows SmartScreen will
       warn ("unknown publisher") — code signing (e.g. SignPath's free plan for open
       source) is a later step.
-- [ ] **Flatpak / Flathub** (back 2026-10-02): manifest `io.github.Insapiable_Inc.namx.yml` on the
-      KDE runtime (Qt 6); permissions `--socket=pipewire` (JACK through PipeWire),
+- [~] **Flatpak / Flathub** (back 2026-10-02): manifest `io.github.Insapiable_Inc.namx.yml` on the
+      KDE runtime (Qt 6). **2026-10-04:** `packaging/flatpak/…yml` on KDE 6.11 +
+      `.github/workflows/flatpak.yml` (test bundle, checks no libjack) — written without a
+      local build (user: CI only), so the first CI run is its test; then the Flathub
+      submission (user: PR to flathub/flathub, `new-pr` branch; the Flathub copy uses a
+      git source at the tag). There is no `--socket=pipewire`: PipeWire comes in through
+      `--filesystem=xdg-run/pipewire-0`. Planned permissions were `--socket=pipewire` (JACK through PipeWire),
       `--filesystem=home` (the library scans folders and presets store real paths — the
       document portal's paths would break them), `--device=all` (ALSA MIDI),
       `--share=ipc`, `--socket=wayland`/`x11`; CI builds a test `.flatpak` bundle; then

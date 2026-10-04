@@ -8,6 +8,7 @@ Everything a distribution or a release job needs, all fed by `cmake --install`:
 | `io.github.Insapiable_Inc.namx.metainfo.xml` | AppStream metadata (software centers, Flathub) |
 | `io.github.Insapiable_Inc.namx.xml` | shared-mime-info types `application/x-nam`, `application/x-nampreset` |
 | `namx.rc` | Windows icon + version resource (compiled into the exe on MSVC) |
+| `flatpak/io.github.Insapiable_Inc.namx.yml` | Flatpak manifest (KDE runtime); CI builds it in `.github/workflows/flatpak.yml` |
 
 An AppImage and a Flatpak (Flathub) are the Linux distribution (ROADMAP Phase 8;
 decision 2026-10-02, reversing 2026-09-17's "no bundles"; no AUR package — user,

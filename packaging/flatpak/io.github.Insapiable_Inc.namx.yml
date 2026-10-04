@@ -1,0 +1,43 @@
+# Flatpak manifest (ROADMAP Phase 8). CI builds it from this checkout
+# (.github/workflows/flatpak.yml); the Flathub copy swaps the `dir` source below for
+# the release tag (type: git, url, tag, commit), the submodules come along with it.
+#
+#   flatpak-builder --user --install --force-clean build-flatpak \
+#       packaging/flatpak/io.github.Insapiable_Inc.namx.yml
+#   flatpak run io.github.Insapiable_Inc.namx
+id: io.github.Insapiable_Inc.namx
+runtime: org.kde.Platform
+runtime-version: '6.11'
+sdk: org.kde.Sdk
+command: namx
+finish-args:
+  - --share=ipc
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --device=dri
+  # Audio: JACK through PipeWire. The runtime's libjack is PipeWire's, which talks to
+  # the host's PipeWire over its socket (there is no --socket=pipewire); libjack is
+  # never bundled.
+  - --filesystem=xdg-run/pipewire-0
+  # MIDI controllers through the ALSA sequencer (/dev/snd/seq).
+  - --device=all
+  # The library scans folders the user picks and presets store real file paths; the
+  # document portal's /run/user/… paths would break both.
+  - --filesystem=home
+modules:
+  - name: namx
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=Release
+      # Portable AVX2/FMA, like every release build (never -march=native).
+      - -DNAM_NATIVE_OPT=OFF
+    sources:
+      - type: dir
+        path: ../..
+        skip:
+          - build-release
+          - build-debug
+          - build-test
+          - build-bench
+          - build-flatpak
+          - .flatpak-builder
