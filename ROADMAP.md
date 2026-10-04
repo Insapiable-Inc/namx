@@ -1138,8 +1138,14 @@ it for the one it replaces, and is measured with `NAMPlayerBench`.
       submodule, BSD-3), 4× oversampled; the old approximation ("Classic") removed. New
       defaults: Drive 25 %, Tone 55 %, Level +6 dB — a boost into the amp (~+4 dB over
       bypass). Accent: TS green.
+- [x] **Phaser:** MXR Phase 90 circuit model (done 2026-10-04, user: preferred over the
+      old one by ear) — `Phase90Circuit.h`, from the polimi-ispl paper's MIT MATLAB
+      code; details in `DSP_RESEARCH.md` §5. The digital Classic and the Vibe switch are
+      gone (preset key `phaser/mode` is ignored now). New defaults Rate 0.4 Hz,
+      Feedback 0 % (the script pedal; 50 % sounded like a wah); Feedback stops at 90 %
+      (the model runs away near 98 %).
 - [ ] **Modulation:** BBD core for Chorus/Flanger (+ analog Delay mode); virtual-analog
-      Uni-Vibe (lamp + photocells + 4 staggered stages).
+      Uni-Vibe (lamp + photocells + 4 staggered stages) — its own card or mode, to decide.
 - [ ] **Wah:** Crybaby nodal-DK model; **Delay:** tape mode (ChowTape model);
       **Compressor:** smooth-branching detector + soft knee.
 - [x] Re-enable Shimmer and Crystals on a high-quality shifter (done 2026-10-03, "sound

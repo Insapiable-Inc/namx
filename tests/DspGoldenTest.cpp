@@ -255,10 +255,11 @@ static unique_ptr<FlangerProcessor> make_flanger_stereo() {
     return fx;
 }
 
-static unique_ptr<PhaserProcessor> make_phaser_vibe_stereo() {
+static unique_ptr<PhaserProcessor> make_phaser_feedback() {
     auto fx = make_unique<PhaserProcessor>();
-    fx->set_vibe(true);
-    fx->set_stereo_mode(true);
+    fx->set_rate_hz(1.0f);
+    fx->set_depth_pct(80.0f);
+    fx->set_feedback_pct(70.0f);
     return fx;
 }
 
@@ -458,7 +459,7 @@ void DspGoldenTest::initTestCase() {
     both("phaser", [] {
         return make_unique<PhaserProcessor>();
     });
-    both("phaser-vibe-stereo", &make_phaser_vibe_stereo);
+    both("phaser-feedback", &make_phaser_feedback);
     both("drive", &make_drive);
     both("eq", &make_eq);
     for (int mode = ChorusProcessor::NORMAL; mode <= ChorusProcessor::SPATIAL; ++mode) {

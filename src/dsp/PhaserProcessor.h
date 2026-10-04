@@ -1,15 +1,14 @@
 #pragma once
 
-#include <array>
-#include <atomic>
-
 #include "Common.h"
 #include "EffectBase.h"
+#include "Phase90Circuit.h"
 
 namespace namx
 {
 
-// 4-stage all-pass phaser. Stereo uses 180° LFO offset.
+// The MXR Phase 90 (Phase90Circuit) with its LFO, plus Depth, Feedback and Mix. Stereo
+// runs the right channel's LFO 180° behind.
 class PhaserProcessor : public EffectBase
 {
 public:
@@ -26,10 +25,6 @@ public:
     }
     void set_feedback_pct(float pct) {
         feedback_pct.store(pct);
-    }
-    // 0 = classic phaser, 1 = Vibe.
-    void set_vibe(bool on) {
-        vibe.store(on);
     }
     void set_mix_pct(float pct) {
         mix_pct.store(pct);
@@ -49,43 +44,39 @@ public:
     }
 
 protected:
-    void on_sample_rate_changed(double /*sr*/) override {
+    void on_sample_rate_changed(double sr) override {
+        circuit_l.prepare(sr);
+        circuit_r.prepare(sr);
         reset();
     }
-    void process_block_mono(float* buf, size_t nframes) override;
-    void process_block_dual(float* l, float* r, size_t nframes) override;
-    void process_block_stereo_out(float* l, float* r, size_t nframes) override;
+    void process_block_mono(float* buf, size_t nframes) override {
+        render(buf, nullptr, nframes, false);
+    }
+    void process_block_dual(float* l, float* r, size_t nframes) override {
+        render(l, r, nframes, false);
+    }
+    void process_block_stereo_out(float* l, float* r, size_t nframes) override {
+        render(l, r, nframes, true);
+    }
 
 private:
-    atomic<float> rate_hz{1.0f};
+    atomic<float> rate_hz{0.4f};
     atomic<float> depth_pct{50.0f};
-    atomic<float> feedback_pct{50.0f};
+    atomic<float> feedback_pct{0.0f};
     atomic<float> mix_pct{50.0f};
 
     float lfo_phase{0.0f};
+    Phase90Circuit circuit_l, circuit_r;
 
-    static constexpr size_t STAGES = 4;
-    atomic<bool> vibe{false};
-
-    array<float, STAGES> x1_l{}, y1_l{};
-    array<float, STAGES> x1_r{}, y1_r{};
-    float fb_state_l{0.0f}, fb_state_r{0.0f};
-
-    static constexpr float MIN_FREQ = 200.0f;
-    static constexpr float MAX_FREQ = 4000.0f;
-
-    // All-pass coefficient for an LFO phase (sin + pow + tan). Evaluated at
-    // control rate — every CTRL_INTERVAL samples — not per sample.
-    float coeff_at(float phase, float depth) const;
-    // Vibe: four stages at staggered fixed ratios (the Uni-Vibe's mismatched
-    // photocells), lamp-shaped LFO, no feedback.
-    void vibe_coeffs(float phase, float depth, array<float, STAGES>& d) const;
-    static constexpr int CTRL_INTERVAL = 16; // 0.33 ms @ 48 kHz; LFO ≤ 5 Hz
-
-    float process_vibe(float in, const array<float, STAGES>& d, array<float, STAGES>& x1,
-                       array<float, STAGES>& y1, float mix) const;
-    float process_channel(float in, float d, array<float, STAGES>& x1, array<float, STAGES>& y1,
-                          float& fb_state, float fb_amt, float mix) const;
+    // r is null for mono; with stereo_lfo the right channel's LFO runs 180° behind.
+    void render(float* l, float* r, size_t nframes, bool stereo_lfo);
+    // The Phase 90's LFO as gate − source volts: an asymmetric triangle (rises for 65 %
+    // of the period, as in the paper's reference), up from the sweep's low end; Depth
+    // 50 % is the pedal's swing, 100 % twice it.
+    static float gate_vgs(float phase, float depth);
+    // Digital full scale ↔ volts at the pedal's input (≈ a guitar's level at −12 dBFS);
+    // the JFETs' grit depends on it.
+    static constexpr float VOLTS_PER_UNIT = 1.0f;
 };
 
 } // namespace namx

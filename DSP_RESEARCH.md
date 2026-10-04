@@ -25,7 +25,7 @@ all be used. That reopens Rubber Band, which Phase 17 avoided while the app was 
 | **Cabinet / convolution** | Partitioned FFT convolution (was brute-force FIR) | Uniform partitions: fine for 1 s cab IRs; multi-second reverb IRs will want non-uniform ones | Done 2026-10-03 (see §3) | ✅ |
 | **Drive** | Digital TS approximation | Approximate circuit, aliasing | A NAM "pedal" capture slot before the amp; WDF Tube Screamer | ✅ |
 | **Chorus / Flanger** | Modulated delay lines | Clean and digital | Bucket-brigade (BBD) model | ✅ |
-| **Phaser / Vibe** | 4-stage all-pass | Generic sweep; Vibe is an approximation | Grey-box / virtual-analog phaser and Uni-Vibe | ✅ |
+| **Phaser** | MXR Phase 90 circuit model (was a generic 4-stage all-pass + an approximate Vibe) | — | Done 2026-10-04 (see §5); a Uni-Vibe would be its own effect | ✅ |
 | **Delay** | Clean digital line + saturation | No analog character | BBD and tape models | ✅ |
 | **Wah** | Resonant SVF band-pass | Not a real wah's response | Crybaby circuit model (nodal DK) | ✅ |
 | **Compressor** | Feed-forward peak | Basic but fine | Better detector/knee; optional neural opto | ✅ / ⚠️ |
@@ -157,8 +157,9 @@ and later rebuild it as a WDF Tube Screamer with ADAA, for users without capture
 
 ## 5. Modulation: chorus, flanger, phaser, vibe
 
-**Today:** LFO-modulated digital delay lines (chorus, flanger) and a 4-stage all-pass
-phaser with a "Vibe" variant (staggered stages, lamp-shaped LFO).
+**Today:** LFO-modulated digital delay lines (chorus, flanger); the phaser is an MXR
+Phase 90 circuit model (2026-10-04, below). Until then it was a generic 4-stage digital
+all-pass with a "Vibe" variant (staggered stages, lamp-shaped LFO) — both removed.
 
 | Candidate | Effect | Notes | RT |
 |---|---|---|---|
@@ -170,6 +171,21 @@ phaser with a "Vibe" variant (staggered stages, lamp-shaped LFO).
 **Recommendation:** a **BBD core** shared by Chorus and Flanger (and an "analog" Delay
 mode), and a **virtual-analog Vibe**: lamp thermal model + photocell curve + 4 staggered
 stages. Neural LFO models are worth it only if we capture specific pedals.
+
+**Phaser — done 2026-10-04 (chosen by ear):** the MXR Phase 90 after Giampiccolo et al.,
+"Wave Digital Model of the MXR Phase 90 based on a Time-Varying Resistor Approximation of
+JFET Elements" ([code][p90], MATLAB reference + LTspice schematic, MIT; their plugin
+binary is CC BY-NC and unused). `Phase90Circuit.h` reduces their WDF to closed form and
+matches the MATLAB to ~1e-6 V: a 33 Hz input buffer, four op-amp all-pass stages (47 nF;
+24 kΩ ∥ a 2N5952 JFET channel whose resistance follows the LFO on the gate *and* Vds —
+asymmetric grit at the sweep's low end), dry + wet through a 17 Hz output coupling. No
+oversampling needed (aliasing 52–74 dB under the note at 48 kHz). Feedback (not in the
+script circuit) is solved without a one-sample delay and AC-coupled at 20 Hz; the loop
+rings on its own and runs away from ~98 %, so the knob stops at 90 % (clamping at
+op-amp rails instead was tried and sounded harsh). Digital full scale = 1 V at the input.
+Other open-source phasers looked at: [ChowPhaser][chowphaser] (BSD-3; loosely a Schulte
+Compact Phasing 'A', more a creative effect — drive/dirt in the feedback, LFO skew) and
+a grey-box PH-10 student plugin. A Boss PH-3 is available for by-ear reference.
 
 ## 6. Delay
 
@@ -254,6 +270,8 @@ neural opto as an optional "character" mode later.
 [bbd]: https://www.hsu-hh.de/ant/wp-content/uploads/sites/699/2018/09/Holters-Parker-2018-A-Combined-Model-for-a-Bucket-Brigade-Device-and-its-Input-and-Output-Filters.pdf
 [bbd-chow]: https://ccrma.stanford.edu/~jatin/chowdsp/chowdsp_utils/namespacechowdsp_1_1BBD.html
 [phaser-gb]: https://arxiv.org/pdf/2306.01332
+[p90]: https://github.com/polimi-ispl/mxrphase90
+[chowphaser]: https://github.com/jatinchowdhury18/ChowPhaser
 [nn-lfo]: https://www.dafx.de/paper-archive/2020/proceedings/papers/DAFx2020_paper_49.pdf
 [nn-pf]: https://www.researchgate.net/publication/356164520_Neural_Modeling_of_Phaser_and_Flanging_Effects
 [va-cmp]: https://arxiv.org/pdf/2009.02833

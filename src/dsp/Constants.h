@@ -91,15 +91,15 @@ constexpr double FLANGER_MIX_DEFAULT = 50.0;
 // Up to 10 Hz for fast Phase 90 / Uni-Vibe "chop" settings (~7–8 Hz).
 constexpr double PHASER_RATE_MIN = 0.1;
 constexpr double PHASER_RATE_MAX = 10.0;
-constexpr double PHASER_RATE_DEFAULT = 1.0;
+constexpr double PHASER_RATE_DEFAULT = 0.4;
 
 constexpr double PHASER_DEPTH_MIN = 0.0;
 constexpr double PHASER_DEPTH_MAX = 100.0;
 constexpr double PHASER_DEPTH_DEFAULT = 50.0;
 
 constexpr double PHASER_FEEDBACK_MIN = 0.0;
-constexpr double PHASER_FEEDBACK_MAX = 99.0;
-constexpr double PHASER_FEEDBACK_DEFAULT = 50.0;
+constexpr double PHASER_FEEDBACK_MAX = 90.0; // the Phase 90 model runs away from ~98 %
+constexpr double PHASER_FEEDBACK_DEFAULT = 0.0;
 
 constexpr double PHASER_MIX_MIN = 0.0;
 constexpr double PHASER_MIX_MAX = 100.0;
