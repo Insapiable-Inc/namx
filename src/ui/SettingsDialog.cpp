@@ -384,6 +384,9 @@ void SettingsDialog::add_folder(size_t section) {
 }
 
 void SettingsDialog::remove_folder(size_t section) {
+    if (!folder_lists[section]->currentItem()) {
+        return; // nothing selected: nothing to remove, no rescan
+    }
     delete folder_lists[section]->currentItem();
     apply_folders();
 }
