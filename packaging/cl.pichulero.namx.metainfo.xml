@@ -29,6 +29,12 @@
     </p>
   </description>
   <launchable type="desktop-id">cl.pichulero.namx.desktop</launchable>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://raw.githubusercontent.com/Insapiable-Inc/namx/main/docs/screenshots/main.png</image>
+      <caption>The rack with a Mesa model and a Celestion V30 cabinet loaded</caption>
+    </screenshot>
+  </screenshots>
   <provides>
     <binary>namx</binary>
     <mediatype>application/x-nam</mediatype>

@@ -71,7 +71,7 @@ Three things to install:
    from <https://visualstudio.microsoft.com/downloads/>. The free Community
    edition or the standalone *Build Tools* installer both work.
 
-2. **CMake** ≥ 3.16. Either install from <https://cmake.org/download/> or use the
+2. **CMake** ≥ 3.20. Either install from <https://cmake.org/download/> or use the
    one bundled with VS (`Developer PowerShell for VS 2022` already has it on
    `PATH`).
 
@@ -173,8 +173,8 @@ An AUR-style `PKGBUILD` lives in [`packaging/`](packaging/README.md). An AppImag
 a Flatpak (Flathub) are planned for the first release (ROADMAP Phase 8).
 
 Command-line flags: `namx [file…]` opens `.nam` / `.wav` / `.nampreset` files;
-`--version`; `--self-test-and-exit` (headless CI check: window up, library scanned,
-exit 0 after 1.5 s).
+`--version` / `-v`; `--help` / `-h`; `--self-test-and-exit` (headless CI check: window
+up, library scanned, exit 0 after 1.5 s). An option the app doesn't know is an error.
 
 ### Windows — quick build (PowerShell)
 
@@ -204,7 +204,7 @@ cmake -S . -B build-release `
       -G "Visual Studio 17 2022" -A x64 `
       -DCMAKE_PREFIX_PATH="C:\Qt\6.7.0\msvc2019_64"
 cmake --build build-release --config Release --parallel
-& "C:\Qt\6.7.0\msvc2019_64\bin\windeployqt.exe" .\build-release\Release\namx.exe
+& "C:\Qt\6.7.0\msvc2019_64\bin\windeployqt.exe" --compiler-runtime .\build-release\Release\namx.exe
 ```
 
 With Ninja (faster):
@@ -225,6 +225,7 @@ cmake --build build-release --parallel
 | `-DNAM_NATIVE_OPT=OFF` | ON | Portable AVX2/FMA instead of `-march=native` (release/CI builds) |
 | `-DNAM_BUILD_TESTS=ON` | OFF | `MidiMapperTest`, `DspGoldenTest`, `WavReaderTest`, `NamProcessorTest`, `LibraryIndexTest` |
 | `-DNAM_BUILD_BENCH=ON` | OFF | `namx-bench`, the chain benchmark (see Troubleshooting → High CPU usage) |
+| `-DNAM_WERROR=ON` | OFF | Compiler warnings are errors (CI and `build.sh` turn it on) |
 
 ---
 
@@ -313,12 +314,15 @@ jack_connect NAM-X:output_R  system:playback_2
 
 | Knob | Range | Center freq / type |
 |------|-------|--------------------|
-| **Input** | ±20 dB | Input gain before model |
+| **Input** (column) | ±20 dB | Gain into the chain |
+| Amplifier **Input** | ±20 dB | Level into the model: more or less breakup |
+| Amplifier **Output** | ±20 dB | Trim on top of the loudness normalization (models that state their loudness are brought to −18 dB) |
 | **Bass** | ±12 dB | Low shelf, 40–500 Hz (default 250) |
 | **Middle** | ±12 dB | Peak, 200 Hz–2.5 kHz (default 1 kHz, Q 0.7) |
 | **High-Mid** | ±12 dB | Peak, 800 Hz–8 kHz (default 3 kHz, Q 1) |
 | **Treble** | ±12 dB | High shelf, 1.5–12 kHz (default 4 kHz) |
-| **Output** | ±20 dB | Output gain after IR |
+| Cabinet **Level** | ±20 dB | The cabinet's level |
+| **Output** (column) | ±20 dB | Gain after the chain, before the limiter |
 
 Gain changes are sample-accurate smoothed (no clicks or zipper noise).
 
@@ -365,8 +369,8 @@ The second bar holds the global tempo and the metronome.
 | **Count-in** | 0–2 bars counted in when you press play; **Silent after count-in** keeps only the lights running, to check your own timing |
 | **Level / Pan** | The click's own volume and position. It is mixed in after the Output knob and isn't shown on the output meter |
 
-**Tempo sync.** Delay **Time** and the Tremolo / Chorus / Flanger / Phaser **Rate**
-each have a **Sync** switch: on, the knob picks a note value (4 bars … 1/32, dotted and
+**Tempo sync.** Delay **Time**, the Tremolo / Chorus / Flanger / Phaser **Rate** and
+the Reverb **Pre-delay** each have a **Sync** switch: on, the knob picks a note value (4 bars … 1/32, dotted and
 triplets) instead of ms / Hz, and follows the tempo. Delay times are capped at 3000 ms.
 
 The tempo and every metronome setting belong to the session, not to presets: a preset
@@ -414,7 +418,7 @@ change applies immediately.
 
 | Page | What's there |
 |---|---|
-| Audio | Input / output device (same as the status bar's In: / Out:), the server's sample rate, buffer and round-trip latency (read-only: PipeWire/JACK own them), xruns + reset |
+| Audio | Input / output device (same as the status bar's In: / Out:), the server's sample rate, buffer and round-trip latency (read-only: PipeWire/JACK own them), xruns + reset, **Normalize models** (loudness normalization, on by default), **Exclusive mode** (Windows) |
 | MIDI | Input devices on/off, Follow MIDI clock, **Mappings…** |
 | Library | Model / IR / preset folders, rescan |
 | Tuner | Reference pitch, show the detected frequency (also on the tuner card) |
@@ -455,24 +459,25 @@ the effects loop, after the amp, so it swells the level without changing the amp
 ```
 input ─▶ Input Gain ─▶ Tuner ─▶ Transpose ─▶ Noise Gate ─▶ Compressor ─▶ Wah ─▶ Flanger ─▶ Phaser ─▶ Drive
       ─▶ Amplifier (NAM) ─▶ Volume Pedal ─▶ Equalizer ─▶ Chorus ─▶ Tremolo ─▶ Delay ─▶ Reverb
-      ─▶ Cabinet (IR A + IR B) ─▶ Output Gain ─▶ (+ metronome) ─▶ Limiter ─▶ output L/R
+      ─▶ Cabinet (IR) ─▶ Output Gain ─▶ (+ metronome) ─▶ Limiter ─▶ output L/R
 ```
 
-The chain starts mono. Effects in stereo mode (Chorus, Tremolo, Delay, Reverb by
-default; Flanger/Phaser when switched; a panned Cabinet) make it stereo from
-there on. A stereo signal reaching the Amplifier is summed to mono unless its **Stereo**
-switch is on, which runs the model once per channel at twice the CPU.
+The chain starts mono. Effects in stereo mode (Delay and Reverb by default; Chorus,
+Tremolo, Flanger and Phaser when their **Stereo** switch is on) make it stereo from
+there on. A stereo signal reaching the Amplifier runs the model once per channel, at
+twice the CPU — it is never summed to mono.
 
 | Stage | Main controls | ▾ More |
 |-------|---------------|--------|
 | Transpose | Semitones (±12), Mix; **Reverse** (pedal heel ↔ toe), **Continuous** switch (off = Discrete: whole semitones; on = smooth whammy-style glides, the shifter then stays active at 0 st) | — |
-| Drive | Drive, Tone, Level (TS-style: clipping on the mids/highs, clean lows kept) | — |
+| Drive | Drive, Tone, Level — a Tube Screamer circuit model (the op-amp + diode clipper as a wave digital filter, oversampled) | — |
+| Amplifier | On/Off, ‹ › through the library, Input, Output (see Parameters); the row shows the model and its metadata | — |
 | Dynamic Wah | **Manual** switch (off = Auto: your playing sweeps it), **Reverse** (pedal heel ↔ toe), Mix, Sensitivity, Resonance, Position (the sweep in Manual mode — map an expression pedal) | — |
 | Flanger / Phaser / Chorus | Mix, Rate (Sync), Depth, Feedback (not Chorus; Phaser up to 90 %); Flanger **Range**. The Phaser is an MXR Phase 90 model: Depth 50 % and Mix 50 % are the pedal, Feedback 0 % the original "script" circuit | — |
 | Equalizer | Bass, Middle, High-Mid, Treble (±12 dB) | the four band frequencies, Low Cut, High Cut |
 | Delay | Mix, Time (Sync), Feedback (ping-pong in stereo) | R Time, Low/High Cut, Saturation, Shimmer (octave-up repeats) |
 | Reverb | Type (Plate / Hall / Room), Mix, Decay (0.2–10 s), Damping, Width | Pre-delay (0–250 ms; with the main row's **Sync** on, a note value at the tempo, up to 2 s), Low/High Cut, Shimmer (octave-up feedback into the tail) |
-| Cabinet | IR (library, ‹ ›; click the name to browse) | — |
+| Cabinet | On/Off, ‹ › through the library, Level; the row shows the IR and its metadata | — |
 | Volume Pedal | Volume, Mid (level at half travel), **Reverse** (pedal heel ↔ toe) | — |
 | Output | Gain, **Limit** (look-ahead limiter at −0.3 dBFS) | — |
 
@@ -508,9 +513,10 @@ IR files are compatible with any standard cab sim WAV (e.g., from OwnHammer, Cel
 
 ### Failed to load NAM model
 
-- Confirm the file is a valid `.nam` file (JSON with weights).
+- Confirm the file is a valid `.nam` file (JSON with weights); the dialog says what
+  was wrong (a truncated weights list, an unsupported architecture, more than one
+  channel, a stated sample rate outside 8–384 kHz, a file over 256 MB).
 - Check that the file version is between 0.5.0 and 0.7.0.
-- Run from a terminal to see the error printed to stderr.
 
 ### Failed to load IR
 
@@ -521,7 +527,7 @@ IR files are compatible with any standard cab sim WAV (e.g., from OwnHammer, Cel
 
 - Check JACK port connections (`jack_lsp -c`).
 - Verify input and output gain knobs are not zeroed (double-click to reset).
-- Ensure the IR "Enable" checkbox is ticked if an IR is loaded.
+- The Amplifier and Cabinet rows' **On** switches bypass them when off.
 
 ### High CPU usage
 
@@ -565,7 +571,7 @@ window is minimized); the window is up in **< 1 s**. Reference numbers (i9-12900
 (amp 2.5 %, cab 1.1 %, all other effects together 0.4 %); cold start 135 ms; peak
 RSS 170 MB.
 
-### Submodule build errors (missing eigen / wav.h)
+### Submodule build errors (missing eigen / NAM/dsp.h)
 
 ```bash
 git submodule update --init --recursive

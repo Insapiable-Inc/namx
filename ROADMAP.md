@@ -1349,33 +1349,34 @@ on the `experiment/tone3000` branch.
       tokens) are deleted once.
 - [x] Update the north star (decision reversed, with the date and the reason).
 
-## Phase 28 — Cleanup & documentation (added 2026-10-02; before the release, after naming)
+## Phase 28 — Cleanup & documentation (added 2026-10-02; before the release, after naming; in progress 2026-10-04)
 
 The repo and its docs have to describe the app as it is. After Phase 7 so everything
 carries the final name.
 
-- [ ] **README** rewritten for the current app: what it is, the features as they are now
-      (it still says "3-band EQ"; no MIDI, metronome, library, LED meters…), platform
-      status, install, screenshots, license, credits.
-- [ ] **Mission / vision**, stated up front: "the world's best" free, open-source, native
-      NAM player — Linux first, no DAW, no subscriptions, batteries included (tuner,
-      metronome, MIDI). Draft points are in `MARKETING.md`.
-- [ ] **Fresh screenshots** (offscreen grab workflow): main window, library, a preset,
-      MIDI mappings, settings; stored in the repo (e.g. `docs/screenshots/`), referenced
-      from the README and the AppStream metadata.
-- [ ] **Build instructions** checked and updated: `gui/BUILD.md` per distro (Arch,
-      Ubuntu 24.04+, Fedora), Windows (MSVC 2022 + Qt + vcpkg), CMake options, tests;
-      the AudioDSPTools submodule is now only needed for the resampler header.
-- [ ] **User manual**: split the "how to use" half of `gui/BUILD.md` into its own
-      manual (getting started, routing audio, the rack, presets & slots, library, MIDI
-      incl. multi-assign / Reverse / ranges, tuner & metronome, settings, shortcuts,
-      troubleshooting); linked from Help.
+- [ ] **README** rewritten for the current app: what it is, the features as they are now,
+      platform status, install, screenshot, license, credits. **Draft written 2026-10-04,
+      uncommitted on purpose — the user edits it by hand before it lands.** Mission /
+      vision is its "Why NAM-X" section (points from `MARKETING.md`).
+- [x] **Fresh screenshot** (user, 2026-10-04): `docs/screenshots/main.png`, referenced
+      from the README draft and the AppStream metadata (raw GitHub URL on `main`).
+      More (library, MIDI mappings, settings) only if the README wants them.
+- [x] **Build instructions** checked against the code (2026-10-04): BUILD.md's CMake
+      minimum, flags (`NAM_WERROR`), command-line options, the amp/cabinet rows and
+      their knobs, the stereo rules (the amp is never summed; Chorus/Tremolo stereo off by
+      default), the Settings page, the model-load reasons, the submodule note. The
+      vcpkg mention is gone (CLAUDE.md) and the Fedora list has `gcc-c++`.
+- [x] **User manual**: stays inside BUILD.md (user, 2026-10-04 — "the document is fine,
+      just make sure it's up to date"); no split.
 - [ ] **Release notes** for v0.0.0 (the first release — no changelog to write; was
-      "since v0.5.4").
-- [ ] Repo tidy: `AUDIT.md` (archive or keep private; `ISSUES.md` stays local and
-      untracked — user, 2026-10-04), stale notes, CLAUDE.md / ROADMAP current.
-      (Done 2026-10-04: version → 0.0.0 in CMake, the Windows .rc, AppStream, PKGBUILD;
-      stale ROADMAP items closed.)
+      "since v0.5.4"). After the README wording is settled, so they share its language.
+- [x] Repo tidy (2026-10-04): `AUDIT-2026-10-04*.md` stay untracked like `ISSUES.md`
+      (`.git/info/exclude`; user); the audit's guideline leftovers (π, enum classes,
+      std ints, named casts), the WASAPI/test naming leftovers and the widget-lifetime
+      item are committed. (Done earlier: version → 0.0.0 in CMake, the Windows .rc,
+      AppStream, PKGBUILD; stale ROADMAP items closed.)
+- [ ] Still open from the reviews, for a later pass: ISSUES 32 (MainWindow too big —
+      extract preset/snapshot application first), `AUDIT.md` (archive or keep private).
 
 ## Phase 21 — Windows audio: WASAPI exclusive + ASIO (added 2026-10-01; before the release only if a Windows machine is available)
 
