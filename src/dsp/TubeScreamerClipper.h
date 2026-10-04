@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <numbers>
 
 #include <chowdsp_wdf/chowdsp_wdf.h>
 
@@ -40,7 +41,7 @@ public:
         os_rate = 4.0 * sr;
         c_fb.prepare(static_cast<float>(os_rate));
         // The 4.7 kΩ / 47 nF leg's high-pass, bilinear at the oversampled rate.
-        const double k = std::tan(3.14159265358979323846 * HP_HZ / os_rate);
+        const double k = std::tan(std::numbers::pi * HP_HZ / os_rate);
         hp_b = static_cast<float>(1.0 / (1.0 + k));
         hp_a = static_cast<float>((1.0 - k) / (1.0 + k));
         reset();
@@ -84,7 +85,7 @@ public:
     }
 
 private:
-    static constexpr double HP_HZ = 1.0 / (2.0 * 3.14159265358979323846 * 4.7e3 * 47.0e-9);
+    static constexpr double HP_HZ = 1.0 / (2.0 * std::numbers::pi * 4.7e3 * 47.0e-9);
     static constexpr float R_LEG = 4.7e3f;
     // 1N914: saturation current and thermal voltage × ideality factor (Yeh 2007).
     static constexpr float DIODE_IS = 2.52e-9f;
@@ -123,9 +124,9 @@ private:
             double sinc = 0.5;
             if (m != 0) {
                 // sin(π m / 2) / (π m): 0 for even m, ±1/(π m) for odd.
-                sinc = (m % 2 == 0) ? 0.0
-                                    : ((m % 4 == 1 || m % 4 == -3) ? 1.0 : -1.0) /
-                                          (3.14159265358979323846 * m);
+                sinc = (m % 2 == 0)
+                           ? 0.0
+                           : ((m % 4 == 1 || m % 4 == -3) ? 1.0 : -1.0) / (std::numbers::pi * m);
             }
             const double r = static_cast<double>(m) / mid;
             const double w = i0(beta * std::sqrt(std::max(0.0, 1.0 - r * r))) / i0(beta);

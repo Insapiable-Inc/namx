@@ -2,13 +2,12 @@
 
 #include <algorithm>
 #include <cmath>
+#include <numbers>
 
 #include "Common.h"
 
 namespace namx
 {
-
-static constexpr float TWO_PI = 6.28318530718f;
 
 void DelayProcessor::on_sample_rate_changed(double sr) {
     const size_t n = static_cast<size_t>(MAX_DELAY_MS * sr / 1000.0) + 4;
@@ -80,8 +79,11 @@ DelayProcessor::Params DelayProcessor::params() const {
     p.fb = std::min(feedback_pct.load() / 100.0f, 0.99f);
     p.mix = mix_pct.load() / 100.0f;
     p.cross = std::clamp(cross_pct.load(), 0.0f, 100.0f) / 100.0f;
-    p.hp_a = std::exp(-TWO_PI * std::clamp(low_cut_hz.load(), 20.0f, 2000.0f) / fs);
-    p.lp_k = 1.0f - std::exp(-TWO_PI * std::clamp(high_cut_hz.load(), 500.0f, 0.45f * fs) / fs);
+    p.hp_a = std::exp(
+        -(2.0f * std::numbers::pi_v<float>)*std::clamp(low_cut_hz.load(), 20.0f, 2000.0f) / fs);
+    p.lp_k = 1.0f - std::exp(-(2.0f * std::numbers::pi_v<float>)*std::clamp(high_cut_hz.load(),
+                                                                            500.0f, 0.45f * fs) /
+                             fs);
     p.sat_drive = std::clamp(sat_pct.load(), 0.0f, 100.0f) / 100.0f;
     p.mod_depth = 0.003f * fs * std::clamp(mod_pct.load(), 0.0f, 100.0f) / 100.0f; // up to ±3 ms
     p.ph_inc = 0.55f / fs; // 0.55 Hz wobble
@@ -120,7 +122,7 @@ void DelayProcessor::process_block_mono(float* buf, size_t nframes) {
     shimmer_edge(p.shimmer);
     Line& l = lines[0];
     for (size_t i = 0; i < nframes; ++i) {
-        const float mod = p.mod_depth * std::sin(TWO_PI * mod_phase);
+        const float mod = p.mod_depth * std::sin((2.0f * std::numbers::pi_v<float>)*mod_phase);
         mod_phase += p.ph_inc;
         if (mod_phase >= 1.0f) {
             mod_phase -= 1.0f;
@@ -141,7 +143,7 @@ void DelayProcessor::process_block_dual(float* l, float* r, size_t nframes) {
     const Params p = params();
     shimmer_edge(p.shimmer);
     for (size_t i = 0; i < nframes; ++i) {
-        const float mod = p.mod_depth * std::sin(TWO_PI * mod_phase);
+        const float mod = p.mod_depth * std::sin((2.0f * std::numbers::pi_v<float>)*mod_phase);
         mod_phase += p.ph_inc;
         if (mod_phase >= 1.0f) {
             mod_phase -= 1.0f;
@@ -167,7 +169,7 @@ void DelayProcessor::process_block_stereo_out(float* l, float* r, size_t nframes
     shimmer_edge(p.shimmer);
     const float c = p.cross;
     for (size_t i = 0; i < nframes; ++i) {
-        const float mod = p.mod_depth * std::sin(TWO_PI * mod_phase);
+        const float mod = p.mod_depth * std::sin((2.0f * std::numbers::pi_v<float>)*mod_phase);
         mod_phase += p.ph_inc;
         if (mod_phase >= 1.0f) {
             mod_phase -= 1.0f;

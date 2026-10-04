@@ -2,13 +2,12 @@
 
 #include <algorithm>
 #include <cmath>
+#include <numbers>
 
 #include "Common.h"
 
 namespace namx
 {
-
-static constexpr float PI = 3.14159265358979323846f;
 
 void ChorusProcessor::on_sample_rate_changed(double sr) {
     const size_t length = static_cast<size_t>((BASE_MS + MAX_DEPTH_MS + 5.0f) * sr / 1000.0f) + 4;
@@ -32,21 +31,21 @@ void ChorusProcessor::reset() {
 }
 
 float ChorusProcessor::tap(const DelayLine& line, float phase, float depth, float fs,
-                           int current_mode) {
+                           Mode current_mode) {
     float lfo;
-    if (current_mode == VINTAGE) {
+    if (current_mode == Mode::VINTAGE) {
         const float f = phase - std::floor(phase);
         lfo = 4.0f * std::abs(f - 0.5f) - 1.0f; // triangle
     } else {
-        lfo = std::sin(2.0f * PI * phase);
+        lfo = std::sin(2.0f * std::numbers::pi_v<float> * phase);
     }
     const float del = std::max(1.0f, (BASE_MS + depth * MAX_DEPTH_MS * lfo) * fs / 1000.0f);
     return line.interpolate(del);
 }
 
 float ChorusProcessor::wet(const DelayLine& line, float phase, float depth, float fs,
-                           int current_mode) {
-    if (current_mode == TRI) {
+                           Mode current_mode) {
+    if (current_mode == Mode::TRI) {
         return (tap(line, phase, depth, fs, current_mode) +
                 tap(line, phase + 1.0f / 3.0f, depth, fs, current_mode) +
                 tap(line, phase + 2.0f / 3.0f, depth, fs, current_mode)) *
@@ -70,13 +69,13 @@ void ChorusProcessor::process_block_mono(float* buf, size_t nframes) {
     const float mix = mix_pct.load() / 100.0f;
     const float fs = static_cast<float>(sample_rate);
     const float ph_inc = rate_hz.load() / fs;
-    const int current_mode = mode.load(std::memory_order_relaxed);
-    const float lp_k = 1.0f - std::exp(-2.0f * PI * 3200.0f / fs);
+    const Mode current_mode = mode.load(std::memory_order_relaxed);
+    const float lp_k = 1.0f - std::exp(-2.0f * std::numbers::pi_v<float> * 3200.0f / fs);
 
     for (size_t i = 0; i < nframes; ++i) {
         line_l.push(buf[i]);
         float w = wet(line_l, lfo_phase, depth, fs, current_mode);
-        if (current_mode == VINTAGE) {
+        if (current_mode == Mode::VINTAGE) {
             w = vintage_tone(w, vint_lp[0], lp_k);
         }
         buf[i] = buf[i] * (1.0f - mix) + w * mix;
@@ -95,8 +94,8 @@ void ChorusProcessor::process_block_dual(float* l, float* r, size_t nframes) {
     const float mix = mix_pct.load() / 100.0f;
     const float fs = static_cast<float>(sample_rate);
     const float ph_inc = rate_hz.load() / fs;
-    const int current_mode = mode.load(std::memory_order_relaxed);
-    const float lp_k = 1.0f - std::exp(-2.0f * PI * 3200.0f / fs);
+    const Mode current_mode = mode.load(std::memory_order_relaxed);
+    const float lp_k = 1.0f - std::exp(-2.0f * std::numbers::pi_v<float> * 3200.0f / fs);
 
     for (size_t i = 0; i < nframes; ++i) {
         // Same LFO for both channels: identical mono effect applied per channel.
@@ -104,7 +103,7 @@ void ChorusProcessor::process_block_dual(float* l, float* r, size_t nframes) {
         line_r.push(r[i]);
         float w_l = wet(line_l, lfo_phase, depth, fs, current_mode);
         float w_r = wet(line_r, lfo_phase, depth, fs, current_mode);
-        if (current_mode == VINTAGE) {
+        if (current_mode == Mode::VINTAGE) {
             w_l = vintage_tone(w_l, vint_lp[0], lp_k);
             w_r = vintage_tone(w_r, vint_lp[1], lp_k);
         }
@@ -125,17 +124,18 @@ void ChorusProcessor::process_block_stereo_out(float* l, float* r, size_t nframe
     const float mix = mix_pct.load() / 100.0f;
     const float fs = static_cast<float>(sample_rate);
     const float ph_inc = rate_hz.load() / fs;
-    const int current_mode = mode.load(std::memory_order_relaxed);
-    const float lp_k = 1.0f - std::exp(-2.0f * PI * 3200.0f / fs);
-    const float off = current_mode == SPATIAL ? 0.25f : 0.5f; // LFO offset
-    const float r_sign = current_mode == SPATIAL ? -1.0f : 1.0f; // Spatial: inverted right wet
+    const Mode current_mode = mode.load(std::memory_order_relaxed);
+    const float lp_k = 1.0f - std::exp(-2.0f * std::numbers::pi_v<float> * 3200.0f / fs);
+    const float off = current_mode == Mode::SPATIAL ? 0.25f : 0.5f; // LFO offset
+    const float r_sign =
+        current_mode == Mode::SPATIAL ? -1.0f : 1.0f; // Spatial: inverted right wet
 
     for (size_t i = 0; i < nframes; ++i) {
         line_l.push(l[i]);
         line_r.push(r[i]);
         float w_l = wet(line_l, lfo_phase, depth, fs, current_mode);
         float w_r = wet(line_r, lfo_phase + off, depth, fs, current_mode);
-        if (current_mode == VINTAGE) {
+        if (current_mode == Mode::VINTAGE) {
             w_l = vintage_tone(w_l, vint_lp[0], lp_k);
             w_r = vintage_tone(w_r, vint_lp[1], lp_k);
         }

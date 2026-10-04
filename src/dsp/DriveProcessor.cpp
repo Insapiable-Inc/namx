@@ -2,13 +2,12 @@
 
 #include <algorithm>
 #include <cmath>
+#include <numbers>
 
 #include "Common.h"
 
 namespace namx
 {
-
-static constexpr float PI = 3.14159265358979323846f;
 
 void DriveProcessor::sync_right_channel() {
     // The WDF network holds references between its elements, so it can't be copied:
@@ -29,7 +28,7 @@ void DriveProcessor::process_channel(float* buf, size_t n, int ch) {
     const float drive = std::clamp(drive_pct.load(), 0.0f, 100.0f) / 100.0f;
     const float tone = std::clamp(tone_pct.load(), 0.0f, 100.0f) / 100.0f;
     const float fc = 600.0f * std::pow(10.0f, tone); // 600 Hz … 6 kHz
-    const float lp_k = 1.0f - std::exp(-2.0f * PI * fc / fs);
+    const float lp_k = 1.0f - std::exp(-2.0f * std::numbers::pi_v<float> * fc / fs);
     const float level = std::pow(10.0f, level_db.load() / 20.0f) * MAKEUP;
 
     // Digital full scale = CIRCUIT_VOLTS at the pedal's input.

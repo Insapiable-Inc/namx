@@ -2,13 +2,12 @@
 
 #include <algorithm>
 #include <cmath>
+#include <numbers>
 
 #include "Common.h"
 
 namespace namx
 {
-
-static constexpr float PI = 3.14159265358979323846f;
 
 void DynamicWahProcessor::on_sample_rate_changed(double sr) {
     env_attack = static_cast<float>(std::exp(-1.0 / (0.002 * sr)));
@@ -61,7 +60,7 @@ void DynamicWahProcessor::process_channel(float* buf, size_t nframes, int ch) {
             cutoff = std::max(
                 BASE_FREQ, std::min(BASE_FREQ + sens * env * (PEAK_FREQ - BASE_FREQ), PEAK_FREQ));
         }
-        float f = std::min(2.0f * PI * cutoff / sr, 0.5f);
+        float f = std::min(2.0f * std::numbers::pi_v<float> * cutoff / sr, 0.5f);
 
         float hp = dry - q_inv * bp - lp;
         bp += f * hp;

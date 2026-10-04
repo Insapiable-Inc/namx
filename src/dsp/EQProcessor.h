@@ -24,16 +24,16 @@ namespace namx
 class EQProcessor : public EffectBase
 {
 public:
-    enum Band
+    enum class Band : size_t
     {
         LOW_CUT = 0,
         BASS,
         MIDDLE,
         HIGH_MID,
         TREBLE,
-        HIGH_CUT,
-        BANDS
+        HIGH_CUT
     };
+    static constexpr size_t BANDS = 6;
 
     EQProcessor();
 
@@ -46,13 +46,13 @@ public:
 
     // Back-compat names (3-band era).
     void set_low_gain(double db) {
-        set_gain(BASS, db);
+        set_gain(Band::BASS, db);
     }
     void set_mid_gain(double db) {
-        set_gain(MIDDLE, db);
+        set_gain(Band::MIDDLE, db);
     }
     void set_treble_gain(double db) {
-        set_gain(TREBLE, db);
+        set_gain(Band::TREBLE, db);
     }
 
 protected:

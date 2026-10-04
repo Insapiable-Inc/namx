@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <numbers>
 
 #include "Common.h"
 
@@ -69,11 +70,12 @@ struct Cuts
     size_t pre; // samples
 };
 static Cuts cuts_for(double sr, float low_hz, float high_hz, float pre_ms, float max_pre_ms) {
-    constexpr float TWO_PI = 6.28318530718f;
     const float fs = static_cast<float>(sr);
     Cuts c;
-    c.hp_a = std::exp(-TWO_PI * std::clamp(low_hz, 20.0f, 2000.0f) / fs);
-    c.lp_k = 1.0f - std::exp(-TWO_PI * std::clamp(high_hz, 500.0f, 0.45f * fs) / fs);
+    c.hp_a = std::exp(-(2.0f * std::numbers::pi_v<float>)*std::clamp(low_hz, 20.0f, 2000.0f) / fs);
+    c.lp_k =
+        1.0f -
+        std::exp(-(2.0f * std::numbers::pi_v<float>)*std::clamp(high_hz, 500.0f, 0.45f * fs) / fs);
     c.pre = static_cast<size_t>(std::clamp(pre_ms, 0.0f, max_pre_ms) * fs / 1000.0f);
     return c;
 }

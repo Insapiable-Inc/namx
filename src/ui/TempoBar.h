@@ -30,14 +30,14 @@ class BeatLeds : public QWidget
 public:
     explicit BeatLeds(QWidget* parent = nullptr);
 
-    void set_pattern(int new_beats, uint32_t new_accents);
+    void set_pattern(int new_beats, std::uint32_t new_accents);
     // Current beat (-1 = stopped); `countIn` lights it amber.
     void set_beat(int new_beat, bool new_count_in);
 
     QSize sizeHint() const override;
 
 signals:
-    void accents_changed(uint32_t accents);
+    void accents_changed(std::uint32_t accents);
 
 protected:
     void paintEvent(QPaintEvent* ev) override;
@@ -46,7 +46,7 @@ protected:
 private:
     static constexpr int W = 12, GAP = 4, H = 26;
     int beats = 4;
-    uint32_t accents = 0;
+    std::uint32_t accents = 0;
     int beat = -1;
     bool count_in = false;
 };
@@ -118,7 +118,7 @@ public:
 
     void on_bpm_field_changed(double new_bpm);
     void on_play_toggled(bool on);
-    void on_accents_edited(uint32_t accents);
+    void on_accents_edited(std::uint32_t accents);
     void populate_meter_menu(); // time signatures, rebuilt each time it opens
     void ask_custom_meter();
     void choose_subdivision(int subdivision); // 1 = beats … 4 = sixteenths

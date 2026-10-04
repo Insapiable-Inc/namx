@@ -2,6 +2,8 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
+#include <utility>
 
 #include <QHBoxLayout>
 #include <QInputDialog>
@@ -33,7 +35,7 @@ QSize BeatLeds::sizeHint() const {
     return {beats * W + (beats - 1) * GAP + 2, H};
 }
 
-void BeatLeds::set_pattern(int new_beats, uint32_t new_accents) {
+void BeatLeds::set_pattern(int new_beats, std::uint32_t new_accents) {
     beats = std::clamp(new_beats, 1, Metronome::MAX_BEATS);
     accents = new_accents;
     setFixedSize(sizeHint());
@@ -55,15 +57,15 @@ void BeatLeds::paintEvent(QPaintEvent*) {
     for (int b = 0; b < beats; ++b) {
         const Metronome::Accent a = Metronome::accent_of(accents, b);
         const qreal x = 1 + b * (W + GAP);
-        const qreal h = a == Metronome::STRONG   ? H - 2
-                        : a == Metronome::NORMAL ? (H - 2) * 0.66
-                        : a == Metronome::SOFT   ? (H - 2) * 0.36
-                                                 : (H - 2) * 0.36;
+        const qreal h = a == Metronome::Accent::STRONG   ? H - 2
+                        : a == Metronome::Accent::NORMAL ? (H - 2) * 0.66
+                        : a == Metronome::Accent::SOFT   ? (H - 2) * 0.36
+                                                         : (H - 2) * 0.36;
         const QRectF r(x, H - 1 - h, W, h);
         const bool lit = b == beat;
         QColor c =
             lit ? (count_in ? Theme::meter_mid() : Theme::generic_accent()) : Theme::track_hover();
-        if (a == Metronome::MUTE) {
+        if (a == Metronome::Accent::MUTE) {
             p.setPen(QPen(lit ? c : Theme::track_hover(), 1.2));
             p.setBrush(Qt::NoBrush);
         } else {
@@ -81,8 +83,9 @@ void BeatLeds::mousePressEvent(QMouseEvent* ev) {
     }
     // strong → normal → soft → mute → strong
     const Metronome::Accent a = Metronome::accent_of(accents, b);
-    const Metronome::Accent next =
-        a == Metronome::MUTE ? Metronome::STRONG : Metronome::Accent(a - 1);
+    const Metronome::Accent next = a == Metronome::Accent::MUTE
+                                       ? Metronome::Accent::STRONG
+                                       : static_cast<Metronome::Accent>(std::to_underlying(a) - 1);
     accents = Metronome::with_accent(accents, b, next);
     update();
     emit accents_changed(accents);
@@ -251,7 +254,7 @@ TempoBar::TempoBar(Metronome& metronome, QWidget* parent)
     const int unit = s.value("metronome/unit", 4).toInt();
     set_meter(beats, unit, !s.contains("metronome/accents"));
     if (s.contains("metronome/accents")) {
-        const uint32_t acc = s.value("metronome/accents").toUInt();
+        const std::uint32_t acc = s.value("metronome/accents").toUInt();
         metro.set_accents(acc);
         leds->set_pattern(metro.get_beats(), acc);
     }
@@ -321,7 +324,7 @@ void TempoBar::set_meter(int beats, int unit, bool reset_accents) {
     s.setValue("metronome/beats", metro.get_beats());
     s.setValue("metronome/unit", metro.get_unit());
     if (reset_accents) {
-        const uint32_t acc = Metronome::default_accents(metro.get_beats(), metro.get_unit());
+        const std::uint32_t acc = Metronome::default_accents(metro.get_beats(), metro.get_unit());
         metro.set_accents(acc);
         s.setValue("metronome/accents", acc);
     }
@@ -399,7 +402,7 @@ void TempoBar::on_play_toggled(bool on) {
     play->setText(on ? "■" : "▶");
 }
 
-void TempoBar::on_accents_edited(uint32_t accents) {
+void TempoBar::on_accents_edited(std::uint32_t accents) {
     metro.set_accents(accents);
     persist("metronome/accents", accents);
 }

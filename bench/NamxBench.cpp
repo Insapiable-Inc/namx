@@ -200,12 +200,12 @@ int run(int argc, char** argv) {
     transpose.set_semitones(-2.0f); // a drop tuning: the shifter's real cost
     // Worst case the UI can reach for the effects that skip idle work: all six EQ bands
     // engaged (flat bands are skipped), the delay's modulation and saturation on.
-    for (const EQProcessor::Band b :
-         {EQProcessor::BASS, EQProcessor::MIDDLE, EQProcessor::HIGH_MID, EQProcessor::TREBLE}) {
+    for (const EQProcessor::Band b : {EQProcessor::Band::BASS, EQProcessor::Band::MIDDLE,
+                                      EQProcessor::Band::HIGH_MID, EQProcessor::Band::TREBLE}) {
         eq.set_gain(b, 3.0);
     }
-    eq.set_freq(EQProcessor::LOW_CUT, 80.0);
-    eq.set_freq(EQProcessor::HIGH_CUT, 8000.0);
+    eq.set_freq(EQProcessor::Band::LOW_CUT, 80.0);
+    eq.set_freq(EQProcessor::Band::HIGH_CUT, 8000.0);
     delay.set_modulation(30.0f);
     delay.set_saturation(30.0f);
 

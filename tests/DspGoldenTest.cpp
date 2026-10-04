@@ -28,6 +28,7 @@
 #include <numbers>
 #include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <QFile>
@@ -472,7 +473,8 @@ void DspGoldenTest::initTestCase() {
     both("phaser-feedback", &make_phaser_feedback);
     both("drive", &make_drive);
     both("eq", &make_eq);
-    for (int mode = ChorusProcessor::NORMAL; mode <= ChorusProcessor::SPATIAL; ++mode) {
+    for (int mode = std::to_underlying(ChorusProcessor::Mode::NORMAL);
+         mode <= std::to_underlying(ChorusProcessor::Mode::SPATIAL); ++mode) {
         both("chorus-" + std::to_string(mode), [mode] {
             return make_chorus(mode);
         });

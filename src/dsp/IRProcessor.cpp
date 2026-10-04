@@ -2,13 +2,12 @@
 
 #include <algorithm>
 #include <cmath>
+#include <numbers>
 
 #include "Common.h"
 
 namespace namx
 {
-
-static constexpr float PI = 3.14159265358979323846f;
 
 IRProcessor::IRProcessor()
     : al(CHUNK)
@@ -36,7 +35,8 @@ void IRProcessor::reset() {
 // RBJ Butterworth high-pass / low-pass (Q = 0.707).
 void IRProcessor::design_butterworth(Biquad& b, float f, bool high, float fs) {
     f = std::clamp(f, 10.0f, 0.45f * fs);
-    const float w = 2.0f * PI * f / fs, cw = std::cos(w), alpha = std::sin(w) / (2.0f * 0.7071f);
+    const float w = 2.0f * std::numbers::pi_v<float> * f / fs, cw = std::cos(w),
+                alpha = std::sin(w) / (2.0f * 0.7071f);
     const float a0 = 1.0f + alpha;
     const float k = high ? (1.0f + cw) / 2.0f : (1.0f - cw) / 2.0f;
     b.b0 = k / a0;
@@ -97,7 +97,7 @@ bool IRProcessor::process_chunk(float* l, float* r, size_t n, bool input_is_ster
         const float lvl =
             std::pow(10.0f, level_db[s].load() / 20.0f) * share * (invert[s].load() ? -1.0f : 1.0f);
         const float pan = std::clamp(pan_pct[s].load(), -100.0f, 100.0f) / 100.0f;
-        const float ang = (pan + 1.0f) * 0.25f * PI;
+        const float ang = (pan + 1.0f) * 0.25f * std::numbers::pi_v<float>;
         g_l[s] = lvl * std::cos(ang) * std::sqrt(2.0f);
         g_r[s] = lvl * std::sin(ang) * std::sqrt(2.0f);
         if (loaded && std::abs(pan) > 0.001f) {

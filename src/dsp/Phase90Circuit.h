@@ -1,5 +1,7 @@
 #pragma once
 
+#include <numbers>
+
 #include "Common.h"
 
 namespace namx
@@ -41,8 +43,8 @@ public:
         const double t = 1.0 / sr;
         g_in = static_cast<float>(t / (2.0 * (IN_R_SERIES + IN_R_BIAS) * IN_C));
         g_stage_per_siemens = static_cast<float>(t / (2.0 * STAGE_C));
-        g_fb = static_cast<float>(t * 3.14159265358979323846 * FB_HP_HZ);
-        g_out = static_cast<float>(t * 3.14159265358979323846 * OUT_HP_HZ);
+        g_fb = static_cast<float>(t * std::numbers::pi * FB_HP_HZ);
+        g_out = static_cast<float>(t * std::numbers::pi * OUT_HP_HZ);
         reset();
     }
 

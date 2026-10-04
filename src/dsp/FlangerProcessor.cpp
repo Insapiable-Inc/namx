@@ -2,13 +2,12 @@
 
 #include <algorithm>
 #include <cmath>
+#include <numbers>
 
 #include "Common.h"
 
 namespace namx
 {
-
-static constexpr float PI = 3.14159265358979323846f;
 
 void FlangerProcessor::on_sample_rate_changed(double sr) {
     const size_t length = static_cast<size_t>((BASE_MS + DEPTH_MS + 5.0f) * sr / 1000.0f) + 4;
@@ -33,7 +32,7 @@ void FlangerProcessor::reset() {
 
 void FlangerProcessor::process_sample(float in, float phase, DelayLine& line, float& fb,
                                       float depth, float fb_amt, float mix, float& out) const {
-    float lfo = std::sin(2.0f * PI * phase);
+    float lfo = std::sin(2.0f * std::numbers::pi_v<float> * phase);
     // Range scales the sweep centre and width together (max = BASE_MS/DEPTH_MS).
     const float r = std::clamp(range_pct.load(std::memory_order_relaxed), 0.0f, 100.0f) / 100.0f;
     const float base = 1.5f + (BASE_MS - 1.5f) * r;

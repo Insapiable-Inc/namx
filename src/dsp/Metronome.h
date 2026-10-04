@@ -3,6 +3,7 @@
 #include <array>
 #include <atomic>
 #include <cstdint>
+#include <utility>
 #include <vector>
 
 #include "Common.h"
@@ -26,20 +27,20 @@ class Metronome
 {
 public:
     static constexpr int MAX_BEATS = 16;
-    enum Accent : uint32_t
+    enum class Accent : std::uint32_t
     {
         MUTE = 0,
         SOFT = 1,
         NORMAL = 2,
         STRONG = 3
     };
-    enum Sound
+    enum class Sound : size_t
     {
         CLICK = 0,
         WOOD,
-        BEEP,
-        SOUND_COUNT
+        BEEP
     };
+    static constexpr int SOUND_COUNT = 3;
 
     Metronome();
 
@@ -63,21 +64,21 @@ public:
         return unit.load();
     }
     // 2 bits per beat (Accent), beat 0 in the low bits.
-    void set_accents(uint32_t packed) {
+    void set_accents(std::uint32_t packed) {
         accents.store(packed);
     }
-    uint32_t get_accents() const {
+    std::uint32_t get_accents() const {
         return accents.load();
     }
-    static Accent accent_of(uint32_t packed, int beat) {
-        return Accent((packed >> (2 * beat)) & 3u);
+    static Accent accent_of(std::uint32_t packed, int beat) {
+        return static_cast<Accent>((packed >> (2 * beat)) & 3u);
     }
-    static uint32_t with_accent(uint32_t packed, int beat, Accent a) {
-        return (packed & ~(3u << (2 * beat))) | (uint32_t(a) << (2 * beat));
+    static std::uint32_t with_accent(std::uint32_t packed, int beat, Accent a) {
+        return (packed & ~(3u << (2 * beat))) | (std::to_underlying(a) << (2 * beat));
     }
     // Default pattern: strong downbeat; compound meters (6/8, 9/8, 12/8 …)
     // stress each group of three; everything else Normal.
-    static uint32_t default_accents(int beats, int unit);
+    static std::uint32_t default_accents(int beats, int unit);
 
     void set_subdivision(int n) {
         subdiv.store(n < 1 ? 1 : n > 4 ? 4 : n);
@@ -134,9 +135,9 @@ private:
     atomic<double> bpm{120.0};
     atomic<int> beats{4};
     atomic<int> unit{4};
-    atomic<uint32_t> accents;
+    atomic<std::uint32_t> accents;
     atomic<int> subdiv{1};
-    atomic<size_t> sound{CLICK};
+    atomic<size_t> sound{std::to_underlying(Sound::CLICK)};
     atomic<float> volume_db{-6.0f};
     atomic<float> pan{0.0f};
     atomic<int> count_in_bars{0};

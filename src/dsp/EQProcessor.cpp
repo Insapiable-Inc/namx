@@ -1,15 +1,13 @@
 #include "EQProcessor.h"
 
 #include <algorithm>
+#include <numbers>
+#include <utility>
 
 #include "Common.h"
 
 namespace namx
 {
-
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
 
 EQProcessor::EQProcessor() {
     static constexpr array<double, BANDS> DEFAULT_FREQ{20.0,   250.0,  1000.0,
@@ -28,20 +26,20 @@ void EQProcessor::on_sample_rate_changed(double) {
 }
 
 void EQProcessor::set_gain(Band b, double db) {
-    gain[b].store(db, std::memory_order_relaxed);
+    gain[std::to_underlying(b)].store(db, std::memory_order_relaxed);
     version.fetch_add(1, std::memory_order_release);
 }
 
 void EQProcessor::set_freq(Band b, double hz) {
-    freq[b].store(hz, std::memory_order_relaxed);
+    freq[std::to_underlying(b)].store(hz, std::memory_order_relaxed);
     version.fetch_add(1, std::memory_order_release);
 }
 
 bool EQProcessor::active(Band b, double gain_db, double freq_hz) const {
     switch (b) {
-        case LOW_CUT:
+        case Band::LOW_CUT:
             return freq_hz > 20.5;
-        case HIGH_CUT:
+        case Band::HIGH_CUT:
             return freq_hz < 19999.0 && freq_hz < 0.45 * sample_rate;
         default:
             return std::abs(gain_db) > 0.01;
@@ -53,7 +51,7 @@ void EQProcessor::apply_changes() {
     if (v != applied_version) {
         applied_version = v;
         for (size_t i = 0; i < BANDS; ++i) {
-            const Band b = Band(i);
+            const Band b = static_cast<Band>(i);
             const double g = gain[i].load(std::memory_order_relaxed);
             const double f = freq[i].load(std::memory_order_relaxed);
             const Biquad c = design(b, g, f);
@@ -76,15 +74,15 @@ EQProcessor::Biquad EQProcessor::design(Band band, double gain_db, double freq_h
     Biquad bq;
     const double fs = sample_rate;
     const double f = std::clamp(freq_hz, 10.0, 0.45 * fs);
-    const double w0 = 2.0 * M_PI * f / fs;
+    const double w0 = 2.0 * std::numbers::pi * f / fs;
     const double cw = std::cos(w0), sw = std::sin(w0);
     double b0, b1, b2, a0, a1, a2;
 
     switch (band) {
-        case LOW_CUT:
-        case HIGH_CUT: {
+        case Band::LOW_CUT:
+        case Band::HIGH_CUT: {
             const double alpha = sw / (2.0 * 0.7071); // Butterworth Q
-            if (band == LOW_CUT) {
+            if (band == Band::LOW_CUT) {
                 b0 = (1 + cw) / 2;
                 b1 = -(1 + cw);
                 b2 = (1 + cw) / 2;
@@ -98,10 +96,10 @@ EQProcessor::Biquad EQProcessor::design(Band band, double gain_db, double freq_h
             a2 = 1 - alpha;
             break;
         }
-        case MIDDLE:
-        case HIGH_MID: {
+        case Band::MIDDLE:
+        case Band::HIGH_MID: {
             const double a = std::pow(10.0, gain_db / 40.0);
-            const double alpha = sw / (2.0 * (band == MIDDLE ? 0.707 : 1.0));
+            const double alpha = sw / (2.0 * (band == Band::MIDDLE ? 0.707 : 1.0));
             b0 = 1 + alpha * a;
             b1 = -2 * cw;
             b2 = 1 - alpha * a;
@@ -110,13 +108,13 @@ EQProcessor::Biquad EQProcessor::design(Band band, double gain_db, double freq_h
             a2 = 1 - alpha / a;
             break;
         }
-        case BASS:
-        case TREBLE:
+        case Band::BASS:
+        case Band::TREBLE:
         default: {
             const double a = std::pow(10.0, gain_db / 40.0);
             const double alpha = sw / 2.0 * std::sqrt(2.0); // shelf slope S = 1
             const double s_a = 2.0 * std::sqrt(a) * alpha;
-            if (band == BASS) {
+            if (band == Band::BASS) {
                 b0 = a * ((a + 1) - (a - 1) * cw + s_a);
                 b1 = 2 * a * ((a - 1) - (a + 1) * cw);
                 b2 = a * ((a + 1) - (a - 1) * cw - s_a);

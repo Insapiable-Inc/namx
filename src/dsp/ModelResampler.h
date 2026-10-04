@@ -6,9 +6,11 @@
 // .cpp: its WDL dependencies include <windows.h> on Windows, whose macros (ABSOLUTE,
 // RELATIVE, …) break any header that follows. NamProcessor.h only names ModelResampler.
 
+#include <numbers>
+
 namespace iplug
 {
-inline constexpr double PI = 3.14159265358979323846;
+inline constexpr double PI = std::numbers::pi; // the vendored header expects this name
 }
 
 #ifndef DEFAULT_BLOCK_SIZE

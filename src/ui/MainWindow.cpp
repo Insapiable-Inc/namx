@@ -371,6 +371,14 @@ MainWindow::~MainWindow() {
     save_connections();
     engine->stop();
     delete midi; // stop MIDI input before the rest of the window is torn down
+    // Children holding a reference to the engine go now, not in ~QObject after the
+    // engine member is gone (audit 2026-10-04, Fable item 31).
+    delete settings_dialog;
+    settings_dialog = nullptr;
+    delete tempo_bar;
+    tempo_bar = nullptr;
+    delete audio_bar;
+    audio_bar = nullptr;
 }
 
 QFrame* MainWindow::make_row_card(const QString& title) {
@@ -899,7 +907,7 @@ void MainWindow::setup_ui() {
         KnobWidget* hi_mid =
             late_knob("eq", "highMid",
                       new KnobWidget("High-Mid", EQ_BAND_MIN, EQ_BAND_MAX, EQ_BAND_DEFAULT, "dB"),
-                      eq_set(EQProcessor::HIGH_MID, true));
+                      eq_set(EQProcessor::Band::HIGH_MID, true));
         hi_mid->set_scroll_step(0.1);
         QWidget* col =
             make_effect_row("Equalizer", sw_eq_enable, {knob_low, knob_mid, hi_mid, knob_treble});
@@ -907,19 +915,20 @@ void MainWindow::setup_ui() {
             col,
             {
                 make_eq_freq_knob("lowFreq", "Bass Freq", EQ_BASS_FREQ_MIN, EQ_BASS_FREQ_MAX,
-                                  EQ_BASS_FREQ_DEFAULT, EQProcessor::BASS, 0),
+                                  EQ_BASS_FREQ_DEFAULT, EQProcessor::Band::BASS, 0),
                 make_eq_freq_knob("midFreq", "Mid Freq", EQ_MID_FREQ_MIN, EQ_MID_FREQ_MAX,
-                                  EQ_MID_FREQ_DEFAULT, EQProcessor::MIDDLE, 0),
+                                  EQ_MID_FREQ_DEFAULT, EQProcessor::Band::MIDDLE, 0),
                 make_eq_freq_knob("highMidFreq", "High-Mid Freq", EQ_HI_MID_FREQ_MIN,
-                                  EQ_HI_MID_FREQ_MAX, EQ_HI_MID_FREQ_DEFAULT, EQProcessor::HIGH_MID,
-                                  0),
+                                  EQ_HI_MID_FREQ_MAX, EQ_HI_MID_FREQ_DEFAULT,
+                                  EQProcessor::Band::HIGH_MID, 0),
                 make_eq_freq_knob("trebleFreq", "Treble Freq", EQ_TREBLE_FREQ_MIN,
-                                  EQ_TREBLE_FREQ_MAX, EQ_TREBLE_FREQ_DEFAULT, EQProcessor::TREBLE,
-                                  0),
+                                  EQ_TREBLE_FREQ_MAX, EQ_TREBLE_FREQ_DEFAULT,
+                                  EQProcessor::Band::TREBLE, 0),
                 make_eq_freq_knob("lowCut", "Low Cut", LOW_CUT_MIN, LOW_CUT_MAX, LOW_CUT_DEFAULT,
-                                  EQProcessor::LOW_CUT, LOW_CUT_MIN + 0.5),
+                                  EQProcessor::Band::LOW_CUT, LOW_CUT_MIN + 0.5),
                 make_eq_freq_knob("highCut", "High Cut", HIGH_CUT_MIN, HIGH_CUT_MAX,
-                                  HIGH_CUT_DEFAULT, EQProcessor::HIGH_CUT, -(HIGH_CUT_MAX - 1.0)),
+                                  HIGH_CUT_DEFAULT, EQProcessor::Band::HIGH_CUT,
+                                  -(HIGH_CUT_MAX - 1.0)),
             });
         sw_eq_enable->setChecked(true);
         Theme::tag_card(col, "eq");

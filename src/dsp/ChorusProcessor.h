@@ -1,6 +1,7 @@
 #pragma once
 
 #include <atomic>
+#include <utility>
 
 #include "Common.h"
 #include "DelayLine.h"
@@ -31,15 +32,16 @@ public:
     void set_mix_pct(float pct) {
         mix_pct.store(pct);
     }
-    enum Mode
+    enum class Mode : int
     {
         NORMAL = 0,
         TRI,
         VINTAGE,
         SPATIAL
     };
-    void set_mode(int m) {
-        mode.store(m);
+    void set_mode(int m) { // the registry's integer; out of range = Normal
+        mode.store(m >= 0 && m <= std::to_underlying(Mode::SPATIAL) ? static_cast<Mode>(m)
+                                                                    : Mode::NORMAL);
     }
 
     float get_rate_hz() const {
@@ -64,13 +66,13 @@ private:
     atomic<float> mix_pct{50.0f};
 
     float lfo_phase{0.0f};
-    atomic<int> mode{NORMAL};
+    atomic<Mode> mode{Mode::NORMAL};
     float vint_lp[2]{}; // Vintage wet low-pass per channel
 
     // Wet sample for one channel at an LFO phase (all modes).
-    float wet(const DelayLine& line, float phase, float depth, float fs, int current_mode);
+    float wet(const DelayLine& line, float phase, float depth, float fs, Mode current_mode);
     // One modulated read of the line at an LFO phase.
-    static float tap(const DelayLine& line, float phase, float depth, float fs, int current_mode);
+    static float tap(const DelayLine& line, float phase, float depth, float fs, Mode current_mode);
 
     DelayLine line_l, line_r;
 

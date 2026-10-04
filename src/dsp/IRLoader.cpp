@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstring>
+#include <numbers>
 
 #include <Eigen/Dense>
 
@@ -36,10 +37,12 @@ static vector<float> resample_sinc(const vector<float>& in, double fs_in, double
         for (size_t k = k_min; k <= k_max; ++k) {
             const double u = t - static_cast<double>(k);
             const double x = 2.0 * cutoff * u;
-            const double sinc = (std::abs(x) < 1e-9) ? 1.0 : std::sin(M_PI * x) / (M_PI * x);
+            const double sinc = (std::abs(x) < 1e-9)
+                                    ? 1.0
+                                    : std::sin(std::numbers::pi * x) / (std::numbers::pi * x);
             // Blackman window over [-half, half]
-            const double w =
-                0.42 + 0.5 * std::cos(M_PI * u / half) + 0.08 * std::cos(2.0 * M_PI * u / half);
+            const double w = 0.42 + 0.5 * std::cos(std::numbers::pi * u / half) +
+                             0.08 * std::cos(2.0 * std::numbers::pi * u / half);
             acc += in[k] * 2.0 * cutoff * sinc * w;
         }
         out[i] = static_cast<float>(acc);
@@ -74,7 +77,8 @@ unique_ptr<IRLoader::Kernel> IRLoader::build_kernel() const {
         const size_t fade = std::min(ir.size(), static_cast<size_t>(FADE_MS * 0.001 * rate));
         for (size_t i = 0; i < fade; ++i) {
             const double x = static_cast<double>(i + 1) / static_cast<double>(fade);
-            ir[ir.size() - fade + i] *= static_cast<float>(0.5 + 0.5 * std::cos(M_PI * x));
+            ir[ir.size() - fade + i] *=
+                static_cast<float>(0.5 + 0.5 * std::cos(std::numbers::pi * x));
         }
         qCInfo(lc_audio, "[IRLoader] IR is %.2f s long: faded out at %.1f s",
                static_cast<double>(full_length) / rate, MAX_IR_SECONDS);

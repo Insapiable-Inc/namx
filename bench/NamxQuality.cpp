@@ -409,12 +409,12 @@ void eq() {
     EQProcessor e;
     e.set_sample_rate(SR);
     e.set_enabled(true);
-    e.set_gain(EQProcessor::BASS, 6.0);
-    e.set_gain(EQProcessor::MIDDLE, -6.0);
-    e.set_gain(EQProcessor::HIGH_MID, 3.0);
-    e.set_gain(EQProcessor::TREBLE, -3.0);
-    e.set_freq(EQProcessor::LOW_CUT, 80.0);
-    e.set_freq(EQProcessor::HIGH_CUT, 8000.0);
+    e.set_gain(EQProcessor::Band::BASS, 6.0);
+    e.set_gain(EQProcessor::Band::MIDDLE, -6.0);
+    e.set_gain(EQProcessor::Band::HIGH_MID, 3.0);
+    e.set_gain(EQProcessor::Band::TREBLE, -3.0);
+    e.set_freq(EQProcessor::Band::LOW_CUT, 80.0);
+    e.set_freq(EQProcessor::Band::HIGH_CUT, 8000.0);
     double worst = 0.0, worst_hz = 0.0;
     for (int i = 0; i < 40; ++i) {
         const double hz = 30.0 * std::pow(16000.0 / 30.0, i / 39.0);

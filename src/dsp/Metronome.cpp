@@ -2,13 +2,14 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
+#include <numbers>
+#include <utility>
 
 #include "Common.h"
 
 namespace namx
 {
-
-static constexpr double TWO_PI = 6.283185307179586;
 
 Metronome::Metronome()
     : accents(default_accents(4, 4)) {
@@ -33,12 +34,14 @@ void Metronome::set_meter(int new_beats, int new_unit) {
     unit.store(new_unit == 2 || new_unit == 8 || new_unit == 16 ? new_unit : 4);
 }
 
-uint32_t Metronome::default_accents(int beats, int unit) {
+std::uint32_t Metronome::default_accents(int beats, int unit) {
     beats = std::clamp(beats, 1, MAX_BEATS);
     const bool compound = unit >= 8 && beats > 3 && beats % 3 == 0;
-    uint32_t p = 0;
+    std::uint32_t p = 0;
     for (int b = 0; b < beats; ++b) {
-        Accent a = b == 0 ? STRONG : compound ? (b % 3 == 0 ? NORMAL : SOFT) : NORMAL;
+        Accent a = b == 0     ? Accent::STRONG
+                   : compound ? (b % 3 == 0 ? Accent::NORMAL : Accent::SOFT)
+                              : Accent::NORMAL;
         p = with_accent(p, b, a);
     }
     return p;
@@ -62,7 +65,7 @@ static vector<float> sine_blip(double sr, double freq, double len_s, double tau,
     for (size_t i = 0; i < s.size(); ++i) {
         const double t = static_cast<double>(i) / sr;
         const double env = std::min(1.0, t / attack_s) * std::exp(-t / tau);
-        s[i] = static_cast<float>(std::sin(TWO_PI * freq * t) * env);
+        s[i] = static_cast<float>(std::sin((2.0 * std::numbers::pi) * freq * t) * env);
     }
     normalize(s);
     return s;
@@ -71,12 +74,13 @@ static vector<float> sine_blip(double sr, double freq, double len_s, double tau,
 // Noise burst into a resonant band-pass (RBJ): a woodblock-ish knock.
 static vector<float> wood_knock(double sr, double freq, double len_s) {
     vector<float> s(static_cast<size_t>(len_s * sr));
-    const double w0 = TWO_PI * freq / sr, q = 9.0, alpha = std::sin(w0) / (2.0 * q);
+    const double w0 = (2.0 * std::numbers::pi) * freq / sr, q = 9.0,
+                 alpha = std::sin(w0) / (2.0 * q);
     const double a0 = 1.0 + alpha;
     const double b0 = alpha / a0, b2 = -alpha / a0;
     const double a1 = -2.0 * std::cos(w0) / a0, a2 = (1.0 - alpha) / a0;
     double x1 = 0, x2 = 0, y1 = 0, y2 = 0;
-    uint32_t seed = 0x1234567u;
+    std::uint32_t seed = 0x1234567u;
     for (size_t i = 0; i < s.size(); ++i) {
         seed = seed * 1664525u + 1013904223u;
         const double noise = (static_cast<double>(seed >> 8) / 8388608.0 - 1.0) *
@@ -93,14 +97,14 @@ static vector<float> wood_knock(double sr, double freq, double len_s) {
 }
 
 void Metronome::build_sounds(double sr) {
-    samples[CLICK] = {sine_blip(sr, 2000.0, 0.030, 0.006, 0.0005),
-                      sine_blip(sr, 1500.0, 0.030, 0.006, 0.0005),
-                      sine_blip(sr, 1000.0, 0.020, 0.004, 0.0005)};
-    samples[WOOD] = {wood_knock(sr, 1700.0, 0.060), wood_knock(sr, 1150.0, 0.060),
-                     wood_knock(sr, 850.0, 0.045)};
-    samples[BEEP] = {sine_blip(sr, 1760.0, 0.070, 0.050, 0.002),
-                     sine_blip(sr, 880.0, 0.070, 0.050, 0.002),
-                     sine_blip(sr, 660.0, 0.045, 0.030, 0.002)};
+    samples[std::to_underlying(Sound::CLICK)] = {sine_blip(sr, 2000.0, 0.030, 0.006, 0.0005),
+                                                 sine_blip(sr, 1500.0, 0.030, 0.006, 0.0005),
+                                                 sine_blip(sr, 1000.0, 0.020, 0.004, 0.0005)};
+    samples[std::to_underlying(Sound::WOOD)] = {
+        wood_knock(sr, 1700.0, 0.060), wood_knock(sr, 1150.0, 0.060), wood_knock(sr, 850.0, 0.045)};
+    samples[std::to_underlying(Sound::BEEP)] = {sine_blip(sr, 1760.0, 0.070, 0.050, 0.002),
+                                                sine_blip(sr, 880.0, 0.070, 0.050, 0.002),
+                                                sine_blip(sr, 660.0, 0.045, 0.030, 0.002)};
 }
 
 void Metronome::trigger(const vector<float>& sample, float gain) {
@@ -150,8 +154,9 @@ void Metronome::process(float* l, float* r, size_t n) {
 
     const float vol = std::pow(10.0f, volume_db.load(std::memory_order_relaxed) / 20.0f);
     const float current_pan = std::clamp(pan.load(std::memory_order_relaxed), -1.0f, 1.0f);
-    const float g_l = vol * std::cos((current_pan + 1.0f) * 0.25f * 3.14159265f); // constant power
-    const float g_r = vol * std::sin((current_pan + 1.0f) * 0.25f * 3.14159265f);
+    const float g_l =
+        vol * std::cos((current_pan + 1.0f) * 0.25f * std::numbers::pi_v<float>); // constant power
+    const float g_r = vol * std::sin((current_pan + 1.0f) * 0.25f * std::numbers::pi_v<float>);
 
     if (!run) {
         render(l, r, 0, n, g_l, g_r); // let the last click ring out
@@ -163,7 +168,7 @@ void Metronome::process(float* l, float* r, size_t n) {
     const double current_bpm = std::clamp(bpm.load(std::memory_order_relaxed), 20.0, 400.0);
     const double samples_per_tick = sample_rate * 60.0 / current_bpm *
                                     (4.0 / unit.load(std::memory_order_relaxed)) / current_subdiv;
-    const uint32_t acc = accents.load(std::memory_order_relaxed);
+    const std::uint32_t acc = accents.load(std::memory_order_relaxed);
     const array<vector<float>, 3>& set = samples[sound.load(std::memory_order_relaxed)];
     const bool current_silent_after = silent_after.load(std::memory_order_relaxed) &&
                                       count_in_bars.load(std::memory_order_relaxed) > 0;
@@ -182,14 +187,15 @@ void Metronome::process(float* l, float* r, size_t n) {
         }
         const bool counting = count_in_left > 0;
         const bool audible = counting || !current_silent_after;
-        const Accent a = counting ? (beat == 0 ? STRONG : NORMAL) : accent_of(acc, beat);
+        const Accent a =
+            counting ? (beat == 0 ? Accent::STRONG : Accent::NORMAL) : accent_of(acc, beat);
         if (tick == 0) {
             beat_now.store(beat, std::memory_order_relaxed);
             count_in_now.store(counting, std::memory_order_relaxed);
-            if (audible && a != MUTE) {
-                trigger(set[a == STRONG ? 0 : 1], a == SOFT ? 0.45f : 1.0f);
+            if (audible && a != Accent::MUTE) {
+                trigger(set[a == Accent::STRONG ? 0 : 1], a == Accent::SOFT ? 0.45f : 1.0f);
             }
-        } else if (audible && a != MUTE) {
+        } else if (audible && a != Accent::MUTE) {
             trigger(set[2], 0.55f);
         }
 

@@ -4,6 +4,7 @@
 #include <cmath>
 #include <complex>
 #include <cstdint>
+#include <numbers>
 
 #include "Common.h"
 
@@ -106,7 +107,6 @@ private:
     static constexpr float PULL_MS = 5.0f; // band phasors glide to their peak's
     static constexpr float SMOOTH = 0.5f; // energy smoothing between control steps
     static constexpr float SAME_PARTIAL = 0.02f; // relative frequency match
-    static constexpr double PI = 3.14159265358979323846;
 
     static double erb_number(double hz) {
         return 21.4 * std::log10(1.0 + 0.00437 * hz);
@@ -199,8 +199,8 @@ private:
         for (size_t k = 0; k < bands; ++k) {
             const double hz = erb_to_hz(lo + static_cast<double>(k) / BANDS_PER_ERB);
             const double b = BANDWIDTH_FACTOR * 1.019 * erb_width(hz);
-            const double lambda = std::exp(-2.0 * PI * b / rate);
-            const double w = 2.0 * PI * hz / rate;
+            const double lambda = std::exp(-2.0 * std::numbers::pi * b / rate);
+            const double w = 2.0 * std::numbers::pi * hz / rate;
             center[k] = static_cast<float>(w);
             const cd a = std::polar(lambda, w);
             field(&Block::a_r, k) = static_cast<float>(a.real());
@@ -227,7 +227,8 @@ private:
                     at_peak = st[3];
                 }
             }
-            delay[k] = peak_at < target_delay ? static_cast<uint32_t>(target_delay - peak_at) : 0;
+            delay[k] =
+                peak_at < target_delay ? static_cast<std::uint32_t>(target_delay - peak_at) : 0;
             if (std::abs(hz - 82.41) < std::abs(bass_hz - 82.41)) {
                 bass_hz = hz;
                 bass_latency = std::max(peak_at, target_delay);
@@ -287,7 +288,7 @@ private:
     // Upward shifts would push the top bands past Nyquist (they'd fold back as
     // inharmonic noise): those bands are faded out.
     void update_weights() {
-        const float limit = 0.9f * static_cast<float>(PI);
+        const float limit = 0.9f * static_cast<float>(std::numbers::pi);
         for (size_t k = 0; k < bands; ++k) {
             const float shifted = center[k] * ratio;
             const float fade = std::clamp((limit - shifted) / (0.05f * limit), 0.0f, 1.0f);
@@ -326,7 +327,7 @@ private:
                     break;
                 }
             }
-            owner[k] = static_cast<uint16_t>(j);
+            owner[k] = static_cast<std::uint16_t>(j);
         }
         const float pull = 1.0f - std::exp(-static_cast<float>(CONTROL) /
                                            (PULL_MS * 0.001f * static_cast<float>(rate)));
@@ -368,8 +369,8 @@ private:
     vector<float> center, smoothed_energy, omega;
     vector<float> wr, wi, pending_r, pending_i;
     vector<std::complex<double>> base_w;
-    vector<uint16_t> owner;
-    vector<uint32_t> delay;
+    vector<std::uint16_t> owner;
+    vector<std::uint32_t> delay;
     vector<float> line_r, line_i; // [position × bands + band]
     size_t line_len = 1, line_pos = 0;
 };

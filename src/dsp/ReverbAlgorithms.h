@@ -4,6 +4,7 @@
 #include <array>
 #include <cmath>
 #include <cstddef>
+#include <numbers>
 
 #include "Common.h"
 #include "DelayLine.h"
@@ -18,8 +19,6 @@ namespace namx
 
 namespace reverb_tanks
 {
-
-constexpr float TWO_PI = 6.28318530717958647692f;
 
 // Lattice all-pass: w = x + g·d, y = d − g·w, d ← w. Delay of `length` samples.
 struct AllPass
@@ -113,7 +112,7 @@ public:
         half_loop_seconds = static_cast<float>(len(672) + len(4453) + len(1800) + len(3720) +
                                                len(908) + len(4217) + len(2656) + len(3163)) /
                             (2.0f * rate);
-        lfo_step = TWO_PI * 1.0f / rate;
+        lfo_step = (2.0f * std::numbers::pi_v<float>)*1.0f / rate;
         reset();
     }
 
@@ -152,8 +151,8 @@ public:
 
         // Tank: two halves, each fed by the input and the other half's output.
         lfo_phase += lfo_step;
-        if (lfo_phase > TWO_PI) {
-            lfo_phase -= TWO_PI;
+        if (lfo_phase > (2.0f * std::numbers::pi_v<float>)) {
+            lfo_phase -= (2.0f * std::numbers::pi_v<float>);
         }
         const float lfo[2] = {std::sin(lfo_phase), std::cos(lfo_phase)};
         const size_t base[2] = {len(672), len(908)};
@@ -253,7 +252,8 @@ public:
         for (size_t i = 0; i < count; ++i) {
             base_length[i] = shape.line_ms[i] * ms;
             lines[i].resize(static_cast<size_t>(base_length[i] + shape.modulation_ms * ms) + 4);
-            lfo_step[i] = TWO_PI * (0.31f + 0.13f * static_cast<float>(i)) / rate;
+            lfo_step[i] =
+                (2.0f * std::numbers::pi_v<float>)*(0.31f + 0.13f * static_cast<float>(i)) / rate;
             lfo_phase[i] = static_cast<float>(i) * 0.785f;
         }
         depth = shape.modulation_ms * ms;
@@ -319,8 +319,8 @@ public:
         std::array<float, N> y{};
         for (size_t i = 0; i < count; ++i) {
             lfo_phase[i] += lfo_step[i];
-            if (lfo_phase[i] > TWO_PI) {
-                lfo_phase[i] -= TWO_PI;
+            if (lfo_phase[i] > (2.0f * std::numbers::pi_v<float>)) {
+                lfo_phase[i] -= (2.0f * std::numbers::pi_v<float>);
             }
             const float length = base_length[i] + depth * (0.5f + 0.5f * std::sin(lfo_phase[i]));
             const float raw = lines[i].interpolate(length - 1.0f);
