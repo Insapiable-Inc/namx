@@ -277,7 +277,7 @@ endif()
 include(GNUInstallDirs)
 install(TARGETS namx RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 if(UNIX AND NOT APPLE)
-    set(NAM_APP_ID "cl.pichulero.namx")
+    set(NAM_APP_ID "io.github.Insapiable_Inc.namx")
     install(FILES packaging/${NAM_APP_ID}.desktop
             DESTINATION ${CMAKE_INSTALL_DATADIR}/applications)
     install(FILES packaging/${NAM_APP_ID}.metainfo.xml

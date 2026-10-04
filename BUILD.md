@@ -164,7 +164,7 @@ cmake --build build-release --parallel
 sudo cmake --install build-release --prefix /usr/local
 ```
 
-This installs the binary, the launcher (`cl.pichulero.namx.desktop`, with `.nam`
+This installs the binary, the launcher (`io.github.Insapiable_Inc.namx.desktop`, with `.nam`
 and `.nampreset` file associations), the AppStream metadata and the icon theme files.
 Run `update-desktop-database` / `update-mime-database` afterwards if your distro
 doesn't hook them.

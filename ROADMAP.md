@@ -370,8 +370,8 @@ NAM Rig, NAM Stage.)
 
 **Renamed again 2026-10-03: the app is NAM-X** (user's pick, 2026-10-01; the
 similarity to Reinarc's "Nam XT" is an accepted coincidence). Display name **NAM-X**;
-binary / QSettings app name **`namx`** (config `…/pichulero.cl/namx.conf`); app id
-**`cl.pichulero.namx`**; C++ namespace **`namx`**; JACK and ALSA MIDI client **NAM-X**
+binary / QSettings app name **`namx`** (config `…/Insapiable/namx.conf`); app id
+**`io.github.Insapiable_Inc.namx`** (was `cl.pichulero.namx` until 2026-10-04 — tied to the GitHub org, not a personal domain); C++ namespace **`namx`**; JACK and ALSA MIDI client **NAM-X**
 (ports `NAM-X:input`, `NAM-X:output_L/R`; saved connections store only the other end, so
 routing survives); Documents folder `NAM-X/` (an existing `NAM Player/` keeps being
 used until `NAM-X/` exists); repo **`nam-x`**. The one-time migration now copies the
@@ -492,14 +492,14 @@ app id in hicolor, `setWindowIcon` from the qrc, Windows exe icon + version bloc
       machine-wide. The portable zip stays. Unsigned at first: Windows SmartScreen will
       warn ("unknown publisher") — code signing (e.g. SignPath's free plan for open
       source) is a later step.
-- [ ] **Flatpak / Flathub** (back 2026-10-02): manifest `cl.pichulero.NAMPlayer.yml` on the
+- [ ] **Flatpak / Flathub** (back 2026-10-02): manifest `io.github.Insapiable_Inc.namx.yml` on the
       KDE runtime (Qt 6); permissions `--socket=pipewire` (JACK through PipeWire),
       `--filesystem=home` (the library scans folders and presets store real paths — the
       document portal's paths would break them), `--device=all` (ALSA MIDI),
       `--share=ipc`, `--socket=wayland`/`x11`; CI builds a test `.flatpak` bundle; then
       submit to Flathub (its own repo under flathub/, bumped each release). Known limit:
       classic `jackd` (non-PipeWire) setups are awkward from the sandbox — point them to
-      the source build. Config lives in `~/.var/app/cl.pichulero.NAMPlayer/` (document
+      the source build. Config lives in `~/.var/app/io.github.Insapiable_Inc.namx/` (document
       it in the manual).
 - [x] CI release job on tag push: `.github/workflows/release.yml` — Ubuntu 22.04 and
       Arch container (build + tests + install layout), Windows (windeployqt zip),

@@ -24,8 +24,9 @@ namespace namx
 #define NAM_VERSION "0.0.0"
 #endif
 
-// The app's QSettings store was "NAM Player" until the NAM-X rename (2026-10-03) and
-// "NAM Linux" before that. On the first start of an empty "namx" store, copy the
+// The app's QSettings store lived under the "pichulero.cl" organization until
+// 2026-10-04 (now "Insapiable"), as "namx", before that "NAM Player" (until the NAM-X
+// rename, 2026-10-03) and "NAM Linux". On the first start of an empty store, copy the
 // newest legacy store that has anything in it, exactly once, so upgrading keeps saved
 // port connections, device IDs, the library, MIDI mappings, session state and window
 // geometry. Legacy stores are left in place (harmless, and a downgrade still finds them).
@@ -35,7 +36,7 @@ static void migrate_legacy_settings() {
         return;
     }
 
-    for (const char* name : {"NAM Player", "NAM Linux"}) {
+    for (const char* name : {"namx", "NAM Player", "NAM Linux"}) {
         QSettings legacy(QStringLiteral("pichulero.cl"), QString::fromUtf8(name));
         const QStringList keys = legacy.allKeys();
         if (keys.isEmpty()) {
@@ -45,7 +46,7 @@ static void migrate_legacy_settings() {
             current.setValue(key, legacy.value(key));
         }
         current.sync();
-        qInfo("[NAM-X] Migrated %lld settings keys from the legacy \"%s\" store",
+        qInfo("[NAM-X] Migrated %lld settings keys from the legacy pichulero.cl/\"%s\" store",
               static_cast<long long>(keys.size()), name);
         return;
     }
@@ -118,13 +119,13 @@ int run(int argc, char* argv[]) {
 #endif
 
     QApplication app(argc, argv);
-    // Application name drives the QSettings path (…/pichulero.cl/namx.conf) — keep in
+    // Application name drives the QSettings path (…/Insapiable/namx.conf) — keep in
     // sync with migrate_legacy_settings(). The display name is what windows show.
     app.setApplicationName("namx");
     app.setApplicationDisplayName("NAM-X");
     app.setApplicationVersion(NAM_VERSION);
-    app.setOrganizationName("pichulero.cl");
-    app.setDesktopFileName("cl.pichulero.namx");
+    app.setOrganizationName("Insapiable");
+    app.setDesktopFileName("io.github.Insapiable_Inc.namx");
     app.setWindowIcon(QIcon(":/icons/namx-256.png"));
 
     // Positional arguments after QApplication has taken Qt's own options

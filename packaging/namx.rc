@@ -26,7 +26,7 @@ BEGIN
     BEGIN
         BLOCK "040904B0"
         BEGIN
-            VALUE "CompanyName",      "pichulero.cl"
+            VALUE "CompanyName",      "Insapiable"
             VALUE "FileDescription",  "NAM-X"
             VALUE "FileVersion",      NAM_VERSION
             VALUE "InternalName",     "namx"

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
-  <id>cl.pichulero.namx</id>
+  <id>io.github.Insapiable_Inc.namx</id>
   <name>NAM-X</name>
   <summary>Play Neural Amp Modeler profiles and impulse responses live</summary>
-  <developer id="cl.pichulero">
+  <developer id="io.github.insapiable_inc">
     <name>silvercobraa</name>
   </developer>
   <metadata_license>CC0-1.0</metadata_license>
@@ -28,7 +28,7 @@
       Modeler plugin.
     </p>
   </description>
-  <launchable type="desktop-id">cl.pichulero.namx.desktop</launchable>
+  <launchable type="desktop-id">io.github.Insapiable_Inc.namx.desktop</launchable>
   <screenshots>
     <screenshot type="default">
       <image>https://raw.githubusercontent.com/Insapiable-Inc/namx/main/docs/screenshots/main.png</image>

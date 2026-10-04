@@ -6,12 +6,12 @@
     <comment>Neural Amp Modeler profile</comment>
     <sub-class-of type="application/json"/>
     <glob pattern="*.nam"/>
-    <icon name="cl.pichulero.namx"/>
+    <icon name="io.github.Insapiable_Inc.namx"/>
   </mime-type>
   <mime-type type="application/x-nampreset">
     <comment>NAM-X preset</comment>
     <sub-class-of type="application/json"/>
     <glob pattern="*.nampreset"/>
-    <icon name="cl.pichulero.namx"/>
+    <icon name="io.github.Insapiable_Inc.namx"/>
   </mime-type>
 </mime-info>
