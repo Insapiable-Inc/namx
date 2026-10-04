@@ -1088,7 +1088,7 @@ fix (the commit messages name the item):
       test at 44.1 kHz, preset validation in the self-test, sanitizer/`RtSlot` tests
       (F-51), pinning CI actions to commit SHAs (F-42, second half).
 
-## Phase 27 — Benchmarking: measured against the best (added 2026-10-02; done 2026-10-02 except the loopback latency)
+## Phase 27 — Benchmarking: measured against the best (added 2026-10-02; done 2026-10-02 except the loopback latency, moved after v0.0.0 on 2026-10-04)
 
 "The world's best" has to be measured. What exists: `NAMPlayerBench` (per-stage time
 against the block budget), `--self-test-and-exit` (cold start, peak RSS), the DSP %
@@ -1104,7 +1104,7 @@ machine, in `gui/BENCHMARKS.md`.
 - [x] **NAM accuracy vs the official plugin:** (done 2026-10-02 against upstream's reference renderer; fast tanh = the official plugin's accuracy) render the same input through both and
       null them; ours must match within float tolerance at the model's own rate, and
       report how each handles other rates (ties to Phase 26 item 15).
-- [ ] **Latency:** measured round trip with a loopback cable (`jack_iodelay`) against
+- [ ] **Latency** (after v0.0.0 — user, 2026-10-04)**:** measured round trip with a loopback cable (`jack_iodelay`) against
       what the status bar reports, ours vs the official plugin in a host at the same
       buffer; plus each effect's added latency (Transpose, limiter look-ahead) — ties
       to review item 28.
@@ -1347,7 +1347,7 @@ on the `experiment/tone3000` branch.
       tokens) are deleted once.
 - [x] Update the north star (decision reversed, with the date and the reason).
 
-## Phase 28 — Cleanup & documentation (added 2026-10-02; before the release, after naming; in progress 2026-10-04)
+## Phase 28 — Cleanup & documentation (added 2026-10-02; before the release, after naming; done 2026-10-04 except the MainWindow split, moved after v0.0.0)
 
 The repo and its docs have to describe the app as it is. After Phase 7 so everything
 carries the final name.
@@ -1376,8 +1376,10 @@ carries the final name.
       std ints, named casts), the WASAPI/test naming leftovers and the widget-lifetime
       item are committed. (Done earlier: version → 0.0.0 in CMake, the Windows .rc,
       AppStream, PKGBUILD; stale ROADMAP items closed.)
-- [ ] Still open from the reviews, for a later pass: ISSUES 32 (MainWindow too big —
-      extract preset/snapshot application first), `AUDIT.md` (archive or keep private).
+- [x] `AUDIT.md` kept private (user, 2026-10-04): untracked and in `.git/info/exclude`
+      like the other audits (it stays in the published history).
+- [ ] **After v0.0.0** (user, 2026-10-04 — too big a change right before the first
+      release): ISSUES 32, MainWindow too big — extract preset/snapshot application first.
 
 ## Phase 21 — Windows audio: WASAPI exclusive + ASIO (added 2026-10-01; before the release only if a Windows machine is available)
 
