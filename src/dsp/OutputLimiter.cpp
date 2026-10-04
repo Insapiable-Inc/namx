@@ -15,7 +15,10 @@ void OutputLimiter::set_sample_rate(double sr) {
     look_ms.store(static_cast<double>(look) / sr * 1000.0);
     delay_l.assign(look, 0.0f);
     delay_r.assign(look, 0.0f);
-    need_window.assign(look, 1.0f);
+    q_gain.assign(look + 1, 1.0f);
+    q_at.assign(look + 1, 0);
+    q_head = q_count = 0;
+    sample_index = 0;
     pos = 0;
     gain = 1.0f;
     release = std::exp(-1.0f / (0.080f * static_cast<float>(sr)));
@@ -30,7 +33,8 @@ void OutputLimiter::process(float* l, float* r, size_t n) {
         {
             std::fill(delay_l.begin(), delay_l.end(), 0.0f);
             std::fill(delay_r.begin(), delay_r.end(), 0.0f);
-            std::fill(need_window.begin(), need_window.end(), 1.0f);
+            q_head = q_count = 0;
+            sample_index = 0;
             gain = 1.0f;
         }
         was_enabled = false;
@@ -50,16 +54,27 @@ void OutputLimiter::process(float* l, float* r, size_t n) {
         const float out_l = delay_l[pos], out_r = delay_r[pos];
         delay_l[pos] = l[i];
         delay_r[pos] = r[i];
-        need_window[pos] = need;
         if (++pos == look) {
             pos = 0;
         }
 
-        // Lowest gain any sample in the window (the next 1 ms) will need.
-        float target = 1.0f;
-        for (float g : need_window) {
-            target = std::min(target, g);
+        // Lowest gain any sample in the window (the next 1 ms) will need: drop the
+        // queued gains this one undercuts (they can never be the minimum again),
+        // append it, then drop the head once it has left the window.
+        const size_t cap = q_gain.size();
+        while (q_count > 0 && q_gain[(q_head + q_count - 1) % cap] >= need) {
+            --q_count;
         }
+        const size_t tail = (q_head + q_count) % cap;
+        q_gain[tail] = need;
+        q_at[tail] = sample_index;
+        ++q_count;
+        if (sample_index >= look && q_at[q_head] <= sample_index - look) {
+            q_head = (q_head + 1) % cap;
+            --q_count;
+        }
+        ++sample_index;
+        const float target = q_gain[q_head];
 
         gain = target < gain ? gain + attack * (target - gain) : target + release * (gain - target);
         // Safety: never let a sample out above the ceiling.

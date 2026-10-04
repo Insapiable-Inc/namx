@@ -1,6 +1,7 @@
 #pragma once
 
 #include <atomic>
+#include <cstdint>
 #include <vector>
 
 #include "Common.h"
@@ -38,8 +39,15 @@ public:
 private:
     atomic<bool> enabled{false};
     atomic<float> gr_peak_db{0.0f};
-    vector<float> delay_l, delay_r,
-        need_window; // look-ahead lines + required gain per slot
+    vector<float> delay_l, delay_r; // look-ahead lines
+    // The lowest gain any sample in the look-ahead needs, as a monotonic queue over
+    // the last `look` samples (audit 2026-10-04 item 13: scanning the window per
+    // sample grew with the square of the rate). Ring of (gain, sample index), gains
+    // ascending from head to tail; the head is the window minimum.
+    vector<float> q_gain;
+    vector<uint64_t> q_at;
+    size_t q_head = 0, q_count = 0;
+    uint64_t sample_index = 0;
     size_t pos = 0;
     size_t look = 48; // look-ahead, samples
     atomic<double> look_ms{1.0};
