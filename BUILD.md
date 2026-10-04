@@ -169,8 +169,8 @@ and `.nampreset` file associations), the AppStream metadata and the icon theme f
 Run `update-desktop-database` / `update-mime-database` afterwards if your distro
 doesn't hook them.
 
-An AUR-style `PKGBUILD` lives in [`packaging/`](packaging/README.md). An AppImage and
-a Flatpak (Flathub) are planned for the first release (ROADMAP Phase 8).
+An AppImage and a Flatpak (Flathub) are planned for the first release (ROADMAP
+Phase 8); there is no distribution package. Arch users build from source as above.
 
 Command-line flags: `namx [file…]` opens `.nam` / `.wav` / `.nampreset` files;
 `--version` / `-v`; `--help` / `-h`; `--self-test-and-exit` (headless CI check: window

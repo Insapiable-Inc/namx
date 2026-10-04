@@ -31,8 +31,8 @@ Decisions:
   feature set (Library + TONE3000 + `Qt6::Network`) instead of being redone. The
   `v1.0` tag is back at the end of Phase 8.
 - ~~**No AppImage, Flatpak or other bundle** (2026-09-17).~~ **Reversed 2026-10-02: ship
-  both an AppImage and a Flatpak (Flathub)** next to the AUR PKGBUILD (and a Windows
-  setup `.exe` next to the zip) — the AppImage as
+  both an AppImage and a Flatpak (Flathub)** (and a Windows setup `.exe` next to the
+  zip; **no AUR package** — user 2026-10-04, the PKGBUILD was removed) — the AppImage as
   "try it on any distro", Flathub for store visibility and automatic updates. No Snap.
   Both wrap the same `cmake --install` layout; neither may bundle `libjack` (they use the
   system's or PipeWire's).
@@ -474,9 +474,8 @@ app id in hicolor, `setWindowIcon` from the qrc, Windows exe icon + version bloc
 - [x] `install(TARGETS …)` + `install(FILES …)` in `gui/CMakeLists.txt` so
       `cmake --install` deploys binary, desktop file, mime, icons, metainfo
       (layout verified with a DESTDIR install).
-- [x] AUR PKGBUILD (`qt6-base jack`; `pipewire-jack` as optdepend — both provide
-      `jack`). Source: the release job's submodule-vendored tarball; `sha256sums`
-      to be filled at publish time. *Not run through makepkg yet (needs the tarball).*
+- ~~AUR PKGBUILD~~ **Dropped 2026-10-04 (user): no AUR package.** The PKGBUILD and the
+      release job's PKGBUILD asset are gone; Arch users build from source.
 - [ ] **AppImage** (back 2026-10-02, reversing the 2026-09-17 drop): built in
       `release.yml` with `linuxdeploy` + its Qt plugin on an old base (Ubuntu 22.04-ish,
       for glibc reach) with a newer GCC for C++23, bundling `libstdc++` but **not
@@ -500,7 +499,7 @@ app id in hicolor, `setWindowIcon` from the qrc, Windows exe icon + version bloc
       `--share=ipc`, `--socket=wayland`/`x11`; CI builds a test `.flatpak` bundle; then
       submit to Flathub (its own repo under flathub/, bumped each release). Known limit:
       classic `jackd` (non-PipeWire) setups are awkward from the sandbox — point them to
-      the AUR/source build. Config lives in `~/.var/app/cl.pichulero.NAMPlayer/` (document
+      the source build. Config lives in `~/.var/app/cl.pichulero.NAMPlayer/` (document
       it in the manual).
 - [x] CI release job on tag push: `.github/workflows/release.yml` — Ubuntu 22.04 and
       Arch container (build + tests + install layout), Windows (windeployqt zip),
@@ -514,9 +513,8 @@ app id in hicolor, `setWindowIcon` from the qrc, Windows exe icon + version bloc
       console flags print nothing (GUI subsystem) — About is the way there.
 - [ ] **Tag v0.0.0** — the first release (2026-10-04; was v0.6.0). **User action**, in
       this order: make the GitHub repo public, set the AppStream `<release>` date,
-      `git tag v0.0.0 && git push github v0.0.0` — the release workflow does the rest;
-      fill the PKGBUILD's `sha256sums` from the published tarball and push it to the
-      AUR. Was (2026-10-02): (Was moved to Phase 12 on 2026-08-22; back here since 2026-09-12
+      `git tag v0.0.0 && git push github v0.0.0` — the release workflow does the rest.
+      Was (2026-10-02): (Was moved to Phase 12 on 2026-08-22; back here since 2026-09-12
       because packaging itself now runs last.) **User action**, in this order: add
       the `TONE3000_CLIENT_ID` repository secret (Phase 12 prerequisite), make the
       GitHub repo public / rename it (Phase 7), then `git tag v1.0.0 && git push

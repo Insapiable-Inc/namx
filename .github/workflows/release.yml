@@ -2,8 +2,8 @@ name: Release
 
 # Tag push (v0.0.0, v0.1.0-rc1, …) → build + tests on Ubuntu 24.04 and Arch
 # (the AppImage and Flatpak jobs come with ROADMAP Phase 8), a Windows
-# windeployqt zip, a source tarball with the submodules vendored (for the
-# AUR PKGBUILD), and a GitHub release. Every build uses -DNAM_NATIVE_OPT=OFF
+# windeployqt zip, a source tarball with the submodules vendored, and a GitHub
+# release. Every build uses -DNAM_NATIVE_OPT=OFF
 # (portable AVX2/FMA).
 
 on:
@@ -31,15 +31,14 @@ jobs:
           V="${GITHUB_REF_NAME#v}"
           [ "${GITHUB_REF_TYPE}" = "tag" ] || V="$(git describe --tags --always | sed 's/^v//')"
           echo "version=$V" >> "$GITHUB_OUTPUT"
-      - name: Check that the tag matches CMake, the PKGBUILD and the metainfo
+      - name: Check that the tag matches CMake and the metainfo
         if: github.ref_type == 'tag'
         run: |
           V="${{ steps.ver.outputs.version }}"
           CMAKE=$(sed -n 's/^project(namx VERSION \([0-9.]*\).*/\1/p' CMakeLists.txt)
-          PKG=$(sed -n 's/^pkgver=\(.*\)/\1/p' packaging/PKGBUILD)
           META=$(grep -o '<release version="[^"]*"' packaging/cl.pichulero.namx.metainfo.xml | head -1 | sed 's/.*="\(.*\)"/\1/')
-          echo "tag $V · CMakeLists $CMAKE · PKGBUILD $PKG · metainfo $META"
-          [ "$V" = "$CMAKE" ] && [ "$V" = "$PKG" ] && [ "$V" = "$META" ]
+          echo "tag $V · CMakeLists $CMAKE · metainfo $META"
+          [ "$V" = "$CMAKE" ] && [ "$V" = "$META" ]
       - name: Pack
         run: |
           V="${{ steps.ver.outputs.version }}"
@@ -47,9 +46,6 @@ jobs:
           tar --exclude-vcs --exclude='./out' --transform "s,^\.,namx-$V," \
               -czf "out/namx-$V-src.tar.gz" .
           (cd out && sha256sum "namx-$V-src.tar.gz" > "namx-$V-src.tar.gz.sha256")
-          # The PKGBUILD with the tarball's checksum, ready for the AUR.
-          SHA=$(cut -d' ' -f1 "out/namx-$V-src.tar.gz.sha256")
-          sed "s/^sha256sums=('SKIP')/sha256sums=('$SHA')/" packaging/PKGBUILD > out/PKGBUILD
       - uses: actions/upload-artifact@v4
         with:
           name: source

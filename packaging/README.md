@@ -7,12 +7,11 @@ Everything a distribution or a release job needs, all fed by `cmake --install`:
 | `cl.pichulero.namx.desktop` | Launcher; opens `.nam` / `.nampreset` files (`%F`) |
 | `cl.pichulero.namx.metainfo.xml` | AppStream metadata (software centers, Flathub) |
 | `cl.pichulero.namx.xml` | shared-mime-info types `application/x-nam`, `application/x-nampreset` |
-| `PKGBUILD` | Arch / AUR package (`namx`) |
 | `namx.rc` | Windows icon + version resource (compiled into the exe on MSVC) |
 
-An AppImage and a Flatpak (Flathub) are planned for the first release (ROADMAP
-Phase 8; decision 2026-10-02, reversing 2026-09-17's "no bundles"). Neither may bundle
-`libjack`: they use the system's or PipeWire's.
+An AppImage and a Flatpak (Flathub) are the Linux distribution (ROADMAP Phase 8;
+decision 2026-10-02, reversing 2026-09-17's "no bundles"; no AUR package — user,
+2026-10-04). Neither may bundle `libjack`: they use the system's or PipeWire's.
 
 Icons live in `../resources/icons` (`namx.svg` source, PNG sizes 16–512,
 `namx.ico`) and install as `cl.pichulero.namx` in the hicolor theme.
