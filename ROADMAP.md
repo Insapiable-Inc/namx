@@ -1166,6 +1166,7 @@ the Volume pedal — get the controls a real expression setup has. MIDI multi-as
       crossfade wobble on sweeps, and re-check with the Phase 22 shifter.
 - [ ] Manual check with a real pedal: wah stopped short of the toe, 0…+12 st whammy,
       reversed volume, a crossfade volume ↔ wah on one pedal.
+      (2026-10-04: Reverse with an expression pedal works; the rest not tried yet.)
 
 ## Phase 24 — Multiple effect instances (added 2026-10-02; big; after the v0.6.0 release)
 
