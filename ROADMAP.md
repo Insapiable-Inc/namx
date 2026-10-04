@@ -1052,6 +1052,40 @@ for the backend work (Phase 21), and a second full review follows the big change
 - [ ] P3: 32 (MainWindow too big), 33 (naming leftovers), 34 (loader/transition test
       coverage — grows with the fixes above).
 
+**Outside audits, 2026-10-04** (`AUDIT-2026-10-04.md`, 13 findings; `AUDIT-2026-10-04-fable.md`,
+52 findings — both untracked at the repo root). Worked through 2026-10-04, one commit per
+fix (the commit messages name the item):
+- [x] Every P1 and P2 that is platform-independent: the resampler warm-up overrun and
+      model-rate validation (+ `NamProcessorTest`), the 4-bit WAV SIGFPE in the scan
+      (+ `LibraryIndexTest`), the root-run read-only test in the Arch release job, the
+      preset-version cast, the JACK buffer-size race, MIDI clock from reception time,
+      A/B restoring unloads, v1 presets getting the default order, read budgets, scan
+      cancellation, UTF-8 paths on Windows, the NaN scrub, the registry pushing initial
+      values (the Drive card and two Stereo switches disagreed with the engine), MIDI
+      Toggle on quantized knobs, IRLoader reclaim under its mutex, CI tokens, the MSVC
+      runtime in the zip, PKGBUILD cleanup, NAM_WERROR.
+- [x] P3s done: Drive latency in the total, limiter sliding minimum (monotonic queue;
+      2.35 → 0.65 µs at 48 kHz), swap-fade order, empty delay-line guards, reverb
+      pre-delay and Shimmer stale audio, IR raw trimming, latency_ms() atomics, argv
+      after QApplication + absolute paths, plain-text metadata, hero-row describe cache,
+      preset-`*` recompute only on change, debounced tempo/tuner settings, Escape in
+      NumberField, Remove-with-nothing-selected, starter seeding flag, stale Learn row,
+      watcher delta + unwatchable folders logged, sorted favorites, selection-model leak,
+      eventfd failure, WASAPI buffer_size/COM/device names, --version console on
+      Windows, bench baseline keyed by SIMD level, golden null check, vcpkg files
+      removed, CMake defaults, build scripts in a tarball, docs pass.
+- [ ] Left, by phase: **Phase 21** — WASAPI clock drift (A-08), reconfiguring on the
+      notification thread (F-06), exclusive-mode priming (F-37), WinMM callback ring
+      (F-40); **Phase 22** — Drive polyphase half-band FIRs (F-20), per-sample `sin` in
+      the reverb LFOs and the pedal wah's `pow` (F-21), tuner lock-free ring (F-19);
+      **Phase 24** — `EffectBase` as implementation inheritance (F-23); **Phase 28** —
+      guideline leftovers (F-22: plain enums, `M_PI`, per-file π), child widgets
+      outliving the engine (F-31); **core fork** — the vendored resampler's `cerr`/throw
+      on the audio thread (F-12; our `ModelResampler::Reset` covers the warm-up bounds);
+      **undecided** — single instance via `QLockFile` + `QLocalSocket` (F-14), the golden
+      test at 44.1 kHz, preset validation in the self-test, sanitizer/`RtSlot` tests
+      (F-51), pinning CI actions to commit SHAs (F-42, second half).
+
 ## Phase 27 — Benchmarking: measured against the best (added 2026-10-02; done 2026-10-02 except the loopback latency)
 
 "The world's best" has to be measured. What exists: `NAMPlayerBench` (per-stage time
