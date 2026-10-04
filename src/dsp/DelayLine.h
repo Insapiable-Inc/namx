@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <cassert>
 #include <cmath>
 #include <cstddef>
 #include <vector>
@@ -41,6 +42,7 @@ public:
 
     // Stores `sample` as the newest, overwriting the oldest.
     void push(float sample) {
+        assert(!samples.empty()); // resize() first: an effect processed before its rate
         samples[next] = sample;
         next = next + 1 == samples.size() ? 0 : next + 1;
     }
@@ -53,6 +55,7 @@ public:
 
     // The sample `delay` pushes behind the newest. delay < size().
     float at(size_t delay) const {
+        assert(delay < samples.size());
         const size_t newest = newest_index();
         return samples[delay <= newest ? newest - delay : newest + samples.size() - delay];
     }

@@ -56,6 +56,9 @@ static inline float vintage_tone(float x, float& lp, float k) {
 }
 
 void ChorusProcessor::process_block_mono(float* buf, size_t nframes) {
+    if (line_l.empty()) {
+        return; // no sample rate yet (audit 2026-10-04, Fable item 17)
+    }
     const float depth = depth_pct.load() / 100.0f;
     const float mix = mix_pct.load() / 100.0f;
     const float fs = static_cast<float>(sample_rate);
@@ -78,6 +81,9 @@ void ChorusProcessor::process_block_mono(float* buf, size_t nframes) {
 }
 
 void ChorusProcessor::process_block_dual(float* l, float* r, size_t nframes) {
+    if (line_l.empty()) {
+        return; // no sample rate yet (audit 2026-10-04, Fable item 17)
+    }
     const float depth = depth_pct.load() / 100.0f;
     const float mix = mix_pct.load() / 100.0f;
     const float fs = static_cast<float>(sample_rate);
@@ -105,6 +111,9 @@ void ChorusProcessor::process_block_dual(float* l, float* r, size_t nframes) {
 }
 
 void ChorusProcessor::process_block_stereo_out(float* l, float* r, size_t nframes) {
+    if (line_l.empty()) {
+        return; // no sample rate yet (audit 2026-10-04, Fable item 17)
+    }
     const float depth = depth_pct.load() / 100.0f;
     const float mix = mix_pct.load() / 100.0f;
     const float fs = static_cast<float>(sample_rate);
