@@ -9,7 +9,7 @@
 // tanf… differently between versions (glibc 2.39 vs 2.44 changed tanf), which moves
 // the output by ~1e-7 — while a one-sample shift moves the 440 Hz phase by ~6 %.
 //
-// When a change is MEANT to alter the sound, re-record the file (from gui/):
+// When a change is MEANT to alter the sound, re-record the file (from the repo root):
 //   NAM_GOLDEN_PRINT=1 build-test/DspGoldenTest | sed -n 's/^golden: //p' > tests/dsp-golden.txt
 //
 // Deterministic by construction: the input is a sum of sines with fixed envelopes,

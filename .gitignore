@@ -1,0 +1,14 @@
+# Build trees (build.sh / build.ps1 / CMake presets in BUILD.md)
+/build/
+/build-*/
+/out/
+/dist/
+/vcpkg_installed/
+
+# Personal presets stay local; resources/presets are the shipped starters.
+/presets/
+
+# Editors / OS
+.vscode/
+.idea/
+*.DS_Store

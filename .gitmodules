@@ -1,0 +1,13 @@
+[submodule "external/NeuralAmpModelerCore"]
+	path = external/NeuralAmpModelerCore
+	url = https://github.com/Insapiable-Inc/NeuralAmpModelerCore.git
+	branch = namx
+[submodule "external/signalsmith-linear"]
+	path = external/signalsmith-linear
+	url = https://github.com/Signalsmith-Audio/linear.git
+[submodule "external/signalsmith-stretch"]
+	path = external/signalsmith-stretch
+	url = https://github.com/Signalsmith-Audio/signalsmith-stretch.git
+[submodule "external/chowdsp_wdf"]
+	path = external/chowdsp_wdf
+	url = https://github.com/Chowdhury-DSP/chowdsp_wdf.git

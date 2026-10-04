@@ -1,18 +1,9 @@
-name: GUI — Windows build
+name: Windows build
 
 on:
   push:
-    branches: [linux-gui, gui-beautification, windows-compatibility, main]
-    paths:
-      - 'gui/**'
-      - 'NAM/**'
-      - 'Dependencies/**'
-      - '.github/workflows/gui-windows.yml'
+    branches: [main]
   pull_request:
-    paths:
-      - 'gui/**'
-      - 'NAM/**'
-      - '.github/workflows/gui-windows.yml'
   workflow_dispatch:
 
 jobs:
@@ -41,7 +32,6 @@ jobs:
           arch: x64
 
       - name: Configure (Release, Ninja)
-        working-directory: gui
         shell: pwsh
         run: |
           cmake -S . -B build-release `
@@ -50,11 +40,9 @@ jobs:
                 -DCMAKE_PREFIX_PATH="$env:QT_ROOT_DIR"
 
       - name: Build
-        working-directory: gui
         run: cmake --build build-release --parallel
 
       - name: Run windeployqt
-        working-directory: gui
         shell: pwsh
         run: |
           $exe = "build-release\namx.exe"
@@ -69,12 +57,12 @@ jobs:
         with:
           name: namx-windows-x64
           path: |
-            gui/build-release/namx.exe
-            gui/build-release/*.dll
-            gui/build-release/platforms/
-            gui/build-release/styles/
-            gui/build-release/imageformats/
-            gui/build-release/iconengines/
-            gui/build-release/tls/
-            gui/build-release/networkinformation/
+            build-release/namx.exe
+            build-release/*.dll
+            build-release/platforms/
+            build-release/styles/
+            build-release/imageformats/
+            build-release/iconengines/
+            build-release/tls/
+            build-release/networkinformation/
           retention-days: 14

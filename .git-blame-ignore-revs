@@ -1,3 +1,3 @@
 # Mass reformat commits — skipped by `git blame` (git config blame.ignoreRevsFile .git-blame-ignore-revs)
-# Phase 20: clang-format gui/
-25b969bb3c4b49a55411e9131e88646a75ee845f
+# Phase 20: clang-format of the app sources (then under gui/)
+fcf90300bd4354cd45240a8c20c94c12d24d863a

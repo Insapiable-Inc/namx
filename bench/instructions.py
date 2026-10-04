@@ -10,10 +10,10 @@ Counts depend on the compiler, so the baseline file keeps one entry per compiler
 bench prints which one built it). Without an entry for this compiler the check only
 reports; with one, a stage more than --tolerance above its baseline fails.
 
-    gui/bench/instructions.py --bench gui/build-release/namx-bench \
-        --baseline gui/bench/instructions-baseline.json [--update]
+    bench/instructions.py --bench build-release/namx-bench \
+        --baseline bench/instructions-baseline.json [--update]
 
-The amp runs example_models/wavenet_a1_standard.nam (a standard 16+8 ch WaveNet); the
+The amp runs the core's example_models/wavenet_a1_standard.nam (a standard 16+8 ch WaveNet); the
 cab gets a small IR this script writes into a temporary directory it creates.
 """
 
@@ -67,8 +67,9 @@ def main():
     ap.add_argument("--tolerance", type=float, default=0.03, help="allowed growth (0.03 = 3 %%)")
     a = ap.parse_args()
 
-    repo = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    model = os.path.join(repo, "example_models", "wavenet_a1_standard.nam")
+    repo = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    model = os.path.join(repo, "external", "NeuralAmpModelerCore", "example_models",
+                         "wavenet_a1_standard.nam")
     head = subprocess.run([a.bench, "--only", "Gate", "--blocks", "1"], capture_output=True,
                           text=True, env=dict(os.environ, QT_LOGGING_RULES="*=false")).stdout
     compiler = re.search(r"^compiler: (.+)$", head, re.M).group(1).strip()

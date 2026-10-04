@@ -1,18 +1,9 @@
-name: GUI — Linux build
+name: Linux build
 
 on:
   push:
-    branches: [linux-gui, gui-beautification, windows-compatibility, main]
-    paths:
-      - 'gui/**'
-      - 'NAM/**'
-      - 'Dependencies/**'
-      - '.github/workflows/gui-linux.yml'
+    branches: [main]
   pull_request:
-    paths:
-      - 'gui/**'
-      - 'NAM/**'
-      - '.github/workflows/gui-linux.yml'
   workflow_dispatch:
 
 jobs:
@@ -34,15 +25,14 @@ jobs:
             libgl1-mesa-dev \
             desktop-file-utils appstream python3 valgrind
 
-      - name: Check formatting (gui/.clang-format)
+      - name: Check formatting (.clang-format)
         run: |
           # Pinned to the major version the code is formatted with; others differ slightly.
           pipx install 'clang-format==22.*'
-          find gui/src gui/tests gui/bench \( -name '*.cpp' -o -name '*.h' \) -print0 \
+          find src tests bench \( -name '*.cpp' -o -name '*.h' \) -print0 \
             | xargs -0 clang-format --dry-run --Werror
 
       - name: Configure (Release)
-        working-directory: gui
         env:
           CXX: g++-14 # C++23; 24.04 defaults to GCC 13
         run: |
@@ -54,11 +44,9 @@ jobs:
                 -DNAM_BUILD_BENCH=ON
 
       - name: Build
-        working-directory: gui
         run: cmake --build build-release --parallel
 
       - name: Smoke test (headless) + client test
-        working-directory: gui
         env:
           QT_QPA_PLATFORM: offscreen
         run: |
@@ -71,16 +59,15 @@ jobs:
           ./build-release/WavReaderTest
 
       - name: CPU regression (instructions per block, callgrind)
-        # Counts per compiler (gui/bench/instructions-baseline.json). Until this
+        # Counts per compiler (bench/instructions-baseline.json). Until this
         # runner's compiler has an entry the step only reports; record one by running
         # the script with --update on the same toolchain and committing the file.
         run: |
-          python3 gui/bench/instructions.py \
-            --bench gui/build-release/namx-bench \
-            --baseline gui/bench/instructions-baseline.json
+          python3 bench/instructions.py \
+            --bench build-release/namx-bench \
+            --baseline bench/instructions-baseline.json
 
       - name: Packaging files + install layout
-        working-directory: gui
         run: |
           desktop-file-validate packaging/cl.pichulero.namx.desktop
           appstreamcli validate --no-net packaging/cl.pichulero.namx.metainfo.xml || true
@@ -94,5 +81,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: namx-linux-x64
-          path: gui/build-release/namx
+          path: build-release/namx
           retention-days: 14

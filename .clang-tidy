@@ -1,10 +1,10 @@
-# Naming for gui/ — see CPP_GUIDELINES.md → Naming. Run through the compile database:
-#   cmake -S gui -B gui/build-test -DNAM_BUILD_TESTS=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
-#   run-clang-tidy -p gui/build-test 'gui/(src|tests|bench)/'
+# Naming for the app sources — see CPP_GUIDELINES.md → Naming. Run through the compile database:
+#   cmake -S . -B build-test -DNAM_BUILD_TESTS=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+#   run-clang-tidy -p build-test '/(src|tests|bench)/'
 # Overrides of Qt virtuals (paintEvent, sizeHint…) are left alone by the check.
 ---
 Checks: '-*,readability-identifier-naming'
-HeaderFilterRegex: '.*/gui/(src|tests|bench)/.*'
+HeaderFilterRegex: '.*/(src|tests|bench)/.*'
 CheckOptions:
   readability-identifier-naming.ClassCase: CamelCase
   readability-identifier-naming.StructCase: CamelCase

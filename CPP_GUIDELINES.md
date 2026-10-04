@@ -1,7 +1,7 @@
 # C++ guidelines
 
-Coding preferences for the GUI code under `gui/`. The upstream library (`NAM/`,
-`tools/`, `Dependencies/`) keeps its own style.
+Coding preferences for the app code (`src/`, `tests/`, `bench/`). The submodules under
+`external/` (the NAM core and the rest) keep their own style.
 
 These rules apply to new and touched code. Existing code is brought in line
 separately; a guideline landing here does not by itself mean a refactor.
@@ -199,7 +199,7 @@ Every heap object has exactly one owner, and the code makes that owner obvious.
 
 ## Formatting
 
-`gui/.clang-format` is the source of truth. Run `clang-format -i` on what you touch.
+`.clang-format` is the source of truth. Run `clang-format -i` on what you touch.
 It overrides the upstream root `.clang-format`, which `NAM/` and `tools/` keep.
 
 - **4-space indent**, no tabs. **100-column** limit.
@@ -229,7 +229,7 @@ It overrides the upstream root `.clang-format`, which `NAM/` and `tools/` keep.
 
 - **`#pragma once`** in every header. No `#ifndef` guards.
 - **Include order (Google style).** One block per group, separated by a blank line,
-  sorted alphabetically inside each block. `gui/.clang-format` enforces this.
+  sorted alphabetically inside each block. `.clang-format` enforces this.
   1. The file's own header (`Foo.cpp` includes `"Foo.h"` first, which proves the
      header compiles on its own).
   2. The standard library: `<atomic>`, `<vector>`.
@@ -285,7 +285,7 @@ It overrides the upstream root `.clang-format`, which `NAM/` and `tools/` keep.
 
 ## Namespaces
 
-- **All of `gui/` lives in one namespace, `namx`.** No nesting to mirror directories
+- **All app code lives in one namespace, `namx`.** No nesting to mirror directories
   (`namx::dsp::`, `namx::ui::`). A small named group of free functions and constants
   that has no state is a nested namespace, not a class: `Theme::track()`,
   `TempoSync::note_ms()`, `PresetSerializer::save()`, `NAMConstants::…`

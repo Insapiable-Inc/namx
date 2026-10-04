@@ -43,7 +43,7 @@ $ErrorActionPreference = 'Stop'
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $BuildDir  = Join-Path $ScriptDir "build-$($BuildType.ToLower())"
-$RepoRoot  = Split-Path -Parent $ScriptDir
+$RepoRoot  = $ScriptDir
 
 # ---------------------------------------------------------------------------
 # Locate Qt
@@ -71,7 +71,7 @@ Write-Host "==> Qt: $QtDir"
 # ---------------------------------------------------------------------------
 # Submodules
 # ---------------------------------------------------------------------------
-Write-Host "==> Initialising git submodules (eigen, AudioDSPTools, signalsmith-linear, signalsmith-stretch, chowdsp_wdf)..."
+Write-Host "==> Initialising git submodules (external/: NeuralAmpModelerCore with Eigen, AudioDSPTools; signalsmith-linear, signalsmith-stretch, chowdsp_wdf)..."
 Push-Location $RepoRoot
 try {
     & git submodule update --init --recursive

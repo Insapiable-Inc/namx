@@ -1,6 +1,6 @@
 #pragma once
 
-// Names every file in gui/ uses. They are imported into namx once, here, so our code
+// Names every app source file uses. They are imported into namx once, here, so our code
 // writes `string` and `vector` instead of `std::string` and `std::vector`
 // (CPP_GUIDELINES.md → Namespaces). The list grows deliberately.
 

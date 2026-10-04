@@ -1,4 +1,4 @@
-# Formatting for gui/ — see CPP_GUIDELINES.md. Overrides the upstream root .clang-format.
+# Formatting for the app sources — see CPP_GUIDELINES.md.
 ---
 Language: Cpp
 BasedOnStyle: LLVM

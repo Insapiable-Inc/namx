@@ -55,7 +55,6 @@ jobs:
             libjack-jackd2-dev libasound2-dev pkg-config libgl1-mesa-dev \
             desktop-file-utils appstream python3
       - name: Configure (portable, tests on)
-        working-directory: gui
         env:
           CXX: g++-14 # C++23; 24.04 defaults to GCC 13
         run: |
@@ -64,10 +63,8 @@ jobs:
             -DNAM_NATIVE_OPT=OFF \
             -DNAM_BUILD_TESTS=ON
       - name: Build
-        working-directory: gui
         run: cmake --build build-release --parallel
       - name: Smoke test + client test
-        working-directory: gui
         env:
           QT_QPA_PLATFORM: offscreen
         run: |
@@ -77,7 +74,6 @@ jobs:
           ./build-release/DspGoldenTest
           ./build-release/WavReaderTest
       - name: Validate packaging files + install layout
-        working-directory: gui
         run: |
           desktop-file-validate packaging/cl.pichulero.namx.desktop
           appstreamcli validate --no-net packaging/cl.pichulero.namx.metainfo.xml || true
@@ -97,7 +93,6 @@ jobs:
         with:
           submodules: recursive
       - name: Configure + build (portable, tests on)
-        working-directory: gui
         run: |
           cmake -S . -B build-release -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
@@ -105,7 +100,6 @@ jobs:
             -DNAM_BUILD_TESTS=ON
           cmake --build build-release --parallel
       - name: Smoke test + client test + install layout
-        working-directory: gui
         env:
           QT_QPA_PLATFORM: offscreen
         run: |
@@ -137,7 +131,6 @@ jobs:
         with:
           arch: x64
       - name: Configure (Release, Ninja)
-        working-directory: gui
         shell: pwsh
         run: |
           cmake -S . -B build-release `
@@ -145,10 +138,8 @@ jobs:
                 -DCMAKE_BUILD_TYPE=Release `
                 -DCMAKE_PREFIX_PATH="$env:QT_ROOT_DIR"
       - name: Build
-        working-directory: gui
         run: cmake --build build-release --parallel
       - name: windeployqt + zip
-        working-directory: gui
         shell: pwsh
         run: |
           $exe = "build-release\namx.exe"
@@ -162,7 +153,7 @@ jobs:
             if (Test-Path "build-release\$d") { Copy-Item -Recurse "build-release\$d" "dist\namx\$d" }
           }
           Copy-Item LICENSE dist\namx\LICENSE.txt
-          Copy-Item ..\LICENSE dist\namx\LICENSE-MIT.txt
+          Copy-Item LICENSE-MIT dist\namx\LICENSE-MIT.txt
           $v = "${env:GITHUB_REF_NAME}" -replace '^v',''
           Compress-Archive -Path dist\namx -DestinationPath "dist\namx-$v-windows-x64.zip"
           Get-FileHash "dist\namx-$v-windows-x64.zip" -Algorithm SHA256 | ForEach-Object { "$($_.Hash.ToLower())  namx-$v-windows-x64.zip" } | Set-Content "dist\namx-$v-windows-x64.zip.sha256"
@@ -170,8 +161,8 @@ jobs:
         with:
           name: windows
           path: |
-            gui/dist/*.zip
-            gui/dist/*.sha256
+            dist/*.zip
+            dist/*.sha256
 
   release:
     name: GitHub release

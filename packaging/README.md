@@ -31,8 +31,8 @@ share/icons/hicolor/scalable/apps/cl.pichulero.namx.svg
 Validate before publishing:
 
 ```bash
-desktop-file-validate gui/packaging/cl.pichulero.namx.desktop
-appstreamcli validate --pedantic gui/packaging/cl.pichulero.namx.metainfo.xml
-xmllint --noout gui/packaging/cl.pichulero.namx.xml
+desktop-file-validate packaging/cl.pichulero.namx.desktop
+appstreamcli validate --pedantic packaging/cl.pichulero.namx.metainfo.xml
+xmllint --noout packaging/cl.pichulero.namx.xml
 ```
 

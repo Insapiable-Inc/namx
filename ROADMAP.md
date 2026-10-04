@@ -372,7 +372,7 @@ newest legacy store ("NAM Player", else "NAM Linux") into an empty `namx` one.
       this machine): GitHub → repo Settings → General → Repository name. Then
       `git remote set-url github https://github.com/silvercobraa/nam-x.git`. (Docs and
       packaging already point at `nam-x`.)
-- [ ] **Clean repo init** (user decision 2026-10-03, "some other day", before the
+- [x] **Clean repo init** (user decision 2026-10-03, "some other day", before the
       release): the GitHub repo is a fork of `sdatkinson/NeuralAmpModelerCore` — PRs
       default to upstream, search ranks it low, it reads as a copy of the core — and it
       carries upstream's tags `v0.0.0`…`v0.5.4`, so our planned `v0.6.0` would look like
@@ -386,6 +386,12 @@ newest legacy store ("NAM Player", else "NAM Linux") into an empty `namx` one.
       dimension checks) then needs a home: offer it upstream (Phase 26 item) and point
       the submodule at our own core fork until it's merged. Also moves: the upstream
       `tools/` tests we touched, CI paths, `NAM_DEPS_PATH`, docs that say "fork".
+      **Done 2026-10-04:** new repo `Insapiable-Inc/namx` (+ Forgejo `namx` mirror), our
+      269 commits rewritten with `git filter-repo` (gui/ → root; no upstream commits or
+      tags); app at the root, code dependencies as submodules under `external/`; the core
+      is the fork `Insapiable-Inc/NeuralAmpModelerCore`, branch `namx` = upstream 3cde95c
+      + our fix (3be052e there as 564d53d). The old fork repo stays as an archive. First
+      version still to pick (CMake says 1.0.0).
 - [x] Clone URLs in README/BUILD.md now point at the *current* GitHub name with
       `… nam-player` as the checkout dir (2026-08-22) — valid before and after the
       rename thanks to the redirect; flip them to the new name once it lands.

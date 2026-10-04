@@ -24,9 +24,14 @@ if(NOT WIN32)
     pkg_check_modules(ALSA REQUIRED alsa)
 endif()
 
-# NAM core sources
-set(NAM_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/..")
+# Code dependencies are git submodules under external/ (Qt, JACK and ALSA come from the OS).
+# The NAM core brings its own: Eigen, nlohmann/json, AudioDSPTools.
+set(EXTERNAL_DIR "${CMAKE_CURRENT_SOURCE_DIR}/external")
+set(NAM_ROOT "${EXTERNAL_DIR}/NeuralAmpModelerCore")
 set(NAM_DEPS_PATH "${NAM_ROOT}/Dependencies")
+if(NOT EXISTS "${NAM_ROOT}/NAM/dsp.h")
+    message(FATAL_ERROR "Submodules missing: run  git submodule update --init --recursive")
+endif()
 
 file(GLOB_RECURSE NAM_SOURCES
     "${NAM_ROOT}/NAM/*.cpp"
@@ -178,9 +183,9 @@ target_include_directories(namx SYSTEM PRIVATE
     ${NAM_ROOT}
     ${NAM_DEPS_PATH}/eigen
     ${NAM_DEPS_PATH}/nlohmann
-    ${NAM_DEPS_PATH}/signalsmith-linear/include
-    ${NAM_DEPS_PATH}/signalsmith-stretch/include
-    ${NAM_DEPS_PATH}/chowdsp_wdf/include
+    ${EXTERNAL_DIR}/signalsmith-linear/include
+    ${EXTERNAL_DIR}/signalsmith-stretch/include
+    ${EXTERNAL_DIR}/chowdsp_wdf/include
     # Header-only Lanczos resampler (NamProcessor: models at their training rate).
     ${NAM_DEPS_PATH}/AudioDSPTools/dsp/ResamplingContainer
 )
@@ -311,9 +316,9 @@ if(NAM_BUILD_TESTS)
     list(FILTER GOLDEN_DSP_SOURCES EXCLUDE REGEX "(AudioEngine|JackBackend|WasapiBackend|NamProcessor)\\.cpp$")
     add_executable(DspGoldenTest tests/DspGoldenTest.cpp ${GOLDEN_DSP_SOURCES})
     target_include_directories(DspGoldenTest SYSTEM PRIVATE ${NAM_DEPS_PATH}/eigen
-        ${NAM_DEPS_PATH}/signalsmith-linear/include
-    ${NAM_DEPS_PATH}/signalsmith-stretch/include
-    ${NAM_DEPS_PATH}/chowdsp_wdf/include)
+        ${EXTERNAL_DIR}/signalsmith-linear/include
+    ${EXTERNAL_DIR}/signalsmith-stretch/include
+    ${EXTERNAL_DIR}/chowdsp_wdf/include)
     target_include_directories(DspGoldenTest PRIVATE src/dsp)
     target_compile_definitions(DspGoldenTest PRIVATE NAM_SAMPLE_FLOAT
                                NAM_GOLDEN_FILE="${CMAKE_CURRENT_SOURCE_DIR}/tests/dsp-golden.txt")
@@ -334,9 +339,9 @@ if(NAM_BUILD_BENCH)
     add_executable(namx-bench bench/NamxBench.cpp ${BENCH_DSP_SOURCES} ${NAM_SOURCES})
     target_include_directories(namx-bench SYSTEM PRIVATE
         ${NAM_ROOT} ${NAM_DEPS_PATH}/eigen ${NAM_DEPS_PATH}/nlohmann
-        ${NAM_DEPS_PATH}/signalsmith-linear/include
-    ${NAM_DEPS_PATH}/signalsmith-stretch/include
-    ${NAM_DEPS_PATH}/chowdsp_wdf/include
+        ${EXTERNAL_DIR}/signalsmith-linear/include
+    ${EXTERNAL_DIR}/signalsmith-stretch/include
+    ${EXTERNAL_DIR}/chowdsp_wdf/include
         ${NAM_DEPS_PATH}/AudioDSPTools/dsp/ResamplingContainer)
     target_include_directories(namx-bench PRIVATE src/dsp)
     target_compile_definitions(namx-bench PRIVATE NAM_SAMPLE_FLOAT NAM_ENABLE_A2_FAST)
@@ -352,9 +357,9 @@ if(NAM_BUILD_BENCH)
     add_executable(namx-quality bench/NamxQuality.cpp ${BENCH_DSP_SOURCES} ${NAM_SOURCES})
     target_include_directories(namx-quality SYSTEM PRIVATE
         ${NAM_ROOT} ${NAM_DEPS_PATH}/eigen ${NAM_DEPS_PATH}/nlohmann
-        ${NAM_DEPS_PATH}/signalsmith-linear/include
-    ${NAM_DEPS_PATH}/signalsmith-stretch/include
-    ${NAM_DEPS_PATH}/chowdsp_wdf/include
+        ${EXTERNAL_DIR}/signalsmith-linear/include
+    ${EXTERNAL_DIR}/signalsmith-stretch/include
+    ${EXTERNAL_DIR}/chowdsp_wdf/include
         ${NAM_DEPS_PATH}/AudioDSPTools/dsp/ResamplingContainer)
     target_include_directories(namx-quality PRIVATE src/dsp)
     target_compile_definitions(namx-quality PRIVATE NAM_SAMPLE_FLOAT NAM_ENABLE_A2_FAST)

@@ -35,7 +35,7 @@ library. ¹ Not 48 kHz: the model runs at its 48 kHz training rate behind the re
 | Slimmable (A2) | 48 kHz | 19 µs · 2.9 % | 34 µs · 2.6 % | 63 µs · 2.4 % | 122 µs · 2.3 % |
 | Slimmable (A2) | 96 kHz ¹ | 13 µs · 4.0 % | 22 µs · 3.2 % | 38 µs · 2.8 % | 69 µs · 2.6 % |
 
-Reproduce: `gui/bench/bench_matrix.py --bench gui/build-bench/namx-bench --cpu 2
+Reproduce: `bench/bench_matrix.py --bench build-bench/namx-bench --cpu 2
 --model "Label=path.nam" …`
 
 **Release builds are as fast:** the portable build (`-DNAM_NATIVE_OPT=OFF`, AVX2 + FMA, what
@@ -144,7 +144,7 @@ modulation and saturation on, Transpose at −2 st.
 | stereo input, amp summed | 129 µs · 4.8 % (p99 156 µs) | 35 µs · 5.2 % (p99 38 µs) |
 | stereo input, amp per channel | 207 µs · 7.8 % (p99 232 µs) | 54 µs · 8.2 % (p99 63 µs) |
 
-Reproduce: `gui/bench/bench_effects.py --bench gui/build-bench/namx-bench --cpu 2
+Reproduce: `bench/bench_effects.py --bench build-bench/namx-bench --cpu 2
 --model amp.nam --ir cab.wav`; totals with `namx-bench --model … --ir … [routing flags]`.
 
 ## Resampling
@@ -269,13 +269,13 @@ PipeWire-JACK at 48 kHz / 128 frames, no input signal, `powersave` governor.
 
 ## CPU regression check (CI)
 
-`gui/bench/instructions.py` counts the CPU instructions one 128-frame block costs in each
+`bench/instructions.py` counts the CPU instructions one 128-frame block costs in each
 stage, under valgrind's callgrind: nearly deterministic for a given binary, unlike wall
 time on shared CI runners. Each stage runs for 50 and 150 blocks and the difference is
 taken, so startup (model load) cancels out. The amp uses the repo's
 `example_models/wavenet_a1_standard.nam`; the cab a small IR the script writes into its own
-temporary directory. Baselines are per compiler (`gui/bench/instructions-baseline.json`);
-CI (`gui-linux.yml`) fails when a stage grows more than 3 %, and only reports until its
+temporary directory. Baselines are per compiler (`bench/instructions-baseline.json`);
+CI (`linux.yml`) fails when a stage grows more than 3 %, and only reports until its
 compiler (GCC 14 on Ubuntu 24.04) has an entry — record one with `--update` on that
 toolchain. Repeat runs agree within ±0.3 %; a deliberate +10 % fails. The tuner is left
 out: its pitch detection runs on a worker thread woken by wall time.

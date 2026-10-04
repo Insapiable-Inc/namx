@@ -4,33 +4,43 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository layout
 
-This repo is a fork of [NeuralAmpModelerCore](https://github.com/sdatkinson/NeuralAmpModelerCore) with a standalone cross-platform GUI added under `gui/`. The root-level code (`NAM/`, `tools/`, `Dependencies/`) is the upstream C++ DSP library. All GUI work lives exclusively in `gui/`.
+NAM-X, a standalone cross-platform Neural Amp Modeler player (Qt 6). The NAM DSP core and
+the other code dependencies are git submodules under `external/`; Qt, JACK/PipeWire and
+ALSA come from the OS. (Until 2026-10-04 the app lived under `gui/` in a fork of
+NeuralAmpModelerCore — older notes in ROADMAP/AUDIT still say `gui/…`.)
 
 ```
-nam-x/
-├── NAM/           # Core DSP library: neural net inference (WaveNet, LSTM, ConvNet, Linear)
-├── Dependencies/  # Git submodules: Eigen (linear algebra), nlohmann (JSON), AudioDSPTools (upstream tools only — the GUI reads WAVs with its own `WavReader`), signalsmith-linear (MIT FFT for the cab convolution), signalsmith-stretch (MIT pitch shifter for the Shimmers), chowdsp_wdf (BSD-3 wave digital filters for the Drive)
-├── tools/         # Upstream CLI tools: loadmodel, benchmodel, run_tests
-├── LICENSE        # Upstream MIT (NAM core) — the app itself is GPL-3.0-or-later, see gui/LICENSE
-├── ROADMAP.md     # Public-release plan — phased checklist, worked one phase at a time
-└── gui/           # Qt6 standalone player (all GUI work happens here)
-    ├── build.sh           # One-shot Linux build script
-    ├── build.ps1          # One-shot Windows build script (UTF-8 BOM, CRLF — keep it that way)
-    ├── BUILD.md           # The real build/usage manual (per-distro deps, Windows, troubleshooting)
-    ├── DSP_RESEARCH.md    # State-of-the-art options per effect (Phase 22), real-time flags, sources
-    ├── CPP_GUIDELINES.md  # C++ style for gui/ (naming, auto, ownership, errors, formatting…) — follow it in new/touched code
-    ├── .clang-format      # Formatting for gui/ (overrides the upstream root one)
-    ├── CMakeLists.txt     # CMake build definition
-    ├── presets/           # Personal .nampreset files — untracked on purpose, do not add to git
-    └── src/
-        ├── main.cpp       # QApplication setup (org/app name → QSettings path), Theme::apply
-        ├── ui/            # Qt widgets
-        ├── midi/          # MidiInput (ALSA / WinMM), MidiMapper (no widgets beyond the target pointers)
-        └── dsp/           # AudioEngine, backends, effect processors (no Qt dependencies)
-    ├── resources/         # resources.qrc, app icon (icons/), starter presets (presets/)
-    ├── packaging/         # desktop file, AppStream, mime, PKGBUILD, Windows .rc (AppImage + Flatpak planned in Phase 8 — decision 2026-10-02, reversing 2026-09-17)
-    └── tests/             # MidiMapperTest, DspGoldenTest, WavReaderTest (-DNAM_BUILD_TESTS=ON)
+namx/
+├── CMakeLists.txt     # CMake build definition
+├── build.sh           # One-shot Linux build script
+├── build.ps1          # One-shot Windows build script (UTF-8 BOM — keep it)
+├── BUILD.md           # The real build/usage manual (per-distro deps, Windows, troubleshooting)
+├── ROADMAP.md         # Public-release plan — phased checklist, worked one phase at a time
+├── DSP_RESEARCH.md    # State-of-the-art options per effect (Phase 22), real-time flags, sources
+├── CPP_GUIDELINES.md  # C++ style (naming, auto, ownership, errors, formatting…) — follow it in new/touched code
+├── .clang-format      # Formatting for src/, tests/, bench/
+├── LICENSE            # GPL-3.0-or-later (the app); LICENSE-MIT = the core's MIT text (+ pre-2026-10-01 app code)
+├── presets/           # Personal .nampreset files — untracked on purpose, do not add to git
+├── src/
+│   ├── main.cpp       # QApplication setup (org/app name → QSettings path), Theme::apply
+│   ├── ui/            # Qt widgets
+│   ├── midi/          # MidiInput (ALSA / WinMM), MidiMapper (no widgets beyond the target pointers)
+│   └── dsp/           # AudioEngine, backends, effect processors (no Qt dependencies)
+├── resources/         # resources.qrc, app icon (icons/), starter presets (presets/)
+├── packaging/         # desktop file, AppStream, mime, PKGBUILD, Windows .rc (AppImage + Flatpak planned in Phase 8 — decision 2026-10-02, reversing 2026-09-17)
+├── tests/             # MidiMapperTest, DspGoldenTest, WavReaderTest (-DNAM_BUILD_TESTS=ON)
+├── bench/             # namx-bench, instructions.py (CPU regression) (-DNAM_BUILD_BENCH=ON)
+└── external/          # Git submodules (CMake: EXTERNAL_DIR, NAM_ROOT, NAM_DEPS_PATH)
+    ├── NeuralAmpModelerCore/  # NAM core — our fork (Insapiable-Inc), branch `namx` = upstream 3cde95c + our weight-check fix; brings Eigen, nlohmann/json, AudioDSPTools in its Dependencies/
+    ├── signalsmith-linear/    # MIT FFT for the cab convolution
+    ├── signalsmith-stretch/   # MIT pitch shifter for the Shimmers
+    └── chowdsp_wdf/           # BSD-3 wave digital filters for the Drive
 ```
+
+The core fork lives locally in `~/Git/namx-core` (remotes: `origin` = the Insapiable-Inc
+fork, `upstream` = sdatkinson). A core change goes there on `namx`, gets pushed, then the
+submodule is bumped here. Keep the core at a version whose sound we've checked (golden test,
+by ear) — updating it is its own step.
 
 ## Release plan workflow
 
@@ -40,19 +50,18 @@ nam-x/
 
 ```bash
 # Linux
-cd gui
-bash build.sh          # Release (default) → gui/build-release/namx
-bash build.sh Debug    # Debug → gui/build-debug/namx
+bash build.sh          # Release (default) → build-release/namx
+bash build.sh Debug    # Debug → build-debug/namx
 
-# Windows (PowerShell; needs MSVC + Qt6 + vcpkg — see gui/BUILD.md)
-cd gui; ./build.ps1
+# Windows (PowerShell; needs MSVC + Qt6 + vcpkg — see BUILD.md)
+./build.ps1
 ```
 
 The script initialises submodules automatically. Manual CMake:
 
 ```bash
-cmake -S gui -B gui/build-release -DCMAKE_BUILD_TYPE=Release
-cmake --build gui/build-release --parallel $(nproc)
+cmake -S . -B build-release -DCMAKE_BUILD_TYPE=Release
+cmake --build build-release --parallel $(nproc)
 ```
 
 **Required packages (Arch):** `qt6-base jack2 alsa-lib cmake ninja`
@@ -65,27 +74,27 @@ Release builds default to `-march=native` via the `NAM_NATIVE_OPT` CMake option 
 `-DNAM_BUILD_TESTS=ON` adds `MidiMapperTest`, `DspGoldenTest` and `WavReaderTest` (all headless):
 
 ```bash
-cmake -S gui -B gui/build-test -DCMAKE_BUILD_TYPE=Debug -DNAM_BUILD_TESTS=ON
-cmake --build gui/build-test && gui/build-test/MidiMapperTest && gui/build-test/WavReaderTest
+cmake -S . -B build-test -DCMAKE_BUILD_TYPE=Debug -DNAM_BUILD_TESTS=ON
+cmake --build build-test && build-test/MidiMapperTest && build-test/WavReaderTest
 ```
 
 **TONE3000** (the community catalog integration) was removed on 2026-10-02 — the user
 wasn't convinced by it; the working integration lives on the `experiment/tone3000`
 branch. Don't reintroduce it on `main` without asking.
 
-`DspGoldenTest` (same option) renders every effect over a fixed signal and compares a signature of the output (per quarter second and channel: RMS plus level/phase at 440.5 Hz and 2 kHz) against `gui/tests/dsp-golden.txt`, within 0.1 % of the window's RMS — any DSP refactor that must not change the sound has to keep it green. Deliberately not bit-exact: glibc versions round `tanf` & co. differently (CI's Ubuntu vs. local Arch), while a one-sample shift or a missed `reset()` still fails. Re-record (command in the test's header comment) only when a change is meant to alter the sound.
+`DspGoldenTest` (same option) renders every effect over a fixed signal and compares a signature of the output (per quarter second and channel: RMS plus level/phase at 440.5 Hz and 2 kHz) against `tests/dsp-golden.txt`, within 0.1 % of the window's RMS — any DSP refactor that must not change the sound has to keep it green. Deliberately not bit-exact: glibc versions round `tanf` & co. differently (CI's Ubuntu vs. local Arch), while a one-sample shift or a missed `reset()` still fails. Re-record (command in the test's header comment) only when a change is meant to alter the sound.
 
-`-DNAM_BUILD_BENCH=ON` adds `namx-bench` (`gui/bench/`): the DSP chain timed per stage against the block budget (`--model`, `--ir`, `--frames`, `--rate`, `--no-fast-tanh`, `--only`). The Phase 14 efficiency budget and reference numbers are in `gui/BUILD.md` → High CPU usage; re-run the bench after DSP changes. `--self-test-and-exit` also prints cold-start time and peak RSS.
+`-DNAM_BUILD_BENCH=ON` adds `namx-bench` (`bench/`): the DSP chain timed per stage against the block budget (`--model`, `--ir`, `--frames`, `--rate`, `--no-fast-tanh`, `--only`). The Phase 14 efficiency budget and reference numbers are in `BUILD.md` → High CPU usage; re-run the bench after DSP changes. `--self-test-and-exit` also prints cold-start time and peak RSS.
 
 ## Running
 
 ```bash
 # Linux, PipeWire-JACK (modern distros) — just launch:
-gui/build-release/namx
+build-release/namx
 
 # Classic jackd:
 jackd -d alsa -r 44100 -p 256 &
-gui/build-release/namx
+build-release/namx
 ```
 
 JACK ports: `NAM-X:input`, `NAM-X:output_L`, `NAM-X:output_R`. Connect with `jack_connect`, qjackctl, or qpwgraph. Devices are also selectable from the status bar at the bottom of the window (click the In:/Out: items), and connections persist via QSettings. On Windows the WASAPI backend picks devices directly — no server needed.
@@ -137,7 +146,7 @@ All effects inherit `EffectBase` (`src/dsp/EffectBase.h` — the header comment 
 | `WasapiBackend` | `src/dsp/WasapiBackend.h/cpp` | Windows WASAPI backend: shared mode (float32 mix format only) or opt-in exclusive mode (native format search + conversion, minimum period, falls back to shared; `audio/exclusive`). No Windows machine here: compile-checked with MinGW, not run |
 | `NamProcessor` | `src/dsp/NamProcessor.h/cpp` | NAM model hosting; independent L/R instances for stereo; a model runs at its training rate (48 kHz when unstated) — at another engine rate it sits behind AudioDSPTools' Lanczos `ResamplingContainer` (via `ModelResampler.h`), like the official plugin; Input (`nam/input`) before the model; output = loudness normalization × the user's Output trim (`nam/output`); both 0 dB by default |
 | `WavReader` | `src/dsp/WavReader.h/cpp` | Strict mono WAV reader for IRs (PCM 16/24/32, float 32/64, extensible); every length checked before reading — damaged files are errors (`tests/WavReaderTest`) |
-| `IRLoader` / `IRProcessor` | `src/dsp/IRLoader.h/cpp`, `IRProcessor.h/cpp` | Cab convolution: 64 direct taps + uniformly partitioned FFT convolution (overlap-save, `signalsmith-linear` FFT — the `Dependencies/signalsmith-linear` submodule), zero added latency, IRs up to 1 s (longer ones faded out); energy-normalized, RtSlot kernel swap; `IRProcessor` = two loaders (slots A/B) with level/pan/phase/blend + cuts — the UI exposes slot A only, with its Level on the row (`ir/levelA`, ±20 dB, ramped per block; restored 2026-10-04 — the other advanced options stay commented out since 2026-10-01; slot B is neither restored nor loaded from presets) |
+| `IRLoader` / `IRProcessor` | `src/dsp/IRLoader.h/cpp`, `IRProcessor.h/cpp` | Cab convolution: 64 direct taps + uniformly partitioned FFT convolution (overlap-save, `signalsmith-linear` FFT — the `external/signalsmith-linear` submodule), zero added latency, IRs up to 1 s (longer ones faded out); energy-normalized, RtSlot kernel swap; `IRProcessor` = two loaders (slots A/B) with level/pan/phase/blend + cuts — the UI exposes slot A only, with its Level on the row (`ir/levelA`, ±20 dB, ramped per block; restored 2026-10-04 — the other advanced options stay commented out since 2026-10-01; slot B is neither restored nor loaded from presets) |
 | `EQProcessor` | `src/dsp/EQProcessor.h/cpp` | 4-band semi-parametric biquad EQ + low/high cut (Audio EQ Cookbook) |
 | `TunerProcessor` | `src/dsp/TunerProcessor.h/cpp` | NSDF pitch detect; audio thread fills, GUI timer reads; Mute (on by default, `tuner/mute`, saved in presets like `tuner/enabled`) silences the output while it runs |
 | `TunerDisplay` | `src/ui/TunerDisplay.h/cpp` | TU-3-style readout: LED ladder, glowing seven-segment note, signed cents |
@@ -146,9 +155,9 @@ All effects inherit `EffectBase` (`src/dsp/EffectBase.h` — the header comment 
 | `DelayProcessor` | `src/dsp/DelayProcessor.h/cpp` | Ping-pong stereo delay |
 | `ReverbProcessor` | `src/dsp/ReverbProcessor.h/cpp`, `ReverbAlgorithms.h` | Plate (Dattorro), Hall and Room (8- / 16-line FDNs) + pre-delay (tempo-syncable), wet cuts, level-matched types; Decay keeps its 0–100 preset key `roomSize` and shows 0.2–10 s (`decay_seconds`); Shimmer (octave-up feedback, `StretchShifter`) |
 | `DriveProcessor`, `VolumeProcessor`, `TransposeProcessor` | `src/dsp/…` | Phase 17 stages: Tube Screamer drive, volume pedal with mid-point, ±12 st transpose |
-| `TubeScreamerClipper` | `src/dsp/TubeScreamerClipper.h` | The Drive's clipping stage: the TS808/TS9 op-amp + diode circuit as a wave digital filter (`Dependencies/chowdsp_wdf`, BSD-3), 4× oversampled with half-band FIRs (small latency, reported). Replaced the digital TS approximation ("Classic") 2026-10-04 — approved by ear |
+| `TubeScreamerClipper` | `src/dsp/TubeScreamerClipper.h` | The Drive's clipping stage: the TS808/TS9 op-amp + diode circuit as a wave digital filter (`external/chowdsp_wdf`, BSD-3), 4× oversampled with half-band FIRs (small latency, reported). Replaced the digital TS approximation ("Classic") 2026-10-04 — approved by ear |
 | `FilterBankShifter` | `src/dsp/FilterBankShifter.h` | Transpose's shifter: complex gammatone bank (2 bands/ERB) → per-band rotation at (ratio − 1) × its spectral peak's frequency → Hohmann delay/phase-aligned resynthesis; ~20 ms at the low E, ~4 ms above; band state in 8-lane blocks so the loop vectorizes. Chosen by ear 2026-10-03 (the variants tried are listed in its header) |
-| `StretchShifter` | `src/dsp/StretchShifter.h` | Octave shifter for the tails (Reverb Shimmer, Delay Shimmer — keys `reverb/shimmer`, `delay/shimmer`; the Delay's was `crystals` until 2026-10-03): Signalsmith Stretch (`Dependencies/signalsmith-stretch`, MIT) at its default 120 ms block, accurate pitch, 150 ms latency — the Delay feeds it 150 ms earlier in the line so the Delay's octave repeats land on time. Replaced the WSOLA `PitchShifter` (deleted 2026-10-03) |
+| `StretchShifter` | `src/dsp/StretchShifter.h` | Octave shifter for the tails (Reverb Shimmer, Delay Shimmer — keys `reverb/shimmer`, `delay/shimmer`; the Delay's was `crystals` until 2026-10-03): Signalsmith Stretch (`external/signalsmith-stretch`, MIT) at its default 120 ms block, accurate pitch, 150 ms latency — the Delay feeds it 150 ms earlier in the line so the Delay's octave repeats land on time. Replaced the WSOLA `PitchShifter` (deleted 2026-10-03) |
 | `OutputLimiter` | `src/dsp/OutputLimiter.h/cpp` | Output-stage look-ahead limiter (not an effect; registry key `limiter`) |
 | `MainWindow` | `src/ui/MainWindow.h/cpp` | Window assembly, parameter registry, effect strip + DnD reorder, session state; the status bar's red middle zone is for problems worth seeing — post with `set_notice(key, text, tip)`, clear with an empty text (first user: model/device sample-rate mismatch) |
 | `ParamRegistry.h` | `src/ui/` | `ParamDesc` — one entry per user-facing parameter (shared by MainWindow + PresetSerializer) |
@@ -176,11 +185,11 @@ All effects inherit `EffectBase` (`src/dsp/EffectBase.h` — the header comment 
 
 ### Naming
 
-Code follows `gui/CPP_GUIDELINES.md` (Phase 20, 2026-10-01): `snake_case` functions,
+Code follows `CPP_GUIDELINES.md` (Phase 20, 2026-10-01): `snake_case` functions,
 variables and members with no prefixes, `UPPER_CASE` constants, `PascalCase` types; no
 parameter or local reuses a member's name (`new_<x>` / `current_<x>` / `<x>_per_channel`).
 Settings keys, preset JSON keys and effect IDs are data and keep their spelling
-(`effectOrder`, `session/presetPath`, …). `gui/.clang-tidy` encodes the naming rules.
+(`effectOrder`, `session/presetPath`, …). `.clang-tidy` encodes the naming rules.
 
 ### Parameter registry
 
@@ -207,11 +216,11 @@ entry, and refresh the Amplifier/Cabinet hero rows (`update_hero_cards`). Don't 
 ### Persistence
 
 - **QSettings** (org `pichulero.cl`, app name set in `main.cpp` — drives the config path): last model/IR/preset paths, audio device IDs, JACK port connections, window geometry + dock state (`window/state`), the library (`library/{model,ir,preset}Roots`, `favorites`, `recents`, `section`, and `modes`/`sorts` — one All/★/Recent mode and one sort per section; the old global `mode`/`sort` only seed them), and the full registry state plus `session/effectOrder` under `session/` (saved on exit + debounced 1 s after any widget change; restored on launch through the widgets). First run auto-connects `system:capture_1`/`playback_{1,2}`.
-- **Presets** (8 starters in `gui/resources/presets/`, seeded once into `<presets>/Starter`) are `.nampreset` JSON files via `QJsonDocument`, schema v2: all registry parameters plus `version`, `namEnabled`, `effectOrder` (stable-ID list), embedded `namPath`/`irPath` (applied on load when the file exists; otherwise a warning, current model/IR kept); older presets may carry a `tone3000` object from the removed integration, which is ignored. v1 files (no `version`) still load. Loading applies values through the widgets, so the UI and engine can't drift.
+- **Presets** (8 starters in `resources/presets/`, seeded once into `<presets>/Starter`) are `.nampreset` JSON files via `QJsonDocument`, schema v2: all registry parameters plus `version`, `namEnabled`, `effectOrder` (stable-ID list), embedded `namPath`/`irPath` (applied on load when the file exists; otherwise a warning, current model/IR kept); older presets may carry a `tone3000` object from the removed integration, which is ignored. v1 files (no `version`) still load. Loading applies values through the widgets, so the UI and engine can't drift.
 
 ## NAM core library
 
-`NAM/dsp.h` defines `nam::DSP`, the base class for all models. The key interface used by `NamProcessor`:
+`external/NeuralAmpModelerCore/NAM/dsp.h` defines `nam::DSP`, the base class for all models. The key interface used by `NamProcessor`:
 
 ```cpp
 model->Reset(sampleRate, maxBufferSize);
@@ -219,11 +228,11 @@ model->prewarm();  // run inference on silence to settle state
 model->process(NAM_SAMPLE** inputs, NAM_SAMPLE** outputs, int numFrames);
 ```
 
-`NAM_SAMPLE` is `float` when compiled with `-DNAM_SAMPLE_FLOAT` (set in `gui/CMakeLists.txt`, along with `-DNAM_ENABLE_A2_FAST` for the fast-path WaveNet). Models are loaded via `nam::get_dsp(std::filesystem::path)` from `NAM/get_dsp.h`. A model `Reset` to buffer size N must never be fed more than N frames — the core only asserts, and Release strips asserts. `NamProcessor` guards this: `prepare_buffer` re-`Reset()`s live models when the max grows, and `process()` bypasses oversized blocks.
+`NAM_SAMPLE` is `float` when compiled with `-DNAM_SAMPLE_FLOAT` (set in `CMakeLists.txt`, along with `-DNAM_ENABLE_A2_FAST` for the fast-path WaveNet). Models are loaded via `nam::get_dsp(std::filesystem::path)` from `NAM/get_dsp.h`. A model `Reset` to buffer size N must never be fed more than N frames — the core only asserts, and Release strips asserts. `NamProcessor` guards this: `prepare_buffer` re-`Reset()`s live models when the max grows, and `process()` bypasses oversized blocks.
 
 ## CMake notes
 
-- `CMAKE_AUTOMOC ON` — MOC runs automatically; add new Qt classes to `GUI_SOURCES` in `gui/CMakeLists.txt`.
+- `CMAKE_AUTOMOC ON` — MOC runs automatically; add new Qt classes to `GUI_SOURCES` in `CMakeLists.txt`.
 - Backend selection is in `CMakeLists.txt`: `WasapiBackend.cpp` on WIN32, `JackBackend.cpp` otherwise. On Windows the target is `WIN32_EXECUTABLE` (no console — `std::cerr` output is invisible there).
 - The clang language server shows false-positive errors for Qt types because it doesn't see the CMake include paths. Ignore these; the actual compiler succeeds.
 - `stdc++fs` is linked explicitly on Linux for `std::filesystem`.

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build namx GUI
+# Build NAM-X
 # Usage: ./build.sh [Release|Debug]
 set -e
 
@@ -7,8 +7,8 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 BUILD_TYPE="${1:-Release}"
 BUILD_DIR="${SCRIPT_DIR}/build-${BUILD_TYPE,,}"
 
-echo "==> Initialising git submodules (eigen, AudioDSPTools, signalsmith-linear, signalsmith-stretch, chowdsp_wdf)…"
-cd "${SCRIPT_DIR}/.."
+echo "==> Initialising git submodules (external/: NeuralAmpModelerCore with Eigen, AudioDSPTools; signalsmith-linear, signalsmith-stretch, chowdsp_wdf)…"
+cd "${SCRIPT_DIR}"
 git submodule update --init --recursive
 
 echo "==> Configuring CMake (${BUILD_TYPE})…"

@@ -5,7 +5,7 @@ Runs namx-bench's Amp stage for each model over buffer sizes and sample rates,
 pinned to one CPU, and prints a Markdown table of mean µs per block and % of the
 real-time budget. Deterministic input (the bench's own signal); no files written.
 
-    gui/bench/bench_matrix.py --bench gui/build-bench/namx-bench --cpu 2 \
+    bench/bench_matrix.py --bench build-bench/namx-bench --cpu 2 \
         --model "Standard WaveNet=path/a.nam" --model "Lite=path/b.nam"
 """
 

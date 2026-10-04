@@ -117,10 +117,11 @@ no separate audio dependency — the Windows SDK already ships them.
 ## 2. Get the source & submodules
 
 ```bash
-git clone --recursive https://github.com/silvercobraa/nam-x.git
-cd nam-x
+git clone --recursive https://github.com/Insapiable-Inc/namx.git
+cd namx
 
-# The GUI needs the Eigen submodule (AudioDSPTools is only used by the upstream CLI tools)
+# Code dependencies are submodules under external/: the NAM core (with Eigen,
+# nlohmann/json, AudioDSPTools), signalsmith-linear, signalsmith-stretch, chowdsp_wdf.
 git submodule update --init --recursive
 ```
 
@@ -134,18 +135,16 @@ If you already cloned without `--recursive`, the `build.sh` script calls
 ### Linux — quick build
 
 ```bash
-cd gui
 chmod +x build.sh
 ./build.sh          # defaults to Release
 ./build.sh Debug    # Debug
 ```
 
-Binary lands at `gui/build-release/namx` (or `build-debug/`).
+Binary lands at `build-release/namx` (or `build-debug/`).
 
 ### Linux — manual CMake
 
 ```bash
-cd gui
 cmake -S . -B build-release -DCMAKE_BUILD_TYPE=Release
 cmake --build build-release --parallel $(nproc)
 ```
@@ -160,7 +159,6 @@ Optional CMake variables:
 ### Linux — install / packages
 
 ```bash
-cd gui
 cmake -S . -B build-release -DCMAKE_BUILD_TYPE=Release -DNAM_NATIVE_OPT=OFF
 cmake --build build-release --parallel
 sudo cmake --install build-release --prefix /usr/local
@@ -183,14 +181,13 @@ exit 0 after 1.5 s).
 From a "Developer PowerShell for VS 2022" prompt:
 
 ```powershell
-cd gui
 .\build.ps1                                          # Release
 .\build.ps1 -BuildType Debug                         # Debug
 .\build.ps1 -QtDir 'C:\Qt\6.7.0\msvc2019_64'         # custom Qt
 .\build.ps1 -Generator Ninja                         # Ninja for faster builds
 ```
 
-Binary lands at `gui\build-release\Release\namx.exe`. `windeployqt`
+Binary lands at `build-release\Release\namx.exe`. `windeployqt`
 runs automatically at the end of the build to copy Qt DLLs next to the .exe.
 
 > If you see *"Could not find a package configuration file provided by Qt6"*,
@@ -200,7 +197,6 @@ runs automatically at the end of the build to copy Qt DLLs next to the .exe.
 ### Windows — manual CMake
 
 ```powershell
-cd gui
 cmake -S . -B build-release `
       -G "Visual Studio 17 2022" -A x64 `
       -DCMAKE_PREFIX_PATH="C:\Qt\6.7.0\msvc2019_64"
@@ -550,9 +546,9 @@ IR files are compatible with any standard cab sim WAV (e.g., from OwnHammer, Cel
 against the real-time budget:
 
 ```bash
-cmake -S gui -B gui/build-bench -DCMAKE_BUILD_TYPE=Release -DNAM_BUILD_BENCH=ON
-cmake --build gui/build-bench --target namx-bench
-gui/build-bench/namx-bench --model amp.nam --ir cab.wav   # --frames 128 --rate 48000 by default
+cmake -S . -B build-bench -DCMAKE_BUILD_TYPE=Release -DNAM_BUILD_BENCH=ON
+cmake --build build-bench --target namx-bench
+build-bench/namx-bench --model amp.nam --ir cab.wav   # --frames 128 --rate 48000 by default
 ```
 
 `namx --self-test-and-exit` prints the cold-start time and peak memory.

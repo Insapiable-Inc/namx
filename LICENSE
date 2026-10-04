@@ -1,4 +1,4 @@
-NAM-X — the standalone GUI under gui/
+NAM-X
 Copyright (C) 2026 silvercobraa and the NAM-X contributors
 
 This program is free software: you can redistribute it and/or modify it under the
@@ -13,13 +13,14 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 Other parts of this repository keep their own licenses:
 
-- The upstream NeuralAmpModelerCore library (NAM/, tools/) is MIT-licensed,
-  Copyright (c) 2023 Steven Atkinson. See ../LICENSE. Builds of NAM-X include
-  that code under the terms of the MIT License.
-- Code in gui/ published before 2026-10-01 was released under the MIT License in
-  ../LICENSE. It is included in this GPL-licensed program under those terms, and that
-  notice is preserved.
-- Dependencies/ are git submodules under their own licenses.
+- The NeuralAmpModelerCore library (the external/NeuralAmpModelerCore submodule) is
+  MIT-licensed, Copyright (c) 2023 Steven Atkinson; see LICENSE-MIT. Builds of NAM-X
+  include that code under the terms of the MIT License.
+- App code published before 2026-10-01 (then under gui/ in a fork of
+  NeuralAmpModelerCore) was released under the MIT License in LICENSE-MIT. It is
+  included in this GPL-licensed program under those terms, and that notice is
+  preserved.
+- The other submodules under external/ keep their own licenses.
 
 --------------------------------------------------------------------------------
 
