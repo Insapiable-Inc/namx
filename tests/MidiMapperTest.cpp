@@ -254,12 +254,22 @@ int run(int argc, char** argv) {
         const QByteArray original = before.readAll();
         before.close();
         QFile::setPermissions(locked_dir, QFile::ReadOwner | QFile::ExeOwner);
-        mapper.set_mappings(MidiMapper::default_mappings()); // different content
-        const bool saved = mapper.save_file(kept);
-        QFile after(kept);
-        CHECK(after.open(QIODevice::ReadOnly), "the file is still there");
-        CHECK(!saved, "save into a read-only folder reports failure");
-        CHECK(after.readAll() == original, "the existing file is left as it was");
+        // Root (CI's container jobs) writes into a read-only folder regardless, so
+        // there is nothing to check there (audit 2026-10-04): probe first.
+        QFile probe(locked_dir + "/probe");
+        const bool lock_holds = !probe.open(QIODevice::WriteOnly);
+        probe.close();
+        probe.remove();
+        if (lock_holds) {
+            mapper.set_mappings(MidiMapper::default_mappings()); // different content
+            const bool saved = mapper.save_file(kept);
+            QFile after(kept);
+            CHECK(after.open(QIODevice::ReadOnly), "the file is still there");
+            CHECK(!saved, "save into a read-only folder reports failure");
+            CHECK(after.readAll() == original, "the existing file is left as it was");
+        } else {
+            std::printf("  skip read-only folder: this user can write into it\n");
+        }
         QFile::setPermissions(locked_dir, QFile::ReadOwner | QFile::WriteOwner |
                                               QFile::ExeOwner); // so tmp can clean up
     }
