@@ -27,14 +27,14 @@
 namespace namx
 {
 
-static int gFailures = 0;
+static int failures = 0;
 #define CHECK(cond, msg) \
     do { \
         if (cond) \
             std::printf("  ok   %s\n", msg); \
         else { \
             std::printf("  FAIL %s  (%s:%d)\n", msg, __FILE__, __LINE__); \
-            ++gFailures; \
+            ++failures; \
         } \
     } while (0)
 
@@ -325,8 +325,8 @@ int run(int argc, char** argv) {
         CHECK(bpm == 0.0, "a burst of unstamped ticks sets no tempo");
     }
 
-    std::printf(gFailures ? "\n%d FAILED\n" : "\nall passed\n", gFailures);
-    return gFailures ? 1 : 0;
+    std::printf(failures ? "\n%d FAILED\n" : "\nall passed\n", failures);
+    return failures ? 1 : 0;
 }
 
 } // namespace namx

@@ -103,7 +103,7 @@ private:
     void release_streams(); // the clients and services, keeping the devices
     void teardown();
 
-    IMMDevice* open_device_by_id(const string& deviceId) const;
+    IMMDevice* open_device_by_id(const string& device_id) const;
 
     IMMDeviceEnumerator* enumerator = nullptr;
     IMMDevice* capture_device = nullptr;

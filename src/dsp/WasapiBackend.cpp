@@ -230,14 +230,14 @@ static vector<IAudioBackend::DeviceInfo> enumerate_wasapi_devices(EDataFlow dire
     result.push_back({"default", "Default"});
 
     HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
-    bool comInit = (hr == S_OK || hr == S_FALSE);
+    bool com_init = (hr == S_OK || hr == S_FALSE);
     // RPC_E_CHANGED_MODE means COM already initialized — fine.
 
     IMMDeviceEnumerator* enumerator = nullptr;
     hr = CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr, CLSCTX_ALL,
                           __uuidof(IMMDeviceEnumerator), reinterpret_cast<void**>(&enumerator));
     if (FAILED(hr) || !enumerator) {
-        if (comInit) {
+        if (com_init) {
             CoUninitialize();
         }
         return result;
@@ -252,10 +252,10 @@ static vector<IAudioBackend::DeviceInfo> enumerate_wasapi_devices(EDataFlow dire
             IMMDevice* dev = nullptr;
             if (SUCCEEDED(collection->Item(i, &dev)) && dev) {
                 IAudioBackend::DeviceInfo info;
-                LPWSTR idStr = nullptr;
-                if (SUCCEEDED(dev->GetId(&idStr)) && idStr) {
-                    info.id = wide_to_utf8(idStr);
-                    CoTaskMemFree(idStr);
+                LPWSTR id_str = nullptr;
+                if (SUCCEEDED(dev->GetId(&id_str)) && id_str) {
+                    info.id = wide_to_utf8(id_str);
+                    CoTaskMemFree(id_str);
                 }
                 info.name = friendly_device_name(dev);
                 if (!info.name.empty() && !info.id.empty()) {
@@ -267,7 +267,7 @@ static vector<IAudioBackend::DeviceInfo> enumerate_wasapi_devices(EDataFlow dire
         collection->Release();
     }
     enumerator->Release();
-    if (comInit) {
+    if (com_init) {
         CoUninitialize();
     }
     return result;
@@ -334,17 +334,17 @@ vector<IAudioBackend::DeviceInfo> WasapiBackend::enumerate_output_devices() cons
 
 #ifdef _WIN32
 
-IMMDevice* WasapiBackend::open_device_by_id(const string& deviceId) const {
-    if (deviceId.empty() || deviceId == "default") {
+IMMDevice* WasapiBackend::open_device_by_id(const string& device_id) const {
+    if (device_id.empty() || device_id == "default") {
         return nullptr; // Caller falls back to GetDefaultAudioEndpoint
     }
 
-    std::wstring wId = utf8_to_wide(deviceId);
+    std::wstring wId = utf8_to_wide(device_id);
     IMMDevice* dev = nullptr;
     HRESULT hr = enumerator->GetDevice(wId.c_str(), &dev);
     if (FAILED(hr) || !dev) {
-        qCWarning(lc_audio, "[WasapiBackend] GetDevice failed for id=%s: 0x%08lx", deviceId.c_str(),
-                  static_cast<unsigned long>(hr));
+        qCWarning(lc_audio, "[WasapiBackend] GetDevice failed for id=%s: 0x%08lx",
+                  device_id.c_str(), static_cast<unsigned long>(hr));
         return nullptr;
     }
     return dev;
@@ -354,7 +354,7 @@ bool WasapiBackend::start(const string& client_name, Callback* cb) {
     return start_with_devices(client_name, cb, "default", "default");
 }
 
-bool WasapiBackend::start_with_devices(const string& /*clientName*/, Callback* cb,
+bool WasapiBackend::start_with_devices(const string& /*client_name*/, Callback* cb,
                                        const string& input_device_id,
                                        const string& output_device_id) {
     if (running.load()) {
@@ -540,7 +540,7 @@ bool WasapiBackend::init_capture() {
     capture_channels = wfx->nChannels;
 
     hr = capture_client->Initialize(AUDCLNT_SHAREMODE_SHARED, AUDCLNT_STREAMFLAGS_EVENTCALLBACK,
-                                    0, // hnsBufferDuration — system default for shared mode
+                                    0, // hns_buffer_duration — system default for shared mode
                                     0, // periodicity must be 0 in shared mode
                                     wfx.get(), nullptr);
     if (FAILED(hr)) {
@@ -549,12 +549,12 @@ bool WasapiBackend::init_capture() {
         return false;
     }
 
-    UINT32 bufFrames = 0;
-    if (FAILED(capture_client->GetBufferSize(&bufFrames))) {
+    UINT32 buf_frames = 0;
+    if (FAILED(capture_client->GetBufferSize(&buf_frames))) {
         qCWarning(lc_audio, "[WasapiBackend] Capture GetBufferSize failed");
         return false;
     }
-    buffer_size = static_cast<int>(bufFrames);
+    buffer_size = static_cast<int>(buf_frames);
 
     if (FAILED(capture_client->GetService(__uuidof(IAudioCaptureClient),
                                           reinterpret_cast<void**>(&capture)))) {
@@ -755,8 +755,8 @@ void WasapiBackend::audio_thread_main() {
 
     // Pro Audio thread characteristics — bumps priority, registers with the
     // scheduler so we get a slice every audio quantum.
-    DWORD taskIndex = 0;
-    HANDLE avrtHandle = AvSetMmThreadCharacteristicsW(L"Pro Audio", &taskIndex);
+    DWORD task_index = 0;
+    HANDLE avrt_handle = AvSetMmThreadCharacteristicsW(L"Pro Audio", &task_index);
 
     // Flush denormals to zero on this thread. Reverb/delay feedback tails and
     // NAM recurrent state decay into the denormal range, where each float op
@@ -776,41 +776,41 @@ void WasapiBackend::audio_thread_main() {
     // processed block does not always fit the render endpoint right away.
     // Anything that does not fit waits here and drains on the next cycle
     // instead of being discarded (which was an audible gap). Ring buffer of
-    // frames, oldest at fifoHead. Capacity: the whole render buffer plus a
+    // frames, oldest at fifo_head. Capacity: the whole render buffer plus a
     // few capture blocks; if render stalls beyond that the oldest frames are
     // dropped — a discontinuity, but a bounded one.
-    UINT32 renderBufSize = 0;
-    if (FAILED(render_client->GetBufferSize(&renderBufSize))) {
-        renderBufSize = static_cast<UINT32>(buffer_size);
+    UINT32 render_buf_size = 0;
+    if (FAILED(render_client->GetBufferSize(&render_buf_size))) {
+        render_buf_size = static_cast<UINT32>(buffer_size);
     }
     const int render_bytes = bytes_of(render_type);
     const int capture_bytes = bytes_of(capture_type);
-    vector<float> fifoL, fifoR;
-    size_t fifoCap = 0, fifoHead = 0, fifoCount = 0;
-    auto resize_fifo = [&](size_t blockFrames) {
-        fifoCap = static_cast<size_t>(renderBufSize) + 4 * blockFrames;
-        fifoL.assign(fifoCap, 0.0f);
-        fifoR.assign(fifoCap, 0.0f);
-        fifoHead = 0;
+    vector<float> fifo_l, fifo_r;
+    size_t fifo_cap = 0, fifo_head = 0, fifoCount = 0;
+    auto resize_fifo = [&](size_t block_frames) {
+        fifo_cap = static_cast<size_t>(render_buf_size) + 4 * block_frames;
+        fifo_l.assign(fifo_cap, 0.0f);
+        fifo_r.assign(fifo_cap, 0.0f);
+        fifo_head = 0;
         fifoCount = 0;
     };
     resize_fifo(static_cast<size_t>(buffer_size));
 
     auto fifo_push = [&](const float* l, const float* r, size_t n) {
-        if (n > fifoCap) {
-            l += n - fifoCap;
-            r += n - fifoCap;
-            n = fifoCap;
+        if (n > fifo_cap) {
+            l += n - fifo_cap;
+            r += n - fifo_cap;
+            n = fifo_cap;
         }
         // Make room by dropping the oldest frames if the render side stalled.
-        const size_t overflow = (fifoCount + n > fifoCap) ? fifoCount + n - fifoCap : 0;
-        fifoHead = (fifoHead + overflow) % fifoCap;
+        const size_t overflow = (fifoCount + n > fifo_cap) ? fifoCount + n - fifo_cap : 0;
+        fifo_head = (fifo_head + overflow) % fifo_cap;
         fifoCount -= overflow;
-        size_t tail = (fifoHead + fifoCount) % fifoCap;
+        size_t tail = (fifo_head + fifoCount) % fifo_cap;
         for (size_t i = 0; i < n; ++i) {
-            fifoL[tail] = l[i];
-            fifoR[tail] = r[i];
-            if (++tail == fifoCap) {
+            fifo_l[tail] = l[i];
+            fifo_r[tail] = r[i];
+            if (++tail == fifo_cap) {
                 tail = 0;
             }
         }
@@ -822,13 +822,13 @@ void WasapiBackend::audio_thread_main() {
     auto write_frames = [&](BYTE* dst, UINT32 frames) {
         const int rc = render_channels;
         const size_t from_fifo = std::min<size_t>(frames, fifoCount);
-        size_t src = fifoHead;
+        size_t src = fifo_head;
         for (UINT32 i = 0; i < frames; ++i) {
             float l = 0.0f, r = 0.0f;
             if (i < from_fifo) {
-                l = fifoL[src];
-                r = fifoR[src];
-                if (++src == fifoCap) {
+                l = fifo_l[src];
+                r = fifo_r[src];
+                if (++src == fifo_cap) {
                     src = 0;
                 }
             }
@@ -845,7 +845,7 @@ void WasapiBackend::audio_thread_main() {
                 }
             }
         }
-        fifoHead = src;
+        fifo_head = src;
         fifoCount -= from_fifo;
     };
 
@@ -858,39 +858,39 @@ void WasapiBackend::audio_thread_main() {
         if (FAILED(render_client->GetCurrentPadding(&padding))) {
             return;
         }
-        const UINT32 available = renderBufSize > padding ? renderBufSize - padding : 0;
-        const UINT32 toWrite = static_cast<UINT32>(std::min<size_t>(available, fifoCount));
-        if (toWrite == 0) {
+        const UINT32 available = render_buf_size > padding ? render_buf_size - padding : 0;
+        const UINT32 to_write = static_cast<UINT32>(std::min<size_t>(available, fifoCount));
+        if (to_write == 0) {
             return;
         }
 
         BYTE* dst = nullptr;
-        if (FAILED(render->GetBuffer(toWrite, &dst)) || !dst) {
+        if (FAILED(render->GetBuffer(to_write, &dst)) || !dst) {
             return;
         }
-        write_frames(dst, toWrite);
-        render->ReleaseBuffer(toWrite, 0);
+        write_frames(dst, to_write);
+        render->ReleaseBuffer(to_write, 0);
     };
 
     // Exclusive event mode: every render event takes exactly one whole buffer; what
     // isn't pending yet goes out as silence.
     auto render_full_buffer = [&]() {
         BYTE* dst = nullptr;
-        if (FAILED(render->GetBuffer(renderBufSize, &dst)) || !dst) {
+        if (FAILED(render->GetBuffer(render_buf_size, &dst)) || !dst) {
             return;
         }
-        write_frames(dst, renderBufSize);
-        render->ReleaseBuffer(renderBufSize, 0);
+        write_frames(dst, render_buf_size);
+        render->ReleaseBuffer(render_buf_size, 0);
     };
 
-    HANDLE waitHandles[3] = {stop_event, capture_event, render_event};
+    HANDLE wait_handles[3] = {stop_event, capture_event, render_event};
 
     while (running.load()) {
         // Wake on capture data (the normal case) or on render space freeing up
         // while output is still pending. Exclusive mode must answer every render
         // event, pending output or not.
-        const DWORD nHandles = (exclusive || fifoCount > 0) ? 3 : 2;
-        DWORD wait = WaitForMultipleObjects(nHandles, waitHandles, FALSE, 2000);
+        const DWORD n_handles = (exclusive || fifoCount > 0) ? 3 : 2;
+        DWORD wait = WaitForMultipleObjects(n_handles, wait_handles, FALSE, 2000);
         if (wait == WAIT_OBJECT_0 + STOP_EVENT_INDEX) {
             break;
         }
@@ -907,8 +907,8 @@ void WasapiBackend::audio_thread_main() {
         }
 
         // Drain all available capture packets this cycle (usually one).
-        UINT32 packetFrames = 0;
-        while (SUCCEEDED(capture->GetNextPacketSize(&packetFrames)) && packetFrames > 0) {
+        UINT32 packet_frames = 0;
+        while (SUCCEEDED(capture->GetNextPacketSize(&packet_frames)) && packet_frames > 0) {
             BYTE* data = nullptr;
             UINT32 frames = 0;
             DWORD flags = 0;
@@ -945,19 +945,19 @@ void WasapiBackend::audio_thread_main() {
                 if (ch == 1) {
                     std::copy_n(src, frames, mono_in.data());
                 } else {
-                    const float invCh = 1.0f / static_cast<float>(ch);
+                    const float inv_ch = 1.0f / static_cast<float>(ch);
                     for (UINT32 i = 0; i < frames; ++i) {
                         float s = 0.0f;
                         for (int c = 0; c < ch; ++c) {
                             s += src[i * ch + c];
                         }
-                        mono_in[i] = s * invCh;
+                        mono_in[i] = s * inv_ch;
                     }
                 }
             } else {
                 // Exclusive mode, integer samples: convert while down-mixing.
                 const int ch = capture_channels;
-                const float invCh = 1.0f / static_cast<float>(ch);
+                const float inv_ch = 1.0f / static_cast<float>(ch);
                 for (UINT32 i = 0; i < frames; ++i) {
                     float s = 0.0f;
                     for (int c = 0; c < ch; ++c) {
@@ -966,7 +966,7 @@ void WasapiBackend::audio_thread_main() {
                                                     static_cast<size_t>(capture_bytes),
                                          capture_type);
                     }
-                    mono_in[i] = s * invCh;
+                    mono_in[i] = s * inv_ch;
                 }
             }
             capture->ReleaseBuffer(frames);
@@ -987,8 +987,8 @@ void WasapiBackend::audio_thread_main() {
         }
     }
 
-    if (avrtHandle) {
-        AvRevertMmThreadCharacteristics(avrtHandle);
+    if (avrt_handle) {
+        AvRevertMmThreadCharacteristics(avrt_handle);
     }
 }
 
