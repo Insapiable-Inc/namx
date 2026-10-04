@@ -169,8 +169,11 @@ and `.nampreset` file associations), the AppStream metadata and the icon theme f
 Run `update-desktop-database` / `update-mime-database` afterwards if your distro
 doesn't hook them.
 
-An AppImage and a Flatpak (Flathub) are planned for the first release (ROADMAP
-Phase 8); there is no distribution package. Arch users build from source as above.
+Prebuilt Linux bundles: an AppImage on the releases page (it offers to add itself to
+the applications menu on first start; Settings → Remove from Applications Menu undoes
+it) and a Flatpak on Flathub (`io.github.Insapiable_Inc.namx`; its settings live under
+`~/.var/app/io.github.Insapiable_Inc.namx/`). Neither bundles `libjack`. There is no
+distribution package; Arch users build from source as above.
 
 Command-line flags: `namx [file…]` opens `.nam` / `.wav` / `.nampreset` files;
 `--version` / `-v`; `--help` / `-h`; `--self-test-and-exit` (headless CI check: window

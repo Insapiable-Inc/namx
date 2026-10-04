@@ -179,7 +179,7 @@ Yes, that's exactly how I use it! One thing that annoyed me about a certain comm
 
 **Where are my presets and settings stored?**
 
-Presets are plain JSON files (`.nampreset`) under `Documents/NAM-X/Presets` (the eight starter presets are copied into its `Starter` folder on the first run), or wherever you save them. Settings (devices, connections, window layout, MIDI mappings, the last session) are in `~/.config/Insapiable/namx.conf` on Linux and under `HKEY_CURRENT_USER\Software\Insapiable\namx` on Windows; the library's metadata cache lives in `~/.local/share/Insapiable/namx/`.
+Presets are plain JSON files (`.nampreset`) under `Documents/NAM-X/Presets` (the eight starter presets are copied into its `Starter` folder on the first run), or wherever you save them. Settings (devices, connections, window layout, MIDI mappings, the last session) are in `~/.config/Insapiable/namx.conf` on Linux (under `~/.var/app/io.github.Insapiable_Inc.namx/config/` for the Flatpak) and under `HKEY_CURRENT_USER\Software\Insapiable\namx` on Windows; the library's metadata cache lives in `~/.local/share/Insapiable/namx/`.
 
 **Does it phone home?**
 
