@@ -1,6 +1,7 @@
 #include "LibraryIndex.h"
 
 #include <algorithm>
+#include <atomic>
 
 #include <QDateTime>
 #include <QDir>
@@ -279,6 +280,13 @@ static void describe_preset(const QString& path, LibraryEntry& e) {
 class LibraryScanWorker : public QObject
 {
     Q_OBJECT
+public:
+    // Set by the owner at shutdown: the running scan returns at the next file instead
+    // of walking the rest of the roots (audit 2026-10-04 item 10 — quitting the
+    // thread's event loop doesn't interrupt the slot in progress). An I/O call already
+    // blocked on an unresponsive mount still has to return first.
+    std::atomic<bool> abort{false};
+
 public slots:
     void scan(LibraryRoots roots, QString cache_path) {
         // dir → kinds it feeds. One walk per unique directory tree.
@@ -320,6 +328,9 @@ public slots:
             QDirIterator it(root, QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot | QDir::Readable,
                             QDirIterator::Subdirectories | QDirIterator::FollowSymlinks);
             while (it.hasNext()) {
+                if (abort.load(std::memory_order_relaxed)) {
+                    return; // no result, no cache write
+                }
                 const QString p = QDir::cleanPath(it.next());
                 const QFileInfo fi = it.fileInfo();
                 if (fi.isDir()) {
@@ -458,6 +469,7 @@ LibraryIndex::LibraryIndex(QObject* parent)
 }
 
 LibraryIndex::~LibraryIndex() {
+    worker->abort.store(true, std::memory_order_relaxed);
     thread->quit();
     thread->wait();
 }
