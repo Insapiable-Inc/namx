@@ -282,6 +282,8 @@ private:
     QLabel* lbl_irb_status = nullptr; // Cabinet slot B (detail row)
 
     LibraryIndex* library_index = nullptr;
+    QHash<QString, std::pair<qint64, LibraryEntry>> described; // see describe_cached
+    LibraryEntry describe_cached(const QString& path);
     LibraryPanel* library = nullptr; // the Library dock's content
     QDockWidget* library_dock = nullptr;
 
@@ -402,6 +404,10 @@ private:
     PresetBar* preset_bar = nullptr;
     QString preset_path; // current preset file; empty = untitled
     QJsonObject preset_baseline; // toJson() when it was loaded/saved
+    QHash<QString, QVariant> pending_settings; // see persist_setting
+    void persist_setting(const QString& key, const QVariant& value);
+    QString shown_preset_path; // what the preset bar last showed (update_preset_state)
+    bool shown_preset_modified = false;
     QJsonObject ab[2]; // A/B snapshots; empty = not taken yet
     int ab_active = 0;
     QTimer* preset_state_timer = nullptr;

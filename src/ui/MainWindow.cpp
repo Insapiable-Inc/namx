@@ -317,7 +317,7 @@ MainWindow::MainWindow(QWidget* parent)
     // event-loop pass (a preset load moves dozens of widgets).
     preset_state_timer = new QTimer(this);
     preset_state_timer->setSingleShot(true);
-    preset_state_timer->setInterval(0);
+    preset_state_timer->setInterval(50); // coalesces a knob drag's ticks
     connect(preset_state_timer, &QTimer::timeout, this, &MainWindow::update_preset_state);
 
     // Knob tapers (Phase 9): times, rates and frequencies on log dials.
@@ -1406,7 +1406,7 @@ void MainWindow::setup_ui() {
 void MainWindow::set_tuner_reference(int hz) {
     tuner_ref_hz = hz;
     tuner_display->set_reference(hz);
-    QSettings().setValue("tuner/reference", hz);
+    persist_setting("tuner/reference", hz);
 }
 
 void MainWindow::set_transpose_continuous(bool on) {
@@ -1419,7 +1419,7 @@ void MainWindow::set_transpose_continuous(bool on) {
 
 void MainWindow::set_tuner_show_hz(bool on) {
     tuner_display->set_show_hz(on);
-    QSettings().setValue("tuner/showHz", on);
+    persist_setting("tuner/showHz", on);
 }
 
 // EQ band frequency knob (log taper, "Off" past off_at).
@@ -2039,7 +2039,9 @@ void MainWindow::on_unload_ir() {
 }
 
 bool MainWindow::load_model_file(const QString& path, bool quiet) {
-    const QString clean = QDir::cleanPath(path);
+    // Absolute: a relative path from the command line would be persisted relative and
+    // fail from another working directory (audit 2026-10-04, Fable item 10).
+    const QString clean = QDir::cleanPath(QFileInfo(path).absoluteFilePath());
     // Same file again (preset reload, arrow wrap-around on a one-item list):
     // skip the synchronous rebuild + prewarm and the audible state swap.
     if (!(engine->is_model_loaded() && QString::fromStdString(engine->model_path()) == clean)) {
@@ -2060,7 +2062,9 @@ bool MainWindow::load_model_file(const QString& path, bool quiet) {
 }
 
 bool MainWindow::load_ir_file(const QString& path, bool quiet) {
-    const QString clean = QDir::cleanPath(path);
+    // Absolute: a relative path from the command line would be persisted relative and
+    // fail from another working directory (audit 2026-10-04, Fable item 10).
+    const QString clean = QDir::cleanPath(QFileInfo(path).absoluteFilePath());
     if (!(engine->is_ir_loaded() && QString::fromStdString(engine->ir_path()) == clean)) {
         if (!engine->load_ir(clean.toStdString())) {
             if (!quiet) {
@@ -2079,7 +2083,9 @@ bool MainWindow::load_ir_file(const QString& path, bool quiet) {
 }
 
 bool MainWindow::load_irb_file(const QString& path, bool quiet) {
-    const QString clean = QDir::cleanPath(path);
+    // Absolute: a relative path from the command line would be persisted relative and
+    // fail from another working directory (audit 2026-10-04, Fable item 10).
+    const QString clean = QDir::cleanPath(QFileInfo(path).absoluteFilePath());
     if (!(engine->is_irb_loaded() && QString::fromStdString(engine->ir_path_b()) == clean)) {
         if (!engine->load_irb(clean.toStdString())) {
             if (!quiet) {
@@ -2550,6 +2556,10 @@ void MainWindow::schedule_session_save() {
 
 void MainWindow::save_session_state() {
     QSettings s;
+    for (auto it = pending_settings.cbegin(); it != pending_settings.cend(); ++it) {
+        s.setValue(it.key(), it.value());
+    }
+    pending_settings.clear();
     s.beginGroup("session");
     for (const auto& p : params) {
         const QString path = p.group.isEmpty() ? p.key : p.group + "/" + p.key;
@@ -3073,16 +3083,44 @@ void MainWindow::show_file_status(QLabel* name, QLabel* meta, bool loaded, const
         // Metadata comes from the index when the file is in the library,
         // otherwise it is read now (one-off imports, dropped files).
         const LibraryEntry* e = library_index->find(path);
-        const LibraryEntry fresh = e ? *e : LibraryIndex::describe(path);
+        const LibraryEntry fresh = e ? *e : describe_cached(path);
+        // File names and metadata are untrusted: plain text, never HTML.
+        name->setTextFormat(Qt::PlainText);
+        meta->setTextFormat(Qt::PlainText);
         name->setText(
             name->fontMetrics().elidedText(fresh.name, Qt::ElideMiddle, HERO_NAME_MAX_WIDTH));
         name->setObjectName("fileStatusOk");
-        name->setToolTip(QDir::toNativeSeparators(fresh.path));
+        name->setToolTip(Theme::plain_tooltip(QDir::toNativeSeparators(fresh.path)));
         meta->setText(fresh.summary);
-        meta->setToolTip(fresh.details);
+        meta->setToolTip(Theme::plain_tooltip(fresh.details));
     }
     name->style()->unpolish(name);
     name->style()->polish(name);
+}
+
+// LibraryIndex::describe() for a file outside the library roots, parsed once per
+// path and modification time instead of on every hero-row refresh (audit 2026-10-04,
+// Fable item 25: a big model re-read on each preset load or A/B switch).
+// A non-registry setting written as often as a control moves (the tuner reference
+// field): queued for the session save's debounce instead of a file write per tick
+// (audit 2026-10-04, Fable item 27).
+void MainWindow::persist_setting(const QString& key, const QVariant& value) {
+    pending_settings[key] = value;
+    schedule_session_save();
+}
+
+LibraryEntry MainWindow::describe_cached(const QString& path) {
+    const qint64 mtime = QFileInfo(path).lastModified().toMSecsSinceEpoch();
+    const auto it = described.constFind(path);
+    if (it != described.constEnd() && it->first == mtime) {
+        return it->second;
+    }
+    if (described.size() > 16) {
+        described.clear();
+    }
+    const LibraryEntry e = LibraryIndex::describe(path);
+    described.insert(path, {mtime, e});
+    return e;
 }
 
 void MainWindow::update_rig_status() {
@@ -3120,7 +3158,11 @@ void MainWindow::seed_starter_presets() {
         // Resource files copy read-only.
         QFile::setPermissions(dest, QFile::permissions(dest) | QFile::WriteOwner);
     }
-    s.setValue("presets/starterSeeded", true);
+    // Only once the starters are really there: a read-only or not-yet-mounted
+    // presets folder gets another try next launch (audit 2026-10-04, Fable item 30).
+    if (!QDir(dir).entryList({"*.nampreset"}, QDir::Files).isEmpty()) {
+        s.setValue("presets/starterSeeded", true);
+    }
 }
 
 QJsonObject MainWindow::current_preset_json() const {
@@ -3305,6 +3347,11 @@ static bool same_state(const QJsonValue& a, const QJsonValue& b) {
 void MainWindow::update_preset_state() {
     const bool modified = !preset_path.isEmpty() &&
                           !same_state(PresetSerializer::to_json(params, *engine), preset_baseline);
+    if (preset_path == shown_preset_path && modified == shown_preset_modified) {
+        return; // the bar repolishes and stats the quick slots on every call
+    }
+    shown_preset_path = preset_path;
+    shown_preset_modified = modified;
     preset_bar->set_preset(preset_path, modified);
     setWindowTitle(preset_path.isEmpty()
                        ? QString("NAM-X")

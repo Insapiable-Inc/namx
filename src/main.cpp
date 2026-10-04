@@ -9,6 +9,10 @@
 #include <QTimer>
 #include <QtGlobal>
 
+#ifdef Q_OS_WIN
+#include <windows.h>
+#endif
+
 #include "Common.h"
 #include "MainWindow.h"
 #include "Theme.h"
@@ -70,8 +74,16 @@ int run(int argc, char* argv[]) {
     startup.start();
     // --version / --help answer before any GUI is created, so they work on a
     // headless box (and in the CI smoke test) without a display.
+#ifdef Q_OS_WIN
+    // A GUI-subsystem executable has no console: attach to the parent's so the two
+    // flags print there (audit 2026-10-04, Fable item 49).
+    if (argc > 1 && AttachConsole(ATTACH_PARENT_PROCESS)) {
+        FILE* unused = nullptr;
+        freopen_s(&unused, "CONOUT$", "w", stdout);
+        freopen_s(&unused, "CONOUT$", "w", stderr);
+    }
+#endif
     bool self_test = false;
-    QStringList files;
     for (int i = 1; i < argc; ++i) {
         if (!std::strcmp(argv[i], "--version") || !std::strcmp(argv[i], "-v")) {
             std::printf("NAM-X %s\n", NAM_VERSION);
@@ -89,9 +101,7 @@ int run(int argc, char* argv[]) {
         }
         if (!std::strcmp(argv[i], "--self-test-and-exit")) {
             self_test = true;
-            continue;
         }
-        files << QString::fromLocal8Bit(argv[i]);
     }
 
 #ifdef Q_OS_LINUX
@@ -116,6 +126,23 @@ int run(int argc, char* argv[]) {
     app.setOrganizationName("pichulero.cl");
     app.setDesktopFileName("cl.pichulero.namx");
     app.setWindowIcon(QIcon(":/icons/namx-256.png"));
+
+    // Positional arguments after QApplication has taken Qt's own options
+    // (-platform …) out; an option this app doesn't know is an error, not a file
+    // (audit 2026-10-04, Fable item 10).
+    QStringList files;
+    const QStringList args = app.arguments();
+    for (qsizetype i = 1; i < args.size(); ++i) {
+        const QString& a = args[i];
+        if (a == "--self-test-and-exit") {
+            continue;
+        }
+        if (a.startsWith('-') && a.size() > 1) {
+            std::fprintf(stderr, "namx: unknown option '%s' (try --help)\n", qPrintable(a));
+            return 2;
+        }
+        files << a;
+    }
 
     migrate_legacy_settings();
     Theme::apply(app);

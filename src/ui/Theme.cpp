@@ -3,6 +3,7 @@
 #include <QApplication>
 #include <QPalette>
 #include <QStyle>
+#include <QTextDocument> // Qt::mightBeRichText
 #include <QWidget>
 
 #include "Common.h"
@@ -14,6 +15,13 @@ namespace namx
 
 namespace Theme
 {
+
+QString plain_tooltip(const QString& text) {
+    if (!Qt::mightBeRichText(text)) {
+        return text;
+    }
+    return "<span>" + text.toHtmlEscaped().replace('\n', "<br>") + "</span>";
+}
 
 // Per-effect accents (user-chosen, 2026-08-10). IDs match
 // AudioEngine::effect_table; "neutral" covers Input/Output and fallbacks.

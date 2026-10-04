@@ -24,6 +24,11 @@ namespace namx
 namespace Theme
 {
 
+// A tooltip from file metadata or a file name: Qt renders anything that looks like
+// HTML as rich text, so text that does is escaped and shown as-is (audit 2026-10-04,
+// Fable item 24). Plain text is returned untouched (its line breaks stay).
+QString plain_tooltip(const QString& text);
+
 // Accent for an effect ID ("gate", "nam", … or "neutral").
 QColor accent(const QString& fx_id);
 // The app accent (Breeze blue): chrome, selections, and cards before they are tagged.

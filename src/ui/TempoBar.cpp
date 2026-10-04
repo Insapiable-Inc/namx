@@ -11,6 +11,7 @@
 #include <QPainter>
 #include <QSettings>
 #include <QShortcut>
+#include <QTimer>
 #include <QToolButton>
 
 #include "Common.h"
@@ -116,6 +117,11 @@ static QString format_pan(double v) {
 TempoBar::TempoBar(Metronome& metronome, QWidget* parent)
     : QFrame(parent)
     , metro(metronome) {
+    settings_timer = new QTimer(this);
+    settings_timer->setSingleShot(true);
+    settings_timer->setInterval(1000);
+    connect(settings_timer, &QTimer::timeout, this, &TempoBar::flush_settings);
+
     setObjectName("tempoBar");
     auto* lay = new QHBoxLayout(this);
     lay->setContentsMargins(8, 2, 8, 2);
@@ -348,8 +354,28 @@ void TempoBar::tap() {
     }
 }
 
+void TempoBar::persist(const QString& key, const QVariant& value) {
+    pending_settings[key] = value;
+    settings_timer->start();
+}
+
+void TempoBar::flush_settings() {
+    if (pending_settings.isEmpty()) {
+        return;
+    }
+    QSettings s;
+    for (auto it = pending_settings.cbegin(); it != pending_settings.cend(); ++it) {
+        s.setValue(it.key(), it.value());
+    }
+    pending_settings.clear();
+}
+
+TempoBar::~TempoBar() {
+    flush_settings();
+}
+
 void TempoBar::on_bpm_field_changed(double new_bpm) {
-    QSettings().setValue("tempo/bpm", new_bpm);
+    persist("tempo/bpm", new_bpm);
     metro.set_bpm(new_bpm);
     emit bpm_changed(new_bpm);
 }
@@ -361,7 +387,7 @@ void TempoBar::on_play_toggled(bool on) {
 
 void TempoBar::on_accents_edited(uint32_t accents) {
     metro.set_accents(accents);
-    QSettings().setValue("metronome/accents", accents);
+    persist("metronome/accents", accents);
 }
 
 void TempoBar::populate_meter_menu() {
@@ -399,36 +425,36 @@ void TempoBar::ask_custom_meter() {
 
 void TempoBar::choose_subdivision(int subdivision) {
     metro.set_subdivision(subdivision);
-    QSettings().setValue("metronome/subdivision", subdivision);
+    persist("metronome/subdivision", subdivision);
     update_labels();
 }
 
 void TempoBar::choose_sound(int sound) {
     metro.set_sound(sound);
-    QSettings().setValue("metronome/sound", sound);
+    persist("metronome/sound", sound);
     update_labels();
 }
 
 void TempoBar::choose_count_in(int bars) {
     metro.set_count_in_bars(bars);
-    QSettings().setValue("metronome/countIn", bars);
+    persist("metronome/countIn", bars);
     update_labels();
 }
 
 void TempoBar::choose_silent_after_count_in(bool on) {
     metro.set_silent_after_count_in(on);
-    QSettings().setValue("metronome/silentAfter", on);
+    persist("metronome/silentAfter", on);
     update_labels();
 }
 
 void TempoBar::on_volume_changed(double db) {
     metro.set_volume_db(static_cast<float>(db));
-    QSettings().setValue("metronome/volume", db);
+    persist("metronome/volume", db);
 }
 
 void TempoBar::on_pan_changed(double pct) {
     metro.set_pan(static_cast<float>(pct / 100.0));
-    QSettings().setValue("metronome/pan", pct);
+    persist("metronome/pan", pct);
 }
 
 } // namespace namx

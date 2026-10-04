@@ -5,12 +5,15 @@
 
 #include <QElapsedTimer>
 #include <QFrame>
+#include <QHash>
+#include <QVariant>
 #include <QVector>
 
 #include "Common.h"
 #include "NumberField.h"
 
 class QMenu;
+class QTimer;
 class QToolButton;
 
 namespace namx
@@ -96,8 +99,17 @@ private:
     KnobWidget* pan = nullptr;
     QElapsedTimer tap_clock;
     QVector<qint64> taps; // ms timestamps of the recent taps
+    // Settings writes coalesce (a Level drag would otherwise rewrite the file per
+    // mouse move — audit 2026-10-04, Fable item 27); flushed after 1 s and on exit.
+    void persist(const QString& key, const QVariant& value);
+    void flush_settings();
+    QHash<QString, QVariant> pending_settings;
+    QTimer* settings_timer = nullptr;
     std::function<void(const QString&, QMenu*)> learn_hook;
     void learn_menu_for(QWidget* w, const QString& action_id);
+
+public:
+    ~TempoBar() override;
     void show_learn_menu(const QString& action_id, const QPoint& global_pos);
 
     void on_bpm_field_changed(double new_bpm);

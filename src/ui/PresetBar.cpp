@@ -18,6 +18,7 @@
 
 #include "Common.h"
 #include "LibraryIndex.h"
+#include "Theme.h"
 
 namespace namx
 {
@@ -257,7 +258,7 @@ void PresetBar::populate_preset_menu(QMenu* menu) {
         QAction* a = folder_menu(e->folder, menu, folders)->addAction(e->name);
         a->setCheckable(true);
         a->setChecked(e->path == path);
-        a->setToolTip(e->summary);
+        a->setToolTip(Theme::plain_tooltip(e->summary));
         const QString entry_path = e->path;
         connect(a, &QAction::triggered, this, [this, entry_path] {
             emit preset_chosen(entry_path);
