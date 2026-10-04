@@ -1043,8 +1043,8 @@ for the backend work (Phase 21), and a second full review follows the big change
       ~~19~~ (done 2026-10-04: `EffectBase::sync_right_channel()` — on the first stereo block
       after mono ones each effect copies its left state to the right (clears what can't be
       copied: the Drive's WDF; the amp masks it with its fade); `DspGoldenTest::mono_to_stereo_edge`),
-      21 (model change freezes the GUI — halved 2026-10-02: one parse, no double prewarm, 27 → 13.5 ms per switch;
-      a background loader only if big models still stutter — **ask the user with a big WaveNet**), ~~22~~ (done 2026-10-02),
+      ~~21~~ (model change freezes the GUI — halved 2026-10-02: one parse, no double prewarm, 27 → 13.5 ms per switch;
+      **no background loader — not worth it, user 2026-10-04**), ~~22~~ (done 2026-10-02),
       ~~23~~ (done 2026-10-02), ~~24~~ (IR truncation: faded and at 1 s since 2026-10-03; still only logged),
       ~~26~~ (limiter: monotonic queue, done 2026-10-04 with audit item 13), ~~27~~ (done 2026-10-02), ~~28~~ (done 2026-10-02).
 - [ ] Belong elsewhere: ~~20~~ (bypass cuts tails → "Trails": **not wanted**, user 2026-10-03),
