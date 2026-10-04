@@ -392,13 +392,42 @@ void AudioEngine::process_block(const float* in, float* out_l, float* out_r, siz
     limiter.process(out_l, out_r, n);
 }
 
-vector<AudioEngine::LatencySource> AudioEngine::processing_latency() const {
-    vector<LatencySource> out;
-    if (const double ms = transpose.latency_ms(); ms > 0.0) {
-        out.push_back({"Transpose", ms});
+// Status-bar names for the latency breakdown, by effect ID.
+static string latency_source_name(const string& id) {
+    static const std::pair<const char*, const char*> NAMES[] = {
+        {"tuner", "Tuner"},
+        {"transpose", "Transpose"},
+        {"gate", "Gate"},
+        {"comp", "Compressor"},
+        {"wah", "Wah"},
+        {"flanger", "Flanger"},
+        {"phaser", "Phaser"},
+        {"drive", "Drive"},
+        {"nam", "Amplifier resampling"},
+        {"volume", "Volume"},
+        {"eq", "EQ"},
+        {"chorus", "Chorus"},
+        {"tremolo", "Tremolo"},
+        {"delay", "Delay"},
+        {"reverb", "Reverb"},
+        {"ir", "Cabinet"},
+    };
+    for (const auto& [key, name] : NAMES) {
+        if (id == key) {
+            return name;
+        }
     }
-    if (const double ms = nam.latency_ms(); ms > 0.0) {
-        out.push_back({"Amplifier resampling", ms});
+    return id;
+}
+
+vector<AudioEngine::LatencySource> AudioEngine::processing_latency() const {
+    // Every effect in the table (audit 2026-10-04 item 12: a hand-kept list missed
+    // the Drive's oversampling), then the stages outside the chain.
+    vector<LatencySource> out;
+    for (const auto& [id, fx] : effect_table) {
+        if (const double ms = fx->latency_ms(); ms > 0.0) {
+            out.push_back({latency_source_name(id), ms});
+        }
     }
     if (const double ms = limiter.latency_ms(); ms > 0.0) {
         out.push_back({"Output limiter", ms});
