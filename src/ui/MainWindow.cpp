@@ -3362,11 +3362,22 @@ void MainWindow::switch_ab(int side) {
     if (ab[side].isEmpty()) {
         ab[side] = live;
     } else {
+        // A snapshot restores exactly, an absent model or cabinet included — unlike
+        // a preset file, where an empty path keeps what is loaded (audit 2026-10-04
+        // item 06). A file that went missing meanwhile keeps the current one.
         const PresetSerializer::Applied applied = apply_preset_params(ab[side]);
-        if (!applied.nam_path.isEmpty() && QFile::exists(applied.nam_path)) {
+        if (applied.nam_path.isEmpty()) {
+            if (engine->is_model_loaded()) {
+                on_unload_nam();
+            }
+        } else if (QFile::exists(applied.nam_path)) {
             load_model_file(applied.nam_path, true);
         }
-        if (!applied.ir_path.isEmpty() && QFile::exists(applied.ir_path)) {
+        if (applied.ir_path.isEmpty()) {
+            if (engine->is_ir_loaded()) {
+                on_unload_ir();
+            }
+        } else if (QFile::exists(applied.ir_path)) {
             load_ir_file(applied.ir_path, true);
         }
     }
