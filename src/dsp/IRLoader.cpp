@@ -124,7 +124,7 @@ unique_ptr<IRLoader::Kernel> IRLoader::build_kernel() const {
 }
 
 bool IRLoader::load(const string& path) {
-    expected<wav::MonoAudio, string> audio = wav::read_mono(path);
+    expected<wav::MonoAudio, string> audio = wav::read_mono(utf8_path(path));
     std::lock_guard<std::mutex> lock(load_mutex);
     if (!audio) {
         last_error = audio.error();

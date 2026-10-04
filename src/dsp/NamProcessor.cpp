@@ -76,7 +76,7 @@ bool NamProcessor::load_model(const string& path) {
     try {
         // Read and parse the file once; build both instances from it (review item 21).
         nam::dspData parsed;
-        pair->l = nam::get_dsp(std::filesystem::path(path), parsed);
+        pair->l = nam::get_dsp(utf8_path(path), parsed);
         pair->r = nam::get_dsp(parsed);
     } catch (const std::exception& e) {
         last_error = e.what();
