@@ -56,8 +56,8 @@ public:
         mod_pct.store(pct);
     }
     // Octave-up repeats (0–100 %): each pass through the loop climbs.
-    void set_crystals(float pct) {
-        crystals_pct.store(pct);
+    void set_shimmer_pct(float pct) {
+        shimmer_pct.store(pct);
     }
 
     float time() const {
@@ -96,12 +96,12 @@ private:
     {
         float fb, mix, cross, hp_a, lp_k, sat_drive /* 0–1 */, mod_depth, ph_inc;
         float del_l, del_r; // samples
-        float crystals; // 0–1
+        float shimmer; // 0–1 (octave-up repeats)
     };
     Params params() const;
     float tone(Line& l, float x, const Params& p) const; // feedback-loop cuts
     // What re-enters the line: the repeat `d` (read `read_delay` samples back), blended
-    // toward its octave-up (Crystals). The shifter is fed from `latency` samples earlier
+    // toward its octave-up (Shimmer). The shifter is fed from `latency` samples earlier
     // in the line, so its output lands on the repeat instead of 150 ms after it.
     float loop(int line, float d, float read_delay, const Params& p);
     static float saturate(float x, float amount);
@@ -115,8 +115,8 @@ private:
     atomic<float> high_cut_hz{20000.0f};
     atomic<float> sat_pct{0.0f};
     atomic<float> mod_pct{0.0f};
-    atomic<float> crystals_pct{0.0f};
-    StretchShifter shift[2]; // +12 st, per line (Crystals)
+    atomic<float> shimmer_pct{0.0f};
+    StretchShifter shift[2]; // +12 st, per line (Shimmer)
 
     Line lines[2];
     float mod_phase = 0.0f;

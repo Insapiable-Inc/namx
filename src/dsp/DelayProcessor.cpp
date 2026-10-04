@@ -41,14 +41,14 @@ float DelayProcessor::glide(int line, float target) {
 }
 
 float DelayProcessor::loop(int line, float d, float read_delay, const Params& p) {
-    if (p.crystals <= 0.0f) {
+    if (p.shimmer <= 0.0f) {
         return d;
     }
     // A repeat shorter than the shifter's latency can't be compensated: its octave
     // arrives late (and it's fed the repeat itself).
     const float early_delay = read_delay - static_cast<float>(shift[line].latency_samples());
     const float early = early_delay >= 1.0f ? lines[line].read(early_delay) : d;
-    return d + p.crystals * (shift[line].process(early) - d);
+    return d + p.shimmer * (shift[line].process(early) - d);
 }
 
 DelayProcessor::Params DelayProcessor::params() const {
@@ -62,7 +62,7 @@ DelayProcessor::Params DelayProcessor::params() const {
     p.sat_drive = std::clamp(sat_pct.load(), 0.0f, 100.0f) / 100.0f;
     p.mod_depth = 0.003f * fs * std::clamp(mod_pct.load(), 0.0f, 100.0f) / 100.0f; // up to ±3 ms
     p.ph_inc = 0.55f / fs; // 0.55 Hz wobble
-    p.crystals = std::clamp(crystals_pct.load(), 0.0f, 100.0f) / 100.0f;
+    p.shimmer = std::clamp(shimmer_pct.load(), 0.0f, 100.0f) / 100.0f;
     const float max_d = static_cast<float>(lines[0].samples.size()) - 2.0f - p.mod_depth;
     p.del_l = std::clamp(time_ms.load() * fs / 1000.0f, 1.0f + p.mod_depth, max_d);
     p.del_r = std::clamp(p.del_l * std::clamp(right_pct.load(), 25.0f, 200.0f) / 100.0f,

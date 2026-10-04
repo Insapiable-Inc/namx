@@ -300,10 +300,10 @@ static unique_ptr<DelayProcessor> make_delay_stereo_mod_sat() {
     return fx;
 }
 
-static unique_ptr<DelayProcessor> make_delay_crystals() {
+static unique_ptr<DelayProcessor> make_delay_shimmer() {
     auto fx = make_unique<DelayProcessor>();
     fx->set_stereo_mode(true);
-    fx->set_crystals(60.0f);
+    fx->set_shimmer_pct(60.0f);
     return fx;
 }
 
@@ -475,7 +475,7 @@ void DspGoldenTest::initTestCase() {
     both("tremolo-stereo", &make_tremolo_stereo);
     both("delay", &make_delay);
     both("delay-stereo-mod-sat", &make_delay_stereo_mod_sat);
-    both("delay-crystals", &make_delay_crystals);
+    both("delay-shimmer", &make_delay_shimmer);
     both("reverb", &make_reverb);
     both("reverb-hall", &make_reverb_hall);
     both("reverb-room", &make_reverb_room);

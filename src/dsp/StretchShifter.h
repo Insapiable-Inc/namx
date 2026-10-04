@@ -7,7 +7,7 @@
 namespace namx
 {
 
-// High-quality pitch shifter for the tails (Reverb Shimmer, Delay Crystals): Signalsmith
+// High-quality pitch shifter for the tails (the Reverb's and the Delay's Shimmer): Signalsmith
 // Stretch (MIT), an STFT shifter, at its default 120 ms block — accurate pitch even in
 // the bass, at the cost of latency (latency_samples()), which inside a reverb or a delay
 // repeat doesn't matter (the Delay compensates for it). Mono, one sample at a time;

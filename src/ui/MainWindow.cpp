@@ -1132,11 +1132,11 @@ void MainWindow::setup_ui() {
                 //     },
                 //     "Wobble on the repeats (tape flutter / chorused echoes)"),
                 make_delay_pct_knob(
-                    "crystals", "Crystals", 0.0, 100.0, 0.0,
+                    "shimmer", "Shimmer", 0.0, 100.0, 0.0,
                     [this](double v) {
-                        engine->get_delay().set_crystals(static_cast<float>(v));
+                        engine->get_delay().set_shimmer_pct(static_cast<float>(v));
                     },
-                    "Octave-up repeats: each echo climbs higher"),
+                    "Shimmer: octave-up repeats, each echo climbs higher"),
             });
         sw_delay_stereo->setChecked(true);
         Theme::tag_card(col, "delay");
