@@ -496,7 +496,12 @@ app id in hicolor, `setWindowIcon` from the qrc, Windows exe icon + version bloc
       applications menu (writes the `.desktop` file, icon and MIME types — `.nam`,
       `.nampreset` — into `~/.local/share`), with a matching "remove" option; only when
       running as an AppImage (`$APPIMAGE` set) and nothing integrated it already.
-- [ ] **Windows installer** (user request 2026-10-02): `NAMPlayer-<v>-setup.exe` built in
+- [~] **Windows installer** (2026-10-04: `packaging/windows/namx.iss` +
+      the "Installer" step in `release.yml` → `namx-<v>-windows-x64-setup.exe`; per-user
+      by default with a machine-wide choice, Start-menu entry, optional desktop icon,
+      `.nam` in "Open with" and `.nampreset` as the default, VC++ runtime installed only
+      when missing; untested until the first release run — no Windows or Wine here)
+      (user request 2026-10-02): `NAMPlayer-<v>-setup.exe` built in
       the release workflow's Windows job (Inno Setup, available on the GitHub Windows
       runners) from the same windeployqt folder as the zip — Program Files install,
       Start-menu entry, uninstaller, `.nam` / `.nampreset` associations, per-user or

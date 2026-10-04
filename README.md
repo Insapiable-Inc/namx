@@ -46,9 +46,12 @@ left. I wanted the thing I actually use when I pick up the guitar:
   ./NAM-X-*-x86_64.AppImage
   ```
   It uses your system's JACK or PipeWire-JACK (`libjack` is not bundled).
-- **Windows:** the zip from the [releases page](https://github.com/Insapiable-Inc/namx/releases)
-  (unzip, run `namx.exe`; run `vc_redist.x64.exe` first on a machine without the
-  Visual C++ runtime).
+- **Windows:** from the [releases page](https://github.com/Insapiable-Inc/namx/releases),
+  either the installer (`namx-<version>-windows-x64-setup.exe`: Start menu entry, opens
+  `.nam` and `.nampreset` files, installs the Visual C++ runtime if needed) or the
+  portable zip (unzip, run `namx.exe`; run `vc_redist.x64.exe` first on a machine
+  without the Visual C++ runtime). Neither is signed yet, so Windows SmartScreen warns
+  about an unknown publisher.
 
 ## Build from source
 See [`BUILD.md`](BUILD.md).
