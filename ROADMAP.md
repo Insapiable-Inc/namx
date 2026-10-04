@@ -249,12 +249,12 @@ Requires BUG-06 fixed (Phase 1).
 - [x] Grips: every effect row (incl. Tuner and Cabinet) shows `≡` and drags only
       from the grip (2026-08-23: the grip replaced the title band; clicking
       knobs/toggles/body never reorders); the Input/Output columns don't drag.
-- [ ] Tuner mid-chain: place the Tuner after a stereo effect (e.g. after Delay with
+- [x] Tuner mid-chain: place the Tuner after a stereo effect (e.g. after Delay with
       stereo on) — pitch readout still tracks (fed the L/R average) and Mute
       silences both channels.
       (2026-10-04: readout confirmed — after Transpose it shows the shifted note. The
       Mute switch had been lost in the 2026-08-23 rack redesign; back on the Tuner row,
-      on by default, session-only. Mute still to check.)
+      on by default, session-only. Mute checked by the user the same day.)
 - [x] Digit shortcuts now map to the new left-to-right order; Q/W/E stereo keys too.
       (Confirmed 2026-10-04: digits and Q/W/E toggle the effects' On switches by
       position; the Stereo switches have no shortcuts any more.)
@@ -581,19 +581,22 @@ Manual verification (2026-09-17 — needs a human at the keyboard):
 
 - [ ] Fresh config: the dock opens on the left with `~/NAM` scanned; the footer says
       "Scanning…" briefly and the counts land without the UI stalling.
-- [ ] Click a model: it loads, the row gets the accent bar, the Amplifier row shows
+      (2026-10-04: to try on a fresh computer.)
+- [x] Click a model: it loads, the row gets the accent bar, the Amplifier row shows
       its name + "WaveNet · 48 kHz · …". Hold ↓ in the list: one load when the key
       rests, not one per row. ‹ › on the row follow the visible (filtered/sorted) order
       and wrap around.
-- [ ] Type in the search field: digits/letters filter, effects don't toggle. Click
+- [x] Type in the search field: digits/letters filter, effects don't toggle. Click
       the list and press `1`: the first effect toggles.
-- [ ] ★ on a row toggles the favorite without loading it; **★** mode shows only those.
+- [x] ★ on a row toggles the favorite without loading it; **★** mode shows only those.
       **Recent** lists the last loads, newest first, including drops and imports.
-- [ ] Drop a `.nam` from Dolphin onto the strip, onto a card and onto the dock: all
+- [x] Drop a `.nam` from Dolphin onto the strip, onto a card and onto the dock: all
       three load it. Drop a `.nampreset`: it applies.
-- [ ] Save a preset into the default folder: it appears in **Presets** within a
+- [x] Save a preset into the default folder: it appears in **Presets** within a
       second without a rescan click. Delete a file on disk: it disappears.
-- [ ] Library → Folders…: add `gui/presets`, OK: presets appear; remove it: gone.
+- [x] Library → Folders…: add `gui/presets`, OK: presets appear; remove it: gone.
+      (2026-10-04: works; files already loaded from a removed folder stay loaded —
+      expected, they still exist; ‹ › then start from the first/last library entry.)
 - [ ] Close the dock, quit, relaunch: still closed; `Ctrl+L` brings it back at the
       same width.
 
