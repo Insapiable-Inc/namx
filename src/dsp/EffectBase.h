@@ -34,6 +34,7 @@ public:
     // Non-virtual: stores SR then calls on_sample_rate_changed() hook.
     void set_sample_rate(double sr) {
         sample_rate = sr;
+        rate_for_any_thread.store(sr, std::memory_order_relaxed);
         on_sample_rate_changed(sr);
     }
 
@@ -132,6 +133,9 @@ protected:
     }
 
     double sample_rate{44100.0};
+    // The same rate for latency_ms() and other GUI-thread readers: sample_rate itself
+    // is written on the backend's notification thread (audit 2026-10-04, Fable item 18).
+    atomic<double> rate_for_any_thread{44100.0};
     atomic<bool> enabled{false};
     atomic<bool> stereo_mode{false};
     atomic<bool> reset_pending{false};

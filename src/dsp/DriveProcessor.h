@@ -29,9 +29,9 @@ public:
         level_db.store(db);
     }
     double latency_ms() const override {
-        return enabled.load() && sample_rate > 0.0
-                   ? TubeScreamerClipper::latency_samples() / sample_rate * 1000.0
-                   : 0.0;
+        const double rate = rate_for_any_thread.load(std::memory_order_relaxed);
+        return enabled.load() && rate > 0.0 ? TubeScreamerClipper::latency_samples() / rate * 1000.0
+                                            : 0.0;
     }
 
 protected:

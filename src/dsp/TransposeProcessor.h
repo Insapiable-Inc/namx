@@ -35,8 +35,9 @@ public:
     // Shifting (or ready to, in continuous mode): the shifter's latency in the bass.
     double latency_ms() const override {
         const bool shifting = std::abs(semis.load()) >= 0.01f || continuous.load();
-        return enabled.load() && shifting && sample_rate > 0.0
-                   ? shift[0].latency_samples() / sample_rate * 1000.0
+        const double rate = rate_for_any_thread.load(std::memory_order_relaxed);
+        return enabled.load() && shifting && rate > 0.0
+                   ? latency_samples.load(std::memory_order_relaxed) / rate * 1000.0
                    : 0.0;
     }
 
@@ -48,6 +49,7 @@ protected:
     void on_sample_rate_changed(double sr) override {
         shift[0].prepare(sr);
         shift[1] = shift[0]; // the same design for the right channel
+        latency_samples.store(shift[0].latency_samples(), std::memory_order_relaxed);
     }
     void process_block_mono(float* buf, size_t n) override {
         process_channel(buf, n, 0);
@@ -83,6 +85,7 @@ private:
     atomic<float> mix_pct{100.0f};
     atomic<bool> continuous{false};
     FilterBankShifter shift[2];
+    atomic<double> latency_samples{0.0}; // the shifter's, for latency_ms() on any thread
     array<float, 256> scratch{};
 };
 
