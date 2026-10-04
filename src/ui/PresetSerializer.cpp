@@ -56,7 +56,7 @@ expected<void, QString> validate(const QJsonObject& obj, const ParamRegistry& pa
             return std::unexpected(
                 QString("It was saved by a newer NAM-X (preset format %1; this version "
                         "reads up to %2). Update NAM-X to load it.")
-                    .arg(static_cast<int>(version))
+                    .arg(QString::number(version, 'g', 15))
                     .arg(VERSION));
         }
     }
