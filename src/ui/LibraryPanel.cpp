@@ -498,10 +498,12 @@ void LibraryPanel::set_section(int new_section, bool focus_list) {
     QSettings().setValue("library/section", new_section);
 
     syncing = true;
-    if (view->selectionModel()) {
-        disconnect(view->selectionModel(), nullptr, this, nullptr);
+    QItemSelectionModel* previous = view->selectionModel();
+    if (previous) {
+        disconnect(previous, nullptr, this, nullptr);
     }
     view->setModel(proxies[new_section]);
+    delete previous; // setModel creates a new one and never frees the old (Qt docs)
     show_mode_and_sort();
     connect(view->selectionModel(), &QItemSelectionModel::currentChanged, this,
             &LibraryPanel::on_current_changed);
@@ -580,7 +582,9 @@ void LibraryPanel::toggle_favorite(const QString& path) {
     } else {
         favorites.insert(path);
     }
-    QSettings().setValue("library/favorites", QStringList(favorites.begin(), favorites.end()));
+    QStringList sorted(favorites.begin(), favorites.end());
+    sorted.sort(); // a QSet iterates in hash order: the file would change on every toggle
+    QSettings().setValue("library/favorites", sorted);
     syncing = true;
     model->set_favorites(favorites);
     syncing = false;
