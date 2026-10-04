@@ -1234,7 +1234,7 @@ void MainWindow::setup_ui() {
 
     // IR toggle
     {
-        QWidget* col = make_effect_row("Cabinet", sw_ir_enable, {});
+        QWidget* col = make_effect_row("Cabinet", sw_ir_enable, {make_ir_level_knob(0)});
         sw_ir_enable->setChecked(true);
         make_hero_controls(col, LibraryEntry::Kind::IR, lbl_ir_status, lbl_ir_meta);
 
@@ -1266,7 +1266,7 @@ void MainWindow::setup_ui() {
         //     });
         // high_cut->set_log_taper(true);
         // high_cut->set_value_formatter(hz_label(-(HIGH_CUT_MAX - 1.0)));
-        // add_detail_row(col, {make_ir_level_knob(0), make_ir_pan_knob(0), make_ir_phase_switch(0),
+        // add_detail_row(col, {make_ir_pan_knob(0), make_ir_phase_switch(0),
         //                      blend, low_cut, high_cut});
         //
         // // Slot B: ‹ › through the library's IRs, Choose… (file dialog), ×.
@@ -1454,14 +1454,19 @@ QWidget* MainWindow::make_delay_pct_knob(const QString& key, const QString& labe
     return static_cast<QWidget*>(k);
 }
 
-QWidget* MainWindow::make_ir_level_knob(int slot) {
+// Slot A's is the Cabinet row's Level (IRs differ in loudness on guitar even
+// energy-normalized); slot B's belongs to the disabled dual cab.
+KnobWidget* MainWindow::make_ir_level_knob(int slot) {
+    using namespace NAMConstants;
     KnobWidget* k = late_knob("ir", slot ? "levelB" : "levelA",
-                              new KnobWidget(slot ? "Level B" : "Level A", -24.0, 6.0, 0.0, "dB"),
+                              new KnobWidget(slot ? "Level B" : "Level", IR_LEVEL_MIN, IR_LEVEL_MAX,
+                                             IR_LEVEL_DEFAULT, "dB"),
                               [this, slot](double v) {
                                   engine->get_ir().set_level(slot, static_cast<float>(v));
                               });
     k->set_scroll_step(0.5);
-    return static_cast<QWidget*>(k);
+    k->setToolTip("Level of the cabinet — for IRs that sit too quiet or loud");
+    return k;
 }
 
 // Pan readout: "Center", "40 L", "25 R".

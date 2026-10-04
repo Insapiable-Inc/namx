@@ -30,6 +30,7 @@ void IRProcessor::reset() {
         hp[c].clear();
         lp[c].clear();
     }
+    have_last_gains = false;
 }
 
 // RBJ Butterworth high-pass / low-pass (Q = 0.707).
@@ -78,6 +79,7 @@ bool IRProcessor::process_chunk(float* l, float* r, size_t n, bool input_is_ster
     slot_a.process_block(al.data(), ar.data(), n, input_is_stereo, on && has_a);
     slot_b.process_block(bl.data(), br.data(), n, input_is_stereo, on && has_b);
     if (!on || (!has_a && !has_b)) {
+        have_last_gains = false;
         return input_is_stereo;
     }
 
@@ -103,6 +105,11 @@ bool IRProcessor::process_chunk(float* l, float* r, size_t n, bool input_is_ster
         }
     }
     const bool stereo = input_is_stereo || panned;
+    if (!have_last_gains) {
+        std::copy(g_l, g_l + 2, last_g_l);
+        std::copy(g_r, g_r + 2, last_g_r);
+        have_last_gains = true;
+    }
 
     const float lo = low_cut_hz.load(), hi = high_cut_hz.load();
     if (lo != designed_low || hi != designed_high) {
@@ -110,10 +117,19 @@ bool IRProcessor::process_chunk(float* l, float* r, size_t n, bool input_is_ster
     }
     const bool do_lo = lo > 20.5f, do_hi = hi < 19999.0f;
 
+    // Linear ramp across the chunk from the last gains (exactly them when nothing moved).
+    float d_l[2], d_r[2];
+    for (int s = 0; s < 2; ++s) {
+        d_l[s] = g_l[s] - last_g_l[s];
+        d_r[s] = g_r[s] - last_g_r[s];
+    }
     for (size_t i = 0; i < n; ++i) {
-        float sample_l = g_l[0] * al[i] + g_l[1] * bl[i];
+        const float t = static_cast<float>(i + 1) / static_cast<float>(n);
+        const float gl0 = last_g_l[0] + d_l[0] * t, gl1 = last_g_l[1] + d_l[1] * t;
+        const float gr0 = last_g_r[0] + d_r[0] * t, gr1 = last_g_r[1] + d_r[1] * t;
+        float sample_l = gl0 * al[i] + gl1 * bl[i];
         float sample_r =
-            g_r[0] * (input_is_stereo ? ar[i] : al[i]) + g_r[1] * (input_is_stereo ? br[i] : bl[i]);
+            gr0 * (input_is_stereo ? ar[i] : al[i]) + gr1 * (input_is_stereo ? br[i] : bl[i]);
         if (!stereo) {
             sample_r = sample_l;
         }
@@ -132,6 +148,8 @@ bool IRProcessor::process_chunk(float* l, float* r, size_t n, bool input_is_ster
         l[i] = sample_l;
         r[i] = stereo ? sample_r : sample_l;
     }
+    std::copy(g_l, g_l + 2, last_g_l);
+    std::copy(g_r, g_r + 2, last_g_r);
     return stereo;
 }
 

@@ -169,6 +169,11 @@ constexpr double NAM_OUTPUT_MIN = -20.0;
 constexpr double NAM_OUTPUT_MAX = 20.0;
 constexpr double NAM_OUTPUT_DEFAULT = 0.0;
 
+// Cabinet Level (slot A; preset key ir/levelA)
+constexpr double IR_LEVEL_MIN = -20.0;
+constexpr double IR_LEVEL_MAX = 20.0;
+constexpr double IR_LEVEL_DEFAULT = 0.0;
+
 // Drive (Phase 17)
 constexpr double DRIVE_MIN = 0.0;
 constexpr double DRIVE_MAX = 100.0;

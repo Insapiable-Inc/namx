@@ -119,6 +119,10 @@ private:
     vector<float> al, ar, bl, br; // per-slot scratch (CHUNK)
     Biquad hp[2], lp[2];
     float designed_low = -1.0f, designed_high = -1.0f;
+    // Audio thread only: the last chunk's per-slot gains, ramped from so a Level, Pan or
+    // Blend change doesn't step (unset after a reset or a bypass: the gains apply at once).
+    float last_g_l[2]{}, last_g_r[2]{};
+    bool have_last_gains = false;
 };
 
 } // namespace namx

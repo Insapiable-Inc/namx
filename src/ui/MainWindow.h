@@ -165,7 +165,7 @@ private:
                                double def, EQProcessor::Band b, double off_at);
     QWidget* make_delay_pct_knob(const QString& key, const QString& label, double lo, double hi,
                                  double def, std::function<void(double)> f, const QString& tip);
-    QWidget* make_ir_level_knob(int slot);
+    KnobWidget* make_ir_level_knob(int slot);
     QWidget* make_ir_pan_knob(int slot);
     QWidget* make_ir_phase_switch(int slot);
     QToolButton* make_ir_b_arrow(const QString& glyph, int step);
