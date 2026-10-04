@@ -71,13 +71,17 @@ Write-Host "==> Qt: $QtDir"
 # ---------------------------------------------------------------------------
 # Submodules
 # ---------------------------------------------------------------------------
-Write-Host "==> Initialising git submodules (external/: NeuralAmpModelerCore with Eigen, AudioDSPTools; signalsmith-linear, signalsmith-stretch, chowdsp_wdf)..."
-Push-Location $RepoRoot
-try {
-    & git submodule update --init --recursive
-    if ($LASTEXITCODE -ne 0) { throw "git submodule failed" }
-} finally {
-    Pop-Location
+if (Test-Path (Join-Path $RepoRoot '.git')) {
+    Write-Host "==> Initialising git submodules (external/: NeuralAmpModelerCore with Eigen, AudioDSPTools; signalsmith-linear, signalsmith-stretch, chowdsp_wdf)..."
+    Push-Location $RepoRoot
+    try {
+        & git submodule update --init --recursive
+        if ($LASTEXITCODE -ne 0) { throw "git submodule failed" }
+    } finally {
+        Pop-Location
+    }
+} else {
+    Write-Host "==> Not a git checkout (release tarball): using the vendored external/ sources"
 }
 
 # ---------------------------------------------------------------------------
@@ -125,7 +129,7 @@ if (-not $NoDeploy -and (Test-Path $ExePath)) {
     $WinDeployQt = Join-Path $QtDir 'bin\windeployqt.exe'
     if (Test-Path $WinDeployQt) {
         Write-Host "==> Running windeployqt..."
-        & $WinDeployQt $ExePath --no-translations --no-system-d3d-compiler --no-opengl-sw
+        & $WinDeployQt $ExePath --compiler-runtime --no-translations --no-system-d3d-compiler --no-opengl-sw
         if ($LASTEXITCODE -ne 0) {
             Write-Warning "windeployqt failed; you may need to copy Qt6*.dll manually."
         }
