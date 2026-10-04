@@ -44,7 +44,7 @@ by ear) — updating it is its own step.
 
 ## Release plan workflow
 
-`ROADMAP.md` is the release plan: phases 0–19 with checkboxes, executed **in order, one phase at a time** (the exact order and the v1.0 tag point — after Phase 8 (packaging), which runs after Phase 12 — are in its "North star" section, which also records the product decisions: Petrucci X feature baseline, flat/no skeuomorphism, native Qt standalone, no DAW plugin, Linux first). Check items off as they land.
+`ROADMAP.md` is the release plan: phases 0–19 with checkboxes, executed **in order, one phase at a time** (the exact order and the tag point — **v0.0.0**, the first release (user, 2026-10-04), after cleanup (28), bug fixes (26), benchmarking (27) and packaging (8) — are in its "North star" section, which also records the product decisions: Petrucci X feature baseline, flat/no skeuomorphism, native Qt standalone, no DAW plugin, Linux first). Check items off as they land.
 
 ## Build
 

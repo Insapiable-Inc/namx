@@ -2,7 +2,7 @@
 # AUR package for NAM-X. Builds from the tagged source tree (submodules
 # vendored through the release tarball produced by .github/workflows/release.yml).
 pkgname=namx
-pkgver=1.0.0
+pkgver=0.0.0
 pkgrel=1
 pkgdesc="Standalone Neural Amp Modeler player: models, IRs, effects chain, library"
 arch=('x86_64')

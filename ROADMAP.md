@@ -1,7 +1,7 @@
 # NAM-X — Public Release Plan
 
-Goal: take the app from "works on my machine" to a public v1.0 anyone can install on
-Linux or Windows. Phases are ordered for execution — work top to bottom, one phase at a
+Goal: take the app from "works on my machine" to a public release anyone can install on
+Linux or Windows — first **v0.0.0** (2026-10-04), then on to 1.0. Phases are ordered for execution — work top to bottom, one phase at a
 time. Detailed bug analysis lives in `gui/BUGS.md` (BUG-01…08); this file is the
 tracking checklist.
 
@@ -41,7 +41,16 @@ Decisions:
   upstream NAM core keeps its MIT notice (MIT code may be included in GPL code). This
   also clears the way for the GPLv3 ASIO SDK on Windows. **GPL-3.0-or-later**; applied
   the same day: `gui/LICENSE`, PKGBUILD, AppStream, Windows zip, README.
-- **Execution order** (revised 2026-10-02 — **shipping is last**: everything else, hardening,
+- **Execution order, revised 2026-10-04 (user): ship v0.0.0 soon.** "I want something
+  out already." The first release is **v0.0.0** (the repo is new and has no tags; the
+  v0.6.0 below only existed to sort after the old fork's upstream `v0.5.x` tags) and
+  leaves out the rest of Phase 22 (BBD chorus/flanger, Uni-Vibe, wah/tape/compressor —
+  the Phase 90 phaser made it in) as well as 19 and 24. Remaining before the tag, in
+  order: **28 (cleanup & docs) → 26 (bug fixes: the small P2s, P3s, the second full
+  code review) → 27 (benchmarking: loopback latency) → 8 (packaging) → tag v0.0.0.**
+  After it: the rest of 22, 21 (Windows audio), 24, 19 → 1.0. Manual checks (1, 11–17,
+  23) whenever the user is at the guitar.
+- ~~**Execution order** (revised 2026-10-02 — **shipping is last**: everything else, hardening,
   naming, docs and packaging included, comes before the release tag). **The first release
   is v0.6.0, not 1.0** (after the existing v0.5.x tags), and it leaves out **themes (19)
   and multiple effect instances (24)** — those come after it, on the way to 1.0.
@@ -56,7 +65,8 @@ Decisions:
   docs — after naming, so screenshots and docs carry the final name) → 8 (packaging —
   built in 2026-09; re-checked after the rename) → **tag v0.6.0**.
   After the release: 24 (multiple effect instances), 19 (themes & community), 21 if it
-  waited, … → 1.0. Manual checks (12–17, 23) happen whenever the user is at the guitar.
+  waited, … → 1.0. Manual checks (12–17, 23) happen whenever the user is at the guitar.~~
+  Superseded 2026-10-04 (above).
 
 ---
 
@@ -366,7 +376,8 @@ routing survives); Documents folder `NAM-X/` (an existing `NAM Player/` keeps be
 used until `NAM-X/` exists); repo **`nam-x`**. The one-time migration now copies the
 newest legacy store ("NAM Player", else "NAM Linux") into an empty `namx` one.
 
-- [ ] **Repo rename → `nam-x` on GitHub** (canonical home; currently
+- [x] ~~**Repo rename → `nam-x` on GitHub**~~ Superseded by the clean repo below
+      (`Insapiable-Inc/namx`, 2026-10-04). Was: (canonical home; currently
       `silvercobraa/NeuralAmpModelerGUI`; GitHub auto-redirects the old URL). Optionally
       rename the Forgejo mirror (`nam-linux-gui`) to match. **User action** (no `gh` on
       this machine): GitHub → repo Settings → General → Repository name. Then
@@ -443,7 +454,7 @@ Phase-list fallout is annotated inline below: parts of Phase 14 are built,
 most Phase 18 layout/visual fixes landed or became obsolete, and Phase 5's
 pending palette revision shipped.
 
-## Phase 8 — Packaging & ship → tag **v0.6.0** at the end (the very last step; the first release is 0.x, not 1.0 — 2026-10-02)
+## Phase 8 — Packaging & ship → tag **v0.0.0** at the end (the very last step; v0.0.0 since 2026-10-04 — was v0.6.0, before that v1.0)
 
 Landed 2026-09-17 (everything but the tag). App id `cl.pichulero.NAMPlayer`; the
 desktop file is named after it (AppStream wants the launchable id to match) rather
@@ -500,7 +511,11 @@ app id in hicolor, `setWindowIcon` from the qrc, Windows exe icon + version bloc
 - [x] About dialog / `--version` flag verified: both read `PROJECT_VERSION` (1.0.0)
       through the `NAM_VERSION` define; `--help` lists the flags. On Windows the
       console flags print nothing (GUI subsystem) — About is the way there.
-- [ ] **Tag v0.6.0** — the first release (0.x, not 1.0 — 2026-10-02). (Was moved to Phase 12 on 2026-08-22; back here since 2026-09-12
+- [ ] **Tag v0.0.0** — the first release (2026-10-04; was v0.6.0). **User action**, in
+      this order: make the GitHub repo public, set the AppStream `<release>` date,
+      `git tag v0.0.0 && git push github v0.0.0` — the release workflow does the rest;
+      fill the PKGBUILD's `sha256sums` from the published tarball and push it to the
+      AUR. Was (2026-10-02): (Was moved to Phase 12 on 2026-08-22; back here since 2026-09-12
       because packaging itself now runs last.) **User action**, in this order: add
       the `TONE3000_CLIENT_ID` repository secret (Phase 12 prerequisite), make the
       GitHub repo public / rename it (Phase 7), then `git tag v1.0.0 && git push
@@ -659,23 +674,23 @@ No unauthenticated endpoint exists, so everything sits behind sign-in.
 - [x] **Automated test** (added): `-DNAM_BUILD_TESTS=ON` → `Tone3000ClientTest` runs
       the client against `tests/mock_tone3000.py` (sign-in, refresh, 429, lists,
       favorites, models, download + sidecar, images, sign-out). 40 checks, passing.
-- [ ] ~~Tag v1.0.~~ → end of Phase 8 (2026-09-12).
+- [x] ~~Tag v1.0.~~ → end of Phase 8 (2026-09-12).
 
 Manual verification (2026-09-17 — needs the real key and a human):
 
 - [x] (confirmed 2026-10-02) With the key: Continue → browser sign-in → pick a tone → back in the app on that
       tone's page. Does TONE3000 accept the unregistered `localhost` redirect URI
       (their docs say localhost is allowed in development)? If not, register it.
-- [ ] (2026-10-02: Favorites lists the user's ★ tones) Trending / Latest show real cards with images; Favorites reflects ★ toggles made
+- [x] *(moot: TONE3000 removed 2026-10-02)* (2026-10-02: Favorites lists the user's ★ tones) Trending / Latest show real cards with images; Favorites reflects ★ toggles made
       in the app and on the site; Downloads lists what was fetched.
-- [ ] (2026-10-02: an IR pack downloaded — 4 files + sidecars under TONE3000/<creator>/<tone>/,
+- [x] *(moot: TONE3000 removed 2026-10-02)* (2026-10-02: an IR pack downloaded — 4 files + sidecars under TONE3000/<creator>/<tone>/,
       all decode; the rest below still to check) Download a model: file + sidecar land in the TONE3000 folder, the local tab shows
       it with "TONE3000 · @creator", Load puts it in the rig, the Amplifier row shows
       the T3K mark and clicking it opens the tone.
-- [ ] Save a preset with that model, delete the file, load the preset → download offer
+- [x] *(moot: TONE3000 removed 2026-10-02)* Save a preset with that model, delete the file, load the preset → download offer
       → model back and loaded.
-- [ ] Pull the network: lists say offline, the local library works; reconnect and ↻.
-- [ ] (2026-10-02: sign out / in works; the > 1 h refresh path not checked) Sign out, sign in again; wait > 1 h and use a list (refresh path).
+- [x] *(moot: TONE3000 removed 2026-10-02)* Pull the network: lists say offline, the local library works; reconnect and ↻.
+- [x] *(moot: TONE3000 removed 2026-10-02)* (2026-10-02: sign out / in works; the > 1 h refresh path not checked) Sign out, sign in again; wait > 1 h and use a list (refresh path).
 
 ## Phase 13 — Presets as the live unit ✅ (completed 2026-10-01, code; manual verification below)
 
@@ -875,7 +890,7 @@ acoustic models. UI: cards gained ▾ detail rows for advanced knobs (`addDetail
       sounds identical.
 - [x] Delay: Cross-feed 100 → 0, R Time 75 %, Saturation, Modulation, Shimmer.
 - [x] Reverb Shimmer stays stable at 100 % with long Decay.
-- [ ] ~~Cabinet: two IRs, Blend, Ø B (thin when out of phase), pans → stereo.~~ Not
+- [x] ~~Cabinet: two IRs, Blend, Ø B (thin when out of phase), pans → stereo.~~ Not
       reachable: the dual-cab controls are hidden since 2026-10-01 (only Level is back).
 - [x] Transpose −1/−2 (drop tuning feel) and ±12; Tuner before it reads the real string.
 - [x] Limiter catches peaks with Output +20 dB; no pumping at normal levels.
@@ -910,7 +925,7 @@ acoustic models. UI: cards gained ▾ detail rows for advanced knobs (`addDetail
 - [~] Windows: **WASAPI exclusive mode** → moved to Phase 21 (2026-10-01): no Windows
       machine to test on; all untestable Windows audio work waits together.
 
-## Phase 19 — Themes & community (after the v0.6.0 release)
+## Phase 19 — Themes & community (after the first release)
 
 - [ ] **Theme files** (palette + per-effect accents as JSON in the config dir),
       built-in Dark / Light / High-contrast stage; user themes shareable; `Theme` is
@@ -1017,8 +1032,8 @@ for the backend work (Phase 21), and a second full review follows the big change
 **Deferred:**
 05 (JACK buffer-size race), 16, 17 → Phase 21 with the backend work.
 
-- [ ] **Second full code review** after Phases 21 and 24 (new backends, effect
-      instances), before any major release.
+- [ ] **Second full code review** before the v0.0.0 tag (2026-10-04; was "after Phases
+      21 and 24" — both now come after the release; review again after them).
 
 **P2 — fold into the phase they touch, or fix here when small:**
 - [ ] Small and standalone: 09 (A/B can't restore an unloaded model/IR), ~~10–11~~ (done with 01), ~~12, 13~~ (moot: TONE3000 removed), 14 (closing waits for
@@ -1071,15 +1086,15 @@ machine, in `gui/BENCHMARKS.md`.
 - [ ] Optional: CPU and features vs Archetype: Petrucci X (the feature baseline), in a
       DAW at the same buffer — if a license is at hand.
 
-## Phase 22 — DSP quality: state-of-the-art effects (added 2026-10-01; next, after the Phase 27 benchmarks)
+## Phase 22 — DSP quality: state-of-the-art effects (added 2026-10-01; the open items wait until after v0.0.0 — 2026-10-04)
 
 **Order for the rest (user, 2026-10-03):** Shimmer + Crystals (Signalsmith) → built-in
 Drive (WDF Tube Screamer) → analog modulation (BBD, Uni-Vibe) → Wah last (it already
 sounds good). No Trails.
 
-Research in `gui/DSP_RESEARCH.md` (options per effect, real-time flags, licenses,
+Research in `DSP_RESEARCH.md` (options per effect, real-time flags, licenses,
 sources). Each step keeps the golden test green for effects it doesn't touch, re-records
-it for the one it replaces, and is measured with `NAMPlayerBench`.
+it for the one it replaces, and is measured with `namx-bench`.
 
 - [x] **Discrete selector widget** (user request 2026-10-01; done 2026-10-03 as a *look*,
       not a new widget — "simple and effective"): every snapped KnobWidget with ≤ 32
@@ -1096,7 +1111,8 @@ it for the one it replaces, and is measured with `NAMPlayerBench`.
       stepped controls — Reverb Type, every Sync note value, Transpose's Discrete
       semitones — are plain knobs that only snap, so nothing tells you they click
       between positions (e.g. tick marks per position, the positions' labels around it).
-- [ ] **Accurate fast tanh** (from the 2026-10-02 benchmarks): the core's fast tanh
+- [ ] **Accurate fast tanh** — *parked: the official plugin uses the same fast tanh.*
+      (From the 2026-10-02 benchmarks:) the core's fast tanh
       keeps the amp 46–65 dB off the exact reference (same as the official plugin);
       exact tanh is −118…−139 dB but costs 1.7–2.5× amp CPU. A vectorized tanh accurate
       to ~1e-7 (Eigen-style rational / SIMD) could give both — measure accuracy and CPU
@@ -1184,7 +1200,7 @@ the Volume pedal — get the controls a real expression setup has. MIDI multi-as
       reversed volume, a crossfade volume ↔ wah on one pedal.
       (2026-10-04: Reverse with an expression pedal works; the rest not tried yet.)
 
-## Phase 24 — Multiple effect instances (added 2026-10-02; big; after the v0.6.0 release)
+## Phase 24 — Multiple effect instances (added 2026-10-02; big; after the first release)
 
 Any effect can appear more than once (two delays, a drive before and after the amp,
 two amps blended later…), and effects can be added and removed instead of all 16
@@ -1265,18 +1281,18 @@ removal, not decided) (it reverses the north-star decision "Library + TONE3000 s
 on the `experiment/tone3000` branch.
 
 **Path A — compliance (the four gaps):**
-- [ ] **Entry point in the signal block:** "the TONE3000 entry point is associated
+- [x] *(moot: Path B chosen)* **Entry point in the signal block:** "the TONE3000 entry point is associated
       with adding a tone to a signal block" — add a TONE3000 entry on the Amplifier and
       Cabinet rows (next to ‹ ›) that opens the TONE3000 tab (the splash when signed
       out). Today it is only the dock tab and Library → Browse TONE3000….
-- [ ] **Loaded tone image in the signal block:** show the tone's image beside the T3K
+- [x] *(moot: Path B chosen)* **Loaded tone image in the signal block:** show the tone's image beside the T3K
       mark on the Amplifier/Cabinet rows; cache it next to the download (sidecar) so it
       shows offline. Pack title, gear type, format and creator where space allows.
-- [ ] **"Discover more" in partial lists:** a last card in Trending / Latest / … that
+- [x] *(moot: Path B chosen)* **"Discover more" in partial lists:** a last card in Trending / Latest / … that
       invites to the full catalog (opens the select flow).
-- [ ] **Tab names:** "Mine" → **Created**, "Downloads" → **Downloaded** (required tabs:
+- [x] *(moot: Path B chosen)* **Tab names:** "Mine" → **Created**, "Downloads" → **Downloaded** (required tabs:
       Favorites, Created, Downloaded).
-- [ ] Not code (user): register the app (the Phase 12 key prerequisite) and, for
+- [x] *(moot: Path B chosen)* Not code (user): register the app (the Phase 12 key prerequisite) and, for
       production, ask support@tone3000.com about the 100 requests/min default limit.
       The free tier is non-commercial — fine while the app is free; selling it needs
       their commercial agreement and sign-off before release.
@@ -1315,9 +1331,12 @@ carries the final name.
       manual (getting started, routing audio, the rack, presets & slots, library, MIDI
       incl. multi-assign / Reverse / ranges, tuner & metronome, settings, shortcuts,
       troubleshooting); linked from Help.
-- [ ] **Changelog** since v0.5.4.
-- [ ] Repo tidy: `AUDIT.md` / `ISSUES.md` (archive or keep private), stale notes,
-      `CMakeLists.txt` project version → 0.6.0, CLAUDE.md / ROADMAP current.
+- [ ] **Release notes** for v0.0.0 (the first release — no changelog to write; was
+      "since v0.5.4").
+- [ ] Repo tidy: `AUDIT.md` (archive or keep private; `ISSUES.md` stays local and
+      untracked — user, 2026-10-04), stale notes, CLAUDE.md / ROADMAP current.
+      (Done 2026-10-04: version → 0.0.0 in CMake, the Windows .rc, AppStream, PKGBUILD;
+      stale ROADMAP items closed.)
 
 ## Phase 21 — Windows audio: WASAPI exclusive + ASIO (added 2026-10-01; before the release only if a Windows machine is available)
 
