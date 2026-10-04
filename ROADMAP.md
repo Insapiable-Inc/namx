@@ -240,10 +240,12 @@ Requires BUG-06 fixed (Phase 1).
 
 ### Phase 4 — manual verification pending
 
-- [ ] Drag a card (e.g. Delay before the Amp): the strip rearranges live while
+- [x] Drag a card (e.g. Delay before the Amp): the strip rearranges live while
       dragging, dropping keeps exactly what was shown, Esc/dropping outside cancels,
       and the *sound* changes accordingly. No crash/glitch while dragging during
       playback (at most a brief tail cut from the moved effect resetting).
+      (User, 2026-10-04: "works perfect"; MIDI-learned controls follow their effect
+      when it moves.)
 - [ ] Grips: every effect row (incl. Tuner and Cabinet) shows `≡` and drags only
       from the grip (2026-08-23: the grip replaced the title band; clicking
       knobs/toggles/body never reorders); the Input/Output columns don't drag.
@@ -251,8 +253,10 @@ Requires BUG-06 fixed (Phase 1).
       stereo on) — pitch readout still tracks (fed the L/R average) and Mute
       silences both channels.
 - [ ] Digit shortcuts now map to the new left-to-right order; Q/W/E stereo keys too.
+      (Digits confirmed 2026-10-04 — they follow positions; Q/W/E not yet.)
 - [ ] Order survives relaunch, and a preset saved with a custom order restores it.
       Loading a v1 preset leaves the order untouched.
+      (Relaunch confirmed 2026-10-04, MIDI mappings too; the preset parts not yet.)
 - [ ] **BUG-06 exercise (finally reachable):** put Gate/Comp/Wah *after* a
       stereo-mode Delay or Chorus and play — both channels behave identically
       (per-channel envelopes, no mono collapse, no channel pumping).
