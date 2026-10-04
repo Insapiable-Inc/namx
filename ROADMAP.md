@@ -597,7 +597,7 @@ Manual verification (2026-09-17 — needs a human at the keyboard):
 - [x] Library → Folders…: add `gui/presets`, OK: presets appear; remove it: gone.
       (2026-10-04: works; files already loaded from a removed folder stay loaded —
       expected, they still exist; ‹ › then start from the first/last library entry.)
-- [ ] Close the dock, quit, relaunch: still closed; `Ctrl+L` brings it back at the
+- [x] Close the dock, quit, relaunch: still closed; `Ctrl+L` brings it back at the
       same width.
 
 ## Phase 12 — TONE3000 integration — removed from main 2026-10-02 (Phase 25); the work lives on the `experiment/tone3000` branch
