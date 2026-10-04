@@ -124,16 +124,16 @@ All findings from the (now deleted) `gui/BUGS.md` review, fixed and build-verifi
 Code is fixed, Release build is clean, and a 5 s headless run passed — but these need
 ears/eyes on real hardware before the phase is truly closed:
 
-- [ ] **Preset round-trip (BUG-01).** Save a preset with non-default knobs → twist
+- [x] **Preset round-trip (BUG-01).** Save a preset with non-default knobs → twist
       everything → Load. The *audio* must follow the dials, not just the labels.
       Also: double-click reset and right-click → Reset to Default still change the sound.
-- [ ] **Toggles (BUG-05).** Every effect toggle flips exactly once per click; the
+- [x] **Toggles (BUG-05).** Every effect toggle flips exactly once per click; the
       keyboard shortcuts still toggle correctly.
 - [ ] **Buffer growth (BUG-02).** With a model loaded and audio running:
       `pw-metadata -n settings 0 clock.force-quantum 1024` (then `0` to release).
       Expect at worst a brief glitch while the model re-Resets — no crash, no
       corruption, audio continues at the new quantum.
-- [ ] **Tuner (BUG-08).** Enable tuner, play notes: note/cents update smoothly and the
+- [x] **Tuner (BUG-08).** Enable tuner, play notes: note/cents update smoothly and the
       GUI never stutters. Toggle it on/off a few times. **Quit the app** — it must exit
       promptly (worker thread joins in the destructor; a hang here means a bug).
 - [ ] **Server death + Reconnect.** Kill the audio server mid-session
@@ -142,7 +142,7 @@ ears/eyes on real hardware before the phase is truly closed:
       saved port connections come back.
 - [ ] **IR error message.** Load a stereo WAV as an IR → the error dialog states the
       reason and the convert-to-mono hint (not the old generic message).
-- [ ] **VU peak-hold.** Meters should now catch short transients (palm mutes) that the
+- [x] **VU peak-hold.** Meters should now catch short transients (palm mutes) that the
       old per-block snapshot missed. Visual sanity check.
 - [ ] **Windows build.** Only the Linux compile was verified. `WasapiBackend.cpp` gained
       an `<immintrin.h>` include and FTZ/DAZ in `audioThreadMain` — needs an MSVC
