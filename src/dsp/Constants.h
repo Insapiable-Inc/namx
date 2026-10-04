@@ -160,6 +160,11 @@ constexpr double WAH_MIX_MIN = 0.0;
 constexpr double WAH_MIX_MAX = 100.0;
 constexpr double WAH_MIX_DEFAULT = 100.0;
 
+// Amplifier output gain (a trim on top of the loudness normalization)
+constexpr double NAM_GAIN_MIN = -20.0;
+constexpr double NAM_GAIN_MAX = 20.0;
+constexpr double NAM_GAIN_DEFAULT = 0.0;
+
 // Drive (Phase 17)
 constexpr double DRIVE_MIN = 0.0;
 constexpr double DRIVE_MAX = 100.0;

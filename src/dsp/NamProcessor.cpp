@@ -203,10 +203,13 @@ void NamProcessor::on_sample_rate_changed(double sr) {
     std::copy(scratch.data(), scratch.data() + n, buf);
 }
 
-// Loudness normalization. A newly bound pair takes its gain at once (the load fade-in
-// hides the step); toggling normalization glides over ~20 ms.
+// Loudness normalization × the user's gain. A newly bound pair takes its gain at once
+// (the load fade-in hides the step); toggling normalization or turning Gain glides over
+// ~20 ms.
 void NamProcessor::apply_output_gain(const ModelPair* p, float* l, float* r, size_t n) {
-    const float target = normalize.load(std::memory_order_relaxed) ? p->loudness_gain : 1.0f;
+    const float trim = std::pow(10.0f, gain_db.load(std::memory_order_relaxed) / 20.0f);
+    const float target =
+        (normalize.load(std::memory_order_relaxed) ? p->loudness_gain : 1.0f) * trim;
     if (p != gain_pair) {
         gain_pair = p;
         output_gain = target;

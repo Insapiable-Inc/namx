@@ -849,7 +849,12 @@ void MainWindow::setup_ui() {
 
     // Amp (NAM)
     {
-        QWidget* col = make_effect_row("Amplifier", sw_nam_enable, {});
+        using namespace NAMConstants;
+        knob_nam_gain = new KnobWidget("Gain", NAM_GAIN_MIN, NAM_GAIN_MAX, NAM_GAIN_DEFAULT, "dB");
+        knob_nam_gain->set_scroll_step(0.5);
+        knob_nam_gain->setToolTip("Output level after the model, on top of the loudness "
+                                  "normalization — for models that sit too quiet or loud");
+        QWidget* col = make_effect_row("Amplifier", sw_nam_enable, {knob_nam_gain});
         sw_nam_enable->setChecked(true);
         make_hero_controls(col, LibraryEntry::Kind::MODEL, lbl_nam_status, lbl_nam_meta);
 
@@ -1583,10 +1588,13 @@ void MainWindow::make_hero_controls(QWidget* card, LibraryEntry::Kind kind, QLab
     meta_out = new QLabel;
     meta_out->setObjectName("fileMeta");
 
-    // ‹ › in the Sync column; the file name starts at the knob column.
+    // ‹ › in the Sync column; the file name follows the row's knobs (if any).
     put_in_sync_column(card, prev);
     put_in_sync_column(card, next);
     int i = lay->indexOf(card->findChild<QWidget*>("syncSlot")) + 1;
+    while (i < lay->count() && qobject_cast<KnobWidget*>(lay->itemAt(i)->widget())) {
+        ++i;
+    }
     lay->insertWidget(i++, name_out, 0, Qt::AlignVCenter);
     lay->insertWidget(i++, meta_out, 1, Qt::AlignVCenter);
 }
@@ -2720,6 +2728,9 @@ void MainWindow::register_parameters() {
 
     toggle_param("", "namEnabled", sw_nam_enable, [e](bool b) {
         e->get_nam().set_enabled(b);
+    });
+    knob_param("nam", "gain", knob_nam_gain, [e](double v) {
+        e->get_nam().set_gain_db(static_cast<float>(v));
     });
 
     toggle_param("eq", "enabled", sw_eq_enable, [e](bool b) {

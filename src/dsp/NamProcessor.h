@@ -60,6 +60,10 @@ public:
     bool get_normalize() const {
         return normalize.load(std::memory_order_relaxed);
     }
+    // The user's output trim on top of the normalization (clean models can sit quiet).
+    void set_gain_db(float db) {
+        gain_db.store(db, std::memory_order_relaxed);
+    }
     // The gain normalization applies to the loaded model, in dB; empty when it's off
     // or the model doesn't state its loudness (GUI thread only).
     std::optional<double> get_normalization_db() const {
@@ -144,6 +148,7 @@ private:
     atomic<double> resample_latency_ms{0.0}; // see latency_ms()
     void publish_resampling(const ModelPair* p); // updates the two atomics above
     atomic<bool> normalize{true};
+    atomic<float> gain_db{0.0f};
     // Audio thread only: the output gain as it glides to its target, and the pair it
     // last applied to (a new pair takes its gain at once; the swap fade-in hides it).
     float output_gain{1.0f};
