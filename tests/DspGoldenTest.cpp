@@ -446,8 +446,13 @@ void DspGoldenTest::initTestCase() {
     // Each effect: once with mono input, once with stereo input.
     auto both = [this](const string& name, auto make) {
         for (const bool stereo_input : {false, true}) {
-            cases[name + (stereo_input ? "/stereo" : "/mono")] = [make, stereo_input] {
-                return render_effect(*make(), stereo_input);
+            cases[name + (stereo_input ? "/stereo" : "/mono")] = [make, stereo_input, name] {
+                auto fx = make();
+                if (!fx) {
+                    qFatal("%s: the effect could not be built (an IR failed to load?)",
+                           name.c_str());
+                }
+                return render_effect(*fx, stereo_input);
             };
         }
     };
