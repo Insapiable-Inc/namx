@@ -9,13 +9,15 @@
 #include <QTimer>
 #include <QtGlobal>
 
-#ifdef Q_OS_WIN
-#include <windows.h>
-#endif
-
 #include "Common.h"
 #include "MainWindow.h"
 #include "Theme.h"
+
+// Last: <windows.h> defines macros (ABSOLUTE, RELATIVE, …) that break any of our headers
+// included after it — MidiMapper::Mode's enumerators among them.
+#ifdef Q_OS_WIN
+#include <windows.h>
+#endif
 
 namespace namx
 {

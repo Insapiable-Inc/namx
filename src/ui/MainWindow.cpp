@@ -3204,9 +3204,9 @@ QJsonObject MainWindow::current_preset_json() const {
 // Atomic: the old file stays untouched unless the new one was written completely
 // (QSaveFile writes a temporary and renames it over the target on commit()).
 bool MainWindow::write_preset_file(const QString& path) {
-    const QByteArray data = QJsonDocument(current_preset_json()).toJson();
+    const QByteArray json = QJsonDocument(current_preset_json()).toJson();
     QSaveFile f(path);
-    if (!f.open(QIODevice::WriteOnly) || f.write(data) != data.size() || !f.commit()) {
+    if (!f.open(QIODevice::WriteOnly) || f.write(json) != json.size() || !f.commit()) {
         QMessageBox::critical(this, "Preset",
                               "Cannot write preset:\n" + path + "\n\n" + f.errorString());
         return false;
