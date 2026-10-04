@@ -246,7 +246,7 @@ Requires BUG-06 fixed (Phase 1).
       playback (at most a brief tail cut from the moved effect resetting).
       (User, 2026-10-04: "works perfect"; MIDI-learned controls follow their effect
       when it moves.)
-- [ ] Grips: every effect row (incl. Tuner and Cabinet) shows `≡` and drags only
+- [x] Grips: every effect row (incl. Tuner and Cabinet) shows `≡` and drags only
       from the grip (2026-08-23: the grip replaced the title band; clicking
       knobs/toggles/body never reorders); the Input/Output columns don't drag.
 - [ ] Tuner mid-chain: place the Tuner after a stereo effect (e.g. after Delay with
