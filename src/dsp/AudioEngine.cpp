@@ -18,13 +18,10 @@ AudioEngine::AudioEngine() {
     // to the NAM core, so it covers every model loaded later.
     nam::activations::Activation::enable_fast_tanh();
 
-    // Effects that are naturally stereo default to stereo mode on.
-    // Flanger/Phaser stereo mode is user-controlled (default off).
-    chorus.set_stereo_mode(true);
-    tremolo.set_stereo_mode(true);
+    // The reverb is always stereo; every other effect's stereo mode follows its
+    // Stereo switch, whose starting value the registry pushes (the switches: Delay on,
+    // the rest off).
     reverb.set_stereo_mode(true);
-    // Delay stereo (ping-pong) is on by default to match original behaviour.
-    delay.set_stereo_mode(true);
 
     // NAM and Tuner start enabled; all others start disabled.
     nam.set_enabled(true);

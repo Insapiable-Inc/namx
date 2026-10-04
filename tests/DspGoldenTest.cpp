@@ -266,6 +266,10 @@ static unique_ptr<PhaserProcessor> make_phaser_feedback() {
 static unique_ptr<DriveProcessor> make_drive() {
     auto fx = make_unique<DriveProcessor>();
     fx->set_drive_pct(70.0f);
+    // Recorded with these two (the constructor's defaults at the time; they now
+    // follow Constants.h, like the card).
+    fx->set_tone_pct(50.0f);
+    fx->set_level(0.0f);
     return fx;
 }
 

@@ -3,6 +3,7 @@
 #include <atomic>
 
 #include "Common.h"
+#include "Constants.h"
 #include "EffectBase.h"
 #include "TubeScreamerClipper.h"
 
@@ -50,9 +51,9 @@ protected:
 private:
     void process_channel(float* buf, size_t n, int ch);
 
-    atomic<float> drive_pct{30.0f};
-    atomic<float> tone_pct{50.0f};
-    atomic<float> level_db{0.0f};
+    atomic<float> drive_pct{static_cast<float>(NAMConstants::DRIVE_DEFAULT)};
+    atomic<float> tone_pct{static_cast<float>(NAMConstants::DRIVE_TONE_DEFAULT)};
+    atomic<float> level_db{static_cast<float>(NAMConstants::DRIVE_LEVEL_DEFAULT)};
 
     static constexpr float CIRCUIT_VOLTS = 1.0f; // digital full scale at the pedal's input
     static constexpr float MAKEUP = 0.255f; // output level at Level 0 dB

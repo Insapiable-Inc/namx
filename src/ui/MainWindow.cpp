@@ -2196,6 +2196,9 @@ void MainWindow::knob_param(const QString& group, const QString& key, KnobWidget
                             const std::function<void(double)>& apply) {
     connect(knob, &KnobWidget::value_changed, this, apply);
     connect(knob, &KnobWidget::value_changed, this, &MainWindow::schedule_session_save);
+    // The widget is the truth from the start: the engine's own default need not match
+    // (audit 2026-10-04, Fable item 04 — the Drive card and two Stereo switches didn't).
+    apply(knob->value());
     params.push_back({group, key, knob, nullptr, knob->get_default_value(), false});
     const QString card = target_label_for(knob, group, key);
     midi_mapper->add_knob("param:" + (group.isEmpty() ? key : group + "/" + key), card,
@@ -2207,6 +2210,7 @@ void MainWindow::toggle_param(const QString& group, const QString& key, ToggleSw
                               const std::function<void(bool)>& apply) {
     connect(sw, &ToggleSwitch::toggled, this, apply);
     connect(sw, &ToggleSwitch::toggled, this, &MainWindow::schedule_session_save);
+    apply(sw->isChecked()); // see knob_param
     params.push_back({group, key, nullptr, sw, 0.0, sw->isChecked()});
     const QString label = key == "stereo" ? "Stereo"
                           : key == "sync" ? "Sync"
