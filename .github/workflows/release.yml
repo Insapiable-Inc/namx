@@ -11,8 +11,10 @@ on:
     tags: ['v*']
   workflow_dispatch:
 
+# The write token only where it is used (the release job); the build jobs, the
+# unpinned Arch container among them, get a read-only one.
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   source:
@@ -29,6 +31,15 @@ jobs:
           V="${GITHUB_REF_NAME#v}"
           [ "${GITHUB_REF_TYPE}" = "tag" ] || V="$(git describe --tags --always | sed 's/^v//')"
           echo "version=$V" >> "$GITHUB_OUTPUT"
+      - name: Check that the tag matches CMake, the PKGBUILD and the metainfo
+        if: github.ref_type == 'tag'
+        run: |
+          V="${{ steps.ver.outputs.version }}"
+          CMAKE=$(sed -n 's/^project(namx VERSION \([0-9.]*\).*/\1/p' CMakeLists.txt)
+          PKG=$(sed -n 's/^pkgver=\(.*\)/\1/p' packaging/PKGBUILD)
+          META=$(grep -o '<release version="[^"]*"' packaging/cl.pichulero.namx.metainfo.xml | head -1 | sed 's/.*="\(.*\)"/\1/')
+          echo "tag $V · CMakeLists $CMAKE · PKGBUILD $PKG · metainfo $META"
+          [ "$V" = "$CMAKE" ] && [ "$V" = "$PKG" ] && [ "$V" = "$META" ]
       - name: Pack
         run: |
           V="${{ steps.ver.outputs.version }}"
@@ -36,6 +47,9 @@ jobs:
           tar --exclude-vcs --exclude='./out' --transform "s,^\.,namx-$V," \
               -czf "out/namx-$V-src.tar.gz" .
           (cd out && sha256sum "namx-$V-src.tar.gz" > "namx-$V-src.tar.gz.sha256")
+          # The PKGBUILD with the tarball's checksum, ready for the AUR.
+          SHA=$(cut -d' ' -f1 "out/namx-$V-src.tar.gz.sha256")
+          sed "s/^sha256sums=('SKIP')/sha256sums=('$SHA')/" packaging/PKGBUILD > out/PKGBUILD
       - uses: actions/upload-artifact@v4
         with:
           name: source
@@ -61,6 +75,7 @@ jobs:
           cmake -S . -B build-release -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
             -DNAM_NATIVE_OPT=OFF \
+            -DNAM_WERROR=ON \
             -DNAM_BUILD_TESTS=ON
       - name: Build
         run: cmake --build build-release --parallel
@@ -78,7 +93,7 @@ jobs:
       - name: Validate packaging files + install layout
         run: |
           desktop-file-validate packaging/cl.pichulero.namx.desktop
-          appstreamcli validate --no-net packaging/cl.pichulero.namx.metainfo.xml || true
+          appstreamcli validate --no-net packaging/cl.pichulero.namx.metainfo.xml
           xmllint --noout packaging/cl.pichulero.namx.xml
           DESTDIR="$PWD/stage" cmake --install build-release --prefix /usr
           find stage -type f | sort
@@ -99,6 +114,7 @@ jobs:
           cmake -S . -B build-release -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
             -DNAM_NATIVE_OPT=OFF \
+            -DNAM_WERROR=ON \
             -DNAM_BUILD_TESTS=ON
           cmake --build build-release --parallel
       - name: Smoke test + client test + install layout
@@ -149,10 +165,13 @@ jobs:
           $exe = "build-release\namx.exe"
           if (-not (Test-Path $exe)) { throw "Missing $exe" }
           $windeployqt = Join-Path "$env:QT_ROOT_DIR" "bin\windeployqt.exe"
-          & $windeployqt $exe --release --no-translations --no-system-d3d-compiler --no-opengl-sw
+          # --compiler-runtime: the MSVC runtime installer (vc_redist.x64.exe) ships in
+          # the zip; without it a clean Windows fails at launch with no message.
+          & $windeployqt $exe --release --compiler-runtime --no-translations --no-system-d3d-compiler --no-opengl-sw
           if ($LASTEXITCODE -ne 0) { throw "windeployqt failed" }
           New-Item -ItemType Directory -Force dist\namx | Out-Null
           Copy-Item build-release\namx.exe, build-release\*.dll dist\namx\
+          Copy-Item build-release\vc_redist*.exe dist\namx\ -ErrorAction SilentlyContinue
           foreach ($d in 'platforms','styles','imageformats','iconengines','tls','networkinformation') {
             if (Test-Path "build-release\$d") { Copy-Item -Recurse "build-release\$d" "dist\namx\$d" }
           }
@@ -173,6 +192,8 @@ jobs:
     needs: [source, linux, arch, windows]
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/download-artifact@v4
         with:

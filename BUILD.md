@@ -188,7 +188,10 @@ From a "Developer PowerShell for VS 2022" prompt:
 ```
 
 Binary lands at `build-release\Release\namx.exe`. `windeployqt`
-runs automatically at the end of the build to copy Qt DLLs next to the .exe.
+runs automatically at the end of the build to copy Qt DLLs next to the .exe, plus
+`vc_redist.x64.exe` (the Visual C++ runtime). A machine without that runtime
+fails to start `namx.exe` silently ("VCRUNTIME140_1.dll was not found" at best): run
+the redistributable once. The release zip carries it too.
 
 > If you see *"Could not find a package configuration file provided by Qt6"*,
 > pass `-QtDir 'C:\path\to\Qt\6.x.x\msvc2019_64'`. The script forwards it to

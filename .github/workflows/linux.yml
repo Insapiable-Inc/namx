@@ -6,6 +6,9 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   build-linux:
     name: Build (Ubuntu 24.04)
@@ -40,6 +43,7 @@ jobs:
                 -G Ninja \
                 -DCMAKE_BUILD_TYPE=Release \
                 -DNAM_NATIVE_OPT=OFF \
+                -DNAM_WERROR=ON \
                 -DNAM_BUILD_TESTS=ON \
                 -DNAM_BUILD_BENCH=ON
 
@@ -72,7 +76,7 @@ jobs:
       - name: Packaging files + install layout
         run: |
           desktop-file-validate packaging/cl.pichulero.namx.desktop
-          appstreamcli validate --no-net packaging/cl.pichulero.namx.metainfo.xml || true
+          appstreamcli validate --no-net packaging/cl.pichulero.namx.metainfo.xml
           xmllint --noout packaging/cl.pichulero.namx.xml
           DESTDIR="$PWD/stage" cmake --install build-release --prefix /usr
           test -f stage/usr/bin/namx
