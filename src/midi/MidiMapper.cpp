@@ -146,6 +146,9 @@ QList<MidiMapping> MidiMapper::default_mappings() {
 void MidiMapper::set_mappings(const QList<MidiMapping>& m) {
     mappings = m;
     last_value.clear();
+    if (pending_learn_row >= mappings.size()) {
+        pending_learn_row = -1; // the row being learned is gone (Defaults, a shorter file)
+    }
     save();
     emit mappings_changed();
 }
@@ -278,6 +281,10 @@ void MidiMapper::handle(const MidiMessage& m) {
                            m.type == MidiMessage::NOTE_ON ||
                            (m.type == MidiMessage::CONTROL_CHANGE && m.value > 0);
     if (learnable && (!learn_target.isEmpty() || pending_learn_row >= 0)) {
+        if (learn_target.isEmpty() && pending_learn_row >= mappings.size()) {
+            pending_learn_row = -1; // neither a row nor a target: nothing to bind
+            return;
+        }
         MidiMapping mp;
         if (pending_learn_row >= 0 && pending_learn_row < mappings.size()) {
             mp = mappings[pending_learn_row];
