@@ -73,6 +73,9 @@ private:
     QToolButton* name = nullptr;
     QToolButton* quick_slots[SLOT_COUNT]{};
     QStringList slot_paths; // SLOT_COUNT entries, "" = empty slot
+    // The slot last used (click, Ctrl+N, MIDI), lit while its preset is loaded; -1 = none.
+    // Several slots can hold the same preset — only this one lights.
+    int last_slot = -1;
     QToolButton* ab[2]{};
     QToolButton* ab_copy = nullptr;
     int ab_active = 0;

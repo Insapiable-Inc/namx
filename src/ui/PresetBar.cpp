@@ -167,7 +167,9 @@ void PresetBar::recall_slot(int i) {
     }
     const QString& p = slot_paths[i];
     if (!p.isEmpty() && QFile::exists(p)) {
+        last_slot = i;
         emit preset_chosen(p);
+        update_slots(); // also when the preset was already loaded (no set_preset)
     }
 }
 
@@ -267,7 +269,9 @@ void PresetBar::activate_slot(int i) {
     const QString& p = slot_paths[i];
     if (!p.isEmpty()) {
         if (QFile::exists(p)) {
+            last_slot = i;
             emit preset_chosen(p);
+            update_slots(); // also when the preset was already loaded (no set_preset)
         }
         return;
     }
@@ -276,6 +280,7 @@ void PresetBar::activate_slot(int i) {
         return;
     }
     slot_paths[i] = path;
+    last_slot = i;
     QSettings().setValue("presets/slots", slot_paths);
     update_slots();
 }
@@ -299,11 +304,22 @@ void PresetBar::show_slot_menu(int i, const QPoint& global_pos) {
         return;
     }
     slot_paths[i] = picked == store ? path : QString();
+    if (picked == store) {
+        last_slot = i;
+    }
     QSettings().setValue("presets/slots", slot_paths);
     update_slots();
 }
 
 void PresetBar::update_slots() {
+    // The lit slot: the last one used while its preset is loaded, else the first slot
+    // holding the loaded preset.
+    int lit = -1;
+    if (!path.isEmpty()) {
+        lit = last_slot >= 0 && slot_paths[last_slot] == path
+                  ? last_slot
+                  : static_cast<int>(slot_paths.indexOf(path));
+    }
     for (int i = 0; i < SLOT_COUNT; ++i) {
         const QString& p = slot_paths[i];
         QToolButton* b = quick_slots[i];
@@ -320,7 +336,7 @@ void PresetBar::update_slots() {
                 QString("Slot %1: %2 (Ctrl+%1)").arg(i + 1).arg(QFileInfo(p).completeBaseName()));
         }
         b->setProperty("filled", filled && !missing);
-        b->setProperty("active", filled && p == path);
+        b->setProperty("active", i == lit);
         repolish(b);
     }
 }

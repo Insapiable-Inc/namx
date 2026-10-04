@@ -701,13 +701,17 @@ file, `*` on unsaved changes, folders/subfolders, and a defined set of things pr
       preset's state, because presets older than them have no group for them and an
       absent group was left untouched. Fixed: absent groups now load as defaults.)
 - [ ] Empty slot click stores the preset; Ctrl+N recalls it; right-click → Clear.
-- [ ] A/B: tweak on B, switch to A and back — both states survive; A→B copies.
+      (2026-10-04: recall by click and Ctrl+N works. Every slot holding the loaded preset
+      used to light up — all 8 did after testing filled them with one preset; now only
+      the last slot used lights.)
+- [x] A/B: tweak on B, switch to A and back — both states survive; A→B copies.
 - [ ] Import a file from Downloads → copied into the presets folder and loaded;
       Export doesn't change the current name; Delete moves to the trash → Untitled.
       (2026-10-04: Import and Export confirmed; Delete not yet.)
-- [ ] ~~Tuner state survives loading any preset.~~ Reversed 2026-10-04 (user): the
+- [x] ~~Tuner state survives loading any preset.~~ Reversed 2026-10-04 (user): the
       Tuner's On and Mute are saved in presets like every other control. Check: they
       change with the preset.
+      (Checked by the user 2026-10-04.)
 
 ## Phase 14 — Cockpit: status bar, meters, tuner, efficiency ✅ (completed 2026-10-01, code; manual verification below)
 
@@ -815,11 +819,11 @@ The parameter registry (Phase 2) was built for this: every `ParamDesc` is mappab
 
 ### Phase 16 — manual verification pending
 
-- [ ] With the Scarlett's DIN MIDI or a USB controller: Learn a knob from a CC, a
+- [x] With the Scarlett's DIN MIDI or a USB controller: Learn a knob from a CC, a
       switch from a footswitch (toggle per press), a slot from a program change.
       (2026-10-04: knob from an expression pedal, switch from a footswitch, and forget —
       all work; program change not tried.)
-- [ ] Unplug/replug a USB controller: it reconnects by itself; disabling it in
+- [x] Unplug/replug a USB controller: it reconnects by itself; disabling it in
       MIDI → Devices stops its messages.
       (2026-10-04: hot-plug of the MIDI pedalboard works; the disable switch not tried.
       Several devices: all enabled ones are listened to at once — untested, one device.)
