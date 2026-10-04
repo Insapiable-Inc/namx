@@ -191,6 +191,10 @@ jobs:
     permissions:
       contents: write
     steps:
+      # Only for the release notes (docs/release-notes/<tag>.md).
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: docs/release-notes
       - uses: actions/download-artifact@v4
         with:
           path: artifacts
@@ -199,7 +203,7 @@ jobs:
       - uses: softprops/action-gh-release@v2
         with:
           name: NAM-X ${{ github.ref_name }}
-          generate_release_notes: true
+          body_path: docs/release-notes/${{ github.ref_name }}.md
           prerelease: ${{ contains(github.ref_name, '-') }}
           files: |
             artifacts/source/*

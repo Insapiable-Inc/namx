@@ -1352,10 +1352,11 @@ on the `experiment/tone3000` branch.
 The repo and its docs have to describe the app as it is. After Phase 7 so everything
 carries the final name.
 
-- [ ] **README** rewritten for the current app: what it is, the features as they are now,
-      platform status, install, screenshot, license, credits. **Draft written 2026-10-04,
-      uncommitted on purpose — the user edits it by hand before it lands.** Mission /
-      vision is its "Why NAM-X" section (points from `MARKETING.md`).
+- [x] **README** rewritten for the current app: what it is, the features as they are now,
+      platform status, install, screenshot, license, credits (2026-10-04, edited by the
+      user; every FAQ claim checked against the code). Mission / vision is its "Why it
+      exists" section. Its Installation section already describes the AppImage and
+      Flathub — Phase 8 must make that true (or trim it) before the tag.
 - [x] **Fresh screenshot** (user, 2026-10-04): `docs/screenshots/main.png`, referenced
       from the README draft and the AppStream metadata (raw GitHub URL on `main`).
       More (library, MIDI mappings, settings) only if the README wants them.
@@ -1366,8 +1367,10 @@ carries the final name.
       vcpkg mention is gone (CLAUDE.md) and the Fedora list has `gcc-c++`.
 - [x] **User manual**: stays inside BUILD.md (user, 2026-10-04 — "the document is fine,
       just make sure it's up to date"); no split.
-- [ ] **Release notes** for v0.0.0 (the first release — no changelog to write; was
-      "since v0.5.4"). After the README wording is settled, so they share its language.
+- [x] **Release notes** for v0.0.0 (2026-10-04): `docs/release-notes/v0.0.0.md`, in the
+      README's language; `release.yml` publishes `docs/release-notes/<tag>.md` as the
+      release body (replacing GitHub's generated PR list), so each tag needs its file.
+      Its Downloads list names the AppImage and Flathub — recheck in Phase 8.
 - [x] Repo tidy (2026-10-04): `AUDIT-2026-10-04*.md` stay untracked like `ISSUES.md`
       (`.git/info/exclude`; user); the audit's guideline leftovers (π, enum classes,
       std ints, named casts), the WASAPI/test naming leftovers and the widget-lifetime
