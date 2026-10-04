@@ -161,23 +161,26 @@ bool NamProcessor::load_model(const string& path) {
             }
         }
         publish_resampling(pair.get());
+        // The fade flag goes first: a block that binds the new pair before seeing
+        // the flag would play the swap unmasked, then dip (audit 2026-10-04, Fable
+        // item 11); a fade one block early is harmless.
+        fade_pending.store(true, std::memory_order_release);
         slot.publish(std::move(pair));
         model_path = path;
         model_normalization_db = normalization_db;
     }
-    fade_pending.store(true, std::memory_order_release);
     return true;
 }
 
 void NamProcessor::unload_model() {
     {
         std::lock_guard<std::mutex> lock(model_mutex);
+        fade_pending.store(true, std::memory_order_release); // before the publish, as above
         slot.publish(nullptr);
         model_path = "";
         model_normalization_db.reset();
         publish_resampling(nullptr);
     }
-    fade_pending.store(true, std::memory_order_release);
 }
 
 void NamProcessor::prepare_buffer(size_t new_max_buf) {
