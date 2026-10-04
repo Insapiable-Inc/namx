@@ -11,13 +11,18 @@ license=('GPL-3.0-or-later' 'MIT') # app GPL; bundled NAM core MIT
 depends=('qt6-base' 'jack' 'alsa-lib') # jack = jack2 or pipewire-jack; alsa-lib = MIDI input
 optdepends=('pipewire-jack: run without a JACK daemon'
             'qpwgraph: patch the JACK ports graphically')
-makedepends=('cmake' 'ninja' 'git')
-provides=('namplayer')
+makedepends=('cmake' 'ninja')
 source=("$pkgname-$pkgver.tar.gz::$url/releases/download/v$pkgver/namx-$pkgver-src.tar.gz")
-sha256sums=('SKIP') # filled in by the release job / maintainer at publish time
+# The release job publishes this file with the tarball's checksum filled in
+# (release.yml → PKGBUILD asset); otherwise run `updpkgsums` before pushing to the AUR.
+sha256sums=('SKIP')
 
 build() {
     cd "$srcdir/namx-$pkgver"
+    # makepkg.conf adds -D_GLIBCXX_ASSERTIONS, which makes every vector index a checked
+    # access — the convolution, delay lines and resamplers index per sample on the
+    # real-time thread, and an assertion there aborts the app mid-performance.
+    export CXXFLAGS="${CXXFLAGS//-Wp,-D_GLIBCXX_ASSERTIONS/}"
     cmake -S . -B build -G Ninja \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX=/usr \
