@@ -53,7 +53,7 @@ by ear) — updating it is its own step.
 bash build.sh          # Release (default) → build-release/namx
 bash build.sh Debug    # Debug → build-debug/namx
 
-# Windows (PowerShell; needs MSVC + Qt6 + vcpkg — see BUILD.md)
+# Windows (PowerShell; needs MSVC + Qt6 — see BUILD.md)
 ./build.ps1
 ```
 
