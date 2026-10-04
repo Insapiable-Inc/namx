@@ -14,9 +14,8 @@ class AudioEngine;
 
 // Preset schema v2 (.nampreset JSON) — the one place that maps the
 // parameter registry + engine state to and from JSON. v1 files (no
-// "version" key) load through the same path: absent groups leave their
-// effect untouched, absent keys inside a present group fall back to the
-// registered defaults.
+// "version" key) load through the same path. Any absent key — or whole group,
+// e.g. an effect newer than the file — falls back to the registered default.
 namespace PresetSerializer
 {
 

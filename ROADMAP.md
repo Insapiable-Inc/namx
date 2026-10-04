@@ -694,9 +694,12 @@ file, `*` on unsaved changes, folders/subfolders, and a defined set of things pr
 
 ### Phase 13 — manual verification pending
 
-- [ ] Twist a knob → `*` appears; twist it back → gone. Ctrl+S clears it; relaunch:
+- [x] Twist a knob → `*` appears; twist it back → gone. Ctrl+S clears it; relaunch:
       same name, same `*` state.
-- [ ] ‹ › and the name menu walk the presets; Starter shows as a submenu.
+- [x] ‹ › and the name menu walk the presets; Starter shows as a submenu.
+      (2026-10-04: found while checking — Transpose, Drive and Volume kept the previous
+      preset's state, because presets older than them have no group for them and an
+      absent group was left untouched. Fixed: absent groups now load as defaults.)
 - [ ] Empty slot click stores the preset; Ctrl+N recalls it; right-click → Clear.
 - [ ] A/B: tweak on B, switch to A and back — both states survive; A→B copies.
 - [ ] Import a file from Downloads → copied into the presets folder and loaded;

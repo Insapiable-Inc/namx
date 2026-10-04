@@ -120,20 +120,14 @@ expected<void, QString> validate(const QJsonObject& obj, const ParamRegistry& pa
 }
 
 Applied apply(const QJsonObject& obj, const ParamRegistry& params) {
-    // A group absent from the file leaves its effect untouched (v1
-    // semantics); inside a present group — and at the root — missing keys
-    // fall back to the registered defaults.
+    // A preset is the whole rig: every missing key — a whole group too, e.g. an effect
+    // added after the file was saved — falls back to the registered default (effects
+    // off). Leaving such effects untouched made them keep the previous preset's state.
     for (const auto& p : params) {
         if (!p.in_preset) {
             continue;
         }
-        QJsonObject src = obj;
-        if (!p.group.isEmpty()) {
-            if (!obj.contains(p.group)) {
-                continue;
-            }
-            src = obj[p.group].toObject();
-        }
+        const QJsonObject src = p.group.isEmpty() ? obj : obj[p.group].toObject();
         if (p.knob) {
             p.knob->set_value(src.contains(p.key) ? src[p.key].toDouble(p.knob_default)
                                                   : p.knob_default);
