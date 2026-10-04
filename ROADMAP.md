@@ -738,12 +738,12 @@ The "at the speed of a cockpit" part. Also where *efficient* stops being a sloga
 
 ### Phase 14 — manual verification pending
 
-- [ ] DSP % moves with the chain (enable a stereo effect before the amp → roughly
+- [x] DSP % moves with the chain (enable a stereo effect before the amp → roughly
       doubles); kill/restart the server → xruns count; click resets.
-- [ ] Meters: smooth at 60 fps, hold line waits 1 s then falls; minimize → the GUI
+- [x] Meters: smooth at 60 fps, hold line waits 1 s then falls; minimize → the GUI
       thread goes quiet (`top -H`).
 - [ ] GR meters move with the compressor/gate working; bypass → 0.
-- [ ] Tuner: A4 = 432 makes a 440 Hz A read about +32¢; Hz toggle shows the
+- [x] Tuner: A4 = 432 makes a 440 Hz A read about +32¢; Hz toggle shows the
       frequency; both survive relaunch and preset loads.
 - [ ] Fast tanh: A/B a high-gain model against an older build — no audible change.
 
@@ -766,7 +766,7 @@ click eighths at 2 × BPM.
 - [x] **Metronome** (`src/dsp/Metronome`): play/stop, level, pan, 40–240 BPM, any meter
       1–16 over 2/4/8/16 (presets + Custom…), per-beat accents (strong / normal / soft /
       mute, click the beat lights to cycle; compound defaults stress groups of three),
-      four sound sets (Click, Wood, Beep, Cowbell — synthesized at sample-rate change,
+      three sound sets (Click, Wood, Beep — Cowbell removed 2026-10-04, user; synthesized at sample-rate change,
       no RT allocation), subdivisions (eighths, triplets, sixteenths), beat lights;
       mixed after the output gain, outside the chain and the meters; keeps running
       across preset loads. Settings in QSettings `metronome/*`.
@@ -779,13 +779,13 @@ click eighths at 2 × BPM.
 
 ### Phase 15 — manual verification pending
 
-- [ ] Click tempo matches a reference metronome over a minute (no drift); BPM drag,
+- [x] Click tempo matches a reference metronome over a minute (no drift); BPM drag,
       wheel, typing and Tap all land; Space starts/stops (and still types a space in
       the library search field).
-- [ ] 7/8 with custom accents, 6/8 default accents, triplet subdivision, all four
+- [x] 7/8 with custom accents, 6/8 default accents, triplet subdivision, all four
       sounds; level/pan audible; count-in lights amber, silent-after keeps lights only.
-- [ ] Load presets while the metronome runs: it doesn't stop or stutter.
-- [ ] Delay Sync at 1/8. and 120 BPM ≈ 375 ms; changing the tempo moves the echoes;
+- [x] Load presets while the metronome runs: it doesn't stop or stutter.
+- [x] Delay Sync at 1/8. and 120 BPM ≈ 375 ms; changing the tempo moves the echoes;
       a preset saved with sync reloads synced; tremolo sync at 1/8 pulses in time.
 
 ## Phase 16 — MIDI ✅ (completed 2026-10-01, code; manual verification below)
@@ -817,8 +817,12 @@ The parameter registry (Phase 2) was built for this: every `ParamDesc` is mappab
 
 - [ ] With the Scarlett's DIN MIDI or a USB controller: Learn a knob from a CC, a
       switch from a footswitch (toggle per press), a slot from a program change.
+      (2026-10-04: knob from an expression pedal, switch from a footswitch, and forget —
+      all work; program change not tried.)
 - [ ] Unplug/replug a USB controller: it reconnects by itself; disabling it in
       MIDI → Devices stops its messages.
+      (2026-10-04: hot-plug of the MIDI pedalboard works; the disable switch not tried.
+      Several devices: all enabled ones are listened to at once — untested, one device.)
 - [ ] Relative encoder mode; min/max range on an expression pedal.
 - [ ] Save a `.nammidi`, Defaults, Load it back.
 - [ ] Follow MIDI Clock from a DAW or drum machine; tempo settles within a few beats.
@@ -854,18 +858,18 @@ acoustic models. UI: cards gained ▾ detail rows for advanced knobs (`addDetail
 
 - [x] Drive in front of a clean/crunch model: tighter, mid-forward; Tone/Level sane.
       (Checked on the WDF circuit Drive, 2026-10-04.)
-- [ ] Stereo switch: flanger-stereo before the amp sounds mono with it off (default!
+- [x] Stereo switch: flanger-stereo before the amp sounds mono with it off (default!
       — this changed the sound of sessions that had a stereo effect before the amp),
       wide with it on.
-- [ ] EQ: sweep each frequency; Low/High Cut "Off" at the ends; an old 3-band preset
+- [x] EQ: sweep each frequency; Low/High Cut "Off" at the ends; an old 3-band preset
       sounds identical.
-- [ ] Delay: Cross-feed 100 → 0, R Time 75 %, Saturation, Modulation, Shimmer.
-- [ ] Reverb Shimmer stays stable at 100 % with long Decay.
+- [x] Delay: Cross-feed 100 → 0, R Time 75 %, Saturation, Modulation, Shimmer.
+- [x] Reverb Shimmer stays stable at 100 % with long Decay.
 - [ ] ~~Cabinet: two IRs, Blend, Ø B (thin when out of phase), pans → stereo.~~ Not
       reachable: the dual-cab controls are hidden since 2026-10-01 (only Level is back).
-- [ ] Transpose −1/−2 (drop tuning feel) and ±12; Tuner before it reads the real string.
-- [ ] Limiter catches peaks with Output +20 dB; no pumping at normal levels.
-- [ ] Wah Pedal mode with a MIDI expression pedal on Position.
+- [x] Transpose −1/−2 (drop tuning feel) and ±12; Tuner before it reads the real string.
+- [x] Limiter catches peaks with Output +20 dB; no pumping at normal levels.
+- [x] Wah Pedal mode with a MIDI expression pedal on Position.
 
 ## Phase 18 — Settings, layout discipline, platform ✅ (completed 2026-10-01)
 

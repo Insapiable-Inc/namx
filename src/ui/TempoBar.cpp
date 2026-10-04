@@ -87,7 +87,7 @@ void BeatLeds::mousePressEvent(QMouseEvent* ev) {
     emit accents_changed(accents);
 }
 
-static const char* const SOUND_NAMES[] = {"Click", "Wood", "Beep", "Cowbell"};
+static const char* const SOUND_NAMES[] = {"Click", "Wood", "Beep"};
 static const char* const SUBDIV_NAMES[] = {"Beats", "Eighths", "Triplets", "Sixteenths"};
 static const char* const SUBDIV_SHORT[] = {"♩", "♪♪", "3", "♬"};
 struct MeterPreset
@@ -315,8 +315,9 @@ void TempoBar::update_labels() {
     const int sub = std::clamp(s.value("metronome/subdivision", 1).toInt(), 1, 4);
     subdiv_btn->setText(SUBDIV_SHORT[sub - 1]);
     subdiv_btn->setToolTip(QString("Subdivision: %1").arg(SUBDIV_NAMES[sub - 1]));
-    sound_btn->setText(SOUND_NAMES[std::clamp(s.value("metronome/sound", 0).toInt(), 0,
-                                              Metronome::SOUND_COUNT - 1)]);
+    // An unknown sound (e.g. the removed Cowbell) plays Click, as Metronome::set_sound does.
+    const int sound = s.value("metronome/sound", 0).toInt();
+    sound_btn->setText(SOUND_NAMES[sound >= 0 && sound < Metronome::SOUND_COUNT ? sound : 0]);
     const int ci = s.value("metronome/countIn", 0).toInt();
     const bool silent = s.value("metronome/silentAfter", false).toBool();
     count_in_btn->setText(ci == 0

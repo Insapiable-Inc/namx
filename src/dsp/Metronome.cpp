@@ -92,24 +92,6 @@ static vector<float> wood_knock(double sr, double freq, double len_s) {
     return s;
 }
 
-// Two detuned square waves through a soft band-limit — the TR-808 recipe.
-static vector<float> cowbell(double sr, double f1, double f2, double len_s) {
-    vector<float> s(static_cast<size_t>(len_s * sr));
-    double lp = 0.0;
-    const double k = 1.0 - std::exp(-TWO_PI * 3500.0 / sr);
-    for (size_t i = 0; i < s.size(); ++i) {
-        const double t = static_cast<double>(i) / sr;
-        const double sq = (std::sin(TWO_PI * f1 * t) >= 0 ? 1.0 : -1.0) +
-                          (std::sin(TWO_PI * f2 * t) >= 0 ? 1.0 : -1.0);
-        const double env =
-            std::min(1.0, t / 0.001) * (0.7 * std::exp(-t / 0.012) + 0.3 * std::exp(-t / 0.09));
-        lp += k * (sq * env - lp);
-        s[i] = static_cast<float>(lp);
-    }
-    normalize(s);
-    return s;
-}
-
 void Metronome::build_sounds(double sr) {
     samples[CLICK] = {sine_blip(sr, 2000.0, 0.030, 0.006, 0.0005),
                       sine_blip(sr, 1500.0, 0.030, 0.006, 0.0005),
@@ -119,8 +101,6 @@ void Metronome::build_sounds(double sr) {
     samples[BEEP] = {sine_blip(sr, 1760.0, 0.070, 0.050, 0.002),
                      sine_blip(sr, 880.0, 0.070, 0.050, 0.002),
                      sine_blip(sr, 660.0, 0.045, 0.030, 0.002)};
-    samples[COWBELL] = {cowbell(sr, 587.0, 845.0, 0.200), cowbell(sr, 540.0, 800.0, 0.200),
-                        cowbell(sr, 540.0, 800.0, 0.090)};
 }
 
 void Metronome::trigger(const vector<float>& sample, float gain) {

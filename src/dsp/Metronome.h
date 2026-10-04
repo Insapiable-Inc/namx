@@ -38,7 +38,6 @@ public:
         CLICK = 0,
         WOOD,
         BEEP,
-        COWBELL,
         SOUND_COUNT
     };
 

@@ -361,7 +361,7 @@ The second bar holds the global tempo and the metronome.
 | Beat lights | One column per beat; the current beat lights up (amber during the count-in). Click a beat to cycle its accent: strong → normal → soft → mute |
 | **4/4** | Time signature: common meters, or **Custom…** (1–16 beats over 2, 4, 8 or 16). In x/8 the click is on eighths, so 6/8 at 120 BPM clicks eighths at 240 |
 | **♩ / ♪♪ / 3 / ♬** | Subdivision: beats only, eighths, triplets, sixteenths |
-| **Click / Wood / Beep / Cowbell** | Sound set |
+| **Click / Wood / Beep** | Sound set |
 | **Count-in** | 0–2 bars counted in when you press play; **Silent after count-in** keeps only the lights running, to check your own timing |
 | **Level / Pan** | The click's own volume and position. It is mixed in after the Output knob and isn't shown on the output meter |
 
