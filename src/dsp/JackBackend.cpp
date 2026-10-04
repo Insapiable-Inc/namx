@@ -35,7 +35,7 @@ bool JackBackend::start(const string& client_name, Callback* cb) {
     }
 
     sample_rate = static_cast<double>(jack_get_sample_rate(client));
-    buffer_size = static_cast<int>(jack_get_buffer_size(client));
+    buffer_size.store(static_cast<int>(jack_get_buffer_size(client)));
 
     jack_set_process_callback(client, jack_process_callback, this);
     jack_set_buffer_size_callback(client, jack_buffer_size_callback, this);
@@ -59,7 +59,7 @@ bool JackBackend::start(const string& client_name, Callback* cb) {
     // Initial buffer-size notification so the callback resizes its work buffers
     // before any process callback fires.
     if (callback) {
-        callback->on_buffer_size_changed(buffer_size);
+        callback->on_buffer_size_changed(buffer_size.load());
     }
 
     if (jack_activate(client) != 0) {
@@ -212,9 +212,10 @@ void JackBackend::jack_shutdown_callback(void* arg) {
 }
 
 int JackBackend::on_buffer_size(jack_nframes_t nframes) {
-    buffer_size = static_cast<int>(nframes);
+    const int frames = static_cast<int>(nframes);
+    buffer_size.store(frames, std::memory_order_relaxed);
     if (callback) {
-        callback->on_buffer_size_changed(buffer_size);
+        callback->on_buffer_size_changed(frames);
     }
     return 0;
 }

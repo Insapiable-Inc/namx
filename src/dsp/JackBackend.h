@@ -29,7 +29,7 @@ public:
         return sample_rate;
     }
     int get_buffer_size() const override {
-        return buffer_size;
+        return buffer_size.load(std::memory_order_relaxed);
     }
     string status_string() const override;
 
@@ -70,7 +70,8 @@ private:
     atomic<bool> running{false};
     atomic<int> xruns{0};
     double sample_rate = 44100.0;
-    int buffer_size = 0;
+    // Written on JACK's notification thread, read by the GUI's status timer.
+    atomic<int> buffer_size{0};
 };
 
 } // namespace namx
