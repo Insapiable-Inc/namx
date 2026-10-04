@@ -203,6 +203,7 @@ private:
                     break; // -EAGAIN: drained
                 }
                 MidiMessage m;
+                m.received_us = MidiMessage::now_us();
                 switch (ev->type) {
                     case SND_SEQ_EVENT_CONTROLLER:
                         m.type = MidiMessage::CONTROL_CHANGE;

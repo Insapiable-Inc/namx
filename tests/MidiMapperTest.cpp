@@ -305,16 +305,24 @@ int run(int argc, char** argv) {
             bpm = b;
         });
         mapper.set_follow_clock(true);
-        // 125 BPM: a quarter = 480 ms, a clock tick = 20 ms.
-        QElapsedTimer t;
-        t.start();
+        // 125 BPM: a quarter = 480 ms, a clock tick = 20 ms. The ticks carry the
+        // backend's reception stamps and are handled in one burst, as they are after
+        // a busy GUI (audit 2026-10-04 item 05): the tempo comes from the stamps.
+        const qint64 t0 = MidiMessage::now_us();
         for (int i = 0; i < 24 * 3 + 1; ++i) {
-            while (t.elapsed() < i * 20) {
-                QThread::usleep(200);
-            }
+            MidiMessage tick{MidiMessage::CLOCK, 0, 0, 0};
+            tick.received_us = t0 + i * 20'000;
+            mapper.handle(tick);
+        }
+        CHECK(std::abs(bpm - 125.0) < 0.2, qPrintable(QString("clock at 125 BPM → %1").arg(bpm)));
+
+        // Unstamped ticks handled in one burst read as an impossible tempo: ignored.
+        mapper.handle({MidiMessage::STOP, 0, 0, 0});
+        bpm = 0.0;
+        for (int i = 0; i < 24 * 2 + 1; ++i) {
             mapper.handle({MidiMessage::CLOCK, 0, 0, 0});
         }
-        CHECK(std::abs(bpm - 125.0) < 1.5, qPrintable(QString("clock at 125 BPM → %1").arg(bpm)));
+        CHECK(bpm == 0.0, "a burst of unstamped ticks sets no tempo");
     }
 
     std::printf(gFailures ? "\n%d FAILED\n" : "\nall passed\n", gFailures);

@@ -98,9 +98,10 @@ private:
             return;
         }
         auto* self = reinterpret_cast<WinMidiInput*>(inst);
-        const MidiMessage m = MidiMessage::from_bytes(
-            static_cast<unsigned char>(p1 & 0xFF), static_cast<unsigned char>((p1 >> 8) & 0xFF),
-            static_cast<unsigned char>((p1 >> 16) & 0xFF));
+        MidiMessage m = MidiMessage::from_bytes(static_cast<unsigned char>(p1 & 0xFF),
+                                                static_cast<unsigned char>((p1 >> 8) & 0xFF),
+                                                static_cast<unsigned char>((p1 >> 16) & 0xFF));
+        m.received_us = MidiMessage::now_us();
         if (m.type != MidiMessage::NONE) {
             QMetaObject::invokeMethod(
                 self,

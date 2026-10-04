@@ -1,5 +1,7 @@
 #pragma once
 
+#include <chrono>
+
 #include <QMetaType>
 #include <QString>
 
@@ -29,6 +31,15 @@ struct MidiMessage
     int channel = 0; // 0–15 (voice messages)
     int number = 0; // CC#, note, program
     int value = 0; // CC value, velocity (NoteOn with velocity 0 arrives as NoteOff)
+    // When the backend received it (now_us() on its own thread); 0 = not stamped.
+    // The mapper handles messages later, in a batch after a busy GUI, so a clock
+    // tempo must come from these, not from handling time (audit 2026-10-04 item 05).
+    qint64 received_us = 0;
+
+    static qint64 now_us() {
+        using namespace std::chrono;
+        return duration_cast<microseconds>(steady_clock::now().time_since_epoch()).count();
+    }
 
     bool is_voice() const {
         return type == CONTROL_CHANGE || type == NOTE_ON || type == NOTE_OFF ||

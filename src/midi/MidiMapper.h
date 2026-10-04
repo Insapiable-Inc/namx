@@ -142,8 +142,8 @@ private:
     qsizetype pending_learn_row = -1;
 
     bool follow_clock = false;
-    QElapsedTimer clock;
-    qint64 beat_start_ms = -1;
+    QElapsedTimer clock; // for messages the backend didn't stamp
+    qint64 beat_start_us = -1;
     int clock_ticks = 0;
     QList<double> beat_ms; // recent beat lengths (24 ticks each)
     double last_clock_bpm = 0.0;

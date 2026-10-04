@@ -12,6 +12,7 @@
 
 #include "Common.h"
 #include "KnobWidget.h"
+#include "TempoSync.h"
 #include "ToggleSwitch.h"
 
 namespace namx
@@ -404,7 +405,7 @@ void MidiMapper::apply(MidiMapping& mp, int index, const MidiMessage& m) {
 
 void MidiMapper::handle_clock(const MidiMessage& m) {
     if (m.type != MidiMessage::CLOCK) {
-        beat_start_ms = -1; // transport change: restart the measurement
+        beat_start_us = -1; // transport change: restart the measurement
         clock_ticks = 0;
         beat_ms.clear();
         return;
@@ -412,10 +413,12 @@ void MidiMapper::handle_clock(const MidiMessage& m) {
     if (!follow_clock) {
         return;
     }
-    const qint64 now = clock.elapsed();
-    if (beat_start_ms < 0 || now - beat_start_ms > 2000) // first tick / clock resumed
+    // Reception time, not handling time: ticks queued behind a busy GUI arrive here
+    // in a burst (audit 2026-10-04 item 05).
+    const qint64 now = m.received_us > 0 ? m.received_us : clock.nsecsElapsed() / 1000;
+    if (beat_start_us < 0 || now - beat_start_us > 2'000'000) // first tick / clock resumed
     {
-        beat_start_ms = now;
+        beat_start_us = now;
         clock_ticks = 0;
         beat_ms.clear();
         return;
@@ -423,11 +426,11 @@ void MidiMapper::handle_clock(const MidiMessage& m) {
     if (++clock_ticks < 24) {
         return; // 24 ticks per quarter note
     }
-    beat_ms << static_cast<double>(now - beat_start_ms);
+    beat_ms << static_cast<double>(now - beat_start_us) / 1000.0;
     if (beat_ms.size() > 4) {
         beat_ms.removeFirst();
     }
-    beat_start_ms = now;
+    beat_start_us = now;
     clock_ticks = 0;
 
     double sum = 0.0;
@@ -435,7 +438,12 @@ void MidiMapper::handle_clock(const MidiMessage& m) {
         sum += b;
     }
     const double avg_ms = sum / static_cast<double>(beat_ms.size());
-    const double bpm = std::round(60000.0 / avg_ms * 10.0) / 10.0;
+    const double bpm = avg_ms > 0.0 ? std::round(60000.0 / avg_ms * 10.0) / 10.0 : 0.0;
+    // Unstamped ticks handled in one burst would read as thousands of BPM: a tempo
+    // the tempo bar can't show is a measurement error, not a tempo.
+    if (!std::isfinite(bpm) || bpm < TempoSync::MIN_BPM || bpm > TempoSync::MAX_BPM) {
+        return;
+    }
     if (std::abs(bpm - last_clock_bpm) >= 0.2) // ignore jitter
     {
         last_clock_bpm = bpm;
