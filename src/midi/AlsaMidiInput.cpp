@@ -1,6 +1,8 @@
 // ALSA sequencer MIDI input (Linux). Compiled instead of WinMidiInput.cpp.
 
 #include <atomic>
+#include <cerrno>
+#include <cstring>
 #include <map>
 #include <mutex>
 #include <thread>
@@ -57,6 +59,15 @@ public:
         sync_connections();
 
         wake = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
+        if (wake < 0) {
+            // Without it shutdown() could never wake the poll(): no MIDI rather than a
+            // hung exit (audit 2026-10-04, Fable item 36).
+            qCWarning(lc_audio, "[MIDI] eventfd failed (%s): MIDI input unavailable",
+                      std::strerror(errno));
+            snd_seq_close(seq);
+            seq = nullptr;
+            return false;
+        }
         running = true;
         thread = std::thread([this] {
             run();
