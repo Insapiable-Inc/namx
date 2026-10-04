@@ -53,7 +53,7 @@ public:
         return sample_rate;
     }
     int get_buffer_size() const override {
-        return buffer_size;
+        return buffer_size.load(std::memory_order_relaxed);
     }
     string status_string() const override;
 
@@ -127,7 +127,7 @@ private:
     atomic<bool> running{false};
     atomic<int> xruns{0};
     double sample_rate = 48000.0;
-    int buffer_size = 0;
+    atomic<int> buffer_size{0}; // init paths and the audio thread write, the GUI reads
     int capture_channels = 0;
     int render_channels = 0;
     SampleType capture_type = SampleType::FLOAT32;

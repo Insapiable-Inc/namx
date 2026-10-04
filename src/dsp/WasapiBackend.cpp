@@ -176,6 +176,8 @@ static void write_sample(BYTE* p, SampleType t, float v) {
     }
 }
 
+static string wide_to_utf8(LPCWSTR wstr);
+
 static string friendly_device_name(IMMDevice* dev) {
     if (!dev) {
         return {};
@@ -190,10 +192,7 @@ static string friendly_device_name(IMMDevice* dev) {
     string name;
     if (SUCCEEDED(props->GetValue(PKEY_Device_FriendlyName, &pv)) && pv.vt == VT_LPWSTR &&
         pv.pwszVal) {
-        // Narrow the wide string for the status pill; ASCII-fold non-ASCII.
-        for (const wchar_t* p = pv.pwszVal; *p; ++p) {
-            name += (*p < 128) ? static_cast<char>(*p) : '?';
-        }
+        name = wide_to_utf8(pv.pwszVal); // "Micrófono", not "Micr?fono"
     }
     PropVariantClear(&pv);
     props->Release();
@@ -740,6 +739,20 @@ bool WasapiBackend::init_exclusive() {
 }
 
 void WasapiBackend::audio_thread_main() {
+    // This thread uses the WASAPI interfaces: initialise COM on it (they are
+    // free-threaded, so it worked without — but outside the documented contract;
+    // audit 2026-10-04, Fable item 39). Balanced when the function returns.
+    const HRESULT com = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+    struct ComScope
+    {
+        bool owned;
+        ~ComScope() {
+            if (owned) {
+                CoUninitialize();
+            }
+        }
+    } com_scope{com == S_OK || com == S_FALSE};
+
     // Pro Audio thread characteristics — bumps priority, registers with the
     // scheduler so we get a slice every audio quantum.
     DWORD taskIndex = 0;
@@ -913,6 +926,7 @@ void WasapiBackend::audio_thread_main() {
                 out_l.assign(frames, 0.0f);
                 out_r.assign(frames, 0.0f);
                 resize_fifo(frames);
+                buffer_size.store(static_cast<int>(frames), std::memory_order_relaxed);
                 if (callback) {
                     callback->on_buffer_size_changed(static_cast<int>(frames));
                 }
