@@ -676,6 +676,13 @@ void MainWindow::setup_ui() {
         lay->addWidget(make_stereo_slot(nullptr), 0, Qt::AlignVCenter);
         lay->addWidget(make_sync_slot(), 0, Qt::AlignVCenter);
 
+        // Silent tuning by default; off lets the signal through while the tuner reads.
+        sw_tuner_mute = new ToggleSwitch;
+        sw_tuner_mute->setCheckable(true);
+        sw_tuner_mute->setChecked(true);
+        sw_tuner_mute->setToolTip("Silence the output while the tuner is on");
+        put_in_stereo_column(col, make_caption_switch(sw_tuner_mute, "Mute"));
+
         tuner_display = new TunerDisplay;
         tuner_display->setMaximumWidth(560); // one compact instrument, not a strip
         lay->addWidget(tuner_display, 1, Qt::AlignVCenter);
@@ -2219,7 +2226,10 @@ void MainWindow::toggle_param(const QString& group, const QString& key, ToggleSw
     connect(sw, &ToggleSwitch::toggled, this, apply);
     connect(sw, &ToggleSwitch::toggled, this, &MainWindow::schedule_session_save);
     params.push_back({group, key, nullptr, sw, 0.0, sw->isChecked()});
-    const QString label = key == "stereo" ? "Stereo" : key == "sync" ? "Sync" : "On / Off";
+    const QString label = key == "stereo" ? "Stereo"
+                          : key == "sync" ? "Sync"
+                          : key == "mute" ? "Mute"
+                                          : "On / Off";
     midi_mapper->add_toggle("param:" + (group.isEmpty() ? key : group + "/" + key),
                             target_label_for(sw, group, key), label, sw);
 }
@@ -2621,6 +2631,10 @@ void MainWindow::register_parameters() {
         e->get_tuner().set_enabled(b);
     });
     params.back().in_preset = false; // a practice tool, not part of the sound
+    toggle_param("tuner", "mute", sw_tuner_mute, [e](bool b) {
+        e->get_tuner().set_mute(b);
+    });
+    params.back().in_preset = false;
 
     toggle_param("transpose", "enabled", sw_transpose_enable, [e](bool b) {
         e->get_transpose().set_enabled(b);

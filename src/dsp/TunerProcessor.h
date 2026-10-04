@@ -64,7 +64,7 @@ private:
     void worker_main();
     float detect_pitch();
 
-    atomic<bool> mute{false};
+    atomic<bool> mute{true};
 
     // Ring buffer filled by audio thread, consumed by the worker thread.
     // Protected by buf_mutex; audio uses try_lock (non-blocking).

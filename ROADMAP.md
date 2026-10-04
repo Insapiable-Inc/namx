@@ -252,6 +252,9 @@ Requires BUG-06 fixed (Phase 1).
 - [ ] Tuner mid-chain: place the Tuner after a stereo effect (e.g. after Delay with
       stereo on) — pitch readout still tracks (fed the L/R average) and Mute
       silences both channels.
+      (2026-10-04: readout confirmed — after Transpose it shows the shifted note. The
+      Mute switch had been lost in the 2026-08-23 rack redesign; back on the Tuner row,
+      on by default, session-only. Mute still to check.)
 - [ ] Digit shortcuts now map to the new left-to-right order; Q/W/E stereo keys too.
       (Digits confirmed 2026-10-04 — they follow positions; Q/W/E not yet.)
 - [ ] Order survives relaunch, and a preset saved with a custom order restores it.

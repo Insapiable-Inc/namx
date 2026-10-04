@@ -306,6 +306,7 @@ private:
     KnobWidget* knob_treble = nullptr;
 
     ToggleSwitch* sw_tuner_enable = nullptr;
+    ToggleSwitch* sw_tuner_mute = nullptr;
 
     ToggleSwitch* sw_gate_enable = nullptr;
     KnobWidget* knob_gate_thresh = nullptr;
