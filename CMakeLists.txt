@@ -368,6 +368,12 @@ endif()
 # ---------------------------------------------------------------------------
 option(NAM_BUILD_BENCH "Build the namx-bench chain benchmark" OFF)
 if(NAM_BUILD_BENCH)
+    # Part of the bench's compiler line (bench/instructions.py keys baselines by it).
+    if(NAM_NATIVE_OPT AND NOT MSVC)
+        set(NAM_BENCH_SIMD "native")
+    else()
+        set(NAM_BENCH_SIMD "avx2")
+    endif()
     set(BENCH_DSP_SOURCES ${GUI_SOURCES})
     list(FILTER BENCH_DSP_SOURCES INCLUDE REGEX "^src/dsp/.*\\.cpp$")
     list(FILTER BENCH_DSP_SOURCES EXCLUDE REGEX "(AudioEngine|JackBackend|WasapiBackend)\\.cpp$")
@@ -379,7 +385,8 @@ if(NAM_BUILD_BENCH)
     ${EXTERNAL_DIR}/chowdsp_wdf/include
         ${NAM_DEPS_PATH}/AudioDSPTools/dsp/ResamplingContainer)
     target_include_directories(namx-bench PRIVATE src/dsp)
-    target_compile_definitions(namx-bench PRIVATE NAM_SAMPLE_FLOAT NAM_ENABLE_A2_FAST)
+    target_compile_definitions(namx-bench PRIVATE NAM_SAMPLE_FLOAT NAM_ENABLE_A2_FAST
+                               NAM_BENCH_SIMD="${NAM_BENCH_SIMD}")
     target_link_libraries(namx-bench PRIVATE Qt6::Core) # Log.cpp: QLoggingCategory
     if(MSVC)
         target_compile_options(namx-bench PRIVATE ${NAM_WARNING_FLAGS} /O2 /arch:AVX2 /EHsc)

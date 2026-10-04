@@ -66,18 +66,25 @@ static void usage() {
               "effect runs per channel (the amp included: it never sums to mono).");
 }
 
-// Which compiler built this (instruction-count baselines are per compiler).
+// Which compiler built this, and for which SIMD level: instruction counts differ
+// between -march=native and the portable -mavx2 -mfma build, so the baselines are
+// keyed by both (audit 2026-10-04, Fable item 48).
 static const char* compiler_id() {
+#if defined(NAM_BENCH_SIMD)
+#define NAM_SIMD_TAG " " NAM_BENCH_SIMD
+#else
+#define NAM_SIMD_TAG ""
+#endif
 #if defined(__clang__)
-    return "clang " __clang_version__;
+    return "clang " __clang_version__ NAM_SIMD_TAG;
 #elif defined(__GNUC__)
-    return "gcc " __VERSION__;
+    return "gcc " __VERSION__ NAM_SIMD_TAG;
 #elif defined(_MSC_FULL_VER)
 #define NAM_STR2(x) #x
 #define NAM_STR(x) NAM_STR2(x)
-    return "msvc " NAM_STR(_MSC_FULL_VER);
+    return "msvc " NAM_STR(_MSC_FULL_VER) NAM_SIMD_TAG;
 #else
-    return "unknown";
+    return "unknown" NAM_SIMD_TAG;
 #endif
 }
 

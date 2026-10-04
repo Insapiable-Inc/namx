@@ -6,9 +6,12 @@ instructions one 128-frame block costs. Instruction counts are nearly determinis
 a given binary, unlike wall time on shared CI machines. Startup (model load, IR build)
 is cancelled out by running each stage for two block counts and taking the difference.
 
-Counts depend on the compiler, so the baseline file keeps one entry per compiler (the
-bench prints which one built it). Without an entry for this compiler the check only
-reports; with one, a stage more than --tolerance above its baseline fails.
+Counts depend on the compiler and on the SIMD level (-march=native vs the portable
+-mavx2 -mfma of CI builds), so the baseline file keeps one entry per "compiler +
+SIMD" line the bench prints. Without an entry for this build the check only
+reports; with one, a stage more than --tolerance above its baseline fails. Valgrind
+rejects AVX-512 code, so record and check with a portable (NAM_NATIVE_OPT=OFF) build
+where the CPU has it.
 
     bench/instructions.py --bench build-release/namx-bench \
         --baseline bench/instructions-baseline.json [--update]
@@ -70,9 +73,13 @@ def main():
     repo = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     model = os.path.join(repo, "external", "NeuralAmpModelerCore", "example_models",
                          "wavenet_a1_standard.nam")
-    head = subprocess.run([a.bench, "--only", "Gate", "--blocks", "1"], capture_output=True,
-                          text=True, env=dict(os.environ, QT_LOGGING_RULES="*=false")).stdout
-    compiler = re.search(r"^compiler: (.+)$", head, re.M).group(1).strip()
+    probe = subprocess.run([a.bench, "--only", "Gate", "--blocks", "1"], capture_output=True,
+                           text=True, env=dict(os.environ, QT_LOGGING_RULES="*=false"))
+    found = re.search(r"^compiler: (.+)$", probe.stdout, re.M)
+    if probe.returncode != 0 or not found:
+        print(f"the bench probe failed (exit {probe.returncode}):\n{probe.stderr[-2000:]}")
+        return 1
+    compiler = found.group(1).strip()
 
     with tempfile.TemporaryDirectory() as tmp:
         ir = os.path.join(tmp, "ir.wav")
