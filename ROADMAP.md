@@ -1033,24 +1033,28 @@ for the backend work (Phase 21), and a second full review follows the big change
 **Deferred:**
 05 (JACK buffer-size race), 16, 17 → Phase 21 with the backend work.
 
-- [ ] **Second full code review** before the v0.0.0 tag (2026-10-04; was "after Phases
-      21 and 24" — both now come after the release; review again after them).
+- [x] **Second full code review** before the v0.0.0 tag (2026-10-04; was "after Phases
+      21 and 24" — both now come after the release; review again after them). **Done
+      2026-10-04: the two outside audits below** (Astra + Fable), worked through the same day.
 
 **P2 — fold into the phase they touch, or fix here when small:**
-- [ ] Small and standalone: 09 (A/B can't restore an unloaded model/IR), ~~10–11~~ (done with 01), ~~12, 13~~ (moot: TONE3000 removed), 14 (closing waits for
-      the library scan), 16–17 (JACK: client not closed on shutdown; sample-rate
-      changes not propagated), ~~18~~ (done with 04),
-      19 (mono→stereo exposes stale right-channel state), 21 (model change freezes
-      the GUI — halved 2026-10-02: one parse, no double prewarm, 27 → 13.5 ms per switch;
-      a background loader only if big models still stutter), ~~22~~ (done 2026-10-02),
+- [x] Small and standalone: ~~09~~ (A/B unloads: done 2026-10-04 with audit item 06), ~~10–11~~ (done with 01), ~~12, 13~~ (moot: TONE3000 removed), ~~14~~ (scan cancellation: done 2026-10-04 with audit item 10),
+      16–17 (JACK: client not closed on shutdown; sample-rate changes not propagated → Phase 21), ~~18~~ (done with 04),
+      ~~19~~ (done 2026-10-04: `EffectBase::sync_right_channel()` — on the first stereo block
+      after mono ones each effect copies its left state to the right (clears what can't be
+      copied: the Drive's WDF; the amp masks it with its fade); `DspGoldenTest::mono_to_stereo_edge`),
+      21 (model change freezes the GUI — halved 2026-10-02: one parse, no double prewarm, 27 → 13.5 ms per switch;
+      a background loader only if big models still stutter — **ask the user with a big WaveNet**), ~~22~~ (done 2026-10-02),
       ~~23~~ (done 2026-10-02), ~~24~~ (IR truncation: faded and at 1 s since 2026-10-03; still only logged),
-      26 (limiter scans the whole look-ahead per sample), ~~27~~ (done 2026-10-02), ~~28~~ (done 2026-10-02).
+      ~~26~~ (limiter: monotonic queue, done 2026-10-04 with audit item 13), ~~27~~ (done 2026-10-02), ~~28~~ (done 2026-10-02).
 - [ ] Belong elsewhere: ~~20~~ (bypass cuts tails → "Trails": **not wanted**, user 2026-10-03),
       ~~25~~ (done 2026-10-03 with Phase 22's FFT convolution), 29–31 (WASAPI
       device loss, clock drift, capture averaging → Phase 21), 12–13 also touch
       Phase 25 (TONE3000).
-- [ ] P3: 32 (MainWindow too big), 33 (naming leftovers), 34 (loader/transition test
-      coverage — grows with the fixes above).
+- [ ] P3 → Phase 28: 32 (MainWindow too big — extract preset/snapshot application
+      first), 33 (naming leftovers, with audit item F-22); ~~34~~ (test coverage: done
+      2026-10-04 as far as decided — `NamProcessorTest`, `LibraryIndexTest`, the
+      mono→stereo edge; sanitizer/`RtSlot` tests are the "undecided" entry below).
 
 **Outside audits, 2026-10-04** (`AUDIT-2026-10-04.md`, 13 findings; `AUDIT-2026-10-04-fable.md`,
 52 findings — both untracked at the repo root). Worked through 2026-10-04, one commit per
