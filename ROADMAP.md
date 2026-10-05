@@ -515,7 +515,7 @@ app id in hicolor, `setWindowIcon` from the qrc, Windows exe icon + version bloc
       machine-wide. The portable zip stays. Unsigned at first: Windows SmartScreen will
       warn ("unknown publisher") — code signing (e.g. SignPath's free plan for open
       source) is a later step.
-- [~] **Flatpak / Flathub** (back 2026-10-02): manifest `io.github.Insapiable_Inc.namx.yml` on the
+- [ ] **Flatpak / Flathub** — **deferred after v0.0.0 (user, 2026-10-04: "AppImage only" — the Flathub PR/review was too much for now; manifest + CI kept)** (back 2026-10-02): manifest `io.github.Insapiable_Inc.namx.yml` on the
       KDE runtime (Qt 6). **2026-10-04:** `packaging/flatpak/…yml` on KDE 6.11 +
       `.github/workflows/flatpak.yml` (test bundle, checks no libjack) — written without a
       local build (user: CI only); **CI green 2026-10-04**. Left: the Flathub

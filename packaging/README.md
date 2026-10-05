@@ -11,9 +11,9 @@ Everything a distribution or a release job needs, all fed by `cmake --install`:
 | `windows/namx.iss` | Windows installer (Inno Setup), built by `release.yml` from the windeployqt folder |
 | `flatpak/io.github.Insapiable_Inc.namx.yml` | Flatpak manifest (KDE runtime); CI builds it in `.github/workflows/flatpak.yml` |
 
-An AppImage and a Flatpak (Flathub) are the Linux distribution (ROADMAP Phase 8;
-decision 2026-10-02, reversing 2026-09-17's "no bundles"; no AUR package — user,
-2026-10-04). Neither may bundle `libjack`: they use the system's or PipeWire's.
+The AppImage is the Linux release (user, 2026-10-04: AppImage only for now). The
+Flatpak manifest is kept and CI-built, ready for a Flathub submission later; no AUR
+package. Neither bundle may include `libjack`: they use the system's or PipeWire's.
 
 Icons live in `../resources/icons` (`namx.svg` source, PNG sizes 16–512,
 `namx.ico`) and install as `io.github.Insapiable_Inc.namx` in the hicolor theme.

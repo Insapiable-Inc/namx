@@ -32,20 +32,16 @@ left. I wanted the thing I actually use when I pick up the guitar:
 
 ## Installation
 
-- **Linux, Flatpak:** install it from Flathub:
-  ```bash
-  flatpak install flathub io.github.Insapiable_Inc.namx
-  flatpak run io.github.Insapiable_Inc.namx
-  ```
-  It talks to JACK through PipeWire; a classic `jackd` setup is awkward from the sandbox,
-  so use the AppImage or a source build there.
-- **Linux, AppImage:** download `NAM-X-<version>-x86_64.AppImage` from the
+- **Linux:** download `NAM-X-<version>-x86_64.AppImage` from the
   [releases page](https://github.com/Insapiable-Inc/namx/releases), then:
   ```bash
   chmod +x NAM-X-*-x86_64.AppImage
   ./NAM-X-*-x86_64.AppImage
   ```
-  It uses your system's JACK or PipeWire-JACK (`libjack` is not bundled).
+  On the first start it offers to add itself to your applications menu. It uses your
+  system's JACK or PipeWire-JACK (`libjack` is not bundled) and needs a distribution
+  from 2024 or newer (glibc 2.39: Ubuntu 24.04, Debian 13, Fedora 40 and up); on an
+  older one, build from source.
 - **Windows:** from the [releases page](https://github.com/Insapiable-Inc/namx/releases),
   either the installer (`namx-<version>-windows-x64-setup.exe`: Start menu entry, opens
   `.nam` and `.nampreset` files, installs the Visual C++ runtime if needed) or the
@@ -98,7 +94,7 @@ The release builds need an x86-64 CPU with AVX2 and FMA (Intel 2013+, AMD 2015+)
 
 **How do I install it?**
 
-See [Installation](#installation): Flatpak or AppImage on Linux, a zip on Windows, or build it from source.
+See [Installation](#installation): an AppImage on Linux, an installer or a zip on Windows, or build it from source.
 
 **Is there a VST / CLAP / LV2 plugin?**
 
@@ -179,7 +175,7 @@ Yes, that's exactly how I use it! One thing that annoyed me about a certain comm
 
 **Where are my presets and settings stored?**
 
-Presets are plain JSON files (`.nampreset`) under `Documents/NAM-X/Presets` (the eight starter presets are copied into its `Starter` folder on the first run), or wherever you save them. Settings (devices, connections, window layout, MIDI mappings, the last session) are in `~/.config/Insapiable/namx.conf` on Linux (under `~/.var/app/io.github.Insapiable_Inc.namx/config/` for the Flatpak) and under `HKEY_CURRENT_USER\Software\Insapiable\namx` on Windows; the library's metadata cache lives in `~/.local/share/Insapiable/namx/`.
+Presets are plain JSON files (`.nampreset`) under `Documents/NAM-X/Presets` (the eight starter presets are copied into its `Starter` folder on the first run), or wherever you save them. Settings (devices, connections, window layout, MIDI mappings, the last session) are in `~/.config/Insapiable/namx.conf` on Linux and under `HKEY_CURRENT_USER\Software\Insapiable\namx` on Windows; the library's metadata cache lives in `~/.local/share/Insapiable/namx/`.
 
 **Does it phone home?**
 
