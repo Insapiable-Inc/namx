@@ -60,6 +60,8 @@ QColor well(); // recessed dial well
 QColor dim_text(); // secondary labels (knob names, "Stereo", cents)
 QColor thumb_top(); // switch thumb gradient, light end
 QColor thumb_bot(); // switch thumb gradient, dark end
+QColor thumb_outline(); // switch thumb edge; invalid = none
+int switch_rim_alpha(bool checked); // the switch track's dark edge
 
 // VU meter level gradient, low → clip. The gradient is anchored to the full
 // bar (not the filled chunk), so a color means an absolute level.
@@ -69,10 +71,16 @@ QColor meter_high();
 QColor meter_clip();
 
 // Tuner display (LED ladder + seven-segment note).
-QColor led_green(); // in tune
+QColor led_green(); // in tune, the meters' safe zone
 QColor led_red(); // off pitch
 QColor display_bg(); // near-black LED panel
-QColor display_line(); // the LED panels' frame and unlit digits (dark in every theme)
+QColor display_line(); // the LED panels' frame
+// Dim text and unlit digits on an LED panel: the panel's faint tone moved away from the
+// panel by `factor` (lighter on a dark panel, darker on a light one).
+QColor display_faint(int factor);
+// An unlit LED's tint alpha: `base_alpha` on a dark panel, stronger on a light one.
+int unlit_alpha(int base_alpha);
+QColor led_amber(); // the meters' hot zone
 
 // Chilean flag ("Made in Chile" badge in the menu bar).
 QColor flag_blue();

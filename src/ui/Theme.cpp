@@ -12,6 +12,7 @@
 #include <QStyleHints>
 #include <QTextDocument> // Qt::mightBeRichText
 #include <QTimer>
+#include <QVariant>
 #include <QWidget>
 
 #include "Common.h"
@@ -92,22 +93,37 @@ struct Palette
     const char* well;
     const char* thumb_top;
     const char* thumb_bot;
+    const char* thumb_outline; // "" = none (the dark theme's thumb needs no edge)
+    int switch_rim_off; // alpha of the switch track's dark edge, off / on
+    int switch_rim_on;
+    // LED displays (tuner, level meters).
+    const char* display_bg;
+    const char* display_line; // frame
+    const char* display_faint; // base of the dim text and unlit digits
+    const char* led_green;
+    const char* led_red;
+    const char* led_amber; // the meters' hot zone
+    int led_unlit_scale; // unlit segments' tint strength (alpha multiplier)
 };
 
 static constexpr Palette DARK = {
-    "#15171c", "#1a1d24", "#1f242c", "#232830", "#2a2f38", "#353c4a", "#424b5c", "#2f3744",
-    "#1f242c", "#2a2f38", "#353c4a", "#424b5c", "#1d2027", "#25292f", "#555c6b", "#d8dee9",
-    "#aab0bc", "#9aa1ad", "#7d8590", "#6b7280", "#ff5252", "#0a0c10", "#2a2f38", "#353c4a",
-    "#2e3441", "#1c2028", "#0e1015", "#6b7280", "#181b22", "#ffffff", "#d8dee9",
+    "#15171c", "#1a1d24", "#1f242c", "#232830", "#2a2f38", "#353c4a", "#424b5c",
+    "#2f3744", "#1f242c", "#2a2f38", "#353c4a", "#424b5c", "#1d2027", "#25292f",
+    "#555c6b", "#d8dee9", "#aab0bc", "#9aa1ad", "#7d8590", "#6b7280", "#ff5252",
+    "#0a0c10", "#2a2f38", "#353c4a", "#2e3441", "#1c2028", "#0e1015", "#6b7280",
+    "#181b22", "#ffffff", "#d8dee9", "",        100,       60,        "#07080c",
+    "#2a2f38", "#2a2f38", "#42e86c", "#ff453a", "#f0c850", 1,
 };
 
 // Draft (2026-10-04, experiment/system-theme): neutral cool greys around Breeze Light;
 // to be tuned by eye like the dark one.
 static constexpr Palette LIGHT = {
-    "#eceef1", "#f6f7f9", "#ffffff", "#f1f3f5", "#e3e6ea", "#d6dae0", "#b4bac4", "#dde4ee",
-    "#cdd2d9", "#d5d9df", "#c3c8d0", "#a9b0ba", "#eef0f2", "#dde0e4", "#a3a9b2", "#1f2328",
-    "#4f5661", "#5f6670", "#7d8590", "#9aa1ab", "#c62828", "#9aa1ab", "#d3d7dd", "#c3c8d0",
-    "#fdfdfe", "#dde1e7", "#a7aeb8", "#9aa1ab", "#e2e5e9", "#ffffff", "#e3e7ec",
+    "#eceef1", "#f6f7f9", "#ffffff", "#f1f3f5", "#e3e6ea", "#d6dae0", "#b4bac4",
+    "#dde4ee", "#cdd2d9", "#d5d9df", "#c3c8d0", "#a9b0ba", "#eef0f2", "#dde0e4",
+    "#a3a9b2", "#1f2328", "#4f5661", "#5f6670", "#7d8590", "#9aa1ab", "#c62828",
+    "#9aa1ab", "#cfd4da", "#c2c8d0", "#ffffff", "#f0f2f5", "#aeb5bf", "#9aa1ab",
+    "#e6e9ed", "#ffffff", "#f3f5f8", "#b4bac4", 40,        30,        "#dfe3e8",
+    "#c3c8d0", "#8a919b", "#16a34a", "#dc2626", "#d19a00", 2,
 };
 
 static Mode current_mode = Mode::SYSTEM;
@@ -153,8 +169,24 @@ QColor thumb_top() {
 QColor thumb_bot() {
     return QColor(palette().thumb_bot);
 }
+QColor thumb_outline() {
+    return QColor(palette().thumb_outline); // invalid when "" → no outline
+}
+int switch_rim_alpha(bool checked) {
+    return checked ? palette().switch_rim_on : palette().switch_rim_off;
+}
 QColor display_line() {
-    return QColor(DARK.track);
+    return QColor(palette().display_line);
+}
+QColor display_faint(int factor) {
+    const QColor base(palette().display_faint);
+    return dark_active ? base.lighter(factor) : base.darker(factor);
+}
+int unlit_alpha(int base_alpha) {
+    return std::min(255, base_alpha * palette().led_unlit_scale);
+}
+QColor led_amber() {
+    return QColor(palette().led_amber);
 }
 
 QColor meter_low() {
@@ -171,13 +203,13 @@ QColor meter_clip() {
 }
 
 QColor led_green() {
-    return QColor("#42e86c");
+    return QColor(palette().led_green);
 }
 QColor led_red() {
-    return QColor("#ff453a");
+    return QColor(palette().led_red);
 }
 QColor display_bg() {
-    return QColor("#07080c");
+    return QColor(palette().display_bg);
 }
 QColor flag_blue() {
     return QColor("#0039a6");
@@ -189,6 +221,8 @@ QColor flag_white() {
     return QColor("#ffffff");
 }
 
+static QColor readable_accent(const QColor& accent);
+
 void tag_card(QWidget* card, const QString& fx_id) {
     if (!card) {
         return;
@@ -198,7 +232,7 @@ void tag_card(QWidget* card, const QString& fx_id) {
     // The app stylesheet disables parent→child palette propagation, so the
     // accents are pushed to the interactive descendants explicitly. Call
     // tagCard AFTER the card's knobs/toggles have been created.
-    const QColor a = accent(fx_id);
+    const QColor a = readable_accent(accent(fx_id));
     for (auto* k : card->findChildren<KnobWidget*>()) {
         k->set_accent(a);
     }
@@ -794,8 +828,9 @@ static QColor on_accent() {
                                                                                    : lightest;
 }
 
-// An effect accent used as text on a light card: the pale ones (Wah, Chorus…) are
-// darkened until they read (3:1). Dark theme: the accent verbatim, as approved.
+// An effect accent on a light card (name, knob ring and tick, switch): the pale ones
+// (Wah, Chorus…) are darkened until they read (3:1, WCAG's floor for graphics and
+// large text). Dark theme: the accent verbatim, as approved.
 static QColor readable_accent(const QColor& accent) {
     if (dark_active) {
         return accent;
@@ -963,6 +998,13 @@ void reapply(bool force) {
             if (t->get_accent() == old_accent) {
                 t->set_accent(current_accent);
             }
+        }
+    }
+    // Effect cards: their accents may change with the theme (readable_accent).
+    for (auto* w : themed_root->findChildren<QWidget*>()) {
+        const QVariant fx = w->property("fx");
+        if (fx.isValid()) {
+            tag_card(w, fx.toString());
         }
     }
     for (auto* w : themed_root->findChildren<QWidget*>()) {
