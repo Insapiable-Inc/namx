@@ -138,10 +138,17 @@ jobs:
         run: |
           V="${GITHUB_REF_NAME#v}"
           export LDAI_OUTPUT="NAM-X-$V-x86_64.AppImage"
+          # The XDG portal theme (main.cpp asks for it: the desktop's own file dialogs);
+          # the Qt plugin doesn't deploy platform themes on its own.
+          mkdir -p AppDir/usr/plugins/platformthemes
+          cp /usr/lib/x86_64-linux-gnu/qt6/plugins/platformthemes/libqxdgdesktopportal.so \
+             AppDir/usr/plugins/platformthemes/
           ./linuxdeploy-x86_64.AppImage --appdir AppDir \
             --desktop-file AppDir/usr/share/applications/io.github.Insapiable_Inc.namx.desktop \
             --icon-file AppDir/usr/share/icons/hicolor/256x256/apps/io.github.Insapiable_Inc.namx.png \
+            --deploy-deps-only AppDir/usr/plugins/platformthemes \
             --plugin qt --output appimage
+          test -f AppDir/usr/plugins/platformthemes/libqxdgdesktopportal.so
           # libjack must come from the host (JACK or PipeWire), never from the bundle.
           if find AppDir -name 'libjack*' | grep .; then echo 'libjack is bundled'; exit 1; fi
           mkdir -p dist && mv NAM-X-*.AppImage NAM-X-*.zsync dist/
