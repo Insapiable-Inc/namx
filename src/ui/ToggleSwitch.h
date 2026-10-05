@@ -20,6 +20,9 @@ public:
     explicit ToggleSwitch(QWidget* parent = nullptr);
 
     void set_accent(const QColor& c);
+    QColor get_accent() const {
+        return accent;
+    }
 
     QSize sizeHint() const override {
         return {42, 22};

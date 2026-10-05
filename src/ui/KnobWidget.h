@@ -67,6 +67,9 @@ public:
     // app stylesheet disables parent→child palette propagation, so palette
     // Highlight can NOT be used for this.
     void set_accent(const QColor& new_accent);
+    QColor get_accent() const {
+        return accent;
+    }
 
     // When true, the value label shows a rounded integer.
     void set_integer_display(bool on) {
