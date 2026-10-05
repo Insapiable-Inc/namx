@@ -498,6 +498,11 @@ app id in hicolor, `setWindowIcon` from the qrc, Windows exe icon + version bloc
       applications menu (writes the `.desktop` file, icon and MIME types — `.nam`,
       `.nampreset` — into `~/.local/share`), with a matching "remove" option; only when
       running as an AppImage (`$APPIMAGE` set) and nothing integrated it already.
+- [ ] **Try the bundles on a GTK desktop** (user, 2026-10-04 — "at some point", not
+      blocking v0.0.0): GNOME on Wayland gives no server-side decorations, so Qt draws
+      its own (the AppImage only carries the plain "bradient" decoration plugin); file
+      dialogs go through xdg-desktop-portal-gnome; the menu integration in GNOME's app
+      grid. Tested so far on KDE Plasma only. A GNOME live USB or VM is enough.
 - [~] **Windows installer** (2026-10-04: `packaging/windows/namx.iss` +
       the "Installer" step in `release.yml` → `namx-<v>-windows-x64-setup.exe`; per-user
       by default with a machine-wide choice, Start-menu entry, optional desktop icon,
