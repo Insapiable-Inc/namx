@@ -132,13 +132,13 @@ void TunerDisplay::paintEvent(QPaintEvent*) {
             if (lit) {
                 draw_lit_led(p, r, base, led_d / 2.0);
             } else {
-                draw_unlit_led(p, r, base, led_d / 2.0, 12);
+                draw_unlit_led(p, r, base, led_d / 2.0, Theme::unlit_alpha(12));
             }
         }
     }
 
     // Seven-segment note in the center
-    const QColor digit_color = !valid ? Theme::display_line().lighter(150) : in_tune ? green : red;
+    const QColor digit_color = !valid ? Theme::display_faint(150) : in_tune ? green : red;
     const qreal w = 18.0, h = 26.0, t = 3.5;
     const qreal half = (h - 3 * t) / 2.0;
     const qreal digit_x = panel.center().x() - w / 2.0 - 12.0;
@@ -165,7 +165,8 @@ void TunerDisplay::paintEvent(QPaintEvent*) {
         if (lit & s.seg) {
             draw_lit_led(p, s.r, digit_color, t / 2.0);
         } else {
-            draw_unlit_led(p, s.r, red, t / 2.0, 16); // always dark red, like the LEDs
+            draw_unlit_led(p, s.r, red, t / 2.0,
+                           Theme::unlit_alpha(16)); // always dark red, like the LEDs
         }
     }
 
@@ -212,7 +213,7 @@ void TunerDisplay::paintEvent(QPaintEvent*) {
             p.drawText(text_rect, Qt::AlignRight | Qt::AlignVCenter,
                        valid ? QString("%1 Hz").arg(hz, 0, 'f', 1) : QStringLiteral("-- Hz"));
         } else {
-            p.setPen(Theme::display_line().lighter(170));
+            p.setPen(Theme::display_faint(170));
             p.drawText(text_rect, Qt::AlignRight | Qt::AlignVCenter,
                        QString("A4 = %1").arg(reference));
         }

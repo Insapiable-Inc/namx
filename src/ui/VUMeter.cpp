@@ -63,7 +63,7 @@ void VUMeter::set_peak(float peak) {
 // above 0 dBFS.
 QColor VUMeter::zone_color(float value) {
     return value > CLIP_VALUE  ? Theme::led_red()
-           : value > HOT_VALUE ? Theme::meter_mid()
+           : value > HOT_VALUE ? Theme::led_amber()
                                : Theme::led_green();
 }
 
@@ -105,7 +105,7 @@ void VUMeter::paintEvent(QPaintEvent*) {
         if (level >= center || i == hold_led) {
             lit_leds.push_back(i);
         } else {
-            draw_unlit_led(p, led_rect(i), zone_color(center), 1.0);
+            draw_unlit_led(p, led_rect(i), zone_color(center), 1.0, Theme::unlit_alpha(14));
         }
     }
     for (const int i : lit_leds) {

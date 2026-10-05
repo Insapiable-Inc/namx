@@ -51,7 +51,7 @@ void ToggleSwitch::paintEvent(QPaintEvent*) {
     p.drawRoundedRect(r, rx, rx);
 
     // Subtle inset shadow line on the top edge.
-    QPen rim(QColor(0, 0, 0, isChecked() ? 60 : 100), 1.0);
+    QPen rim(QColor(0, 0, 0, Theme::switch_rim_alpha(isChecked())), 1.0);
     p.setPen(rim);
     p.setBrush(Qt::NoBrush);
     p.drawRoundedRect(r.adjusted(0.5, 0.5, -0.5, -0.5), rx - 0.5, rx - 0.5);
@@ -86,7 +86,11 @@ void ToggleSwitch::paintEvent(QPaintEvent*) {
     thumb_grad.setColorAt(0.0, Theme::thumb_top());
     thumb_grad.setColorAt(1.0, Theme::thumb_bot());
     p.setBrush(thumb_grad);
-    p.drawEllipse(thumb_rect);
+    const QColor outline = Theme::thumb_outline();
+    if (outline.isValid()) {
+        p.setPen(QPen(outline, 1.0)); // a white thumb on a light track needs an edge
+    }
+    p.drawEllipse(outline.isValid() ? thumb_rect.adjusted(0.5, 0.5, -0.5, -0.5) : thumb_rect);
 }
 
 void ToggleSwitch::mouseReleaseEvent(QMouseEvent* e) {
