@@ -957,6 +957,14 @@ acoustic models. UI: cards gained ▾ detail rows for advanced knobs (`addDetail
 - [ ] **Theme files** (palette + per-effect accents as JSON in the config dir),
       built-in Dark / Light / High-contrast stage; user themes shareable; `Theme` is
       already the single owner of colour, so this is mostly plumbing.
+- [ ] **Follow the OS theme by default** (user, 2026-10-04 — switching Plasma to Breeze
+      Light changed nothing; v0.0.0 ships dark-only, user decision): the default theme
+      takes the system's highlight / accent colour (generic accent, selection, focus;
+      per-effect accents stay) and switches to the Light palette when the OS is light
+      (`QStyleHints::colorScheme()` on Qt 6.5+, the palette's window lightness before).
+      The light palette is a full second set of `Theme.cpp`'s ~200 tones (knob bodies,
+      wells, tracks, LEDs, stylesheet) — a light background behind the dark controls
+      looks broken — drafted, then tuned by the user by eye.
 - [ ] **Preset sharing:** export bundles that carry TONE3000 tone references (Phase 12)
       so a shared `.nampreset` can fetch its model; a community presets/themes repo
       linked from the app ("Get more…"). Investigate whether TONE3000 will host
