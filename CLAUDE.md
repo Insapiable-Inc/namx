@@ -237,6 +237,7 @@ model->process(NAM_SAMPLE** inputs, NAM_SAMPLE** outputs, int numFrames);
 ## CMake notes
 
 - `CMAKE_AUTOMOC ON` — MOC runs automatically; add new Qt classes to `GUI_SOURCES` in `CMakeLists.txt`.
+- Shared code is compiled once (2026-10-04): `nam_core` (the NAM core, warnings off) and `namx_dsp` (every `src/dsp/*.cpp` in `GUI_SOURCES` except AudioEngine and the backends) are OBJECT libraries; the app, `NamProcessorTest`, `DspGoldenTest`, `namx-bench` and `namx-quality` link **both** (object files only reach direct linkers). Optimization/SIMD/NAM defines live on the `namx_build_options` interface target, so tests and benches run the code exactly as the app compiles it. A new `src/dsp` .cpp goes into `GUI_SOURCES` and lands in `namx_dsp` automatically.
 - Backend selection is in `CMakeLists.txt`: `WasapiBackend.cpp` on WIN32, `JackBackend.cpp` otherwise. On Windows the target is `WIN32_EXECUTABLE` (no console — `std::cerr` output is invisible there).
 - The clang language server shows false-positive errors for Qt types because it doesn't see the CMake include paths. Ignore these; the actual compiler succeeds.
 - `stdc++fs` is linked explicitly on Linux for `std::filesystem`.

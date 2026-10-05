@@ -167,10 +167,8 @@ else()
 endif()
 
 # ---------------------------------------------------------------------------
-# Target
+# Compile options
 # ---------------------------------------------------------------------------
-
-add_executable(namx ${GUI_SOURCES} ${NAM_SOURCES})
 
 # Warnings (CPP_GUIDELINES.md → Types and casts) apply to our code only: third-party
 # sources compiled into our targets are silenced, their headers included as SYSTEM.
@@ -188,57 +186,6 @@ else()
     endif()
     set(NAM_THIRD_PARTY_FLAGS -w)
 endif()
-set_source_files_properties(${NAM_SOURCES} PROPERTIES COMPILE_OPTIONS "${NAM_THIRD_PARTY_FLAGS}")
-
-# On Windows we want a GUI app (no console window). Linux ignores WIN32.
-set_target_properties(namx PROPERTIES WIN32_EXECUTABLE TRUE)
-
-target_include_directories(namx SYSTEM PRIVATE
-    ${NAM_ROOT}
-    ${NAM_DEPS_PATH}/eigen
-    ${NAM_DEPS_PATH}/nlohmann
-    ${EXTERNAL_DIR}/signalsmith-linear/include
-    ${EXTERNAL_DIR}/signalsmith-stretch/include
-    ${EXTERNAL_DIR}/chowdsp_wdf/include
-    # Header-only Lanczos resampler (NamProcessor: models at their training rate).
-    ${NAM_DEPS_PATH}/AudioDSPTools/dsp/ResamplingContainer
-)
-target_include_directories(namx PRIVATE
-    src/dsp
-    src/ui
-    src/midi
-)
-
-if(NOT WIN32)
-    target_include_directories(namx PRIVATE ${JACK_INCLUDE_DIRS} ${ALSA_INCLUDE_DIRS})
-endif()
-
-target_compile_definitions(namx PRIVATE
-    NAM_SAMPLE_FLOAT
-    NAM_ENABLE_A2_FAST
-    NAM_VERSION="${PROJECT_VERSION}"
-    # packaging/namx.rc builds its numeric FILEVERSION from these.
-    NAM_VERSION_MAJOR=${PROJECT_VERSION_MAJOR}
-    NAM_VERSION_MINOR=${PROJECT_VERSION_MINOR}
-    NAM_VERSION_PATCH=${PROJECT_VERSION_PATCH}
-)
-
-target_link_libraries(namx PRIVATE
-    Qt6::Core
-    Qt6::Widgets
-)
-
-if(WIN32)
-    # WASAPI lives in these system DLLs.
-    target_link_libraries(namx PRIVATE ole32 mmdevapi avrt winmm)
-    target_compile_definitions(namx PRIVATE NOMINMAX WIN32_LEAN_AND_MEAN)
-else()
-    target_link_libraries(namx PRIVATE ${JACK_LIBRARIES} ${ALSA_LIBRARIES})
-endif()
-
-# ---------------------------------------------------------------------------
-# Compile options
-# ---------------------------------------------------------------------------
 
 # Eigen (NAM inference + IR convolution) needs AVX2/FMA to vectorize fully;
 # baseline x86-64 limits it to SSE2. NAM_NATIVE_OPT=ON (default) uses
@@ -247,11 +194,15 @@ endif()
 # AVX2+FMA (any x86-64 CPU from ~2013 on).
 option(NAM_NATIVE_OPT "Optimize for the build machine's CPU (-march=native); OFF = portable -mavx2 -mfma" ON)
 
+# Optimization, SIMD and the NAM core's switches, shared by every target that runs
+# the DSP (the app, its libraries, the DSP tests and the benches), so the tests and
+# the benches measure the code the app ships.
+add_library(namx_build_options INTERFACE)
 if(MSVC)
     # MSVC has no -march=native equivalent; /arch:AVX2 is both the fast and
     # the portable choice, so NAM_NATIVE_OPT has no effect here.
-    target_compile_options(namx PRIVATE
-        ${NAM_WARNING_FLAGS} /permissive- /EHsc
+    target_compile_options(namx_build_options INTERFACE
+        /permissive- /EHsc
         $<$<CONFIG:Release>:/O2>
         $<$<NOT:$<CONFIG:Debug>>:/arch:AVX2>
         $<$<CONFIG:Debug>:/Od /Zi>
@@ -263,12 +214,96 @@ else()
         set(NAM_SIMD_FLAGS -mavx2 -mfma)
     endif()
     # Every non-Debug config gets the SIMD flags (RelWithDebInfo included).
-    target_compile_options(namx PRIVATE
-        ${NAM_WARNING_FLAGS}
+    target_compile_options(namx_build_options INTERFACE
         $<$<CONFIG:Release>:-O3>
         $<$<NOT:$<CONFIG:Debug>>:${NAM_SIMD_FLAGS}>
         $<$<CONFIG:Debug>:-Og -g>
     )
+endif()
+target_compile_definitions(namx_build_options INTERFACE NAM_SAMPLE_FLOAT NAM_ENABLE_A2_FAST)
+if(WIN32)
+    # <windows.h> reaches NamProcessor.cpp through the resampler's WDL headers: no
+    # min/max macros, no rarely used APIs.
+    target_compile_definitions(namx_build_options INTERFACE NOMINMAX WIN32_LEAN_AND_MEAN)
+endif()
+
+# ---------------------------------------------------------------------------
+# Libraries: compiled once, linked into the app, the tests and the benches
+# (each used to compile its own copy — about half of a full build's CPU time).
+# OBJECT libraries add their objects to whatever links them directly, so a
+# consumer of namx_dsp links nam_core too.
+# ---------------------------------------------------------------------------
+
+# The NAM core (third-party: warnings off).
+add_library(nam_core OBJECT ${NAM_SOURCES})
+target_include_directories(nam_core SYSTEM PUBLIC
+    ${NAM_ROOT}
+    ${NAM_DEPS_PATH}/eigen
+    ${NAM_DEPS_PATH}/nlohmann
+    # Header-only Lanczos resampler (NamProcessor: models at their training rate).
+    ${NAM_DEPS_PATH}/AudioDSPTools/dsp/ResamplingContainer
+)
+target_compile_options(nam_core PRIVATE ${NAM_THIRD_PARTY_FLAGS})
+target_link_libraries(nam_core PUBLIC namx_build_options)
+set_target_properties(nam_core PROPERTIES AUTOMOC OFF AUTOUIC OFF AUTORCC OFF)
+
+# Our DSP: every effect, the loaders and NamProcessor — src/dsp minus the engine and
+# the platform backends, which only the app has.
+set(DSP_SOURCES ${GUI_SOURCES})
+list(FILTER DSP_SOURCES INCLUDE REGEX "^src/dsp/.*\\.cpp$")
+list(FILTER DSP_SOURCES EXCLUDE REGEX "(AudioEngine|JackBackend|WasapiBackend)\\.cpp$")
+add_library(namx_dsp OBJECT ${DSP_SOURCES})
+target_include_directories(namx_dsp PUBLIC src/dsp)
+target_include_directories(namx_dsp SYSTEM PUBLIC
+    ${EXTERNAL_DIR}/signalsmith-linear/include
+    ${EXTERNAL_DIR}/signalsmith-stretch/include
+    ${EXTERNAL_DIR}/chowdsp_wdf/include
+)
+target_compile_options(namx_dsp PRIVATE ${NAM_WARNING_FLAGS})
+target_link_libraries(namx_dsp PUBLIC nam_core Qt6::Core) # Log.cpp: QLoggingCategory
+set_target_properties(namx_dsp PROPERTIES AUTOMOC OFF AUTOUIC OFF AUTORCC OFF)
+
+# ---------------------------------------------------------------------------
+# Target
+# ---------------------------------------------------------------------------
+
+set(APP_SOURCES ${GUI_SOURCES})
+list(REMOVE_ITEM APP_SOURCES ${DSP_SOURCES})
+add_executable(namx ${APP_SOURCES})
+
+# On Windows we want a GUI app (no console window). Linux ignores WIN32.
+set_target_properties(namx PROPERTIES WIN32_EXECUTABLE TRUE)
+
+target_include_directories(namx PRIVATE
+    src/ui
+    src/midi
+)
+
+if(NOT WIN32)
+    target_include_directories(namx PRIVATE ${JACK_INCLUDE_DIRS} ${ALSA_INCLUDE_DIRS})
+endif()
+
+target_compile_definitions(namx PRIVATE
+    NAM_VERSION="${PROJECT_VERSION}"
+    # packaging/namx.rc builds its numeric FILEVERSION from these.
+    NAM_VERSION_MAJOR=${PROJECT_VERSION_MAJOR}
+    NAM_VERSION_MINOR=${PROJECT_VERSION_MINOR}
+    NAM_VERSION_PATCH=${PROJECT_VERSION_PATCH}
+)
+target_compile_options(namx PRIVATE ${NAM_WARNING_FLAGS})
+
+target_link_libraries(namx PRIVATE
+    namx_dsp
+    nam_core
+    Qt6::Core
+    Qt6::Widgets
+)
+
+if(WIN32)
+    # WASAPI lives in these system DLLs.
+    target_link_libraries(namx PRIVATE ole32 mmdevapi avrt winmm)
+else()
+    target_link_libraries(namx PRIVATE ${JACK_LIBRARIES} ${ALSA_LIBRARIES})
 endif()
 
 # ---------------------------------------------------------------------------
@@ -326,15 +361,9 @@ if(NAM_BUILD_TESTS)
 
     # The model loader's boundaries: no block size yet, far-off and absurd model rates
     # (audit 2026-10-04 items 01/02).
-    add_executable(NamProcessorTest tests/NamProcessorTest.cpp src/dsp/NamProcessor.cpp
-                   src/dsp/Log.cpp ${NAM_SOURCES})
-    target_include_directories(NamProcessorTest SYSTEM PRIVATE
-        ${NAM_ROOT} ${NAM_DEPS_PATH}/eigen ${NAM_DEPS_PATH}/nlohmann
-        ${NAM_DEPS_PATH}/AudioDSPTools/dsp/ResamplingContainer)
-    target_include_directories(NamProcessorTest PRIVATE src/dsp)
-    target_compile_definitions(NamProcessorTest PRIVATE NAM_SAMPLE_FLOAT NAM_ENABLE_A2_FAST)
+    add_executable(NamProcessorTest tests/NamProcessorTest.cpp)
     target_compile_options(NamProcessorTest PRIVATE ${NAM_WARNING_FLAGS})
-    target_link_libraries(NamProcessorTest PRIVATE Qt6::Core)
+    target_link_libraries(NamProcessorTest PRIVATE namx_dsp nam_core Qt6::Core)
     add_test(NAME NamProcessorTest COMMAND NamProcessorTest)
 
     # The library scan's file descriptions against hand-built WAV headers (audit 2026-10-04).
@@ -348,19 +377,12 @@ if(NAM_BUILD_TESTS)
     # Recorded effect outputs (tests/DspGoldenTest.cpp, tests/dsp-golden.txt): guards DSP refactors.
     find_package(Qt6 REQUIRED COMPONENTS Test)
     find_package(Threads REQUIRED)
-    set(GOLDEN_DSP_SOURCES ${GUI_SOURCES})
-    list(FILTER GOLDEN_DSP_SOURCES INCLUDE REGEX "^src/dsp/.*\\.cpp$")
-    list(FILTER GOLDEN_DSP_SOURCES EXCLUDE REGEX "(AudioEngine|JackBackend|WasapiBackend|NamProcessor)\\.cpp$")
-    add_executable(DspGoldenTest tests/DspGoldenTest.cpp ${GOLDEN_DSP_SOURCES})
-    target_include_directories(DspGoldenTest SYSTEM PRIVATE ${NAM_DEPS_PATH}/eigen
-        ${EXTERNAL_DIR}/signalsmith-linear/include
-    ${EXTERNAL_DIR}/signalsmith-stretch/include
-    ${EXTERNAL_DIR}/chowdsp_wdf/include)
-    target_include_directories(DspGoldenTest PRIVATE src/dsp)
-    target_compile_definitions(DspGoldenTest PRIVATE NAM_SAMPLE_FLOAT
+    add_executable(DspGoldenTest tests/DspGoldenTest.cpp)
+    target_compile_definitions(DspGoldenTest PRIVATE
                                NAM_GOLDEN_FILE="${CMAKE_CURRENT_SOURCE_DIR}/tests/dsp-golden.txt")
     target_compile_options(DspGoldenTest PRIVATE ${NAM_WARNING_FLAGS})
-    target_link_libraries(DspGoldenTest PRIVATE Qt6::Core Qt6::Test Threads::Threads)
+    target_link_libraries(DspGoldenTest PRIVATE namx_dsp nam_core Qt6::Core Qt6::Test
+                          Threads::Threads)
     add_test(NAME DspGoldenTest COMMAND DspGoldenTest)
 endif()
 
@@ -376,41 +398,14 @@ if(NAM_BUILD_BENCH)
     else()
         set(NAM_BENCH_SIMD "avx2")
     endif()
-    set(BENCH_DSP_SOURCES ${GUI_SOURCES})
-    list(FILTER BENCH_DSP_SOURCES INCLUDE REGEX "^src/dsp/.*\\.cpp$")
-    list(FILTER BENCH_DSP_SOURCES EXCLUDE REGEX "(AudioEngine|JackBackend|WasapiBackend)\\.cpp$")
-    add_executable(namx-bench bench/NamxBench.cpp ${BENCH_DSP_SOURCES} ${NAM_SOURCES})
-    target_include_directories(namx-bench SYSTEM PRIVATE
-        ${NAM_ROOT} ${NAM_DEPS_PATH}/eigen ${NAM_DEPS_PATH}/nlohmann
-        ${EXTERNAL_DIR}/signalsmith-linear/include
-    ${EXTERNAL_DIR}/signalsmith-stretch/include
-    ${EXTERNAL_DIR}/chowdsp_wdf/include
-        ${NAM_DEPS_PATH}/AudioDSPTools/dsp/ResamplingContainer)
-    target_include_directories(namx-bench PRIVATE src/dsp)
-    target_compile_definitions(namx-bench PRIVATE NAM_SAMPLE_FLOAT NAM_ENABLE_A2_FAST
-                               NAM_BENCH_SIMD="${NAM_BENCH_SIMD}")
-    target_link_libraries(namx-bench PRIVATE Qt6::Core) # Log.cpp: QLoggingCategory
-    if(MSVC)
-        target_compile_options(namx-bench PRIVATE ${NAM_WARNING_FLAGS} /O2 /arch:AVX2 /EHsc)
-    else()
-        target_compile_options(namx-bench PRIVATE ${NAM_WARNING_FLAGS} -O3 ${NAM_SIMD_FLAGS})
-    endif()
+    add_executable(namx-bench bench/NamxBench.cpp)
+    target_compile_definitions(namx-bench PRIVATE NAM_BENCH_SIMD="${NAM_BENCH_SIMD}")
+    target_compile_options(namx-bench PRIVATE ${NAM_WARNING_FLAGS})
+    target_link_libraries(namx-bench PRIVATE namx_dsp nam_core Qt6::Core)
 
     # Effect quality numbers (bench/NamxQuality.cpp): aliasing, pitch error, decay,
     # EQ response, limiter overshoot — the yardstick for Phase 22.
-    add_executable(namx-quality bench/NamxQuality.cpp ${BENCH_DSP_SOURCES} ${NAM_SOURCES})
-    target_include_directories(namx-quality SYSTEM PRIVATE
-        ${NAM_ROOT} ${NAM_DEPS_PATH}/eigen ${NAM_DEPS_PATH}/nlohmann
-        ${EXTERNAL_DIR}/signalsmith-linear/include
-    ${EXTERNAL_DIR}/signalsmith-stretch/include
-    ${EXTERNAL_DIR}/chowdsp_wdf/include
-        ${NAM_DEPS_PATH}/AudioDSPTools/dsp/ResamplingContainer)
-    target_include_directories(namx-quality PRIVATE src/dsp)
-    target_compile_definitions(namx-quality PRIVATE NAM_SAMPLE_FLOAT NAM_ENABLE_A2_FAST)
-    target_link_libraries(namx-quality PRIVATE Qt6::Core)
-    if(MSVC)
-        target_compile_options(namx-quality PRIVATE ${NAM_WARNING_FLAGS} /O2 /arch:AVX2 /EHsc)
-    else()
-        target_compile_options(namx-quality PRIVATE ${NAM_WARNING_FLAGS} -O3 ${NAM_SIMD_FLAGS})
-    endif()
+    add_executable(namx-quality bench/NamxQuality.cpp)
+    target_compile_options(namx-quality PRIVATE ${NAM_WARNING_FLAGS})
+    target_link_libraries(namx-quality PRIVATE namx_dsp nam_core Qt6::Core)
 endif()
