@@ -36,6 +36,9 @@ Decisions:
   "try it on any distro", Flathub for store visibility and automatic updates. No Snap.
   Both wrap the same `cmake --install` layout; neither may bundle `libjack` (they use the
   system's or PipeWire's).
+- **AppImage only for v0.0.0** (user, 2026-10-04): Flathub's submission PR and review
+  were too much for the first release — the Flatpak manifest and its CI build stay in
+  `packaging/flatpak/` for a later submission (Phase 8 item, deferred).
 - **The app is GPL** (2026-10-01). MIT had only been inherited from upstream's root
   `LICENSE`, never chosen. `gui/` becomes GPLv3 with the user's copyright; the
   upstream NAM core keeps its MIT notice (MIT code may be included in GPL code). This
@@ -1401,7 +1404,7 @@ carries the final name.
       platform status, install, screenshot, license, credits (2026-10-04, edited by the
       user; every FAQ claim checked against the code). Mission / vision is its "Why it
       exists" section. Its Installation section already describes the AppImage and
-      Flathub — Phase 8 must make that true (or trim it) before the tag.
+      Flathub — trimmed to the AppImage on 2026-10-04 (AppImage only for v0.0.0).
 - [x] **Fresh screenshot** (user, 2026-10-04): `docs/screenshots/main.png`, referenced
       from the README draft and the AppStream metadata (raw GitHub URL on `main`).
       More (library, MIDI mappings, settings) only if the README wants them.
@@ -1415,7 +1418,7 @@ carries the final name.
 - [x] **Release notes** for v0.0.0 (2026-10-04): `docs/release-notes/v0.0.0.md`, in the
       README's language; `release.yml` publishes `docs/release-notes/<tag>.md` as the
       release body (replacing GitHub's generated PR list), so each tag needs its file.
-      Its Downloads list names the AppImage and Flathub — recheck in Phase 8.
+      Its Downloads list: AppImage, Windows installer + zip, source (Flathub dropped 2026-10-04).
 - [x] Repo tidy (2026-10-04): `AUDIT-2026-10-04*.md` stay untracked like `ISSUES.md`
       (`.git/info/exclude`; user); the audit's guideline leftovers (π, enum classes,
       std ints, named casts), the WASAPI/test naming leftovers and the widget-lifetime
