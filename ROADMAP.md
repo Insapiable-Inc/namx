@@ -957,8 +957,17 @@ acoustic models. UI: cards gained ▾ detail rows for advanced knobs (`addDetail
 - [ ] **Theme files** (palette + per-effect accents as JSON in the config dir),
       built-in Dark / Light / High-contrast stage; user themes shareable; `Theme` is
       already the single owner of colour, so this is mostly plumbing.
-- [ ] **Follow the OS theme by default** (user, 2026-10-04 — switching Plasma to Breeze
-      Light changed nothing; v0.0.0 ships dark-only, user decision): the default theme
+- [~] **Follow the OS theme by default** (user, 2026-10-04 — switching Plasma to Breeze
+      Light changed nothing; v0.0.0 ships dark-only, user decision). **Built 2026-10-04 on
+      branch `experiment/os-palette`** (local; `experiment/system-theme` is the earlier
+      table-only take): Settings → Appearance (Follow the system / Dark / Light); following
+      the system derives every chrome tone from the OS palette and accent, live; forced
+      Dark = today's look exactly, forced Light = a tuned table; effect accents kept
+      (darkened to 3:1 on light cards); Input/Output/limiter in the app accent. User: "on
+      Linux it looks perfect" (Breeze, Air, Oxygen, light and dark). Before merging: the
+      status colours (meter_* as text — yellow DSP % unreadable on light) and the ▾ arrow
+      PNG (fixed grey) need theme-aware versions; decide Windows (Qt's generic palette vs
+      our tables + light/dark + accent only). Original plan: the default theme
       takes the system's highlight / accent colour (generic accent, selection, focus;
       per-effect accents stay) and switches to the Light palette when the OS is light
       (`QStyleHints::colorScheme()` on Qt 6.5+, the palette's window lightness before).
