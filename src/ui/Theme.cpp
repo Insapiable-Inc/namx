@@ -56,10 +56,11 @@ QColor accent(const QString& fx_id) {
     return QColor("#7d8590");
 }
 
-// Chrome tones per theme (stylesheet roles + custom-painted widgets). The per-effect
+// Chrome tones (stylesheet roles + custom-painted widgets), as hex tables for the forced
+// Dark / Light themes. The per-effect
 // accents, the meters and the LED displays are the same in both: the displays are
 // dark panels on purpose, like hardware. DARK is the approved palette, verbatim.
-struct Palette
+struct PaletteHex
 {
     const char* window; // main window background
     const char* surface; // bars, menus, lists
@@ -106,7 +107,55 @@ struct Palette
     int led_unlit_scale; // unlit segments' tint strength (alpha multiplier)
 };
 
-static constexpr Palette DARK = {
+// The tones in use: one of the tables, or derived from the OS palette (Mode::SYSTEM).
+struct Colors
+{
+    QColor window; // main window background
+    QColor surface; // bars, menus, lists
+    QColor card; // effect cards
+    QColor raised; // tool buttons, tooltips
+    QColor control; // push buttons, combo boxes
+    QColor control_hover;
+    QColor handle_hover; // scroll handles, hovered
+    QColor selection; // hovered / selected menu and list items
+    QColor pressed;
+    QColor line; // separators and quiet borders
+    QColor border; // control borders
+    QColor border_hover;
+    QColor disabled_bg;
+    QColor disabled_border;
+    QColor disabled_text;
+    QColor text;
+    QColor text_dim; // secondary labels
+    QColor text_muted; // status and captions
+    QColor text_faint; // grips, captions
+    QColor text_off; // empty preset slots
+    QColor notice; // status bar problems
+    QColor shadow;
+    // Custom-painted widgets (knobs, switches, fields).
+    QColor track;
+    QColor track_hover;
+    QColor knob_body_top;
+    QColor knob_body_bot;
+    QColor bezel;
+    QColor detent;
+    QColor well;
+    QColor thumb_top;
+    QColor thumb_bot;
+    QColor thumb_outline; // invalid = none (the dark theme's thumb needs no edge)
+    int switch_rim_off; // alpha of the switch track's dark edge, off / on
+    int switch_rim_on;
+    // LED displays (tuner, level meters).
+    QColor display_bg;
+    QColor display_line; // frame
+    QColor display_faint; // base of the dim text and unlit digits
+    QColor led_green;
+    QColor led_red;
+    QColor led_amber; // the meters' hot zone
+    int led_unlit_scale; // unlit segments' tint strength (alpha multiplier)
+};
+
+static constexpr PaletteHex DARK = {
     "#15171c", "#1a1d24", "#1f242c", "#232830", "#2a2f38", "#353c4a", "#424b5c",
     "#2f3744", "#1f242c", "#2a2f38", "#353c4a", "#424b5c", "#1d2027", "#25292f",
     "#555c6b", "#d8dee9", "#aab0bc", "#9aa1ad", "#7d8590", "#6b7280", "#ff5252",
@@ -117,7 +166,7 @@ static constexpr Palette DARK = {
 
 // Draft (2026-10-04, experiment/system-theme): neutral cool greys around Breeze Light;
 // to be tuned by eye like the dark one.
-static constexpr Palette LIGHT = {
+static constexpr PaletteHex LIGHT = {
     "#eceef1", "#f6f7f9", "#ffffff", "#f1f3f5", "#e3e6ea", "#d6dae0", "#b4bac4",
     "#dde4ee", "#cdd2d9", "#d5d9df", "#c3c8d0", "#a9b0ba", "#eef0f2", "#dde0e4",
     "#a3a9b2", "#1f2328", "#4f5661", "#5f6670", "#7d8590", "#9aa1ab", "#c62828",
@@ -126,13 +175,106 @@ static constexpr Palette LIGHT = {
     "#c3c8d0", "#8a919b", "#16a34a", "#dc2626", "#d19a00", 2,
 };
 
+static Colors from_hex(const PaletteHex& t) {
+    return Colors{
+        QColor(t.window),        QColor(t.surface),
+        QColor(t.card),          QColor(t.raised),
+        QColor(t.control),       QColor(t.control_hover),
+        QColor(t.handle_hover),  QColor(t.selection),
+        QColor(t.pressed),       QColor(t.line),
+        QColor(t.border),        QColor(t.border_hover),
+        QColor(t.disabled_bg),   QColor(t.disabled_border),
+        QColor(t.disabled_text), QColor(t.text),
+        QColor(t.text_dim),      QColor(t.text_muted),
+        QColor(t.text_faint),    QColor(t.text_off),
+        QColor(t.notice),        QColor(t.shadow),
+        QColor(t.track),         QColor(t.track_hover),
+        QColor(t.knob_body_top), QColor(t.knob_body_bot),
+        QColor(t.bezel),         QColor(t.detent),
+        QColor(t.well),          QColor(t.thumb_top),
+        QColor(t.thumb_bot),     QColor(t.thumb_outline),
+        t.switch_rim_off,        t.switch_rim_on,
+        QColor(t.display_bg),    QColor(t.display_line),
+        QColor(t.display_faint), QColor(t.led_green),
+        QColor(t.led_red),       QColor(t.led_amber),
+        t.led_unlit_scale,
+    };
+}
+
+static QColor mix(const QColor& a, const QColor& b, double t) {
+    return QColor::fromRgbF(static_cast<float>(a.redF() + (b.redF() - a.redF()) * t),
+                            static_cast<float>(a.greenF() + (b.greenF() - a.greenF()) * t),
+                            static_cast<float>(a.blueF() + (b.blueF() - a.blueF()) * t));
+}
+
+// Every chrome tone from the OS palette (Mode::SYSTEM): the window, base, button, text,
+// shadow and highlight colours as they are, the in-between tones mixed between them.
+// Mixing toward the text colour darkens on a light scheme and lightens on a dark one,
+// so one recipe serves both. Ours stay: the effect accents, the LED colours and the
+// status bar's warning red.
+static Colors from_system(const QPalette& sys, bool dark) {
+    const QColor w = sys.color(QPalette::Window);
+    const QColor base = sys.color(QPalette::Base);
+    const QColor button = sys.color(QPalette::Button);
+    const QColor text = sys.color(QPalette::WindowText);
+    const QColor white(255, 255, 255);
+    const QColor black(0, 0, 0);
+    const PaletteHex& ours = dark ? DARK : LIGHT;
+    const QColor border = mix(w, text, 0.22);
+    return Colors{
+        w, // window
+        mix(w, base, 0.5), // surface
+        button, // card
+        mix(button, text, 0.04), // raised
+        mix(button, text, 0.08), // control
+        mix(button, text, 0.16), // control_hover
+        mix(w, text, 0.40), // handle_hover
+        mix(w, sys.color(QPalette::Highlight), 0.22), // selection
+        mix(button, text, 0.22), // pressed
+        mix(w, text, 0.12), // line
+        border,
+        mix(w, text, 0.36), // border_hover
+        mix(w, button, 0.5), // disabled_bg
+        mix(w, text, 0.08), // disabled_border
+        sys.color(QPalette::Disabled, QPalette::WindowText),
+        text,
+        mix(text, w, 0.22), // text_dim
+        mix(text, w, 0.32), // text_muted
+        mix(text, w, 0.45), // text_faint
+        mix(text, w, 0.58), // text_off
+        QColor(ours.notice),
+        sys.color(QPalette::Shadow),
+        mix(button, text, 0.14), // track
+        mix(button, text, 0.24), // track_hover
+        dark ? mix(button, text, 0.06) : mix(button, white, 0.7), // knob_body_top
+        dark ? mix(button, black, 0.25) : mix(button, text, 0.05), // knob_body_bot
+        dark ? mix(w, black, 0.55) : mix(w, text, 0.30), // bezel
+        mix(text, w, 0.58), // detent
+        mix(base, text, 0.03), // well
+        white, // thumb_top
+        dark ? mix(white, w, 0.12) : mix(white, text, 0.05), // thumb_bot
+        dark ? QColor() : border, // thumb_outline
+        ours.switch_rim_off,
+        ours.switch_rim_on,
+        dark ? mix(w, black, 0.65) : mix(w, text, 0.06), // display_bg
+        dark ? mix(w, text, 0.10) : border, // display_line
+        dark ? mix(w, text, 0.10) : mix(w, text, 0.45), // display_faint
+        QColor(ours.led_green),
+        QColor(ours.led_red),
+        QColor(ours.led_amber),
+        ours.led_unlit_scale,
+    };
+}
+
 static Mode current_mode = Mode::SYSTEM;
 static bool dark_active = true;
 static QColor current_accent("#3daee9"); // Breeze blue until the system says otherwise
 static QPointer<QWidget> themed_root;
 
-static const Palette& palette() {
-    return dark_active ? DARK : LIGHT;
+static Colors active = from_hex(DARK);
+
+static const Colors& palette() {
+    return active;
 }
 
 QColor generic_accent() {
@@ -819,13 +961,12 @@ static double contrast(const QColor& a, const QColor& b) {
     return (std::max(la, lb) + 0.05) / (std::min(la, lb) + 0.05);
 }
 
-// Text drawn on the accent (checked buttons, selections): whichever of the theme's
-// darkest and lightest tones reads better on it.
+// Text drawn on the accent (checked buttons, selections): the theme's window or text
+// tone, whichever reads better on it.
 static QColor on_accent() {
-    const QColor darkest(DARK.window);
-    const QColor lightest("#ffffff");
-    return contrast(current_accent, darkest) >= contrast(current_accent, lightest) ? darkest
-                                                                                   : lightest;
+    const QColor& a = active.window;
+    const QColor& b = active.text;
+    return contrast(current_accent, a) >= contrast(current_accent, b) ? a : b;
 }
 
 // An effect accent on a light card (name, knob ring and tick, switch): the pale ones
@@ -836,7 +977,7 @@ static QColor readable_accent(const QColor& accent) {
         return accent;
     }
     QColor c = accent;
-    const QColor card(LIGHT.card);
+    const QColor& card = active.card;
     for (int i = 0; i < 12 && contrast(c, card) < 3.0; ++i) {
         c = c.darker(115);
     }
@@ -844,8 +985,8 @@ static QColor readable_accent(const QColor& accent) {
 }
 
 static QString fill_roles(const char* sheet) {
-    const Palette& pal = palette();
-    const std::pair<const char*, QString> roles[] = {
+    const Colors& pal = palette();
+    const std::pair<const char*, QColor> roles[] = {
         {"window", pal.window},
         {"surface", pal.surface},
         {"card", pal.card},
@@ -867,12 +1008,12 @@ static QString fill_roles(const char* sheet) {
         {"text_faint", pal.text_faint},
         {"text_off", pal.text_off},
         {"notice", pal.notice},
-        {"accent", current_accent.name()},
-        {"on_accent", on_accent().name()},
+        {"accent", current_accent},
+        {"on_accent", on_accent()},
     };
     QString qss = QString::fromUtf8(sheet);
     for (const auto& [role, color] : roles) {
-        qss.replace(QString("@%1@").arg(QLatin1String(role)), color);
+        qss.replace(QString("@%1@").arg(QLatin1String(role)), color.name());
     }
     return qss;
 }
@@ -899,6 +1040,8 @@ static void resolve_scheme() {
             dark_active = system.color(QPalette::Window).lightness() < 128;
             break;
     }
+    active = current_mode == Mode::SYSTEM ? from_system(system, dark_active)
+                                          : from_hex(dark_active ? DARK : LIGHT);
 }
 
 // Follows the OS while Mode::SYSTEM: a scheme switch (Qt 6.5+) or a new system
@@ -938,7 +1081,7 @@ void apply(QApplication& app) {
 
 void apply_to(QWidget& root) {
     themed_root = &root;
-    const Palette& pal = palette();
+    const Colors& pal = palette();
     QPalette p;
     p.setColor(QPalette::Window, QColor(pal.window));
     p.setColor(QPalette::WindowText, QColor(pal.text));
@@ -976,9 +1119,9 @@ void apply_to(QWidget& root) {
 
 void reapply(bool force) {
     const QColor old_accent = current_accent;
-    const bool was_dark = dark_active;
+    const QString old_sheet = fill_roles(STYLE_SHEET);
     resolve_scheme();
-    if (!force && old_accent == current_accent && was_dark == dark_active) {
+    if (!force && old_sheet == fill_roles(STYLE_SHEET)) {
         return; // the event was ours (or changed nothing we use): no loop, no flicker
     }
     qApp->setStyleSheet(fill_roles(APP_STYLE_SHEET));
