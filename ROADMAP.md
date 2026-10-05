@@ -476,8 +476,10 @@ app id in hicolor, `setWindowIcon` from the qrc, Windows exe icon + version bloc
       (layout verified with a DESTDIR install).
 - ~~AUR PKGBUILD~~ **Dropped 2026-10-04 (user): no AUR package.** The PKGBUILD and the
       release job's PKGBUILD asset are gone; Arch users build from source.
-- [~] **AppImage** (2026-10-04: the `appimage` job in `release.yml`, written without a
-      local run — user: CI only — so the first tag/dispatch run is its test. Built on
+- [~] **AppImage** (2026-10-04: the `appimage` job in `release.yml`. **First dispatch run
+      green (4 min); the CI AppImage ran on the user's Plasma desktop: audio through
+      PipeWire-JACK, meters, last session restored, the menu offer appeared.** The portal
+      platform theme was missing from it — now bundled and checked; confirm on the next run. Built on
       **Ubuntu 24.04, not 22.04**: 24.04's libstdc++ is GCC 14's, so nothing C++ gets
       bundled; a bundled libstdc++ breaks hosts whose GL drivers need a newer one. Reach:
       glibc 2.39 — Ubuntu 24.04, Debian 13, Fedora 40 and newer. xcb + Wayland + offscreen
