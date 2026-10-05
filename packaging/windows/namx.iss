@@ -73,11 +73,29 @@ Filename: "{tmp}\vc_redist.x64.exe"; Parameters: "/install /quiet /norestart"; S
 Filename: "{app}\namx.exe"; Description: "{cm:LaunchProgram,NAM-X}"; Flags: nowait postinstall skipifsilent
 
 [Code]
-// The VC++ 2015-2022 x64 runtime registers itself here once installed.
+const
+  RuntimeKey = 'SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64';
+
+// The VC++ 2015-2022 x64 runtime registers its version here. "Installed" alone isn't
+// enough: namx.exe needs at least the runtime it was built against, which is the
+// version of the vc_redist.x64.exe shipped next to it (an older 14.x fails to start it).
 function VCRuntimeMissing: Boolean;
 var
-  Installed: Cardinal;
+  Installed, Minor, Bld, MS, LS, NeedMinor, NeedBld: Cardinal;
 begin
-  Result := not (RegQueryDWordValue(HKLM64, 'SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64',
-                                    'Installed', Installed) and (Installed = 1));
+  if not (RegQueryDWordValue(HKLM64, RuntimeKey, 'Installed', Installed) and (Installed = 1))
+     or not RegQueryDWordValue(HKLM64, RuntimeKey, 'Minor', Minor)
+     or not RegQueryDWordValue(HKLM64, RuntimeKey, 'Bld', Bld) then
+  begin
+    Result := True;
+    exit;
+  end;
+  if not GetVersionNumbers(ExpandConstant('{tmp}\vc_redist.x64.exe'), MS, LS) then
+  begin
+    Result := False; // no bundled installer to compare with (or to run)
+    exit;
+  end;
+  NeedMinor := MS and $FFFF;
+  NeedBld := LS shr 16;
+  Result := (Minor < NeedMinor) or ((Minor = NeedMinor) and (Bld < NeedBld));
 end;

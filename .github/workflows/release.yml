@@ -237,9 +237,11 @@ jobs:
           & $windeployqt $exe --release --compiler-runtime --no-translations --no-system-d3d-compiler --no-opengl-sw
           if ($LASTEXITCODE -ne 0) { throw "windeployqt failed" }
           New-Item -ItemType Directory -Force dist\namx | Out-Null
-          Copy-Item build-release\namx.exe, build-release\*.dll dist\namx\
+          Copy-Item build-release\namx.exe, build-release\*.dll dist\namx\ -Exclude Qt6Network.dll
           Copy-Item build-release\vc_redist*.exe dist\namx\ -ErrorAction SilentlyContinue
-          foreach ($d in 'platforms','styles','imageformats','iconengines','tls','networkinformation') {
+          # No networking in NAM-X: windeployqt's Qt6Network and its tls / networkinformation
+          # plugins are left out (the app runs without them).
+          foreach ($d in 'platforms','styles','imageformats','iconengines') {
             if (Test-Path "build-release\$d") { Copy-Item -Recurse "build-release\$d" "dist\namx\$d" }
           }
           Copy-Item LICENSE dist\namx\LICENSE.txt
