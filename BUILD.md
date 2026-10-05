@@ -33,9 +33,13 @@ effects chain plus a 4-band EQ with low and high cuts.
 sudo apt update
 sudo apt install \
     git cmake ninja-build g++-14 \
-    qt6-base-dev \
+    qt6-base-dev qt6-xdgdesktopportal-platformtheme \
     libjack-jackd2-dev libasound2-dev jackd2 qjackctl
 ```
+
+`qt6-xdgdesktopportal-platformtheme` gives NAM-X your desktop's own file dialogs
+(through the XDG portal); without it, it falls back to Qt's plainer ones. On Arch it
+is part of `qt6-base`.
 
 The code is C++23 and needs GCC 14. Ubuntu 24.04 defaults to GCC 13, so point CMake
 at the newer compiler: `export CXX=g++-14` before `bash build.sh` (Debian 13 and
