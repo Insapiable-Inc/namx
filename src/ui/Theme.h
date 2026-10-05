@@ -31,8 +31,23 @@ QString plain_tooltip(const QString& text);
 
 // Accent for an effect ID ("gate", "nam", … or "neutral").
 QColor accent(const QString& fx_id);
-// The app accent (Breeze blue): chrome, selections, and cards before they are tagged.
+// The app accent: the system's highlight colour while following the system (Breeze
+// blue otherwise): chrome, selections, and cards before they are tagged.
 QColor generic_accent();
+
+// Dark, light, or whichever the OS uses (the default; follows it live).
+enum class Mode
+{
+    SYSTEM,
+    DARK,
+    LIGHT
+};
+Mode get_mode();
+// Persists (`ui/theme`) and restyles the window at once.
+void set_mode(Mode new_mode);
+// Re-reads the system scheme and accent and restyles the window; without `force`,
+// only when one of them changed.
+void reapply(bool force = false);
 
 // Neutral chrome tones for custom-painted widgets (knobs, switches).
 QColor track(); // recessed track / switch off state
@@ -57,6 +72,7 @@ QColor meter_clip();
 QColor led_green(); // in tune
 QColor led_red(); // off pitch
 QColor display_bg(); // near-black LED panel
+QColor display_line(); // the LED panels' frame and unlit digits (dark in every theme)
 
 // Chilean flag ("Made in Chile" badge in the menu bar).
 QColor flag_blue();

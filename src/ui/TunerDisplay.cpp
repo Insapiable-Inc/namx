@@ -88,7 +88,7 @@ void TunerDisplay::paintEvent(QPaintEvent*) {
 
     // The LED panel.
     const QRectF panel = QRectF(rect()).adjusted(0.5, 0.5, -0.5, -0.5);
-    p.setPen(QPen(Theme::track(), 1.0));
+    p.setPen(QPen(Theme::display_line(), 1.0));
     p.setBrush(Theme::display_bg());
     p.drawRoundedRect(panel, 5, 5);
 
@@ -138,7 +138,7 @@ void TunerDisplay::paintEvent(QPaintEvent*) {
     }
 
     // Seven-segment note in the center
-    const QColor digit_color = !valid ? Theme::track().lighter(150) : in_tune ? green : red;
+    const QColor digit_color = !valid ? Theme::display_line().lighter(150) : in_tune ? green : red;
     const qreal w = 18.0, h = 26.0, t = 3.5;
     const qreal half = (h - 3 * t) / 2.0;
     const qreal digit_x = panel.center().x() - w / 2.0 - 12.0;
@@ -212,7 +212,7 @@ void TunerDisplay::paintEvent(QPaintEvent*) {
             p.drawText(text_rect, Qt::AlignRight | Qt::AlignVCenter,
                        valid ? QString("%1 Hz").arg(hz, 0, 'f', 1) : QStringLiteral("-- Hz"));
         } else {
-            p.setPen(Theme::track().lighter(170));
+            p.setPen(Theme::display_line().lighter(170));
             p.drawText(text_rect, Qt::AlignRight | Qt::AlignVCenter,
                        QString("A4 = %1").arg(reference));
         }

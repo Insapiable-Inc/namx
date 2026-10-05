@@ -13,6 +13,7 @@
 #include <QVBoxLayout>
 
 #include "Common.h"
+#include "Theme.h"
 
 namespace namx
 {
@@ -78,9 +79,9 @@ SettingsDialog::SettingsDialog(SettingsTargets new_targets, QWidget* parent)
     page_list->setFixedWidth(150);
     pages = new QStackedWidget;
     const std::pair<const char*, QWidget*> all[] = {
-        {"Audio", build_audio_page()},         {"MIDI", build_midi_page()},
-        {"Library", build_library_page()},     {"Tuner", build_tuner_page()},
-        {"Shortcuts", build_shortcuts_page()},
+        {"Audio", build_audio_page()},           {"MIDI", build_midi_page()},
+        {"Library", build_library_page()},       {"Tuner", build_tuner_page()},
+        {"Appearance", build_appearance_page()}, {"Shortcuts", build_shortcuts_page()},
     };
     for (const auto& [name, page] : all) {
         page_list->addItem(name);
@@ -156,6 +157,11 @@ void SettingsDialog::refresh_current_page() {
             reference_box->setValue(qRound(targets.tuner_reference.value()));
             show_hz_box->setChecked(targets.tuner_display.get_show_hz());
             break;
+        case Page::APPEARANCE: {
+            const QSignalBlocker block(theme_box);
+            theme_box->setCurrentIndex(static_cast<int>(Theme::get_mode()));
+            break;
+        }
         case Page::SHORTCUTS:
             refresh_shortcuts();
             break;
@@ -424,6 +430,24 @@ QWidget* SettingsDialog::build_tuner_page() {
     form->addRow("Reference pitch", reference_box);
     form->addRow("", show_hz_box);
     return make_page("The reference is also on the tuner card. Concert pitch is 440 Hz.", form);
+}
+
+// Appearance: the colour theme, applied at once.
+
+QWidget* SettingsDialog::build_appearance_page() {
+    theme_box = new QComboBox;
+    // Index order = Theme::Mode.
+    theme_box->addItems({"Follow the system", "Dark", "Light"});
+    connect(theme_box, &QComboBox::currentIndexChanged, this, [](int index) {
+        Theme::set_mode(static_cast<Theme::Mode>(index));
+    });
+
+    QFormLayout* form = make_form();
+    form->addRow("Theme", theme_box);
+    return make_page("Following the system takes its light or dark setting and its accent "
+                     "colour, and changes along with it. The tuner and the meters stay dark "
+                     "displays in every theme.",
+                     form);
 }
 
 // Shortcuts: listed from the window itself, so the page can't go stale.

@@ -73,7 +73,7 @@ void VUMeter::paintEvent(QPaintEvent*) {
 
     // The dark LED panel.
     const QRectF panel = QRectF(rect()).adjusted(0.5, 0.5, -0.5, -0.5);
-    p.setPen(QPen(Theme::track(), 1.0));
+    p.setPen(QPen(Theme::display_line(), 1.0));
     p.setBrush(Theme::display_bg());
     p.drawRoundedRect(panel, 3, 3);
 

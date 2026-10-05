@@ -57,6 +57,7 @@ public:
         MIDI,
         LIBRARY,
         TUNER,
+        APPEARANCE,
         SHORTCUTS,
     };
 
@@ -73,6 +74,7 @@ private:
     QWidget* build_midi_page();
     QWidget* build_library_page();
     QWidget* build_tuner_page();
+    QWidget* build_appearance_page();
     QWidget* build_shortcuts_page();
 
     void refresh_current_page();
@@ -105,6 +107,7 @@ private:
 
     array<QListWidget*, 3> folder_lists{}; // models, IRs, presets
 
+    QComboBox* theme_box = nullptr;
     QSpinBox* reference_box = nullptr;
     QCheckBox* show_hz_box = nullptr;
     QCheckBox* exclusive_box = nullptr; // only where the backend supports it (WASAPI)
