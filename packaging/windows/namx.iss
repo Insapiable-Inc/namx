@@ -58,12 +58,12 @@ Name: "{autodesktop}\NAM-X"; Filename: "{app}\namx.exe"; Tasks: desktopicon
 ; .nam / .nampreset open in NAM-X. HKA = the machine for an admin install, the user
 ; otherwise. .nam also lists NAM-X under "Open with" without taking the default from
 ; another app; .nampreset is ours alone.
-Root: HKA; Subkey: "Software\Classes\.nam\OpenWithProgids"; ValueType: string; ValueName: "NAMX.Model"; ValueData: ""; Flags: uninsdeletevalue
+Root: HKA; Subkey: "Software\Classes\.nam\OpenWithProgids"; ValueType: string; ValueName: "NAMX.Model"; ValueData: ""; Flags: uninsdeletevalue uninsdeletekeyifempty
 Root: HKA; Subkey: "Software\Classes\NAMX.Model"; ValueType: string; ValueName: ""; ValueData: "Neural Amp Modeler profile"; Flags: uninsdeletekey
 Root: HKA; Subkey: "Software\Classes\NAMX.Model\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\namx.exe,0"
 Root: HKA; Subkey: "Software\Classes\NAMX.Model\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\namx.exe"" ""%1"""
-Root: HKA; Subkey: "Software\Classes\.nampreset"; ValueType: string; ValueName: ""; ValueData: "NAMX.Preset"; Flags: uninsdeletevalue
-Root: HKA; Subkey: "Software\Classes\.nampreset\OpenWithProgids"; ValueType: string; ValueName: "NAMX.Preset"; ValueData: ""; Flags: uninsdeletevalue
+Root: HKA; Subkey: "Software\Classes\.nampreset"; ValueType: string; ValueName: ""; ValueData: "NAMX.Preset"; Flags: uninsdeletevalue uninsdeletekeyifempty
+Root: HKA; Subkey: "Software\Classes\.nampreset\OpenWithProgids"; ValueType: string; ValueName: "NAMX.Preset"; ValueData: ""; Flags: uninsdeletevalue uninsdeletekeyifempty
 Root: HKA; Subkey: "Software\Classes\NAMX.Preset"; ValueType: string; ValueName: ""; ValueData: "NAM-X preset"; Flags: uninsdeletekey
 Root: HKA; Subkey: "Software\Classes\NAMX.Preset\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\namx.exe,0"
 Root: HKA; Subkey: "Software\Classes\NAMX.Preset\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\namx.exe"" ""%1"""
