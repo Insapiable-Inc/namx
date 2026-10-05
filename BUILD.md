@@ -171,7 +171,7 @@ doesn't hook them.
 
 Prebuilt Linux build: an AppImage on the releases page (glibc 2.39+; it offers to add
 itself to the applications menu on first start; Settings → Remove from Applications
-Menu undoes it; no `libjack` inside). There is no Flatpak or distribution package yet;
+Menu undoes it; no `libjack` inside). There is no distribution package;
 Arch users build from source as above.
 
 Command-line flags: `namx [file…]` opens `.nam` / `.wav` / `.nampreset` files;

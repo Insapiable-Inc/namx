@@ -30,15 +30,14 @@ Decisions:
   release, so the desktop file and CI jobs are built once against the final v1.0
   feature set (Library + TONE3000 + `Qt6::Network`) instead of being redone. The
   `v1.0` tag is back at the end of Phase 8.
-- ~~**No AppImage, Flatpak or other bundle** (2026-09-17).~~ **Reversed 2026-10-02: ship
+- *(Superseded by the next point.)* ~~**No AppImage, Flatpak or other bundle** (2026-09-17).~~ **Reversed 2026-10-02: ship
   both an AppImage and a Flatpak (Flathub)** (and a Windows setup `.exe` next to the
   zip; **no AUR package** — user 2026-10-04, the PKGBUILD was removed) — the AppImage as
   "try it on any distro", Flathub for store visibility and automatic updates. No Snap.
   Both wrap the same `cmake --install` layout; neither may bundle `libjack` (they use the
   system's or PipeWire's).
-- **AppImage only for v0.0.0** (user, 2026-10-04): Flathub's submission PR and review
-  were too much for the first release — the Flatpak manifest and its CI build stay in
-  `packaging/flatpak/` for a later submission (Phase 8 item, deferred).
+- **AppImage only** (user, 2026-10-04): no Flatpak — Flathub's submission PR and review
+  were too much; the manifest and its CI workflow were removed (git history: 0438cc5).
 - **The app is GPL** (2026-10-01). MIT had only been inherited from upstream's root
   `LICENSE`, never chosen. `gui/` becomes GPLv3 with the user's copyright; the
   upstream NAM core keeps its MIT notice (MIT code may be included in GPL code). This
@@ -518,20 +517,9 @@ app id in hicolor, `setWindowIcon` from the qrc, Windows exe icon + version bloc
       machine-wide. The portable zip stays. Unsigned at first: Windows SmartScreen will
       warn ("unknown publisher") — code signing (e.g. SignPath's free plan for open
       source) is a later step.
-- [ ] **Flatpak / Flathub** — **deferred after v0.0.0 (user, 2026-10-04: "AppImage only" — the Flathub PR/review was too much for now; manifest + CI kept)** (back 2026-10-02): manifest `io.github.Insapiable_Inc.namx.yml` on the
-      KDE runtime (Qt 6). **2026-10-04:** `packaging/flatpak/…yml` on KDE 6.11 +
-      `.github/workflows/flatpak.yml` (test bundle, checks no libjack) — written without a
-      local build (user: CI only); **CI green 2026-10-04**. Left: the Flathub
-      submission (user: PR to flathub/flathub, `new-pr` branch; the Flathub copy uses a
-      git source at the tag). There is no `--socket=pipewire`: PipeWire comes in through
-      `--filesystem=xdg-run/pipewire-0`. Planned permissions were `--socket=pipewire` (JACK through PipeWire),
-      `--filesystem=home` (the library scans folders and presets store real paths — the
-      document portal's paths would break them), `--device=all` (ALSA MIDI),
-      `--share=ipc`, `--socket=wayland`/`x11`; CI builds a test `.flatpak` bundle; then
-      submit to Flathub (its own repo under flathub/, bumped each release). Known limit:
-      classic `jackd` (non-PipeWire) setups are awkward from the sandbox — point them to
-      the source build. Config lives in `~/.var/app/io.github.Insapiable_Inc.namx/` (document
-      it in the manual).
+- ~~**Flatpak / Flathub**~~ **Dropped 2026-10-04 (user: "AppImage only").** A KDE 6.11
+      manifest and a CI workflow were built and went green, then removed with the
+      decision; they're in git history (0438cc5) if Flathub ever comes back.
 - [x] CI release job on tag push: `.github/workflows/release.yml` — Ubuntu 22.04 and
       Arch container (build + tests + install layout), Windows (windeployqt zip),
       source tarball, GitHub release with the artifacts;

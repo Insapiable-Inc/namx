@@ -1,7 +1,7 @@
 name: Release
 
 # Tag push (v0.0.0, v0.1.0-rc1, …) → build + tests on Ubuntu 24.04 and Arch, an
-# AppImage (the Flatpak goes through Flathub; flatpak.yml test-builds it), a Windows
+# AppImage, a Windows
 # windeployqt zip, a source tarball with the submodules vendored, and a GitHub
 # release. Every build uses -DNAM_NATIVE_OPT=OFF
 # (portable AVX2/FMA).

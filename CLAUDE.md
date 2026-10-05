@@ -27,7 +27,7 @@ namx/
 │   ├── midi/          # MidiInput (ALSA / WinMM), MidiMapper (no widgets beyond the target pointers)
 │   └── dsp/           # AudioEngine, backends, effect processors (no Qt dependencies)
 ├── resources/         # resources.qrc, app icon (icons/), starter presets (presets/)
-├── packaging/         # desktop file, AppStream, mime, Windows .rc (AppImage built by release.yml — the only Linux release, user 2026-10-04; Flatpak manifest kept + CI-built for a later Flathub submission; no AUR package)
+├── packaging/         # desktop file, AppStream, mime, Windows .rc (AppImage built by release.yml — the only Linux release, user 2026-10-04; no Flatpak, Snap or AUR package)
 ├── tests/             # MidiMapperTest, DspGoldenTest, WavReaderTest, NamProcessorTest, LibraryIndexTest (-DNAM_BUILD_TESTS=ON)
 ├── bench/             # namx-bench, instructions.py (CPU regression) (-DNAM_BUILD_BENCH=ON)
 └── external/          # Git submodules (CMake: EXTERNAL_DIR, NAM_ROOT, NAM_DEPS_PATH)
@@ -69,7 +69,7 @@ cmake --build build-release --parallel $(nproc)
 
 Release builds default to `-march=native` via the `NAM_NATIVE_OPT` CMake option (ON). **CI/release builds must configure with `-DNAM_NATIVE_OPT=OFF`** → portable `-mavx2 -mfma`.
 
-`cmake --install <build> --prefix /usr` installs the binary plus the desktop/mime/AppStream/icon files (app id `io.github.Insapiable_Inc.namx`); `.github/workflows/release.yml` runs on `v*` tags (Ubuntu + Arch build and tests, Windows zip, source tarball, GitHub release). **Linux distribution:** the AppImage only (user, 2026-10-04 — Flathub's review process deferred; the Flatpak manifest in `packaging/flatpak/` stays CI-built for a later submission); no Snap, no AUR package (the PKGBUILD was removed). Bundles must never include `libjack`. `namx --version`, `--help`, `--self-test-and-exit` (headless CI check) and `namx file…` (opens .nam/.wav/.nampreset) are handled in `main.cpp`; the version comes from `PROJECT_VERSION` via the `NAM_VERSION` define.
+`cmake --install <build> --prefix /usr` installs the binary plus the desktop/mime/AppStream/icon files (app id `io.github.Insapiable_Inc.namx`); `.github/workflows/release.yml` runs on `v*` tags (Ubuntu + Arch build and tests, Windows zip, source tarball, GitHub release). **Linux distribution:** the AppImage only (user, 2026-10-04); no Flatpak (manifest removed — in git history at 0438cc5), no Snap, no AUR package (the PKGBUILD was removed). Bundles must never include `libjack`. `namx --version`, `--help`, `--self-test-and-exit` (headless CI check) and `namx file…` (opens .nam/.wav/.nampreset) are handled in `main.cpp`; the version comes from `PROJECT_VERSION` via the `NAM_VERSION` define.
 
 `-DNAM_BUILD_TESTS=ON` adds `MidiMapperTest`, `DspGoldenTest`, `WavReaderTest`, `NamProcessorTest` and `LibraryIndexTest` (all headless):
 
