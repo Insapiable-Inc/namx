@@ -478,7 +478,7 @@ app id in hicolor, `setWindowIcon` from the qrc, Windows exe icon + version bloc
       (layout verified with a DESTDIR install).
 - ~~AUR PKGBUILD~~ **Dropped 2026-10-04 (user): no AUR package.** The PKGBUILD and the
       release job's PKGBUILD asset are gone; Arch users build from source.
-- [~] **AppImage** (2026-10-04: the `appimage` job in `release.yml`. **First dispatch run
+- [x] **AppImage** (2026-10-04: the `appimage` job in `release.yml`. **Release run 37254108636 all green; the portal theme is in (qt6-xdgdesktopportal-platformtheme), checked.** **First dispatch run
       green (4 min); the CI AppImage ran on the user's Plasma desktop: audio through
       PipeWire-JACK, meters, last session restored, the menu offer appeared.** The portal
       platform theme was missing from it — now bundled and checked; confirm on the next run. Built on
@@ -505,7 +505,7 @@ app id in hicolor, `setWindowIcon` from the qrc, Windows exe icon + version bloc
       its own (the AppImage only carries the plain "bradient" decoration plugin); file
       dialogs go through xdg-desktop-portal-gnome; the menu integration in GNOME's app
       grid. Tested so far on KDE Plasma only. A GNOME live USB or VM is enough.
-- [~] **Windows installer** (2026-10-04: `packaging/windows/namx.iss` +
+- [x] **Windows installer** (2026-10-04 — **checked under Wine from run 37254108636's artifact: per-user install, the runtime check installed the bundled VC++ 14.44 over Wine's 14.42, app self-test passes, uninstall leaves nothing**: `packaging/windows/namx.iss` +
       the "Installer" step in `release.yml` → `namx-<v>-windows-x64-setup.exe`; per-user
       by default with a machine-wide choice, Start-menu entry, optional desktop icon,
       `.nam` in "Open with" and `.nampreset` as the default, VC++ runtime installed only
