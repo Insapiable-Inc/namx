@@ -1401,8 +1401,20 @@ carries the final name.
       their knobs, the stereo rules (the amp is never summed; Chorus/Tremolo stereo off by
       default), the Settings page, the model-load reasons, the submodule note. The
       vcpkg mention is gone (CLAUDE.md) and the Fedora list has `gcc-c++`.
-- [x] **User manual**: stays inside BUILD.md (user, 2026-10-04 — "the document is fine,
-      just make sure it's up to date"); no split.
+- ~~**User manual**: stays inside BUILD.md (user, 2026-10-04 — "the document is fine,
+      just make sure it's up to date"); no split.~~ **Reversed later on 2026-10-04 (user:
+      "the BUILD.md document is not good"):**
+- [ ] **Split BUILD.md into a build guide and a user manual, both more concise** (before
+      the v0.0.0 tag — user, 2026-10-04: "we're not ready with the cleanups"). BUILD.md
+      (584 lines, "Build & Usage Guide") mixes the two audiences. Build side: §1
+      Prerequisites, §2 Source & submodules, §3 Build (+ install, CMake flags), the
+      build-only troubleshooting (submodule errors) and the benchmark/measuring notes.
+      Usage side (new manual, e.g. `docs/MANUAL.md`): §4 Run, §5 Connect audio ports,
+      §6 Controls reference (knobs, parameters, presets, tempo, MIDI, settings, library),
+      §7 Signal chain, §8 File formats, the user-facing troubleshooting (JACK, model/IR
+      loading, quiet output, crackles/CPU). Tighten both while splitting; fix every link
+      to BUILD.md sections (README, CLAUDE.md, release notes, packaging/README, code
+      comments).
 - [x] **Release notes** for v0.0.0 (2026-10-04): `docs/release-notes/v0.0.0.md`, in the
       README's language; `release.yml` publishes `docs/release-notes/<tag>.md` as the
       release body (replacing GitHub's generated PR list), so each tag needs its file.
