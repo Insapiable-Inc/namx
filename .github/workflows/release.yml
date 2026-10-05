@@ -108,7 +108,8 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y cmake ninja-build g++-14 qt6-base-dev qt6-base-dev-tools \
-            qt6-wayland libjack-jackd2-dev libasound2-dev pkg-config libgl1-mesa-dev \
+            qt6-wayland qt6-xdgdesktopportal-platformtheme libjack-jackd2-dev libasound2-dev \
+            pkg-config libgl1-mesa-dev \
             libfuse2t64 file
       - name: Configure + build (portable)
         env:
