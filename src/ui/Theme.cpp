@@ -374,7 +374,10 @@ void tag_card(QWidget* card, const QString& fx_id) {
     // The app stylesheet disables parent→child palette propagation, so the
     // accents are pushed to the interactive descendants explicitly. Call
     // tagCard AFTER the card's knobs/toggles have been created.
-    const QColor a = readable_accent(accent(fx_id));
+    // Non-effect cards (Input, Output: gain knobs, the limiter) take the app accent,
+    // like the tempo bar's knobs.
+    const QColor a =
+        fx_id == QLatin1String("neutral") ? current_accent : readable_accent(accent(fx_id));
     for (auto* k : card->findChildren<KnobWidget*>()) {
         k->set_accent(a);
     }
