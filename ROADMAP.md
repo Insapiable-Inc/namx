@@ -955,10 +955,12 @@ acoustic models. UI: cards gained ▾ detail rows for advanced knobs (`addDetail
       per effect ID; effect accents kept readable both ways under a theme file. Left: C
       (editor with colour pickers, ~2–3 days) if themes get used; High-contrast stage
       theme; the meter gradient isn't themeable.
-- [ ] **Theme leftovers** (open since the merge, 2026-10-09): the status colours
-      (meter_* as text — the yellow DSP % is unreadable on light themes) and the ▾ arrow
-      PNG (fixed grey) need theme-aware versions; live reload of a theme file is untested
-      (user: not worth worrying about); Windows' Follow the system unchecked on hardware.
+- [x] **Theme leftovers** (2026-10-09): the status colours (`meter_*` → `status_ok/warn/bad`)
+      are darkened to 4.5:1 on the status bar's tone where they don't reach it (light
+      themes; dark unchanged) and re-coloured on a theme switch; the ▾ arrow PNG is
+      tinted to 3:1 on the controls where its grey doesn't reach it (cached copy, dark
+      keeps the resource). Not done: live reload of a theme file untested (user: not worth
+      worrying about); Windows' Follow the system unchecked on hardware.
 - [x] **Follow the OS theme by default** (user, 2026-10-04 — switching Plasma to Breeze
       Light changed nothing; v0.0.0 was going to ship dark-only — reversed 2026-10-09, the
       branch merged into main). **Built 2026-10-04 on

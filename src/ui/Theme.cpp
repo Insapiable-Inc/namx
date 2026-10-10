@@ -5,12 +5,16 @@
 #include <cmath>
 
 #include <QApplication>
+#include <QDir>
 #include <QEvent>
+#include <QFileInfo>
 #include <QFileSystemWatcher>
 #include <QHash>
+#include <QImage>
 #include <QPalette>
 #include <QPointer>
 #include <QSettings>
+#include <QStandardPaths>
 #include <QStyle>
 #include <QStyleHints>
 #include <QTextDocument> // Qt::mightBeRichText
@@ -296,19 +300,6 @@ int unlit_alpha(int base_alpha) {
 }
 QColor led_amber() {
     return QColor(palette().led_amber);
-}
-
-QColor meter_low() {
-    return QColor("#5cc8a8");
-}
-QColor meter_mid() {
-    return QColor("#f0c850");
-}
-QColor meter_high() {
-    return QColor("#e85a4f");
-}
-QColor meter_clip() {
-    return QColor("#ff5252");
 }
 
 QColor led_green() {
@@ -597,7 +588,7 @@ QToolButton#presetName:hover {
     border-color: @border_hover@;
 }
 QToolButton#presetName::menu-indicator {
-    image: url(:/icons/down-arrow.png);
+    image: url(@arrow@);
     subcontrol-position: right center;
     right: 8px;
 }
@@ -633,7 +624,7 @@ QToolButton#menuTool {
     padding-right: 20px;
 }
 QToolButton#menuTool::menu-indicator {
-    image: url(:/icons/down-arrow.png);
+    image: url(@arrow@);
     subcontrol-origin: padding;
     subcontrol-position: right center;
     right: 7px;
@@ -879,7 +870,7 @@ QComboBox::drop-down {
     width: 20px;
 }
 QComboBox::down-arrow {
-    image: url(:/icons/down-arrow.png); /* @2x picked up on HiDPI */
+    image: url(@arrow@); /* @2x picked up on HiDPI */
     margin-right: 6px;
 }
 QComboBox::down-arrow:disabled {
@@ -943,16 +934,69 @@ static QColor on_accent() {
 // (Wah, Chorus…) are darkened until they read (3:1, WCAG's floor for graphics and
 // large text). Dark theme: the accent verbatim, as approved — except under a theme
 // file, whose cards can be any tone: there the dark ones are lightened the same way.
+static QColor readable_on(const QColor& color, const QColor& background, double ratio);
+
 static QColor readable_accent(const QColor& accent) {
     if (dark_active && current_mode != Mode::CUSTOM) {
         return accent;
     }
-    QColor c = accent;
-    const QColor& card = active.card;
-    for (int i = 0; i < 12 && contrast(c, card) < 3.0; ++i) {
-        c = dark_active ? c.lighter(115) : c.darker(115);
+    return readable_on(accent, active.card, 3.0);
+}
+
+// `color` moved away from `background` (darker on a light one, lighter on a dark one)
+// until the two reach `ratio`; unchanged when they already do.
+static QColor readable_on(const QColor& color, const QColor& background, double ratio) {
+    const bool light_background = luminance(background) > 0.18;
+    QColor c = color;
+    for (int i = 0; i < 16 && contrast(c, background) < ratio; ++i) {
+        c = light_background ? c.darker(115) : c.lighter(115);
     }
     return c;
+}
+
+// The status colours as approved on dark, made readable (4.5:1, WCAG's floor for text —
+// the DSP load is text) on the status bar's tone.
+QColor status_ok() {
+    return readable_on(QColor("#5cc8a8"), active.surface, 4.5);
+}
+QColor status_warn() {
+    return readable_on(QColor("#f0c850"), active.surface, 4.5);
+}
+QColor status_bad() {
+    return readable_on(QColor("#e85a4f"), active.surface, 4.5);
+}
+
+// The ▾ arrow on combo boxes and menu buttons: the resource image where its grey reads
+// on the controls (3:1, as for graphics), else a copy tinted readable, written to the
+// cache folder (style sheets take only files) with its @2x twin.
+static QString arrow_url() {
+    static const QColor ARROW_GREY(153, 160, 172); // the PNGs' colour
+    const QColor tint = readable_on(ARROW_GREY, active.control, 3.0);
+    if (tint == ARROW_GREY) {
+        return ":/icons/down-arrow.png";
+    }
+    const QString dir = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
+    const QString name = QString("down-arrow-%1").arg(tint.name().mid(1));
+    const QString path = dir + '/' + name + ".png";
+    if (QFileInfo::exists(path) && QFileInfo::exists(dir + '/' + name + "@2x.png")) {
+        return path;
+    }
+    QDir().mkpath(dir);
+    for (const char* suffix : {"", "@2x"}) {
+        QImage image(QString(":/icons/down-arrow%1.png").arg(QLatin1String(suffix)));
+        image = image.convertToFormat(QImage::Format_ARGB32);
+        for (int y = 0; y < image.height(); ++y) {
+            for (int x = 0; x < image.width(); ++x) {
+                QColor c = tint;
+                c.setAlpha(qAlpha(image.pixel(x, y)));
+                image.setPixelColor(x, y, c);
+            }
+        }
+        if (!image.save(dir + '/' + name + QLatin1String(suffix) + ".png")) {
+            return ":/icons/down-arrow.png"; // no cache folder: the grey one beats none
+        }
+    }
+    return path;
 }
 
 static QString fill_roles(const char* sheet) {
@@ -985,6 +1029,9 @@ static QString fill_roles(const char* sheet) {
     QString qss = QString::fromUtf8(sheet);
     for (const auto& [role, color] : roles) {
         qss.replace(QString("@%1@").arg(QLatin1String(role)), color.name());
+    }
+    if (qss.contains("@arrow@")) {
+        qss.replace("@arrow@", arrow_url());
     }
     return qss;
 }

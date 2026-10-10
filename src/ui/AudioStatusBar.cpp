@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <functional>
 
+#include <QEvent>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QMenu>
@@ -109,10 +110,11 @@ void AudioStatusBar::refresh() {
     output_id = s.value("audio/outputDeviceId").toString();
 
     connected = engine.is_running();
+    error_text.clear();
     const QString status = QString::fromStdString(engine.backend_status());
     // First token of the backend status ("JACK ● 48000 Hz ● …" → "JACK").
     const QString backend = status.section(' ', 0, 0);
-    lbl_backend->setText(dot(Theme::meter_low()) + (backend.isEmpty() ? "Audio" : backend));
+    lbl_backend->setText(dot(Theme::status_ok()) + (backend.isEmpty() ? "Audio" : backend));
     lbl_backend->setToolTip(status);
     static_cast<ClickableLabel*>(lbl_backend)->setCursor(Qt::ArrowCursor);
 
@@ -120,9 +122,22 @@ void AudioStatusBar::refresh() {
     update_metrics();
 }
 
+void AudioStatusBar::changeEvent(QEvent* event) {
+    QWidget::changeEvent(event);
+    if (event->type() != QEvent::StyleChange || !lbl_backend) {
+        return;
+    }
+    if (connected) {
+        refresh();
+    } else if (!error_text.isEmpty()) {
+        set_error(error_text);
+    }
+}
+
 void AudioStatusBar::set_error(const QString& text) {
     connected = false;
-    lbl_backend->setText(dot(Theme::meter_high()) + text.toHtmlEscaped());
+    error_text = text;
+    lbl_backend->setText(dot(Theme::status_bad()) + text.toHtmlEscaped());
     lbl_backend->setToolTip("Click to reconnect");
     static_cast<ClickableLabel*>(lbl_backend)->setCursor(Qt::PointingHandCursor);
 
@@ -194,8 +209,8 @@ void AudioStatusBar::update_metrics() {
 // Level → status color: calm, warning, trouble. Theme meter colors so the
 // status bar speaks the same language as the VU meters.
 static QString load_span(const QString& text, float frac) {
-    const QColor c = frac >= 0.9f   ? Theme::meter_high()
-                     : frac >= 0.7f ? Theme::meter_mid()
+    const QColor c = frac >= 0.9f   ? Theme::status_bad()
+                     : frac >= 0.7f ? Theme::status_warn()
                                     : Theme::dim_text();
     return QString("<span style=\"color:%1\">%2</span>").arg(c.name(), text);
 }

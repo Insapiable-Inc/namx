@@ -43,6 +43,10 @@ public:
     void set_device(bool input, const QString& id);
     void reset_counters();
 
+protected:
+    // A theme change: the backend dot is HTML text, coloured when it was set.
+    void changeEvent(QEvent* event) override;
+
 signals:
     // A device was picked and persisted — owner restarts audio.
     void device_selection_changed();
@@ -66,6 +70,7 @@ private:
     QLabel* lbl_output = nullptr;
     QString input_id, output_id;
     bool connected = false;
+    QString error_text; // the not-connected message on show, if any
 
     // DSP load: peaks taken every metrics tick, shown as the max over a
     // ~0.5 s window (readable, still catches spikes); the all-time max since

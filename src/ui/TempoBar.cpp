@@ -63,8 +63,8 @@ void BeatLeds::paintEvent(QPaintEvent*) {
                                                          : (H - 2) * 0.36;
         const QRectF r(x, H - 1 - h, W, h);
         const bool lit = b == beat;
-        QColor c =
-            lit ? (count_in ? Theme::meter_mid() : Theme::generic_accent()) : Theme::track_hover();
+        QColor c = lit ? (count_in ? Theme::status_warn() : Theme::generic_accent())
+                       : Theme::track_hover();
         if (a == Metronome::Accent::MUTE) {
             p.setPen(QPen(lit ? c : Theme::track_hover(), 1.2));
             p.setBrush(Qt::NoBrush);

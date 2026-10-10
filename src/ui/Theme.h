@@ -74,12 +74,12 @@ QColor thumb_bot(); // switch thumb gradient, dark end
 QColor thumb_outline(); // switch thumb edge; invalid = none
 int switch_rim_alpha(bool checked); // the switch track's dark edge
 
-// VU meter level gradient, low → clip. The gradient is anchored to the full
-// bar (not the filled chunk), so a color means an absolute level.
-QColor meter_low();
-QColor meter_mid();
-QColor meter_high();
-QColor meter_clip();
+// Status colours (status bar dots and DSP load, MIDI light, count-in beats, the MIDI
+// Learn glow): fine, warning, trouble. Readable on the status bar in every theme —
+// darkened on a light one.
+QColor status_ok();
+QColor status_warn();
+QColor status_bad();
 
 // Tuner display (LED ladder + seven-segment note).
 QColor led_green(); // in tune, the meters' safe zone

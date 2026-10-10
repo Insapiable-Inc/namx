@@ -2500,7 +2500,7 @@ void MainWindow::on_learn_changed() {
             .arg(t ? t->group : QString(), t ? t->label : target));
     if (QWidget* w = widget_for_target(target)) {
         auto* glow = new QGraphicsDropShadowEffect(w);
-        glow->setColor(Theme::meter_mid());
+        glow->setColor(Theme::status_warn());
         glow->setBlurRadius(22);
         glow->setOffset(0, 0);
         w->setGraphicsEffect(glow);
@@ -2917,6 +2917,11 @@ void MainWindow::changeEvent(QEvent* ev) {
     if (ev->type() == QEvent::WindowStateChange) {
         update_meter_timer();
     }
+    // A theme change: the status bar's dots are HTML text, coloured when they were set.
+    if (ev->type() == QEvent::StyleChange && lbl_midi && lbl_rig_status) {
+        update_rig_status();
+        show_midi_light(false);
+    }
 }
 
 void MainWindow::showEvent(QShowEvent* ev) {
@@ -3158,7 +3163,7 @@ LibraryEntry MainWindow::describe_cached(const QString& path) {
 void MainWindow::update_rig_status() {
     auto item = [](bool on, const QString& text) {
         return QString("<span style=\"color:%1\">●</span> %2")
-            .arg((on ? Theme::meter_low() : Theme::track()).name(), text.toHtmlEscaped());
+            .arg((on ? Theme::status_ok() : Theme::track()).name(), text.toHtmlEscaped());
     };
     const bool model = engine->is_model_loaded();
     const bool ir = engine->is_ir_loaded();
@@ -3680,7 +3685,7 @@ bool MainWindow::try_load_referenced_file(const QString& path, LibraryEntry::Kin
 
 // Status bar MIDI light: lit briefly on activity, grey without MIDI.
 void MainWindow::show_midi_light(bool lit) {
-    const QColor c = !midi_ok ? Theme::track() : lit ? Theme::meter_mid() : Theme::meter_low();
+    const QColor c = !midi_ok ? Theme::track() : lit ? Theme::status_warn() : Theme::status_ok();
     lbl_midi->setText(QString("<span style=\"color:%1\">●</span> MIDI").arg(c.name()));
 }
 
