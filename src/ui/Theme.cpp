@@ -1,10 +1,13 @@
 #include "Theme.h"
 
 #include <algorithm>
+#include <cassert>
 #include <cmath>
 
 #include <QApplication>
 #include <QEvent>
+#include <QFileSystemWatcher>
+#include <QHash>
 #include <QPalette>
 #include <QPointer>
 #include <QSettings>
@@ -17,6 +20,7 @@
 
 #include "Common.h"
 #include "KnobWidget.h"
+#include "ThemeFile.h"
 #include "ToggleSwitch.h"
 
 namespace namx
@@ -47,13 +51,29 @@ static constexpr FxColor FX_COLORS[] = {
     {"neutral", "#7d8590"},
 };
 
+// A theme file's effect accents (Mode::CUSTOM; empty otherwise).
+static QHash<QString, QColor> effect_overrides;
+
 QColor accent(const QString& fx_id) {
+    if (const auto it = effect_overrides.constFind(fx_id); it != effect_overrides.cend()) {
+        return *it;
+    }
     for (const auto& fc : FX_COLORS) {
         if (fx_id == QLatin1String(fc.id)) {
             return QColor(fc.accent);
         }
     }
     return QColor("#7d8590");
+}
+
+QStringList effect_ids() {
+    QStringList ids;
+    for (const auto& fc : FX_COLORS) {
+        if (fc.id != string_view("neutral")) {
+            ids.append(QLatin1String(fc.id));
+        }
+    }
+    return ids;
 }
 
 // What stays ours in every theme: the warning red, the switch edge, the LED colours.
@@ -120,12 +140,6 @@ struct Colors
     int led_unlit_scale; // unlit segments' tint strength (alpha multiplier)
 };
 
-static QColor mix(const QColor& a, const QColor& b, double t) {
-    return QColor::fromRgbF(static_cast<float>(a.redF() + (b.redF() - a.redF()) * t),
-                            static_cast<float>(a.greenF() + (b.greenF() - a.greenF()) * t),
-                            static_cast<float>(a.blueF() + (b.blueF() - a.blueF()) * t));
-}
-
 // The forced Dark / Light themes: KDE's Breeze Dark and Breeze Light colour schemes
 // (/usr/share/color-schemes/Breeze*.colors), as Qt's KDE platform theme turns them into
 // a QPalette — disabled text and shadow included, read from a dump under each scheme
@@ -171,45 +185,45 @@ static Colors from_palette(const QPalette& sys, bool dark) {
     const QColor white(255, 255, 255);
     const QColor black(0, 0, 0);
     const OwnTones& ours = dark ? OWN_DARK : OWN_LIGHT;
-    const QColor border = mix(w, text, 0.22);
+    const QColor border = mix_colors(w, text, 0.22);
     return Colors{
         w, // window
-        mix(w, base, 0.5), // surface
+        mix_colors(w, base, 0.5), // surface
         button, // card
-        mix(button, text, 0.04), // raised
-        mix(button, text, 0.08), // control
-        mix(button, text, 0.16), // control_hover
-        mix(w, text, 0.40), // handle_hover
-        mix(w, sys.color(QPalette::Highlight), 0.22), // selection
-        mix(button, text, 0.22), // pressed
-        mix(w, text, 0.12), // line
+        mix_colors(button, text, 0.04), // raised
+        mix_colors(button, text, 0.08), // control
+        mix_colors(button, text, 0.16), // control_hover
+        mix_colors(w, text, 0.40), // handle_hover
+        mix_colors(w, sys.color(QPalette::Highlight), 0.22), // selection
+        mix_colors(button, text, 0.22), // pressed
+        mix_colors(w, text, 0.12), // line
         border,
-        mix(w, text, 0.36), // border_hover
-        mix(w, button, 0.5), // disabled_bg
-        mix(w, text, 0.08), // disabled_border
+        mix_colors(w, text, 0.36), // border_hover
+        mix_colors(w, button, 0.5), // disabled_bg
+        mix_colors(w, text, 0.08), // disabled_border
         sys.color(QPalette::Disabled, QPalette::WindowText),
         text,
-        mix(text, w, 0.22), // text_dim
-        mix(text, w, 0.32), // text_muted
-        mix(text, w, 0.45), // text_faint
-        mix(text, w, 0.58), // text_off
+        mix_colors(text, w, 0.22), // text_dim
+        mix_colors(text, w, 0.32), // text_muted
+        mix_colors(text, w, 0.45), // text_faint
+        mix_colors(text, w, 0.58), // text_off
         QColor(ours.notice),
         sys.color(QPalette::Shadow),
-        mix(button, text, 0.14), // track
-        mix(button, text, 0.24), // track_hover
-        dark ? mix(button, text, 0.06) : mix(button, white, 0.7), // knob_body_top
-        dark ? mix(button, black, 0.25) : mix(button, text, 0.05), // knob_body_bot
-        dark ? mix(w, black, 0.55) : mix(w, text, 0.30), // bezel
-        mix(text, w, 0.58), // detent
-        mix(base, text, 0.03), // well
+        mix_colors(button, text, 0.14), // track
+        mix_colors(button, text, 0.24), // track_hover
+        dark ? mix_colors(button, text, 0.06) : mix_colors(button, white, 0.7), // knob_body_top
+        dark ? mix_colors(button, black, 0.25) : mix_colors(button, text, 0.05), // knob_body_bot
+        dark ? mix_colors(w, black, 0.55) : mix_colors(w, text, 0.30), // bezel
+        mix_colors(text, w, 0.58), // detent
+        mix_colors(base, text, 0.03), // well
         white, // thumb_top
-        dark ? mix(white, w, 0.12) : mix(white, text, 0.05), // thumb_bot
+        dark ? mix_colors(white, w, 0.12) : mix_colors(white, text, 0.05), // thumb_bot
         dark ? QColor() : border, // thumb_outline
         ours.switch_rim_off,
         ours.switch_rim_on,
-        dark ? mix(w, black, 0.65) : mix(w, text, 0.06), // display_bg
-        dark ? mix(w, text, 0.10) : border, // display_line
-        dark ? mix(w, text, 0.10) : mix(w, text, 0.45), // display_faint
+        dark ? mix_colors(w, black, 0.65) : mix_colors(w, text, 0.06), // display_bg
+        dark ? mix_colors(w, text, 0.10) : border, // display_line
+        dark ? mix_colors(w, text, 0.10) : mix_colors(w, text, 0.45), // display_faint
         QColor(ours.led_green),
         QColor(ours.led_red),
         QColor(ours.led_amber),
@@ -218,6 +232,8 @@ static Colors from_palette(const QPalette& sys, bool dark) {
 }
 
 static Mode current_mode = Mode::SYSTEM;
+static ThemeSpec custom_theme; // Mode::CUSTOM
+static QString custom_theme_path;
 static bool dark_active = true;
 static QColor current_accent("#3daee9"); // Breeze blue until the system says otherwise
 static QPointer<QWidget> themed_root;
@@ -925,15 +941,16 @@ static QColor on_accent() {
 
 // An effect accent on a light card (name, knob ring and tick, switch): the pale ones
 // (Wah, Chorus…) are darkened until they read (3:1, WCAG's floor for graphics and
-// large text). Dark theme: the accent verbatim, as approved.
+// large text). Dark theme: the accent verbatim, as approved — except under a theme
+// file, whose cards can be any tone: there the dark ones are lightened the same way.
 static QColor readable_accent(const QColor& accent) {
-    if (dark_active) {
+    if (dark_active && current_mode != Mode::CUSTOM) {
         return accent;
     }
     QColor c = accent;
     const QColor& card = active.card;
     for (int i = 0; i < 12 && contrast(c, card) < 3.0; ++i) {
-        c = c.darker(115);
+        c = dark_active ? c.lighter(115) : c.darker(115);
     }
     return c;
 }
@@ -972,10 +989,29 @@ static QString fill_roles(const char* sheet) {
     return qss;
 }
 
-// Reads the scheme and accent the OS asks for (Mode::SYSTEM), or the forced Breeze one.
+// A theme file's base colours as the palette from_palette reads.
+static QPalette palette_of(const ThemeSpec& spec) {
+    QPalette p;
+    p.setColor(QPalette::Window, spec.window);
+    p.setColor(QPalette::WindowText, spec.text);
+    p.setColor(QPalette::Base, spec.base);
+    p.setColor(QPalette::Button, spec.button);
+    p.setColor(QPalette::Highlight, spec.accent);
+    p.setColor(QPalette::Shadow, spec.shadow);
+    p.setColor(QPalette::Disabled, QPalette::WindowText, spec.disabled_text);
+    return p;
+}
+
+// Reads the scheme and accent the OS asks for (Mode::SYSTEM), the forced Breeze one, or
+// the theme file's.
 static void resolve_scheme() {
     const QPalette system = QGuiApplication::palette();
+    effect_overrides.clear();
     switch (current_mode) {
+        case Mode::CUSTOM:
+            dark_active = custom_theme.window.lightness() < 128;
+            effect_overrides = custom_theme.effects;
+            break;
         case Mode::DARK:
             dark_active = true;
             break;
@@ -992,7 +1028,9 @@ static void resolve_scheme() {
             dark_active = system.color(QPalette::Window).lightness() < 128;
             break;
     }
-    const QPalette source = current_mode == Mode::SYSTEM ? system : breeze(dark_active);
+    const QPalette source = current_mode == Mode::SYSTEM   ? system
+                            : current_mode == Mode::CUSTOM ? palette_of(custom_theme)
+                                                           : breeze(dark_active);
     current_accent = source.color(QPalette::Highlight);
     active = from_palette(source, dark_active);
 }
@@ -1016,9 +1054,55 @@ protected:
     }
 };
 
+// The theme file in use, watched so that saving it restyles the window (editors that
+// save by replacing the file drop it from the watch; it is added back).
+static QFileSystemWatcher* custom_watcher = nullptr;
+
+static void watch_custom_file() {
+    if (!custom_watcher) {
+        custom_watcher = new QFileSystemWatcher(qApp);
+        QObject::connect(custom_watcher, &QFileSystemWatcher::fileChanged, qApp, [] {
+            // Let the editor finish writing (a replace is a remove plus a create).
+            QTimer::singleShot(200, qApp, [] {
+                if (current_mode != Mode::CUSTOM) {
+                    return;
+                }
+                watch_custom_file();
+                const auto spec = load_theme_file(custom_theme_path, effect_ids());
+                if (!spec) {
+                    qWarning("Theme file %s: %s", qPrintable(custom_theme_path),
+                             qPrintable(spec.error()));
+                    return; // keep the last good version
+                }
+                custom_theme = *spec;
+                reapply(true);
+            });
+        });
+    }
+    if (!custom_watcher->files().isEmpty()) {
+        custom_watcher->removePaths(custom_watcher->files());
+    }
+    if (current_mode == Mode::CUSTOM) {
+        custom_watcher->addPath(custom_theme_path);
+    }
+}
+
 void apply(QApplication& app) {
     current_mode = static_cast<Mode>(
-        std::clamp(QSettings().value("ui/theme", 0).toInt(), 0, static_cast<int>(Mode::LIGHT)));
+        std::clamp(QSettings().value("ui/theme", 0).toInt(), 0, static_cast<int>(Mode::CUSTOM)));
+    if (current_mode == Mode::CUSTOM) {
+        custom_theme_path = QSettings().value("ui/customTheme").toString();
+        const auto spec = load_theme_file(custom_theme_path, effect_ids());
+        if (spec) {
+            custom_theme = *spec;
+            watch_custom_file();
+        } else {
+            // This run only: the setting stays, so the theme is back once the file is.
+            qWarning("Theme file %s: %s; following the system instead",
+                     qPrintable(custom_theme_path), qPrintable(spec.error()));
+            current_mode = Mode::SYSTEM;
+        }
+    }
     resolve_scheme();
     app.setStyle("Fusion");
     app.setStyleSheet(fill_roles(APP_STYLE_SHEET));
@@ -1065,7 +1149,7 @@ void apply_to(QWidget& root) {
     for (const auto& fc : FX_COLORS) {
         qss += QString::fromUtf8("QFrame[fx=\"%1\"] QLabel#fxName { color: %2; }\n"
                                  "QFrame[fx=\"%1\"] QLabel#fileStatusOk { color: %2; }\n")
-                   .arg(QLatin1String(fc.id), readable_accent(QColor(fc.accent)).name());
+                   .arg(QLatin1String(fc.id), readable_accent(accent(fc.id)).name());
     }
     root.setStyleSheet(qss);
 }
@@ -1113,9 +1197,31 @@ Mode get_mode() {
 }
 
 void set_mode(Mode new_mode) {
+    assert(new_mode != Mode::CUSTOM);
     current_mode = new_mode;
     QSettings().setValue("ui/theme", static_cast<int>(new_mode));
+    watch_custom_file();
     reapply(true);
+}
+
+expected<void, QString> set_custom(const QString& path) {
+    auto spec = load_theme_file(path, effect_ids());
+    if (!spec) {
+        return std::unexpected(spec.error());
+    }
+    custom_theme = std::move(*spec);
+    custom_theme_path = path;
+    current_mode = Mode::CUSTOM;
+    QSettings settings;
+    settings.setValue("ui/theme", static_cast<int>(Mode::CUSTOM));
+    settings.setValue("ui/customTheme", path);
+    watch_custom_file();
+    reapply(true);
+    return {};
+}
+
+QString custom_path() {
+    return current_mode == Mode::CUSTOM ? custom_theme_path : QString();
 }
 
 } // namespace Theme

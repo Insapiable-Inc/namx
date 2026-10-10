@@ -86,6 +86,7 @@ jobs:
           ./build-release/WavReaderTest
           ./build-release/NamProcessorTest
           ./build-release/LibraryIndexTest
+          ./build-release/ThemeFileTest
       - name: Validate packaging files + install layout
         run: |
           desktop-file-validate packaging/io.github.Insapiable_Inc.namx.desktop
@@ -196,6 +197,7 @@ jobs:
           ./build-release/WavReaderTest
           ./build-release/NamProcessorTest
           ./build-release/LibraryIndexTest
+          ./build-release/ThemeFileTest
           DESTDIR="$PWD/stage" cmake --install build-release --prefix /usr
           find stage -type f | sort
 

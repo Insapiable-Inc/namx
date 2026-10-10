@@ -945,15 +945,24 @@ acoustic models. UI: cards gained ▾ detail rows for advanced knobs (`addDetail
 
 ## Phase 19 — Themes & community (after the first release)
 
-- [ ] **Theme files** (palette + per-effect accents as JSON in the config dir),
+- [~] **Theme files** (palette + per-effect accents as JSON in the config dir),
       built-in Dark / Light / High-contrast stage; user themes shareable; `Theme` is
-      already the single owner of colour, so this is mostly plumbing.
+      already the single owner of colour, so this is mostly plumbing. **Built 2026-10-09
+      on `experiment/os-palette`** (user chose "A+B" from: A theme files, B KDE `.colors`
+      import, C an in-app editor): `<config>/themes/*.json|*.colors`, Settings →
+      Appearance lists them (+ Import…, Open Folder, broken files with the reason), the
+      theme in use reloads on save; JSON needs only `window` + `text`, `effects` overrides
+      per effect ID; effect accents kept readable both ways under a theme file. Left: C
+      (editor with colour pickers, ~2–3 days) if themes get used; High-contrast stage
+      theme; the meter gradient isn't themeable.
 - [~] **Follow the OS theme by default** (user, 2026-10-04 — switching Plasma to Breeze
       Light changed nothing; v0.0.0 ships dark-only, user decision). **Built 2026-10-04 on
       branch `experiment/os-palette`** (local; `experiment/system-theme` is the earlier
       table-only take): Settings → Appearance (Follow the system / Dark / Light); following
       the system derives every chrome tone from the OS palette and accent, live; forced
-      Dark = today's look exactly, forced Light = a tuned table; effect accents kept
+      Dark = today's look exactly, forced Light = a tuned table (2026-10-09: both
+      replaced by KDE's Breeze Dark / Breeze Light palettes through the same derivation
+      as the system — user: "new dark theme is fine"); effect accents kept
       (darkened to 3:1 on light cards); Input/Output/limiter in the app accent. User: "on
       Linux it looks perfect" (Breeze, Air, Oxygen, light and dark). Before merging: the
       status colours (meter_* as text — yellow DSP % unreadable on light) and the ▾ arrow

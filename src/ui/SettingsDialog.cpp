@@ -1,19 +1,25 @@
 #include "SettingsDialog.h"
 
+#include <QDesktopServices>
 #include <QDir>
 #include <QFileDialog>
+#include <QFileInfo>
 #include <QFormLayout>
 #include <QHBoxLayout>
 #include <QHeaderView>
 #include <QMenu>
 #include <QMenuBar>
+#include <QMessageBox>
 #include <QPushButton>
 #include <QSettings>
 #include <QShortcut>
+#include <QStandardPaths>
+#include <QUrl>
 #include <QVBoxLayout>
 
 #include "Common.h"
 #include "Theme.h"
+#include "ThemeFile.h"
 
 namespace namx
 {
@@ -157,11 +163,9 @@ void SettingsDialog::refresh_current_page() {
             reference_box->setValue(qRound(targets.tuner_reference.value()));
             show_hz_box->setChecked(targets.tuner_display.get_show_hz());
             break;
-        case Page::APPEARANCE: {
-            const QSignalBlocker block(theme_box);
-            theme_box->setCurrentIndex(static_cast<int>(Theme::get_mode()));
+        case Page::APPEARANCE:
+            refresh_themes();
             break;
-        }
         case Page::SHORTCUTS:
             refresh_shortcuts();
             break;
@@ -436,18 +440,138 @@ QWidget* SettingsDialog::build_tuner_page() {
 
 QWidget* SettingsDialog::build_appearance_page() {
     theme_box = new QComboBox;
-    // Index order = Theme::Mode.
-    theme_box->addItems({"Follow the system", "Dark", "Light"});
-    connect(theme_box, &QComboBox::currentIndexChanged, this, [](int index) {
-        Theme::set_mode(static_cast<Theme::Mode>(index));
+    theme_box->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+    connect(theme_box, &QComboBox::activated, this, &SettingsDialog::choose_theme);
+    auto* import_button = new QPushButton("Import…");
+    import_button->setToolTip("Copy a theme file (.json, or a KDE colour scheme .colors) into "
+                              "the themes folder and use it");
+    connect(import_button, &QPushButton::clicked, this, &SettingsDialog::import_theme);
+    auto* folder_button = new QPushButton("Open Folder");
+    folder_button->setToolTip(themes_folder());
+    connect(folder_button, &QPushButton::clicked, this, [] {
+        QDir().mkpath(themes_folder());
+        QDesktopServices::openUrl(QUrl::fromLocalFile(themes_folder()));
     });
+    auto* buttons = new QHBoxLayout;
+    buttons->addWidget(import_button);
+    buttons->addWidget(folder_button);
+    buttons->addStretch(1);
+
+    theme_problems = new QLabel;
+    theme_problems->setWordWrap(true);
+    theme_problems->setObjectName("settingsHint");
+    theme_problems->hide();
+    // Files dropped into the folder show up while the page is open.
+    themes_watcher = new QFileSystemWatcher(this);
+    connect(themes_watcher, &QFileSystemWatcher::directoryChanged, this,
+            &SettingsDialog::refresh_themes);
 
     QFormLayout* form = make_form();
     form->addRow("Theme", theme_box);
+    form->addRow("", buttons);
+    auto* content = new QVBoxLayout;
+    content->addLayout(form);
+    content->addWidget(theme_problems); // full width: the reasons can be long
     return make_page("Following the system takes its light or dark setting and its accent "
                      "colour, and changes along with it. Dark and Light are KDE's Breeze "
-                     "Dark and Breeze Light.",
-                     form);
+                     "Dark and Breeze Light. Your own themes go in the themes folder: a KDE "
+                     "colour scheme (.colors) or a short JSON file (the manual has the "
+                     "format). The theme in use reloads whenever its file is saved.",
+                     content);
+}
+
+// The menu: the built-in modes (data: Theme::Mode), then the themes folder's files
+// (data: their path). Files that don't load are listed below it, with the reason.
+void SettingsDialog::refresh_themes() {
+    theme_box->clear();
+    theme_box->addItem("Follow the system", static_cast<int>(Theme::Mode::SYSTEM));
+    theme_box->addItem("Dark", static_cast<int>(Theme::Mode::DARK));
+    theme_box->addItem("Light", static_cast<int>(Theme::Mode::LIGHT));
+
+    QStringList problems;
+    bool separated = false;
+    for (const ThemeFileEntry& entry : list_theme_files(Theme::effect_ids())) {
+        if (!entry.error.isEmpty()) {
+            problems.append(QString("%1: %2").arg(QFileInfo(entry.path).fileName(), entry.error));
+            continue;
+        }
+        if (!separated) {
+            theme_box->insertSeparator(theme_box->count());
+            separated = true;
+        }
+        theme_box->addItem(entry.name, entry.path);
+        theme_box->setItemData(theme_box->count() - 1, entry.path, Qt::ToolTipRole);
+    }
+
+    if (Theme::get_mode() == Theme::Mode::CUSTOM) {
+        const QString path = Theme::custom_path();
+        if (theme_box->findData(path) < 0) {
+            // In use, but gone from the folder (or broken since): still selectable as is.
+            theme_box->addItem(QFileInfo(path).completeBaseName(), path);
+        }
+        theme_box->setCurrentIndex(theme_box->findData(path));
+    } else {
+        theme_box->setCurrentIndex(theme_box->findData(static_cast<int>(Theme::get_mode())));
+    }
+
+    theme_problems->setText(problems.isEmpty() ? QString() : "Not loaded:\n" + problems.join("\n"));
+    theme_problems->setVisible(!problems.isEmpty());
+
+    if (QFileInfo(themes_folder()).isDir() && themes_watcher->directories().isEmpty()) {
+        themes_watcher->addPath(themes_folder());
+    }
+}
+
+void SettingsDialog::choose_theme(int index) {
+    const QVariant data = theme_box->itemData(index);
+    if (data.typeId() != QMetaType::QString) {
+        Theme::set_mode(static_cast<Theme::Mode>(data.toInt()));
+        return;
+    }
+    if (const auto applied = Theme::set_custom(data.toString()); !applied) {
+        QMessageBox::warning(this, "Theme", "This theme can't be used:\n" + applied.error());
+        refresh_themes(); // back to the theme still in use
+    }
+}
+
+// Copies the file into the themes folder (so it survives the original moving) and
+// switches to it. KDE's own schemes are where the dialog starts, when there are any.
+void SettingsDialog::import_theme() {
+    QString start = QStandardPaths::locate(QStandardPaths::GenericDataLocation, "color-schemes",
+                                           QStandardPaths::LocateDirectory);
+    if (start.isEmpty()) {
+        start = QDir::homePath();
+    }
+    const QString source = QFileDialog::getOpenFileName(this, "Import Theme", start,
+                                                        "Themes (*.json *.colors);;All files (*)");
+    if (source.isEmpty()) {
+        return;
+    }
+    if (const auto spec = load_theme_file(source, Theme::effect_ids()); !spec) {
+        QMessageBox::warning(this, "Import Theme", "This file can't be used:\n" + spec.error());
+        return;
+    }
+    QDir().mkpath(themes_folder());
+    const QString target = QDir(themes_folder()).filePath(QFileInfo(source).fileName());
+    if (QFileInfo(target) != QFileInfo(source)) {
+        if (QFileInfo::exists(target)) {
+            if (QMessageBox::question(this, "Import Theme",
+                                      QString("The themes folder already has %1. Replace it?")
+                                          .arg(QFileInfo(target).fileName())) != QMessageBox::Yes) {
+                return;
+            }
+            QFile::remove(target);
+        }
+        if (!QFile::copy(source, target)) {
+            QMessageBox::warning(this, "Import Theme",
+                                 QString("Couldn't copy the file to %1.").arg(themes_folder()));
+            return;
+        }
+    }
+    if (const auto applied = Theme::set_custom(target); !applied) {
+        QMessageBox::warning(this, "Import Theme", "This file can't be used:\n" + applied.error());
+    }
+    refresh_themes();
 }
 
 // Shortcuts: listed from the window itself, so the page can't go stale.

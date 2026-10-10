@@ -158,7 +158,7 @@ Optional CMake variables:
 | Variable | Purpose |
 |----------|---------|
 | `-DNAM_NATIVE_OPT=OFF` | Portable AVX2/FMA instead of `-march=native` (required for release builds) |
-| `-DNAM_BUILD_TESTS=ON` | Also build the tests (`MidiMapperTest`, `DspGoldenTest`, `WavReaderTest`, `NamProcessorTest`, `LibraryIndexTest`; run them directly or via `ctest`) |
+| `-DNAM_BUILD_TESTS=ON` | Also build the tests (`MidiMapperTest`, `DspGoldenTest`, `WavReaderTest`, `NamProcessorTest`, `LibraryIndexTest`, `ThemeFileTest`; run them directly or via `ctest`) |
 
 ### Linux — install / packages
 
@@ -229,7 +229,7 @@ cmake --build build-release --parallel
 | `-DCMAKE_BUILD_TYPE=Release` | Release | `Debug` for symbols, `Release` for optimization |
 | `-DCMAKE_PREFIX_PATH=...` | none | Qt install root on Windows |
 | `-DNAM_NATIVE_OPT=OFF` | ON | Portable AVX2/FMA instead of `-march=native` (release/CI builds) |
-| `-DNAM_BUILD_TESTS=ON` | OFF | `MidiMapperTest`, `DspGoldenTest`, `WavReaderTest`, `NamProcessorTest`, `LibraryIndexTest` |
+| `-DNAM_BUILD_TESTS=ON` | OFF | `MidiMapperTest`, `DspGoldenTest`, `WavReaderTest`, `NamProcessorTest`, `LibraryIndexTest`, `ThemeFileTest` |
 | `-DNAM_BUILD_BENCH=ON` | OFF | `namx-bench`, the chain benchmark (see Troubleshooting → High CPU usage) |
 | `-DNAM_WERROR=ON` | OFF | Compiler warnings are errors (CI and `build.sh` turn it on) |
 
@@ -428,6 +428,7 @@ change applies immediately.
 | MIDI | Input devices on/off, Follow MIDI clock, **Mappings…** |
 | Library | Model / IR / preset folders, rescan |
 | Tuner | Reference pitch, show the detected frequency (also on the tuner card) |
+| Appearance | Theme: **Follow the system** (light or dark and the accent colour, live), **Dark** / **Light** (KDE's Breeze Dark / Breeze Light), or a theme file from the themes folder; **Import…** copies a file there, **Open Folder** shows it (see [File formats](#8-file-formats)) |
 | Shortcuts | Every keyboard shortcut, read from the window (**Settings → Keyboard Shortcuts…**) |
 
 ### Library
@@ -500,6 +501,46 @@ about 4 ms higher up, where the pick attack is.
 | `.nam`  | Neural Amp Modeler model file. Supported architectures: WaveNet, LSTM, ConvNet, Linear. Version 0.5–0.7 supported. |
 | `.wav`  | Impulse response / cab simulation. Mono; PCM 16/24/32-bit or float 32/64-bit. Any sample rate. Up to 1 s is used; a longer file is faded out over its last 10 ms there. |
 | `.nampreset` | Preset, JSON (schema v2): `version`, every effect group (`noiseGate`, `compressor`, …) with its parameters, `effectOrder` (stable effect IDs), `namPath` / `irPath` (older files may carry a `tone3000` object; it is ignored). An effect group missing from the file loads at its defaults, as does a missing key inside a group; a missing `effectOrder` loads the default order. |
+
+### Theme files
+
+Themes live in the themes folder: `~/.config/Insapiable/namx/themes` on Linux,
+`%LOCALAPPDATA%\Insapiable\namx\themes` on Windows (**Settings → Appearance → Open
+Folder**). Two formats are read:
+
+- **KDE colour schemes** (`.colors`), as they are — the ones in
+  `/usr/share/color-schemes` or `~/.local/share/color-schemes`, or downloaded from the
+  KDE Store. The window, view, button and selection colours are used.
+- **JSON** (`.json`): only `window` and `text` are required.
+
+```json
+{
+  "name": "Nord",
+  "window": "#2e3440",
+  "text": "#eceff4",
+  "base": "#3b4252",
+  "button": "#434c5e",
+  "accent": "#88c0d0",
+  "effects": { "nam": "#ebcb8b", "ir": "#bf616a" }
+}
+```
+
+| Key | Used for | When missing |
+|---|---|---|
+| `window` | Window background | required |
+| `text` | Text | required |
+| `base` | Lists, fields | `window` |
+| `button` | Effect cards, buttons | `window` |
+| `accent` | Selections, the Input/Output knobs, the tempo bar | Breeze blue `#3daee9` |
+| `shadow`, `disabledText` | Shadows, disabled controls | derived from `window` / `text` |
+| `effects` | Per-effect colour, by effect ID: `tuner`, `transpose`, `gate` (Noise Gate), `comp` (Compressor), `wah`, `flanger`, `phaser`, `drive` (Overdrive), `nam` (Amplifier), `volume` (Volume Pedal), `eq`, `chorus`, `tremolo`, `delay`, `reverb`, `ir` (Cabinet) | NAM-X's own |
+
+Colours are `#rrggbb` (or SVG names such as `"red"`). Every other tone (hover, borders,
+knob bodies, LED panels) is derived from these, light or dark depending on `window`.
+Effect colours that would be hard to read on the cards are lightened (dark themes) or
+darkened (light themes) until they stand out. A file with an error (a misspelt key, an
+unknown effect, a bad colour) isn't loaded; Settings lists it with the reason. The theme
+in use reloads each time its file is saved.
 
 NAM models are available from the [NAM community model library](https://www.neuralampmodeler.com).
 IR files are compatible with any standard cab sim WAV (e.g., from OwnHammer, Celestion, Rosen Digital, etc.).

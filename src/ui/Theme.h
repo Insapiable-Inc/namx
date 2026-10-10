@@ -2,6 +2,7 @@
 
 #include <QColor>
 #include <QString>
+#include <QStringList>
 
 #include "Common.h"
 
@@ -29,22 +30,32 @@ namespace Theme
 // Fable item 24). Plain text is returned untouched (its line breaks stay).
 QString plain_tooltip(const QString& text);
 
-// Accent for an effect ID ("gate", "nam", … or "neutral").
+// Accent for an effect ID ("gate", "nam", … or "neutral"); a theme file may override it.
 QColor accent(const QString& fx_id);
 // The app accent: the system's highlight colour while following the system (Breeze
 // blue otherwise): chrome, selections, and cards before they are tagged.
 QColor generic_accent();
 
-// Dark, light, or whichever the OS uses (the default; follows it live).
+// Dark, light, or whichever the OS uses (the default; follows it live), or a theme file.
+// The values are stored in `ui/theme`: append only.
 enum class Mode
 {
     SYSTEM,
     DARK,
-    LIGHT
+    LIGHT,
+    CUSTOM
 };
 Mode get_mode();
-// Persists (`ui/theme`) and restyles the window at once.
+// Persists (`ui/theme`) and restyles the window at once. Not for Mode::CUSTOM: that
+// takes a file, through set_custom.
 void set_mode(Mode new_mode);
+// Loads a theme file (ThemeFile.h) and switches to it; persists `ui/theme` and
+// `ui/customTheme`. The file is watched: saving it restyles the window.
+expected<void, QString> set_custom(const QString& path);
+// The theme file in use (Mode::CUSTOM), else empty.
+QString custom_path();
+// The effect IDs a theme file may give an accent to.
+QStringList effect_ids();
 // Re-reads the system scheme and accent and restyles the window; without `force`,
 // only when one of them changed.
 void reapply(bool force = false);

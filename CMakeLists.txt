@@ -90,6 +90,8 @@ set(GUI_SOURCES
     src/ui/GainReductionMeter.cpp
     src/ui/GainReductionMeter.h
     src/ui/Theme.cpp
+    src/ui/ThemeFile.cpp
+    src/ui/ThemeFile.h
     src/ui/TunerDisplay.cpp
     src/ui/TunerDisplay.h
     src/ui/Theme.h
@@ -346,6 +348,7 @@ if(NAM_BUILD_TESTS)
         src/ui/ToggleSwitch.cpp
         src/ui/ToggleSwitch.h
         src/ui/Theme.cpp
+        src/ui/ThemeFile.cpp
     )
     target_include_directories(MidiMapperTest PRIVATE src/midi src/ui src/dsp)
     target_compile_options(MidiMapperTest PRIVATE ${NAM_WARNING_FLAGS})
@@ -373,6 +376,13 @@ if(NAM_BUILD_TESTS)
     target_compile_options(LibraryIndexTest PRIVATE ${NAM_WARNING_FLAGS})
     target_link_libraries(LibraryIndexTest PRIVATE Qt6::Core)
     add_test(NAME LibraryIndexTest COMMAND LibraryIndexTest)
+
+    # Theme files (JSON and KDE .colors) against hand-written good and broken ones.
+    add_executable(ThemeFileTest tests/ThemeFileTest.cpp src/ui/ThemeFile.cpp src/ui/ThemeFile.h)
+    target_include_directories(ThemeFileTest PRIVATE src/ui src/dsp)
+    target_compile_options(ThemeFileTest PRIVATE ${NAM_WARNING_FLAGS})
+    target_link_libraries(ThemeFileTest PRIVATE Qt6::Core Qt6::Gui)
+    add_test(NAME ThemeFileTest COMMAND ThemeFileTest)
 
     # Recorded effect outputs (tests/DspGoldenTest.cpp, tests/dsp-golden.txt): guards DSP refactors.
     find_package(Qt6 REQUIRED COMPONENTS Test)

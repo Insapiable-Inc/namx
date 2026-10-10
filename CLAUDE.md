@@ -28,7 +28,7 @@ namx/
 │   └── dsp/           # AudioEngine, backends, effect processors (no Qt dependencies)
 ├── resources/         # resources.qrc, app icon (icons/), starter presets (presets/)
 ├── packaging/         # desktop file, AppStream, mime, Windows .rc (AppImage built by release.yml — the only Linux release, user 2026-10-04; no Flatpak, Snap or AUR package)
-├── tests/             # MidiMapperTest, DspGoldenTest, WavReaderTest, NamProcessorTest, LibraryIndexTest (-DNAM_BUILD_TESTS=ON)
+├── tests/             # MidiMapperTest, DspGoldenTest, WavReaderTest, NamProcessorTest, LibraryIndexTest, ThemeFileTest (-DNAM_BUILD_TESTS=ON)
 ├── bench/             # namx-bench, instructions.py (CPU regression) (-DNAM_BUILD_BENCH=ON)
 └── external/          # Git submodules (CMake: EXTERNAL_DIR, NAM_ROOT, NAM_DEPS_PATH)
     ├── NeuralAmpModelerCore/  # NAM core — our fork (Insapiable-Inc), branch `namx` = upstream 3cde95c + our weight-check fix; brings Eigen, nlohmann/json, AudioDSPTools in its Dependencies/
@@ -71,7 +71,7 @@ Release builds default to `-march=native` via the `NAM_NATIVE_OPT` CMake option 
 
 `cmake --install <build> --prefix /usr` installs the binary plus the desktop/mime/AppStream/icon files (app id `io.github.Insapiable_Inc.namx`); `.github/workflows/release.yml` runs on `v*` tags (Ubuntu + Arch build and tests, Windows zip, source tarball, GitHub release). **Linux distribution:** the AppImage only (user, 2026-10-04); no Flatpak (manifest removed — in git history at 0438cc5), no Snap, no AUR package (the PKGBUILD was removed). Bundles must never include `libjack`. `namx --version`, `--help`, `--self-test-and-exit` (headless CI check) and `namx file…` (opens .nam/.wav/.nampreset) are handled in `main.cpp`; the version comes from `PROJECT_VERSION` via the `NAM_VERSION` define.
 
-`-DNAM_BUILD_TESTS=ON` adds `MidiMapperTest`, `DspGoldenTest`, `WavReaderTest`, `NamProcessorTest` and `LibraryIndexTest` (all headless):
+`-DNAM_BUILD_TESTS=ON` adds `MidiMapperTest`, `DspGoldenTest`, `WavReaderTest`, `NamProcessorTest`, `LibraryIndexTest` and `ThemeFileTest` (all headless):
 
 ```bash
 cmake -S . -B build-test -DCMAKE_BUILD_TYPE=Debug -DNAM_BUILD_TESTS=ON
@@ -182,7 +182,8 @@ All effects inherit `EffectBase` (`src/dsp/EffectBase.h` — the header comment 
 | `Log.h` | `src/dsp/` | `nam.audio` logging category — use `qCWarning(lc_audio, …)`, never `std::cerr` (invisible on Windows) |
 | `KnobWidget` | `src/ui/KnobWidget.h/cpp` | `QDial` wrapper: float range, scroll step, label; `set_snap` makes it discrete, and with ≤ 32 positions it draws position dots (`Theme::detent`) instead of the sweep arc |
 | `ToggleSwitch` | `src/ui/ToggleSwitch.h/cpp` | Custom-painted on/off switch |
-| `Theme` | `src/ui/Theme.h/cpp` | Fusion + dark palette + app stylesheet; per-effect accents (`tag_card(card, fx_id)`) + chrome color accessors — **all colors live here** |
+| `Theme` | `src/ui/Theme.h/cpp` | Fusion + app stylesheet; per-effect accents (`tag_card(card, fx_id)`) + chrome color accessors — **all colors live here**. Modes (`ui/theme`): Follow the system (default, live), Dark / Light (= KDE Breeze Dark / Light palettes, user 2026-10-09), Custom (a theme file, `ui/customTheme`, reloaded on save). Every mode is one palette (window, text, base, button, accent, shadow, disabled text) → `from_palette` derives all tones; ours in every mode: LED colours, warning red, switch edges, effect accents (a theme file may override those) |
+| `ThemeFile` | `src/ui/ThemeFile.h/cpp` | Theme file reader (no widgets): our JSON or a KDE `.colors`, from `<config>/themes`; strict — an unknown key/effect ID or bad colour is an error with a message (`tests/ThemeFileTest`) |
 | `AppImageIntegration` | `src/ui/AppImageIntegration.h/cpp` | AppImage only (`$APPIMAGE`): add/remove the launcher, icon and MIME types under `~/.local/share` (marker key `X-NAMX-AppImage-Integration`), first-run offer from `MainWindow::offer_desktop_integration` (skipped in `--self-test-and-exit`), Settings menu entry |
 | `EffectShortcuts` | `src/ui/EffectShortcuts.h/cpp` | Keyboard toggles for effects (user has Latin American layout) |
 | `Constants.h` | `src/dsp/` | DSP parameter ranges and defaults for all effects |

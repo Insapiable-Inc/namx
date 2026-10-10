@@ -5,6 +5,7 @@
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDialog>
+#include <QFileSystemWatcher>
 #include <QLabel>
 #include <QListWidget>
 #include <QMainWindow>
@@ -83,6 +84,9 @@ private:
     void refresh_midi_devices();
     void refresh_library();
     void refresh_shortcuts();
+    void refresh_themes();
+    void choose_theme(int index);
+    void import_theme();
 
     void choose_device(bool input, int index);
     void add_folder(size_t section);
@@ -108,6 +112,8 @@ private:
     array<QListWidget*, 3> folder_lists{}; // models, IRs, presets
 
     QComboBox* theme_box = nullptr;
+    QLabel* theme_problems = nullptr; // theme files that don't load, and why
+    QFileSystemWatcher* themes_watcher = nullptr;
     QSpinBox* reference_box = nullptr;
     QCheckBox* show_hz_box = nullptr;
     QCheckBox* exclusive_box = nullptr; // only where the backend supports it (WASAPI)
