@@ -56,58 +56,23 @@ QColor accent(const QString& fx_id) {
     return QColor("#7d8590");
 }
 
-// Chrome tones (stylesheet roles + custom-painted widgets), as hex tables for the forced
-// Dark / Light themes. The per-effect
-// accents, the meters and the LED displays are the same in both: the displays are
-// dark panels on purpose, like hardware. DARK is the approved palette, verbatim.
-struct PaletteHex
+// What stays ours in every theme: the warning red, the switch edge, the LED colours.
+// The displays' LED colours are deeper on a light panel so they still read.
+struct OwnTones
 {
-    const char* window; // main window background
-    const char* surface; // bars, menus, lists
-    const char* card; // effect cards
-    const char* raised; // tool buttons, tooltips
-    const char* control; // push buttons, combo boxes
-    const char* control_hover;
-    const char* handle_hover; // scroll handles, hovered
-    const char* selection; // hovered / selected menu and list items
-    const char* pressed;
-    const char* line; // separators and quiet borders
-    const char* border; // control borders
-    const char* border_hover;
-    const char* disabled_bg;
-    const char* disabled_border;
-    const char* disabled_text;
-    const char* text;
-    const char* text_dim; // secondary labels
-    const char* text_muted; // status and captions
-    const char* text_faint; // grips, captions
-    const char* text_off; // empty preset slots
     const char* notice; // status bar problems
-    const char* shadow;
-    // Custom-painted widgets (knobs, switches, fields).
-    const char* track;
-    const char* track_hover;
-    const char* knob_body_top;
-    const char* knob_body_bot;
-    const char* bezel;
-    const char* detent;
-    const char* well;
-    const char* thumb_top;
-    const char* thumb_bot;
-    const char* thumb_outline; // "" = none (the dark theme's thumb needs no edge)
     int switch_rim_off; // alpha of the switch track's dark edge, off / on
     int switch_rim_on;
-    // LED displays (tuner, level meters).
-    const char* display_bg;
-    const char* display_line; // frame
-    const char* display_faint; // base of the dim text and unlit digits
     const char* led_green;
     const char* led_red;
     const char* led_amber; // the meters' hot zone
     int led_unlit_scale; // unlit segments' tint strength (alpha multiplier)
 };
 
-// The tones in use: one of the tables, or derived from the OS palette (Mode::SYSTEM).
+static constexpr OwnTones OWN_DARK = {"#ff5252", 100, 60, "#42e86c", "#ff453a", "#f0c850", 1};
+static constexpr OwnTones OWN_LIGHT = {"#c62828", 40, 30, "#16a34a", "#dc2626", "#d19a00", 2};
+
+// The tones in use, derived from a palette (from_palette).
 struct Colors
 {
     QColor window; // main window background
@@ -155,71 +120,57 @@ struct Colors
     int led_unlit_scale; // unlit segments' tint strength (alpha multiplier)
 };
 
-static constexpr PaletteHex DARK = {
-    "#15171c", "#1a1d24", "#1f242c", "#232830", "#2a2f38", "#353c4a", "#424b5c",
-    "#2f3744", "#1f242c", "#2a2f38", "#353c4a", "#424b5c", "#1d2027", "#25292f",
-    "#555c6b", "#d8dee9", "#aab0bc", "#9aa1ad", "#7d8590", "#6b7280", "#ff5252",
-    "#0a0c10", "#2a2f38", "#353c4a", "#2e3441", "#1c2028", "#0e1015", "#6b7280",
-    "#181b22", "#ffffff", "#d8dee9", "",        100,       60,        "#07080c",
-    "#2a2f38", "#2a2f38", "#42e86c", "#ff453a", "#f0c850", 1,
-};
-
-// Draft (2026-10-04, experiment/system-theme): neutral cool greys around Breeze Light;
-// to be tuned by eye like the dark one.
-static constexpr PaletteHex LIGHT = {
-    "#eceef1", "#f6f7f9", "#ffffff", "#f1f3f5", "#e3e6ea", "#d6dae0", "#b4bac4",
-    "#dde4ee", "#cdd2d9", "#d5d9df", "#c3c8d0", "#a9b0ba", "#eef0f2", "#dde0e4",
-    "#a3a9b2", "#1f2328", "#4f5661", "#5f6670", "#7d8590", "#9aa1ab", "#c62828",
-    "#9aa1ab", "#cfd4da", "#c2c8d0", "#ffffff", "#f0f2f5", "#aeb5bf", "#9aa1ab",
-    "#e6e9ed", "#ffffff", "#f3f5f8", "#b4bac4", 40,        30,        "#dfe3e8",
-    "#c3c8d0", "#8a919b", "#16a34a", "#dc2626", "#d19a00", 2,
-};
-
-static Colors from_hex(const PaletteHex& t) {
-    return Colors{
-        QColor(t.window),        QColor(t.surface),
-        QColor(t.card),          QColor(t.raised),
-        QColor(t.control),       QColor(t.control_hover),
-        QColor(t.handle_hover),  QColor(t.selection),
-        QColor(t.pressed),       QColor(t.line),
-        QColor(t.border),        QColor(t.border_hover),
-        QColor(t.disabled_bg),   QColor(t.disabled_border),
-        QColor(t.disabled_text), QColor(t.text),
-        QColor(t.text_dim),      QColor(t.text_muted),
-        QColor(t.text_faint),    QColor(t.text_off),
-        QColor(t.notice),        QColor(t.shadow),
-        QColor(t.track),         QColor(t.track_hover),
-        QColor(t.knob_body_top), QColor(t.knob_body_bot),
-        QColor(t.bezel),         QColor(t.detent),
-        QColor(t.well),          QColor(t.thumb_top),
-        QColor(t.thumb_bot),     QColor(t.thumb_outline),
-        t.switch_rim_off,        t.switch_rim_on,
-        QColor(t.display_bg),    QColor(t.display_line),
-        QColor(t.display_faint), QColor(t.led_green),
-        QColor(t.led_red),       QColor(t.led_amber),
-        t.led_unlit_scale,
-    };
-}
-
 static QColor mix(const QColor& a, const QColor& b, double t) {
     return QColor::fromRgbF(static_cast<float>(a.redF() + (b.redF() - a.redF()) * t),
                             static_cast<float>(a.greenF() + (b.greenF() - a.greenF()) * t),
                             static_cast<float>(a.blueF() + (b.blueF() - a.blueF()) * t));
 }
 
-// Every chrome tone from the OS palette (Mode::SYSTEM): the window, base, button, text,
-// shadow and highlight colours as they are, the in-between tones mixed between them.
+// The forced Dark / Light themes: KDE's Breeze Dark and Breeze Light colour schemes
+// (/usr/share/color-schemes/Breeze*.colors), as Qt's KDE platform theme turns them into
+// a QPalette — disabled text and shadow included, read from a dump under each scheme
+// (2026-10-09). So "Dark" looks like following the system under Breeze Dark, anywhere.
+static QPalette breeze(bool dark) {
+    struct Roles
+    {
+        const char* window;
+        const char* window_text;
+        const char* base;
+        const char* button;
+        const char* highlight;
+        const char* shadow;
+        const char* disabled_text;
+    };
+    static constexpr Roles DARK = {"#202326", "#fcfcfc", "#141618", "#292c30",
+                                   "#3daee9", "#0e0f10", "#686a6c"};
+    static constexpr Roles LIGHT = {"#eff0f1", "#232629", "#ffffff", "#fcfcfc",
+                                    "#3daee9", "#474a4c", "#a0a1a3"};
+    const Roles& r = dark ? DARK : LIGHT;
+    QPalette p;
+    p.setColor(QPalette::Window, QColor(r.window));
+    p.setColor(QPalette::WindowText, QColor(r.window_text));
+    p.setColor(QPalette::Base, QColor(r.base));
+    p.setColor(QPalette::Button, QColor(r.button));
+    p.setColor(QPalette::Highlight, QColor(r.highlight));
+    p.setColor(QPalette::Shadow, QColor(r.shadow));
+    p.setColor(QPalette::Disabled, QPalette::WindowText, QColor(r.disabled_text));
+    return p;
+}
+
+// Every chrome tone from a palette (the OS's, or Breeze's when forced): the window, base,
+// button, text, shadow and highlight colours as they are, the in-between tones mixed
+// between them.
 // Mixing toward the text colour darkens on a light scheme and lightens on a dark one,
 // so one recipe serves both. Ours stay: the effect accents, the LED colours and the
 // status bar's warning red.
-static Colors from_system(const QPalette& sys, bool dark) {
+static Colors from_palette(const QPalette& sys, bool dark) {
     const QColor w = sys.color(QPalette::Window);
     const QColor base = sys.color(QPalette::Base);
     const QColor button = sys.color(QPalette::Button);
     const QColor text = sys.color(QPalette::WindowText);
     const QColor white(255, 255, 255);
     const QColor black(0, 0, 0);
-    const PaletteHex& ours = dark ? DARK : LIGHT;
+    const OwnTones& ours = dark ? OWN_DARK : OWN_LIGHT;
     const QColor border = mix(w, text, 0.22);
     return Colors{
         w, // window
@@ -271,7 +222,7 @@ static bool dark_active = true;
 static QColor current_accent("#3daee9"); // Breeze blue until the system says otherwise
 static QPointer<QWidget> themed_root;
 
-static Colors active = from_hex(DARK);
+static Colors active = from_palette(breeze(true), true);
 
 static const Colors& palette() {
     return active;
@@ -1021,11 +972,9 @@ static QString fill_roles(const char* sheet) {
     return qss;
 }
 
-// Reads the scheme and accent the OS asks for (Mode::SYSTEM), or the forced scheme.
+// Reads the scheme and accent the OS asks for (Mode::SYSTEM), or the forced Breeze one.
 static void resolve_scheme() {
     const QPalette system = QGuiApplication::palette();
-    current_accent =
-        current_mode == Mode::SYSTEM ? system.color(QPalette::Highlight) : QColor("#3daee9");
     switch (current_mode) {
         case Mode::DARK:
             dark_active = true;
@@ -1043,8 +992,9 @@ static void resolve_scheme() {
             dark_active = system.color(QPalette::Window).lightness() < 128;
             break;
     }
-    active = current_mode == Mode::SYSTEM ? from_system(system, dark_active)
-                                          : from_hex(dark_active ? DARK : LIGHT);
+    const QPalette source = current_mode == Mode::SYSTEM ? system : breeze(dark_active);
+    current_accent = source.color(QPalette::Highlight);
+    active = from_palette(source, dark_active);
 }
 
 // Follows the OS while Mode::SYSTEM: a scheme switch (Qt 6.5+) or a new system

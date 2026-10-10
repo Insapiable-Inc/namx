@@ -445,8 +445,8 @@ QWidget* SettingsDialog::build_appearance_page() {
     QFormLayout* form = make_form();
     form->addRow("Theme", theme_box);
     return make_page("Following the system takes its light or dark setting and its accent "
-                     "colour, and changes along with it. The tuner and the meters stay dark "
-                     "displays in every theme.",
+                     "colour, and changes along with it. Dark and Light are KDE's Breeze "
+                     "Dark and Breeze Light.",
                      form);
 }
 
