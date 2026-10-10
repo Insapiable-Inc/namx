@@ -943,20 +943,25 @@ acoustic models. UI: cards gained ▾ detail rows for advanced knobs (`addDetail
 - [~] Windows: **WASAPI exclusive mode** → moved to Phase 21 (2026-10-01): no Windows
       machine to test on; all untestable Windows audio work waits together.
 
-## Phase 19 — Themes & community (after the first release)
+## Phase 19 — Themes & community (after the first release; the themes part merged into main for v0.0.0 — user, 2026-10-09)
 
-- [~] **Theme files** (palette + per-effect accents as JSON in the config dir),
+- [x] **Theme files** (palette + per-effect accents as JSON in the config dir),
       built-in Dark / Light / High-contrast stage; user themes shareable; `Theme` is
       already the single owner of colour, so this is mostly plumbing. **Built 2026-10-09
-      on `experiment/os-palette`** (user chose "A+B" from: A theme files, B KDE `.colors`
+      on `experiment/os-palette`, merged into main the same day (ships in v0.0.0)** (user chose "A+B" from: A theme files, B KDE `.colors`
       import, C an in-app editor): `<config>/themes/*.json|*.colors`, Settings →
       Appearance lists them (+ Import…, Open Folder, broken files with the reason), the
       theme in use reloads on save; JSON needs only `window` + `text`, `effects` overrides
       per effect ID; effect accents kept readable both ways under a theme file. Left: C
       (editor with colour pickers, ~2–3 days) if themes get used; High-contrast stage
       theme; the meter gradient isn't themeable.
-- [~] **Follow the OS theme by default** (user, 2026-10-04 — switching Plasma to Breeze
-      Light changed nothing; v0.0.0 ships dark-only, user decision). **Built 2026-10-04 on
+- [ ] **Theme leftovers** (open since the merge, 2026-10-09): the status colours
+      (meter_* as text — the yellow DSP % is unreadable on light themes) and the ▾ arrow
+      PNG (fixed grey) need theme-aware versions; live reload of a theme file is untested
+      (user: not worth worrying about); Windows' Follow the system unchecked on hardware.
+- [x] **Follow the OS theme by default** (user, 2026-10-04 — switching Plasma to Breeze
+      Light changed nothing; v0.0.0 was going to ship dark-only — reversed 2026-10-09, the
+      branch merged into main). **Built 2026-10-04 on
       branch `experiment/os-palette`** (local; `experiment/system-theme` is the earlier
       table-only take): Settings → Appearance (Follow the system / Dark / Light); following
       the system derives every chrome tone from the OS palette and accent, live; forced
