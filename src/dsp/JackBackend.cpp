@@ -75,15 +75,17 @@ bool JackBackend::start(const string& client_name, Callback* cb) {
 }
 
 void JackBackend::stop() {
-    if (!running.load()) {
-        return;
-    }
-    running.store(false);
+    // Server shutdown clears running, but JACK still requires the owner thread
+    // to close the client. Stream state is not ownership of the client handle.
+    const bool was_running = running.exchange(false);
     if (client) {
-        jack_deactivate(client);
+        if (was_running) {
+            jack_deactivate(client);
+        }
         jack_client_close(client);
         client = nullptr;
     }
+    port_in = port_out_l = port_out_r = nullptr;
     callback = nullptr;
 }
 
