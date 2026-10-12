@@ -155,7 +155,7 @@ All effects inherit `EffectBase` (`src/dsp/EffectBase.h` — the header comment 
 | `NoiseGateProcessor`, `CompressorProcessor`, `DynamicWahProcessor` | `src/dsp/…` | Mono dynamics (envelope gate, feedforward comp, envelope wah) |
 | `ChorusProcessor`, `FlangerProcessor`, `PhaserProcessor`, `TremoloProcessor` | `src/dsp/…` | Modulation effects; stereo variants use LFO phase offsets |
 | `Phase90Circuit` | `src/dsp/Phase90Circuit.h` | The Phaser: MXR Phase 90 circuit model (polimi-ispl paper's MIT MATLAB in closed form — JFET channel resistance from the LFO and Vds); Feedback solved in-loop, capped at 90 % (runs away near 98 %); chosen by ear 2026-10-04, replacing the digital phaser + Vibe |
-| `DelayProcessor` | `src/dsp/DelayProcessor.h/cpp` | Ping-pong stereo delay |
+| `DelayProcessor` | `src/dsp/DelayProcessor.h/cpp` | Stereo delay: two independent lines (Time / R Time, each syncable); ping-pong Cross-feed in the DSP, no knob |
 | `ReverbProcessor` | `src/dsp/ReverbProcessor.h/cpp`, `ReverbAlgorithms.h` | Plate (Dattorro), Hall and Room (8- / 16-line FDNs) + pre-delay (tempo-syncable), wet cuts, level-matched types; Decay keeps its 0–100 preset key `roomSize` and shows 0.2–10 s (`decay_seconds`); Shimmer (octave-up feedback, `StretchShifter`) |
 | `DriveProcessor`, `VolumeProcessor`, `TransposeProcessor` | `src/dsp/…` | Phase 17 stages: Tube Screamer drive, volume pedal with mid-point, ±12 st transpose |
 | `TubeScreamerClipper` | `src/dsp/TubeScreamerClipper.h` | The Drive's clipping stage: the TS808/TS9 op-amp + diode circuit as a wave digital filter (`external/chowdsp_wdf`, BSD-3), 4× oversampled with half-band FIRs (small latency, reported). Replaced the digital TS approximation ("Classic") 2026-10-04 — approved by ear |

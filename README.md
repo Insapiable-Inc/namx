@@ -132,7 +132,7 @@ Any mono WAV file: PCM 16/24/32-bit or float 32/64-bit, 1 kHz to 768 kHz (it is 
 1. Equalizer: 4 bands plus low and high cuts
 1. Chorus: mono or stereo
 1. Tremolo: mono or stereo
-1. Delay: mono or ping-pong stereo, with an octave-up shimmer on the repeats
+1. Delay: mono or stereo with separate left/right times, with an octave-up shimmer on the repeats
 1. Reverb: Plate, Hall and Room, with pre-delay and shimmer
 1. Cabinet: loads an impulse response
 

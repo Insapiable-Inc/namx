@@ -482,7 +482,7 @@ twice the CPU — it is never summed to mono.
 | Dynamic Wah | **Manual** switch (off = Auto: your playing sweeps it), **Reverse** (pedal heel ↔ toe), Mix, Sensitivity, Resonance, Position (the sweep in Manual mode — map an expression pedal) | — |
 | Flanger / Phaser / Chorus | Mix, Rate (Sync), Depth, Feedback (not Chorus; Phaser up to 90 %); Flanger **Range**. The Phaser is an MXR Phase 90 model: Depth 50 % and Mix 50 % are the pedal, Feedback 0 % the original "script" circuit | — |
 | Equalizer | Bass, Middle, High-Mid, Treble (±12 dB) | the four band frequencies, Low Cut, High Cut |
-| Delay | Mix, Time (Sync), Feedback (ping-pong in stereo) | R Time (the right repeat's own time, synced with Time), Low/High Cut, Saturation, Shimmer (octave-up repeats) |
+| Delay | Mix, Time, R Time (the right repeat's own time; Sync covers both), Feedback (two independent echoes in stereo) | Low/High Cut, Saturation, Shimmer (octave-up repeats) |
 | Reverb | Type (Plate / Hall / Room), Mix, Decay (0.2–10 s), Damping, Width | Pre-delay (0–250 ms; with the main row's **Sync** on, a note value at the tempo, up to 2 s), Low/High Cut, Shimmer (octave-up feedback into the tail) |
 | Cabinet | On/Off, ‹ › through the library, Level; the row shows the IR and its metadata | — |
 | Volume Pedal | Volume, Mid (level at half travel), **Reverse** (pedal heel ↔ toe) | — |

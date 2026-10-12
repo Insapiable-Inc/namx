@@ -13,9 +13,9 @@ namespace namx
 
 // Stereo delay.
 // Mono in + mono mode: one delay line.
-// Mono in + stereo mode: two lines — left at Time, right at R Time
-//   — with Cross-feed blending the repeats across: 100 % = ping-pong
-//   (left → right → left …), 0 % = two independent echoes.
+// Mono in + stereo mode: two lines — left at Time, right at R Time — with Cross-feed
+//   blending the repeats across: 0 % (the default; the UI has no knob) = two independent
+//   echoes, 100 % = ping-pong (left → right → left …).
 // Stereo in (any mode): each channel through its own line (L/R times).
 // Every mode: Low/High Cut and Saturation act inside the feedback loop, so
 // each repeat is darker / dirtier than the last (tape/analog character);
@@ -111,8 +111,8 @@ private:
     atomic<float> time_ms{250.0f};
     atomic<float> feedback_pct{40.0f};
     atomic<float> mix_pct{30.0f};
-    atomic<float> right_ms{250.0f};
-    atomic<float> cross_pct{100.0f};
+    atomic<float> right_ms{375.0f};
+    atomic<float> cross_pct{0.0f};
     atomic<float> low_cut_hz{20.0f};
     atomic<float> high_cut_hz{20000.0f};
     atomic<float> sat_pct{0.0f};

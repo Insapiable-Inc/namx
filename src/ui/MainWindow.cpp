@@ -1107,19 +1107,26 @@ void MainWindow::setup_ui() {
         knob_del_feedback->set_scroll_step(1.0);
         knob_del_mix->set_scroll_step(1.0);
 
+        // R Time: the right line's own time, synced by the row's Sync switch too; beside Time.
+        knob_del_right_time = new KnobWidget("R Time", DELAY_TIME_MIN, DELAY_TIME_MAX,
+                                             DELAY_RIGHT_TIME_DEFAULT, "ms");
+        knob_del_right_time->set_scroll_step(1.0);
+        knob_del_right_time->setToolTip(
+            "Right repeat time (stereo): different from Time for a wide, uneven bounce");
         QWidget* col =
             make_effect_row("Delay", sw_delay_enable,
-                            {knob_del_mix, knob_del_time, knob_del_feedback}, &sw_delay_stereo);
+                            {knob_del_mix, knob_del_time, knob_del_right_time, knob_del_feedback},
+                            &sw_delay_stereo);
         add_tempo_sync(col, knob_del_time, "Time", true, 8 /* 1/8. */, DELAY_TIME_MIN,
                        DELAY_TIME_MAX, [this](double v) {
                            engine->get_delay().set_time(static_cast<float>(v));
                        });
-        // R Time: the right line's own time, synced by the row's Sync switch too.
-        knob_del_right_time =
-            new KnobWidget("R Time", DELAY_TIME_MIN, DELAY_TIME_MAX, DELAY_TIME_DEFAULT, "ms");
-        knob_del_right_time->set_scroll_step(1.0);
-        knob_del_right_time->setToolTip(
-            "Right repeat time (stereo): different from Time for a wide, uneven bounce");
+        add_tempo_sync(
+            col, knob_del_right_time, "R Time", true, 7 /* 1/4 */, DELAY_TIME_MIN, DELAY_TIME_MAX,
+            [this](double v) {
+                engine->get_delay().set_right_time(static_cast<float>(v));
+            },
+            sync_of(knob_del_time).sync);
         KnobWidget* low_cut = late_knob(
             "delay", "lowCut",
             new KnobWidget("Low Cut", LOW_CUT_MIN, DELAY_LOW_CUT_MAX, LOW_CUT_DEFAULT, "Hz"),
@@ -1139,9 +1146,9 @@ void MainWindow::setup_ui() {
         add_detail_row(
             col,
             {
-                knob_del_right_time,
                 // GUIDELINE EXCEPTION (commented-out code, user's call 2026-10-01): Cross-feed is
-                // off — the delay stays ping-pong (its 100 % default).
+                // off — the stereo delay is two independent lines (its 0 % default, user
+                // 2026-10-12: L and R times set separately; it was ping-pong before).
                 // make_delay_pct_knob(
                 //     "crossFeed", "Cross-feed", DELAY_CROSS_MIN, DELAY_CROSS_MAX,
                 //     DELAY_CROSS_DEFAULT,
@@ -1172,12 +1179,6 @@ void MainWindow::setup_ui() {
                     },
                     "Shimmer: octave-up repeats, each echo climbs higher"),
             });
-        add_tempo_sync(
-            col, knob_del_right_time, "R Time", true, 8 /* 1/8. */, DELAY_TIME_MIN, DELAY_TIME_MAX,
-            [this](double v) {
-                engine->get_delay().set_right_time(static_cast<float>(v));
-            },
-            sync_of(knob_del_time).sync);
         sw_delay_stereo->setChecked(true);
         Theme::tag_card(col, "delay");
 

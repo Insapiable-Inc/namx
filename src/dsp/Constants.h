@@ -121,6 +121,7 @@ constexpr double TREMOLO_DEPTH_DEFAULT = 50.0;
 constexpr double DELAY_TIME_MIN = 20.0;
 constexpr double DELAY_TIME_MAX = 3000.0;
 constexpr double DELAY_TIME_DEFAULT = 250.0;
+constexpr double DELAY_RIGHT_TIME_DEFAULT = 375.0; // R Time: off Time, so stereo isn't mono
 
 constexpr double DELAY_FEEDBACK_MIN = 0.0;
 constexpr double DELAY_FEEDBACK_MAX = 90.0;
@@ -206,7 +207,7 @@ constexpr double HIGH_CUT_MIN = 2000.0, HIGH_CUT_MAX = 20000.0,
 
 // Phase 17: Delay
 constexpr double DELAY_CROSS_MIN = 0.0, DELAY_CROSS_MAX = 100.0,
-                 DELAY_CROSS_DEFAULT = 100.0; // 100 = ping-pong
+                 DELAY_CROSS_DEFAULT = 0.0; // 0 = two independent lines, 100 = ping-pong
 constexpr double DELAY_LOW_CUT_MAX = 1000.0;
 constexpr double DELAY_HIGH_CUT_MIN = 1000.0;
 constexpr double DELAY_SAT_MIN = 0.0, DELAY_SAT_MAX = 100.0, DELAY_SAT_DEFAULT = 0.0;
