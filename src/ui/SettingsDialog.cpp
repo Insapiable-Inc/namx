@@ -560,11 +560,11 @@ void SettingsDialog::import_theme() {
                                           .arg(QFileInfo(target).fileName())) != QMessageBox::Yes) {
                 return;
             }
-            QFile::remove(target);
         }
-        if (!QFile::copy(source, target)) {
-            QMessageBox::warning(this, "Import Theme",
-                                 QString("Couldn't copy the file to %1.").arg(themes_folder()));
+        if (const auto copied = copy_theme_file(source, target); !copied) {
+            QMessageBox::warning(
+                this, "Import Theme",
+                QString("Couldn't copy the file to %1.\n%2").arg(themes_folder(), copied.error()));
             return;
         }
     }

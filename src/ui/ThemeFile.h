@@ -34,6 +34,9 @@ QColor mix_colors(const QColor& a, const QColor& b, double t);
 // else is an error, so a typo doesn't fail silently.
 expected<ThemeSpec, QString> load_theme_file(const QString& path, const QStringList& effect_ids);
 
+// Copy a theme without losing an existing destination if reading or writing fails.
+expected<void, QString> copy_theme_file(const QString& source, const QString& target);
+
 // Where user themes live (`<config>/themes`); not created here.
 QString themes_folder();
 

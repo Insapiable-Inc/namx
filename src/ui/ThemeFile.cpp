@@ -7,6 +7,7 @@
 #include <QFileInfo>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QSaveFile>
 #include <QStandardPaths>
 
 namespace namx
@@ -52,7 +53,26 @@ static expected<QByteArray, QString> read_small_file(const QString& path) {
     if (file.size() > MAX_THEME_BYTES) {
         return std::unexpected(QString("The file is too big to be a theme."));
     }
-    return file.readAll();
+    const QByteArray bytes = file.read(MAX_THEME_BYTES + 1);
+    if (file.error() != QFileDevice::NoError) {
+        return std::unexpected(QString("Can't read the file: %1").arg(file.errorString()));
+    }
+    if (bytes.size() > MAX_THEME_BYTES) {
+        return std::unexpected(QString("The file is too big to be a theme."));
+    }
+    return bytes;
+}
+
+expected<void, QString> copy_theme_file(const QString& source, const QString& target) {
+    const auto bytes = read_small_file(source);
+    if (!bytes) {
+        return std::unexpected(bytes.error());
+    }
+    QSaveFile file(target);
+    if (!file.open(QIODevice::WriteOnly) || file.write(*bytes) != bytes->size() || !file.commit()) {
+        return std::unexpected(QString("Can't save the theme: %1").arg(file.errorString()));
+    }
+    return {};
 }
 
 // JSON: {"name", "window", "text", "base", "button", "accent", "shadow", "disabledText",
@@ -108,6 +128,9 @@ static expected<ThemeSpec, QString> parse_json(const QByteArray& bytes,
         }
     }
 
+    if (obj.contains("effects") && !obj.value("effects").isObject()) {
+        return std::unexpected(QString("\"effects\" should be an object of effect colours."));
+    }
     const QJsonObject effects = obj.value("effects").toObject();
     for (auto it = effects.begin(); it != effects.end(); ++it) {
         if (!effect_ids.contains(it.key())) {

@@ -105,6 +105,30 @@ static void test_json(const QTemporaryDir& dir) {
                      R"({"window": "#000", "text": "#fff", "effects": {"gat": "#f00"}})",
                      "unknown effect \"gat\""),
           "an unknown effect ID");
+    CHECK(fails_with(dir, "fx-array.json", R"({"window": "#000", "text": "#fff", "effects": []})",
+                     "\"effects\" should be an object"),
+          "malformed effect overrides are rejected instead of silently ignored");
+}
+
+static void test_copy(const QTemporaryDir& dir) {
+    std::printf("Theme replacement\n");
+    const QString target = write_file(dir, "installed.json", "original theme");
+    auto contents = [&] {
+        QFile file(target);
+        if (!file.open(QIODevice::ReadOnly)) {
+            return QByteArray();
+        }
+        return file.readAll();
+    };
+    CHECK(!copy_theme_file(dir.filePath("missing-source.json"), target),
+          "missing import source fails");
+    CHECK(contents() == "original theme", "failed import preserves the installed theme");
+    const QString source = write_file(dir, "replacement.json", "replacement theme");
+    CHECK(copy_theme_file(source, target).has_value(), "replace an existing theme");
+    CHECK(contents() == "replacement theme", "replacement bytes are saved");
+    CHECK(!copy_theme_file(source, dir.path()), "unwritable destination fails");
+    CHECK(copy_theme_file(target, target).has_value(), "copying onto itself preserves the file");
+    CHECK(contents() == "replacement theme", "same-file copy keeps the contents");
 }
 
 static void test_kde(const QTemporaryDir& dir) {
@@ -177,6 +201,7 @@ int main() {
     namx::test_json(dir);
     namx::test_kde(dir);
     namx::test_missing(dir);
+    namx::test_copy(dir);
     std::printf(namx::failures ? "%d FAILED\n" : "all passed\n", namx::failures);
     return namx::failures ? 1 : 0;
 }
