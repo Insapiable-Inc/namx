@@ -1,5 +1,6 @@
 #include "PresetSerializer.h"
 
+#include <algorithm>
 #include <cmath>
 
 #include <QJsonArray>
@@ -7,7 +8,9 @@
 
 #include "AudioEngine.h"
 #include "Common.h"
+#include "Constants.h"
 #include "KnobWidget.h"
+#include "TempoSync.h"
 #include "ToggleSwitch.h"
 
 namespace namx
@@ -116,7 +119,38 @@ expected<void, QString> validate(const QJsonObject& obj, const ParamRegistry& pa
     return {};
 }
 
-Applied apply(const QJsonObject& obj, const ParamRegistry& params) {
+QJsonObject upgrade(QJsonObject obj) {
+    QJsonObject delay = obj["delay"].toObject();
+    if (!delay.contains("rightRatio")) {
+        return obj;
+    }
+    using namespace NAMConstants;
+    const double share = std::clamp(delay["rightRatio"].toDouble(100.0), 25.0, 200.0) / 100.0;
+    delay.remove("rightRatio");
+    if (!delay.contains("rightTime")) {
+        delay["rightTime"] = std::clamp(delay["time"].toDouble(DELAY_TIME_DEFAULT) * share,
+                                        DELAY_TIME_MIN, DELAY_TIME_MAX);
+    }
+    if (!delay.contains("rightSyncNote")) {
+        const double wholes =
+            TempoSync::NOTES[TempoSync::clamp_index(delay["syncNote"].toDouble(8.0 /* 1/8. */))]
+                .wholes *
+            share;
+        size_t nearest = 0;
+        for (size_t i = 1; i < TempoSync::NOTES.size(); ++i) {
+            if (std::abs(std::log(TempoSync::NOTES[i].wholes / wholes)) <
+                std::abs(std::log(TempoSync::NOTES[nearest].wholes / wholes))) {
+                nearest = i;
+            }
+        }
+        delay["rightSyncNote"] = static_cast<double>(nearest);
+    }
+    obj["delay"] = delay;
+    return obj;
+}
+
+Applied apply(const QJsonObject& preset, const ParamRegistry& params) {
+    const QJsonObject obj = upgrade(preset);
     // A preset is the whole rig: every missing key — a whole group too, e.g. an effect
     // added after the file was saved — falls back to the registered default (effects
     // off). Leaving such effects untouched made them keep the previous preset's state.

@@ -322,8 +322,9 @@ MainWindow::MainWindow(QWidget* parent)
     connect(preset_state_timer, &QTimer::timeout, this, &MainWindow::update_preset_state);
 
     // Knob tapers (Phase 9): times, rates and frequencies on log dials.
-    for (KnobWidget* k : {knob_gate_attack, knob_gate_release, knob_comp_attack, knob_comp_release,
-                          knob_fl_rate, knob_ph_rate, knob_ch_rate, knob_tr_rate, knob_del_time}) {
+    for (KnobWidget* k :
+         {knob_gate_attack, knob_gate_release, knob_comp_attack, knob_comp_release, knob_fl_rate,
+          knob_ph_rate, knob_ch_rate, knob_tr_rate, knob_del_time, knob_del_right_time}) {
         k->set_log_taper(true);
     }
 
@@ -1113,6 +1114,12 @@ void MainWindow::setup_ui() {
                        DELAY_TIME_MAX, [this](double v) {
                            engine->get_delay().set_time(static_cast<float>(v));
                        });
+        // R Time: the right line's own time, synced by the row's Sync switch too.
+        knob_del_right_time =
+            new KnobWidget("R Time", DELAY_TIME_MIN, DELAY_TIME_MAX, DELAY_TIME_DEFAULT, "ms");
+        knob_del_right_time->set_scroll_step(1.0);
+        knob_del_right_time->setToolTip(
+            "Right repeat time (stereo): different from Time for a wide, uneven bounce");
         KnobWidget* low_cut = late_knob(
             "delay", "lowCut",
             new KnobWidget("Low Cut", LOW_CUT_MIN, DELAY_LOW_CUT_MAX, LOW_CUT_DEFAULT, "Hz"),
@@ -1132,13 +1139,7 @@ void MainWindow::setup_ui() {
         add_detail_row(
             col,
             {
-                make_delay_pct_knob(
-                    "rightRatio", "R Time", DELAY_RIGHT_MIN, DELAY_RIGHT_MAX, DELAY_RIGHT_DEFAULT,
-                    [this](double v) {
-                        engine->get_delay().set_right_ratio(static_cast<float>(v));
-                    },
-                    "Right repeat time as a share of Time (stereo): 75 % or 150 % for a wide, "
-                    "uneven bounce"),
+                knob_del_right_time,
                 // GUIDELINE EXCEPTION (commented-out code, user's call 2026-10-01): Cross-feed is
                 // off — the delay stays ping-pong (its 100 % default).
                 // make_delay_pct_knob(
@@ -1171,6 +1172,12 @@ void MainWindow::setup_ui() {
                     },
                     "Shimmer: octave-up repeats, each echo climbs higher"),
             });
+        add_tempo_sync(
+            col, knob_del_right_time, "R Time", true, 8 /* 1/8. */, DELAY_TIME_MIN, DELAY_TIME_MAX,
+            [this](double v) {
+                engine->get_delay().set_right_time(static_cast<float>(v));
+            },
+            sync_of(knob_del_time).sync);
         sw_delay_stereo->setChecked(true);
         Theme::tag_card(col, "delay");
 
@@ -2510,7 +2517,7 @@ void MainWindow::on_learn_changed() {
 
 void MainWindow::add_tempo_sync(QWidget* card, KnobWidget* free_knob, const QString& label,
                                 bool is_time, int default_note, double min, double max,
-                                std::function<void(double)> push) {
+                                std::function<void(double)> push, ToggleSwitch* shared_sync) {
     // The free knob's own row: the card's main row, or one of its ▾ detail rows.
     auto* lay = static_cast<QHBoxLayout*>(free_knob->parentWidget()->layout());
 
@@ -2530,8 +2537,17 @@ void MainWindow::add_tempo_sync(QWidget* card, KnobWidget* free_knob, const QStr
     lay->insertWidget(lay->indexOf(free_knob) + 1, note, 0, Qt::AlignVCenter);
 
     // Sync switch in the main row's Sync column, right of Stereo — also for a knob that
-    // sits in a ▾ detail row (Reverb Pre-delay).
-    auto* sw = new ToggleSwitch;
+    // sits in a ▾ detail row (Reverb Pre-delay). A second synced knob on the row (Delay
+    // R Time) follows the switch already there.
+    ToggleSwitch* sw = shared_sync;
+    if (sw) {
+        connect(sw, &ToggleSwitch::toggled, this, [free_knob, note](bool on) {
+            show_synced_knob(free_knob, note, on);
+        });
+        synced.push_back({free_knob, note, sw, is_time, min, max, std::move(push)});
+        return;
+    }
+    sw = new ToggleSwitch;
     sw->setCheckable(true);
     sw->setToolTip(QString("Sync %1 to the global tempo").arg(label));
     auto* cap = new QLabel("Sync");
@@ -2616,6 +2632,20 @@ void MainWindow::save_session_state() {
 void MainWindow::restore_session_state() {
     QSettings s;
     s.beginGroup("session");
+    // Session keys are preset keys: an old session's Delay R Time goes through the
+    // same upgrade as an old preset's.
+    if (s.contains("delay/rightRatio")) {
+        QJsonObject delay;
+        for (const char* key : {"time", "syncNote", "rightRatio", "rightTime", "rightSyncNote"}) {
+            if (s.contains(QString("delay/") + key)) {
+                delay[key] = s.value(QString("delay/") + key).toDouble();
+            }
+        }
+        delay = PresetSerializer::upgrade(QJsonObject{{"delay", delay}})["delay"].toObject();
+        s.setValue("delay/rightTime", delay["rightTime"].toDouble());
+        s.setValue("delay/rightSyncNote", delay["rightSyncNote"].toDouble());
+        s.remove("delay/rightRatio");
+    }
     for (const auto& p : params) {
         const QString path = p.group.isEmpty() ? p.key : p.group + "/" + p.key;
         if (!s.contains(path)) {
@@ -2835,9 +2865,15 @@ void MainWindow::register_parameters() {
         e->get_delay().set_stereo_mode(b);
     });
     knob_param("delay", "time", knob_del_time, synced_handler(knob_del_time));
-    toggle_param("delay", "sync", sync_of(knob_del_time).sync, synced_handler(knob_del_time));
+    toggle_param("delay", "sync", sync_of(knob_del_time).sync, [this](bool) {
+        push_synced(knob_del_time);
+        push_synced(knob_del_right_time);
+    });
     knob_param("delay", "syncNote", sync_of(knob_del_time).note_knob,
                synced_handler(knob_del_time));
+    knob_param("delay", "rightTime", knob_del_right_time, synced_handler(knob_del_right_time));
+    knob_param("delay", "rightSyncNote", sync_of(knob_del_right_time).note_knob,
+               synced_handler(knob_del_right_time));
     knob_param("delay", "feedback", knob_del_feedback, [e](double v) {
         e->get_delay().set_feedback_pct(static_cast<float>(v));
     });
@@ -3436,7 +3472,9 @@ void MainWindow::restore_preset_state() {
     // those take the live (= restored) values, so an upgrade alone never
     // marks the preset modified.
     preset_baseline = merge_new_keys(
-        QJsonDocument::fromJson(s.value("session/presetBaseline").toString().toUtf8()).object(),
+        PresetSerializer::upgrade(
+            QJsonDocument::fromJson(s.value("session/presetBaseline").toString().toUtf8())
+                .object()),
         PresetSerializer::to_json(params, *engine));
     library->set_loaded_path(LibraryEntry::Kind::PRESET, path);
     update_preset_state();

@@ -155,7 +155,8 @@ private:
         std::function<void(double)> push;
     };
     void add_tempo_sync(QWidget* card, KnobWidget* free_knob, const QString& label, bool is_time,
-                        int default_note, double min, double max, std::function<void(double)> push);
+                        int default_note, double min, double max, std::function<void(double)> push,
+                        ToggleSwitch* shared_sync = nullptr);
     SyncedParam& sync_of(KnobWidget* free_knob);
     void push_synced(KnobWidget* free_knob);
     void set_tempo(double new_bpm);
@@ -363,6 +364,7 @@ private:
     ToggleSwitch* sw_delay_enable = nullptr;
     ToggleSwitch* sw_delay_stereo = nullptr;
     KnobWidget* knob_del_time = nullptr;
+    KnobWidget* knob_del_right_time = nullptr;
     KnobWidget* knob_del_feedback = nullptr;
     KnobWidget* knob_del_mix = nullptr;
 

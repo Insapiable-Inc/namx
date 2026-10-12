@@ -205,8 +205,6 @@ constexpr double HIGH_CUT_MIN = 2000.0, HIGH_CUT_MAX = 20000.0,
                  HIGH_CUT_DEFAULT = 20000.0; // 20k = off
 
 // Phase 17: Delay
-constexpr double DELAY_RIGHT_MIN = 25.0, DELAY_RIGHT_MAX = 200.0,
-                 DELAY_RIGHT_DEFAULT = 100.0; // % of Time
 constexpr double DELAY_CROSS_MIN = 0.0, DELAY_CROSS_MAX = 100.0,
                  DELAY_CROSS_DEFAULT = 100.0; // 100 = ping-pong
 constexpr double DELAY_LOW_CUT_MAX = 1000.0;

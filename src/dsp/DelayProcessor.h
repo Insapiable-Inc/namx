@@ -13,7 +13,7 @@ namespace namx
 
 // Stereo delay.
 // Mono in + mono mode: one delay line.
-// Mono in + stereo mode: two lines — left at Time, right at Time × R Time %
+// Mono in + stereo mode: two lines — left at Time, right at R Time
 //   — with Cross-feed blending the repeats across: 100 % = ping-pong
 //   (left → right → left …), 0 % = two independent echoes.
 // Stereo in (any mode): each channel through its own line (L/R times).
@@ -38,9 +38,10 @@ public:
     void set_mix_pct(float pct) {
         mix_pct.store(pct);
     }
-    void set_right_ratio(float pct) {
-        right_pct.store(pct);
-    } // 25–200 % of Time
+    // The right line's own delay (stereo mode, stereo input); the mono line uses Time.
+    void set_right_time(float ms) {
+        right_ms.store(ms);
+    }
     void set_cross_feed(float pct) {
         cross_pct.store(pct);
     }
@@ -110,7 +111,7 @@ private:
     atomic<float> time_ms{250.0f};
     atomic<float> feedback_pct{40.0f};
     atomic<float> mix_pct{30.0f};
-    atomic<float> right_pct{100.0f};
+    atomic<float> right_ms{250.0f};
     atomic<float> cross_pct{100.0f};
     atomic<float> low_cut_hz{20.0f};
     atomic<float> high_cut_hz{20000.0f};
@@ -131,10 +132,8 @@ private:
     float del_now[2]{-1.0f, -1.0f};
     float glide_k = 1.0f; // per-sample step, ~80 ms time constant
 
-    // Longest Time × the longest R Time (200 %), plus headroom for the modulation.
-    static constexpr float MAX_DELAY_MS =
-        static_cast<float>(NAMConstants::DELAY_TIME_MAX * NAMConstants::DELAY_RIGHT_MAX / 100.0) +
-        100.0f;
+    // Longest Time (either line), plus headroom for the modulation.
+    static constexpr float MAX_DELAY_MS = static_cast<float>(NAMConstants::DELAY_TIME_MAX) + 100.0f;
 };
 
 } // namespace namx

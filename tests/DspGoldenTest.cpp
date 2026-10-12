@@ -291,6 +291,7 @@ static unique_ptr<TremoloProcessor> make_tremolo_stereo() {
 static unique_ptr<DelayProcessor> make_delay() {
     auto fx = make_unique<DelayProcessor>();
     fx->set_time(180.0f);
+    fx->set_right_time(180.0f);
     fx->set_feedback_pct(55.0f);
     fx->set_mix_pct(40.0f);
     return fx;
@@ -300,6 +301,7 @@ static unique_ptr<DelayProcessor> make_delay_stereo_mod_sat() {
     auto fx = make_unique<DelayProcessor>();
     fx->set_stereo_mode(true);
     fx->set_time(240.0f);
+    fx->set_right_time(240.0f);
     fx->set_modulation(50.0f);
     fx->set_saturation(50.0f);
     fx->set_cross_feed(30.0f);

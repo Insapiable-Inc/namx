@@ -90,8 +90,7 @@ DelayProcessor::Params DelayProcessor::params() const {
     p.shimmer = std::clamp(shimmer_pct.load(), 0.0f, 100.0f) / 100.0f;
     const float max_d = static_cast<float>(lines[0].samples.size()) - 2.0f - p.mod_depth;
     p.del_l = std::clamp(time_ms.load() * fs / 1000.0f, 1.0f + p.mod_depth, max_d);
-    p.del_r = std::clamp(p.del_l * std::clamp(right_pct.load(), 25.0f, 200.0f) / 100.0f,
-                         1.0f + p.mod_depth, max_d);
+    p.del_r = std::clamp(right_ms.load() * fs / 1000.0f, 1.0f + p.mod_depth, max_d);
     return p;
 }
 

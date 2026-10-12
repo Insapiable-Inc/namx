@@ -42,6 +42,11 @@ inline constexpr int VERSION = 2;
 // The error says what's wrong, for the user.
 expected<void, QString> validate(const QJsonObject& obj, const ParamRegistry& params);
 
+// Rewrites keys older builds saved into today's (also for session state, which uses the
+// same keys): the Delay's `rightRatio` (R Time as a % of Time, until 2026-10-12) becomes
+// `rightTime` in ms and `rightSyncNote` (the note nearest that share of the Time note).
+QJsonObject upgrade(QJsonObject obj);
+
 // Applies all registry parameters to their widgets (the engine follows via
 // the registry's signal connections) and returns the rest. Call validate() first.
 Applied apply(const QJsonObject& obj, const ParamRegistry& params);
