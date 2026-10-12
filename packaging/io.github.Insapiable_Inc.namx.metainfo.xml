@@ -15,7 +15,7 @@
       through it live with a few milliseconds of latency, and shape the sound with a
       freely reorderable effects chain: tuner, transpose, noise gate, compressor, dynamic
       wah, flanger, phaser, Tube Screamer drive, volume pedal, four-band EQ, chorus,
-      tremolo, ping-pong delay, reverb and cab simulation.
+      tremolo, stereo delay, reverb and cab simulation.
     </p>
     <p>
       A library panel keeps models, IRs and presets one click away, with search,
