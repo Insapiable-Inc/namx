@@ -3612,7 +3612,8 @@ void MainWindow::on_load_preset() {
 }
 
 bool MainWindow::load_preset_file(const QString& path_in) {
-    const QString path = QDir::cleanPath(path_in);
+    // Persist CLI paths independently of the working directory on the next launch.
+    const QString path = QDir::cleanPath(QFileInfo(path_in).absoluteFilePath());
     QFile f(path);
     if (!f.open(QIODevice::ReadOnly)) {
         QMessageBox::critical(this, "Preset", "Cannot read preset:\n" + path);
