@@ -55,6 +55,7 @@
         "enabled": true,
         "stereo": true,
         "time": 600,
+        "rightTime": 900,
         "feedback": 55,
         "mix": 40
     },
