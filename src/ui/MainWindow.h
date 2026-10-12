@@ -159,6 +159,9 @@ private:
                         ToggleSwitch* shared_sync = nullptr);
     SyncedParam& sync_of(KnobWidget* free_knob);
     void push_synced(KnobWidget* free_knob);
+    // Dims the controls the current mode ignores (Delay R Time with Stereo off; the Wah's
+    // Sensitivity in Manual, Position and Reverse in Auto). They stay adjustable.
+    void update_inactive_controls();
     void set_tempo(double new_bpm);
 
     // Second row of advanced controls under a card's main row, behind a
@@ -333,6 +336,7 @@ private:
     KnobWidget* knob_wah_sens = nullptr;
     KnobWidget* knob_wah_res = nullptr;
     KnobWidget* knob_wah_mix = nullptr;
+    KnobWidget* knob_wah_pos = nullptr;
 
     ToggleSwitch* sw_flanger_enable = nullptr;
     ToggleSwitch* sw_flanger_stereo = nullptr;

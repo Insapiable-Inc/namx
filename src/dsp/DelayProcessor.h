@@ -16,7 +16,8 @@ namespace namx
 // Mono in + stereo mode: two lines — left at Time, right at R Time — with Cross-feed
 //   blending the repeats across: 0 % (the default; the UI has no knob) = two independent
 //   echoes, 100 % = ping-pong (left → right → left …).
-// Stereo in (any mode): each channel through its own line (L/R times).
+// Stereo in: each channel through its own line — L/R times in stereo mode, both at
+//   Time in mono mode (R Time is only used in stereo mode).
 // Every mode: Low/High Cut and Saturation act inside the feedback loop, so
 // each repeat is darker / dirtier than the last (tape/analog character);
 // Modulation wobbles the delay time (tape flutter / chorus on the repeats).

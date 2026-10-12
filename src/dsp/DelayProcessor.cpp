@@ -90,7 +90,10 @@ DelayProcessor::Params DelayProcessor::params() const {
     p.shimmer = std::clamp(shimmer_pct.load(), 0.0f, 100.0f) / 100.0f;
     const float max_d = static_cast<float>(lines[0].samples.size()) - 2.0f - p.mod_depth;
     p.del_l = std::clamp(time_ms.load() * fs / 1000.0f, 1.0f + p.mod_depth, max_d);
-    p.del_r = std::clamp(right_ms.load() * fs / 1000.0f, 1.0f + p.mod_depth, max_d);
+    // Stereo off: R Time is unused (its knob is dimmed) — a stereo input runs both lines at Time.
+    p.del_r = is_stereo_mode()
+                  ? std::clamp(right_ms.load() * fs / 1000.0f, 1.0f + p.mod_depth, max_d)
+                  : p.del_l;
     return p;
 }
 

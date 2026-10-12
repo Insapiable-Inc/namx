@@ -322,7 +322,7 @@ jack_connect NAM-X:output_R  system:playback_2
 |------|-------|--------------------|
 | **Input** (column) | ±20 dB | Gain into the chain |
 | Amplifier **Input** | ±20 dB | Level into the model: more or less breakup |
-| Amplifier **Output** | ±20 dB | Trim on top of the loudness normalization (models that state their loudness are brought to −18 dB) |
+| Amplifier **Level** | ±20 dB | Trim on top of the loudness normalization (models that state their loudness are brought to −18 dB) |
 | **Bass** | ±12 dB | Low shelf, 40–500 Hz (default 250) |
 | **Middle** | ±12 dB | Peak, 200 Hz–2.5 kHz (default 1 kHz, Q 0.7) |
 | **High-Mid** | ±12 dB | Peak, 800 Hz–8 kHz (default 3 kHz, Q 1) |
@@ -373,9 +373,9 @@ The second bar holds the global tempo and the metronome.
 | **♩ / ♪♪ / 3 / ♬** | Subdivision: beats only, eighths, triplets, sixteenths |
 | **Click / Wood / Beep** | Sound set |
 | **Count-in** | 0–2 bars counted in when you press play; **Silent after count-in** keeps only the lights running, to check your own timing |
-| **Level / Pan** | The click's own volume and position. It is mixed in after the Output knob and isn't shown on the output meter |
+| **Click Level / Click Pan** | The click's own volume and position. It is mixed in after the Output knob and isn't shown on the output meter |
 
-**Tempo sync.** Delay **Time**, the Tremolo / Chorus / Flanger / Phaser **Rate** and
+**Tempo sync.** Delay **L/Mono Time** and **R Time**, the Tremolo / Chorus / Flanger / Phaser **Rate** and
 the Reverb **Pre-delay** each have a **Sync** switch: on, the knob picks a note value (4 bars … 1/32, dotted and
 triplets) instead of ms / Hz, and follows the tempo. Delay times are capped at 3000 ms.
 
@@ -476,14 +476,14 @@ twice the CPU — it is never summed to mono.
 
 | Stage | Main controls | ▾ More |
 |-------|---------------|--------|
-| Transpose | Semitones (±12), Mix; **Reverse** (pedal heel ↔ toe), **Continuous** switch (off = Discrete: whole semitones; on = smooth whammy-style glides, the shifter then stays active at 0 st) | — |
-| Overdrive | Drive, Tone, Level — a Tube Screamer circuit model (the op-amp + diode clipper as a wave digital filter, oversampled) | — |
-| Amplifier | On/Off, ‹ › through the library, Input, Output (see Parameters); the row shows the model and its metadata | — |
-| Dynamic Wah | **Manual** switch (off = Auto: your playing sweeps it), **Reverse** (pedal heel ↔ toe), Mix, Sensitivity, Resonance, Position (the sweep in Manual mode — map an expression pedal) | — |
+| Transpose | Mix, Semitones (±12); **Reverse** (pedal heel ↔ toe), **Continuous** switch (off = Discrete: whole semitones; on = smooth whammy-style glides, the shifter then stays active at 0 st) | — |
+| Overdrive | Level, Drive, Tone — a Tube Screamer circuit model (the op-amp + diode clipper as a wave digital filter, oversampled) | — |
+| Amplifier | On/Off, ‹ › through the library, Input, Level (see Parameters); the row shows the model and its metadata | — |
+| Dynamic Wah | **Manual** switch (off = Auto: your playing sweeps it), **Reverse** (pedal heel ↔ toe), Mix, Sensitivity (Auto), Position (the sweep in Manual mode — map an expression pedal), Resonance; the controls the current mode ignores are dimmed | — |
 | Flanger / Phaser / Chorus | Mix, Rate (Sync), Depth, Feedback (not Chorus; Phaser up to 90 %); Flanger **Range**. The Phaser is an MXR Phase 90 model: Depth 50 % and Mix 50 % are the pedal, Feedback 0 % the original "script" circuit | — |
 | Equalizer | Bass, Middle, High-Mid, Treble (±12 dB) | the four band frequencies, Low Cut, High Cut |
-| Delay | Mix, Time, R Time (the right repeat's own time; Sync covers both), Feedback (two independent echoes in stereo) | Low/High Cut, Saturation, Shimmer (octave-up repeats) |
-| Reverb | Type (Plate / Hall / Room), Mix, Decay (0.2–10 s), Damping, Width | Pre-delay (0–250 ms; with the main row's **Sync** on, a note value at the tempo, up to 2 s), Low/High Cut, Shimmer (octave-up feedback into the tail) |
+| Delay | Mix, L/Mono Time, R Time (the right repeat's own time, Stereo only — dimmed otherwise; Sync covers both), Feedback (two independent echoes in stereo) | Low/High Cut, Saturation, Shimmer (octave-up repeats) |
+| Reverb | Mix, Type (Plate / Hall / Room — reads "Type: Plate"), Decay (0.2–10 s), Damping, Width | Pre-delay (0–250 ms; with the main row's **Sync** on, a note value at the tempo, up to 2 s), Low/High Cut, Shimmer (octave-up feedback into the tail) |
 | Cabinet | On/Off, ‹ › through the library, Level; the row shows the IR and its metadata | — |
 | Volume Pedal | Volume, Mid (level at half travel), **Reverse** (pedal heel ↔ toe) | — |
 | Output | Gain, **Limit** (look-ahead limiter at −0.3 dBFS) | — |

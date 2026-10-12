@@ -329,6 +329,7 @@ MainWindow::MainWindow(QWidget* parent)
     }
 
     restore_session_state();
+    update_inactive_controls();
     {
         QSettings s;
         const QByteArray geo = s.value("window/geometry").toByteArray();
@@ -563,6 +564,40 @@ static ToggleSwitch* make_reverse_switch(QWidget* card, const QString& knob_name
     return sw;
 }
 
+// Dimmed, still adjustable, with the reason added to the tooltip: `w` is what fades,
+// `tip` carries the tooltip (a caption switch fades as a whole, its switch has the tip).
+static void set_inactive(QWidget* w, QWidget* tip, bool inactive, const QString& why) {
+    if (!tip->property("activeToolTip").isValid()) {
+        tip->setProperty("activeToolTip", tip->toolTip());
+    }
+    const QString base = tip->property("activeToolTip").toString();
+    if (inactive) {
+        auto* fade = new QGraphicsOpacityEffect(w);
+        fade->setOpacity(0.35);
+        w->setGraphicsEffect(fade);
+        tip->setToolTip(base + "\n\nNot in use: " + why);
+    } else {
+        w->setGraphicsEffect(nullptr);
+        tip->setToolTip(base);
+    }
+}
+
+void MainWindow::update_inactive_controls() {
+    const bool mono_delay = !sw_delay_stereo->isChecked();
+    const QString why_mono = "with Stereo off the delay is one line, at L/Mono Time";
+    set_inactive(knob_del_right_time, knob_del_right_time, mono_delay, why_mono);
+    KnobWidget* right_note = sync_of(knob_del_right_time).note_knob;
+    set_inactive(right_note, right_note, mono_delay, why_mono);
+
+    const bool manual = sw_wah_manual->isChecked();
+    set_inactive(knob_wah_sens, knob_wah_sens, manual,
+                 "in Manual mode Position sweeps the wah, not your playing");
+    set_inactive(knob_wah_pos, knob_wah_pos, !manual,
+                 "in Auto mode your playing sweeps the wah; turn Manual on to use Position");
+    set_inactive(sw_wah_reverse->parentWidget(), sw_wah_reverse, !manual,
+                 "Reverse flips Position, which only works in Manual mode");
+}
+
 void MainWindow::setup_ui() {
     auto* central = new QWidget(this);
     setCentralWidget(central);
@@ -763,7 +798,7 @@ void MainWindow::setup_ui() {
                 engine->get_transpose().set_mix_pct(static_cast<float>(v));
             });
         mix->set_scroll_step(1.0);
-        QWidget* col = make_effect_row("Transpose", sw_transpose_enable, {semis, mix});
+        QWidget* col = make_effect_row("Transpose", sw_transpose_enable, {mix, semis});
         sw_transpose_reverse = make_reverse_switch(col, "Semitones");
         sw_transpose_continuous = new ToggleSwitch;
         sw_transpose_continuous->setCheckable(true);
@@ -808,8 +843,8 @@ void MainWindow::setup_ui() {
             new KnobWidget("Attack", COMP_ATTACK_MIN, COMP_ATTACK_MAX, COMP_ATTACK_DEFAULT, "ms");
         knob_comp_release = new KnobWidget("Release", COMP_RELEASE_MIN, COMP_RELEASE_MAX,
                                            COMP_RELEASE_DEFAULT, "ms");
-        knob_comp_makeup = new KnobWidget("Makeup Gain", COMP_MAKEUP_MIN, COMP_MAKEUP_MAX,
-                                          COMP_MAKEUP_DEFAULT, "dB");
+        knob_comp_makeup =
+            new KnobWidget("Level", COMP_MAKEUP_MIN, COMP_MAKEUP_MAX, COMP_MAKEUP_DEFAULT, "dB");
         knob_comp_thresh->set_scroll_step(1.0);
         knob_comp_ratio->set_scroll_step(0.5);
         knob_comp_attack->set_scroll_step(1.0);
@@ -861,10 +896,12 @@ void MainWindow::setup_ui() {
                                         engine->get_wah().set_position_pct(static_cast<float>(v));
                                     });
         pos->set_scroll_step(1.0);
+        knob_wah_pos = pos;
         QWidget* col = make_effect_row("Dynamic Wah", sw_wah_enable,
-                                       {knob_wah_mix, knob_wah_sens, knob_wah_res, pos});
+                                       {knob_wah_mix, knob_wah_sens, pos, knob_wah_res});
         sw_wah_reverse = make_reverse_switch(col, "Position");
         put_in_sync_column(col, make_caption_switch(sw_wah_manual, "Manual"));
+        connect(sw_wah_manual, &ToggleSwitch::toggled, this, &MainWindow::update_inactive_controls);
         Theme::tag_card(col, "wah");
 
         fx_cols[&engine->get_wah()] = col;
@@ -882,7 +919,7 @@ void MainWindow::setup_ui() {
         knob_drive_tone->set_scroll_step(1.0);
         knob_drive_level->set_scroll_step(0.5);
         QWidget* col = make_effect_row("Overdrive", sw_drive_enable,
-                                       {knob_drive, knob_drive_tone, knob_drive_level});
+                                       {knob_drive_level, knob_drive, knob_drive_tone});
         Theme::tag_card(col, "drive");
         fx_cols[&engine->get_drive()] = col;
     }
@@ -896,7 +933,7 @@ void MainWindow::setup_ui() {
         knob_nam_input->setToolTip("Level into the model: more or less breakup, without "
                                    "changing the pedals before it");
         knob_nam_output =
-            new KnobWidget("Output", NAM_OUTPUT_MIN, NAM_OUTPUT_MAX, NAM_OUTPUT_DEFAULT, "dB");
+            new KnobWidget("Level", NAM_OUTPUT_MIN, NAM_OUTPUT_MAX, NAM_OUTPUT_DEFAULT, "dB");
         knob_nam_output->set_scroll_step(0.5);
         knob_nam_output->setToolTip("Level after the model, on top of the loudness "
                                     "normalization — for models that sit too quiet or loud");
@@ -1084,7 +1121,7 @@ void MainWindow::setup_ui() {
         knob_tr_rate->set_scroll_step(0.1);
         knob_tr_depth->set_scroll_step(1.0);
 
-        QWidget* col = make_effect_row("Tremolo", sw_tremolo_enable, {knob_tr_rate, knob_tr_depth},
+        QWidget* col = make_effect_row("Tremolo", sw_tremolo_enable, {knob_tr_depth, knob_tr_rate},
                                        &sw_tremolo_stereo);
         add_tempo_sync(col, knob_tr_rate, "Rate", false, 10 /* 1/8 */, TREMOLO_RATE_MIN,
                        TREMOLO_RATE_MAX, [this](double v) {
@@ -1099,7 +1136,7 @@ void MainWindow::setup_ui() {
     {
         using namespace NAMConstants;
         knob_del_time =
-            new KnobWidget("Time", DELAY_TIME_MIN, DELAY_TIME_MAX, DELAY_TIME_DEFAULT, "ms");
+            new KnobWidget("L/Mono Time", DELAY_TIME_MIN, DELAY_TIME_MAX, DELAY_TIME_DEFAULT, "ms");
         knob_del_feedback = new KnobWidget("Feedback", DELAY_FEEDBACK_MIN, DELAY_FEEDBACK_MAX,
                                            DELAY_FEEDBACK_DEFAULT, "%");
         knob_del_mix = new KnobWidget("Mix", DELAY_MIX_MIN, DELAY_MIX_MAX, DELAY_MIX_DEFAULT, "%");
@@ -1112,12 +1149,12 @@ void MainWindow::setup_ui() {
                                              DELAY_RIGHT_TIME_DEFAULT, "ms");
         knob_del_right_time->set_scroll_step(1.0);
         knob_del_right_time->setToolTip(
-            "Right repeat time (stereo): different from Time for a wide, uneven bounce");
+            "Right repeat time (Stereo on): different from L/Mono Time for a wide, uneven bounce");
         QWidget* col =
             make_effect_row("Delay", sw_delay_enable,
                             {knob_del_mix, knob_del_time, knob_del_right_time, knob_del_feedback},
                             &sw_delay_stereo);
-        add_tempo_sync(col, knob_del_time, "Time", true, 8 /* 1/8. */, DELAY_TIME_MIN,
+        add_tempo_sync(col, knob_del_time, "L/Mono Time", true, 8 /* 1/8. */, DELAY_TIME_MIN,
                        DELAY_TIME_MAX, [this](double v) {
                            engine->get_delay().set_time(static_cast<float>(v));
                        });
@@ -1180,6 +1217,8 @@ void MainWindow::setup_ui() {
                     "Shimmer: octave-up repeats, each echo climbs higher"),
             });
         sw_delay_stereo->setChecked(true);
+        connect(sw_delay_stereo, &ToggleSwitch::toggled, this,
+                &MainWindow::update_inactive_controls);
         Theme::tag_card(col, "delay");
 
         fx_cols[&engine->get_delay()] = col;
@@ -1207,9 +1246,12 @@ void MainWindow::setup_ui() {
             });
         rev_type->set_snap(1.0);
         rev_type->set_scroll_step(1.0);
+        // One line, "Type: Plate", so the knob says what it picks without being turned.
+        rev_type->set_name_visible(false);
         rev_type->set_value_formatter([](double v) {
             static const char* const names[] = {"Plate", "Hall", "Room"};
-            return QString(names[std::clamp(static_cast<int>(std::lround(v)), 0, 2)]);
+            return QString("Type: %1")
+                .arg(names[std::clamp(static_cast<int>(std::lround(v)), 0, 2)]);
         });
         rev_type->setToolTip("Plate: dense, bright studio plate · Hall: a big space, distinct "
                              "early echoes · Room: a smaller space, quick dense echoes");
@@ -1223,7 +1265,7 @@ void MainWindow::setup_ui() {
                                   "~0.3 s on Hall)");
         QWidget* col = make_effect_row(
             "Reverb", sw_reverb_enable,
-            {rev_type, knob_rev_mix, knob_rev_room, knob_rev_damping, knob_rev_width});
+            {knob_rev_mix, rev_type, knob_rev_room, knob_rev_damping, knob_rev_width});
         knob_rev_pre = new KnobWidget("Pre-delay", REVERB_PRE_DELAY_MIN, REVERB_PRE_DELAY_MAX,
                                       REVERB_PRE_DELAY_DEFAULT, "ms");
         KnobWidget* pre = knob_rev_pre;
@@ -2485,6 +2527,7 @@ void MainWindow::on_learn_changed() {
     if (learn_widget) {
         learn_widget->setGraphicsEffect(nullptr);
         learn_widget = nullptr;
+        update_inactive_controls(); // the glow replaced a dimmed control's fade
     }
     const QString target = midi_mapper->learning();
     learn_esc->setEnabled(!target.isEmpty());

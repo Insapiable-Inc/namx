@@ -88,6 +88,9 @@ public:
         update_label();
     }
 
+    // Hides the name line; for a knob whose value label names itself ("Type: Plate").
+    void set_name_visible(bool on);
+
     // Logarithmic dial (frequencies, times, rates): equal travel = equal
     // ratio, so 100 Hz–1 kHz gets as much of the sweep as 1–10 kHz. Values
     // stored in presets don't change — only how the dial maps to them.
@@ -116,6 +119,7 @@ protected:
 
 private:
     VerticalDial* dial;
+    QLabel* name_label;
     QLabel* label_value;
     QColor accent;
     double min, max, default_value;

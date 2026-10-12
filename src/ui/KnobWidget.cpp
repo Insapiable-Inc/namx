@@ -182,7 +182,7 @@ KnobWidget::KnobWidget(const QString& new_label, double min_val, double max_val,
     , label(new_label) {
     setAttribute(Qt::WA_StyledBackground, false);
 
-    auto* name_label = new QLabel(new_label);
+    name_label = new QLabel(new_label);
     {
         QPalette p = name_label->palette();
         p.setColor(QPalette::WindowText, Theme::dim_text());
@@ -291,6 +291,10 @@ void KnobWidget::on_dial_changed(int) {
     last_emitted = v;
     update_label();
     emit value_changed(v);
+}
+
+void KnobWidget::set_name_visible(bool on) {
+    name_label->setVisible(on);
 }
 
 void KnobWidget::update_label() {
