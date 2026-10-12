@@ -950,7 +950,7 @@ void MainWindow::setup_ui() {
     {
         using namespace NAMConstants;
         knob_low = new KnobWidget("Bass", EQ_BAND_MIN, EQ_BAND_MAX, EQ_BAND_DEFAULT, "dB");
-        knob_mid = new KnobWidget("Middle", EQ_BAND_MIN, EQ_BAND_MAX, EQ_BAND_DEFAULT, "dB");
+        knob_mid = new KnobWidget("Low-Mid", EQ_BAND_MIN, EQ_BAND_MAX, EQ_BAND_DEFAULT, "dB");
         knob_treble = new KnobWidget("Treble", EQ_BAND_MIN, EQ_BAND_MAX, EQ_BAND_DEFAULT, "dB");
         knob_low->set_scroll_step(0.1);
         knob_mid->set_scroll_step(0.1);
@@ -973,7 +973,7 @@ void MainWindow::setup_ui() {
             {
                 make_eq_freq_knob("lowFreq", "Bass Freq", EQ_BASS_FREQ_MIN, EQ_BASS_FREQ_MAX,
                                   EQ_BASS_FREQ_DEFAULT, EQProcessor::Band::BASS, 0),
-                make_eq_freq_knob("midFreq", "Mid Freq", EQ_MID_FREQ_MIN, EQ_MID_FREQ_MAX,
+                make_eq_freq_knob("midFreq", "Low-Mid Freq", EQ_MID_FREQ_MIN, EQ_MID_FREQ_MAX,
                                   EQ_MID_FREQ_DEFAULT, EQProcessor::Band::MIDDLE, 0),
                 make_eq_freq_knob("highMidFreq", "High-Mid Freq", EQ_HI_MID_FREQ_MIN,
                                   EQ_HI_MID_FREQ_MAX, EQ_HI_MID_FREQ_DEFAULT,

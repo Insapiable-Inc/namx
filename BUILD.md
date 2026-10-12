@@ -324,7 +324,7 @@ jack_connect NAM-X:output_R  system:playback_2
 | Amplifier **Input** | ±20 dB | Level into the model: more or less breakup |
 | Amplifier **Level** | ±20 dB | Trim on top of the loudness normalization (models that state their loudness are brought to −18 dB) |
 | **Bass** | ±12 dB | Low shelf, 40–500 Hz (default 250) |
-| **Middle** | ±12 dB | Peak, 200 Hz–2.5 kHz (default 1 kHz, Q 0.7) |
+| **Low-Mid** | ±12 dB | Peak, 200 Hz–2.5 kHz (default 1 kHz, Q 0.7) |
 | **High-Mid** | ±12 dB | Peak, 800 Hz–8 kHz (default 3 kHz, Q 1) |
 | **Treble** | ±12 dB | High shelf, 1.5–12 kHz (default 4 kHz) |
 | Cabinet **Level** | ±20 dB | The cabinet's level |
@@ -481,7 +481,7 @@ twice the CPU — it is never summed to mono.
 | Amplifier | On/Off, ‹ › through the library, Input, Level (see Parameters); the row shows the model and its metadata | — |
 | Dynamic Wah | **Manual** switch (off = Auto: your playing sweeps it), **Reverse** (pedal heel ↔ toe), Mix, Sensitivity (Auto), Position (the sweep in Manual mode — map an expression pedal), Resonance; the controls the current mode ignores are dimmed | — |
 | Flanger / Phaser / Chorus | Mix, Rate (Sync), Depth, Feedback (not Chorus; Phaser up to 90 %); Flanger **Range**. The Phaser is an MXR Phase 90 model: Depth 50 % and Mix 50 % are the pedal, Feedback 0 % the original "script" circuit | — |
-| Equalizer | Bass, Middle, High-Mid, Treble (±12 dB) | the four band frequencies, Low Cut, High Cut |
+| Equalizer | Bass, Low-Mid, High-Mid, Treble (±12 dB) | the four band frequencies, Low Cut, High Cut |
 | Delay | Mix, L/Mono Time, R Time (the right repeat's own time, Stereo only — dimmed otherwise; Sync covers both), Feedback (two independent echoes in stereo) | Low/High Cut, Saturation, Shimmer (octave-up repeats) |
 | Reverb | Mix, Type (Plate / Hall / Room — reads "Type: Plate"), Decay (0.2–10 s), Damping, Width | Pre-delay (0–250 ms; with the main row's **Sync** on, a note value at the tempo, up to 2 s), Low/High Cut, Shimmer (octave-up feedback into the tail) |
 | Cabinet | On/Off, ‹ › through the library, Level; the row shows the IR and its metadata | — |
