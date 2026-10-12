@@ -1143,6 +1143,17 @@ fix (the commit messages name the item):
       test at 44.1 kHz, preset validation in the self-test, sanitizer/`RtSlot` tests
       (F-51), pinning CI actions to commit SHAs (F-42, second half).
 
+**Audio interface unplugged mid-session** (user, 2026-10-12, Scarlett 8i6 on PipeWire-JACK):
+- [x] Unplug/replug the interface while NAM-X runs: no crash.
+- [ ] Audio doesn't come back after the replug: PipeWire drops our links with the device
+      and `apply_connections` only runs at startup/device change, so the outputs stay
+      unconnected until a restart. Re-apply the saved connections when the ports reappear
+      (JACK port-registration callback → GUI thread).
+- [ ] Quitting after that saves the stripped state: `save_connections` on exit wrote
+      `inputSources=@Invalid()` and outputs without the interface, so the next launch had
+      no guitar and no headphones. Don't let a vanished device's links be forgotten —
+      keep saved destinations whose ports are missing instead of overwriting them.
+
 ## Phase 27 — Benchmarking: measured against the best (added 2026-10-02; done 2026-10-02 except the loopback latency, moved after v0.0.0 on 2026-10-04)
 
 "The world's best" has to be measured. What exists: `NAMPlayerBench` (per-stage time
