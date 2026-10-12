@@ -500,7 +500,10 @@ app id in hicolor, `setWindowIcon` from the qrc, Windows exe icon + version bloc
       applications menu (writes the `.desktop` file, icon and MIME types — `.nam`,
       `.nampreset` — into `~/.local/share`), with a matching "remove" option; only when
       running as an AppImage (`$APPIMAGE` set) and nothing integrated it already.
-- [ ] **Try the bundles on a GTK desktop** (user, 2026-10-04 — "at some point", not
+- [x] **Try the bundles on a GTK desktop** — **done 2026-10-12 on GNOME (Wayland, Arch)**:
+      looks and runs the same as on Plasma; Qt's own title bar works (plainer); file dialogs
+      open GNOME's portal picker. App-grid and MIME integration not checked (user: "let's
+      not worry about it"). (user, 2026-10-04 — "at some point", not
       blocking v0.0.0): GNOME on Wayland gives no server-side decorations, so Qt draws
       its own (the AppImage only carries the plain "bradient" decoration plugin); file
       dialogs go through xdg-desktop-portal-gnome; the menu integration in GNOME's app
