@@ -80,21 +80,19 @@ QStringList effect_ids() {
     return ids;
 }
 
-// What stays ours in every theme: the warning red, the switch edge, the LED colours.
+// What stays ours in every theme: the warning red and the LED colours.
 // The displays' LED colours are deeper on a light panel so they still read.
 struct OwnTones
 {
     const char* notice; // status bar problems
-    int switch_rim_off; // alpha of the switch track's dark edge, off / on
-    int switch_rim_on;
     const char* led_green;
     const char* led_red;
     const char* led_amber; // the meters' hot zone
     int led_unlit_scale; // unlit segments' tint strength (alpha multiplier)
 };
 
-static constexpr OwnTones OWN_DARK = {"#ff5252", 100, 60, "#42e86c", "#ff453a", "#f0c850", 1};
-static constexpr OwnTones OWN_LIGHT = {"#c62828", 40, 30, "#16a34a", "#dc2626", "#d19a00", 2};
+static constexpr OwnTones OWN_DARK = {"#ff5252", "#42e86c", "#ff453a", "#f0c850", 1};
+static constexpr OwnTones OWN_LIGHT = {"#c62828", "#16a34a", "#dc2626", "#d19a00", 2};
 
 // The tones in use, derived from a palette (from_palette).
 struct Colors
@@ -124,16 +122,13 @@ struct Colors
     // Custom-painted widgets (knobs, switches, fields).
     QColor track;
     QColor track_hover;
-    QColor knob_body_top;
-    QColor knob_body_bot;
+    QColor knob_face;
+    QColor knob_edge; // invalid = none
     QColor bezel;
     QColor detent;
     QColor well;
-    QColor thumb_top;
-    QColor thumb_bot;
+    QColor thumb;
     QColor thumb_outline; // invalid = none (the dark theme's thumb needs no edge)
-    int switch_rim_off; // alpha of the switch track's dark edge, off / on
-    int switch_rim_on;
     // LED displays (tuner, level meters).
     QColor display_bg;
     QColor display_line; // frame
@@ -215,16 +210,13 @@ static Colors from_palette(const QPalette& sys, bool dark) {
         sys.color(QPalette::Shadow),
         mix_colors(button, text, 0.14), // track
         mix_colors(button, text, 0.24), // track_hover
-        dark ? mix_colors(button, text, 0.06) : mix_colors(button, white, 0.7), // knob_body_top
-        dark ? mix_colors(button, black, 0.25) : mix_colors(button, text, 0.05), // knob_body_bot
+        dark ? mix_colors(button, text, 0.10) : mix_colors(button, white, 0.7), // knob_face
+        dark ? QColor() : border, // knob_edge
         dark ? mix_colors(w, black, 0.55) : mix_colors(w, text, 0.30), // bezel
         mix_colors(text, w, 0.58), // detent
         mix_colors(base, text, 0.03), // well
-        white, // thumb_top
-        dark ? mix_colors(white, w, 0.12) : mix_colors(white, text, 0.05), // thumb_bot
+        dark ? mix_colors(white, w, 0.06) : white, // thumb
         dark ? QColor() : border, // thumb_outline
-        ours.switch_rim_off,
-        ours.switch_rim_on,
         dark ? mix_colors(w, black, 0.65) : mix_colors(w, text, 0.06), // display_bg
         dark ? mix_colors(w, text, 0.10) : border, // display_line
         dark ? mix_colors(w, text, 0.10) : mix_colors(w, text, 0.45), // display_faint
@@ -258,11 +250,11 @@ QColor track() {
 QColor track_hover() {
     return QColor(palette().track_hover);
 }
-QColor knob_body_top() {
-    return QColor(palette().knob_body_top);
+QColor knob_face() {
+    return QColor(palette().knob_face);
 }
-QColor knob_body_bot() {
-    return QColor(palette().knob_body_bot);
+QColor knob_edge() {
+    return QColor(palette().knob_edge);
 }
 QColor bezel() {
     return QColor(palette().bezel);
@@ -276,17 +268,11 @@ QColor well() {
 QColor dim_text() {
     return QColor(palette().text_dim);
 }
-QColor thumb_top() {
-    return QColor(palette().thumb_top);
-}
-QColor thumb_bot() {
-    return QColor(palette().thumb_bot);
+QColor thumb() {
+    return QColor(palette().thumb);
 }
 QColor thumb_outline() {
     return QColor(palette().thumb_outline); // invalid when "" → no outline
-}
-int switch_rim_alpha(bool checked) {
-    return checked ? palette().switch_rim_on : palette().switch_rim_off;
 }
 QColor display_line() {
     return QColor(palette().display_line);

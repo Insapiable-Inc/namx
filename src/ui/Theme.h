@@ -62,16 +62,14 @@ void reapply(bool force = false);
 // Neutral chrome tones for custom-painted widgets (knobs, switches).
 QColor track(); // recessed track / switch off state
 QColor track_hover(); // hovered track
-QColor knob_body_top(); // knob body gradient, light end
-QColor knob_body_bot(); // knob body gradient, dark end
-QColor bezel(); // outline around the knob body
+QColor knob_face(); // the knob's flat disc
+QColor knob_edge(); // its outline; invalid = none (a dark theme's knob needs no edge)
+QColor bezel(); // the gain-reduction meter's groove
 QColor detent(); // a stepped knob's unlit position dots
 QColor well(); // recessed dial well
 QColor dim_text(); // secondary labels (knob names, "Stereo", cents)
-QColor thumb_top(); // switch thumb gradient, light end
-QColor thumb_bot(); // switch thumb gradient, dark end
+QColor thumb(); // the switch's flat thumb
 QColor thumb_outline(); // switch thumb edge; invalid = none
-int switch_rim_alpha(bool checked); // the switch track's dark edge
 
 // Status colours (status bar dots and DSP load, MIDI light, count-in beats, the MIDI
 // Learn glow): fine, warning, trouble. Readable on the status bar in every theme —

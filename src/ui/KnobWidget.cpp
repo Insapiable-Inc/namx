@@ -13,7 +13,6 @@
 #include <QPainter>
 #include <QPainterPath>
 #include <QPalette>
-#include <QRadialGradient>
 #include <QVBoxLayout>
 #include <QWheelEvent>
 #include <QtMath>
@@ -87,7 +86,7 @@ protected:
 
         // Outer arc geometry: a thin ring on the outside of the body.
         const qreal arc_inset = 2.5;
-        const qreal arc_width = 2.5;
+        const qreal arc_width = 3.0;
         const QRectF arc_rect(c.x() - side / 2.0 + arc_inset, c.y() - side / 2.0 + arc_inset,
                               side - 2 * arc_inset, side - 2 * arc_inset);
 
@@ -115,7 +114,7 @@ protected:
         } else {
             // Faded background track.
             QPen track_pen(Theme::track(), arc_width);
-            track_pen.setCapStyle(Qt::FlatCap);
+            track_pen.setCapStyle(Qt::RoundCap);
             p.setPen(track_pen);
             p.drawArc(arc_rect, start_angle, sweep_total);
 
@@ -126,27 +125,20 @@ protected:
             p.drawArc(arc_rect, start_angle, static_cast<int>(sweep_total * t));
         }
 
-        // Knob body — neutral flat-ish disc with a subtle top→bottom gradient.
-        // The effect accent lives only on the outer value ring and the tick.
-        const qreal body_inset = arc_inset + 4.0;
-        const QRectF body_rect(c.x() - side / 2.0 + body_inset, c.y() - side / 2.0 + body_inset,
-                               side - 2 * body_inset, side - 2 * body_inset);
-
-        QLinearGradient body(body_rect.topLeft(), body_rect.bottomLeft());
-        body.setColorAt(0.0, Theme::knob_body_top());
-        body.setColorAt(1.0, Theme::knob_body_bot());
-        p.setBrush(body);
-        p.setPen(QPen(Theme::bezel(), 1.0));
+        // Knob body: a flat neutral disc (no gradient, highlight or bezel). The effect
+        // accent lives only on the outer value ring and the tick.
+        const qreal body_inset = arc_inset + 4.5;
+        QRectF body_rect(c.x() - side / 2.0 + body_inset, c.y() - side / 2.0 + body_inset,
+                         side - 2 * body_inset, side - 2 * body_inset);
+        p.setBrush(Theme::knob_face());
+        const QColor edge = Theme::knob_edge();
+        if (edge.isValid()) {
+            p.setPen(QPen(edge, 1.0)); // a light disc on a light card needs an edge
+            body_rect.adjust(0.5, 0.5, -0.5, -0.5);
+        } else {
+            p.setPen(Qt::NoPen);
+        }
         p.drawEllipse(body_rect);
-
-        // Single thin highlight arc along the top crown — no bottom rim,
-        // since duplicating shadow with the dark background fights itself.
-        const QRectF crown_rect = body_rect.adjusted(1.5, 1.5, -1.5, -1.5);
-        QPen crown_pen(QColor(255, 255, 255, 26), 1.0);
-        p.setPen(crown_pen);
-        p.setBrush(Qt::NoBrush);
-        // Arc from 30° to 150° (top half).
-        p.drawArc(crown_rect, 30 * 16, 120 * 16);
 
         // Indicator tick — the effect accent, matching the value ring.
         // Radii are proportional so the tick stays sane at small dial sizes.
