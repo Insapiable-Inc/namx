@@ -357,12 +357,17 @@ void AudioEngine::process_block(const float* in, float* out_l, float* out_r, siz
     // 4. The output meter: the guitar at the output stage, before the click is
     //    added and before the limiter — red means the limiter is (or would be)
     //    catching peaks.
-    float out_peak = 0.0f;
+    float peak_l = 0.0f;
+    float peak_r = 0.0f;
     for (size_t i = 0; i < n; ++i) {
-        out_peak = std::max(out_peak, std::max(std::abs(out_l[i]), std::abs(out_r[i])));
+        peak_l = std::max(peak_l, std::abs(out_l[i]));
+        peak_r = std::max(peak_r, std::abs(out_r[i]));
     }
-    if (out_peak > output_peak.load(std::memory_order_relaxed)) {
-        output_peak.store(out_peak, std::memory_order_relaxed);
+    if (peak_l > output_peak[0].load(std::memory_order_relaxed)) {
+        output_peak[0].store(peak_l, std::memory_order_relaxed);
+    }
+    if (peak_r > output_peak[1].load(std::memory_order_relaxed)) {
+        output_peak[1].store(peak_r, std::memory_order_relaxed);
     }
 
     // 5. A non-finite sample — from the capture port, a model overflowing in

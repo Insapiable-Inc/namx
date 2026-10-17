@@ -233,8 +233,9 @@ public:
     float take_input_peak() {
         return input_peak.exchange(0.0f);
     }
-    float take_output_peak() {
-        return output_peak.exchange(0.0f);
+    // The output is stereo: one peak per channel (0 = left, 1 = right).
+    float take_output_peak(int channel) {
+        return output_peak[channel].exchange(0.0f);
     }
 
     // Diagnostics (status bar)
@@ -317,7 +318,7 @@ private:
     float output_gain_smooth = 1.0f;
 
     atomic<float> input_peak{0.0f};
-    atomic<float> output_peak{0.0f};
+    atomic<float> output_peak[2]{0.0f, 0.0f}; // left, right
     atomic<float> dsp_load_peak{0.0f};
     atomic<int> non_finite_blocks{0};
 

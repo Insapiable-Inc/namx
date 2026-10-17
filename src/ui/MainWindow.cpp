@@ -1371,8 +1371,8 @@ void MainWindow::setup_ui() {
     // they flank the strip: input on the left, output on the right — signal
     // flows in → chain → out. The full-height meter reads bottom→top.
 
-    input_card = make_gain_column("Input", knob_input_gain, meter_in);
-    output_card = make_gain_column("Output", knob_output_gain, meter_out);
+    input_card = make_gain_column("Input", knob_input_gain, meter_in, 1); // one input port
+    output_card = make_gain_column("Output", knob_output_gain, meter_out, 2);
     {
         // Output limiter switch under the gain knob.
         sw_limiter = new ToggleSwitch;
@@ -1619,7 +1619,8 @@ void MainWindow::clear_ir_b() {
 }
 
 // Input/Output column: title, big gain knob, full-height meter.
-QWidget* MainWindow::make_gain_column(const QString& title, KnobWidget*& knob, VUMeter*& meter) {
+QWidget* MainWindow::make_gain_column(const QString& title, KnobWidget*& knob, VUMeter*& meter,
+                                      int channel_count) {
     using namespace NAMConstants;
     auto* col = new QFrame;
     col->setProperty("fxCard", true);
@@ -1634,7 +1635,7 @@ QWidget* MainWindow::make_gain_column(const QString& title, KnobWidget*& knob, V
     knob =
         new KnobWidget("Gain", GAIN_MIN, GAIN_MAX, GAIN_DEFAULT, "dB", KnobWidget::Form::STACKED);
     knob->set_scroll_step(0.1);
-    meter = new VUMeter(Qt::Vertical);
+    meter = new VUMeter(Qt::Vertical, channel_count);
 
     lay->addWidget(name);
     lay->addWidget(knob, 0, Qt::AlignHCenter);
@@ -2974,7 +2975,7 @@ void MainWindow::register_parameters() {
 
 void MainWindow::update_meters() {
     meter_in->set_peak(engine->take_input_peak());
-    meter_out->set_peak(engine->take_output_peak());
+    meter_out->set_peaks(engine->take_output_peak(0), engine->take_output_peak(1));
     gr_gate->set_reduction(engine->get_gate().take_gain_reduction_db());
     gr_comp->set_reduction(engine->get_comp().take_gain_reduction_db());
     tempo_bar->poll();

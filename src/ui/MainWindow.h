@@ -182,7 +182,9 @@ private:
     void step_ir_b(int step);
     void choose_ir_b();
     void clear_ir_b();
-    QWidget* make_gain_column(const QString& title, KnobWidget*& knob, VUMeter*& meter);
+    // `channel_count`: 1 for the mono input, 2 for the stereo output's L/R meter.
+    QWidget* make_gain_column(const QString& title, KnobWidget*& knob, VUMeter*& meter,
+                              int channel_count);
     void find_in_library();
     QToolButton* make_library_arrow(const QString& glyph, int step, const QString& tip,
                                     LibraryEntry::Kind kind);
