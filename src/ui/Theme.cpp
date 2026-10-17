@@ -400,7 +400,7 @@ QPushButton {
     background-color: @control@;
     color: @text@;
     border: 1px solid @border@;
-    border-radius: 5px;
+    border-radius: 4px;
     padding: 6px 14px;
     min-height: 20px;
     font-weight: 500;
@@ -411,6 +411,9 @@ QPushButton:hover {
 }
 QPushButton:pressed {
     background-color: @pressed@;
+}
+QPushButton:focus {
+    border-color: @accent@;
 }
 QPushButton:disabled {
     background-color: @disabled_bg@;
@@ -423,6 +426,9 @@ QFrame[fxCard="true"] {
     background-color: @card@;
     border: 1px solid @line@;
     border-radius: 6px;
+}
+QFrame[fxCard="true"]:hover {
+    border-color: @border@;
 }
 QLabel#fxGrip {
     color: @text_faint@;
@@ -556,6 +562,9 @@ QToolButton#heroArrow:hover {
 QToolButton#heroArrow:pressed {
     background-color: @pressed@;
 }
+QToolButton#heroArrow:focus {
+    border-color: @accent@;
+}
 
 /* === Preset bar (top of the rack) === */
 QFrame#presetBar {
@@ -575,7 +584,7 @@ QToolButton#presetName {
     padding: 3px 10px;
     text-align: left;
     border: 1px solid @line@;
-    border-radius: 5px;
+    border-radius: 4px;
     background-color: @window@;
 }
 QToolButton#presetName[untitled="true"] {
@@ -585,6 +594,9 @@ QToolButton#presetName[untitled="true"] {
 }
 QToolButton#presetName:hover {
     border-color: @border_hover@;
+}
+QToolButton#presetName:focus {
+    border-color: @accent@;
 }
 QToolButton#presetName::menu-indicator {
     image: url(@arrow@);
@@ -603,6 +615,9 @@ QToolButton#presetSlot:hover, QToolButton#presetAb:hover {
     background-color: @selection@;
     border-color: @border_hover@;
 }
+QToolButton#presetSlot:focus, QToolButton#presetAb:focus {
+    border-color: @accent@;
+}
 /* Push buttons (Save, Tap, A→B…) and menu buttons (4/4, Click…): filled and
    bordered so they read as clickable; menu buttons carry a ▾. */
 QToolButton#presetTool, QToolButton#menuTool {
@@ -618,6 +633,9 @@ QToolButton#presetTool:hover, QToolButton#menuTool:hover {
 }
 QToolButton#presetTool:pressed, QToolButton#menuTool:pressed {
     background-color: @pressed@;
+}
+QToolButton#presetTool:focus, QToolButton#menuTool:focus {
+    border-color: @accent@;
 }
 QToolButton#menuTool {
     padding-right: 20px;
@@ -672,18 +690,24 @@ QLineEdit#numberEdit {
     selection-background-color: @accent@;
     selection-color: @on_accent@;
 }
+QLineEdit#numberEdit:focus {
+    border-color: @accent@;
+}
 
 QToolButton#metroPlay {
     color: @text@;
     background-color: @control@;
     border: 1px solid @border@;
-    border-radius: 5px;
+    border-radius: 4px;
     min-width: 26px;
     padding: 3px 6px;
     font-size: 11pt;
 }
 QToolButton#metroPlay:hover {
     background-color: @control_hover@;
+}
+QToolButton#metroPlay:focus {
+    border-color: @accent@;
 }
 QToolButton#metroPlay:checked {
     color: @on_accent@;
@@ -705,25 +729,31 @@ QToolButton#cardMore:hover {
     background-color: @selection@;
 }
 
-/* === MIDI Mappings window === */
-QDialog#midiMappings QGroupBox {
+/* === Group boxes and tables (MIDI Mappings, Settings) === */
+QGroupBox {
     border: 1px solid @line@;
     border-radius: 6px;
     margin-top: 14px;
     padding: 8px;
 }
-QDialog#midiMappings QGroupBox::title {
+QGroupBox::title {
     subcontrol-origin: margin;
     left: 8px;
     color: @text_muted@;
 }
-QDialog#midiMappings QTableWidget {
+QTableView {
     background-color: @surface@;
     border: 1px solid @line@;
-    border-radius: 5px;
+    border-radius: 6px;
     gridline-color: @line@;
+    selection-background-color: @selection@;
+    selection-color: @text@;
+    outline: none;
 }
-QDialog#midiMappings QHeaderView::section {
+QTableView:focus {
+    border-color: @accent@;
+}
+QHeaderView::section {
     background-color: @card@;
     color: @text_muted@;
     border: none;
@@ -731,8 +761,10 @@ QDialog#midiMappings QHeaderView::section {
     padding: 4px 6px;
     font-weight: 600;
 }
-/* No spin box rule: a style-sheet box makes Fusion drop the arrows, and the palette
-   already reaches them (AA_UseStyleSheetPropagationInWidgetStyles). */
+/* Spin boxes and check boxes stay Fusion's: a style-sheet box on a spin box loses its
+   arrows, and the palette already reaches them (AA_UseStyleSheetPropagationInWidgetStyles). */
+
+/* === MIDI Mappings window: the per-row Learn / × buttons === */
 QDialog#midiMappings QToolButton {
     color: @text@;
     background: transparent;
@@ -743,8 +775,8 @@ QDialog#midiMappings QToolButton {
 QDialog#midiMappings QToolButton:hover {
     background-color: @selection@;
 }
-QDialog#midiMappings QCheckBox {
-    color: @text@;
+QDialog#midiMappings QToolButton:focus {
+    border-color: @accent@;
 }
 
 /* === Library dock === */
@@ -779,6 +811,9 @@ QToolButton#libraryMode:hover, QToolButton#libraryTool:hover {
     background-color: @selection@;
     border-color: @border_hover@;
 }
+QToolButton#libraryMode:focus, QToolButton#libraryTool:focus {
+    border-color: @accent@;
+}
 QToolButton#libraryMode:checked {
     color: @on_accent@;
     background-color: @accent@;
@@ -788,7 +823,7 @@ QLineEdit#librarySearch {
     background-color: @surface@;
     color: @text@;
     border: 1px solid @line@;
-    border-radius: 5px;
+    border-radius: 4px;
     padding: 5px 8px;
     selection-background-color: @accent@;
     selection-color: @on_accent@;
@@ -799,8 +834,11 @@ QLineEdit#librarySearch:focus {
 QListView#libraryList {
     background-color: @surface@;
     border: 1px solid @line@;
-    border-radius: 5px;
+    border-radius: 6px;
     outline: none;
+}
+QListView#libraryList:focus {
+    border-color: @accent@;
 }
 QLabel#libraryStatus {
     color: @text_muted@;
@@ -812,8 +850,11 @@ QListWidget {
     background-color: @surface@;
     color: @text@;
     border: 1px solid @line@;
-    border-radius: 5px;
+    border-radius: 6px;
     outline: none;
+}
+QListWidget:focus {
+    border-color: @accent@;
 }
 QListWidget::item {
     padding: 4px 6px;
@@ -824,7 +865,7 @@ QListWidget::item:selected {
 }
 QTabWidget::pane {
     border: 1px solid @line@;
-    border-radius: 5px;
+    border-radius: 6px;
     top: -1px;
 }
 QTabBar::tab {
@@ -846,13 +887,16 @@ QComboBox {
     background-color: @control@;
     color: @text@;
     border: 1px solid @border@;
-    border-radius: 5px;
+    border-radius: 4px;
     padding: 4px 8px;
     min-height: 20px;
     font-weight: 500;
 }
 QComboBox:hover {
     border-color: @border_hover@;
+}
+QComboBox:focus {
+    border-color: @accent@;
 }
 QComboBox:disabled {
     background-color: @disabled_bg@;

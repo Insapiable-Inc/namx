@@ -54,7 +54,7 @@ MidiMappingsDialog::MidiMappingsDialog(MidiMapper& new_mapper, MidiInput* new_in
     : QDialog(parent)
     , mapper(new_mapper)
     , input(new_input) {
-    setObjectName("midiMappings"); // scoped dark-table rules in Theme
+    setObjectName("midiMappings"); // the Learn / × button rules in Theme
     setWindowTitle("MIDI Mappings");
     resize(980, 560);
     auto* root = new QVBoxLayout(this);
