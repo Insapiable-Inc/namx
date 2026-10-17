@@ -329,9 +329,8 @@ void tag_card(QWidget* card, const QString& fx_id) {
     }
     card->setProperty("fx", fx_id);
 
-    // The app stylesheet disables parent→child palette propagation, so the
-    // accents are pushed to the interactive descendants explicitly. Call
-    // tagCard AFTER the card's knobs/toggles have been created.
+    // Knobs and switches paint their own accent (not a palette role), so it is pushed
+    // to each one. Call tag_card AFTER the card's knobs/toggles have been created.
     // Non-effect cards (Input, Output: gain knobs, the limiter) take the app accent,
     // like the tempo bar's knobs.
     const QColor a =
@@ -732,13 +731,8 @@ QDialog#midiMappings QHeaderView::section {
     padding: 4px 6px;
     font-weight: 600;
 }
-QDialog#midiMappings QSpinBox {
-    background-color: @window@;
-    color: @text@;
-    border: 1px solid @line@;
-    border-radius: 4px;
-    padding: 2px 4px;
-}
+/* No spin box rule: a style-sheet box makes Fusion drop the arrows, and the palette
+   already reaches them (AA_UseStyleSheetPropagationInWidgetStyles). */
 QDialog#midiMappings QToolButton {
     color: @text@;
     background: transparent;
@@ -1151,6 +1145,12 @@ void apply(QApplication& app) {
         }
     }
     resolve_scheme();
+    // Under a style sheet a widget takes the application palette (the OS's), not its
+    // parent's — so a window created later than apply_to (Settings, MIDI Mappings)
+    // showed the OS's base colour in its check boxes, spin boxes and tables: black ones
+    // on the Light theme under a dark desktop. This attribute restores the widget-style
+    // propagation, so the window's palette reaches every descendant.
+    QApplication::setAttribute(Qt::AA_UseStyleSheetPropagationInWidgetStyles, true);
     app.setStyle("Fusion");
     app.setStyleSheet(fill_roles(APP_STYLE_SHEET));
     app.installEventFilter(new SystemThemeWatcher(&app));

@@ -19,9 +19,8 @@ namespace namx
 // AudioEngine::effect_table, plus "neutral" for non-effect cards). The
 // accent is rendered VERBATIM — stripe, title, knob ring/tick/value label,
 // toggle "on" state all use the exact palette hex; contrast is managed by
-// choosing the palette values, not by code. tagCard pushes the accent to
-// the card's knobs/toggles explicitly because the app stylesheet disables
-// parent→child palette propagation.
+// choosing the palette values, not by code. tag_card pushes the accent to
+// the card's knobs/toggles, which paint it themselves.
 namespace Theme
 {
 
@@ -99,8 +98,7 @@ QColor flag_red();
 QColor flag_white();
 
 // Tags a card with its effect ID: sets the `fx` dynamic property (drives the
-// per-effect QSS rules) and overrides QPalette::Highlight so descendant
-// knobs/switches pick up the accent without individual tagging.
+// per-effect QSS rules) and hands the accent to its knobs and switches.
 void tag_card(QWidget* card, const QString& fx_id);
 
 // Install Fusion + a tooltip-only application stylesheet. Call once after
