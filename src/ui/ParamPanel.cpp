@@ -307,8 +307,22 @@ void ParamPanel::build_header(QVBoxLayout* lay) {
     if (!io) {
         power = new QToolButton;
         power->setObjectName("powerButton");
-        power->setText("⏻");
         power->setCheckable(true);
+        // Drawn, not a font glyph: centred in every font. Dim off, the accent on.
+        auto pixmap = [this](const QColor& color) {
+            const qreal dpr = devicePixelRatioF();
+            QPixmap pm(QSize(20, 20) * dpr);
+            pm.setDevicePixelRatio(dpr);
+            pm.fill(Qt::transparent);
+            QPainter painter(&pm);
+            paint_power_icon(painter, QRectF(0, 0, 20, 20), color);
+            return pm;
+        };
+        QIcon icon;
+        icon.addPixmap(pixmap(Theme::node_text_dim()), QIcon::Normal, QIcon::Off);
+        icon.addPixmap(pixmap(Theme::fx_accent(theme_id(*n->type))), QIcon::Normal, QIcon::On);
+        power->setIcon(icon);
+        power->setIconSize(QSize(20, 20));
         power->setToolTip("On / bypassed");
         connect(power, &QToolButton::toggled, this, [this](bool on) {
             model.set_enabled(current_id, on);

@@ -116,8 +116,10 @@ holds the rules, `NodeCatalog` the node types:
   **Merge** node (2 inputs, 1 output, a Mix A/B crossfade, no EQ). No loops.
 - Kinds: `INPUT` (1 out: the guitar after the input gain), `OUTPUT` (L, R in; one side
   wired = mono on both), `MONO` effects (1 in, 1 out), `STEREO` = **mono in, stereo out**
-  (1 in, L and R out) for Flanger, Phaser, Chorus, Tremolo (L/R LFOs fixed half a cycle
-  apart, user 2026-10-18), Delay (with a Ping-Pong knob) and Reverb, `MERGE` (A, B in).
+  (1 in, L and R out) — the **only** version of Flanger, Phaser, Chorus, Tremolo (L/R
+  LFOs fixed half a cycle apart), Delay (Ping-Pong knob) and Reverb (user, 2026-10-18:
+  one node per effect; for mono, wire one output), `MERGE` (A, B in). Each card has its
+  own bypass button (power icon left of the ⋮).
   **Every effect takes one input** (user, 2026-10-18): no 2-in effects, a stereo rig
   runs two nodes, one per side — Amp and Cab included, which are mono only (briefly
   stereo-only; mono is the most intuitive).

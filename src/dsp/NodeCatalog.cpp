@@ -137,6 +137,8 @@ void io_limiter(EffectBase& fx, double v) {
 vector<NodeType> build_types() {
     vector<NodeType> t;
 
+    // Modulation, Delay and Reverb come only as mono in, stereo out (user, 2026-10-18):
+    // one node per effect; for a mono signal, wire one of its outputs.
     // Amp + cab first: the Add menu's most-used entries. Mono only (user, 2026-10-18:
     // the most intuitive); a stereo rig uses one per channel.
     t.push_back({"nam",
@@ -298,7 +300,7 @@ vector<NodeType> build_types() {
         {"flanger",
          "Flanger",
          "Modulation",
-         true,
+         false,
          true,
          NodeType::File::NONE,
          {
@@ -323,7 +325,7 @@ vector<NodeType> build_types() {
         {"phaser",
          "Phaser",
          "Modulation",
-         true,
+         false,
          true,
          NodeType::File::NONE,
          {
@@ -345,7 +347,7 @@ vector<NodeType> build_types() {
         {"chorus",
          "Chorus",
          "Modulation",
-         true,
+         false,
          true,
          NodeType::File::NONE,
          {
@@ -364,7 +366,7 @@ vector<NodeType> build_types() {
         {"tremolo",
          "Tremolo",
          "Modulation",
-         true,
+         false,
          true,
          NodeType::File::NONE,
          {
@@ -381,7 +383,7 @@ vector<NodeType> build_types() {
         {"delay",
          "Delay",
          "Delay",
-         true,
+         false,
          true,
          NodeType::File::NONE,
          {
@@ -432,7 +434,7 @@ vector<NodeType> build_types() {
             {"reverb",
              "Reverb",
              "Reverb",
-             true,
+             false,
              true,
              NodeType::File::NONE,
              {

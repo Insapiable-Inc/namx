@@ -156,7 +156,7 @@ public:
         p->setFont(f);
         p->setPen(Theme::node_text());
         const double text_x = 72;
-        const double text_w = NODE_W - text_x - 24;
+        const double text_w = NODE_W - text_x - 46; // room for the power button and ⋮
         p->drawText(QRectF(text_x, 12, text_w, 24), Qt::AlignLeft | Qt::AlignVCenter,
                     QFontMetricsF(f).elidedText(n->name, Qt::ElideRight, text_w));
         f.setPointSizeF(8.5);
@@ -167,8 +167,16 @@ public:
                     QFontMetricsF(f).elidedText(io_line(*n), Qt::ElideRight, text_w + 14));
         p->setOpacity(1.0);
 
-        // ⋮ menu affordance.
+        // Bypass button and ⋮ menu affordance.
         if (n->kind() != NodeKind::INPUT && n->kind() != NodeKind::OUTPUT) {
+            const QRectF power = power_rect();
+            QColor ring = n->enabled ? accent : Theme::node_text_dim();
+            p->setPen(QPen(ring, 1.2));
+            QColor fill = ring;
+            fill.setAlpha(n->enabled ? 40 : 0);
+            p->setBrush(fill);
+            p->drawEllipse(power);
+            paint_power_icon(*p, power.adjusted(3, 3, -3, -3), ring);
             p->setPen(Qt::NoPen);
             p->setBrush(Theme::node_text_dim());
             for (int i = 0; i < 3; ++i) {
@@ -228,6 +236,12 @@ protected:
             }
             const GraphModel::Node* n = canvas.model.node(id);
             if (n && n->kind() != NodeKind::INPUT && n->kind() != NodeKind::OUTPUT &&
+                power_rect().adjusted(-3, -3, 3, 3).contains(ev->pos())) {
+                canvas.model.set_enabled(id, !n->enabled); // the card's bypass button
+                ev->accept();
+                return;
+            }
+            if (n && n->kind() != NodeKind::INPUT && n->kind() != NodeKind::OUTPUT &&
                 QRectF(NODE_W - 24, 8, 20, 30).contains(ev->pos())) {
                 canvas.select_node(id);
                 // After this handler: a menu action may rebuild the scene (and this card).
@@ -260,10 +274,23 @@ protected:
     }
 
     void hoverMoveEvent(QGraphicsSceneHoverEvent* ev) override {
-        setCursor(port_hit(ev->pos()) ? Qt::CrossCursor : Qt::ArrowCursor);
+        const GraphModel::Node* n = canvas.model.node(id);
+        const bool on_power = n && n->kind() != NodeKind::INPUT && n->kind() != NodeKind::OUTPUT &&
+                              power_rect().adjusted(-3, -3, 3, 3).contains(ev->pos());
+        setCursor(port_hit(ev->pos()) ? Qt::CrossCursor
+                  : on_power          ? Qt::PointingHandCursor
+                                      : Qt::ArrowCursor);
+        setToolTip(on_power
+                       ? QString(n->enabled ? "On: click to bypass" : "Bypassed: click to turn on")
+                       : QString());
     }
 
 private:
+    // The bypass button, left of the ⋮.
+    static QRectF power_rect() {
+        return QRectF(NODE_W - 44, 13, 20, 20);
+    }
+
     // (input?, port) under a local point.
     std::optional<std::pair<bool, int>> port_hit(QPointF local) const {
         const GraphModel::Node* n = canvas.model.node(id);

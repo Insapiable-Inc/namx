@@ -133,4 +133,18 @@ void paint_node_icon(QPainter& p, const QRectF& box, const QString& type_id,
     p.restore();
 }
 
+void paint_power_icon(QPainter& p, const QRectF& r, const QColor& color) {
+    p.save();
+    p.setRenderHint(QPainter::Antialiasing);
+    const double side = std::min(r.width(), r.height());
+    const QPointF c = r.center();
+    const double rad = side * 0.36;
+    p.setPen(QPen(color, std::max(1.4, side / 10.0), Qt::SolidLine, Qt::RoundCap));
+    p.setBrush(Qt::NoBrush);
+    // Ring open at the top (60° gap), bar from the centre up through the gap.
+    p.drawArc(QRectF(c.x() - rad, c.y() - rad, 2 * rad, 2 * rad), 120 * 16, 300 * 16);
+    p.drawLine(QPointF(c.x(), c.y() - rad * 1.15), QPointF(c.x(), c.y() - rad * 0.15));
+    p.restore();
+}
+
 } // namespace namx
