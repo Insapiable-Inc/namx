@@ -126,8 +126,10 @@ struct GraphWire
 class GraphPlan
 {
 public:
-    // Buffers that never change: silence for unwired inputs.
+    // Buffers with a fixed role: silence for unwired inputs (never written), and a
+    // scratch buffer anyone may overwrite (an effect's discarded R copy).
     static constexpr int SILENCE = 0;
+    static constexpr int SCRATCH = 1;
 
     struct Step
     {
@@ -151,11 +153,16 @@ public:
 };
 
 // Compiles `wires` over `nodes`: rejects a wire to an unknown node or port, a second
-// wire into one input, and cycles. Only nodes reachable from the Input run; the rest
-// stay idle (their outputs read as silence).
+// wire into one input, and cycles. Only nodes on a path from the Input to the Output
+// run (live_node_ids); dead ends and unfed branches stay idle, their outputs silent.
 expected<unique_ptr<GraphPlan>, string>
 compile_graph(const vector<std::shared_ptr<GraphNode>>& nodes, const vector<GraphWire>& wires,
               size_t capacity);
+
+// The nodes that run: on a path from the Input to the Output, plus the Input itself
+// (it feeds the input meter). Empty for an invalid graph.
+vector<int> live_node_ids(const vector<std::shared_ptr<GraphNode>>& nodes,
+                          const vector<GraphWire>& wires);
 
 // `wires` with `wire` connected: a wire already into the same input is replaced (an
 // input takes one wire), a duplicate is not added twice.

@@ -77,7 +77,7 @@ static void test_rules() {
     CHECK(!compile_graph(loop_nodes, {{2, 0, 3, 0}, {3, 0, 2, 0}}, N).has_value(),
           "a graph with a loop doesn't compile");
     CHECK(!can_add_wire(loop_nodes, loop_chain, {3, 1, 4, 1}), "a port a node lacks is refused");
-    CHECK(!NodeCatalog::create(9, "nam", true), "no stereo Amp variant");
+    CHECK(!NodeCatalog::create(9, "nam", false), "no mono Amp variant: Amp and Cab are stereo");
 
     // Connecting into a taken input replaces its wire; never into a loop.
     const vector<GraphWire> replaced = with_wire(loop_chain, {1, 0, 3, 0});
@@ -123,6 +123,20 @@ static void test_processing() {
                              NodeCatalog::create(3, "output", false)};
         const auto [l, r] = run(nodes, {{2, 0, 3, 0}});
         CHECK(equals_scaled(l, 0.0f) && equals_scaled(r, 0.0f), "an unfed branch is silent");
+    }
+    // A dead end (fed, but reaching no Output) doesn't run.
+    {
+        const Nodes nodes = {NodeCatalog::create(1, "input", false),
+                             NodeCatalog::create(2, "drive", false),
+                             NodeCatalog::create(3, "output", false)};
+        const vector<GraphWire> wires = {{1, 0, 2, 0}, {1, 0, 3, 0}};
+        const auto plan = compile_graph(nodes, wires, N);
+        const bool drive_runs = plan && std::any_of((*plan)->steps.begin(), (*plan)->steps.end(),
+                                                    [](const GraphPlan::Step& st) {
+                                                        return st.node->id == 2;
+                                                    });
+        CHECK(plan && !drive_runs, "a dead end isn't processed");
+        CHECK(live_node_ids(nodes, wires) == vector<int>({1, 3}), "live nodes: Input to Output");
     }
 }
 

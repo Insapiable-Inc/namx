@@ -94,6 +94,7 @@ void GraphModel::push() {
     for (const auto& n : nodes) {
         dsp.push_back(n.dsp);
     }
+    live_ids = live_node_ids(dsp, wires);
     if (auto ok = engine.set_graph(dsp, wires); !ok) {
         // The model only ever holds graphs can_add_wire accepted: a bug if reached.
         qCWarning(lc_audio, "[GraphModel] graph rejected: %s", ok.error().c_str());
@@ -113,6 +114,9 @@ void GraphModel::apply_all(Node& n) {
 
 int GraphModel::create(const QString& type_id, bool stereo, int id) {
     const int new_id = id > 0 ? id : next_id;
+    if (const NodeType* t = NodeCatalog::find(type_id.toStdString())) {
+        stereo = t->variant(stereo); // an Amp asked for mono is the stereo Amp
+    }
     std::shared_ptr<GraphNode> dsp = engine.create_node(new_id, type_id.toStdString(), stereo);
     if (!dsp) {
         return 0;
@@ -457,14 +461,11 @@ bool GraphModel::from_json(const QJsonObject& obj, QStringList* warnings) {
 
 bool GraphModel::from_v3(const QJsonObject& graph, QStringList* warnings) {
     const QJsonArray node_arr = graph["nodes"].toArray();
-    // Validate before touching the live graph.
+    // Validate before touching the live graph: an Input and an Output, or it isn't one.
     bool has_in = false;
     bool has_out = false;
     for (const auto& v : node_arr) {
         const QString type = v.toObject()["type"].toString();
-        if (!NodeCatalog::find(type.toStdString()) || v.toObject()["id"].toInt() <= 0) {
-            return false;
-        }
         has_in = has_in || type == "input";
         has_out = has_out || type == "output";
     }
@@ -473,12 +474,20 @@ bool GraphModel::from_v3(const QJsonObject& graph, QStringList* warnings) {
     }
 
     clear();
+    vector<int> dropped; // nodes this build doesn't have (the Tuner, global since 2026-10-18)
     for (const auto& v : node_arr) {
         const QJsonObject o = v.toObject();
-        const int id = create(o["type"].toString(), o["stereo"].toBool(), o["id"].toInt());
+        const int id = o["id"].toInt() > 0 && !node(o["id"].toInt())
+                           ? create(o["type"].toString(), o["stereo"].toBool(), o["id"].toInt())
+                           : 0;
         Node* n = id ? find(id) : nullptr;
         if (!n) {
-            continue; // a duplicate ID or a variant the type lacks
+            dropped.push_back(o["id"].toInt());
+            if (warnings && o["type"].toString() != "tuner") {
+                warnings->append(QString("A node of an unknown kind (\"%1\") was left out.")
+                                     .arg(o["type"].toString()));
+            }
+            continue;
         }
         if (o["name"].isString() && !o["name"].toString().trimmed().isEmpty()) {
             n->name = o["name"].toString().trimmed();
@@ -501,12 +510,39 @@ bool GraphModel::from_v3(const QJsonObject& graph, QStringList* warnings) {
             }
         }
     }
+    vector<GraphWire> saved;
     for (const auto& v : graph["wires"].toArray()) {
         const QJsonObject o = v.toObject();
-        const GraphWire w{o["from"].toInt(), o["fromPort"].toInt(), o["to"].toInt(),
-                          o["toPort"].toInt()};
-        if (can_add_wire(w)) {
-            wires.push_back(w);
+        saved.push_back(
+            {o["from"].toInt(), o["fromPort"].toInt(), o["to"].toInt(), o["toPort"].toInt()});
+    }
+    auto is_dropped = [&dropped](int id) {
+        return std::find(dropped.begin(), dropped.end(), id) != dropped.end();
+    };
+    // A dropped node's source feeds on to what it fed, so the chain stays joined.
+    auto source_of = [&](GraphWire w) -> std::optional<GraphWire> {
+        for (int hops = 0; is_dropped(w.from_node) && hops < 64; ++hops) {
+            const auto in = std::find_if(saved.begin(), saved.end(), [&w](const GraphWire& x) {
+                return x.to_node == w.from_node && x.to_port == 0;
+            });
+            if (in == saved.end()) {
+                return std::nullopt;
+            }
+            w.from_node = in->from_node;
+            w.from_port = in->from_port;
+        }
+        return is_dropped(w.from_node) ? std::nullopt : std::optional<GraphWire>(w);
+    };
+    for (const GraphWire& original : saved) {
+        if (is_dropped(original.to_node)) {
+            continue;
+        }
+        const std::optional<GraphWire> w = source_of(original);
+        if (!w) {
+            continue;
+        }
+        if (can_add_wire(*w)) {
+            wires.push_back(*w);
         } else if (warnings) {
             warnings->append("A wire that would break the graph was skipped.");
         }
@@ -573,7 +609,7 @@ bool GraphModel::from_v2(const QJsonObject& obj, QStringList* warnings) {
         }
         const bool stereo_switch =
             id == "reverb" || obj[group].toObject()["stereo"].toBool(id == "delay");
-        const bool stereo = type->has_stereo && (stereo_switch || right.has_value());
+        const bool stereo = type->variant(type->has_stereo && (stereo_switch || right.has_value()));
         const QString file = id == "nam"  ? obj["namPath"].toString()
                              : id == "ir" ? obj["irPath"].toString()
                                           : QString();

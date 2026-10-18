@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <memory>
 #include <vector>
 
@@ -63,6 +64,11 @@ public:
         return routes[i];
     }
     const Node* node(int id) const;
+    // On a path from the Input to the Output: the engine runs it (SignalGraph's
+    // live_node_ids). Dead ends and unfed branches don't.
+    bool is_live(int id) const {
+        return std::find(live_ids.begin(), live_ids.end(), id) != live_ids.end();
+    }
     int input_id() const;
     int output_id() const;
 
@@ -132,6 +138,7 @@ private:
     vector<Node> nodes;
     vector<GraphWire> wires;
     vector<vector<QPointF>> routes; // parallel to wires
+    vector<int> live_ids; // from push()
     int next_id = 1;
     bool normalize_models = true;
 };

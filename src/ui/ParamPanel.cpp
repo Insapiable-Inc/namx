@@ -25,8 +25,6 @@
 #include "ReverbProcessor.h"
 #include "Theme.h"
 #include "ToggleSwitch.h"
-#include "TunerDisplay.h"
-#include "TunerProcessor.h"
 #include "VUMeter.h"
 
 namespace namx
@@ -143,7 +141,6 @@ void ParamPanel::show_node(int id) {
     choices.clear();
     title = subtitle = file_name = file_meta = nullptr;
     power = nullptr;
-    tuner = nullptr;
     meter = nullptr;
     if (body) {
         // Later: this may run from a signal of one of its own widgets.
@@ -186,11 +183,6 @@ void ParamPanel::show_node(int id) {
     clay->setSpacing(14);
     if (n->type->file != NodeType::File::NONE) {
         build_file_section(clay);
-    }
-    if (n->type->id == "tuner") {
-        tuner = new TunerDisplay;
-        tuner->setMinimumHeight(140);
-        clay->addWidget(tuner);
     }
     build_params(clay);
     clay->addStretch();
@@ -570,24 +562,6 @@ void ParamPanel::poll_meters(AudioEngine& engine) {
     } else {
         meter->set_peaks(engine.take_output_peak(0), engine.take_output_peak(1));
     }
-}
-
-void ParamPanel::poll_tuner(int reference_hz) {
-    const GraphModel::Node* n = model.node(current_id);
-    if (!tuner || !n) {
-        return;
-    }
-    tuner->set_reference(reference_hz);
-    const auto& t = static_cast<const TunerProcessor&>(n->dsp->processor());
-    const float freq = n->enabled ? t.get_last_pitch() : 0.0f;
-    if (freq <= 0.0f) {
-        tuner->set_reading("-", 0.0f, false);
-        return;
-    }
-    const float ref = static_cast<float>(reference_hz);
-    const int midi_note = TunerProcessor::freq_to_midi(freq, ref);
-    tuner->set_reading(QString::fromStdString(TunerProcessor::midi_to_name(midi_note)),
-                       TunerProcessor::cents_offset(freq, ref), true, freq);
 }
 
 } // namespace namx

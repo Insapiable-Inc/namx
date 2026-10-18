@@ -65,6 +65,11 @@ struct NodeType
     string category; // Amp, Cab, Drive, Dynamics, Filter, Pitch, Modulation, Delay, Reverb, Utility
     bool has_mono = true; // offered as a mono node
     bool has_stereo = false; // offered as a stereo node (L/R ports)
+    // The variant a request for `stereo` gets: that one when the type has it, else the
+    // type's only one.
+    bool variant(bool stereo) const {
+        return stereo ? has_stereo || !has_mono : !has_mono;
+    }
     File file = File::NONE;
     vector<ParamSpec> params;
 };

@@ -11,6 +11,7 @@
 #include <QFile>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QHBoxLayout>
 #include <QInputDialog>
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -43,7 +44,10 @@
 #include "ParamPanel.h"
 #include "SettingsDialog.h"
 #include "TempoBar.h"
+#include "Theme.h"
+#include "ToggleSwitch.h"
 #include "TunerDisplay.h"
+#include "TunerProcessor.h"
 
 namespace namx
 {
@@ -138,7 +142,7 @@ RigWindow::RigWindow(QWidget* parent)
             return;
         }
         panel->poll_meters(*engine);
-        panel->poll_tuner(tuner_reference ? static_cast<int>(tuner_reference->value()) : 440);
+        poll_tuner();
         top->poll();
     });
     meter_timer->start();
@@ -163,6 +167,8 @@ void RigWindow::setup_ui() {
 
     top = new TopBar(engine->get_metronome());
     lay->addWidget(top);
+    tuner_strip = make_tuner_strip();
+    lay->addWidget(tuner_strip);
     connect(top, &TopBar::preset_menu_about_to_show, this, &RigWindow::populate_preset_menu);
     connect(top, &TopBar::rename_requested, this, &RigWindow::rename_preset);
     connect(top, &TopBar::favorite_toggled, this, &RigWindow::toggle_favorite);
@@ -198,22 +204,89 @@ void RigWindow::setup_ui() {
     connect(audio_bar, &AudioStatusBar::device_selection_changed, this, &RigWindow::restart_audio);
     connect(audio_bar, &AudioStatusBar::reconnect_requested, this, &RigWindow::restart_audio);
 
-    // What Settings → Tuner drives (the tuner itself shows in a Tuner node's panel).
+    connect(top, &TopBar::tuner_toggled, this, &RigWindow::set_tuner_on);
+}
+
+// The tuner strip under the top bar: the global tuner (not a node), shown while it runs.
+QFrame* RigWindow::make_tuner_strip() {
     const QSettings s;
+    auto* strip = new QFrame;
+    strip->setObjectName("tunerStrip");
+    auto* lay = new QHBoxLayout(strip);
+    lay->setContentsMargins(18, 8, 18, 8);
+    lay->setSpacing(14);
+    tuner_display = new TunerDisplay;
+    tuner_display->setMinimumHeight(96);
+    tuner_display->set_show_hz(s.value("tuner/showHz", false).toBool());
+    lay->addWidget(tuner_display, 1);
+
+    auto* side = new QVBoxLayout;
+    side->setSpacing(8);
+    auto* mute_row = new QHBoxLayout;
+    tuner_mute = new ToggleSwitch;
+    tuner_mute->setCheckable(true);
+    tuner_mute->setToolTip("Silence the rig while the tuner is on");
+    tuner_mute->setChecked(s.value("tuner/mute", true).toBool());
+    engine->get_tuner().set_mute(tuner_mute->isChecked());
+    connect(tuner_mute, &ToggleSwitch::toggled, this, [this](bool on) {
+        engine->get_tuner().set_mute(on);
+        QSettings().setValue("tuner/mute", on);
+    });
+    auto* mute_cap = new QLabel("Mute");
+    mute_cap->setObjectName("toggleCaption");
+    mute_row->addWidget(tuner_mute);
+    mute_row->addWidget(mute_cap);
+    mute_row->addStretch();
+    side->addLayout(mute_row);
+
+    auto* ref_row = new QHBoxLayout;
+    auto* ref_cap = new QLabel("A4");
+    ref_cap->setObjectName("toggleCaption");
     tuner_reference = new NumberField({.minimum = 420,
                                        .maximum = 460,
                                        .decimals = 0,
                                        .step = 1,
                                        .unit = "Hz",
-                                       .reset_value = 440},
-                                      this);
-    tuner_reference->hide();
+                                       .reset_value = 440});
+    tuner_reference->setToolTip("Reference pitch: 440 Hz is concert pitch");
     tuner_reference->set_value(s.value("tuner/reference", 440).toInt());
-    connect(tuner_reference, &NumberField::value_changed, this, [](double v) {
+    tuner_display->set_reference(static_cast<int>(tuner_reference->value()));
+    connect(tuner_reference, &NumberField::value_changed, this, [this](double v) {
+        tuner_display->set_reference(static_cast<int>(v));
         QSettings().setValue("tuner/reference", static_cast<int>(v));
     });
-    settings_tuner = new TunerDisplay(this);
-    settings_tuner->hide();
+    ref_row->addWidget(ref_cap);
+    ref_row->addWidget(tuner_reference);
+    ref_row->addStretch();
+    side->addLayout(ref_row);
+    side->addStretch();
+    lay->addLayout(side);
+
+    Theme::tag_card(strip, "tuner");
+    strip->hide();
+    return strip;
+}
+
+void RigWindow::set_tuner_on(bool on) {
+    engine->get_tuner().set_enabled(on);
+    tuner_strip->setVisible(on);
+    top->set_tuner(on);
+}
+
+void RigWindow::poll_tuner() {
+    if (!tuner_strip->isVisible()) {
+        return;
+    }
+    const TunerProcessor& t = engine->get_tuner();
+    const float freq = t.get_last_pitch();
+    if (freq <= 0.0f) {
+        tuner_display->set_reading("-", 0.0f, false);
+        return;
+    }
+    const float ref = static_cast<float>(tuner_reference->value());
+    const int midi_note = TunerProcessor::freq_to_midi(freq, ref);
+    tuner_display->set_reading(QString::fromStdString(TunerProcessor::midi_to_name(midi_note)),
+                               TunerProcessor::cents_offset(freq, ref), true, freq);
 }
 
 void RigWindow::setup_menus() {
@@ -274,6 +347,13 @@ void RigWindow::setup_menus() {
     named->addActions(menu->actions());
     setMenuBar(bar);
     bar->hide();
+
+    QAction* tuner = menu->addAction("Tuner", this, [this] {
+        set_tuner_on(!engine->get_tuner().is_enabled());
+    });
+    tuner->setShortcut(QKeySequence("Ctrl+T"));
+    addAction(tuner);
+    named->addAction(tuner);
 
     // Metronome on Space, like the old tempo bar (not while typing in a field).
     auto* space = new QShortcut(QKeySequence(Qt::Key_Space), this);
@@ -415,9 +495,10 @@ void RigWindow::open_settings() {
             .midi_mapper = *midi_mapper,
             .library_index = *library,
             .tuner_reference = *tuner_reference,
-            .tuner_display = *settings_tuner,
+            .tuner_display = *tuner_display,
             .set_tuner_show_hz =
-                [](bool on) {
+                [this](bool on) {
+                    tuner_display->set_show_hz(on);
                     QSettings().setValue("tuner/showHz", on);
                 },
             .window = *this,
@@ -816,8 +897,9 @@ void RigWindow::rebuild_search() {
                 {TopBar::SearchEntry::Kind::NODE, name + " (" + cat + ")", id, false});
         }
         if (t.has_stereo) {
-            entries.push_back(
-                {TopBar::SearchEntry::Kind::NODE, name + " Stereo (" + cat + ")", id, true});
+            entries.push_back({TopBar::SearchEntry::Kind::NODE,
+                               (t.has_mono ? name + " Stereo (" : name + " (") + cat + ")", id,
+                               true});
         }
     }
     for (const auto& e : library->get_entries()) {

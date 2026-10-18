@@ -998,6 +998,29 @@ QFrame#tempoPopup {
     border-radius: 6px;
 }
 
+QToolButton#tunerToggle {
+    color: @text@;
+    background-color: @raised@;
+    border: 1px solid @border@;
+    border-radius: 6px;
+    min-height: 30px;
+    padding: 0 12px;
+    font-weight: 600;
+}
+QToolButton#tunerToggle:hover {
+    background-color: @selection@;
+    border-color: @border_hover@;
+}
+QToolButton#tunerToggle:checked {
+    color: @on_accent@;
+    background-color: @accent@;
+    border-color: @accent@;
+}
+QFrame#tunerStrip {
+    background-color: @surface@;
+    border-bottom: 1px solid @line@;
+}
+
 /* === Node-graph UI: canvas tools === */
 QWidget#canvasTools {
     background-color: @surface@;

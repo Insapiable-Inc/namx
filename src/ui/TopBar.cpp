@@ -81,6 +81,12 @@ TopBar::TopBar(Metronome& metronome, QWidget* parent)
     lay->addWidget(rename);
     lay->addStretch(1);
 
+    tuner_button = tool("Tuner", "Tuner on / off (Ctrl+T)");
+    tuner_button->setObjectName("tunerToggle");
+    tuner_button->setCheckable(true);
+    connect(tuner_button, &QToolButton::toggled, this, &TopBar::tuner_toggled);
+    lay->addWidget(tuner_button);
+
     // Metronome: play, tempo, and the full tempo bar in a popup.
     tempo_popup = new QFrame(this, Qt::Popup);
     tempo_popup->setObjectName("tempoPopup");
@@ -173,6 +179,11 @@ void TopBar::set_preset(const QString& name, bool modified, bool untitled) {
     preset_button->setProperty("untitled", untitled);
     preset_button->style()->unpolish(preset_button);
     preset_button->style()->polish(preset_button);
+}
+
+void TopBar::set_tuner(bool on) {
+    const QSignalBlocker block(tuner_button);
+    tuner_button->setChecked(on);
 }
 
 void TopBar::set_favorite(bool on) {

@@ -15,6 +15,7 @@
 #include "OutputLimiter.h"
 #include "RtSlot.h"
 #include "SignalGraph.h"
+#include "TunerProcessor.h"
 
 namespace namx
 {
@@ -86,6 +87,12 @@ public:
     // Model / IR of a node ("nam" / "ir" nodes); retired objects are reclaimed.
     bool load_model(GraphNode& node, const string& path);
     bool load_ir(GraphNode& node, const string& path);
+
+    // Global, outside the graph: reads the guitar after the input gain; while on with
+    // Mute set it silences what enters the graph.
+    TunerProcessor& get_tuner() {
+        return tuner;
+    }
 
     // Mixed in after the output gain — outside the graph, not metered.
     Metronome& get_metronome() {
@@ -169,6 +176,7 @@ private:
     std::mutex config_mutex;
     size_t max_block{512};
 
+    TunerProcessor tuner;
     OutputLimiter limiter;
     Metronome metronome;
 

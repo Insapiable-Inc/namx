@@ -9,6 +9,7 @@
 #include "Common.h"
 #include "TopBar.h"
 
+class QFrame;
 class QLabel;
 class QSplitter;
 class QTimer;
@@ -27,6 +28,7 @@ class NumberField;
 class ParamPanel;
 class SettingsDialog;
 class TunerDisplay;
+class ToggleSwitch;
 
 // The main window of the node-graph UI (ui/node-graph): the top bar, the node
 // network on the left, the selected node's parameters on the right, the audio status
@@ -63,6 +65,11 @@ private:
     void update_status();
     void set_notice(const QString& key, const QString& text, const QString& tip = {});
     void open_settings();
+
+    // The global tuner (not a node): the strip under the top bar.
+    QFrame* make_tuner_strip();
+    void set_tuner_on(bool on);
+    void poll_tuner();
 
     // Files into nodes.
     void load_file_into_node(const QString& path, bool is_model);
@@ -115,8 +122,10 @@ private:
     SettingsDialog* settings_dialog = nullptr;
     MidiInput* midi = nullptr;
     MidiMapper* midi_mapper = nullptr;
-    NumberField* tuner_reference = nullptr; // Settings → Tuner; read by the panel
-    TunerDisplay* settings_tuner = nullptr; // Settings → Tuner's preview target
+    QFrame* tuner_strip = nullptr;
+    TunerDisplay* tuner_display = nullptr;
+    ToggleSwitch* tuner_mute = nullptr;
+    NumberField* tuner_reference = nullptr; // A4; Settings → Tuner drives it too
 
     QTimer* meter_timer = nullptr;
     QTimer* status_timer = nullptr;

@@ -21,13 +21,12 @@ class AudioEngine;
 class GraphModel;
 class KnobWidget;
 class ToggleSwitch;
-class TunerDisplay;
 class VUMeter;
 struct ParamSpec;
 
 // The right-hand panel (ui/node-graph): the selected node's header — icon, name, its
 // I/O, the power switch, a menu — and every parameter of its type, built from the
-// NodeCatalog. Amp and Cab nodes add their file, the Tuner its display, Input and
+// NodeCatalog. Amp and Cab nodes add their file, Input and
 // Output their level meters.
 class ParamPanel : public QWidget
 {
@@ -45,7 +44,6 @@ public:
 
     // Live readouts, from the window's timers.
     void poll_meters(AudioEngine& engine);
-    void poll_tuner(int reference_hz);
 
     // Hooks the window provides (the node menu's Duplicate / Delete select or clear).
     std::function<void(int)> on_duplicate;
@@ -73,7 +71,6 @@ private:
     QHash<QString, KnobWidget*> knobs;
     QHash<QString, ToggleSwitch*> switches;
     QHash<QString, QList<QToolButton*>> choices;
-    TunerDisplay* tuner = nullptr;
     VUMeter* meter = nullptr;
 };
 

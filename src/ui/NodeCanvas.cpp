@@ -113,7 +113,11 @@ public:
         }
         p->setRenderHint(QPainter::Antialiasing);
         const QColor accent = node_accent(*n);
-        const bool live = n->enabled;
+        // Bypassed, or out of the signal path (a dead end or an unfed branch, which the
+        // engine doesn't run — dashed): drawn faded.
+        const bool in_path = n->kind() == NodeKind::INPUT || n->kind() == NodeKind::OUTPUT ||
+                             canvas.model.is_live(id);
+        const bool live = n->enabled && in_path;
         const QRectF body(0, 0, NODE_W, NODE_H);
 
         // Glow when selected.
@@ -130,7 +134,7 @@ public:
         if (!live) {
             edge = Theme::node_text_dim();
         }
-        p->setPen(QPen(edge, isSelected() ? 2.2 : 1.6));
+        p->setPen(QPen(edge, isSelected() ? 2.2 : 1.6, in_path ? Qt::SolidLine : Qt::DashLine));
         p->setBrush(Theme::node_fill());
         p->drawRoundedRect(body, 9, 9);
 
@@ -289,6 +293,12 @@ private:
 
     // "Mono → Stereo", "Mono (Guitar)", or the loaded file for Amp/Cab.
     QString io_line(const GraphModel::Node& n) const {
+        if (n.type->file != NodeType::File::NONE) {
+            return n.file.isEmpty()
+                       ? QString(n.type->file == NodeType::File::MODEL ? "No model loaded"
+                                                                       : "No IR loaded")
+                       : QFileInfo(n.file).completeBaseName();
+        }
         switch (n.kind()) {
             case NodeKind::INPUT:
                 return "Mono (Guitar)";
@@ -300,12 +310,6 @@ private:
                 return wired(true, 0) && wired(true, 1) ? "Stereo → Stereo" : "Mono → Stereo";
             case NodeKind::MONO:
                 break;
-        }
-        if (n.type->file != NodeType::File::NONE) {
-            return n.file.isEmpty()
-                       ? QString(n.type->file == NodeType::File::MODEL ? "No model loaded"
-                                                                       : "No IR loaded")
-                       : QFileInfo(n.file).completeBaseName();
         }
         return "Mono → Mono";
     }
@@ -430,7 +434,7 @@ void NodeCanvas::populate_add_menu(QMenu* menu,
                 });
             }
             if (t.has_stereo) {
-                sub->addAction(name + " (Stereo)", menu, [pick, id] {
+                sub->addAction(t.has_mono ? name + " (Stereo)" : name, menu, [pick, id] {
                     pick(id, true);
                 });
             }

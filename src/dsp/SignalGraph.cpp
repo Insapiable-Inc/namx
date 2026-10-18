@@ -119,7 +119,60 @@ vector<size_t> topological_order(const NodeList& nodes,
     return order;
 }
 
+// Nodes on a path from the Input to the Output (the Input always: it feeds the input
+// meter even with nothing wired). `order`: topological.
+vector<bool> live_mask(const NodeList& nodes, const std::unordered_map<int, size_t>& index,
+                       const vector<GraphWire>& wires, const vector<size_t>& order) {
+    vector<bool> from_input(nodes.size(), false);
+    for (const size_t i : order) {
+        from_input[i] = from_input[i] || nodes[i]->kind == NodeKind::INPUT;
+        if (from_input[i]) {
+            for (const auto& w : wires) {
+                if (w.from_node == nodes[i]->id) {
+                    from_input[index.at(w.to_node)] = true;
+                }
+            }
+        }
+    }
+    vector<bool> to_output(nodes.size(), false);
+    for (auto it = order.rbegin(); it != order.rend(); ++it) {
+        const size_t i = *it;
+        to_output[i] = to_output[i] || nodes[i]->kind == NodeKind::OUTPUT;
+        if (to_output[i]) {
+            for (const auto& w : wires) {
+                if (w.to_node == nodes[i]->id) {
+                    to_output[index.at(w.from_node)] = true;
+                }
+            }
+        }
+    }
+    vector<bool> live(nodes.size(), false);
+    for (size_t i = 0; i < nodes.size(); ++i) {
+        live[i] = nodes[i]->kind == NodeKind::INPUT || (from_input[i] && to_output[i]);
+    }
+    return live;
+}
+
 } // namespace
+
+vector<int> live_node_ids(const NodeList& nodes, const vector<GraphWire>& wires) {
+    const auto index = index_nodes(nodes);
+    if ((index.empty() && !nodes.empty()) || !check_wires(nodes, index, wires).empty()) {
+        return {};
+    }
+    const vector<size_t> order = topological_order(nodes, index, wires);
+    if (order.size() != nodes.size()) {
+        return {};
+    }
+    const vector<bool> live = live_mask(nodes, index, wires, order);
+    vector<int> ids;
+    for (size_t i = 0; i < nodes.size(); ++i) {
+        if (live[i]) {
+            ids.push_back(nodes[i]->id);
+        }
+    }
+    return ids;
+}
 
 vector<GraphWire> with_wire(const vector<GraphWire>& wires, const GraphWire& wire) {
     vector<GraphWire> next;
@@ -168,25 +221,12 @@ compile_graph(const NodeList& nodes, const vector<GraphWire>& wires, size_t capa
         return std::unexpected(string("the wires make a loop"));
     }
 
-    // Reachable from the Input (in processing order, a node's sources come first).
-    vector<bool> live(nodes.size(), false);
-    for (const size_t i : order) {
-        if (nodes[i]->kind == NodeKind::INPUT) {
-            live[i] = true;
-            continue;
-        }
-        for (const auto& w : wires) {
-            if (w.to_node == nodes[i]->id && live[index.at(w.from_node)]) {
-                live[i] = true;
-            }
-        }
-    }
+    const vector<bool> live = live_mask(nodes, index, wires, order);
 
     auto plan = make_unique<GraphPlan>();
     plan->nodes = nodes;
     plan->buffers.emplace_back(); // SILENCE
-    const int scratch = 1;
-    plan->buffers.emplace_back();
+    plan->buffers.emplace_back(); // SCRATCH
     std::unordered_map<int, array<int, 2>> out_buffers; // node ID → buffer per output port
 
     for (const size_t i : order) {
@@ -210,7 +250,7 @@ compile_graph(const NodeList& nodes, const vector<GraphWire>& wires, size_t capa
             plan->buffers.emplace_back();
         }
         if (node->kind == NodeKind::MONO) {
-            step.out[1] = scratch; // EffectBase::process writes its copy of L there
+            step.out[1] = GraphPlan::SCRATCH; // EffectBase::process writes its copy of L there
         }
         out_buffers[node->id] = outs;
 

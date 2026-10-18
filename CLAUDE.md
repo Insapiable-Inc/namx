@@ -118,7 +118,13 @@ holds the rules, `NodeCatalog` the node types:
   wired = mono on both), `MONO` effects (1 in, 1 out — most effects), `STEREO` variants
   (L, R in and out; R unwired = mono in → the effect's stereo out, both wired = its
   stereo-in path) for the effects that were stereo-capable (Flanger, Phaser, Chorus,
-  Tremolo, Delay — with a Ping-Pong knob — and Reverb), `MERGE`.
+  Tremolo, Delay — with a Ping-Pong knob — and Reverb), `MERGE`. **Amp and Cab are
+  stereo only** (user, 2026-10-18): one model / IR per node, per channel; two different
+  amps = two nodes, each wired on one channel.
+- **The tuner is global, not a node** (user, 2026-10-18): the engine runs it on the input
+  after the input gain, before the graph (Mute silences the graph's input); the top
+  bar's Tuner button (Ctrl+T) shows its strip. Older graphs' Tuner nodes are dropped on
+  load and the chain rejoined.
 - **Nodes don't float**: `GraphLayout` places every card (all the same size) north to
   south after each structure change — rows by longest path from the Input, the Output
   alone at the bottom, a lane for each wire that skips rows, barycenter ordering,
@@ -128,7 +134,9 @@ holds the rules, `NodeCatalog` the node types:
 - `AudioEngine` compiles the graph (`compile_graph`: topological order, a buffer per
   output port) into a `GraphPlan` published through an `RtSlot`; the plan owns
   `shared_ptr<GraphNode>`s, so a removed node lives until the audio thread has left the
-  last plan holding it. Only nodes reachable from the Input run. A node whose input
+  last plan holding it. Only nodes on a path from the Input to the Output run
+  (`live_node_ids`); dead ends and unfed branches are skipped and drawn faded with a
+  dashed edge. A node whose input
   wiring changed gets `request_reset()`. Output gain, meter, metronome and limiter follow
   the graph as before. Latency = the slowest Input→Output path.
 - `NodeCatalog` type IDs are the old effect IDs (never rename) and parameter keys are the

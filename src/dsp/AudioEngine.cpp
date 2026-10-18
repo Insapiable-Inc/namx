@@ -253,6 +253,7 @@ void AudioEngine::on_buffer_size_changed(int new_size) {
                 node->processor().set_sample_rate(sr);
             }
         }
+        tuner.set_sample_rate(sr);
         metronome.set_sample_rate(sr);
         limiter.set_sample_rate(sr);
         // ~20 ms one-pole gain smoothing, independent of sample rate.
@@ -315,6 +316,12 @@ void AudioEngine::process_block(const float* in, float* out_l, float* out_r, siz
             buf[i] = in[i] * gain;
             in_peak = std::max(in_peak, std::abs(buf[i]));
         }
+    }
+    // The tuner (off = a no-op): reads the guitar, and with Mute on silences the graph's
+    // input. Its R copy goes to the plan's scratch buffer.
+    if (plan->input_buffer >= 0) {
+        tuner.process(plan->buffers[static_cast<size_t>(plan->input_buffer)].data(),
+                      plan->buffers[GraphPlan::SCRATCH].data(), n, false);
     }
     // Peak-hold: accumulate the max until the GUI takes and resets it, so the
     // poll can't miss transients between blocks.

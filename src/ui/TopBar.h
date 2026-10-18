@@ -21,7 +21,7 @@ class NumberField;
 class TempoBar;
 
 // The bar across the top of the window (ui/node-graph): logo, the preset's name
-// (click for the preset menu, ✎ to rename), the metronome with its tempo, a search
+// (click for the preset menu, ✎ to rename), the tuner, the metronome with its tempo, a search
 // over everything that can be added or loaded, the favourite star, the main menu and
 // Settings.
 class TopBar : public QFrame
@@ -49,6 +49,7 @@ public:
 
     void set_preset(const QString& name, bool modified, bool untitled);
     void set_favorite(bool on);
+    void set_tuner(bool on);
     void set_search_entries(const QList<SearchEntry>& entries);
     // The metronome popup's tempo bar (MIDI clock follow, beat LEDs).
     TempoBar* tempo() const {
@@ -69,6 +70,7 @@ signals:
     void preset_menu_about_to_show();
     void rename_requested();
     void favorite_toggled(bool on);
+    void tuner_toggled(bool on);
     void settings_requested();
     void search_picked(const TopBar::SearchEntry& entry);
 
@@ -88,6 +90,7 @@ private:
     QStandardItemModel* search_model = nullptr;
     QList<SearchEntry> search_entries;
     QToolButton* star = nullptr;
+    QToolButton* tuner_button = nullptr;
 };
 
 } // namespace namx

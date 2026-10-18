@@ -15,7 +15,6 @@
 #include "ReverbProcessor.h"
 #include "TransposeProcessor.h"
 #include "TremoloProcessor.h"
-#include "TunerProcessor.h"
 #include "VolumeProcessor.h"
 
 namespace namx
@@ -102,12 +101,14 @@ void io_limiter(EffectBase& fx, double v) {
 vector<NodeType> build_types() {
     vector<NodeType> t;
 
-    // Amp + cab first: the Add menu's most-used entries.
+    // Amp + cab first: the Add menu's most-used entries. Stereo only (L/R in and out):
+    // one file per node, a model / IR instance per channel, and with one side wired
+    // only that one runs. Two different amps = two nodes, one channel each.
     t.push_back({"nam",
                  "Amp",
                  "Amp",
-                 true,
                  false,
+                 true,
                  NodeType::File::MODEL,
                  {
                      knob("input", "Input", NAM_INPUT_MIN, NAM_INPUT_MAX, NAM_INPUT_DEFAULT, "dB",
@@ -120,8 +121,8 @@ vector<NodeType> build_types() {
     t.push_back({"ir",
                  "Cab",
                  "Cab",
-                 true,
                  false,
+                 true,
                  NodeType::File::IR,
                  {
                      knob(
@@ -412,17 +413,6 @@ vector<NodeType> build_types() {
                   &set_float<VolumeProcessor, &VolumeProcessor::set_mid>,
                   "Level at half travel: lower = swells stay quiet longer"),
          }});
-    t.push_back(
-        {"tuner",
-         "Tuner",
-         "Utility",
-         true,
-         false,
-         NodeType::File::NONE,
-         {
-             toggle("mute", "Mute", true, &set_bool<TunerProcessor, &TunerProcessor::set_mute>,
-                    "Silence the output while the tuner is on"),
-         }});
     t.push_back({"merge",
                  "Merge",
                  "Utility",
@@ -501,9 +491,6 @@ unique_ptr<EffectBase> make_processor(const string& id) {
     }
     if (id == "volume") {
         return make_unique<VolumeProcessor>();
-    }
-    if (id == "tuner") {
-        return make_unique<TunerProcessor>();
     }
     if (id == "merge") {
         return make_unique<MergeProcessor>();
