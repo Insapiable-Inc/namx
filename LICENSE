@@ -1,29 +1,3 @@
-NAM-X
-Copyright (C) 2026 silvercobraa and the NAM-X contributors
-
-This program is free software: you can redistribute it and/or modify it under the
-terms of the GNU General Public License as published by the Free Software Foundation,
-either version 3 of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
-PARTICULAR PURPOSE. See the GNU General Public License below for more details.
-
-SPDX-License-Identifier: GPL-3.0-or-later
-
-Other parts of this repository keep their own licenses:
-
-- The NeuralAmpModelerCore library (the external/NeuralAmpModelerCore submodule) is
-  MIT-licensed, Copyright (c) 2023 Steven Atkinson; see LICENSE-MIT. Builds of NAM-X
-  include that code under the terms of the MIT License.
-- App code published before 2026-10-01 (then under gui/ in a fork of
-  NeuralAmpModelerCore) was released under the MIT License in LICENSE-MIT. It is
-  included in this GPL-licensed program under those terms, and that notice is
-  preserved.
-- The other submodules under external/ keep their own licenses.
-
---------------------------------------------------------------------------------
-
 GNU GENERAL PUBLIC LICENSE
 Version 3, 29 June 2007
 

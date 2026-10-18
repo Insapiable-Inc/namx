@@ -19,7 +19,7 @@ namx/
 ├── DSP_RESEARCH.md    # State-of-the-art options per effect (Phase 22), real-time flags, sources
 ├── CPP_GUIDELINES.md  # C++ style (naming, auto, ownership, errors, formatting…) — follow it in new/touched code
 ├── .clang-format      # Formatting for src/, tests/, bench/
-├── LICENSE            # GPL-3.0-or-later (the app); LICENSE-MIT = the core's MIT text (+ pre-2026-10-01 app code)
+├── LICENSE            # GPL-3.0-or-later text, verbatim (GitHub detects it); COPYRIGHT = our notice; LICENSE-MIT = the core's MIT text (+ pre-2026-10-01 app code)
 ├── presets/           # Personal .nampreset files — untracked on purpose, do not add to git
 ├── src/
 │   ├── main.cpp       # QApplication setup (org/app name → QSettings path), Theme::apply

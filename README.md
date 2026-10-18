@@ -187,9 +187,10 @@ Use the [GitHub issues](https://github.com/Insapiable-Inc/namx/issues), I guess?
 
 ## License and credits
 
-NAM-X is GPL-3.0-or-later (`LICENSE`). As the license says: this program is
-distributed in the hope that it will be useful, but **WITHOUT ANY WARRANTY**; without
-even the implied warranty of merchantability or fitness for a particular purpose.
+NAM-X is GPL-3.0-or-later (`LICENSE`; the copyright notice and the licenses of included
+code are in `COPYRIGHT`). As the license says: this program is distributed in the hope
+that it will be useful, but **WITHOUT ANY WARRANTY**; without even the implied warranty
+of merchantability or fitness for a particular purpose.
 
 It builds on:
 

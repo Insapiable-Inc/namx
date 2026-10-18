@@ -249,6 +249,7 @@ jobs:
           }
           Copy-Item LICENSE dist\namx\LICENSE.txt
           Copy-Item LICENSE-MIT dist\namx\LICENSE-MIT.txt
+          Copy-Item COPYRIGHT dist\namx\COPYRIGHT.txt
           $v = "${env:GITHUB_REF_NAME}" -replace '^v',''
           Compress-Archive -Path dist\namx -DestinationPath "dist\namx-$v-windows-x64.zip"
           Get-FileHash "dist\namx-$v-windows-x64.zip" -Algorithm SHA256 | ForEach-Object { "$($_.Hash.ToLower())  namx-$v-windows-x64.zip" } | Set-Content "dist\namx-$v-windows-x64.zip.sha256"
