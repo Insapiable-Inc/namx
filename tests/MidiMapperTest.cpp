@@ -366,6 +366,12 @@ int run(int argc, char** argv) {
         CHECK(std::abs(level) < 1e-9, "Reverse on: CC 127 → min");
         mapper.handle(cc(0, 22, 127));
         CHECK(power, "an alias reaches the switch: CC ≥ 64 turns it on");
+        mapper.set_mappings({});
+        mapper.learn("param:Delay/mix");
+        mapper.handle(cc(0, 23, 100));
+        CHECK(!mapper.get_mappings().isEmpty() &&
+                  mapper.get_mappings().back().mode == MidiMapping::ABSOLUTE,
+              "a CC learned on a value knob follows it (absolute), like a knob widget");
         mapper.remove_targets("param:Delay/");
         CHECK(!mapper.target("param:Delay/mix") && !mapper.target("param:old/enabled"),
               "removed targets and their aliases are gone");

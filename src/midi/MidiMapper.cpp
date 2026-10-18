@@ -380,8 +380,8 @@ void MidiMapper::handle(const MidiMessage& m) {
             const MidiTarget* t = target(learn_target);
             // Sensible default mode: knobs follow a CC; switches and actions
             // flip per press (footswitches), anything driven by notes too.
-            mp.mode = (t && t->knob && mp.source == MidiMapping::CC) ? MidiMapping::ABSOLUTE
-                                                                     : MidiMapping::TOGGLE;
+            mp.mode = (t && t->has_range() && mp.source == MidiMapping::CC) ? MidiMapping::ABSOLUTE
+                                                                            : MidiMapping::TOGGLE;
             list.erase(std::remove_if(list.begin(), list.end(),
                                       [&](const MidiMapping& x) {
                                           return x.target == learn_target;
