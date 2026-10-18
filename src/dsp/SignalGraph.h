@@ -15,15 +15,16 @@ namespace namx
 //
 // Every port carries one mono signal. An output port may feed any number of
 // inputs (that is how the signal splits — there is no split node); an input
-// port takes at most one wire, so two signals meet only in a Merge node.
+// port takes at most one wire, so two signals meet only in a Merge node. Effects
+// take one input (user, 2026-10-18): a stereo rig runs two nodes, one per side.
 //
 //   kind     inputs        outputs       processing
 //   -------  ------------  ------------  ----------------------------------------
 //   INPUT    —             1 (guitar)    the capture port after the input gain
 //   OUTPUT   L, R          —             R unwired = L (and the other way round)
 //   MONO     1             1             the effect's mono path
-//   STEREO   L, R          L, R          R unwired = mono in → the effect's stereo
-//                                         out; both wired = its stereo-in path
+//   STEREO   1             L, R          mono in → the effect's stereo out (LFOs half
+//                                         a cycle apart, ping-pong, a wide tail)
 //   MERGE    A, B          1             (1 − mix)·A + mix·B
 //
 // A node's processor is an EffectBase (Input/Output/Merge have small ones of

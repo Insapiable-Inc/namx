@@ -307,7 +307,7 @@ private:
             case NodeKind::MERGE:
                 return "2 × Mono → Mono";
             case NodeKind::STEREO:
-                return wired(true, 0) && wired(true, 1) ? "Stereo → Stereo" : "Mono → Stereo";
+                return "Mono → Stereo";
             case NodeKind::MONO:
                 break;
         }

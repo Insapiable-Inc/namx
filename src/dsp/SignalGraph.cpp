@@ -11,9 +11,9 @@ int input_count(NodeKind kind) {
         case NodeKind::INPUT:
             return 0;
         case NodeKind::MONO:
+        case NodeKind::STEREO:
             return 1;
         case NodeKind::OUTPUT:
-        case NodeKind::STEREO:
         case NodeKind::MERGE:
             return 2;
     }
@@ -297,12 +297,10 @@ void run_plan(GraphPlan& plan, size_t n) {
             case NodeKind::STEREO: {
                 float* l = buf(step.out[0]);
                 float* r = buf(step.out[1]);
-                const bool both = step.in_wired[0] && step.in_wired[1];
-                // One side wired: that side is the mono source of the effect's stereo out.
-                const int mono_in = step.in_wired[0] ? step.in[0] : step.in[1];
-                std::copy_n(buf(both ? step.in[0] : mono_in), n, l);
-                std::copy_n(buf(both ? step.in[1] : mono_in), n, r);
-                fx.process(l, r, n, both);
+                // Mono in → the effect's stereo out (bypassed: the input on both).
+                std::copy_n(buf(step.in[0]), n, l);
+                std::copy_n(buf(step.in[0]), n, r);
+                fx.process(l, r, n, false);
                 break;
             }
             case NodeKind::MERGE: {

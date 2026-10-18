@@ -78,6 +78,15 @@ static void test_rules() {
           "a graph with a loop doesn't compile");
     CHECK(!can_add_wire(loop_nodes, loop_chain, {3, 1, 4, 1}), "a port a node lacks is refused");
     CHECK(!NodeCatalog::create(9, "nam", true), "no stereo Amp variant: Amp and Cab are mono");
+    {
+        // A stereo node takes one input: mono in, L and R out.
+        const Nodes nodes = {NodeCatalog::create(1, "input", false),
+                             NodeCatalog::create(2, "tremolo", true),
+                             NodeCatalog::create(3, "output", false)};
+        const vector<GraphWire> wires = {{1, 0, 2, 0}, {2, 0, 3, 0}, {2, 1, 3, 1}};
+        CHECK(compile_graph(nodes, wires, N).has_value(), "mono in, stereo out compiles");
+        CHECK(!can_connect(nodes, wires, {1, 0, 2, 1}), "a stereo node has no second input");
+    }
 
     // Connecting into a taken input replaces its wire; never into a loop.
     const vector<GraphWire> replaced = with_wire(loop_chain, {1, 0, 3, 0});

@@ -609,7 +609,9 @@ bool GraphModel::from_v2(const QJsonObject& obj, QStringList* warnings) {
         }
         const bool stereo_switch =
             id == "reverb" || obj[group].toObject()["stereo"].toBool(id == "delay");
-        const bool stereo = type->variant(type->has_stereo && (stereo_switch || right.has_value()));
+        // Mono in → stereo out only while the signal is still mono; once it is stereo,
+        // every effect runs once per side (the chain's per-channel path): two mono nodes.
+        const bool stereo = type->variant(!right && type->has_stereo && stereo_switch);
         const QString file = id == "nam"  ? obj["namPath"].toString()
                              : id == "ir" ? obj["irPath"].toString()
                                           : QString();
@@ -630,13 +632,10 @@ bool GraphModel::from_v2(const QJsonObject& obj, QStringList* warnings) {
         if (stereo) {
             const int nid = make();
             wires.push_back({left.first, left.second, nid, 0});
-            if (right) {
-                wires.push_back({right->first, right->second, nid, 1});
-            }
             left = {nid, 0};
             right = std::pair{nid, 1};
         } else if (right) {
-            // A mono effect after a stereo one ran once per channel: two nodes.
+            // After a stereo node the chain ran each effect once per channel: two nodes.
             const int l = make();
             const int r = make();
             find(l)->name = unique_name(find(l)->name + " L");

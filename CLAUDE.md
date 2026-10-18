@@ -115,12 +115,12 @@ holds the rules, `NodeCatalog` the node types:
   no split node); **an input takes at most one wire**, so two signals meet only in a
   **Merge** node (2 inputs, 1 output, a Mix A/B crossfade, no EQ). No loops.
 - Kinds: `INPUT` (1 out: the guitar after the input gain), `OUTPUT` (L, R in; one side
-  wired = mono on both), `MONO` effects (1 in, 1 out — most effects), `STEREO` variants
-  (L, R in and out; R unwired = mono in → the effect's stereo out, both wired = its
-  stereo-in path) for the effects that were stereo-capable (Flanger, Phaser, Chorus,
-  Tremolo, Delay — with a Ping-Pong knob — and Reverb), `MERGE`. **Amp and Cab are mono
-  only** (user, 2026-10-18, after briefly trying stereo-only: mono is the most
-  intuitive); a stereo rig uses one per channel.
+  wired = mono on both), `MONO` effects (1 in, 1 out), `STEREO` = **mono in, stereo out**
+  (1 in, L and R out) for Flanger, Phaser, Chorus, Tremolo (L/R LFOs fixed half a cycle
+  apart, user 2026-10-18), Delay (with a Ping-Pong knob) and Reverb, `MERGE` (A, B in).
+  **Every effect takes one input** (user, 2026-10-18): no 2-in effects, a stereo rig
+  runs two nodes, one per side — Amp and Cab included, which are mono only (briefly
+  stereo-only; mono is the most intuitive).
 - **The tuner is global, not a node** (user, 2026-10-18): the engine runs it on the input
   after the input gain, before the graph (Mute silences the graph's input); the top
   bar's Tuner button (Ctrl+T) shows its strip. Older graphs' Tuner nodes are dropped on
