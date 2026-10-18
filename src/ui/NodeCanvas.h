@@ -25,7 +25,8 @@ class WireItem;
 // — inputs on a card's top edge, outputs on its bottom edge — and a wire per
 // connection. Cards sit where GraphModel's layout puts them; they can't be dragged. Drag from a port to a port to connect (either direction); a wire into an
 // input that already has one replaces it, and a wire that would close a loop is
-// refused (drawn red while dragging). Drag a wired input away to move or drop its wire. Right-click for menus; Delete removes the
+// refused (drawn red while dragging); dropping a wire on empty canvas offers a new node
+// wired to it. Drag a wired input away to move or drop its wire. Right-click for menus; Delete removes the
 // selection; the wheel zooms; dragging the background pans.
 class NodeCanvas : public QGraphicsView
 {
@@ -34,7 +35,8 @@ class NodeCanvas : public QGraphicsView
 public:
     explicit NodeCanvas(GraphModel& new_model, QWidget* parent = nullptr);
 
-    // The Add menu, by category: `pick(type, stereo)` for the chosen entry.
+    // Every addable node type in one flat list, alphabetical: `pick(type, stereo)` for
+    // the chosen entry.
     static void populate_add_menu(QMenu* menu,
                                   const std::function<void(const QString&, bool)>& pick);
 
@@ -65,6 +67,9 @@ private:
     void show_node_menu(int id, const QPoint& global_pos);
     void show_wire_menu(const GraphWire& wire, const QPoint& global_pos);
     void show_add_menu(const QPoint& global_pos);
+    // A wire dragged from (node, port) and dropped on empty canvas: the add menu, the
+    // new node wired to that port.
+    void show_connect_menu(int node, int port, bool from_output, const QPoint& global_pos);
     void delete_selection();
 
     // Wire drawing, driven by the card that got the press. `from_output`: the fixed
@@ -74,6 +79,7 @@ private:
     void end_wire(QPointF scene_pos);
     // The port under `scene_pos` on the side opposite the fixed end, if any.
     std::optional<std::pair<int, int>> port_at(QPointF scene_pos, bool want_input) const;
+    bool node_at(QPointF scene_pos) const; // a card under `scene_pos`
 
     GraphModel& model;
     QGraphicsScene* scene;

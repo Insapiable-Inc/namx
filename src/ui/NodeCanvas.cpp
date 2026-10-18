@@ -445,27 +445,33 @@ NodeCanvas::NodeCanvas(GraphModel& new_model, QWidget* parent)
 
 void NodeCanvas::populate_add_menu(QMenu* menu,
                                    const std::function<void(const QString&, bool)>& pick) {
-    static const char* const CATEGORIES[] = {"Amp",   "Cab",        "Drive", "Dynamics", "Filter",
-                                             "Pitch", "Modulation", "Delay", "Reverb",   "Utility"};
-    for (const char* cat : CATEGORIES) {
-        QMenu* sub = menu->addMenu(cat);
-        for (const auto& t : NodeCatalog::types()) {
-            if (t.category != cat) {
-                continue;
-            }
-            const QString id = QString::fromStdString(t.id);
-            const QString name = QString::fromStdString(t.name);
-            if (t.has_mono) {
-                sub->addAction(name, menu, [pick, id] {
-                    pick(id, false);
-                });
-            }
-            if (t.has_stereo) {
-                sub->addAction(t.has_mono ? name + " (Stereo)" : name, menu, [pick, id] {
-                    pick(id, true);
-                });
-            }
+    struct Entry
+    {
+        QString label;
+        QString id;
+        bool stereo;
+    };
+    vector<Entry> entries;
+    for (const auto& t : NodeCatalog::types()) {
+        if (t.category == "IO") {
+            continue;
         }
+        const QString id = QString::fromStdString(t.id);
+        const QString name = QString::fromStdString(t.name);
+        if (t.has_mono) {
+            entries.push_back({name, id, false});
+        }
+        if (t.has_stereo) {
+            entries.push_back({t.has_mono ? name + " (Stereo)" : name, id, true});
+        }
+    }
+    std::sort(entries.begin(), entries.end(), [](const Entry& a, const Entry& b) {
+        return QString::localeAwareCompare(a.label, b.label) < 0;
+    });
+    for (const auto& e : entries) {
+        menu->addAction(e.label, menu, [pick, id = e.id, stereo = e.stereo] {
+            pick(id, stereo);
+        });
     }
 }
 
@@ -629,13 +635,28 @@ void NodeCanvas::mouseDoubleClickEvent(QMouseEvent* ev) {
 
 void NodeCanvas::show_add_menu(const QPoint& global_pos) {
     QMenu menu(this);
-    menu.addSection("Add Node");
     populate_add_menu(&menu, [this](const QString& type, bool stereo) {
         if (const int id = model.add_node(type, stereo)) {
             QTimer::singleShot(0, this, [this, id] {
                 select_node(id);
             });
         }
+    });
+    menu.exec(global_pos);
+}
+
+void NodeCanvas::show_connect_menu(int node, int port, bool from_output, const QPoint& global_pos) {
+    QMenu menu(this);
+    populate_add_menu(&menu, [this, node, port, from_output](const QString& type, bool stereo) {
+        const int id = model.add_node(type, stereo);
+        if (!id) {
+            return;
+        }
+        // The new node's first input (dragged from an output) or first output.
+        model.connect(from_output ? GraphWire{node, port, id, 0} : GraphWire{id, 0, node, port});
+        QTimer::singleShot(0, this, [this, id] {
+            select_node(id);
+        });
     });
     menu.exec(global_pos);
 }
@@ -688,8 +709,8 @@ void NodeCanvas::show_node_menu(int id, const QPoint& global_pos) {
 
 void NodeCanvas::show_wire_menu(const GraphWire& wire, const QPoint& global_pos) {
     QMenu menu(this);
-    QMenu* insert = menu.addMenu("Insert Node");
-    populate_add_menu(insert, [this, wire](const QString& type, bool stereo) {
+    // Picking an effect inserts it on the wire.
+    populate_add_menu(&menu, [this, wire](const QString& type, bool stereo) {
         const int id = model.add_node(type, stereo);
         if (id && model.insert_on_wire(id, wire)) {
             QTimer::singleShot(0, this, [this, id] {
@@ -697,6 +718,7 @@ void NodeCanvas::show_wire_menu(const GraphWire& wire, const QPoint& global_pos)
             });
         }
     });
+    menu.addSeparator();
     menu.addAction("Delete Wire", this, [this, wire] {
         model.remove_wire(wire);
     });
@@ -751,10 +773,28 @@ void NodeCanvas::end_wire(QPointF scene_pos) {
                                 ? GraphWire{d.node, d.port, target->first, target->second}
                                 : GraphWire{target->first, target->second, d.node, d.port};
         model.connect(w); // replaces the input's old wire; refused if it makes a loop
+    } else if (!node_at(scene_pos)) {
+        // Dropped on empty canvas: offer a new node wired to the port. Deferred — the card
+        // that got the press is still in its mouse handler, and adding a node rebuilds.
+        const QPoint at = mapToGlobal(mapFromScene(scene_pos));
+        QTimer::singleShot(0, this, [this, d, at] {
+            if (model.node(d.node)) {
+                show_connect_menu(d.node, d.port, d.from_output, at);
+            }
+        });
     }
     if (rebuild_pending) {
         QTimer::singleShot(0, this, &NodeCanvas::rebuild);
     }
+}
+
+bool NodeCanvas::node_at(QPointF scene_pos) const {
+    for (QGraphicsItem* item : scene->items(scene_pos)) {
+        if (dynamic_cast<NodeItem*>(item)) {
+            return true;
+        }
+    }
+    return false;
 }
 
 std::optional<std::pair<int, int>> NodeCanvas::port_at(QPointF scene_pos, bool want_input) const {
