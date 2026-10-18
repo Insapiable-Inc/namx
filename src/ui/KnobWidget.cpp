@@ -42,6 +42,14 @@ public:
         update();
     }
 
+    // The node-graph panel's look (KnobWidget::Form::PANEL): a flat dark body like the
+    // canvas cards, a thick value arc in the accent with a soft glow (the selected
+    // card's), a light pointer.
+    void set_panel_look(bool on) {
+        panel_look = on;
+        update();
+    }
+
     // Discrete knobs (`positions` ≥ 2) draw one dot per position on the ring, the
     // current one lit, instead of a value arc: a switch, not a sweep. 0 = continuous.
     void set_positions(int n) {
@@ -82,6 +90,10 @@ protected:
     }
 
     void paintEvent(QPaintEvent*) override {
+        if (panel_look) {
+            paint_panel();
+            return;
+        }
         QPainter p(this);
         p.setRenderHint(QPainter::Antialiasing);
 
@@ -170,7 +182,81 @@ protected:
     }
 
 private:
+    // Sweep position 0…1, snapped to the drawn positions on a stepped knob.
+    double travel() const {
+        const double range = std::max(1, maximum() - minimum());
+        const double t = (value() - minimum()) / range;
+        if (positions < 2) {
+            return t;
+        }
+        return static_cast<double>(std::lround(t * (positions - 1))) / (positions - 1);
+    }
+
+    void paint_panel() {
+        QPainter p(this);
+        p.setRenderHint(QPainter::Antialiasing);
+        const qreal side = std::min(width(), height());
+        const QPointF c(width() / 2.0, height() / 2.0);
+        const qreal ring_w = 4.0;
+        const qreal ring_r = side / 2.0 - ring_w / 2.0 - 3.0; // room for the glow
+        const QRectF ring(c.x() - ring_r, c.y() - ring_r, 2 * ring_r, 2 * ring_r);
+        constexpr int START = 225 * 16;
+        constexpr int SWEEP = -270 * 16;
+        const double t = travel();
+
+        if (positions >= 2) {
+            // Stepped: a dot per position, the current one lit and glowing.
+            const int current = static_cast<int>(std::lround(t * (positions - 1)));
+            const double dot_r = positions > 12 ? 1.5 : 2.2;
+            p.setPen(Qt::NoPen);
+            for (int i = 0; i < positions; ++i) {
+                const double a = qDegreesToRadians(225.0 - 270.0 * i / (positions - 1));
+                const QPointF dot(c.x() + ring_r * std::cos(a), c.y() - ring_r * std::sin(a));
+                if (i == current) {
+                    QColor halo = accent;
+                    halo.setAlpha(70);
+                    p.setBrush(halo);
+                    p.drawEllipse(dot, dot_r + 3.0, dot_r + 3.0);
+                }
+                p.setBrush(i == current ? accent : Theme::detent());
+                p.drawEllipse(dot, i == current ? dot_r + 1.0 : dot_r,
+                              i == current ? dot_r + 1.0 : dot_r);
+            }
+        } else {
+            QPen track(Theme::track(), ring_w, Qt::SolidLine, Qt::RoundCap);
+            p.setPen(track);
+            p.drawArc(ring, START, SWEEP);
+            const int span = static_cast<int>(SWEEP * t);
+            if (span != 0) {
+                // Glow under the value arc, then the arc.
+                for (int i = 2; i >= 1; --i) {
+                    QColor halo = accent;
+                    halo.setAlpha(i == 2 ? 35 : 70);
+                    p.setPen(QPen(halo, ring_w + 4.0 * i, Qt::SolidLine, Qt::RoundCap));
+                    p.drawArc(ring, START, span);
+                }
+                p.setPen(QPen(accent, ring_w, Qt::SolidLine, Qt::RoundCap));
+                p.drawArc(ring, START, span);
+            }
+        }
+
+        // Body: flat, the canvas cards' fill, a thin edge tinted by the accent.
+        const qreal body_r = ring_r - ring_w / 2.0 - 4.0;
+        QColor edge = accent;
+        edge.setAlpha(90);
+        p.setPen(QPen(edge, 1.2));
+        p.setBrush(Theme::canvas_bg());
+        p.drawEllipse(c, body_r, body_r);
+
+        // Pointer.
+        const double a = qDegreesToRadians(225.0 - 270.0 * t);
+        const QPointF dir(std::cos(a), -std::sin(a));
+        p.setPen(QPen(Theme::node_text(), 2.6, Qt::SolidLine, Qt::RoundCap));
+        p.drawLine(c + dir * (body_r * 0.35), c + dir * (body_r - 3.0));
+    }
+
     QColor accent{Theme::generic_accent()};
+    bool panel_look{false};
     int positions{0};
     int drag_start_y{0};
     int drag_start_val{0};
@@ -212,6 +298,11 @@ KnobWidget::KnobWidget(const QString& new_label, double min_val, double max_val,
         setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
         dial->setFixedSize(60, 60);
         name_label->setObjectName("knobName");
+        // The unit lives in the label; the field holds the bare number.
+        if (!new_unit.isEmpty()) {
+            name_label->setText(QString("%1 (%2)").arg(new_label, new_unit));
+        }
+        dial->set_panel_look(true);
         field = new QLineEdit;
         field->setObjectName("knobField");
         field->setAlignment(Qt::AlignCenter);
@@ -329,7 +420,7 @@ void KnobWidget::update_label() {
     double v = value();
     QString txt =
         int_display ? QString::number(static_cast<int>(std::round(v))) : QString::number(v, 'f', 1);
-    if (!unit.isEmpty()) {
+    if (!unit.isEmpty() && !field) { // the PANEL form shows its unit in the label
         txt += " " + unit;
     }
     if (formatter) {

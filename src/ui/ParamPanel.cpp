@@ -40,9 +40,26 @@ QString theme_id(const NodeType& t) {
     return t.id == "input" || t.id == "output" ? QString("neutral") : QString::fromStdString(t.id);
 }
 
+// Field texts carry no unit: it is in the knob's label ("Low Cut (Hz)").
 QString format_hz(double hz) {
-    return hz < 1000.0 ? QString("%1 Hz").arg(qRound(hz))
-                       : QString("%1 kHz").arg(hz / 1000.0, 0, 'f', hz < 10000.0 ? 1 : 0);
+    return QString::number(qRound(hz));
+}
+
+// The unit the field's number is in, for the label: the stored one, except where the
+// Format shows something else (Decay in seconds).
+QString display_unit(const ParamSpec& p) {
+    switch (p.format) {
+        case ParamSpec::Format::DECAY:
+            return "s";
+        case ParamSpec::Format::SEMITONES:
+            return "st";
+        case ParamSpec::Format::NUMBER:
+        case ParamSpec::Format::HZ:
+        case ParamSpec::Format::HZ_OFF_LOW:
+        case ParamSpec::Format::HZ_OFF_HIGH:
+            break;
+    }
+    return QString::fromStdString(p.unit);
 }
 
 // The value as the parameter's Format shows it; {} = KnobWidget's own number + unit.
@@ -64,17 +81,17 @@ std::function<QString(double)> formatter_for(const ParamSpec& p) {
             return [](double v) {
                 const double tenths = std::round(v * 10.0) / 10.0;
                 if (tenths == 0.0) {
-                    return QString("0 st");
+                    return QString("0");
                 }
                 const bool whole = std::fmod(tenths, 1.0) == 0.0;
-                return QString("%1%2 st")
+                return QString("%1%2")
                     .arg(tenths > 0 ? "+" : "")
                     .arg(tenths, 0, 'f', whole ? 0 : 1);
             };
         case ParamSpec::Format::DECAY:
             return [](double v) {
                 const double s = ReverbProcessor::decay_seconds(static_cast<float>(v));
-                return QString("%1 s").arg(s, 0, 'f', s < 1.0 ? 2 : 1);
+                return QString::number(s, 'f', s < 1.0 ? 2 : 1);
             };
         case ParamSpec::Format::HZ:
             return [](double v) {
@@ -537,8 +554,8 @@ QWidget* ParamPanel::make_choice(const ParamSpec& p) {
 KnobWidget* ParamPanel::make_knob(const ParamSpec& p) {
     const QString key = QString::fromStdString(p.key);
     const int id = current_id;
-    auto* k = new KnobWidget(QString::fromStdString(p.label), p.min, p.max, p.def,
-                             QString::fromStdString(p.unit), KnobWidget::Form::PANEL);
+    auto* k = new KnobWidget(QString::fromStdString(p.label), p.min, p.max, p.def, display_unit(p),
+                             KnobWidget::Form::PANEL);
     k->setToolTip(QString::fromStdString(p.tip));
     k->set_scroll_step(p.step);
     if (p.kind == ParamSpec::Kind::NOTE) {
