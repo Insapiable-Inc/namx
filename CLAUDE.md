@@ -31,7 +31,7 @@ namx/
 ├── tests/             # MidiMapperTest, DspGoldenTest, WavReaderTest, NamProcessorTest, LibraryIndexTest, ThemeFileTest (-DNAM_BUILD_TESTS=ON)
 ├── bench/             # namx-bench, instructions.py (CPU regression) (-DNAM_BUILD_BENCH=ON)
 └── external/          # Git submodules (CMake: EXTERNAL_DIR, NAM_ROOT, NAM_DEPS_PATH)
-    ├── NeuralAmpModelerCore/  # NAM core — our fork (Insapiable-Inc), branch `namx` = upstream 3cde95c + our weight-check fix; brings Eigen, nlohmann/json, AudioDSPTools in its Dependencies/
+    ├── NeuralAmpModelerCore/  # NAM core — our fork (Insapiable-Inc), branch `namx` = upstream 0.6.0 (0b3d3c9, merged 2026-10-18) + our weight-check fix; brings Eigen, nlohmann/json, AudioDSPTools in its Dependencies/
     ├── signalsmith-linear/    # MIT FFT for the cab convolution
     ├── signalsmith-stretch/   # MIT pitch shifter for the Shimmers
     └── chowdsp_wdf/           # BSD-3 wave digital filters for the Drive
