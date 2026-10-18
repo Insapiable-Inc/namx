@@ -492,6 +492,10 @@ vector<NodeType> build_types() {
                      knob("mix", "Mix A / B", 0.0, 100.0, 50.0, "%", 1.0,
                           &set_float<MergeProcessor, &MergeProcessor::set_mix_pct>,
                           "0 % = input A only · 50 % = both, half each · 100 % = input B only"),
+                     toggle("invertB", "Invert B", false,
+                            &set_bool<MergeProcessor, &MergeProcessor::set_invert_b>,
+                            "Flips input B's polarity: two branches that thin each other out "
+                            "when blended can fill out instead"),
                  }});
     // Not in the Add menu: every graph has exactly one of each.
     t.push_back({"input",

@@ -113,7 +113,11 @@ holds the rules, `NodeCatalog` the node types:
 - Every port carries one **mono** signal. Inputs are on a card's top edge, outputs on its
   bottom edge. **An output may feed any number of inputs** (that is the split — there is
   no split node); **an input takes at most one wire**, so two signals meet only in a
-  **Merge** node (2 inputs, 1 output, a Mix A/B crossfade, no EQ). No loops.
+  **Merge** node (2 inputs, 1 output, a Mix A/B crossfade, Invert B for polarity,
+  no EQ). No loops. Where two signals meet (Merge, an Output with both sides wired)
+  the earlier one is delayed to line up with the later — path latencies summed from
+  `latency_ms()` every block in `run_plan`, up to `GraphPlan::MAX_ALIGN` samples
+  (user, 2026-10-18).
 - Kinds: `INPUT` (1 out: the guitar after the input gain), `OUTPUT` (L, R in; one side
   wired = mono on both), `MONO` effects (1 in, 1 out), `STEREO` = **mono in, stereo out**
   (1 in, L and R out) — the **only** version of Flanger, Phaser, Chorus, Tremolo (L/R

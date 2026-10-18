@@ -1,6 +1,7 @@
 #include "SignalGraph.h"
 
 #include <algorithm>
+#include <cmath>
 #include <unordered_map>
 
 namespace namx
@@ -36,8 +37,19 @@ int output_count(NodeKind kind) {
 
 void MergeProcessor::mix_into(const float* a, const float* b, float* out, size_t n) const {
     const float m = std::clamp(mix.load(std::memory_order_relaxed), 0.0f, 1.0f);
+    const float mb = invert_b.load(std::memory_order_relaxed) ? -m : m;
     for (size_t i = 0; i < n; ++i) {
-        out[i] = (1.0f - m) * a[i] + m * b[i];
+        out[i] = (1.0f - m) * a[i] + mb * b[i];
+    }
+}
+
+void GraphPlan::DelayLine::run(const float* in, float* out, size_t n, size_t delay) {
+    constexpr size_t MASK = MAX_ALIGN - 1;
+    delay = std::min(delay, MASK);
+    for (size_t i = 0; i < n; ++i) {
+        line[pos] = in[i];
+        out[i] = line[(pos - delay) & MASK];
+        pos = (pos + 1) & MASK;
     }
 }
 
@@ -252,6 +264,20 @@ compile_graph(const NodeList& nodes, const vector<GraphWire>& wires, size_t capa
         if (node->kind == NodeKind::MONO) {
             step.out[1] = GraphPlan::SCRATCH; // EffectBase::process writes its copy of L there
         }
+        // Two signals meet: a delay line and an aligned buffer per input (the Output's
+        // aligned buffers are what the engine plays).
+        const bool both_wired = step.in_wired[0] && step.in_wired[1];
+        if (node->kind == NodeKind::MERGE || (node->kind == NodeKind::OUTPUT && both_wired)) {
+            step.align = static_cast<int>(plan->lines.size());
+            for (int p = 0; p < 2; ++p) {
+                plan->lines.emplace_back();
+                step.aligned[p] = static_cast<int>(plan->buffers.size());
+                plan->buffers.emplace_back();
+                if (node->kind == NodeKind::OUTPUT) {
+                    step.out[p] = step.aligned[p];
+                }
+            }
+        }
         out_buffers[node->id] = outs;
 
         if (node->kind == NodeKind::INPUT) {
@@ -259,9 +285,13 @@ compile_graph(const NodeList& nodes, const vector<GraphWire>& wires, size_t capa
             plan->input = static_cast<IoProcessor*>(&node->processor());
         } else if (node->kind == NodeKind::OUTPUT) {
             plan->output = static_cast<IoProcessor*>(&node->processor());
-            // One side wired = mono out on both.
-            plan->out_buffer[0] = step.in_wired[0] ? step.in[0] : step.in[1];
-            plan->out_buffer[1] = step.in_wired[1] ? step.in[1] : step.in[0];
+            if (both_wired) {
+                plan->out_buffer[0] = step.aligned[0];
+                plan->out_buffer[1] = step.aligned[1];
+            } else { // one side wired = mono out on both
+                plan->out_buffer[0] = step.in_wired[0] ? step.in[0] : step.in[1];
+                plan->out_buffer[1] = step.in_wired[1] ? step.in[1] : step.in[0];
+            }
         }
         plan->steps.push_back(step);
     }
@@ -273,6 +303,7 @@ compile_graph(const NodeList& nodes, const vector<GraphWire>& wires, size_t capa
             }
         }
     }
+    plan->latency.assign(plan->buffers.size(), 0.0);
     plan->reserve(capacity);
     return plan;
 }
@@ -281,9 +312,29 @@ void run_plan(GraphPlan& plan, size_t n) {
     auto buf = [&plan](int i) {
         return plan.buffers[static_cast<size_t>(i)].data();
     };
+    auto latency = [&plan](int i) -> double& {
+        return plan.latency[static_cast<size_t>(i)];
+    };
     for (auto& step : plan.steps) {
         EffectBase& fx = step.node->processor();
         fx.consume_pending_reset();
+        // Line the inputs up: the earlier one waits for the later.
+        double in_latency = latency(step.in[0]);
+        if (step.align >= 0) {
+            in_latency = std::max(in_latency, latency(step.in[1]));
+            for (int p = 0; p < 2; ++p) {
+                const double wait = in_latency - latency(step.in[p]);
+                plan.lines[static_cast<size_t>(step.align + p)].run(
+                    buf(step.in[p]), buf(step.aligned[p]), n,
+                    static_cast<size_t>(std::lround(wait)));
+            }
+        }
+        const double own = fx.is_enabled() ? fx.latency_ms() * fx.get_sample_rate() / 1000.0 : 0.0;
+        for (const int o : step.out) {
+            if (o > GraphPlan::SCRATCH) {
+                latency(o) = in_latency + own;
+            }
+        }
         switch (step.node->kind) {
             case NodeKind::INPUT:
             case NodeKind::OUTPUT:
@@ -306,10 +357,10 @@ void run_plan(GraphPlan& plan, size_t n) {
             case NodeKind::MERGE: {
                 float* out = buf(step.out[0]);
                 if (fx.is_enabled()) {
-                    static_cast<MergeProcessor&>(fx).mix_into(buf(step.in[0]), buf(step.in[1]), out,
-                                                              n);
+                    static_cast<MergeProcessor&>(fx).mix_into(buf(step.aligned[0]),
+                                                              buf(step.aligned[1]), out, n);
                 } else {
-                    std::copy_n(buf(step.in[0]), n, out);
+                    std::copy_n(buf(step.aligned[0]), n, out);
                 }
                 break;
             }

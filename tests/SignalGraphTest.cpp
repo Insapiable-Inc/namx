@@ -2,7 +2,8 @@
 // wiring rules — one wire per input, no loops — and what a compiled plan does with
 // a block: fan-out from one output, a Merge's mix, a bypassed node passing through,
 // an Output with one side wired playing it on both, a node nothing feeds staying
-// silent. Fixed ramps as input; nothing touches the disk.
+// silent, two branches of different latency lined up where they meet. Fixed ramps as
+// input; nothing touches the disk.
 
 #include "SignalGraph.h"
 
@@ -100,6 +101,34 @@ static void test_rules() {
     CHECK(!can_connect(loop_nodes, loop_chain, {3, 0, 1, 0}), "nothing feeds the Input");
 }
 
+// A mono effect that only delays, by DELAY samples, and reports it.
+class LateEffect : public EffectBase
+{
+public:
+    static constexpr size_t DELAY = 10;
+    LateEffect() {
+        set_enabled(true);
+    }
+    void reset() override {
+        std::fill(std::begin(held), std::end(held), 0.0f);
+    }
+    double latency_ms() const override {
+        return DELAY / get_sample_rate() * 1000.0;
+    }
+
+protected:
+    void process_block_mono(float* buf, size_t n) override {
+        for (size_t i = 0; i < n; ++i) {
+            const float x = buf[i];
+            buf[i] = held[i % DELAY];
+            held[i % DELAY] = x;
+        }
+    }
+
+private:
+    float held[DELAY] = {};
+};
+
 static void test_processing() {
     std::printf("processing\n");
     // Input fans out to both sides of a Merge: at 50 % the input comes back.
@@ -132,6 +161,28 @@ static void test_processing() {
                              NodeCatalog::create(3, "output", false)};
         const auto [l, r] = run(nodes, {{2, 0, 3, 0}});
         CHECK(equals_scaled(l, 0.0f) && equals_scaled(r, 0.0f), "an unfed branch is silent");
+    }
+    // A branch with latency into a Merge: the direct branch waits for it, so A and B
+    // line up — and Invert B at 50 % cancels them exactly.
+    {
+        auto merge = NodeCatalog::create(3, "merge", false);
+        auto late =
+            std::make_shared<GraphNode>(2, "late", NodeKind::MONO, std::make_unique<LateEffect>());
+        const Nodes nodes = {NodeCatalog::create(1, "input", false), late, merge,
+                             NodeCatalog::create(4, "output", false)};
+        const vector<GraphWire> wires = {{1, 0, 2, 0}, {2, 0, 3, 0}, {1, 0, 3, 1}, {3, 0, 4, 0}};
+        const auto [l, r] = run(nodes, wires);
+        bool aligned = l.size() == N;
+        for (size_t i = 0; aligned && i < N; ++i) {
+            const float want =
+                i < LateEffect::DELAY ? 0.0f : static_cast<float>(i - LateEffect::DELAY) / N;
+            aligned = std::abs(l[i] - want) < 1e-6f;
+        }
+        CHECK(aligned, "a direct branch waits for a late one at a Merge");
+        static_cast<MergeProcessor&>(merge->processor()).set_invert_b(true);
+        late->processor().reset(); // a fresh plan: fresh delay lines
+        const auto [l2, r2] = run(nodes, wires);
+        CHECK(equals_scaled(l2, 0.0f), "Invert B at 50 % cancels two aligned copies");
     }
     // A dead end (fed, but reaching no Output) doesn't run.
     {

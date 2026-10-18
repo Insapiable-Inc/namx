@@ -25,7 +25,12 @@ namespace namx
 //   MONO     1             1             the effect's mono path
 //   STEREO   1             L, R          mono in → the effect's stereo out (LFOs half
 //                                         a cycle apart, ping-pong, a wide tail)
-//   MERGE    A, B          1             (1 − mix)·A + mix·B
+//   MERGE    A, B          1             (1 − mix)·A ± mix·B (Invert B flips B)
+//
+// Where two signals meet (a Merge, an Output with both sides wired) the earlier one
+// is delayed to line up with the later: each block, every path's latency is summed
+// from its nodes' latency_ms(), so a Drive or a Pitch Shift on one branch doesn't
+// comb-filter the blend. Up to GraphPlan::MAX_ALIGN samples.
 //
 // A node's processor is an EffectBase (Input/Output/Merge have small ones of
 // their own), so enable/bypass, parameters and resets work the same everywhere.
@@ -71,7 +76,8 @@ private:
     atomic<bool> limiter{false};
 };
 
-// Two mono inputs → one: a crossfade (bypassed = A only).
+// Two mono inputs → one: a crossfade, B's polarity optionally flipped (bypassed = A
+// only).
 class MergeProcessor : public EffectBase
 {
 public:
@@ -83,11 +89,15 @@ public:
     void set_mix_pct(float pct) {
         mix.store(pct / 100.0f, std::memory_order_relaxed);
     }
+    void set_invert_b(bool on) {
+        invert_b.store(on, std::memory_order_relaxed);
+    }
     // Audio thread. `out` may not alias `a` or `b`.
     void mix_into(const float* a, const float* b, float* out, size_t n) const;
 
 private:
     atomic<float> mix{0.5f};
+    atomic<bool> invert_b{false};
 };
 
 // One node: its kind, catalog type and processor. Shared by the GUI's model
@@ -131,6 +141,17 @@ public:
     // scratch buffer anyone may overwrite (an effect's discarded R copy).
     static constexpr int SILENCE = 0;
     static constexpr int SCRATCH = 1;
+    // Longest delay that lines two signals up (1.4 s at 48 kHz, 0.34 s at 192 kHz).
+    static constexpr size_t MAX_ALIGN = size_t{1} << 16;
+
+    // Audio thread: delays one input by a whole number of samples.
+    struct DelayLine
+    {
+        vector<float> line = vector<float>(MAX_ALIGN, 0.0f);
+        size_t pos = 0;
+        // `out` may alias `in`.
+        void run(const float* in, float* out, size_t n, size_t delay);
+    };
 
     struct Step
     {
@@ -138,10 +159,16 @@ public:
         int in[2]; // buffer per input port
         int out[2]; // buffer per output port (−1 = none)
         bool in_wired[2];
+        // Two signals meet here: delay lines align[0], align[1] (into the input's
+        // `aligned` buffer); −1 = none.
+        int align = -1;
+        int aligned[2] = {-1, -1};
     };
 
     vector<Step> steps;
     vector<vector<float>> buffers;
+    vector<DelayLine> lines;
+    vector<double> latency; // audio thread: per buffer, samples behind the Input
     vector<std::shared_ptr<GraphNode>> nodes; // keeps every node of the graph alive
     int input_buffer = -1; // the Input node's output (−1: no Input node)
     IoProcessor* input = nullptr;
