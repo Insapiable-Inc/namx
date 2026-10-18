@@ -716,7 +716,7 @@ bool GraphModel::from_v2(const QJsonObject& obj, QStringList* warnings) {
 
     for (const QString& id : order) {
         const NodeType* type = NodeCatalog::find(id.toStdString());
-        if (!type || id == "input" || id == "output" || id == "merge") {
+        if (!type || id == "input" || id == "output" || id == "merge" || id == "select") {
             continue;
         }
         const QString group = QString::fromStdString(NodeCatalog::legacy_group(id.toStdString()));

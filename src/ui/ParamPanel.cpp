@@ -277,7 +277,8 @@ QString ParamPanel::io_text() const {
         case NodeKind::OUTPUT:
             return wired(0) && wired(1) ? "Stereo In → Stereo Out" : "Mono In → Stereo Out (L = R)";
         case NodeKind::MERGE:
-            return "Mono In A + Mono In B → Mono Out";
+            return n->type->id == "select" ? "Mono In A or Mono In B → Mono Out"
+                                           : "Mono In A + Mono In B → Mono Out";
         case NodeKind::STEREO:
             return "Mono In → Stereo Out";
         case NodeKind::MONO:

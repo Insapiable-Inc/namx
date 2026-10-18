@@ -341,6 +341,9 @@ private:
             case NodeKind::OUTPUT:
                 return wired(true, 0) && wired(true, 1) ? "Stereo  L · R" : "Mono → L + R";
             case NodeKind::MERGE:
+                if (n.type->id == "select") {
+                    return n.values.value("input") > 0.5 ? "Input B on" : "Input A on";
+                }
                 return "2 × Mono → Mono";
             case NodeKind::STEREO:
                 return "Mono → Stereo";

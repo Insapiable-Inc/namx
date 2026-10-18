@@ -35,11 +35,20 @@ int output_count(NodeKind kind) {
     return 0;
 }
 
-void MergeProcessor::mix_into(const float* a, const float* b, float* out, size_t n) const {
+void MergeProcessor::mix_into(const float* a, const float* b, float* out, size_t n) {
     const float m = std::clamp(mix.load(std::memory_order_relaxed), 0.0f, 1.0f);
     const float mb = invert_b.load(std::memory_order_relaxed) ? -m : m;
     for (size_t i = 0; i < n; ++i) {
         out[i] = (1.0f - m) * a[i] + mb * b[i];
+    }
+}
+
+void SelectProcessor::mix_into(const float* a, const float* b, float* out, size_t n) {
+    const float target = use_b.load(std::memory_order_relaxed) ? 1.0f : 0.0f;
+    const float step = static_cast<float>(1000.0 / (FADE_MS * sample_rate));
+    for (size_t i = 0; i < n; ++i) {
+        fade = fade < target ? std::min(target, fade + step) : std::max(target, fade - step);
+        out[i] = (1.0f - fade) * a[i] + fade * b[i];
     }
 }
 
@@ -357,8 +366,8 @@ void run_plan(GraphPlan& plan, size_t n) {
             case NodeKind::MERGE: {
                 float* out = buf(step.out[0]);
                 if (fx.is_enabled()) {
-                    static_cast<MergeProcessor&>(fx).mix_into(buf(step.aligned[0]),
-                                                              buf(step.aligned[1]), out, n);
+                    static_cast<TwoInputProcessor&>(fx).mix_into(buf(step.aligned[0]),
+                                                                 buf(step.aligned[1]), out, n);
                 } else {
                     std::copy_n(buf(step.aligned[0]), n, out);
                 }

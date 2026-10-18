@@ -695,7 +695,9 @@ void RigWindow::register_midi_targets() {
                 const GraphModel::Node* x = model->node(id);
                 return x ? x->values.value(key) : 0.0;
             };
-            if (p.kind == ParamSpec::Kind::SWITCH) {
+            // A two-way choice (Select's A | B) toggles like a switch.
+            if (p.kind == ParamSpec::Kind::SWITCH ||
+                (p.kind == ParamSpec::Kind::CHOICE && p.choices.size() == 2)) {
                 midi_mapper->add_switch(
                     target, group, QString::fromStdString(p.label),
                     [get] {

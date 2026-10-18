@@ -497,6 +497,15 @@ vector<NodeType> build_types() {
                             "Flips input B's polarity: two branches that thin each other out "
                             "when blended can fill out instead"),
                  }});
+    {
+        ParamSpec input =
+            toggle("input", "Input", false, &set_bool<SelectProcessor, &SelectProcessor::set_use_b>,
+                   "Which input goes on: switch between two branches (map it to a "
+                   "footswitch); both keep running, so tails are ready");
+        input.kind = Kind::CHOICE;
+        input.choices = {"A", "B"};
+        t.push_back({"select", "Select", "Utility", true, false, NodeType::File::NONE, {input}});
+    }
     // Not in the Add menu: every graph has exactly one of each.
     t.push_back({"input",
                  "Input",
@@ -568,6 +577,9 @@ unique_ptr<EffectBase> make_processor(const string& id) {
     if (id == "merge") {
         return make_unique<MergeProcessor>();
     }
+    if (id == "select") {
+        return make_unique<SelectProcessor>();
+    }
     if (id == "input" || id == "output") {
         return make_unique<IoProcessor>();
     }
@@ -603,7 +615,7 @@ std::shared_ptr<GraphNode> create(int id, const string& type_id, bool stereo) {
         kind = NodeKind::INPUT;
     } else if (type_id == "output") {
         kind = NodeKind::OUTPUT;
-    } else if (type_id == "merge") {
+    } else if (type_id == "merge" || type_id == "select") {
         kind = NodeKind::MERGE;
     } else if (stereo ? !type->has_stereo : !type->has_mono) {
         return nullptr;

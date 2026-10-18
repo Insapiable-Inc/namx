@@ -184,6 +184,20 @@ static void test_processing() {
         const auto [l2, r2] = run(nodes, wires);
         CHECK(equals_scaled(l2, 0.0f), "Invert B at 50 % cancels two aligned copies");
     }
+    // Select: input A, then B after a reset (no crossfade left to run).
+    {
+        auto select = NodeCatalog::create(2, "select", false);
+        const Nodes nodes = {NodeCatalog::create(1, "input", false), select,
+                             NodeCatalog::create(3, "output", false)};
+        const vector<GraphWire> wires = {{1, 0, 2, 0}, {2, 0, 3, 0}};
+        const auto [l, r] = run(nodes, wires);
+        CHECK(equals_scaled(l, 1.0f), "Select on A plays A");
+        auto& fx = static_cast<SelectProcessor&>(select->processor());
+        fx.set_use_b(true);
+        fx.reset();
+        const auto [l2, r2] = run(nodes, wires);
+        CHECK(equals_scaled(l2, 0.0f), "Select on B plays B (unwired: silence)");
+    }
     // A dead end (fed, but reaching no Output) doesn't run.
     {
         const Nodes nodes = {NodeCatalog::create(1, "input", false),
