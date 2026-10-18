@@ -66,8 +66,7 @@
     <display_length compare="ge">1280</display_length>
   </requires>
   <releases>
-    <!-- The date is set when v0.0.0 is tagged (ROADMAP Phase 8). -->
-    <release version="0.0.0" date="2026-10-04">
+    <release version="0.0.0" date="2026-10-18">
       <description>
         <p>First public release: reorderable effects chain, library panel, presets, MIDI control, tuner and metronome, JACK/PipeWire and WASAPI backends.</p>
       </description>

@@ -533,7 +533,7 @@ app id in hicolor, `setWindowIcon` from the qrc, Windows exe icon + version bloc
 - [x] About dialog / `--version` flag verified: both read `PROJECT_VERSION` (1.0.0)
       through the `NAM_VERSION` define; `--help` lists the flags. On Windows the
       console flags print nothing (GUI subsystem) — About is the way there.
-- [ ] **Tag v0.0.0** — the first release (2026-10-04; was v0.6.0). **User action**, in
+- [x] **Tag v0.0.0** — the first release (tagged 2026-10-18; AppStream date set the same day) (2026-10-04; was v0.6.0). **User action**, in
       this order: make the GitHub repo public, set the AppStream `<release>` date,
       `git tag v0.0.0 && git push github v0.0.0` — the release workflow does the rest.
       Was (2026-10-02): (Was moved to Phase 12 on 2026-08-22; back here since 2026-09-12
