@@ -170,14 +170,16 @@ public:
 
         // Bypass button and ⋮ menu affordance.
         if (n->kind() != NodeKind::INPUT && n->kind() != NodeKind::OUTPUT) {
-            const QRectF power = power_rect();
-            QColor ring = n->enabled ? accent : Theme::node_text_dim();
-            p->setPen(QPen(ring, 1.2));
-            QColor fill = ring;
-            fill.setAlpha(n->enabled ? 40 : 0);
-            p->setBrush(fill);
-            p->drawEllipse(power);
-            paint_power_icon(*p, power.adjusted(3, 3, -3, -3), ring);
+            if (n->can_bypass()) {
+                const QRectF power = power_rect();
+                QColor ring = n->enabled ? accent : Theme::node_text_dim();
+                p->setPen(QPen(ring, 1.2));
+                QColor fill = ring;
+                fill.setAlpha(n->enabled ? 40 : 0);
+                p->setBrush(fill);
+                p->drawEllipse(power);
+                paint_power_icon(*p, power.adjusted(3, 3, -3, -3), ring);
+            }
             p->setPen(Qt::NoPen);
             p->setBrush(Theme::node_text_dim());
             for (int i = 0; i < 3; ++i) {
@@ -236,8 +238,7 @@ protected:
                 return;
             }
             const GraphModel::Node* n = canvas.model.node(id);
-            if (n && n->kind() != NodeKind::INPUT && n->kind() != NodeKind::OUTPUT &&
-                power_rect().adjusted(-3, -3, 3, 3).contains(ev->pos())) {
+            if (n && n->can_bypass() && power_rect().adjusted(-3, -3, 3, 3).contains(ev->pos())) {
                 canvas.model.set_enabled(id, !n->enabled); // the card's bypass button
                 ev->accept();
                 return;
@@ -284,8 +285,8 @@ protected:
 
     void hoverMoveEvent(QGraphicsSceneHoverEvent* ev) override {
         const GraphModel::Node* n = canvas.model.node(id);
-        const bool on_power = n && n->kind() != NodeKind::INPUT && n->kind() != NodeKind::OUTPUT &&
-                              power_rect().adjusted(-3, -3, 3, 3).contains(ev->pos());
+        const bool on_power =
+            n && n->can_bypass() && power_rect().adjusted(-3, -3, 3, 3).contains(ev->pos());
         setCursor(port_hit(ev->pos()) ? Qt::CrossCursor
                   : on_power          ? Qt::PointingHandCursor
                                       : Qt::ArrowCursor);
@@ -341,9 +342,6 @@ private:
             case NodeKind::OUTPUT:
                 return wired(true, 0) && wired(true, 1) ? "Stereo  L · R" : "Mono → L + R";
             case NodeKind::MERGE:
-                if (n.type->id == "select") {
-                    return n.values.value("input") > 0.5 ? "Input B on" : "Input A on";
-                }
                 return "2 × Mono → Mono";
             case NodeKind::STEREO:
                 return "Mono → Stereo";
@@ -732,11 +730,13 @@ void NodeCanvas::show_node_menu(int id, const QPoint& global_pos) {
         }
     });
     if (!io) {
-        QAction* on = menu.addAction("Enabled", this, [this, id](bool checked) {
-            model.set_enabled(id, checked);
-        });
-        on->setCheckable(true);
-        on->setChecked(n->enabled);
+        if (n->can_bypass()) {
+            QAction* on = menu.addAction("Enabled", this, [this, id](bool checked) {
+                model.set_enabled(id, checked);
+            });
+            on->setCheckable(true);
+            on->setChecked(n->enabled);
+        }
         if (n->kind() == NodeKind::MONO && n->type->has_stereo) {
             menu.addAction("Make Stereo", this, [this, id] {
                 model.set_stereo(id, true);

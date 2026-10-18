@@ -25,8 +25,8 @@ namespace namx
 //   MONO     1             1             the effect's mono path
 //   STEREO   1             L, R          mono in → the effect's stereo out (LFOs half
 //                                         a cycle apart, ping-pong, a wide tail)
-//   MERGE    A, B          1             Merge: (1 − mix)·A ± mix·B (Invert B flips B);
-//                                         Select: A or B (a short crossfade between)
+//   MERGE    A, B          1             (1 − mix)·A ± mix·B (Invert B flips B); no
+//                                         bypass
 //
 // Where two signals meet (a Merge, an Output with both sides wired) the earlier one
 // is delayed to line up with the later: each block, every path's latency is summed
@@ -77,22 +77,19 @@ private:
     atomic<bool> limiter{false};
 };
 
-// A MERGE-kind node's processor: two mono inputs → one (bypassed = A only).
-class TwoInputProcessor : public EffectBase
+// Two mono inputs → one: a crossfade, B's polarity optionally flipped. The gains
+// glide over FADE_MS, so a footswitch flipping Mix 0 ↔ 100 % (an A/B switch) doesn't
+// click.
+class MergeProcessor : public EffectBase
 {
 public:
-    TwoInputProcessor() {
+    static constexpr double FADE_MS = 10.0;
+    MergeProcessor() {
         set_enabled(true);
     }
-    // Audio thread. `out` may not alias `a` or `b`.
-    virtual void mix_into(const float* a, const float* b, float* out, size_t n) = 0;
-};
-
-// Merge: a crossfade, B's polarity optionally flipped.
-class MergeProcessor : public TwoInputProcessor
-{
-public:
     void reset() override {
+        gain_a = target_a();
+        gain_b = target_b();
     }
     void set_mix_pct(float pct) {
         mix.store(pct / 100.0f, std::memory_order_relaxed);
@@ -100,29 +97,17 @@ public:
     void set_invert_b(bool on) {
         invert_b.store(on, std::memory_order_relaxed);
     }
-    void mix_into(const float* a, const float* b, float* out, size_t n) override;
+    // Audio thread. `out` may not alias `a` or `b`.
+    void mix_into(const float* a, const float* b, float* out, size_t n);
 
 private:
+    float target_a() const;
+    float target_b() const;
+
     atomic<float> mix{0.5f};
     atomic<bool> invert_b{false};
-};
-
-// Select: input A or input B, switched with a FADE_MS crossfade (no click).
-class SelectProcessor : public TwoInputProcessor
-{
-public:
-    static constexpr double FADE_MS = 10.0;
-    void reset() override {
-        fade = use_b.load(std::memory_order_relaxed) ? 1.0f : 0.0f;
-    }
-    void set_use_b(bool on) {
-        use_b.store(on, std::memory_order_relaxed);
-    }
-    void mix_into(const float* a, const float* b, float* out, size_t n) override;
-
-private:
-    atomic<bool> use_b{false};
-    float fade = 0.0f; // audio thread: 0 = A, 1 = B
+    float gain_a = 0.5f; // audio thread
+    float gain_b = 0.5f;
 };
 
 // One node: its kind, catalog type and processor. Shared by the GUI's model

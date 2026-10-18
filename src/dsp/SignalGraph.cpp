@@ -35,20 +35,33 @@ int output_count(NodeKind kind) {
     return 0;
 }
 
-void MergeProcessor::mix_into(const float* a, const float* b, float* out, size_t n) {
-    const float m = std::clamp(mix.load(std::memory_order_relaxed), 0.0f, 1.0f);
-    const float mb = invert_b.load(std::memory_order_relaxed) ? -m : m;
-    for (size_t i = 0; i < n; ++i) {
-        out[i] = (1.0f - m) * a[i] + mb * b[i];
-    }
+float MergeProcessor::target_a() const {
+    return 1.0f - std::clamp(mix.load(std::memory_order_relaxed), 0.0f, 1.0f);
 }
 
-void SelectProcessor::mix_into(const float* a, const float* b, float* out, size_t n) {
-    const float target = use_b.load(std::memory_order_relaxed) ? 1.0f : 0.0f;
+float MergeProcessor::target_b() const {
+    const float m = std::clamp(mix.load(std::memory_order_relaxed), 0.0f, 1.0f);
+    return invert_b.load(std::memory_order_relaxed) ? -m : m;
+}
+
+void MergeProcessor::mix_into(const float* a, const float* b, float* out, size_t n) {
+    const float to_a = target_a();
+    const float to_b = target_b();
+    if (gain_a == to_a && gain_b == to_b) {
+        for (size_t i = 0; i < n; ++i) {
+            out[i] = gain_a * a[i] + gain_b * b[i];
+        }
+        return;
+    }
+    // A linear glide, full scale in FADE_MS (Invert B: −1 → +1 takes twice that).
     const float step = static_cast<float>(1000.0 / (FADE_MS * sample_rate));
+    auto glide = [step](float g, float to) {
+        return g < to ? std::min(to, g + step) : std::max(to, g - step);
+    };
     for (size_t i = 0; i < n; ++i) {
-        fade = fade < target ? std::min(target, fade + step) : std::max(target, fade - step);
-        out[i] = (1.0f - fade) * a[i] + fade * b[i];
+        gain_a = glide(gain_a, to_a);
+        gain_b = glide(gain_b, to_b);
+        out[i] = gain_a * a[i] + gain_b * b[i];
     }
 }
 
@@ -364,13 +377,8 @@ void run_plan(GraphPlan& plan, size_t n) {
                 break;
             }
             case NodeKind::MERGE: {
-                float* out = buf(step.out[0]);
-                if (fx.is_enabled()) {
-                    static_cast<TwoInputProcessor&>(fx).mix_into(buf(step.aligned[0]),
-                                                                 buf(step.aligned[1]), out, n);
-                } else {
-                    std::copy_n(buf(step.aligned[0]), n, out);
-                }
+                static_cast<MergeProcessor&>(fx).mix_into(
+                    buf(step.aligned[0]), buf(step.aligned[1]), buf(step.out[0]), n);
                 break;
             }
         }

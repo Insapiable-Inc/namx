@@ -440,7 +440,7 @@ void GraphModel::set_value(int id, const QString& key, double value) {
 
 void GraphModel::set_enabled(int id, bool on) {
     Node* n = find(id);
-    if (!n || n->enabled == on || n->kind() == NodeKind::INPUT || n->kind() == NodeKind::OUTPUT) {
+    if (!n || n->enabled == on || !n->can_bypass()) {
         return;
     }
     n->enabled = on;
@@ -532,7 +532,7 @@ QJsonObject GraphModel::to_json() const {
         o["name"] = n.name;
         o["x"] = n.pos.x();
         o["y"] = n.pos.y();
-        if (n.kind() != NodeKind::INPUT && n.kind() != NodeKind::OUTPUT) {
+        if (n.can_bypass()) {
             o["enabled"] = n.enabled;
         }
         QJsonObject params;
@@ -609,7 +609,7 @@ bool GraphModel::from_v3(const QJsonObject& graph, QStringList* warnings) {
         if (o["name"].isString() && !o["name"].toString().trimmed().isEmpty()) {
             n->name = o["name"].toString().trimmed();
         }
-        n->enabled = o["enabled"].toBool(true);
+        n->enabled = !n->can_bypass() || o["enabled"].toBool(true);
         if (o["x"].isDouble() && o["y"].isDouble()) {
             n->pos = QPointF(o["x"].toDouble(), o["y"].toDouble());
         } else {
@@ -716,7 +716,7 @@ bool GraphModel::from_v2(const QJsonObject& obj, QStringList* warnings) {
 
     for (const QString& id : order) {
         const NodeType* type = NodeCatalog::find(id.toStdString());
-        if (!type || id == "input" || id == "output" || id == "merge" || id == "select") {
+        if (!type || id == "input" || id == "output" || id == "merge") {
             continue;
         }
         const QString group = QString::fromStdString(NodeCatalog::legacy_group(id.toStdString()));

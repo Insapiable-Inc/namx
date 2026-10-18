@@ -48,13 +48,11 @@ struct FxColor
     const char* accent;
 };
 static constexpr FxColor FX_COLORS[] = {
-    {"tuner", "#b6aa8d"},     {"gate", "#8f969e"},    {"comp", "#4f78bd"},
-    {"wah", "#d4c19a"},       {"flanger", "#93477b"}, {"phaser", "#4bba5b"},
-    {"nam", "#e4b954"},       {"eq", "#a5a38f"},      {"chorus", "#8dccf3"},
-    {"tremolo", "#19848e"},   {"delay", "#aaa6a0"},   {"reverb", "#8f7d99"},
-    {"ir", "#ef661a"},        {"drive", "#2e9a5c"},   {"volume", "#9fb4c7"},
-    {"transpose", "#c9a6f2"}, {"merge", "#4f9fe8"},   {"select", "#6f86e6"},
-    {"neutral", "#7d8590"},
+    {"tuner", "#b6aa8d"},   {"gate", "#8f969e"},    {"comp", "#4f78bd"},   {"wah", "#d4c19a"},
+    {"flanger", "#93477b"}, {"phaser", "#4bba5b"},  {"nam", "#e4b954"},    {"eq", "#a5a38f"},
+    {"chorus", "#8dccf3"},  {"tremolo", "#19848e"}, {"delay", "#aaa6a0"},  {"reverb", "#8f7d99"},
+    {"ir", "#ef661a"},      {"drive", "#2e9a5c"},   {"volume", "#9fb4c7"}, {"transpose", "#c9a6f2"},
+    {"merge", "#4f9fe8"},   {"neutral", "#7d8590"},
 };
 
 // A theme file's effect accents (Mode::CUSTOM; empty otherwise).

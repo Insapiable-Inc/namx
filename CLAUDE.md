@@ -122,10 +122,11 @@ holds the rules, `NodeCatalog` the node types:
   wired = mono on both), `MONO` effects (1 in, 1 out), `STEREO` = **mono in, stereo out**
   (1 in, L and R out) — the **only** version of Flanger, Phaser, Chorus, Tremolo (L/R
   LFOs fixed half a cycle apart), Delay (Ping-Pong knob) and Reverb (user, 2026-10-18:
-  one node per effect; for mono, wire one output), `MERGE` (A, B in: the Merge, and **Select** — Input A | B, a 10 ms crossfade
-  between, both branches keep running; user, 2026-10-18; a two-way choice maps to MIDI
-  as a switch). Each card has its
-  own bypass button (power icon left of the ⋮).
+  one node per effect; for mono, wire one output), `MERGE` (A, B in). Each effect card has its own
+  bypass button (power icon left of the ⋮); Input, Output and Merge have none (user,
+  2026-10-18: no Merge bypass is obviously right). A Select (A | B) node was tried and
+  dropped the same day: a Merge's Mix mapped to a footswitch is the A/B switch, its
+  gains glide over 10 ms so the flip doesn't click.
   **Every effect takes one input** (user, 2026-10-18): no 2-in effects, a stereo rig
   runs two nodes, one per side — Amp and Cab included, which are mono only (briefly
   stereo-only; mono is the most intuitive).

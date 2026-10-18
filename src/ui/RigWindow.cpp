@@ -649,7 +649,6 @@ void RigWindow::register_midi_targets() {
     for (const auto& n : model->get_nodes()) {
         const int id = n.id();
         const QString group = n.name;
-        const bool io = n.kind() == NodeKind::INPUT || n.kind() == NodeKind::OUTPUT;
         // Mappings from the effect-row era ("param:delay/mix", "param:namEnabled") reach
         // the first node of the type.
         const bool legacy = std::find(aliased.begin(), aliased.end(), n.type->id) == aliased.end();
@@ -670,7 +669,7 @@ void RigWindow::register_midi_targets() {
             return "param:" + old_group + "/" + key;
         };
 
-        if (!io) {
+        if (n.can_bypass()) {
             const QString target = GraphModel::midi_target_id(group, "enabled");
             midi_mapper->add_switch(
                 target, group, "On / Off",
@@ -695,9 +694,7 @@ void RigWindow::register_midi_targets() {
                 const GraphModel::Node* x = model->node(id);
                 return x ? x->values.value(key) : 0.0;
             };
-            // A two-way choice (Select's A | B) toggles like a switch.
-            if (p.kind == ParamSpec::Kind::SWITCH ||
-                (p.kind == ParamSpec::Kind::CHOICE && p.choices.size() == 2)) {
+            if (p.kind == ParamSpec::Kind::SWITCH) {
                 midi_mapper->add_switch(
                     target, group, QString::fromStdString(p.label),
                     [get] {

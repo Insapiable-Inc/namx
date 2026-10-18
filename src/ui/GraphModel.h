@@ -50,6 +50,11 @@ public:
         bool stereo() const {
             return dsp->kind == NodeKind::STEREO;
         }
+        // Effects only: Input, Output and Merge have no power button (for a Merge no
+        // bypass is obviously right — user, 2026-10-18).
+        bool can_bypass() const {
+            return kind() == NodeKind::MONO || kind() == NodeKind::STEREO;
+        }
     };
 
     explicit GraphModel(AudioEngine& new_engine, QObject* parent = nullptr);
