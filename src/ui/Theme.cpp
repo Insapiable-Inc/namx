@@ -1047,15 +1047,15 @@ QSplitter#rigSplit::handle {
 /* === Node-graph UI: parameter panel === */
 QLabel#knobName {
     color: @text_dim@;
-    font-size: 9.5pt;
+    font-size: 11pt;
 }
 /* No `color`: KnobWidget gives the value its effect's accent. */
 QLineEdit#knobField {
     background-color: @window@;
     border: 1px solid @border@;
     border-radius: 6px;
-    padding: 0 6px;
-    font-size: 11.5pt;
+    padding: 0 8px;
+    font-size: 11pt;
     font-weight: 600;
 }
 QLineEdit#knobField:hover {

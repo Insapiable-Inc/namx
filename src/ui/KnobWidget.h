@@ -30,8 +30,8 @@ public:
     // Compact: dial left, name over value right (effect rows, ~46px tall).
     // Stacked: name over a large dial over the value, all centred — the
     // prominent form for the Input/Output gain columns.
-    // Panel: name on top, then a value field (click to type) left of a large dial —
-    // the node-graph parameter panel (ui/node-graph).
+    // Panel: a large dial, right of it the name (with the unit) over a value field (click
+    // to type) — the node-graph parameter panel (ui/node-graph).
     enum class Form
     {
         COMPACT,

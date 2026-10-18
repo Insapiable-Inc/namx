@@ -43,8 +43,7 @@ public:
     }
 
     // The node-graph panel's look (KnobWidget::Form::PANEL): a flat dark body like the
-    // canvas cards, a thick value arc in the accent with a soft glow (the selected
-    // card's), a light pointer.
+    // canvas cards, a thick value arc in the accent (no glow), a light pointer.
     void set_panel_look(bool on) {
         panel_look = on;
         update();
@@ -198,26 +197,20 @@ private:
         const qreal side = std::min(width(), height());
         const QPointF c(width() / 2.0, height() / 2.0);
         const qreal ring_w = 4.0;
-        const qreal ring_r = side / 2.0 - ring_w / 2.0 - 3.0; // room for the glow
+        const qreal ring_r = side / 2.0 - ring_w / 2.0 - 1.0;
         const QRectF ring(c.x() - ring_r, c.y() - ring_r, 2 * ring_r, 2 * ring_r);
         constexpr int START = 225 * 16;
         constexpr int SWEEP = -270 * 16;
         const double t = travel();
 
         if (positions >= 2) {
-            // Stepped: a dot per position, the current one lit and glowing.
+            // Stepped: a dot per position, the current one lit.
             const int current = static_cast<int>(std::lround(t * (positions - 1)));
             const double dot_r = positions > 12 ? 1.5 : 2.2;
             p.setPen(Qt::NoPen);
             for (int i = 0; i < positions; ++i) {
                 const double a = qDegreesToRadians(225.0 - 270.0 * i / (positions - 1));
                 const QPointF dot(c.x() + ring_r * std::cos(a), c.y() - ring_r * std::sin(a));
-                if (i == current) {
-                    QColor halo = accent;
-                    halo.setAlpha(70);
-                    p.setBrush(halo);
-                    p.drawEllipse(dot, dot_r + 3.0, dot_r + 3.0);
-                }
                 p.setBrush(i == current ? accent : Theme::detent());
                 p.drawEllipse(dot, i == current ? dot_r + 1.0 : dot_r,
                               i == current ? dot_r + 1.0 : dot_r);
@@ -228,13 +221,6 @@ private:
             p.drawArc(ring, START, SWEEP);
             const int span = static_cast<int>(SWEEP * t);
             if (span != 0) {
-                // Glow under the value arc, then the arc.
-                for (int i = 2; i >= 1; --i) {
-                    QColor halo = accent;
-                    halo.setAlpha(i == 2 ? 35 : 70);
-                    p.setPen(QPen(halo, ring_w + 4.0 * i, Qt::SolidLine, Qt::RoundCap));
-                    p.drawArc(ring, START, span);
-                }
                 p.setPen(QPen(accent, ring_w, Qt::SolidLine, Qt::RoundCap));
                 p.drawArc(ring, START, span);
             }
@@ -296,7 +282,7 @@ KnobWidget::KnobWidget(const QString& new_label, double min_val, double max_val,
     if (form == Form::PANEL) {
         // Name over [value field … large dial], like the mockup's parameter cells.
         setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
-        dial->setFixedSize(60, 60);
+        dial->setFixedSize(64, 64);
         name_label->setObjectName("knobName");
         // The unit lives in the label; the field holds the bare number.
         if (!new_unit.isEmpty()) {
@@ -305,23 +291,26 @@ KnobWidget::KnobWidget(const QString& new_label, double min_val, double max_val,
         dial->set_panel_look(true);
         field = new QLineEdit;
         field->setObjectName("knobField");
-        field->setAlignment(Qt::AlignCenter);
-        field->setFixedSize(96, 34);
+        field->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+        field->setFixedSize(100, 30);
         field->setToolTip(QString("%1: click to type a value, Enter to set it").arg(new_label));
         label_value->hide(); // the field shows the value
         connect(field, &QLineEdit::editingFinished, this, &KnobWidget::commit_field);
         field->installEventFilter(this);
 
-        auto* layout = new QVBoxLayout(this);
+        // Dial left; name over the value field right — main's knob tile, larger.
+        auto* layout = new QHBoxLayout(this);
         layout->setContentsMargins(2, 2, 2, 2);
-        layout->setSpacing(6);
-        layout->addWidget(name_label);
-        auto* row = new QHBoxLayout;
-        row->setSpacing(10);
-        row->addWidget(field, 0, Qt::AlignVCenter);
-        row->addStretch();
-        row->addWidget(dial, 0, Qt::AlignVCenter);
-        layout->addLayout(row);
+        layout->setSpacing(12);
+        layout->addWidget(dial, 0, Qt::AlignVCenter);
+        auto* text = new QVBoxLayout;
+        text->setContentsMargins(0, 0, 0, 0);
+        text->setSpacing(5);
+        text->addStretch();
+        text->addWidget(name_label);
+        text->addWidget(field, 0, Qt::AlignLeft);
+        text->addStretch();
+        layout->addLayout(text, 1);
     } else if (form == Form::STACKED) {
         // Prominent stacked form (Input/Output gain): centred name over a
         // large dial over the value.
