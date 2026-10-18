@@ -11,6 +11,8 @@
 
 class QFrame;
 class QLabel;
+class QMenu;
+class QShortcut;
 class QSplitter;
 class QTimer;
 
@@ -65,6 +67,16 @@ private:
     void update_status();
     void set_notice(const QString& key, const QString& text, const QString& tip = {});
     void open_settings();
+
+    // MIDI: input, actions, learn, status light, menu.
+    void setup_midi();
+    // Every node parameter as a MIDI target, by node name (GraphModel::midi_target_id);
+    // again after each structure change. Chain-era IDs alias the first node of a type.
+    void register_midi_targets();
+    void add_learn_entries(const QString& target_id, QMenu* menu);
+    void on_learn_changed();
+    void show_midi_light(bool lit);
+    void open_midi_mappings();
 
     // The global tuner (not a node): the strip under the top bar.
     QFrame* make_tuner_strip();
@@ -122,6 +134,13 @@ private:
     SettingsDialog* settings_dialog = nullptr;
     MidiInput* midi = nullptr;
     MidiMapper* midi_mapper = nullptr;
+    bool midi_ok = false;
+    QMenu* midi_menu = nullptr;
+    QLabel* lbl_midi = nullptr; // status bar activity light
+    QTimer* midi_blink = nullptr;
+    QShortcut* learn_esc = nullptr;
+    QWidget* learn_widget = nullptr; // glowing while learning
+    QString learn_target;
     QFrame* tuner_strip = nullptr;
     TunerDisplay* tuner_display = nullptr;
     ToggleSwitch* tuner_mute = nullptr;

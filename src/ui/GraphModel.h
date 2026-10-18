@@ -100,6 +100,15 @@ public:
     // and the node keeps its old file.
     expected<void, QString> load_file(int id, const QString& path);
 
+    // The global tempo: synced rates and times follow it (ParamSpec::sync_switch).
+    void set_bpm(double new_bpm);
+    double get_bpm() const {
+        return bpm;
+    }
+    // What the effect gets for `p`: the knob's value, or its note value at the tempo while
+    // synced.
+    double effective_value(const Node& n, const ParamSpec& p) const;
+
     // App-wide model setting, applied to every Amp node (Settings → Audio).
     void set_normalize_models(bool on);
 
@@ -112,6 +121,12 @@ public:
     // can't be loaded are reported in `warnings`, the rest still loads. Returns false
     // (graph unchanged) when the object is neither.
     bool from_json(const QJsonObject& obj, QStringList* warnings = nullptr);
+
+    // MIDI target of a node parameter: "param:<node name>/<key>" ("enabled" = the power
+    // switch). By name, so a mapping follows "Delay" from preset to preset.
+    static QString midi_target_id(const QString& node_name, const QString& key) {
+        return "param:" + node_name + "/" + key;
+    }
 
     // A unique display name for a new node of `type` ("Amp", "Amp 2", …).
     QString unique_name(const QString& base) const;
@@ -130,6 +145,7 @@ private:
     void clear();
     int create(const QString& type_id, bool stereo, int id = 0);
     void apply_all(Node& n);
+    void apply_param(Node& n, const ParamSpec& p);
     QString legacy_file_error(const QString& what, const QString& path, const QString& error) const;
     bool from_v2(const QJsonObject& obj, QStringList* warnings);
     bool from_v3(const QJsonObject& graph, QStringList* warnings);
@@ -141,6 +157,7 @@ private:
     vector<int> live_ids; // from push()
     int next_id = 1;
     bool normalize_models = true;
+    double bpm = 120.0;
 };
 
 } // namespace namx

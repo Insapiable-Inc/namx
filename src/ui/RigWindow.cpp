@@ -11,6 +11,7 @@
 #include <QFile>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QGraphicsDropShadowEffect>
 #include <QHBoxLayout>
 #include <QInputDialog>
 #include <QJsonArray>
@@ -34,9 +35,11 @@
 #include "AudioEngine.h"
 #include "AudioStatusBar.h"
 #include "GraphModel.h"
+#include "KnobWidget.h"
 #include "LibraryIndex.h"
 #include "MidiInput.h"
 #include "MidiMapper.h"
+#include "MidiMappingsDialog.h"
 #include "NamProcessor.h"
 #include "NodeCanvas.h"
 #include "NodeCatalog.h"
@@ -105,6 +108,7 @@ RigWindow::RigWindow(QWidget* parent)
 
     setup_ui();
     setup_menus();
+    setup_midi();
 
     session_timer = new QTimer(this);
     session_timer->setSingleShot(true);
@@ -131,6 +135,8 @@ RigWindow::RigWindow(QWidget* parent)
     }
     setup_audio();
     restore_session();
+    register_midi_targets();
+    connect(model, &GraphModel::structure_changed, this, &RigWindow::register_midi_targets);
     rebuild_search();
     QTimer::singleShot(0, canvas, &NodeCanvas::fit_all);
 
@@ -325,6 +331,7 @@ void RigWindow::setup_menus() {
         top->focus_search();
     });
     menu->addSeparator();
+    midi_menu = menu->addMenu("MIDI");
     add("Settings…", QKeySequence("Ctrl+,"), [this] {
         open_settings();
     });
@@ -502,7 +509,10 @@ void RigWindow::open_settings() {
                     QSettings().setValue("tuner/showHz", on);
                 },
             .window = *this,
-            .open_midi_mappings = [] {},
+            .open_midi_mappings =
+                [this] {
+                    open_midi_mappings();
+                },
             .restart_audio =
                 [this] {
                     restart_audio();
@@ -516,6 +526,284 @@ void RigWindow::open_settings() {
         settings_dialog = new SettingsDialog(std::move(targets), this);
     }
     settings_dialog->show_page(SettingsDialog::Page::AUDIO);
+}
+
+// MIDI
+
+void RigWindow::setup_midi() {
+    connect(midi, &MidiInput::message_received, midi_mapper, &MidiMapper::handle);
+    midi_ok = midi->start();
+    connect(midi_mapper, &MidiMapper::tempo_from_clock, top->tempo(), &TempoBar::set_bpm);
+    // Synced rates and times follow the tempo.
+    model->set_bpm(top->tempo()->get_bpm());
+    connect(top->tempo(), &TempoBar::bpm_changed, model, &GraphModel::set_bpm);
+
+    // Actions.
+    midi_mapper->add_action("action:presetNext", "Presets", "Next preset", [this] {
+        step_preset(+1);
+    });
+    midi_mapper->add_action("action:presetPrev", "Presets", "Previous preset", [this] {
+        step_preset(-1);
+    });
+    midi_mapper->add_action("action:metronome", "Metronome", "Start / stop", [this] {
+        top->tempo()->toggle_play();
+    });
+    midi_mapper->add_action("action:tap", "Tempo", "Tap", [this] {
+        top->tempo()->tap_tempo();
+    });
+    midi_mapper->add_action("action:tuner", "Tuner", "On / off", [this] {
+        set_tuner_on(!engine->get_tuner().is_enabled());
+    });
+    // Learn entries: knobs through their context-menu hook, other panel controls through
+    // the panel, each by its "midiTarget" property.
+    KnobWidget::set_menu_hook([this](KnobWidget* k, QMenu* menu) {
+        QString id = k->property("midiTarget").toString();
+        if (id.isEmpty()) {
+            if (const MidiTarget* t = midi_mapper->target_for(k)) {
+                id = t->id;
+            }
+        }
+        if (!id.isEmpty() && midi_mapper->target(id)) {
+            menu->addSeparator();
+            add_learn_entries(id, menu);
+        }
+    });
+    panel->learn_menu = [this](const QString& id, QMenu* menu) {
+        add_learn_entries(id, menu);
+    };
+    top->tempo()->set_learn_menu_hook([this](const QString& id, QMenu* menu) {
+        add_learn_entries(id, menu);
+    });
+
+    learn_esc = new QShortcut(QKeySequence(Qt::Key_Escape), this);
+    learn_esc->setEnabled(false);
+    learn_esc->setWhatsThis("Cancel MIDI learn");
+    connect(learn_esc, &QShortcut::activated, midi_mapper, &MidiMapper::cancel_learn);
+    connect(midi_mapper, &MidiMapper::learn_changed, this, &RigWindow::on_learn_changed);
+
+    // Status bar: a light that blinks on incoming MIDI.
+    lbl_midi = new QLabel;
+    lbl_midi->setObjectName("statusItem");
+    lbl_midi->setTextFormat(Qt::RichText);
+    statusBar()->insertWidget(0, lbl_midi);
+    midi_blink = new QTimer(this);
+    midi_blink->setSingleShot(true);
+    midi_blink->setInterval(120);
+    connect(midi_blink, &QTimer::timeout, this, [this] {
+        show_midi_light(false);
+    });
+    connect(midi_mapper, &MidiMapper::activity, this, [this](const QString& what) {
+        show_midi_light(true);
+        midi_blink->start();
+        lbl_midi->setToolTip("Last MIDI message: " + what);
+    });
+    show_midi_light(false);
+    lbl_midi->setToolTip(midi_ok ? QString("MIDI input (%1)").arg(midi->backend_name())
+                                 : QString("MIDI is not available on this system"));
+
+    // Menu.
+    connect(midi_menu->addAction("Mappings…"), &QAction::triggered, this,
+            &RigWindow::open_midi_mappings);
+    QMenu* devices = midi_menu->addMenu("Devices");
+    connect(devices, &QMenu::aboutToShow, this, [this, devices] {
+        devices->clear();
+        const QStringList list = midi_ok ? midi->devices() : QStringList();
+        if (list.isEmpty()) {
+            devices->addAction(midi_ok ? "No MIDI devices found" : "MIDI not available")
+                ->setEnabled(false);
+        }
+        for (const QString& d : list) {
+            QAction* a = devices->addAction(d);
+            a->setCheckable(true);
+            a->setChecked(midi->is_enabled(d));
+            connect(a, &QAction::toggled, this, [this, d](bool on) {
+                midi->set_enabled(d, on);
+            });
+        }
+    });
+    QAction* clock = midi_menu->addAction("Follow MIDI Clock");
+    clock->setCheckable(true);
+    connect(midi_menu, &QMenu::aboutToShow, clock, [this, clock] {
+        clock->setChecked(midi_mapper->get_follow_clock());
+    });
+    connect(clock, &QAction::toggled, midi_mapper, &MidiMapper::set_follow_clock);
+}
+
+void RigWindow::register_midi_targets() {
+    midi_mapper->remove_targets("param:");
+    // The tuner's own targets live outside the graph: keep them.
+    midi_mapper->add_switch(
+        "param:tuner/mute", "Tuner", "Mute",
+        [this] {
+            return tuner_mute->isChecked();
+        },
+        [this](bool on) {
+            tuner_mute->setChecked(on);
+        });
+    midi_mapper->add_alias("param:tuner/enabled", "action:tuner");
+
+    vector<string> aliased; // types whose first node took the chain-era IDs
+    for (const auto& n : model->get_nodes()) {
+        const int id = n.id();
+        const QString group = n.name;
+        const bool io = n.kind() == NodeKind::INPUT || n.kind() == NodeKind::OUTPUT;
+        // Mappings from the effect-row era ("param:delay/mix", "param:namEnabled") reach
+        // the first node of the type.
+        const bool legacy = std::find(aliased.begin(), aliased.end(), n.type->id) == aliased.end();
+        if (legacy) {
+            aliased.push_back(n.type->id);
+        }
+        const QString old_group = QString::fromStdString(NodeCatalog::legacy_group(n.type->id));
+        auto old_id = [&n, &old_group](const QString& key) {
+            if (n.type->id == "input") {
+                return QString("param:inputGain");
+            }
+            if (n.type->id == "output") {
+                return key == "gain" ? QString("param:outputGain") : QString("param:limiter");
+            }
+            if (key == "enabled" && (n.type->id == "nam" || n.type->id == "ir")) {
+                return QString(n.type->id == "nam" ? "param:namEnabled" : "param:irEnabled");
+            }
+            return "param:" + old_group + "/" + key;
+        };
+
+        if (!io) {
+            const QString target = GraphModel::midi_target_id(group, "enabled");
+            midi_mapper->add_switch(
+                target, group, "On / Off",
+                [this, id] {
+                    const GraphModel::Node* x = model->node(id);
+                    return x && x->enabled;
+                },
+                [this, id](bool on) {
+                    model->set_enabled(id, on);
+                });
+            if (legacy) {
+                midi_mapper->add_alias(old_id("enabled"), target);
+            }
+        }
+        for (const auto& p : n.type->params) {
+            if (p.stereo_only && !n.stereo()) {
+                continue;
+            }
+            const QString key = QString::fromStdString(p.key);
+            const QString target = GraphModel::midi_target_id(group, key);
+            auto get = [this, id, key] {
+                const GraphModel::Node* x = model->node(id);
+                return x ? x->values.value(key) : 0.0;
+            };
+            if (p.kind == ParamSpec::Kind::SWITCH) {
+                midi_mapper->add_switch(
+                    target, group, QString::fromStdString(p.label),
+                    [get] {
+                        return get() > 0.5;
+                    },
+                    [this, id, key](bool on) {
+                        model->set_value(id, key, on ? 1.0 : 0.0);
+                    });
+            } else {
+                const bool stepped =
+                    p.kind == ParamSpec::Kind::CHOICE || p.kind == ParamSpec::Kind::NOTE;
+                std::function<bool()> reversed;
+                if (!p.reverse_switch.empty()) {
+                    const QString rkey = QString::fromStdString(p.reverse_switch);
+                    reversed = [this, id, rkey] {
+                        const GraphModel::Node* x = model->node(id);
+                        return x && x->values.value(rkey) > 0.5;
+                    };
+                }
+                QString label = QString::fromStdString(p.label);
+                if (p.kind == ParamSpec::Kind::NOTE) {
+                    label += " (note)";
+                }
+                midi_mapper->add_value(
+                    target, group, label, p.min, p.max, stepped ? 1.0 : 0.0,
+                    QString::fromStdString(p.unit), get,
+                    [this, id, key, stepped](double v) {
+                        model->set_value(id, key, stepped ? std::round(v) : v);
+                    },
+                    reversed);
+            }
+            if (legacy) {
+                midi_mapper->add_alias(old_id(key), target);
+            }
+        }
+    }
+}
+
+void RigWindow::add_learn_entries(const QString& target_id, QMenu* menu) {
+    if (!midi_mapper->target(target_id)) {
+        return;
+    }
+    connect(menu->addAction("MIDI Learn"), &QAction::triggered, this, [this, target_id] {
+        if (!midi_ok) {
+            QMessageBox::information(this, "MIDI Learn",
+                                     "MIDI input is not available on this system.");
+            return;
+        }
+        midi_mapper->learn(target_id);
+    });
+    if (midi_mapper->has_mapping(target_id)) {
+        connect(menu->addAction("Forget MIDI (" + midi_mapper->mapping_summary(target_id) + ")"),
+                &QAction::triggered, this, [this, target_id] {
+                    midi_mapper->forget(target_id);
+                });
+    }
+}
+
+void RigWindow::on_learn_changed() {
+    if (learn_widget) {
+        learn_widget->setGraphicsEffect(nullptr);
+        learn_widget = nullptr;
+    }
+    const QString target = midi_mapper->learning();
+    learn_esc->setEnabled(!target.isEmpty());
+    if (target.isEmpty()) {
+        if (!learn_target.isEmpty()) {
+            const MidiTarget* t = midi_mapper->target(learn_target);
+            const QString summary = midi_mapper->mapping_summary(learn_target);
+            statusBar()->showMessage(
+                summary.isEmpty() || !t
+                    ? QString("MIDI Learn cancelled")
+                    : QString("MIDI: %1 → %2 · %3").arg(summary, t->group, t->label),
+                4000);
+        }
+        learn_target.clear();
+        return;
+    }
+    learn_target = target;
+    const MidiTarget* t = midi_mapper->target(target);
+    statusBar()->showMessage(
+        QString("MIDI Learn: move a control on your MIDI device for %1 · %2 — Esc cancels")
+            .arg(t ? t->group : QString(), t ? t->label : target));
+    // Highlight the control on screen, if it is (panel controls carry their target).
+    QWidget* w = nullptr;
+    for (QWidget* c : findChildren<QWidget*>()) {
+        if (c->isVisible() && c->property("midiTarget").toString() == target) {
+            w = c;
+        }
+    }
+    if (!w) {
+        w = top->tempo()->action_widget(target);
+    }
+    if (w) {
+        auto* glow = new QGraphicsDropShadowEffect(w);
+        glow->setColor(Theme::status_warn());
+        glow->setBlurRadius(22);
+        glow->setOffset(0, 0);
+        w->setGraphicsEffect(glow);
+        learn_widget = w;
+    }
+}
+
+void RigWindow::show_midi_light(bool lit) {
+    const QColor c = !midi_ok ? Theme::track() : lit ? Theme::status_warn() : Theme::status_ok();
+    lbl_midi->setText(QString("<span style=\"color:%1\">●</span> MIDI").arg(c.name()));
+}
+
+void RigWindow::open_midi_mappings() {
+    MidiMappingsDialog dlg(*midi_mapper, midi_ok ? midi : nullptr, this);
+    dlg.exec();
 }
 
 // Files into nodes

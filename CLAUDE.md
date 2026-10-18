@@ -143,8 +143,19 @@ holds the rules, `NodeCatalog` the node types:
   v2 preset keys, so v2 presets and the chain-era session migrate by name
   (`GraphModel::from_v2`: enabled effects in `effectOrder`, mono effects after a stereo
   one doubled into L/R twins, as the chain ran them).
-- Not ported yet: tempo sync of rates/times, MIDI mapping targets, the gate/compressor
-  reduction meters, preset quick slots and A/B, the library panel.
+- **Tempo sync** is catalog data: a rate/time `ParamSpec` names its Sync switch and note
+  parameter (`sync_switch`, `sync_note`, `Kind::NOTE`); `GraphModel::effective_value`
+  resolves it at the tempo (`set_bpm`, fed by the tempo bar) and the panel shows the
+  note knob in the free knob's place while synced. Keys as in v2 presets.
+- **MIDI**: every node parameter is a widget-free `MidiMapper` target
+  (`add_value`/`add_switch`), ID `param:<node name>/<key>` (`enabled` = power), so a
+  mapping follows a node name across presets; registered again on every structure
+  change (`RigWindow::register_midi_targets`; renames are structure changes, names are
+  unique). Chain-era IDs (`param:delay/mix`, `param:namEnabled`, …) are aliases to the
+  first node of the type, so existing mappings keep working — and `main` keeps reading
+  the same `midi/mappings`. Panel controls carry a `midiTarget` property for Learn.
+- Not ported yet: the gate/compressor reduction meters, preset quick slots and A/B, the
+  library panel.
 
 ### EffectBase dispatch
 
@@ -174,7 +185,7 @@ All effects inherit `EffectBase` (`src/dsp/EffectBase.h` — the header comment 
 | `NodeCatalog` | `src/dsp/NodeCatalog.h/cpp` | Every node type: name, category, mono/stereo variants, file kind, `ParamSpec`s; `create(id, type, stereo)` |
 | `GraphModel` | `src/ui/GraphModel.h/cpp` | The rig as edited: nodes (name, position, values, file) + wires; every change pushed to the engine; JSON v3 + v2 migration |
 | `NodeCanvas` | `src/ui/NodeCanvas.h/cpp` | The node network (QGraphicsView): cards, ports, bezier wires, drag-to-connect, wire pick-up, context menus (Add / node / wire → Insert Node), zoom tools; `NodeIcons` paints the category icons |
-| `ParamPanel` | `src/ui/ParamPanel.h/cpp` | Right panel: the selected node's header (icon, name, I/O, power, ⋮) and its catalog parameters; file row for Amp/Cab, tuner display, Input/Output meters |
+| `ParamPanel` | `src/ui/ParamPanel.h/cpp` | Right panel: the selected node's header (icon, name, I/O, power, ⋮) and its catalog parameters — switches in a row, choices as segments, knobs as `KnobWidget::Form::PANEL` (name, typeable value field, large dial) in two columns, synced knobs swapping to their note value; file row for Amp/Cab, Input/Output meters |
 | `TopBar` | `src/ui/TopBar.h/cpp` | Logo, preset name menu + ✎ rename, metronome + BPM (full `TempoBar` in a popup), search over effects/presets/models/IRs, ★, ⋮ menu, ⚙ |
 | `RigWindow` | `src/ui/RigWindow.h/cpp` | The main window: audio start/devices/connections, presets, session, search, Settings, notices (`set_notice`) |
 | `IAudioBackend` | `src/dsp/IAudioBackend.h` | Backend interface: start/stop, device enumeration, port routing |

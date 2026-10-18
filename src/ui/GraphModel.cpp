@@ -13,6 +13,7 @@
 #include "IRProcessor.h"
 #include "Log.h"
 #include "NamProcessor.h"
+#include "TempoSync.h"
 
 namespace namx
 {
@@ -21,6 +22,7 @@ namespace
 {
 
 constexpr int FORMAT_VERSION = 3;
+static_assert(TempoSync::NOTES.size() == 16, "NodeCatalog's note params index NOTES 0 … 15");
 
 } // namespace
 
@@ -101,10 +103,40 @@ void GraphModel::push() {
     }
 }
 
+double GraphModel::effective_value(const Node& n, const ParamSpec& p) const {
+    const double free = n.values.value(QString::fromStdString(p.key), p.def);
+    if (p.sync_switch.empty() || n.values.value(QString::fromStdString(p.sync_switch)) <= 0.5) {
+        return free;
+    }
+    const double note = n.values.value(QString::fromStdString(p.sync_note));
+    const double v = p.sync_time ? TempoSync::note_ms(bpm, note) : TempoSync::note_hz(bpm, note);
+    return std::clamp(v, p.min, p.sync_max > 0.0 ? p.sync_max : p.max);
+}
+
+void GraphModel::apply_param(Node& n, const ParamSpec& p) {
+    if (p.apply) {
+        p.apply(n.dsp->processor(), effective_value(n, p));
+    }
+}
+
+void GraphModel::set_bpm(double new_bpm) {
+    if (new_bpm <= 0.0 || new_bpm == bpm) {
+        return;
+    }
+    bpm = new_bpm;
+    for (auto& n : nodes) {
+        for (const auto& p : n.type->params) {
+            if (!p.sync_switch.empty()) {
+                apply_param(n, p); // only synced ones change
+            }
+        }
+    }
+}
+
 void GraphModel::apply_all(Node& n) {
     EffectBase& fx = n.dsp->processor();
     for (const auto& p : n.type->params) {
-        p.apply(fx, n.values.value(QString::fromStdString(p.key), p.def));
+        apply_param(n, p);
     }
     fx.set_enabled(n.enabled);
     if (n.type->id == "nam") {
@@ -323,7 +355,13 @@ void GraphModel::set_value(int id, const QString& key, double value) {
                 return;
             }
             n->values[key] = value;
-            p.apply(n->dsp->processor(), value);
+            // The parameter itself, and the ones whose Sync switch or note value it is.
+            const string k = p.key;
+            for (const auto& q : n->type->params) {
+                if (q.key == k || q.sync_switch == k || q.sync_note == k) {
+                    apply_param(*n, q);
+                }
+            }
             emit node_changed(id);
             emit modified();
             return;
@@ -348,7 +386,13 @@ void GraphModel::set_name(int id, const QString& name) {
     if (!n || trimmed.isEmpty() || n->name == trimmed) {
         return;
     }
+    if (std::any_of(nodes.begin(), nodes.end(), [&trimmed](const Node& x) {
+            return x.name == trimmed;
+        })) {
+        return; // names are unique: MIDI targets go by name
+    }
     n->name = trimmed;
+    emit structure_changed(); // MIDI targets are re-registered under the new name
     emit node_changed(id);
     emit modified();
 }

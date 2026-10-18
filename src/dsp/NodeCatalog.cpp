@@ -86,6 +86,42 @@ ParamSpec log_dial(ParamSpec p) {
     return p;
 }
 
+// The note values of TempoSync::NOTES (ui/TempoSync.h): the index range.
+constexpr double NOTE_LAST = 15.0;
+
+// `p` follows the tempo while `switch_key` is on, as note value `note_key`.
+ParamSpec synced(ParamSpec p, string switch_key, string note_key, bool is_time, double max = 0.0) {
+    p.sync_switch = std::move(switch_key);
+    p.sync_note = std::move(note_key);
+    p.sync_time = is_time;
+    p.sync_max = max;
+    return p;
+}
+
+ParamSpec sync_switch(string key, const string& label_for) {
+    return toggle(std::move(key), "Sync", false, nullptr, "Sync " + label_for + " to the tempo");
+}
+
+ParamSpec note(string key, string label, int def, bool stereo = false) {
+    ParamSpec p = knob(std::move(key), std::move(label), 0.0, NOTE_LAST, def, {}, 1.0, nullptr,
+                       "As a note value at the global tempo");
+    p.kind = Kind::NOTE;
+    p.stereo_only = stereo;
+    return p;
+}
+
+ParamSpec reversed_by(ParamSpec p, string switch_key) {
+    p.reverse_switch = std::move(switch_key);
+    return p;
+}
+
+ParamSpec reverse_switch(const string& knob_label) {
+    return toggle("reverse", "Reverse", false, nullptr,
+                  "Reverse the expression pedal: heel and toe swap for every MIDI controller "
+                  "mapped to " +
+                      knob_label);
+}
+
 ParamSpec stereo_only(ParamSpec p) {
     p.stereo_only = true;
     return p;
@@ -198,9 +234,12 @@ vector<NodeType> build_types() {
                   &set_float<DynamicWahProcessor, &DynamicWahProcessor::set_mix_pct>),
              knob("sensitivity", "Sensitivity", WAH_SENS_MIN, WAH_SENS_MAX, WAH_SENS_DEFAULT, "%",
                   1.0, &set_float<DynamicWahProcessor, &DynamicWahProcessor::set_sensitivity_pct>),
-             knob("position", "Position", WAH_POSITION_MIN, WAH_POSITION_MAX, WAH_POSITION_DEFAULT,
-                  "%", 1.0,
-                  &set_float<DynamicWahProcessor, &DynamicWahProcessor::set_position_pct>),
+             reversed_by(
+                 knob("position", "Position", WAH_POSITION_MIN, WAH_POSITION_MAX,
+                      WAH_POSITION_DEFAULT, "%", 1.0,
+                      &set_float<DynamicWahProcessor, &DynamicWahProcessor::set_position_pct>),
+                 "reverse"),
+             reverse_switch("Position"),
              knob("resonance", "Resonance", WAH_RES_MIN, WAH_RES_MAX, WAH_RES_DEFAULT, "%", 1.0,
                   &set_float<DynamicWahProcessor, &DynamicWahProcessor::set_resonance_pct>),
          }});
@@ -237,6 +276,7 @@ vector<NodeType> build_types() {
                                &set_float<TransposeProcessor, &TransposeProcessor::set_semitones>,
                                "Pitch shift: −1 / −2 for drop tunings, ±12 for octaves");
         semis.format = Format::SEMITONES;
+        semis.reverse_switch = "reverse";
         t.push_back({"transpose",
                      "Pitch Shift",
                      "Pitch",
@@ -251,6 +291,7 @@ vector<NodeType> build_types() {
                                 &set_bool<TransposeProcessor, &TransposeProcessor::set_continuous>,
                                 "Semitones glides smoothly (whammy-style bends) · off = whole "
                                 "semitones"),
+                         reverse_switch("Semitones"),
                      }});
     }
     t.push_back(
@@ -263,9 +304,12 @@ vector<NodeType> build_types() {
          {
              knob("mix", "Mix", FLANGER_MIX_MIN, FLANGER_MIX_MAX, FLANGER_MIX_DEFAULT, "%", 1.0,
                   &set_float<FlangerProcessor, &FlangerProcessor::set_mix_pct>),
-             log_dial(knob("rate", "Rate", FLANGER_RATE_MIN, FLANGER_RATE_MAX, FLANGER_RATE_DEFAULT,
-                           "Hz", 0.1,
-                           &set_float<FlangerProcessor, &FlangerProcessor::set_rate_hz>)),
+             synced(log_dial(knob("rate", "Rate", FLANGER_RATE_MIN, FLANGER_RATE_MAX,
+                                  FLANGER_RATE_DEFAULT, "Hz", 0.1,
+                                  &set_float<FlangerProcessor, &FlangerProcessor::set_rate_hz>)),
+                    "sync", "syncNote", false),
+             sync_switch("sync", "Rate"),
+             note("syncNote", "Rate", 1),
              knob("depth", "Depth", FLANGER_DEPTH_MIN, FLANGER_DEPTH_MAX, FLANGER_DEPTH_DEFAULT,
                   "%", 1.0, &set_float<FlangerProcessor, &FlangerProcessor::set_depth_pct>),
              knob("feedback", "Feedback", FLANGER_FEEDBACK_MIN, FLANGER_FEEDBACK_MAX,
@@ -285,8 +329,12 @@ vector<NodeType> build_types() {
          {
              knob("mix", "Mix", PHASER_MIX_MIN, PHASER_MIX_MAX, PHASER_MIX_DEFAULT, "%", 1.0,
                   &set_float<PhaserProcessor, &PhaserProcessor::set_mix_pct>),
-             log_dial(knob("rate", "Rate", PHASER_RATE_MIN, PHASER_RATE_MAX, PHASER_RATE_DEFAULT,
-                           "Hz", 0.1, &set_float<PhaserProcessor, &PhaserProcessor::set_rate_hz>)),
+             synced(log_dial(knob("rate", "Rate", PHASER_RATE_MIN, PHASER_RATE_MAX,
+                                  PHASER_RATE_DEFAULT, "Hz", 0.1,
+                                  &set_float<PhaserProcessor, &PhaserProcessor::set_rate_hz>)),
+                    "sync", "syncNote", false),
+             sync_switch("sync", "Rate"),
+             note("syncNote", "Rate", 4),
              knob("depth", "Depth", PHASER_DEPTH_MIN, PHASER_DEPTH_MAX, PHASER_DEPTH_DEFAULT, "%",
                   1.0, &set_float<PhaserProcessor, &PhaserProcessor::set_depth_pct>),
              knob("feedback", "Feedback", PHASER_FEEDBACK_MIN, PHASER_FEEDBACK_MAX,
@@ -303,8 +351,12 @@ vector<NodeType> build_types() {
          {
              knob("mix", "Mix", CHORUS_MIX_MIN, CHORUS_MIX_MAX, CHORUS_MIX_DEFAULT, "%", 1.0,
                   &set_float<ChorusProcessor, &ChorusProcessor::set_mix_pct>),
-             log_dial(knob("rate", "Rate", CHORUS_RATE_MIN, CHORUS_RATE_MAX, CHORUS_RATE_DEFAULT,
-                           "Hz", 0.1, &set_float<ChorusProcessor, &ChorusProcessor::set_rate_hz>)),
+             synced(log_dial(knob("rate", "Rate", CHORUS_RATE_MIN, CHORUS_RATE_MAX,
+                                  CHORUS_RATE_DEFAULT, "Hz", 0.1,
+                                  &set_float<ChorusProcessor, &ChorusProcessor::set_rate_hz>)),
+                    "sync", "syncNote", false),
+             sync_switch("sync", "Rate"),
+             note("syncNote", "Rate", 2),
              knob("depth", "Depth", CHORUS_DEPTH_MIN, CHORUS_DEPTH_MAX, CHORUS_DEPTH_DEFAULT, "%",
                   1.0, &set_float<ChorusProcessor, &ChorusProcessor::set_depth_pct>),
          }});
@@ -318,9 +370,12 @@ vector<NodeType> build_types() {
          {
              knob("depth", "Depth", TREMOLO_DEPTH_MIN, TREMOLO_DEPTH_MAX, TREMOLO_DEPTH_DEFAULT,
                   "%", 1.0, &set_float<TremoloProcessor, &TremoloProcessor::set_depth_pct>),
-             log_dial(knob("rate", "Rate", TREMOLO_RATE_MIN, TREMOLO_RATE_MAX, TREMOLO_RATE_DEFAULT,
-                           "Hz", 0.1,
-                           &set_float<TremoloProcessor, &TremoloProcessor::set_rate_hz>)),
+             synced(log_dial(knob("rate", "Rate", TREMOLO_RATE_MIN, TREMOLO_RATE_MAX,
+                                  TREMOLO_RATE_DEFAULT, "Hz", 0.1,
+                                  &set_float<TremoloProcessor, &TremoloProcessor::set_rate_hz>)),
+                    "sync", "syncNote", false),
+             sync_switch("sync", "Rate"),
+             note("syncNote", "Rate", 10),
          }});
     t.push_back(
         {"delay",
@@ -332,12 +387,19 @@ vector<NodeType> build_types() {
          {
              knob("mix", "Mix", DELAY_MIX_MIN, DELAY_MIX_MAX, DELAY_MIX_DEFAULT, "%", 1.0,
                   &set_float<DelayProcessor, &DelayProcessor::set_mix_pct>),
-             log_dial(knob("time", "Time", DELAY_TIME_MIN, DELAY_TIME_MAX, DELAY_TIME_DEFAULT, "ms",
-                           1.0, &set_float<DelayProcessor, &DelayProcessor::set_time>)),
-             stereo_only(log_dial(knob(
-                 "rightTime", "R Time", DELAY_TIME_MIN, DELAY_TIME_MAX, DELAY_RIGHT_TIME_DEFAULT,
-                 "ms", 1.0, &set_float<DelayProcessor, &DelayProcessor::set_right_time>,
-                 "Right repeat time: different from Time for a wide bounce"))),
+             synced(
+                 log_dial(knob("time", "Time", DELAY_TIME_MIN, DELAY_TIME_MAX, DELAY_TIME_DEFAULT,
+                               "ms", 1.0, &set_float<DelayProcessor, &DelayProcessor::set_time>)),
+                 "sync", "syncNote", true),
+             sync_switch("sync", "the repeat times"),
+             note("syncNote", "Time", 8),
+             stereo_only(
+                 synced(log_dial(knob("rightTime", "R Time", DELAY_TIME_MIN, DELAY_TIME_MAX,
+                                      DELAY_RIGHT_TIME_DEFAULT, "ms", 1.0,
+                                      &set_float<DelayProcessor, &DelayProcessor::set_right_time>,
+                                      "Right repeat time: different from Time for a wide bounce")),
+                        "sync", "rightSyncNote", true)),
+             note("rightSyncNote", "R Time", 7, true),
              stereo_only(knob("crossFeed", "Ping-Pong", 0.0, 100.0, 0.0, "%", 1.0,
                               &set_float<DelayProcessor, &DelayProcessor::set_cross_feed>,
                               "100 % = repeats bounce between the sides · 0 % = two separate "
@@ -384,10 +446,13 @@ vector<NodeType> build_types() {
                  stereo_only(knob("width", "Width", REVERB_WIDTH_MIN, REVERB_WIDTH_MAX,
                                   REVERB_WIDTH_DEFAULT, "%", 1.0,
                                   &set_float<ReverbProcessor, &ReverbProcessor::set_width_pct>)),
-                 knob("preDelay", "Pre-delay", REVERB_PRE_DELAY_MIN, REVERB_PRE_DELAY_MAX,
-                      REVERB_PRE_DELAY_DEFAULT, "ms", 5.0,
-                      &set_float<ReverbProcessor, &ReverbProcessor::set_pre_delay>,
-                      "Gap before the tail starts: keeps the note clear of the room"),
+                 synced(knob("preDelay", "Pre-delay", REVERB_PRE_DELAY_MIN, REVERB_PRE_DELAY_MAX,
+                             REVERB_PRE_DELAY_DEFAULT, "ms", 5.0,
+                             &set_float<ReverbProcessor, &ReverbProcessor::set_pre_delay>,
+                             "Gap before the tail starts: keeps the note clear of the room"),
+                        "preDelaySync", "preDelaySyncNote", true, REVERB_PRE_DELAY_SYNC_MAX),
+                 sync_switch("preDelaySync", "Pre-delay"),
+                 note("preDelaySyncNote", "Pre-delay", 13),
                  hz("lowCut", "Low Cut", LOW_CUT_MIN, REVERB_LOW_CUT_MAX, LOW_CUT_DEFAULT,
                     Format::HZ_OFF_LOW, &set_float<ReverbProcessor, &ReverbProcessor::set_low_cut>),
                  hz("highCut", "High Cut", REVERB_HIGH_CUT_MIN, HIGH_CUT_MAX, HIGH_CUT_DEFAULT,
@@ -406,8 +471,11 @@ vector<NodeType> build_types() {
          false,
          NodeType::File::NONE,
          {
-             knob("position", "Volume", VOLUME_POS_MIN, VOLUME_POS_MAX, VOLUME_POS_DEFAULT, "%",
-                  1.0, &set_float<VolumeProcessor, &VolumeProcessor::set_position_pct>),
+             reversed_by(knob("position", "Volume", VOLUME_POS_MIN, VOLUME_POS_MAX,
+                              VOLUME_POS_DEFAULT, "%", 1.0,
+                              &set_float<VolumeProcessor, &VolumeProcessor::set_position_pct>),
+                         "reverse"),
+             reverse_switch("Volume"),
              knob("mid", "Mid", VOLUME_MID_MIN, VOLUME_MID_MAX, VOLUME_MID_DEFAULT, "dB", 1.0,
                   &set_float<VolumeProcessor, &VolumeProcessor::set_mid>,
                   "Level at half travel: lower = swells stay quiet longer"),
@@ -541,7 +609,9 @@ std::shared_ptr<GraphNode> create(int id, const string& type_id, bool stereo) {
     fx->set_stereo_mode(kind == NodeKind::STEREO);
     fx->set_enabled(true);
     for (const auto& p : type->params) {
-        p.apply(*fx, p.def);
+        if (p.apply) { // Sync, note values and Reverse are read by the UI only
+            p.apply(*fx, p.def);
+        }
     }
     return std::make_shared<GraphNode>(id, type_id, kind, std::move(fx));
 }

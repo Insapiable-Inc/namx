@@ -88,14 +88,83 @@ MidiMapper::MidiMapper(QObject* parent)
     clock.start();
 }
 
+// A target with its name only; the add_* functions fill in what drives it.
+static MidiTarget named_target(const QString& id, const QString& group, const QString& label) {
+    MidiTarget t;
+    t.id = id;
+    t.label = label;
+    t.group = group;
+    return t;
+}
+
 void MidiMapper::add_knob(const QString& id, const QString& group, const QString& label,
                           KnobWidget* k) {
-    targets.push_back({id, label, group, k, nullptr, {}});
+    MidiTarget t = named_target(id, group, label);
+    t.knob = k;
+    targets.push_back(std::move(t));
 }
 
 void MidiMapper::add_toggle(const QString& id, const QString& group, const QString& label,
-                            ToggleSwitch* t) {
-    targets.push_back({id, label, group, nullptr, t, {}});
+                            ToggleSwitch* sw) {
+    MidiTarget t = named_target(id, group, label);
+    t.toggle = sw;
+    targets.push_back(std::move(t));
+}
+
+double MidiTarget::range_min() const {
+    return knob ? knob->minimum() : min;
+}
+double MidiTarget::range_max() const {
+    return knob ? knob->maximum() : max;
+}
+double MidiTarget::range_snap() const {
+    return knob ? knob->get_snap() : snap;
+}
+QString MidiTarget::range_unit() const {
+    return knob ? knob->get_unit() : unit;
+}
+
+void MidiMapper::add_value(const QString& id, const QString& group, const QString& label,
+                           double new_min, double new_max, double new_snap, const QString& new_unit,
+                           std::function<double()> get, std::function<void(double)> set,
+                           std::function<bool()> reversed) {
+    MidiTarget t = named_target(id, group, label);
+    t.get = std::move(get);
+    t.set = std::move(set);
+    t.min = new_min;
+    t.max = new_max;
+    t.snap = new_snap;
+    t.unit = new_unit;
+    t.reversed = std::move(reversed);
+    targets.push_back(std::move(t));
+}
+
+void MidiMapper::add_switch(const QString& id, const QString& group, const QString& label,
+                            std::function<bool()> get, std::function<void(bool)> set) {
+    MidiTarget t = named_target(id, group, label);
+    t.get = [get = std::move(get)] {
+        return get() ? 1.0 : 0.0;
+    };
+    t.set = [set = std::move(set)](double v) {
+        set(v > 0.5);
+    };
+    t.is_switch = true;
+    targets.push_back(std::move(t));
+}
+
+void MidiMapper::remove_targets(const QString& prefix) {
+    std::erase_if(targets, [&prefix](const MidiTarget& t) {
+        return t.id.startsWith(prefix);
+    });
+    for (auto it = aliases.begin(); it != aliases.end();) {
+        it = it.value().startsWith(prefix) ? aliases.erase(it) : std::next(it);
+    }
+}
+
+void MidiMapper::add_alias(const QString& old_id, const QString& id) {
+    if (old_id != id) {
+        aliases.insert(old_id, id);
+    }
 }
 
 void MidiMapper::set_reverse_switch(const QString& id, ToggleSwitch* sw) {
@@ -108,13 +177,22 @@ void MidiMapper::set_reverse_switch(const QString& id, ToggleSwitch* sw) {
 
 void MidiMapper::add_action(const QString& id, const QString& group, const QString& label,
                             std::function<void()> fn) {
-    targets.push_back({id, label, group, nullptr, nullptr, std::move(fn)});
+    MidiTarget t = named_target(id, group, label);
+    t.action = std::move(fn);
+    targets.push_back(std::move(t));
 }
 
 const MidiTarget* MidiMapper::target(const QString& id) const {
     for (const auto& t : targets) {
         if (t.id == id) {
             return &t;
+        }
+    }
+    if (const auto it = aliases.constFind(id); it != aliases.constEnd()) {
+        for (const auto& t : targets) {
+            if (t.id == it.value()) {
+                return &t;
+            }
         }
     }
     return nullptr;
@@ -356,6 +434,60 @@ void MidiMapper::apply(MidiMapping& mp, int index, const MidiMessage& m) {
     if (t->action) {
         if (pressed) {
             t->action();
+        }
+        return;
+    }
+
+    if (t->set && t->is_switch) {
+        const bool on = t->get() > 0.5;
+        switch (mp.mode) {
+            case MidiMapping::TOGGLE:
+            case MidiMapping::RELATIVE:
+                if (pressed) {
+                    t->set(on ? 0.0 : 1.0);
+                }
+                break;
+            case MidiMapping::ABSOLUTE:
+            case MidiMapping::MOMENTARY:
+                if (m.type != MidiMessage::PROGRAM_CHANGE) {
+                    t->set(value >= 64 ? 1.0 : 0.0);
+                } else {
+                    t->set(on ? 0.0 : 1.0);
+                }
+                break;
+        }
+        return;
+    }
+
+    if (t->set) {
+        // The same sweep as a knob widget below, through get/set.
+        double lo = t->min + mp.min * (t->max - t->min);
+        double hi = t->min + mp.max * (t->max - t->min);
+        if (t->reversed && t->reversed()) {
+            std::swap(lo, hi);
+        }
+        switch (mp.mode) {
+            case MidiMapping::ABSOLUTE:
+                t->set(lo + (hi - lo) * value / 127.0);
+                break;
+            case MidiMapping::RELATIVE: {
+                if (m.type != MidiMessage::CONTROL_CHANGE) {
+                    break;
+                }
+                const int delta = m.value < 64 ? m.value : m.value - 128;
+                const double step = (hi - lo) / 127.0;
+                t->set(std::clamp(t->get() + delta * step, std::min(lo, hi), std::max(lo, hi)));
+                break;
+            }
+            case MidiMapping::TOGGLE:
+                if (pressed) {
+                    const double v = t->get();
+                    t->set(std::abs(v - hi) < std::abs(v - lo) ? lo : hi);
+                }
+                break;
+            case MidiMapping::MOMENTARY:
+                t->set(value >= 64 ? hi : lo);
+                break;
         }
         return;
     }

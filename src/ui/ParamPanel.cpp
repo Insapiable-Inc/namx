@@ -13,7 +13,9 @@
 #include <QMenu>
 #include <QMessageBox>
 #include <QPainter>
+#include <QRegularExpression>
 #include <QScrollArea>
+#include <QStackedLayout>
 #include <QToolButton>
 #include <QVBoxLayout>
 
@@ -23,6 +25,7 @@
 #include "NodeCatalog.h"
 #include "NodeIcons.h"
 #include "ReverbProcessor.h"
+#include "TempoSync.h"
 #include "Theme.h"
 #include "ToggleSwitch.h"
 #include "VUMeter.h"
@@ -83,6 +86,51 @@ std::function<QString(double)> formatter_for(const ParamSpec& p) {
     return {};
 }
 
+// A typed value back to the parameter's own units, where its Format shows something
+// else (Off, seconds); {} = KnobWidget's default (the first number, k = ×1000 Hz).
+std::function<std::optional<double>(const QString&)> parser_for(const ParamSpec& p) {
+    auto number = [](const QString& text) -> std::optional<double> {
+        static const QRegularExpression re(R"([-+]?\d*[.,]?\d+)");
+        const QRegularExpressionMatch m = re.match(text);
+        bool ok = false;
+        const double v = m.hasMatch() ? m.captured().replace(',', '.').toDouble(&ok) : 0.0;
+        return ok ? std::optional<double>(v) : std::nullopt;
+    };
+    switch (p.format) {
+        case ParamSpec::Format::HZ_OFF_LOW:
+        case ParamSpec::Format::HZ_OFF_HIGH: {
+            const double off = p.format == ParamSpec::Format::HZ_OFF_LOW ? p.min : p.max;
+            return [number, off](const QString& text) -> std::optional<double> {
+                if (text.contains("off", Qt::CaseInsensitive)) {
+                    return off;
+                }
+                const auto v = number(text);
+                return v && text.contains('k', Qt::CaseInsensitive) ? *v * 1000.0 : v;
+            };
+        }
+        case ParamSpec::Format::DECAY:
+            // Seconds back to the 0–100 position: decay_seconds rises with it.
+            return [number, lo = p.min, hi = p.max](const QString& text) -> std::optional<double> {
+                const auto secs = number(text);
+                if (!secs) {
+                    return std::nullopt;
+                }
+                double a = lo;
+                double b = hi;
+                for (int i = 0; i < 40; ++i) {
+                    const double mid = (a + b) / 2.0;
+                    (ReverbProcessor::decay_seconds(static_cast<float>(mid)) < *secs ? a : b) = mid;
+                }
+                return (a + b) / 2.0;
+            };
+        case ParamSpec::Format::NUMBER:
+        case ParamSpec::Format::HZ:
+        case ParamSpec::Format::SEMITONES:
+            break;
+    }
+    return {};
+}
+
 // The node's icon in its accent box (header).
 class IconBox : public QWidget
 {
@@ -126,7 +174,7 @@ ParamPanel::ParamPanel(GraphModel& new_model, LibraryIndex& new_library, QWidget
     , model(new_model)
     , library(new_library) {
     setObjectName("paramPanel");
-    setMinimumWidth(380);
+    setMinimumWidth(460); // two columns of knobs
     auto* lay = new QVBoxLayout(this);
     lay->setContentsMargins(0, 0, 0, 0);
     connect(&model, &GraphModel::node_changed, this, &ParamPanel::sync_from_model);
@@ -139,6 +187,7 @@ void ParamPanel::show_node(int id) {
     knobs.clear();
     switches.clear();
     choices.clear();
+    synced_cells.clear();
     title = subtitle = file_name = file_meta = nullptr;
     power = nullptr;
     meter = nullptr;
@@ -176,6 +225,7 @@ void ParamPanel::show_node(int id) {
     scroll->setObjectName("panelScroll");
     scroll->setWidgetResizable(true);
     scroll->setFrameShape(QFrame::NoFrame);
+    scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     auto* content = new QWidget;
     content->setObjectName("panelContent");
     auto* clay = new QVBoxLayout(content);
@@ -246,6 +296,7 @@ void ParamPanel::build_header(QVBoxLayout* lay) {
         connect(power, &QToolButton::toggled, this, [this](bool on) {
             model.set_enabled(current_id, on);
         });
+        offer_learn(power, "enabled");
         row->addWidget(power, 0, Qt::AlignVCenter);
     }
 
@@ -344,13 +395,26 @@ void ParamPanel::build_file_section(QVBoxLayout* lay) {
 void ParamPanel::build_params(QVBoxLayout* lay) {
     const GraphModel::Node* n = model.node(current_id);
     const bool stereo = n->stereo();
-    vector<const ParamSpec*> toggles;
+    vector<const ParamSpec*> switch_specs;
+    vector<const ParamSpec*> choice_specs;
     vector<const ParamSpec*> dials;
     for (const auto& p : n->type->params) {
         if (p.stereo_only && !stereo) {
             continue;
         }
-        (p.kind == ParamSpec::Kind::KNOB ? dials : toggles).push_back(&p);
+        switch (p.kind) {
+            case ParamSpec::Kind::SWITCH:
+                switch_specs.push_back(&p);
+                break;
+            case ParamSpec::Kind::CHOICE:
+                choice_specs.push_back(&p);
+                break;
+            case ParamSpec::Kind::KNOB:
+                dials.push_back(&p);
+                break;
+            case ParamSpec::Kind::NOTE:
+                break; // shown in its knob's place while synced
+        }
     }
 
     if (n->kind() == NodeKind::INPUT || n->kind() == NodeKind::OUTPUT) {
@@ -359,99 +423,180 @@ void ParamPanel::build_params(QVBoxLayout* lay) {
         meter->setMinimumHeight(n->kind() == NodeKind::OUTPUT ? 36 : 20);
         lay->addWidget(meter);
     }
-    if (toggles.empty() && dials.empty()) {
+    if (switch_specs.empty() && choice_specs.empty() && dials.empty()) {
         return;
     }
     lay->addWidget(caption("Controls"));
     auto* box = new QFrame;
     box->setObjectName("panelGroup");
     auto* v = new QVBoxLayout(box);
-    v->setContentsMargins(14, 12, 14, 12);
-    v->setSpacing(12);
-    for (const ParamSpec* p : toggles) {
-        v->addWidget(make_param(*p));
+    v->setContentsMargins(16, 14, 16, 16);
+    v->setSpacing(16);
+    if (!switch_specs.empty()) {
+        auto* row = new QHBoxLayout;
+        row->setSpacing(26);
+        for (const ParamSpec* p : switch_specs) {
+            row->addWidget(make_switch(*p));
+        }
+        row->addStretch();
+        v->addLayout(row);
+    }
+    for (const ParamSpec* p : choice_specs) {
+        v->addWidget(make_choice(*p));
     }
     auto* grid = new QGridLayout;
-    grid->setHorizontalSpacing(18);
-    grid->setVerticalSpacing(14);
+    grid->setHorizontalSpacing(24);
+    grid->setColumnStretch(0, 1); // two equal columns, a lone knob included
+    grid->setColumnStretch(1, 1);
+    grid->setVerticalSpacing(18);
     for (size_t i = 0; i < dials.size(); ++i) {
-        grid->addWidget(make_param(*dials[i]), static_cast<int>(i / 2), static_cast<int>(i % 2));
+        grid->addWidget(make_dial_cell(*dials[i]), static_cast<int>(i / 2),
+                        static_cast<int>(i % 2));
     }
     v->addLayout(grid);
     lay->addWidget(box);
 }
 
-QWidget* ParamPanel::make_param(const ParamSpec& p) {
+QString ParamPanel::target_for(const QString& key) const {
+    const GraphModel::Node* n = model.node(current_id);
+    return n ? GraphModel::midi_target_id(n->name, key) : QString();
+}
+
+void ParamPanel::offer_learn(QWidget* w, const QString& key) {
+    w->setProperty("midiTarget", target_for(key));
+    w->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(w, &QWidget::customContextMenuRequested, this, [this, w](const QPoint& at) {
+        if (!learn_menu) {
+            return;
+        }
+        QMenu menu(this);
+        learn_menu(w->property("midiTarget").toString(), &menu);
+        if (!menu.isEmpty()) {
+            menu.exec(w->mapToGlobal(at));
+        }
+    });
+}
+
+QWidget* ParamPanel::make_switch(const ParamSpec& p) {
     const QString key = QString::fromStdString(p.key);
-    const QString label = QString::fromStdString(p.label);
     const QString tip = QString::fromStdString(p.tip);
     const int id = current_id;
+    auto* w = new QWidget;
+    auto* h = new QHBoxLayout(w);
+    h->setContentsMargins(0, 0, 0, 0);
+    h->setSpacing(10);
+    auto* sw = new ToggleSwitch;
+    sw->setCheckable(true);
+    sw->setToolTip(tip);
+    auto* cap = new QLabel(QString::fromStdString(p.label));
+    cap->setObjectName("toggleCaption");
+    cap->setToolTip(tip);
+    h->addWidget(sw);
+    h->addWidget(cap);
+    connect(sw, &ToggleSwitch::toggled, this, [this, id, key](bool on) {
+        model.set_value(id, key, on ? 1.0 : 0.0);
+    });
+    offer_learn(sw, key);
+    switches.insert(key, sw);
+    return w;
+}
 
-    if (p.kind == ParamSpec::Kind::SWITCH) {
-        auto* w = new QWidget;
-        auto* h = new QHBoxLayout(w);
-        h->setContentsMargins(0, 0, 0, 0);
-        h->setSpacing(10);
-        auto* sw = new ToggleSwitch;
-        sw->setCheckable(true);
-        sw->setToolTip(tip);
-        auto* cap = new QLabel(label);
-        cap->setObjectName("toggleCaption");
-        cap->setToolTip(tip);
-        h->addWidget(sw);
-        h->addWidget(cap);
-        h->addStretch();
-        connect(sw, &ToggleSwitch::toggled, this, [this, id, key](bool on) {
-            model.set_value(id, key, on ? 1.0 : 0.0);
-        });
-        switches.insert(key, sw);
-        return w;
+QWidget* ParamPanel::make_choice(const ParamSpec& p) {
+    const QString key = QString::fromStdString(p.key);
+    const int id = current_id;
+    auto* w = new QWidget;
+    auto* h = new QHBoxLayout(w);
+    h->setContentsMargins(0, 0, 0, 0);
+    h->setSpacing(0);
+    auto* cap = new QLabel(QString::fromStdString(p.label));
+    cap->setObjectName("toggleCaption");
+    h->addWidget(cap);
+    h->addSpacing(12);
+    auto* group = new QButtonGroup(w);
+    QList<QToolButton*> buttons;
+    for (size_t i = 0; i < p.choices.size(); ++i) {
+        auto* b = new QToolButton;
+        b->setObjectName("segment");
+        b->setText(QString::fromStdString(p.choices[i]));
+        b->setCheckable(true);
+        b->setProperty("first", i == 0);
+        b->setProperty("last", i + 1 == p.choices.size());
+        group->addButton(b, static_cast<int>(i));
+        h->addWidget(b);
+        buttons << b;
     }
+    h->addStretch();
+    connect(group, &QButtonGroup::idClicked, this, [this, id, key](int index) {
+        model.set_value(id, key, index);
+    });
+    offer_learn(w, key);
+    choices.insert(key, buttons);
+    return w;
+}
 
-    if (p.kind == ParamSpec::Kind::CHOICE) {
-        auto* w = new QWidget;
-        auto* h = new QHBoxLayout(w);
-        h->setContentsMargins(0, 0, 0, 0);
-        h->setSpacing(0);
-        auto* cap = new QLabel(label);
-        cap->setObjectName("toggleCaption");
-        h->addWidget(cap);
-        h->addSpacing(12);
-        auto* group = new QButtonGroup(w);
-        QList<QToolButton*> buttons;
-        for (size_t i = 0; i < p.choices.size(); ++i) {
-            auto* b = new QToolButton;
-            b->setObjectName("segment");
-            b->setText(QString::fromStdString(p.choices[i]));
-            b->setCheckable(true);
-            b->setProperty("first", i == 0);
-            b->setProperty("last", i + 1 == p.choices.size());
-            group->addButton(b, static_cast<int>(i));
-            h->addWidget(b);
-            buttons << b;
-        }
-        h->addStretch();
-        connect(group, &QButtonGroup::idClicked, this, [this, id, key](int index) {
-            model.set_value(id, key, index);
-        });
-        choices.insert(key, buttons);
-        return w;
-    }
-
-    auto* k = new KnobWidget(label, p.min, p.max, p.def, QString::fromStdString(p.unit));
-    k->setToolTip(tip);
+KnobWidget* ParamPanel::make_knob(const ParamSpec& p) {
+    const QString key = QString::fromStdString(p.key);
+    const int id = current_id;
+    auto* k = new KnobWidget(QString::fromStdString(p.label), p.min, p.max, p.def,
+                             QString::fromStdString(p.unit), KnobWidget::Form::PANEL);
+    k->setToolTip(QString::fromStdString(p.tip));
     k->set_scroll_step(p.step);
-    if (p.log_taper) {
-        k->set_log_taper(true);
-    }
-    if (const auto f = formatter_for(p)) {
-        k->set_value_formatter(f);
+    if (p.kind == ParamSpec::Kind::NOTE) {
+        k->set_snap(1.0);
+        k->set_value_formatter([](double v) {
+            return TempoSync::label(v);
+        });
+        k->set_value_parser([](const QString& text) -> std::optional<double> {
+            for (size_t i = 0; i < TempoSync::NOTES.size(); ++i) {
+                if (text.compare(QLatin1String(TempoSync::NOTES[i].label), Qt::CaseInsensitive) ==
+                    0) {
+                    return static_cast<double>(i);
+                }
+            }
+            return std::nullopt;
+        });
+    } else {
+        if (p.log_taper) {
+            k->set_log_taper(true);
+        }
+        if (const auto f = formatter_for(p)) {
+            k->set_value_formatter(f);
+        }
+        if (const auto parse = parser_for(p)) {
+            k->set_value_parser(parse);
+        }
     }
     connect(k, &KnobWidget::value_changed, this, [this, id, key](double v) {
         model.set_value(id, key, v);
     });
+    k->setProperty("midiTarget", target_for(key));
     knobs.insert(key, k);
     return k;
+}
+
+QWidget* ParamPanel::make_dial_cell(const ParamSpec& p) {
+    KnobWidget* free_knob = make_knob(p);
+    if (p.sync_note.empty()) {
+        return free_knob;
+    }
+    // Synced: the note-value knob takes the free knob's place.
+    const GraphModel::Node* n = model.node(current_id);
+    const ParamSpec* note_spec = nullptr;
+    for (const auto& q : n->type->params) {
+        if (q.key == p.sync_note) {
+            note_spec = &q;
+        }
+    }
+    if (!note_spec) {
+        return free_knob;
+    }
+    auto* cell = new QWidget;
+    auto* stack = new QStackedLayout(cell);
+    stack->setContentsMargins(0, 0, 0, 0);
+    stack->addWidget(free_knob);
+    stack->addWidget(make_knob(*note_spec));
+    synced_cells.push_back({stack, QString::fromStdString(p.sync_switch)});
+    return cell;
 }
 
 void ParamPanel::sync_from_model(int id) {
@@ -482,6 +627,9 @@ void ParamPanel::sync_from_model(int id) {
             const QSignalBlocker block(it.value()[i]);
             it.value()[i]->setChecked(i == index);
         }
+    }
+    for (const auto& [stack, sync_key] : synced_cells) {
+        stack->setCurrentIndex(n->values.value(sync_key) > 0.5 ? 1 : 0);
     }
     // Pitch Shift: whole semitones unless Continuous.
     if (KnobWidget* semis = knobs.value("semitones")) {

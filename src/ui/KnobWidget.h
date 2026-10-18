@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <optional>
 
 #include <QColor>
 #include <QString>
@@ -9,6 +10,7 @@
 #include "Common.h"
 
 class QContextMenuEvent;
+class QLineEdit;
 class QLabel;
 class QMenu;
 
@@ -28,10 +30,13 @@ public:
     // Compact: dial left, name over value right (effect rows, ~46px tall).
     // Stacked: name over a large dial over the value, all centred — the
     // prominent form for the Input/Output gain columns.
+    // Panel: name on top, then a value field (click to type) left of a large dial —
+    // the node-graph parameter panel (ui/node-graph).
     enum class Form
     {
         COMPACT,
-        STACKED
+        STACKED,
+        PANEL
     };
 
     explicit KnobWidget(const QString& new_label, double min_val, double max_val,
@@ -88,6 +93,12 @@ public:
         update_label();
     }
 
+    // PANEL form: how a typed value is read (the formatter's inverse); the default takes
+    // the first number, "k" multiplying by 1000 on an Hz knob. nullopt = not a value.
+    void set_value_parser(std::function<std::optional<double>(const QString&)> f) {
+        parser = std::move(f);
+    }
+
     // Hides the name line; for a knob whose value label names itself ("Type: Plate").
     void set_name_visible(bool on);
 
@@ -121,6 +132,9 @@ private:
     VerticalDial* dial;
     QLabel* name_label;
     QLabel* label_value;
+    QLineEdit* field = nullptr; // PANEL form: the value, editable
+    std::function<std::optional<double>(const QString&)> parser;
+    void commit_field();
     QColor accent;
     double min, max, default_value;
     QString unit;

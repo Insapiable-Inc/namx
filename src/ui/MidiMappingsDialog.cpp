@@ -280,9 +280,9 @@ void MidiMappingsDialog::commit_row(int row) {
         static_cast<QComboBox*>(table->cellWidget(row, COL_MODE))->currentIndex());
     // Min/Max are shown in the old target's unit: read them before a target change.
     const MidiTarget* shown = mapper.target(m.target);
-    if (shown && shown->knob) {
-        const double lo = shown->knob->minimum();
-        const double span = shown->knob->maximum() - lo;
+    if (shown && shown->has_range()) {
+        const double lo = shown->range_min();
+        const double span = shown->range_max() - lo;
         auto share = [&](int column) {
             const double v = static_cast<QDoubleSpinBox*>(table->cellWidget(row, column))->value();
             return span > 0.0 ? std::clamp((v - lo) / span, 0.0, 1.0) : 0.0;
@@ -349,7 +349,7 @@ void MidiMappingsDialog::save_mappings() {
 void MidiMappingsDialog::add_range_cell(int row, int column, double share,
                                         const MidiTarget* target) {
     auto* sp = new QDoubleSpinBox;
-    if (!target || !target->knob) {
+    if (!target || !target->has_range()) {
         sp->setEnabled(false);
         sp->setSpecialValueText("—"); // shown at the minimum
         sp->setValue(sp->minimum());
@@ -357,10 +357,9 @@ void MidiMappingsDialog::add_range_cell(int row, int column, double share,
         table->setCellWidget(row, column, sp);
         return;
     }
-    const KnobWidget* k = target->knob;
-    const double lo = k->minimum(), hi = k->maximum();
+    const double lo = target->range_min(), hi = target->range_max();
     const double span = hi - lo;
-    const double snap = k->get_snap();
+    const double snap = target->range_snap();
     const int decimals = snap >= 1.0     ? 0
                          : snap > 0.0    ? 1
                          : span >= 100.0 ? 0
@@ -369,13 +368,13 @@ void MidiMappingsDialog::add_range_cell(int row, int column, double share,
     sp->setDecimals(decimals);
     sp->setRange(lo, hi);
     sp->setSingleStep(snap > 0.0 ? snap : std::pow(10.0, -decimals));
-    if (!k->get_unit().isEmpty()) {
-        sp->setSuffix(" " + k->get_unit());
+    if (!target->range_unit().isEmpty()) {
+        sp->setSuffix(" " + target->range_unit());
     }
     sp->setValue(lo + share * span);
     sp->setToolTip(QString("%1 at the %2 of the controller's travel; Min above Max reverses "
                            "the sweep")
-                       .arg(k->get_label(), column == COL_MIN ? "start" : "end"));
+                       .arg(target->label, column == COL_MIN ? "start" : "end"));
     connect(sp, &QDoubleSpinBox::valueChanged, this, [this, row] {
         commit_row(row);
     });

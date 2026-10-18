@@ -1045,6 +1045,22 @@ QSplitter#rigSplit::handle {
 }
 
 /* === Node-graph UI: parameter panel === */
+QLabel#knobName {
+    color: @text_dim@;
+    font-size: 9.5pt;
+}
+/* No `color`: KnobWidget gives the value its effect's accent. */
+QLineEdit#knobField {
+    background-color: @window@;
+    border: 1px solid @border@;
+    border-radius: 6px;
+    padding: 0 6px;
+    font-size: 11.5pt;
+    font-weight: 600;
+}
+QLineEdit#knobField:hover {
+    border-color: @border_hover@;
+}
 QWidget#paramPanel, QFrame#panelBody, QScrollArea#panelScroll, QWidget#panelContent {
     background-color: @window@;
 }
@@ -1452,6 +1468,8 @@ void apply_to(QWidget& root) {
                                  "QFrame[fx=\"%1\"] QLabel#fileStatusOk { color: %2; }\n"
                                  "QFrame[fx=\"%1\"] QToolButton#powerButton:checked { color: "
                                  "%2; border-color: %2; }\n"
+                                 "QFrame[fx=\"%1\"] QLineEdit#knobField:focus { "
+                                 "border-color: %2; }\n"
                                  "QFrame[fx=\"%1\"] QToolButton#segment:checked { "
                                  "background-color: %2; border-color: %2; color: %3; }\n")
                    .arg(QLatin1String(fc.id), readable_accent(accent(fc.id)).name(),

@@ -67,6 +67,25 @@ struct MidiTarget
     // Knobs only: while this switch is on, every controller sweeps the knob
     // backwards (heel and toe swap) — the effect card's Reverse switch.
     ToggleSwitch* reverse = nullptr;
+
+    // A value with no widget (node-graph parameters, whose controls come and go with
+    // the selection): read and written through functions. `is_switch`: on/off like a
+    // toggle, else a knob over [min, max].
+    std::function<double()> get;
+    std::function<void(double)> set;
+    bool is_switch = false;
+    double min = 0.0, max = 1.0, snap = 0.0;
+    QString unit;
+    std::function<bool()> reversed; // value knobs' Reverse
+
+    // Knob-like: a knob widget or a value knob.
+    bool has_range() const {
+        return knob || (set && !is_switch);
+    }
+    double range_min() const;
+    double range_max() const;
+    double range_snap() const;
+    QString range_unit() const;
 };
 
 // Phase 16 mapping engine. Lives on the GUI thread; MidiInput's queued
@@ -82,6 +101,17 @@ public:
     void add_toggle(const QString& id, const QString& group, const QString& label, ToggleSwitch* t);
     void add_action(const QString& id, const QString& group, const QString& label,
                     std::function<void()> fn);
+    // Widget-free targets (MidiTarget::get/set).
+    void add_value(const QString& id, const QString& group, const QString& label, double min,
+                   double max, double snap, const QString& unit, std::function<double()> get,
+                   std::function<void(double)> set, std::function<bool()> reversed = {});
+    void add_switch(const QString& id, const QString& group, const QString& label,
+                    std::function<bool()> get, std::function<void(bool)> set);
+    // Drops every target whose ID starts with `prefix` (and aliases to them); mappings
+    // stay, and work again once a target with their ID is back.
+    void remove_targets(const QString& prefix);
+    // `old_id` reaches `id`'s target (mappings saved under an older naming).
+    void add_alias(const QString& old_id, const QString& id);
     // Attach a Reverse switch to a knob target (see MidiTarget::reverse).
     void set_reverse_switch(const QString& id, ToggleSwitch* sw);
     const vector<MidiTarget>& get_targets() const {
@@ -136,6 +166,7 @@ private:
     void save() const;
 
     vector<MidiTarget> targets;
+    QHash<QString, QString> aliases; // old ID → target ID
     QList<MidiMapping> mappings;
     QHash<int, int> last_value; // mapping index → last CC value (edge detection)
     QString learn_target;

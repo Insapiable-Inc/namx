@@ -22,7 +22,8 @@ struct ParamSpec
     {
         KNOB,
         SWITCH, // 0 / 1
-        CHOICE // 0 … choices.size() − 1
+        CHOICE, // 0 … choices.size() − 1
+        NOTE // a tempo-sync note value: index into the UI's TempoSync::NOTES (0 … 15)
     };
     // How the UI shows the value.
     enum class Format
@@ -48,6 +49,18 @@ struct ParamSpec
     vector<string> choices;
     bool stereo_only = false; // shown only on the stereo variant
     string tip;
+    // Tempo sync (a rate or time): while the switch `sync_switch` is on, the effect gets
+    // the note value `sync_note` at the global tempo instead of this knob — ms when
+    // `sync_time`, else Hz (one LFO cycle per note) — capped at `sync_max` (0 = max).
+    string sync_switch;
+    string sync_note;
+    bool sync_time = false;
+    double sync_max = 0.0;
+    // A pedal-like knob (Wah Position, Volume, Pitch Shift Semitones): while this switch
+    // is on, MIDI controllers sweep it backwards (heel and toe swap).
+    string reverse_switch;
+    // Sets the effect; nullptr for parameters only the UI reads (Sync, note values,
+    // Reverse).
     void (*apply)(EffectBase& fx, double value) = nullptr;
 };
 

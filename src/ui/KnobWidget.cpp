@@ -6,7 +6,9 @@
 #include <QContextMenuEvent>
 #include <QDial>
 #include <QEvent>
+#include <QKeyEvent>
 #include <QLabel>
+#include <QLineEdit>
 #include <QMenu>
 #include <QMouseEvent>
 #include <QPaintEvent>
@@ -14,6 +16,8 @@
 #include <QPainterPath>
 #include <QPalette>
 #include <QRadialGradient>
+#include <QRegularExpression>
+#include <QTimer>
 #include <QVBoxLayout>
 #include <QWheelEvent>
 #include <QtMath>
@@ -203,7 +207,31 @@ KnobWidget::KnobWidget(const QString& new_label, double min_val, double max_val,
         label_value->setFont(f);
     }
 
-    if (form == Form::STACKED) {
+    if (form == Form::PANEL) {
+        // Name over [value field … large dial], like the mockup's parameter cells.
+        setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+        dial->setFixedSize(60, 60);
+        name_label->setObjectName("knobName");
+        field = new QLineEdit;
+        field->setObjectName("knobField");
+        field->setAlignment(Qt::AlignCenter);
+        field->setFixedSize(96, 34);
+        field->setToolTip(QString("%1: click to type a value, Enter to set it").arg(new_label));
+        label_value->hide(); // the field shows the value
+        connect(field, &QLineEdit::editingFinished, this, &KnobWidget::commit_field);
+        field->installEventFilter(this);
+
+        auto* layout = new QVBoxLayout(this);
+        layout->setContentsMargins(2, 2, 2, 2);
+        layout->setSpacing(6);
+        layout->addWidget(name_label);
+        auto* row = new QHBoxLayout;
+        row->setSpacing(10);
+        row->addWidget(field, 0, Qt::AlignVCenter);
+        row->addStretch();
+        row->addWidget(dial, 0, Qt::AlignVCenter);
+        layout->addLayout(row);
+    } else if (form == Form::STACKED) {
         // Prominent stacked form (Input/Output gain): centred name over a
         // large dial over the value.
         setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
@@ -312,6 +340,42 @@ void KnobWidget::update_label() {
     p.setColor(QPalette::WindowText, accent);
     label_value->setPalette(p);
     label_value->setText(txt);
+    if (field) {
+        // The app stylesheet styles the field's box; its text takes the accent here (a
+        // palette colour would lose to the stylesheet).
+        const QString color = QString("color: %1;").arg(accent.name());
+        if (field->styleSheet() != color) {
+            field->setStyleSheet(color);
+        }
+        if (!field->hasFocus()) {
+            field->setText(txt);
+        }
+    }
+}
+
+void KnobWidget::commit_field() {
+    if (!field) {
+        return;
+    }
+    const QString text = field->text().trimmed();
+    std::optional<double> v;
+    if (parser) {
+        v = parser(text);
+    } else {
+        static const QRegularExpression number(R"([-+]?\d*[.,]?\d+)");
+        const QRegularExpressionMatch m = number.match(text);
+        bool ok = false;
+        const double x = m.hasMatch() ? m.captured().replace(',', '.').toDouble(&ok) : 0.0;
+        if (ok) {
+            const bool kilo = unit == "Hz" && text.contains('k', Qt::CaseInsensitive);
+            v = kilo ? x * 1000.0 : x;
+        }
+    }
+    field->clearFocus();
+    if (v) {
+        set_value(*v);
+    }
+    update_label(); // a refused entry shows the value again
 }
 
 static std::function<void(KnobWidget*, QMenu*)>& menu_hook() {
@@ -335,6 +399,15 @@ void KnobWidget::contextMenuEvent(QContextMenuEvent* event) {
 }
 
 bool KnobWidget::eventFilter(QObject* obj, QEvent* event) {
+    if (field && obj == field && event->type() == QEvent::KeyPress &&
+        static_cast<QKeyEvent*>(event)->key() == Qt::Key_Escape) {
+        field->setText(label_value->text()); // Escape: keep the value
+        field->clearFocus();
+        return true;
+    }
+    if (field && obj == field && event->type() == QEvent::FocusIn) {
+        QTimer::singleShot(0, field, &QLineEdit::selectAll); // type over it
+    }
     if (obj == dial && event->type() == QEvent::MouseButtonDblClick) {
         reset_to_default();
         return true;

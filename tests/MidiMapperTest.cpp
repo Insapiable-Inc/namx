@@ -325,6 +325,52 @@ int run(int argc, char** argv) {
         CHECK(bpm == 0.0, "a burst of unstamped ticks sets no tempo");
     }
 
+    std::printf("widget-free targets (node-graph parameters)\n");
+    {
+        double level = 0.0;
+        bool reversed = false;
+        bool power = false;
+        mapper.add_value(
+            "param:Delay/mix", "Delay", "Mix", 0.0, 50.0, 0.0, "%",
+            [&level] {
+                return level;
+            },
+            [&level](double v) {
+                level = v;
+            },
+            [&reversed] {
+                return reversed;
+            });
+        mapper.add_switch(
+            "param:Delay/enabled", "Delay", "On / Off",
+            [&power] {
+                return power;
+            },
+            [&power](bool on) {
+                power = on;
+            });
+        MidiMapping m;
+        m.number = 21;
+        m.target = "param:Delay/mix";
+        m.min = 0.0;
+        m.max = 1.0;
+        MidiMapping sw;
+        sw.number = 22;
+        sw.target = "param:old/enabled"; // saved under an older ID
+        mapper.add_alias("param:old/enabled", "param:Delay/enabled");
+        mapper.set_mappings({m, sw});
+        mapper.handle(cc(0, 21, 127));
+        CHECK(std::abs(level - 50.0) < 1e-9, "CC 127 → the value's max");
+        reversed = true;
+        mapper.handle(cc(0, 21, 127));
+        CHECK(std::abs(level) < 1e-9, "Reverse on: CC 127 → min");
+        mapper.handle(cc(0, 22, 127));
+        CHECK(power, "an alias reaches the switch: CC ≥ 64 turns it on");
+        mapper.remove_targets("param:Delay/");
+        CHECK(!mapper.target("param:Delay/mix") && !mapper.target("param:old/enabled"),
+              "removed targets and their aliases are gone");
+    }
+
     std::printf(failures ? "\n%d FAILED\n" : "\nall passed\n", failures);
     return failures ? 1 : 0;
 }

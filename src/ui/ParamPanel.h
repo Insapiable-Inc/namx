@@ -13,6 +13,8 @@ class QLabel;
 class QToolButton;
 class QVBoxLayout;
 class QGridLayout;
+class QMenu;
+class QStackedLayout;
 
 namespace namx
 {
@@ -47,13 +49,25 @@ public:
 
     // Hooks the window provides (the node menu's Duplicate / Delete select or clear).
     std::function<void(int)> on_duplicate;
+    // Adds the MIDI Learn / Forget entries for a target ID to a context menu. Every
+    // control carries its target in the "midiTarget" property (knobs get their menu
+    // through KnobWidget's hook).
+    std::function<void(const QString&, QMenu*)> learn_menu;
 
 private:
     void sync_from_model(int id); // values, power and file without a rebuild
     void build_header(QVBoxLayout* lay);
     void build_file_section(QVBoxLayout* lay);
     void build_params(QVBoxLayout* lay);
-    QWidget* make_param(const ParamSpec& p);
+    QWidget* make_switch(const ParamSpec& p);
+    QWidget* make_choice(const ParamSpec& p);
+    KnobWidget* make_knob(const ParamSpec& p);
+    // A knob, or for a synced one the knob and its note value in one place.
+    QWidget* make_dial_cell(const ParamSpec& p);
+    // MIDI target ID of the current node's `key` (GraphModel::midi_target_id).
+    QString target_for(const QString& key) const;
+    // Right-click on `w`: MIDI Learn for `key`, through learn_menu.
+    void offer_learn(QWidget* w, const QString& key);
     void browse_file();
     void step_file(int step);
     void update_file_labels();
@@ -71,6 +85,12 @@ private:
     QHash<QString, KnobWidget*> knobs;
     QHash<QString, ToggleSwitch*> switches;
     QHash<QString, QList<QToolButton*>> choices;
+    struct SyncedCell
+    {
+        QStackedLayout* stack; // 0 = the knob, 1 = its note value
+        QString sync_key;
+    };
+    vector<SyncedCell> synced_cells;
     VUMeter* meter = nullptr;
 };
 
