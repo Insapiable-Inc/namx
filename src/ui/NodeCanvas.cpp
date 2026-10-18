@@ -743,6 +743,9 @@ void NodeCanvas::show_node_menu(int id, const QPoint& global_pos) {
                 model.set_stereo(id, false);
             });
         }
+        menu.addAction("Reset to Defaults", this, [this, id] {
+            model.reset_values(id);
+        });
         menu.addAction("Duplicate", this, [this, id] {
             if (const int copy = model.duplicate_node(id)) {
                 QTimer::singleShot(0, this, [this, copy] {
@@ -753,6 +756,10 @@ void NodeCanvas::show_node_menu(int id, const QPoint& global_pos) {
         menu.addSeparator();
         menu.addAction("Delete", this, [this, id] {
             model.remove_node(id);
+        });
+    } else {
+        menu.addAction("Reset to Defaults", this, [this, id] {
+            model.reset_values(id);
         });
     }
     menu.exec(global_pos);

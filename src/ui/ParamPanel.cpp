@@ -355,10 +355,7 @@ void ParamPanel::build_header(QVBoxLayout* lay) {
         });
     }
     menu->addAction("Reset to Defaults", this, [this] {
-        const GraphModel::Node* node = model.node(current_id);
-        for (const auto& p : node->type->params) {
-            model.set_value(current_id, QString::fromStdString(p.key), p.def);
-        }
+        model.reset_values(current_id);
     });
     if (!io) {
         menu->addAction("Duplicate", this, [this] {

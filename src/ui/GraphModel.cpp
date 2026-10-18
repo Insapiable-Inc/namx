@@ -399,6 +399,19 @@ int GraphModel::duplicate_node(int id) {
     return new_id;
 }
 
+void GraphModel::reset_values(int id) {
+    Node* n = find(id);
+    if (!n) {
+        return;
+    }
+    for (const auto& p : n->type->params) {
+        n->values[QString::fromStdString(p.key)] = p.def;
+    }
+    apply_all(*n);
+    emit node_changed(id);
+    emit modified();
+}
+
 void GraphModel::set_value(int id, const QString& key, double value) {
     Node* n = find(id);
     if (!n) {

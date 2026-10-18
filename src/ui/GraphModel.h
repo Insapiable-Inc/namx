@@ -96,6 +96,8 @@ public:
 
     // Node state.
     void set_value(int id, const QString& key, double value);
+    // Every parameter back to the catalog default (name, power and file kept).
+    void reset_values(int id);
     void set_enabled(int id, bool on);
     void set_name(int id, const QString& name);
     // The user dragged the card.
