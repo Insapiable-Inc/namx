@@ -7,7 +7,7 @@ effects chain plus a 4-band EQ with low and high cuts.
 | Platform | Audio backend | Status |
 |----------|---------------|--------|
 | Linux    | JACK (jackd2 or PipeWire-JACK) | Stable |
-| Windows  | WASAPI shared or exclusive mode (native, MSVC) | Shared: float32 mix format only; exclusive: new, not yet tested on hardware |
+| Windows  | WASAPI shared or exclusive mode (native, MSVC) | Shared: float32 mix format only; exclusive: opt-in |
 
 ---
 

@@ -27,7 +27,7 @@ namx/
 │   ├── midi/          # MidiInput (ALSA / WinMM), MidiMapper (no widgets beyond the target pointers)
 │   └── dsp/           # AudioEngine, backends, effect processors (no Qt dependencies)
 ├── resources/         # resources.qrc, app icon (icons/), starter presets (presets/)
-├── packaging/         # desktop file, AppStream, mime, Windows .rc (AppImage built by release.yml — the only Linux release, user 2026-10-04; no Flatpak, Snap or AUR package)
+├── packaging/         # desktop file, AppStream, mime, Windows .rc, THIRD-PARTY-NOTICES.md + licenses/ (installed with the bundled deps' license texts — CMake component `notices`) (AppImage built by release.yml — the only Linux release, user 2026-10-04; no Flatpak, Snap or AUR package)
 ├── tests/             # MidiMapperTest, DspGoldenTest, WavReaderTest, NamProcessorTest, LibraryIndexTest, ThemeFileTest (-DNAM_BUILD_TESTS=ON)
 ├── bench/             # namx-bench, instructions.py (CPU regression) (-DNAM_BUILD_BENCH=ON)
 └── external/          # Git submodules (CMake: EXTERNAL_DIR, NAM_ROOT, NAM_DEPS_PATH)

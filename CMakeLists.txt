@@ -333,6 +333,32 @@ if(UNIX AND NOT APPLE)
             RENAME ${NAM_APP_ID}.svg)
 endif()
 
+# License notices: ours plus every bundled third-party license (packaging/
+# THIRD-PARTY-NOTICES.md lists them). Component "notices", so the Windows release job
+# can install just these next to the windeployqt output.
+if(WIN32)
+    set(NAM_NOTICES_DIR licenses)
+else()
+    set(NAM_NOTICES_DIR ${CMAKE_INSTALL_DOCDIR})
+endif()
+install(FILES LICENSE LICENSE-MIT COPYRIGHT
+              packaging/THIRD-PARTY-NOTICES.md
+              packaging/licenses/LGPL-3.0.txt
+              packaging/licenses/nlohmann-json-MIT.txt
+        DESTINATION ${NAM_NOTICES_DIR} COMPONENT notices)
+foreach(notice
+        "${NAM_DEPS_PATH}/AudioDSPTools/LICENSE|AudioDSPTools-LICENSE.txt"
+        "${NAM_DEPS_PATH}/eigen/COPYING.MPL2|Eigen-MPL2.txt"
+        "${EXTERNAL_DIR}/signalsmith-linear/LICENSE.txt|signalsmith-linear-LICENSE.txt"
+        "${EXTERNAL_DIR}/signalsmith-stretch/LICENSE.txt|signalsmith-stretch-LICENSE.txt"
+        "${EXTERNAL_DIR}/chowdsp_wdf/LICENSE|chowdsp_wdf-LICENSE.txt")
+    string(REPLACE "|" ";" notice "${notice}")
+    list(GET notice 0 notice_src)
+    list(GET notice 1 notice_name)
+    install(FILES "${notice_src}" DESTINATION ${NAM_NOTICES_DIR}
+            RENAME "${notice_name}" COMPONENT notices)
+endforeach()
+
 # ---------------------------------------------------------------------------
 # Tests (opt-in): -DNAM_BUILD_TESTS=ON → `ctest` or run the binaries directly.
 # ---------------------------------------------------------------------------
