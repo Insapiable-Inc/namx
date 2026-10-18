@@ -4,37 +4,23 @@
 #include <cmath>
 #include <cstdint>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "ChorusProcessor.h"
 #include "Common.h"
-#include "CompressorProcessor.h"
-#include "DelayProcessor.h"
-#include "DriveProcessor.h"
-#include "DynamicWahProcessor.h"
-#include "EQProcessor.h"
-#include "FlangerProcessor.h"
 #include "IAudioBackend.h"
-#include "IRProcessor.h"
 #include "Metronome.h"
-#include "NamProcessor.h"
-#include "NoiseGateProcessor.h"
 #include "OutputLimiter.h"
-#include "PhaserProcessor.h"
-#include "ReverbProcessor.h"
 #include "RtSlot.h"
-#include "TransposeProcessor.h"
-#include "TremoloProcessor.h"
-#include "TunerProcessor.h"
-#include "VolumeProcessor.h"
+#include "SignalGraph.h"
 
 namespace namx
 {
 
-// Platform-agnostic audio engine. Owns the signal chain and all DSP
-// processors. Delegates I/O to an IAudioBackend (JACK on Linux, WASAPI on
+// Platform-agnostic audio engine. Runs the signal graph (SignalGraph.h), then the
+// metronome and the output limiter. Delegates I/O to an IAudioBackend (JACK on Linux, WASAPI on
 // Windows) created via IAudioBackend::create().
 class AudioEngine : public IAudioBackend::Callback
 {
@@ -82,139 +68,32 @@ public:
     vector<IAudioBackend::DeviceInfo> enumerate_input_devices() const;
     vector<IAudioBackend::DeviceInfo> enumerate_output_devices() const;
 
-    // Model / IR (thin wrappers for MainWindow convenience)
-    // Loads publish through RtSlots; when audio is stopped nothing counts
-    // blocks, so the wrappers reclaim retired objects eagerly in that case.
-    bool load_model(const string& path);
-    void unload_model();
-    bool is_model_loaded() const {
-        return nam.is_model_loaded();
-    }
-    string model_path() const {
-        return nam.get_model_path();
-    }
-    string model_load_error() const {
-        return nam.get_last_error();
-    }
+    // Signal graph (ui/node-graph)
+    // A new node of a NodeCatalog type, configured for the running stream (sample
+    // rate, block size) but not yet live: hand it to set_graph to make it run.
+    std::shared_ptr<GraphNode> create_node(int id, const string& type, bool stereo);
+    // Compiles and publishes the graph RT-safely (RtSlot, like model swaps): nodes
+    // that drop out stay alive until the audio thread has left the old plan. Nodes
+    // whose input wiring changed get a reset. On an error nothing changes.
+    expected<void, string> set_graph(const vector<std::shared_ptr<GraphNode>>& nodes,
+                                     const vector<GraphWire>& wires);
 
-    bool load_ir(const string& path);
-    void unload_ir();
-    bool is_ir_loaded() const {
-        return ir.is_loaded();
-    }
-    string ir_path() const {
-        return ir.file_path();
-    }
-    string ir_load_error() const {
-        return ir.last_error();
-    }
+    // Frees plans, models and IRs the audio thread has provably left (all of them
+    // when it is stopped). Edits do it themselves; the GUI also polls it, so a removed
+    // node's model doesn't wait for the next edit. GUI thread.
+    void reclaim_retired();
 
-    // Second cab slot (Phase 17 dual IR).
-    bool load_irb(const string& path);
-    void unload_irb();
-    bool is_irb_loaded() const {
-        return ir.is_loaded_b();
-    }
-    string ir_path_b() const {
-        return ir.file_path_b();
-    }
-    string ir_b_load_error() const {
-        return ir.last_error_b();
-    }
+    // Model / IR of a node ("nam" / "ir" nodes); retired objects are reclaimed.
+    bool load_model(GraphNode& node, const string& path);
+    bool load_ir(GraphNode& node, const string& path);
 
-    // Gain
-    void set_input_gain(float db) {
-        input_gain_db.store(db);
-    }
-    void set_output_gain(float db) {
-        output_gain_db.store(db);
-    }
-    float input_gain() const {
-        return input_gain_db.load();
-    }
-    float output_gain() const {
-        return output_gain_db.load();
-    }
-
-    // Effect accessors (MainWindow calls setters directly on the effects)
-    TunerProcessor& get_tuner() {
-        return tuner;
-    }
-    NoiseGateProcessor& get_gate() {
-        return gate;
-    }
-    CompressorProcessor& get_comp() {
-        return comp;
-    }
-    DynamicWahProcessor& get_wah() {
-        return wah;
-    }
-    FlangerProcessor& get_flanger() {
-        return flanger;
-    }
-    PhaserProcessor& get_phaser() {
-        return phaser;
-    }
-    NamProcessor& get_nam() {
-        return nam;
-    }
-    EQProcessor& get_eq() {
-        return eq;
-    }
-    ChorusProcessor& get_chorus() {
-        return chorus;
-    }
-    TremoloProcessor& get_tremolo() {
-        return tremolo;
-    }
-    DelayProcessor& get_delay() {
-        return delay;
-    }
-    ReverbProcessor& get_reverb() {
-        return reverb;
-    }
-    IRProcessor& get_ir() {
-        return ir;
-    }
-    DriveProcessor& get_drive() {
-        return drive;
-    }
-    VolumeProcessor& get_volume() {
-        return volume;
+    // Mixed in after the output gain — outside the graph, not metered.
+    Metronome& get_metronome() {
+        return metronome;
     }
     OutputLimiter& get_limiter() {
         return limiter;
     }
-    TransposeProcessor& get_transpose() {
-        return transpose;
-    }
-
-    // Mixed in after the output gain — outside the chain, not metered.
-    Metronome& get_metronome() {
-        return metronome;
-    }
-
-    // Signal chain (processing order = UI order)
-    // GUI-thread snapshot of the active chain. Reordering goes through
-    // setChainOrder().
-    vector<EffectBase*> get_chain() const {
-        return *chain_slot.current();
-    }
-
-    // Stable effect IDs in default (construction) order — the persistence
-    // contract for session state and preset schema v2.
-    vector<string> default_chain_ids() const;
-    // Current chain order as IDs.
-    vector<string> chain_ids() const;
-    EffectBase* effect_by_id(const string& id) const;
-    string id_for_effect(const EffectBase* fx) const;
-
-    // Reorder the chain RT-safely (RtSlot publish, same pattern as model
-    // swaps — never blocks the GUI). Input is sanitized: unknown/duplicate
-    // IDs are dropped and missing effects re-enter at their default
-    // position. Effects whose position changed get a pending reset,
-    // consumed by the audio thread at the top of their next block.
-    void set_chain_order(const vector<string>& ids);
 
     // Port-routing pass-through (no-ops on backends without it)
     using PortConnections = IAudioBackend::PortConnections;
@@ -257,8 +136,9 @@ public:
             backend->reset_xruns();
         }
     }
-    // Processing latency the chain adds right now (effects + output limiter), each
-    // nonzero source with a display name. GUI thread.
+    // Processing latency the graph adds right now: the slowest path from the Input to
+    // the Output (each node on it with a nonzero latency, by type name) plus the
+    // output limiter. GUI thread.
     struct LatencySource
     {
         string name;
@@ -278,44 +158,19 @@ private:
     unique_ptr<IAudioBackend> backend;
     bool exclusive_wanted = false; // GUI thread; handed to each new backend
 
-    // Signal chain — published through an RtSlot. The audio thread binds
-    // one vector per callback; setChainOrder() publishes a new one and the
-    // old vector is freed only after the audio thread has provably left it.
-    using Chain = vector<EffectBase*>;
-    RtSlot<Chain> chain_slot;
+    // The compiled graph — published through an RtSlot. The audio thread binds
+    // one plan per callback; set_graph() publishes a new one and the old plan
+    // (and any node only it still holds) is freed once the audio thread left it.
+    RtSlot<GraphPlan> plan_slot;
+    vector<GraphWire> live_wires; // GUI thread: the wiring of the published plan
 
-    // Free objects retired by loads/reorders while the audio thread is idle.
-    void reclaim_retired();
+    // Sample rate, block size and plan publishing are serialized: a node created or
+    // published while the backend reconfigures still gets the new settings.
+    std::mutex config_mutex;
+    size_t max_block{512};
 
-    // id → effect, in default chain order
-    vector<std::pair<string, EffectBase*>> effect_table;
-
-    // Effect instances (owned here, pointers in the chain buffers)
-    TunerProcessor tuner;
-    NoiseGateProcessor gate;
-    CompressorProcessor comp;
-    DynamicWahProcessor wah;
-    FlangerProcessor flanger;
-    PhaserProcessor phaser;
-    NamProcessor nam;
-    EQProcessor eq;
-    ChorusProcessor chorus;
-    TremoloProcessor tremolo;
-    DelayProcessor delay;
-    ReverbProcessor reverb;
-    IRProcessor ir;
-    DriveProcessor drive;
-    VolumeProcessor volume;
     OutputLimiter limiter;
-    TransposeProcessor transpose;
     Metronome metronome;
-
-    // Gain
-    atomic<float> input_gain_db{0.0f};
-    atomic<float> output_gain_db{0.0f};
-
-    float input_gain_smooth = 1.0f;
-    float output_gain_smooth = 1.0f;
 
     atomic<float> input_peak{0.0f};
     atomic<float> output_peak[2]{0.0f, 0.0f}; // left, right
@@ -324,9 +179,6 @@ private:
 
     // on_audio = timing around this.
     void process_block(const float* in, float* out_l, float* out_r, size_t nframes);
-
-    vector<float> work_buf_l;
-    vector<float> work_buf_r;
 
     // Set from on_buffer_size_changed (never concurrent with the audio thread).
     double chain_sample_rate{0.0};

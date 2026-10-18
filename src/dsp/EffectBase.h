@@ -51,6 +51,10 @@ public:
     bool is_stereo_mode() const {
         return stereo_mode.load();
     }
+    // The rate set last (any thread).
+    double get_sample_rate() const {
+        return rate_for_any_thread.load(std::memory_order_relaxed);
+    }
 
     // Returns true if this effect can produce L≠R output from mono input.
     virtual bool supports_stereo_out() const {

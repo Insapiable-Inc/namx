@@ -3,11 +3,15 @@
 #include <algorithm>
 #include <chrono>
 #include <cmath>
+#include <unordered_map>
 
 #include <NAM/activations.h>
 
 #include "Common.h"
+#include "IRProcessor.h"
 #include "Log.h"
+#include "NamProcessor.h"
+#include "NodeCatalog.h"
 
 namespace namx
 {
@@ -17,167 +21,142 @@ AudioEngine::AudioEngine() {
     // architecture), inaudible — the official plugin enables it too. Global
     // to the NAM core, so it covers every model loaded later.
     nam::activations::Activation::enable_fast_tanh();
-
-    // The reverb is always stereo; every other effect's stereo mode follows its
-    // Stereo switch, whose starting value the registry pushes (the switches: Delay on,
-    // the rest off).
-    reverb.set_stereo_mode(true);
-
-    // NAM and Tuner start enabled; all others start disabled.
-    nam.set_enabled(true);
-    tuner.set_enabled(false);
-    eq.set_enabled(true);
-    ir.set_enabled(true);
-
-    // Stable effect IDs in default processing order — the contract for chain
-    // reordering and for session/preset persistence. Never rename an ID.
-    effect_table = {
-        {"tuner", &tuner},
-        {"transpose", &transpose}, // after the tuner: it reads the real string
-        {"gate", &gate},
-        {"comp", &comp},
-        {"wah", &wah},
-        {"flanger", &flanger},
-        {"phaser", &phaser},
-        {"drive", &drive}, // Phase 17 — new IDs re-enter old sessions here
-        {"nam", &nam},
-        {"volume", &volume}, // first in the effects loop: swells without touching amp gain
-        {"eq", &eq},
-        {"chorus", &chorus},
-        {"tremolo", &tremolo},
-        {"delay", &delay},
-        {"reverb", &reverb},
-        {"ir", &ir},
-    };
-    auto chain = make_unique<Chain>();
-    chain->reserve(effect_table.size());
-    for (const auto& [id, fx] : effect_table) {
-        chain->push_back(fx);
-    }
-    chain_slot.publish(std::move(chain));
 }
 
 void AudioEngine::reclaim_retired() {
     // Only valid with no audio callback possible: after stop(), or before
     // the backend was ever started.
     const bool stopped = !is_running();
-    chain_slot.reclaim(stopped);
-    nam.reclaim_retired(stopped);
-    ir.reclaim_retired(stopped);
-}
-
-bool AudioEngine::load_model(const string& path) {
-    const bool ok = nam.load_model(path);
-    reclaim_retired();
-    return ok;
-}
-
-void AudioEngine::unload_model() {
-    nam.unload_model();
-    reclaim_retired();
-}
-
-bool AudioEngine::load_ir(const string& path) {
-    const bool ok = ir.load(path);
-    reclaim_retired();
-    return ok;
-}
-
-void AudioEngine::unload_ir() {
-    ir.unload();
-    reclaim_retired();
-}
-
-bool AudioEngine::load_irb(const string& path) {
-    const bool ok = ir.load_b(path);
-    reclaim_retired();
-    return ok;
-}
-
-void AudioEngine::unload_irb() {
-    ir.unload_b();
-    reclaim_retired();
-}
-
-vector<string> AudioEngine::default_chain_ids() const {
-    vector<string> ids;
-    ids.reserve(effect_table.size());
-    for (const auto& [id, fx] : effect_table) {
-        ids.push_back(id);
-    }
-    return ids;
-}
-
-vector<string> AudioEngine::chain_ids() const {
-    vector<string> ids;
-    ids.reserve(effect_table.size());
-    for (const auto* fx : *chain_slot.current()) {
-        ids.push_back(id_for_effect(fx));
-    }
-    return ids;
-}
-
-EffectBase* AudioEngine::effect_by_id(const string& id) const {
-    for (const auto& [eid, fx] : effect_table) {
-        if (eid == id) {
-            return fx;
+    plan_slot.reclaim(stopped);
+    if (const GraphPlan* plan = plan_slot.current()) {
+        for (const auto& node : plan->nodes) {
+            if (node->type == "nam") {
+                static_cast<NamProcessor&>(node->processor()).reclaim_retired(stopped);
+            } else if (node->type == "ir") {
+                static_cast<IRProcessor&>(node->processor()).reclaim_retired(stopped);
+            }
         }
     }
-    return nullptr;
 }
 
-string AudioEngine::id_for_effect(const EffectBase* fx) const {
-    for (const auto& [eid, e] : effect_table) {
-        if (e == fx) {
-            return eid;
-        }
+std::shared_ptr<GraphNode> AudioEngine::create_node(int id, const string& type, bool stereo) {
+    std::shared_ptr<GraphNode> node = NodeCatalog::create(id, type, stereo);
+    if (!node) {
+        return nullptr;
     }
+    const std::lock_guard<std::mutex> lock(config_mutex);
+    if (chain_sample_rate > 0.0) {
+        node->processor().set_sample_rate(chain_sample_rate);
+    }
+    if (node->type == "nam") {
+        static_cast<NamProcessor&>(node->processor()).prepare_buffer(max_block);
+    }
+    return node;
+}
+
+bool AudioEngine::load_model(GraphNode& node, const string& path) {
+    if (node.type != "nam") {
+        return false;
+    }
+    const bool ok = static_cast<NamProcessor&>(node.processor()).load_model(path);
+    reclaim_retired();
+    return ok;
+}
+
+bool AudioEngine::load_ir(GraphNode& node, const string& path) {
+    if (node.type != "ir") {
+        return false;
+    }
+    const bool ok = static_cast<IRProcessor&>(node.processor()).load(path);
+    reclaim_retired();
+    return ok;
+}
+
+expected<void, string> AudioEngine::set_graph(const vector<std::shared_ptr<GraphNode>>& nodes,
+                                              const vector<GraphWire>& wires) {
+    {
+        const std::lock_guard<std::mutex> lock(config_mutex);
+        auto plan = compile_graph(nodes, wires, std::max<size_t>(max_block, 512));
+        if (!plan) {
+            return std::unexpected(plan.error());
+        }
+        // A node created before the stream (re)configured missed the new rate; only
+        // nodes that aren't live yet can, so this never touches a running one.
+        for (const auto& node : nodes) {
+            if (chain_sample_rate > 0.0 &&
+                node->processor().get_sample_rate() != chain_sample_rate) {
+                node->processor().set_sample_rate(chain_sample_rate);
+                if (node->type == "nam") {
+                    static_cast<NamProcessor&>(node->processor()).prepare_buffer(max_block);
+                }
+            }
+        }
+        // A node fed from somewhere new carries state from its old source (tails,
+        // diverged channels): have the audio thread clear it.
+        for (const auto& node : nodes) {
+            auto feeds = [&node](const vector<GraphWire>& list) {
+                vector<GraphWire> in;
+                for (const auto& w : list) {
+                    if (w.to_node == node->id) {
+                        in.push_back(w);
+                    }
+                }
+                std::sort(in.begin(), in.end(), [](const GraphWire& a, const GraphWire& b) {
+                    return a.to_port < b.to_port;
+                });
+                return in;
+            };
+            if (feeds(wires) != feeds(live_wires)) {
+                node->processor().request_reset();
+            }
+        }
+        plan_slot.publish(std::move(*plan));
+        live_wires = wires;
+    }
+    reclaim_retired();
     return {};
 }
 
-void AudioEngine::set_chain_order(const vector<string>& ids) {
-    // Sanitize: known IDs only, no duplicates.
-    vector<EffectBase*> new_chain;
-    new_chain.reserve(effect_table.size());
-    for (const auto& id : ids) {
-        EffectBase* fx = effect_by_id(id);
-        if (!fx) {
-            continue;
+vector<AudioEngine::LatencySource> AudioEngine::processing_latency() const {
+    vector<LatencySource> out;
+    const GraphPlan* plan = plan_slot.current();
+    if (plan) {
+        // Per buffer: the slowest path's latency into it, and that path's nodes.
+        struct Path
+        {
+            double ms = 0.0;
+            vector<const GraphNode*> nodes;
+        };
+        vector<Path> paths(plan->buffers.size());
+        for (const auto& step : plan->steps) {
+            Path in = paths[static_cast<size_t>(step.in[0])];
+            if (input_count(step.node->kind) > 1 &&
+                paths[static_cast<size_t>(step.in[1])].ms > in.ms) {
+                in = paths[static_cast<size_t>(step.in[1])];
+            }
+            const EffectBase& fx = step.node->processor();
+            const double own = fx.is_enabled() ? fx.latency_ms() : 0.0;
+            if (own > 0.0) {
+                in.ms += own;
+                in.nodes.push_back(step.node);
+            }
+            for (const int o : step.out) {
+                if (o > 1) { // not silence or the scratch buffer
+                    paths[static_cast<size_t>(o)] = in;
+                }
+            }
         }
-        if (std::find(new_chain.begin(), new_chain.end(), fx) != new_chain.end()) {
-            continue;
-        }
-        new_chain.push_back(fx);
-    }
-
-    // Effects missing from the list re-enter at their default position.
-    size_t default_idx = 0;
-    for (const auto& [id, fx] : effect_table) {
-        if (std::find(new_chain.begin(), new_chain.end(), fx) == new_chain.end()) {
-            const Chain::difference_type slot =
-                static_cast<Chain::difference_type>(std::min(default_idx, new_chain.size()));
-            new_chain.insert(new_chain.begin() + slot, fx); // iterator offsets are signed
-        }
-        ++default_idx;
-    }
-
-    const Chain& cur = *chain_slot.current();
-    if (new_chain == cur) {
-        return;
-    }
-
-    // Moved effects carry state from their old slot (delay tails, diverged
-    // per-channel filters) — have the audio thread clear them.
-    for (size_t i = 0; i < new_chain.size(); ++i) {
-        if (i >= cur.size() || cur[i] != new_chain[i]) {
-            new_chain[i]->request_reset();
+        const Path& l = paths[static_cast<size_t>(plan->out_buffer[0])];
+        const Path& r = paths[static_cast<size_t>(plan->out_buffer[1])];
+        for (const GraphNode* node : (r.ms > l.ms ? r : l).nodes) {
+            const NodeType* type = NodeCatalog::find(node->type);
+            out.push_back({type ? type->name : node->type, node->processor().latency_ms()});
         }
     }
-
-    // Publish a fresh vector; the one the audio thread may still be iterating
-    // is retired and freed only once it has provably moved on. No waiting.
-    chain_slot.publish(make_unique<Chain>(std::move(new_chain)));
-    reclaim_retired();
+    if (const double ms = limiter.latency_ms(); ms > 0.0) {
+        out.push_back({"Limiter", ms});
+    }
+    return out;
 }
 
 AudioEngine::~AudioEngine() {
@@ -196,9 +175,9 @@ bool AudioEngine::start(const string& client_name) {
     }
     backend->set_exclusive_mode(exclusive_wanted);
 
-    // Sample rate and buffer size reach the effects via on_buffer_size_changed,
+    // Sample rate and buffer size reach the nodes via on_buffer_size_changed,
     // which the backend invokes BEFORE activating the stream — configuring
-    // effects after activation would race the audio thread.
+    // them after activation would race the audio thread.
     if (!backend->start(client_name, this)) {
         backend.reset();
         return false;
@@ -260,27 +239,34 @@ void AudioEngine::on_buffer_size_changed(int new_size) {
         return;
     }
     const size_t n = static_cast<size_t>(new_size); // backends report int; positive here
-    if (n > work_buf_l.size()) {
-        work_buf_l.resize(n, 0.0f);
-        work_buf_r.resize(n, 0.0f);
-    }
 
     // Backends call this before activating the stream, and with processing
-    // suspended on later changes — the one safe point to reconfigure effects.
+    // suspended on later changes — the one safe point to reconfigure live nodes.
+    const std::lock_guard<std::mutex> lock(config_mutex);
+    max_block = std::max(max_block, n);
+    GraphPlan* plan = plan_slot.current();
     const double sr = backend ? backend->get_sample_rate() : 0.0;
     if (sr > 0.0 && sr != chain_sample_rate) {
         chain_sample_rate = sr;
-        for (const auto& [id, fx] : effect_table) {
-            fx->set_sample_rate(sr);
+        if (plan) {
+            for (const auto& node : plan->nodes) {
+                node->processor().set_sample_rate(sr);
+            }
         }
         metronome.set_sample_rate(sr);
         limiter.set_sample_rate(sr);
         // ~20 ms one-pole gain smoothing, independent of sample rate.
         smooth_coeff = std::exp(-1.0f / (0.020f * static_cast<float>(sr)));
     }
-
-    // After SR propagation, so a re-Reset() picks up the new rate.
-    nam.prepare_buffer(std::max(n, nam.get_max_buf()));
+    if (plan) {
+        plan->reserve(max_block);
+        // After the rate, so a re-Reset() picks it up.
+        for (const auto& node : plan->nodes) {
+            if (node->type == "nam") {
+                static_cast<NamProcessor&>(node->processor()).prepare_buffer(max_block);
+            }
+        }
+    }
 }
 
 void AudioEngine::on_audio(const float* in, float* out_l, float* out_r, size_t n) {
@@ -299,59 +285,56 @@ void AudioEngine::on_audio(const float* in, float* out_l, float* out_r, size_t n
 }
 
 void AudioEngine::process_block(const float* in, float* out_l, float* out_r, size_t n) {
-    // Reorder fence: every exit counts the block so setChainOrder() knows
-    // when a retired chain vector is safe to free.
+    // Rewire fence: every exit counts the block so set_graph() knows when a
+    // retired plan is safe to free.
     struct BlockGuard
     {
-        RtSlot<Chain>& s;
+        RtSlot<GraphPlan>& s;
         ~BlockGuard() {
             s.end_block();
         }
-    } guard{chain_slot};
+    } guard{plan_slot};
 
-    // Defensive: if a process callback ever fires before on_buffer_size_changed
-    // has grown the work buffers, emit silence rather than overrunning.
-    if (static_cast<size_t>(n) > work_buf_l.size()) {
+    GraphPlan* plan = plan_slot.acquire();
+    // No graph yet, or a block larger than the plan was sized for: silence rather
+    // than an overrun.
+    if (!plan || n > plan->capacity) {
         std::fill_n(out_l, n, 0.0f);
         std::fill_n(out_r, n, 0.0f);
         return;
     }
 
-    // 1. Input gain (smoothed) → both work buffers (identical at this point)
-    const float target_in_gain = db_to_linear(input_gain_db.load());
+    // 1. The Input node: input gain (smoothed) into its buffer.
     float in_peak = 0.0f;
-    for (size_t i = 0; i < n; ++i) {
-        input_gain_smooth =
-            smooth_coeff * input_gain_smooth + (1.0f - smooth_coeff) * target_in_gain;
-        float s = in[i] * input_gain_smooth;
-        work_buf_l[i] = s;
-        work_buf_r[i] = s;
-        in_peak = std::max(in_peak, std::abs(s));
+    if (plan->input_buffer >= 0) {
+        float* buf = plan->buffers[static_cast<size_t>(plan->input_buffer)].data();
+        const float target = db_to_linear(plan->input->get_gain_db());
+        float& gain = plan->input->smoothed;
+        for (size_t i = 0; i < n; ++i) {
+            gain = smooth_coeff * gain + (1.0f - smooth_coeff) * target;
+            buf[i] = in[i] * gain;
+            in_peak = std::max(in_peak, std::abs(buf[i]));
+        }
     }
     // Peak-hold: accumulate the max until the GUI takes and resets it, so the
-    // 50 ms poll can't miss transients between blocks.
+    // poll can't miss transients between blocks.
     if (in_peak > input_peak.load(std::memory_order_relaxed)) {
         input_peak.store(in_peak, std::memory_order_relaxed);
     }
 
-    // 2. Run the signal chain (chain vector bound once per callback; a
-    //    reorder publishes a new vector and never touches this one)
-    bool stereo = false;
-    const Chain& chain = *chain_slot.acquire();
-    for (auto* fx : chain) {
-        fx->consume_pending_reset();
-        stereo = fx->process(work_buf_l.data(), work_buf_r.data(), n, stereo);
-    }
+    // 2. The graph.
+    run_plan(*plan, n);
 
-    (void)stereo; // consumed by downstream effects; output always written to both channels
-
-    // 3. Output gain (smoothed) + write to output buffers
-    const float target_out_gain = db_to_linear(output_gain_db.load());
+    // 3. Output gain (smoothed) + write to output buffers.
+    const float* src_l = plan->buffers[static_cast<size_t>(plan->out_buffer[0])].data();
+    const float* src_r = plan->buffers[static_cast<size_t>(plan->out_buffer[1])].data();
+    const float target_out = plan->output ? db_to_linear(plan->output->get_gain_db()) : 1.0f;
+    float out_gain_scratch = 1.0f;
+    float& out_gain = plan->output ? plan->output->smoothed : out_gain_scratch;
     for (size_t i = 0; i < n; ++i) {
-        output_gain_smooth =
-            smooth_coeff * output_gain_smooth + (1.0f - smooth_coeff) * target_out_gain;
-        out_l[i] = work_buf_l[i] * output_gain_smooth;
-        out_r[i] = work_buf_r[i] * output_gain_smooth;
+        out_gain = smooth_coeff * out_gain + (1.0f - smooth_coeff) * target_out;
+        out_l[i] = src_l[i] * out_gain;
+        out_r[i] = src_r[i] * out_gain;
     }
 
     // 4. The output meter: the guitar at the output stage, before the click is
@@ -373,7 +356,7 @@ void AudioEngine::process_block(const float* in, float* out_l, float* out_r, siz
     // 5. A non-finite sample — from the capture port, a model overflowing in
     //    inference, an effect — would latch in every feedback path (delay lines,
     //    reverb tanks, biquads) and pass the limiter to the hardware (audit
-    //    2026-10-04, Fable item 03). Scrub it, reset every effect once, and count it
+    //    2026-10-04, Fable item 03). Scrub it, reset every node once, and count it
     //    for the status bar.
     bool finite = true;
     for (size_t i = 0; i < n; ++i) {
@@ -384,8 +367,8 @@ void AudioEngine::process_block(const float* in, float* out_l, float* out_r, siz
             out_l[i] = std::isfinite(out_l[i]) ? out_l[i] : 0.0f;
             out_r[i] = std::isfinite(out_r[i]) ? out_r[i] : 0.0f;
         }
-        for (auto* fx : chain) {
-            fx->request_reset();
+        for (auto& step : plan->steps) {
+            step.node->processor().request_reset();
         }
         non_finite_blocks.fetch_add(1, std::memory_order_relaxed);
     }
@@ -393,51 +376,9 @@ void AudioEngine::process_block(const float* in, float* out_l, float* out_r, siz
     // 6. Metronome (own volume/pan), then the limiter (look-ahead; a no-op when
     //    off) as the very last stage, so it guards everything that leaves the app —
     //    guitar plus click (review item 27).
+    limiter.set_enabled(plan->output && plan->output->get_limiter());
     metronome.process(out_l, out_r, n);
     limiter.process(out_l, out_r, n);
-}
-
-// Status-bar names for the latency breakdown, by effect ID.
-static string latency_source_name(const string& id) {
-    static const std::pair<const char*, const char*> NAMES[] = {
-        {"tuner", "Tuner"},
-        {"transpose", "Transpose"},
-        {"gate", "Gate"},
-        {"comp", "Compressor"},
-        {"wah", "Wah"},
-        {"flanger", "Flanger"},
-        {"phaser", "Phaser"},
-        {"drive", "Overdrive"},
-        {"nam", "Amplifier resampling"},
-        {"volume", "Volume"},
-        {"eq", "EQ"},
-        {"chorus", "Chorus"},
-        {"tremolo", "Tremolo"},
-        {"delay", "Delay"},
-        {"reverb", "Reverb"},
-        {"ir", "Cabinet"},
-    };
-    for (const auto& [key, name] : NAMES) {
-        if (id == key) {
-            return name;
-        }
-    }
-    return id;
-}
-
-vector<AudioEngine::LatencySource> AudioEngine::processing_latency() const {
-    // Every effect in the table (audit 2026-10-04 item 12: a hand-kept list missed
-    // the Drive's oversampling), then the stages outside the chain.
-    vector<LatencySource> out;
-    for (const auto& [id, fx] : effect_table) {
-        if (const double ms = fx->latency_ms(); ms > 0.0) {
-            out.push_back({latency_source_name(id), ms});
-        }
-    }
-    if (const double ms = limiter.latency_ms(); ms > 0.0) {
-        out.push_back({"Output limiter", ms});
-    }
-    return out;
 }
 
 } // namespace namx

@@ -92,6 +92,17 @@ QColor display_faint(int factor);
 int unlit_alpha(int base_alpha);
 QColor led_amber(); // the meters' hot zone
 
+// Node graph (ui/node-graph): the canvas and its cards.
+// An effect's accent made readable on the current background (effect IDs, "merge",
+// "neutral" = the app accent).
+QColor fx_accent(const QString& fx_id);
+QColor canvas_bg(); // behind the cards
+QColor canvas_dot(); // the background grid
+QColor node_fill(); // a card's body
+QColor node_text();
+QColor node_text_dim(); // its I/O line, port labels
+QColor wire_drag(); // a wire being drawn
+
 // Chilean flag ("Made in Chile" badge in the menu bar).
 QColor flag_blue();
 QColor flag_red();

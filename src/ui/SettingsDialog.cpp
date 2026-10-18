@@ -150,7 +150,8 @@ void SettingsDialog::refresh_current_page() {
             }
             {
                 const QSignalBlocker block(normalize_box);
-                normalize_box->setChecked(targets.engine.get_nam().get_normalize());
+                normalize_box->setChecked(
+                    QSettings().value("audio/normalizeModels", true).toBool());
             }
             break;
         case Page::MIDI:

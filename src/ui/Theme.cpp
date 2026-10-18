@@ -52,7 +52,7 @@ static constexpr FxColor FX_COLORS[] = {
     {"flanger", "#93477b"}, {"phaser", "#4bba5b"},  {"nam", "#e4b954"},    {"eq", "#a5a38f"},
     {"chorus", "#8dccf3"},  {"tremolo", "#19848e"}, {"delay", "#aaa6a0"},  {"reverb", "#8f7d99"},
     {"ir", "#ef661a"},      {"drive", "#2e9a5c"},   {"volume", "#9fb4c7"}, {"transpose", "#c9a6f2"},
-    {"neutral", "#7d8590"},
+    {"merge", "#4f9fe8"},   {"neutral", "#7d8590"},
 };
 
 // A theme file's effect accents (Mode::CUSTOM; empty otherwise).
@@ -311,6 +311,31 @@ QColor led_red() {
 QColor display_bg() {
     return QColor(palette().display_bg);
 }
+static QColor readable_accent(const QColor& accent);
+
+QColor fx_accent(const QString& fx_id) {
+    return fx_id == QLatin1String("neutral") ? current_accent : readable_accent(accent(fx_id));
+}
+QColor canvas_bg() {
+    return mix_colors(palette().window, dark_active ? QColor(0, 0, 0) : QColor(255, 255, 255),
+                      0.25);
+}
+QColor canvas_dot() {
+    return mix_colors(canvas_bg(), palette().text, 0.12);
+}
+QColor node_fill() {
+    return palette().card;
+}
+QColor node_text() {
+    return palette().text;
+}
+QColor node_text_dim() {
+    return palette().text_muted;
+}
+QColor wire_drag() {
+    return palette().text_dim;
+}
+
 QColor flag_blue() {
     return QColor("#0039a6");
 }
@@ -886,6 +911,212 @@ QComboBox QAbstractItemView::item:hover {
     background-color: @selection@;
 }
 
+
+/* === Node-graph UI (ui/node-graph): top bar === */
+QFrame#topBar {
+    background-color: @surface@;
+    border-bottom: 1px solid @line@;
+}
+QLabel#logo {
+    font-size: 20pt;
+    font-weight: 300;
+    letter-spacing: 3px;
+    color: @text@;
+}
+QFrame#topBarLine {
+    background-color: @line@;
+    margin: 6px 0;
+}
+QToolButton#presetTitle {
+    font-size: 15pt;
+    color: @text@;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 10px;
+}
+QToolButton#presetTitle[untitled="true"] {
+    color: @text_muted@;
+}
+QToolButton#presetTitle:hover {
+    background-color: @selection@;
+}
+QToolButton#presetTitle::menu-indicator {
+    image: none;
+    width: 0;
+}
+QToolButton#topBarTool, QToolButton#metroToggle {
+    color: @text@;
+    background-color: @raised@;
+    border: 1px solid @border@;
+    border-radius: 6px;
+    min-width: 30px;
+    min-height: 30px;
+    font-size: 13pt;
+}
+QToolButton#topBarTool:hover, QToolButton#metroToggle:hover {
+    background-color: @selection@;
+    border-color: @border_hover@;
+}
+QToolButton#topBarTool::menu-indicator {
+    image: none;
+    width: 0;
+}
+QToolButton#topBarTool:checked {
+    color: @accent@;
+}
+QFrame#metroBox {
+    background-color: @raised@;
+    border: 1px solid @border@;
+    border-radius: 7px;
+}
+QFrame#metroBox QToolButton#topBarTool, QFrame#metroBox QToolButton#metroToggle {
+    border: none;
+    background: transparent;
+    min-width: 28px;
+    min-height: 28px;
+}
+QFrame#metroBox QToolButton#metroToggle:checked {
+    color: @on_accent@;
+    background-color: @accent@;
+}
+QLineEdit#topSearch {
+    background-color: @raised@;
+    color: @text@;
+    border: 1px solid @border@;
+    border-radius: 7px;
+    padding: 7px 10px;
+    selection-background-color: @accent@;
+    selection-color: @on_accent@;
+}
+QLineEdit#topSearch:focus {
+    border-color: @accent@;
+}
+QFrame#tempoPopup {
+    background-color: @surface@;
+    border: 1px solid @border@;
+    border-radius: 6px;
+}
+
+/* === Node-graph UI: canvas tools === */
+QWidget#canvasTools {
+    background-color: @surface@;
+    border: 1px solid @line@;
+    border-radius: 7px;
+}
+QToolButton#canvasTool {
+    color: @text@;
+    background: transparent;
+    border: none;
+    border-radius: 5px;
+    min-width: 30px;
+    min-height: 30px;
+    font-size: 14pt;
+}
+QToolButton#canvasTool:hover {
+    background-color: @selection@;
+}
+QSplitter#rigSplit::handle {
+    background-color: @line@;
+    width: 1px;
+}
+
+/* === Node-graph UI: parameter panel === */
+QWidget#paramPanel, QFrame#panelBody, QScrollArea#panelScroll, QWidget#panelContent {
+    background-color: @window@;
+}
+QLabel#panelTitle {
+    font-size: 17pt;
+    font-weight: 600;
+}
+QLabel#panelSubtitle {
+    color: @text_muted@;
+    font-size: 10pt;
+}
+QLabel#panelHint {
+    color: @text_muted@;
+    font-size: 10pt;
+}
+QLabel#panelCaption {
+    color: @text_muted@;
+    font-size: 8.5pt;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+QFrame#panelLine {
+    background-color: @line@;
+}
+QFrame#panelGroup {
+    background-color: @card@;
+    border: 1px solid @line@;
+    border-radius: 8px;
+}
+QToolButton#powerButton {
+    color: @text_muted@;
+    background: transparent;
+    border: 2px solid @border@;
+    border-radius: 19px;
+    min-width: 34px;
+    min-height: 34px;
+    font-size: 15pt;
+}
+QToolButton#powerButton:hover {
+    border-color: @border_hover@;
+}
+QToolButton#powerButton:checked {
+    color: @accent@;
+    border-color: @accent@;
+}
+QToolButton#panelMore {
+    color: @text@;
+    background: transparent;
+    border: none;
+    border-radius: 5px;
+    min-width: 26px;
+    min-height: 30px;
+    font-size: 15pt;
+}
+QToolButton#panelMore::menu-indicator {
+    image: none;
+    width: 0;
+}
+QToolButton#panelMore:hover {
+    background-color: @selection@;
+}
+QToolButton#panelTool {
+    color: @text@;
+    background-color: @raised@;
+    border: 1px solid @border@;
+    border-radius: 5px;
+    padding: 4px 10px;
+}
+QToolButton#panelTool:hover {
+    background-color: @selection@;
+    border-color: @border_hover@;
+}
+QToolButton#segment {
+    color: @text@;
+    background-color: @raised@;
+    border: 1px solid @border@;
+    border-radius: 0;
+    padding: 5px 14px;
+}
+QToolButton#segment[first="true"] {
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+}
+QToolButton#segment[last="true"] {
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+QToolButton#segment:hover {
+    background-color: @selection@;
+}
+QToolButton#segment:checked {
+    color: @on_accent@;
+    background-color: @accent@;
+    border-color: @accent@;
+}
 )";
 
 // The only application-wide styling: tooltips are parentless top-levels, so
@@ -1195,8 +1426,13 @@ void apply_to(QWidget& root) {
     QString qss = fill_roles(STYLE_SHEET);
     for (const auto& fc : FX_COLORS) {
         qss += QString::fromUtf8("QFrame[fx=\"%1\"] QLabel#fxName { color: %2; }\n"
-                                 "QFrame[fx=\"%1\"] QLabel#fileStatusOk { color: %2; }\n")
-                   .arg(QLatin1String(fc.id), readable_accent(accent(fc.id)).name());
+                                 "QFrame[fx=\"%1\"] QLabel#fileStatusOk { color: %2; }\n"
+                                 "QFrame[fx=\"%1\"] QToolButton#powerButton:checked { color: "
+                                 "%2; border-color: %2; }\n"
+                                 "QFrame[fx=\"%1\"] QToolButton#segment:checked { "
+                                 "background-color: %2; border-color: %2; color: %3; }\n")
+                   .arg(QLatin1String(fc.id), readable_accent(accent(fc.id)).name(),
+                        luminance(readable_accent(accent(fc.id))) > 0.35 ? "#000000" : "#ffffff");
     }
     root.setStyleSheet(qss);
 }

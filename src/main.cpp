@@ -10,7 +10,7 @@
 #include <QtGlobal>
 
 #include "Common.h"
-#include "MainWindow.h"
+#include "RigWindow.h"
 #include "Theme.h"
 
 // Last: <windows.h> defines macros (ABSOLUTE, RELATIVE, …) that break any of our headers
@@ -150,7 +150,7 @@ int run(int argc, char* argv[]) {
     migrate_legacy_settings();
     Theme::apply(app);
 
-    MainWindow w;
+    RigWindow w;
     Theme::apply_to(w); // window-scoped so OS dialogs keep the system look
     w.show();
     if (!files.isEmpty()) {
@@ -163,19 +163,10 @@ int run(int argc, char* argv[]) {
             std::printf("self-test: window shown after %lld ms\n",
                         static_cast<long long>(startup.elapsed()));
         });
-        // Every rack control must be in the registry, so presets save it.
-        const QStringList missing = w.controls_missing_from_presets();
-        for (const QString& m : missing) {
-            std::printf("self-test: not saved in presets: %s\n", qPrintable(m));
-        }
-        if (!missing.isEmpty()) {
-            std::fflush(stdout);
-            return 1;
-        }
         QTimer::singleShot(1500, &app, &finish_self_test);
     } else {
         // After the window is up, so the question has a parent on screen.
-        QTimer::singleShot(0, &w, &MainWindow::offer_desktop_integration);
+        QTimer::singleShot(0, &w, &RigWindow::offer_desktop_integration);
     }
     return app.exec();
 }

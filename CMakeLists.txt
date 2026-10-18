@@ -52,14 +52,22 @@ set(GUI_SOURCES
     src/main.cpp
     src/ui/AppImageIntegration.cpp
     src/ui/AppImageIntegration.h
-    src/ui/MainWindow.cpp
-    src/ui/MainWindow.h
+    src/ui/RigWindow.cpp
+    src/ui/RigWindow.h
+    src/ui/TopBar.cpp
+    src/ui/TopBar.h
+    src/ui/NodeCanvas.cpp
+    src/ui/NodeCanvas.h
+    src/ui/NodeIcons.cpp
+    src/ui/NodeIcons.h
+    src/ui/ParamPanel.cpp
+    src/ui/ParamPanel.h
+    src/ui/GraphModel.cpp
+    src/ui/GraphModel.h
     src/ui/KnobWidget.cpp
     src/ui/KnobWidget.h
     src/ui/ToggleSwitch.cpp
     src/ui/ToggleSwitch.h
-    src/ui/EffectShortcuts.cpp
-    src/ui/EffectShortcuts.h
     src/ui/AudioStatusBar.cpp
     src/ui/AudioStatusBar.h
     src/ui/LibraryIndex.cpp
@@ -67,11 +75,6 @@ set(GUI_SOURCES
     src/ui/LibraryPanel.cpp
     src/ui/LibraryPanel.h
     resources/resources.qrc
-    src/ui/ParamRegistry.h
-    src/ui/PresetSerializer.cpp
-    src/ui/PresetSerializer.h
-    src/ui/PresetBar.cpp
-    src/ui/PresetBar.h
     src/ui/NumberField.cpp
     src/ui/NumberField.h
     src/ui/TempoBar.cpp
@@ -104,6 +107,10 @@ set(GUI_SOURCES
     src/dsp/Log.h
     src/dsp/Constants.h
     src/dsp/EffectBase.h
+    src/dsp/SignalGraph.cpp
+    src/dsp/SignalGraph.h
+    src/dsp/NodeCatalog.cpp
+    src/dsp/NodeCatalog.h
     src/dsp/IRLoader.cpp
     src/dsp/IRLoader.h
     src/dsp/WavReader.cpp
@@ -368,6 +375,12 @@ if(NAM_BUILD_TESTS)
     target_compile_options(NamProcessorTest PRIVATE ${NAM_WARNING_FLAGS})
     target_link_libraries(NamProcessorTest PRIVATE namx_dsp nam_core Qt6::Core)
     add_test(NAME NamProcessorTest COMMAND NamProcessorTest)
+
+    # The node graph's wiring rules and block processing (tests/SignalGraphTest.cpp).
+    add_executable(SignalGraphTest tests/SignalGraphTest.cpp)
+    target_compile_options(SignalGraphTest PRIVATE ${NAM_WARNING_FLAGS})
+    target_link_libraries(SignalGraphTest PRIVATE namx_dsp nam_core Qt6::Core)
+    add_test(NAME SignalGraphTest COMMAND SignalGraphTest)
 
     # The library scan's file descriptions against hand-built WAV headers (audit 2026-10-04).
     add_executable(LibraryIndexTest tests/LibraryIndexTest.cpp src/ui/LibraryIndex.cpp

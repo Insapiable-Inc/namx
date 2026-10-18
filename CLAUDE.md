@@ -28,7 +28,7 @@ namx/
 │   └── dsp/           # AudioEngine, backends, effect processors (no Qt dependencies)
 ├── resources/         # resources.qrc, app icon (icons/), starter presets (presets/)
 ├── packaging/         # desktop file, AppStream, mime, Windows .rc (AppImage built by release.yml — the only Linux release, user 2026-10-04; no Flatpak, Snap or AUR package)
-├── tests/             # MidiMapperTest, DspGoldenTest, WavReaderTest, NamProcessorTest, LibraryIndexTest, ThemeFileTest (-DNAM_BUILD_TESTS=ON)
+├── tests/             # MidiMapperTest, DspGoldenTest, WavReaderTest, NamProcessorTest, SignalGraphTest, LibraryIndexTest, ThemeFileTest (-DNAM_BUILD_TESTS=ON)
 ├── bench/             # namx-bench, instructions.py (CPU regression) (-DNAM_BUILD_BENCH=ON)
 └── external/          # Git submodules (CMake: EXTERNAL_DIR, NAM_ROOT, NAM_DEPS_PATH)
     ├── NeuralAmpModelerCore/  # NAM core — our fork (Insapiable-Inc), branch `namx` = upstream 3cde95c + our weight-check fix; brings Eigen, nlohmann/json, AudioDSPTools in its Dependencies/
@@ -103,21 +103,36 @@ JACK ports: `NAM-X:input`, `NAM-X:output_L`, `NAM-X:output_R`. Connect with `jac
 
 Qt6 application with a platform audio backend behind the `IAudioBackend` interface (`src/dsp/IAudioBackend.h`): `JackBackend` on Linux, `WasapiBackend` on Windows. Exactly one backend .cpp is compiled per platform (each defines `IAudioBackend::create()`); everything else is platform-agnostic. The key design constraint is **thread safety between the GUI thread and the real-time audio thread**.
 
-### Signal chain
+### Signal graph (branch `ui/node-graph`, 2026-10-17)
 
-`AudioEngine` (implements `IAudioBackend::Callback`) owns all processors and a **double-buffered chain** (two `std::vector<EffectBase*>` + atomic index) iterated every callback. **Processing order = UI order** — `MainWindow::rebuild_effect_strip` lays the cards out by iterating `get_chain()`, and the user can reorder by dragging cards. Each effect has a stable string ID (`AudioEngine::effect_table` — never rename); `set_chain_order(ids)` sanitizes (unknown IDs dropped, missing effects at default slot) and swaps RT-safely, flagging moved effects for an audio-thread `reset()` via `request_reset()`/`consume_pending_reset()`. All 16 effects reorder freely — nothing is pinned; only the Input/Output gain stages, the output limiter and the metronome sit outside the chain. New effect IDs are appended to the table at their default slot, and old sessions/presets get them there via the sanitizer. The default order:
+On this branch the fixed chain is gone: the rig is a **node graph** the user wires on a
+canvas (look from `mockup.png`: top bar, node network left, parameters right; the
+mockup's bottom-right library panel is deliberately left out). `src/dsp/SignalGraph.h`
+holds the rules, `NodeCatalog` the node types:
 
-```
-mono input → input gain (smoothed)
-  → Tuner → Transpose → Gate → Compressor → Wah → Flanger → Phaser → Drive   (mono section)
-  → NAM model (a stereo input runs one model per channel — never summed to mono)
-  → Volume pedal (first in the effects loop) → EQ
-  → Chorus → Tremolo → Delay → Reverb                              (stereo-capable)
-  → Cabinet (one IR in the UI; the DSP has a second slot, its controls disabled)
-  → output gain (smoothed) → meter (guitar) → + metronome → output limiter → stereo out (L, R)
-```
-
-Cards have a main row and optional ▾ detail rows (`MainWindow::add_detail_row`) for advanced knobs; those knobs register through `late_knob` (deferred `knob_param`) so they don't need named members.
+- Every port carries one **mono** signal. Inputs are on a card's top edge, outputs on its
+  bottom edge. **An output may feed any number of inputs** (that is the split — there is
+  no split node); **an input takes at most one wire**, so two signals meet only in a
+  **Merge** node (2 inputs, 1 output, a Mix A/B crossfade, no EQ). No loops.
+- Kinds: `INPUT` (1 out: the guitar after the input gain), `OUTPUT` (L, R in; one side
+  wired = mono on both), `MONO` effects (1 in, 1 out — most effects), `STEREO` variants
+  (L, R in and out; R unwired = mono in → the effect's stereo out, both wired = its
+  stereo-in path) for the effects that were stereo-capable (Flanger, Phaser, Chorus,
+  Tremolo, Delay — with a Ping-Pong knob — and Reverb), `MERGE`.
+- Any number of instances of a type (two amps, two cabs…). Polarity is not a node yet
+  (user: could be its own node later).
+- `AudioEngine` compiles the graph (`compile_graph`: topological order, a buffer per
+  output port) into a `GraphPlan` published through an `RtSlot`; the plan owns
+  `shared_ptr<GraphNode>`s, so a removed node lives until the audio thread has left the
+  last plan holding it. Only nodes reachable from the Input run. A node whose input
+  wiring changed gets `request_reset()`. Output gain, meter, metronome and limiter follow
+  the graph as before. Latency = the slowest Input→Output path.
+- `NodeCatalog` type IDs are the old effect IDs (never rename) and parameter keys are the
+  v2 preset keys, so v2 presets and the chain-era session migrate by name
+  (`GraphModel::from_v2`: enabled effects in `effectOrder`, mono effects after a stereo
+  one doubled into L/R twins, as the chain ran them).
+- Not ported yet: tempo sync of rates/times, MIDI mapping targets, the gate/compressor
+  reduction meters, preset quick slots and A/B, the library panel.
 
 ### EffectBase dispatch
 
@@ -142,7 +157,14 @@ All effects inherit `EffectBase` (`src/dsp/EffectBase.h` — the header comment 
 
 | Class | File | Purpose |
 |---|---|---|
-| `AudioEngine` | `src/dsp/AudioEngine.h/cpp` | Owns backend + processors, runs the chain, VU peaks |
+| `AudioEngine` | `src/dsp/AudioEngine.h/cpp` | Owns the backend, runs the compiled graph (`create_node`, `set_graph`, `load_model`/`load_ir` per node), metronome, limiter, VU peaks |
+| `SignalGraph` | `src/dsp/SignalGraph.h/cpp` | Node kinds and ports, `GraphNode`, `GraphWire`, `compile_graph` / `can_add_wire` / `run_plan`; `IoProcessor` (Input/Output gain, limiter switch), `MergeProcessor` (`tests/SignalGraphTest`) |
+| `NodeCatalog` | `src/dsp/NodeCatalog.h/cpp` | Every node type: name, category, mono/stereo variants, file kind, `ParamSpec`s; `create(id, type, stereo)` |
+| `GraphModel` | `src/ui/GraphModel.h/cpp` | The rig as edited: nodes (name, position, values, file) + wires; every change pushed to the engine; JSON v3 + v2 migration |
+| `NodeCanvas` | `src/ui/NodeCanvas.h/cpp` | The node network (QGraphicsView): cards, ports, bezier wires, drag-to-connect, wire pick-up, context menus (Add / node / wire → Insert Node), zoom tools; `NodeIcons` paints the category icons |
+| `ParamPanel` | `src/ui/ParamPanel.h/cpp` | Right panel: the selected node's header (icon, name, I/O, power, ⋮) and its catalog parameters; file row for Amp/Cab, tuner display, Input/Output meters |
+| `TopBar` | `src/ui/TopBar.h/cpp` | Logo, preset name menu + ✎ rename, metronome + BPM (full `TempoBar` in a popup), search over effects/presets/models/IRs, ★, ⋮ menu, ⚙ |
+| `RigWindow` | `src/ui/RigWindow.h/cpp` | The main window: audio start/devices/connections, presets, session, search, Settings, notices (`set_notice`) |
 | `IAudioBackend` | `src/dsp/IAudioBackend.h` | Backend interface: start/stop, device enumeration, port routing |
 | `JackBackend` | `src/dsp/JackBackend.h/cpp` | Linux JACK/PipeWire-JACK backend |
 | `WasapiBackend` | `src/dsp/WasapiBackend.h/cpp` | Windows WASAPI backend: shared mode (float32 mix format only) or opt-in exclusive mode (native format search + conversion, minimum period, falls back to shared; `audio/exclusive`). No Windows machine here: compile-checked with MinGW, not run |
@@ -162,17 +184,13 @@ All effects inherit `EffectBase` (`src/dsp/EffectBase.h` — the header comment 
 | `FilterBankShifter` | `src/dsp/FilterBankShifter.h` | Transpose's shifter: complex gammatone bank (2 bands/ERB) → per-band rotation at (ratio − 1) × its spectral peak's frequency → Hohmann delay/phase-aligned resynthesis; ~20 ms at the low E, ~4 ms above; band state in 8-lane blocks so the loop vectorizes. Chosen by ear 2026-10-03 (the variants tried are listed in its header) |
 | `StretchShifter` | `src/dsp/StretchShifter.h` | Octave shifter for the tails (Reverb Shimmer, Delay Shimmer — keys `reverb/shimmer`, `delay/shimmer`; the Delay's was `crystals` until 2026-10-03): Signalsmith Stretch (`external/signalsmith-stretch`, MIT) at its default 120 ms block, accurate pitch, 150 ms latency — the Delay feeds it 150 ms earlier in the line so the Delay's octave repeats land on time. Replaced the WSOLA `PitchShifter` (deleted 2026-10-03) |
 | `OutputLimiter` | `src/dsp/OutputLimiter.h/cpp` | Output-stage look-ahead limiter (not an effect; registry key `limiter`) |
-| `MainWindow` | `src/ui/MainWindow.h/cpp` | Window assembly, parameter registry, effect strip + DnD reorder, session state; the status bar's red middle zone is for problems worth seeing — post with `set_notice(key, text, tip)`, clear with an empty text (first user: model/device sample-rate mismatch) |
-| `ParamRegistry.h` | `src/ui/` | `ParamDesc` — one entry per user-facing parameter (shared by MainWindow + PresetSerializer) |
-| `PresetBar` | `src/ui/PresetBar.h/cpp` | Bar above the rack: preset name menu, ‹ ›, `*`, Save/Save As, quick slots 1–8 (owns `presets/slots`), A/B buttons; MainWindow owns the preset state (`preset_path` + baseline) |
-| `PresetSerializer` | `src/ui/PresetSerializer.h/cpp` | Preset schema v2 JSON ↔ registry/engine (v1 files load too) |
 | `SettingsDialog` | `src/ui/SettingsDialog.h/cpp` | Settings window (Ctrl+,): Audio / MIDI / Library / Tuner / Shortcuts pages, instant apply; drives the same objects as the rest of the UI (`SettingsTargets`); the Shortcuts page is built from the window's menus and `QShortcut`s (each needs a `whatsThis`) |
 | `AudioStatusBar` | `src/ui/AudioStatusBar.h/cpp` | Bottom status bar: backend state, rate/buffer/latency (round trip = server I/O + `AudioEngine::processing_latency()`, from each effect's `latency_ms()` and the limiter; breakdown in the tooltip), device pickers; persists IDs, emits `device_selection_changed` |
 | `LibraryIndex` | `src/ui/LibraryIndex.h/cpp` | Library scan: worker thread over the root folders, metadata cache (`AppDataLocation/library-index.json`), `QFileSystemWatcher` rescans; `LibraryEntry` carries a pre-built `summary`/`details` per file |
 | `LibraryPanel` | `src/ui/LibraryPanel.h/cpp` | Local library tab: Models/IRs/Presets sections, search, favorites, recents, sort, two-line list; emits `activated(kind, path)`, owner reports back via `set_loaded_path` |
 | `TempoBar` | `src/ui/TempoBar.h/cpp` | Tempo + metronome strip: BPM `NumberField`, Tap, play (Space), `BeatLeds` accent editor, meter/subdivision/sound/count-in menus, level/pan; emits `bpm_changed`; `poll()` from the meter timer |
 | `NumberField` | `src/ui/NumberField.h/cpp` | Drag / scroll / click-to-type numeric readout with a unit (tempo BPM, tuner A4 reference) |
-| `TempoSync.h` | `src/ui/` | Note-value table (index order is a preset contract — append only) + ms/Hz conversions; `MainWindow::add_tempo_sync`/`push_synced` wire the Sync switches |
+| `TempoSync.h` | `src/ui/` | Note-value table (index order is a preset contract — append only) + ms/Hz conversions (on `ui/node-graph` only the metronome uses it so far — tempo sync of node parameters is not ported) |
 | `Metronome` | `src/dsp/Metronome.h/cpp` | RT click generator mixed after the output gain and meter, before the limiter (not an effect, not metered); samples synthesized in `set_sample_rate`; settings are atomics |
 | `MidiInput` | `src/midi/MidiInput.h/cpp` + `AlsaMidiInput.cpp` (Linux) / `WinMidiInput.cpp` (Windows) | Platform MIDI input; backend thread → queued `message_received(MidiMessage)`; devices by name, hot-plug, enable set in `midi/disabledDevices` |
 | `MidiMapper` | `src/midi/MidiMapper.h/cpp` | Mappings (CC/note/program × absolute/relative/toggle/momentary, range) → registry knobs/toggles (registered automatically by `knob_param`/`toggle_param`) and actions; Learn; `.nammidi` files; clock → tempo. Tested by `tests/MidiMapperTest` |
@@ -184,8 +202,7 @@ All effects inherit `EffectBase` (`src/dsp/EffectBase.h` — the header comment 
 | `ToggleSwitch` | `src/ui/ToggleSwitch.h/cpp` | Custom-painted on/off switch |
 | `Theme` | `src/ui/Theme.h/cpp` | Fusion + app stylesheet; per-effect accents (`tag_card(card, fx_id)`) + chrome color accessors — **all colors live here**. Modes (`ui/theme`): Follow the system (default, live), Dark / Light (= KDE Breeze Dark / Light palettes, user 2026-10-09), Custom (a theme file, `ui/customTheme`, reloaded on save). Every mode is one palette (window, text, base, button, accent, shadow, disabled text) → `from_palette` derives all tones; ours in every mode: LED colours, warning red, switch edges, effect accents (a theme file may override those). `AA_UseStyleSheetPropagationInWidgetStyles` is on, so the window's palette reaches widgets created later (Settings, MIDI Mappings) — without it they took the OS palette |
 | `ThemeFile` | `src/ui/ThemeFile.h/cpp` | Theme file reader (no widgets): our JSON or a KDE `.colors`, from `<config>/themes`; strict — an unknown key/effect ID or bad colour is an error with a message (`tests/ThemeFileTest`) |
-| `AppImageIntegration` | `src/ui/AppImageIntegration.h/cpp` | AppImage only (`$APPIMAGE`): add/remove the launcher, icon and MIME types under `~/.local/share` (marker key `X-NAMX-AppImage-Integration`), first-run offer from `MainWindow::offer_desktop_integration` (skipped in `--self-test-and-exit`), Settings menu entry |
-| `EffectShortcuts` | `src/ui/EffectShortcuts.h/cpp` | Keyboard toggles for effects (user has Latin American layout) |
+| `AppImageIntegration` | `src/ui/AppImageIntegration.h/cpp` | AppImage only (`$APPIMAGE`): add/remove the launcher, icon and MIME types under `~/.local/share` (marker key `X-NAMX-AppImage-Integration`), first-run offer from `RigWindow::offer_desktop_integration` (skipped in `--self-test-and-exit`), Settings menu entry |
 | `Constants.h` | `src/dsp/` | DSP parameter ranges and defaults for all effects |
 
 ### Naming
@@ -196,32 +213,32 @@ parameter or local reuses a member's name (`new_<x>` / `current_<x>` / `<x>_per_
 Settings keys, preset JSON keys and effect IDs are data and keep their spelling
 (`effectOrder`, `session/presetPath`, …). `.clang-tidy` encodes the naming rules.
 
-### Parameter registry
+### Parameters (branch `ui/node-graph`)
 
-`MainWindow::register_parameters()` is the **single source of truth for every user-facing
-parameter**: one `knob_param`/`toggle_param` line per control builds `params`
-(`ParamDesc { group, key, widget, defaults }`) and wires the widget to the
-engine via a lambda connect. Preset save/load are single loops over this table; Phase 3
-session persistence and future MIDI mapping consume it too. **When adding an effect
-parameter, register it here — never add hand-written connects, slots, or preset keys.**
-`group`+`key` mirror the preset JSON schema (empty group = top-level key).
-Every rack knob and switch is in presets, the Tuner's On and Mute included (user,
-2026-10-04); `--self-test-and-exit` fails if a rack control (outside the tempo bar) is
-missing from the registry.
+`NodeCatalog` (`src/dsp/NodeCatalog.cpp`, no Qt) is the **single source of truth for every
+node parameter**: one `ParamSpec` per control (key, label, range, default, unit, format,
+log taper, stereo-only, setter). `ParamPanel` builds its controls from it, `GraphModel`
+stores `key → value` per node and applies through the setter, presets and the session
+save the same map. **A new parameter is one line in the catalog** — no hand-written
+widgets, connects or preset keys.
 
 ### Loading files
 
-Every way a model/IR/preset gets loaded — library click, ‹ › arrows, `Library → Import…`
-dialogs, drag-and-drop onto the window, session restore, preset references — goes through
-`MainWindow::load_model_file` / `load_ir_file` / `load_preset_file`. They skip a reload of the
-already-loaded path, persist `files/last*`, bump the library recents and mark the loaded
-entry, and refresh the Amplifier/Cabinet hero rows (`update_hero_cards`). Don't call
+A model/IR goes into a node through `GraphModel::load_file(id, path)` (the panel's
+Browse… and ‹ ›, the search box, drag-and-drop, `namx file…`, presets). Don't call
 `AudioEngine::load_model`/`load_ir` from the UI directly.
 
 ### Persistence
 
-- **QSettings** (org `Insapiable` — `pichulero.cl` until 2026-10-04, migrated once by `main.cpp`; app name set in `main.cpp` — drives the config path): last model/IR/preset paths, audio device IDs, JACK port connections, window geometry + dock state (`window/state`), the library (`library/{model,ir,preset}Roots`, `favorites`, `recents`, `section`, and `modes`/`sorts` — one All/★/Recent mode and one sort per section; the old global `mode`/`sort` only seed them), and the full registry state plus `session/effectOrder` under `session/` (saved on exit + debounced 1 s after any widget change; restored on launch through the widgets). First run auto-connects `system:capture_1`/`playback_{1,2}`.
-- **Presets** (8 starters in `resources/presets/`, seeded once into `<presets>/Starter`) are `.nampreset` JSON files via `QJsonDocument`, schema v2: all registry parameters plus `version`, `namEnabled`, `effectOrder` (stable-ID list), embedded `namPath`/`irPath` (applied on load when the file exists; otherwise a warning, current model/IR kept); older presets may carry a `tone3000` object from the removed integration, which is ignored. v1 files (no `version`) still load. Loading applies values through the widgets, so the UI and engine can't drift.
+- **QSettings** (org `Insapiable`; app name set in `main.cpp`): audio device IDs, JACK
+  port connections, the library roots/favorites, and on this branch `graph/session` (the
+  graph JSON, debounced 1 s after any change and on exit), `graph/presetPath` +
+  `graph/presetBaseline` (the `*`), `graph/window/{geometry,split}`. The chain-era
+  `session/…` keys are only read (first launch migrates them) and never written, so
+  `main` keeps its own session. First run auto-connects `system:capture_1`/`playback_{1,2}`.
+- **Presets** are `.nampreset` JSON, format 3: `{"version": 3, "graph": {"nodes": [{id,
+  type, stereo?, name, x, y, enabled, params, file?}], "wires": [{from, fromPort, to,
+  toPort}]}}`. v2 files load through the migration; the 8 starters are still v2.
 
 ## NAM core library
 

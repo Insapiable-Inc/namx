@@ -46,7 +46,7 @@ struct SettingsTargets
 };
 
 // Settings window: one page per area, every change applied immediately (no OK/Cancel).
-// Non-modal; MainWindow keeps one and shows it on the page asked for.
+// Non-modal; the main window keeps one and shows it on the page asked for.
 class SettingsDialog : public QDialog
 {
     Q_OBJECT
