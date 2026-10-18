@@ -101,14 +101,13 @@ void io_limiter(EffectBase& fx, double v) {
 vector<NodeType> build_types() {
     vector<NodeType> t;
 
-    // Amp + cab first: the Add menu's most-used entries. Stereo only (L/R in and out):
-    // one file per node, a model / IR instance per channel, and with one side wired
-    // only that one runs. Two different amps = two nodes, one channel each.
+    // Amp + cab first: the Add menu's most-used entries. Mono only (user, 2026-10-18:
+    // the most intuitive); a stereo rig uses one per channel.
     t.push_back({"nam",
                  "Amp",
                  "Amp",
-                 false,
                  true,
+                 false,
                  NodeType::File::MODEL,
                  {
                      knob("input", "Input", NAM_INPUT_MIN, NAM_INPUT_MAX, NAM_INPUT_DEFAULT, "dB",
@@ -121,8 +120,8 @@ vector<NodeType> build_types() {
     t.push_back({"ir",
                  "Cab",
                  "Cab",
-                 false,
                  true,
+                 false,
                  NodeType::File::IR,
                  {
                      knob(

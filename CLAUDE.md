@@ -118,9 +118,9 @@ holds the rules, `NodeCatalog` the node types:
   wired = mono on both), `MONO` effects (1 in, 1 out — most effects), `STEREO` variants
   (L, R in and out; R unwired = mono in → the effect's stereo out, both wired = its
   stereo-in path) for the effects that were stereo-capable (Flanger, Phaser, Chorus,
-  Tremolo, Delay — with a Ping-Pong knob — and Reverb), `MERGE`. **Amp and Cab are
-  stereo only** (user, 2026-10-18): one model / IR per node, per channel; two different
-  amps = two nodes, each wired on one channel.
+  Tremolo, Delay — with a Ping-Pong knob — and Reverb), `MERGE`. **Amp and Cab are mono
+  only** (user, 2026-10-18, after briefly trying stereo-only: mono is the most
+  intuitive); a stereo rig uses one per channel.
 - **The tuner is global, not a node** (user, 2026-10-18): the engine runs it on the input
   after the input gain, before the graph (Mute silences the graph's input); the top
   bar's Tuner button (Ctrl+T) shows its strip. Older graphs' Tuner nodes are dropped on
