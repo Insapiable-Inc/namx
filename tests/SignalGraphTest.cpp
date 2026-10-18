@@ -12,6 +12,7 @@
 #include <cstdio>
 
 #include "NodeCatalog.h"
+#include "RoutingProcessors.h"
 
 namespace namx
 {
@@ -185,6 +186,53 @@ static void test_processing() {
         merge->processor().reset(); // past the glide
         const auto [l2, r2] = run(nodes, wires);
         CHECK(equals_scaled(l2, 0.0f), "Invert B at 50 % cancels two aligned copies");
+    }
+    // Crossover: an impulse split in two bands that sum to an all-pass — every bit of
+    // its energy comes back.
+    {
+        auto x = NodeCatalog::create(2, "crossover", true);
+        constexpr size_t LEN = 8192;
+        vector<float> l(LEN, 0.0f);
+        l[0] = 1.0f;
+        vector<float> r = l;
+        x->processor().process(l.data(), r.data(), LEN, false);
+        double energy = 0.0;
+        double low = 0.0;
+        for (size_t i = 0; i < LEN; ++i) {
+            energy += (l[i] + r[i]) * (l[i] + r[i]);
+            low += l[i] * l[i];
+        }
+        CHECK(std::abs(energy - 1.0) < 1e-3, "Crossover: Low + High = an all-pass");
+        CHECK(low > 0.01 && low < 0.99, "Crossover: each band gets part of the signal");
+    }
+    // Pan: constant power — the centre −3 dB each side, hard left nothing on the right.
+    {
+        auto pan = NodeCatalog::create(2, "pan", true);
+        float l[N];
+        float r[N];
+        std::fill_n(l, N, 1.0f);
+        std::fill_n(r, N, 1.0f);
+        pan->processor().process(l, r, N, false);
+        CHECK(std::abs(l[N - 1] - 0.70710678f) < 1e-5f && std::abs(r[N - 1] - 0.70710678f) < 1e-5f,
+              "Pan centre: −3 dB on both sides");
+        static_cast<PanProcessor&>(pan->processor()).set_pan_pct(-100.0f);
+        pan->processor().reset();
+        std::fill_n(l, N, 1.0f);
+        std::fill_n(r, N, 1.0f);
+        pan->processor().process(l, r, N, false);
+        CHECK(std::abs(l[0] - 1.0f) < 1e-6f && std::abs(r[0]) < 1e-6f, "Pan hard left: L only");
+    }
+    // Meter: passes the signal through and keeps its peak.
+    {
+        auto meter = NodeCatalog::create(2, "meter", false);
+        const Nodes nodes = {NodeCatalog::create(1, "input", false), meter,
+                             NodeCatalog::create(3, "output", false)};
+        const auto [l, r] = run(nodes, {{1, 0, 2, 0}, {2, 0, 3, 0}});
+        auto& m = static_cast<MeterProcessor&>(meter->processor());
+        CHECK(equals_scaled(l, 1.0f), "Meter passes the signal through");
+        CHECK(std::abs(m.take_peak() - static_cast<float>(N - 1) / N) < 1e-6f &&
+                  m.take_peak() == 0.0f,
+              "Meter: the block's peak, once");
     }
     // A dead end (fed, but reaching no Output) doesn't run.
     {

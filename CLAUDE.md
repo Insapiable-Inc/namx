@@ -127,6 +127,14 @@ holds the rules, `NodeCatalog` the node types:
   2026-10-18: no Merge bypass is obviously right). A Select (A | B) node was tried and
   dropped the same day: a Merge's Mix mapped to a footswitch is the A/B switch, its
   gains glide over 10 ms so the flip doesn't click.
+- **Routing nodes** (user, 2026-10-18; Utility, Merge's blue, no bypass —
+  `NodeType::bypass = false`): **Crossover** (STEREO kind, outputs labelled Low / High
+  via `NodeType::output_labels`; Linkwitz-Riley 24 dB/oct, the bands sum to an
+  all-pass), **Pan** (STEREO kind, constant power, −3 dB centre) — the inverse of Merge
+  — and **Meter** (MONO pass-through; its card draws a level bar, the panel a
+  `VUMeter`; `RigWindow`'s meter timer is the one reader of `MeterProcessor::take_peak`).
+  All three in `src/dsp/RoutingProcessors.h`. Not wanted: a Gain node (not yet), an FX
+  loop node.
   **Every effect takes one input** (user, 2026-10-18): no 2-in effects, a stereo rig
   runs two nodes, one per side — Amp and Cab included, which are mono only (briefly
   stereo-only; mono is the most intuitive).

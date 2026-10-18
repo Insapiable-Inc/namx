@@ -13,6 +13,7 @@
 #include "NoiseGateProcessor.h"
 #include "PhaserProcessor.h"
 #include "ReverbProcessor.h"
+#include "RoutingProcessors.h"
 #include "TransposeProcessor.h"
 #include "TremoloProcessor.h"
 #include "VolumeProcessor.h"
@@ -499,6 +500,37 @@ vector<NodeType> build_types() {
                     "Flips input B's polarity: two branches that thin each other out "
                     "when blended can fill out instead"),
          }});
+    t.back().bypass = false;
+    t.push_back({"crossover",
+                 "Crossover",
+                 "Utility",
+                 false,
+                 true,
+                 NodeType::File::NONE,
+                 {
+                     hz("freq", "Frequency", CrossoverProcessor::FREQ_MIN,
+                        CrossoverProcessor::FREQ_MAX, CrossoverProcessor::FREQ_DEFAULT, Format::HZ,
+                        &set_float<CrossoverProcessor, &CrossoverProcessor::set_freq>),
+                 }});
+    t.back().params.back().tip = "Where the bands split: Low gets what's below it, High what's "
+                                 "above (24 dB/octave each; merged at 50 % they add back flat)";
+    t.back().output_labels = {"Low", "High"};
+    t.back().bypass = false;
+    t.push_back({"pan",
+                 "Pan",
+                 "Utility",
+                 false,
+                 true,
+                 NodeType::File::NONE,
+                 {
+                     knob("pan", "Pan", -100.0, 100.0, 0.0, "%", 1.0,
+                          &set_float<PanProcessor, &PanProcessor::set_pan_pct>,
+                          "−100 % = left only · 0 = centre (−3 dB each side) · 100 % = right "
+                          "only"),
+                 }});
+    t.back().bypass = false;
+    t.push_back({"meter", "Meter", "Utility", true, false, NodeType::File::NONE, {}});
+    t.back().bypass = false;
     // Not in the Add menu: every graph has exactly one of each.
     t.push_back({"input",
                  "Input",
@@ -569,6 +601,15 @@ unique_ptr<EffectBase> make_processor(const string& id) {
     }
     if (id == "merge") {
         return make_unique<MergeProcessor>();
+    }
+    if (id == "crossover") {
+        return make_unique<CrossoverProcessor>();
+    }
+    if (id == "pan") {
+        return make_unique<PanProcessor>();
+    }
+    if (id == "meter") {
+        return make_unique<MeterProcessor>();
     }
     if (id == "input" || id == "output") {
         return make_unique<IoProcessor>();

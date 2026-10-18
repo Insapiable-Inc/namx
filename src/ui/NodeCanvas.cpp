@@ -4,6 +4,7 @@
 #include <cmath>
 
 #include <QContextMenuEvent>
+#include <QElapsedTimer>
 #include <QFileInfo>
 #include <QFontMetricsF>
 #include <QGraphicsPathItem>
@@ -49,16 +50,22 @@ QColor node_accent(const GraphModel::Node& n) {
 }
 
 // "L" / "R", "A" / "B" for two-port sides; nothing for one.
-QString port_label(NodeKind kind, bool input, int port) {
-    if (kind == NodeKind::MERGE && input) {
+QString port_label(const GraphModel::Node& n, bool input, int port) {
+    if (n.kind() == NodeKind::MERGE && input) {
         return port == 0 ? "A" : "B";
     }
-    const int count = input ? input_count(kind) : output_count(kind);
+    const int count = input ? input_count(n.kind()) : output_count(n.kind());
     if (count < 2) {
         return {};
     }
+    if (!input && static_cast<size_t>(port) < n.type->output_labels.size()) {
+        return QString::fromStdString(n.type->output_labels[static_cast<size_t>(port)]);
+    }
     return port == 0 ? "L" : "R";
 }
+
+// A Meter card's scale: dBFS at the left end of its bar (the right end is 0 dBFS).
+constexpr double METER_FLOOR_DB = -60.0;
 
 // A vertical S-curve from an output port down to an input port.
 void curve_to(QPainterPath& path, QPointF b) {
@@ -164,8 +171,12 @@ public:
         f.setWeight(QFont::Normal);
         p->setFont(f);
         p->setPen(Theme::node_text_dim());
-        p->drawText(QRectF(text_x, 38, text_w + 14, 20), Qt::AlignLeft | Qt::AlignVCenter,
-                    QFontMetricsF(f).elidedText(io_line(*n), Qt::ElideRight, text_w + 14));
+        if (n->type->id == "meter") {
+            paint_level(*p, QRectF(text_x, 38, text_w + 14, 20));
+        } else {
+            p->drawText(QRectF(text_x, 38, text_w + 14, 20), Qt::AlignLeft | Qt::AlignVCenter,
+                        QFontMetricsF(f).elidedText(io_line(*n), Qt::ElideRight, text_w + 14));
+        }
         p->setOpacity(1.0);
 
         // Bypass button and ⋮ menu affordance.
@@ -196,14 +207,15 @@ public:
                 p->setPen(QPen(accent, 1.6));
                 p->setBrush(wired(input, port) ? QBrush(accent) : QBrush(Theme::node_fill()));
                 p->drawEllipse(c, PORT_R, PORT_R);
-                const QString label = port_label(n->kind(), input, port);
+                const QString label = port_label(*n, input, port);
                 if (!label.isEmpty()) {
                     QFont lf = p->font();
                     lf.setPointSizeF(7.5);
                     lf.setWeight(QFont::DemiBold);
                     p->setFont(lf);
                     p->setPen(Theme::node_text_dim());
-                    p->drawText(QRectF(c.x() + 7, input ? c.y() - 16 : c.y() + 2, 16, 14),
+                    const double w = QFontMetricsF(lf).horizontalAdvance(label) + 2;
+                    p->drawText(QRectF(c.x() + 7, input ? c.y() - 16 : c.y() + 2, w, 14),
                                 Qt::AlignLeft | Qt::AlignVCenter, label);
                 }
             }
@@ -211,6 +223,24 @@ public:
     }
 
     const int id;
+
+    // A Meter node's peak since the last poll (linear): the bar jumps up to it and falls
+    // back at FALL_DB_PER_S.
+    void feed_peak(float peak) {
+        constexpr double FALL_DB_PER_S = 24.0;
+        const double db = peak > 0.0f ? 20.0 * std::log10(peak) : METER_FLOOR_DB;
+        const double dt =
+            since_feed.isValid() ? static_cast<double>(since_feed.restart()) / 1000.0 : 0.0;
+        if (!since_feed.isValid()) {
+            since_feed.start();
+        }
+        const double shown = std::max(db, level_db - FALL_DB_PER_S * dt);
+        const double clamped = std::max(shown, METER_FLOOR_DB);
+        if (std::abs(clamped - level_db) > 0.05) {
+            level_db = clamped;
+            update();
+        }
+    }
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent* ev) override {
@@ -328,6 +358,28 @@ private:
                            });
     }
 
+    // A Meter card's level: a bar in the meters' zone colours and the dBFS number.
+    void paint_level(QPainter& p, const QRectF& r) const {
+        const QRectF bar(r.left(), r.center().y() - 4, r.width() - 52, 8);
+        p.setPen(Qt::NoPen);
+        p.setBrush(Theme::track());
+        p.drawRoundedRect(bar, 3, 3);
+        const double frac = (level_db - METER_FLOOR_DB) / -METER_FLOOR_DB;
+        if (frac > 0.0) {
+            p.setBrush(level_db > -3.0    ? Theme::led_red()
+                       : level_db > -12.0 ? Theme::led_amber()
+                                          : Theme::led_green());
+            p.drawRoundedRect(
+                QRectF(bar.left(), bar.top(), bar.width() * std::min(frac, 1.0), bar.height()), 3,
+                3);
+        }
+        p.setPen(Theme::node_text_dim());
+        p.drawText(QRectF(bar.right() + 6, r.top(), 46, r.height()),
+                   Qt::AlignLeft | Qt::AlignVCenter,
+                   level_db <= METER_FLOOR_DB ? QString("−∞ dB")
+                                              : QString("%1 dB").arg(level_db, 0, 'f', 1));
+    }
+
     // "Mono → Stereo", "Mono (Guitar)", or the loaded file for Amp/Cab.
     QString io_line(const GraphModel::Node& n) const {
         if (n.type->file != NodeType::File::NONE) {
@@ -344,6 +396,11 @@ private:
             case NodeKind::MERGE:
                 return "2 × Mono → Mono";
             case NodeKind::STEREO:
+                if (n.type->output_labels.size() == 2) {
+                    return QString("Mono → %1 · %2")
+                        .arg(QString::fromStdString(n.type->output_labels[0]),
+                             QString::fromStdString(n.type->output_labels[1]));
+                }
                 return "Mono → Stereo";
             case NodeKind::MONO:
                 break;
@@ -353,6 +410,8 @@ private:
 
     NodeCanvas& canvas;
     bool wiring = false;
+    double level_db = METER_FLOOR_DB; // Meter nodes
+    QElapsedTimer since_feed;
 };
 
 // One connection.
@@ -852,6 +911,12 @@ void NodeCanvas::end_wire(QPointF scene_pos) {
 
 QPointF NodeCanvas::card_at(const QPoint& global_pos) const {
     return mapToScene(mapFromGlobal(global_pos)) - QPointF(NODE_W / 2, NODE_H / 2);
+}
+
+void NodeCanvas::set_meter_peak(int id, float peak) {
+    if (const auto it = node_items.find(id); it != node_items.end()) {
+        it->second->feed_peak(peak);
+    }
 }
 
 void NodeCanvas::node_moved() {

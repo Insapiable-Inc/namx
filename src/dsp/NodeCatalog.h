@@ -85,6 +85,10 @@ struct NodeType
     }
     File file = File::NONE;
     vector<ParamSpec> params;
+    // Names of the output ports when not L / R (Crossover: Low, High).
+    vector<string> output_labels = {};
+    // Has a power button: effects do; routing nodes (Merge, Crossover, Pan, Meter) don't.
+    bool bypass = true;
 };
 
 namespace NodeCatalog

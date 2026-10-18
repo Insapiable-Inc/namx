@@ -46,6 +46,8 @@ public:
 
     // Live readouts, from the window's timers.
     void poll_meters(AudioEngine& engine);
+    // A Meter node's peak (linear) since the last poll, shown while it's selected.
+    void set_meter_peak(int id, float peak);
 
     // Hooks the window provides (the node menu's Duplicate / Delete select or clear).
     std::function<void(int)> on_duplicate;

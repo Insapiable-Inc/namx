@@ -48,6 +48,8 @@ public:
     void zoom_by(double factor);
     void fit_all();
     void auto_organize(); // GraphModel::auto_organize, then fit the view
+    // A Meter node's peak (linear) since the last poll: its card's level bar.
+    void set_meter_peak(int id, float peak);
 
 signals:
     // The selected node (0 = none).

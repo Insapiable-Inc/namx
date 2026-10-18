@@ -45,6 +45,7 @@
 #include "NodeCatalog.h"
 #include "NumberField.h"
 #include "ParamPanel.h"
+#include "RoutingProcessors.h"
 #include "SettingsDialog.h"
 #include "TempoBar.h"
 #include "Theme.h"
@@ -148,6 +149,14 @@ RigWindow::RigWindow(QWidget* parent)
             return;
         }
         panel->poll_meters(*engine);
+        // Meter nodes: one reader takes each peak, the card and the panel share it.
+        for (const auto& n : model->get_nodes()) {
+            if (n.type->id == "meter") {
+                const float peak = static_cast<MeterProcessor&>(n.dsp->processor()).take_peak();
+                canvas->set_meter_peak(n.id(), peak);
+                panel->set_meter_peak(n.id(), peak);
+            }
+        }
         poll_tuner();
         top->poll();
     });

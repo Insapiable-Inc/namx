@@ -279,6 +279,11 @@ QString ParamPanel::io_text() const {
         case NodeKind::MERGE:
             return "Mono In A + Mono In B → Mono Out";
         case NodeKind::STEREO:
+            if (n->type->output_labels.size() == 2) {
+                return QString("Mono In → %1 Out + %2 Out")
+                    .arg(QString::fromStdString(n->type->output_labels[0]),
+                         QString::fromStdString(n->type->output_labels[1]));
+            }
             return "Mono In → Stereo Out";
         case NodeKind::MONO:
             break;
@@ -445,7 +450,7 @@ void ParamPanel::build_params(QVBoxLayout* lay) {
         }
     }
 
-    if (n->kind() == NodeKind::INPUT || n->kind() == NodeKind::OUTPUT) {
+    if (n->kind() == NodeKind::INPUT || n->kind() == NodeKind::OUTPUT || n->type->id == "meter") {
         lay->addWidget(caption("Level"));
         meter = new VUMeter(Qt::Horizontal, n->kind() == NodeKind::OUTPUT ? 2 : 1);
         meter->setMinimumHeight(n->kind() == NodeKind::OUTPUT ? 36 : 20);
@@ -728,9 +733,15 @@ void ParamPanel::step_file(int step) {
     }
 }
 
+void ParamPanel::set_meter_peak(int id, float peak) {
+    if (meter && id == current_id) {
+        meter->set_peak(peak);
+    }
+}
+
 void ParamPanel::poll_meters(AudioEngine& engine) {
     const GraphModel::Node* n = model.node(current_id);
-    if (!meter || !n) {
+    if (!meter || !n || n->type->id == "meter") { // a Meter node: set_meter_peak
         return;
     }
     if (n->kind() == NodeKind::INPUT) {
