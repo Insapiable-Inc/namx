@@ -239,7 +239,7 @@ void RigWindow::setup_menus() {
     menu->addSeparator();
     QMenu* add_menu = menu->addMenu("Add Node");
     NodeCanvas::populate_add_menu(add_menu, [this](const QString& type, bool stereo) {
-        if (const int id = model->add_node(type, stereo, canvas->place_for_new_node())) {
+        if (const int id = model->add_node(type, stereo)) {
             QTimer::singleShot(0, canvas, [this, id] {
                 canvas->select_node(id);
             });
@@ -452,7 +452,7 @@ void RigWindow::load_file_into_node(const QString& path, bool is_model) {
         }
     }
     if (!target) {
-        target = model->add_node(QString::fromStdString(type), false, canvas->place_for_new_node());
+        target = model->add_node(QString::fromStdString(type), false);
     }
     if (auto ok = model->load_file(target, path); !ok) {
         QMessageBox::warning(this, "Couldn't Load the File", ok.error());
@@ -833,8 +833,7 @@ void RigWindow::rebuild_search() {
 void RigWindow::on_search_picked(const TopBar::SearchEntry& entry) {
     switch (entry.kind) {
         case TopBar::SearchEntry::Kind::NODE:
-            if (const int id =
-                    model->add_node(entry.payload, entry.stereo, canvas->place_for_new_node())) {
+            if (const int id = model->add_node(entry.payload, entry.stereo)) {
                 QTimer::singleShot(0, canvas, [this, id] {
                     canvas->select_node(id);
                 });

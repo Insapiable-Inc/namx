@@ -23,7 +23,7 @@ class WireItem;
 
 // The node network (ui/node-graph): one card per node, signal flowing top to bottom
 // — inputs on a card's top edge, outputs on its bottom edge — and a wire per
-// connection. Drag from a port to a port to connect (either direction); drag a wired
+// connection. Cards sit where GraphModel's layout puts them; they can't be dragged. Drag from a port to a port to connect (either direction); drag a wired
 // input away to move or drop its wire. Right-click for menus; Delete removes the
 // selection; the wheel zooms; dragging the background pans.
 class NodeCanvas : public QGraphicsView
@@ -41,8 +41,6 @@ public:
     int selected_node() const;
     void zoom_by(double factor);
     void fit_all();
-    // A free spot for a new node: below the selected node, else the view's centre.
-    QPointF place_for_new_node() const;
 
 signals:
     // The selected node (0 = none).
@@ -65,7 +63,7 @@ private:
     void update_wires();
     void show_node_menu(int id, const QPoint& global_pos);
     void show_wire_menu(const GraphWire& wire, const QPoint& global_pos);
-    void show_add_menu(QPointF scene_pos, const QPoint& global_pos);
+    void show_add_menu(const QPoint& global_pos);
     void delete_selection();
 
     // Wire drawing, driven by the card that got the press. `from_output`: the fixed
@@ -75,8 +73,6 @@ private:
     void end_wire(QPointF scene_pos);
     // The port under `scene_pos` on the side opposite the fixed end, if any.
     std::optional<std::pair<int, int>> port_at(QPointF scene_pos, bool want_input) const;
-    void node_moved(int id);
-    void node_released(int id);
 
     GraphModel& model;
     QGraphicsScene* scene;

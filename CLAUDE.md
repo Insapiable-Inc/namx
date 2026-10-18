@@ -119,6 +119,10 @@ holds the rules, `NodeCatalog` the node types:
   (L, R in and out; R unwired = mono in → the effect's stereo out, both wired = its
   stereo-in path) for the effects that were stereo-capable (Flanger, Phaser, Chorus,
   Tremolo, Delay — with a Ping-Pong knob — and Reverb), `MERGE`.
+- **Nodes don't float**: `GraphLayout` places every card (all the same size) north to
+  south after each structure change — rows by longest path from the Input, the Output
+  alone at the bottom, a lane for each wire that skips rows, barycenter ordering,
+  unwired nodes parked in a column on the right. Positions aren't saved in presets.
 - Any number of instances of a type (two amps, two cabs…). Polarity is not a node yet
   (user: could be its own node later).
 - `AudioEngine` compiles the graph (`compile_graph`: topological order, a buffer per
@@ -237,7 +241,7 @@ Browse… and ‹ ›, the search box, drag-and-drop, `namx file…`, presets). 
   `session/…` keys are only read (first launch migrates them) and never written, so
   `main` keeps its own session. First run auto-connects `system:capture_1`/`playback_{1,2}`.
 - **Presets** are `.nampreset` JSON, format 3: `{"version": 3, "graph": {"nodes": [{id,
-  type, stereo?, name, x, y, enabled, params, file?}], "wires": [{from, fromPort, to,
+  type, stereo?, name, enabled, params, file?}], "wires": [{from, fromPort, to,
   toPort}]}}`. v2 files load through the migration; the 8 starters are still v2.
 
 ## NAM core library

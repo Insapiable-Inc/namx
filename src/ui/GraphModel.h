@@ -22,7 +22,8 @@ class AudioEngine;
 // canvas and their parameter values, and the wires between them. The single source
 // of truth for presets and the session — the canvas and the parameter panel read
 // it and change it only through these calls; every change that alters the sound
-// is pushed to the engine (AudioEngine::set_graph) at once.
+// is pushed to the engine (AudioEngine::set_graph) at once. Nodes don't move freely:
+// every structure change lays the graph out again, north to south (GraphLayout).
 class GraphModel : public QObject
 {
     Q_OBJECT
@@ -33,7 +34,7 @@ public:
         std::shared_ptr<GraphNode> dsp;
         const NodeType* type = nullptr;
         QString name;
-        QPointF pos; // canvas position of the card's top-left corner
+        QPointF pos; // card's top-left corner, from the automatic layout (GraphLayout)
         bool enabled = true;
         QHash<QString, double> values; // every parameter of the type
         QString file; // model / IR path; empty = none
@@ -57,13 +58,17 @@ public:
     const vector<GraphWire>& get_wires() const {
         return wires;
     }
+    // Where wire `i` (get_wires order) bends past the rows it skips (GraphLayout::Result).
+    const vector<QPointF>& route(size_t i) const {
+        return routes[i];
+    }
     const Node* node(int id) const;
     int input_id() const;
     int output_id() const;
 
     // Structure. Each returns false (and changes nothing) when not allowed.
     // A new node: id, or 0 for an unknown type / variant.
-    int add_node(const QString& type_id, bool stereo, QPointF pos);
+    int add_node(const QString& type_id, bool stereo);
     // Input and Output can't be removed. The node's first input source is wired on to
     // whatever its first output fed, so removing a node from a chain keeps it joined.
     bool remove_node(int id);
@@ -81,7 +86,6 @@ public:
     void set_value(int id, const QString& key, double value);
     void set_enabled(int id, bool on);
     void set_name(int id, const QString& name);
-    void set_position(int id, QPointF pos);
     // Loads a model (Amp) or IR (Cab) into the node; on failure the error is returned
     // and the node keeps its old file.
     expected<void, QString> load_file(int id, const QString& path);
@@ -112,9 +116,9 @@ signals:
 
 private:
     Node* find(int id);
-    void push(); // publish the graph to the engine
+    void push(); // lay the graph out, publish it to the engine
     void clear();
-    int create(const QString& type_id, bool stereo, QPointF pos, int id = 0);
+    int create(const QString& type_id, bool stereo, int id = 0);
     void apply_all(Node& n);
     QString legacy_file_error(const QString& what, const QString& path, const QString& error) const;
     bool from_v2(const QJsonObject& obj, QStringList* warnings);
@@ -123,6 +127,7 @@ private:
     AudioEngine& engine;
     vector<Node> nodes;
     vector<GraphWire> wires;
+    vector<vector<QPointF>> routes; // parallel to wires
     int next_id = 1;
     bool normalize_models = true;
 };

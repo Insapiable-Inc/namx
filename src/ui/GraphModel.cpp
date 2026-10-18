@@ -9,6 +9,7 @@
 #include <QJsonValue>
 
 #include "AudioEngine.h"
+#include "GraphLayout.h"
 #include "IRProcessor.h"
 #include "Log.h"
 #include "NamProcessor.h"
@@ -20,10 +21,6 @@ namespace
 {
 
 constexpr int FORMAT_VERSION = 3;
-// Canvas layout of generated graphs (default rig, v2 migration).
-constexpr double COLUMN_X = 0.0;
-constexpr double TWIN_X = 300.0; // a doubled node's right-channel twin
-constexpr double ROW_STEP = 110.0;
 
 } // namespace
 
@@ -81,6 +78,17 @@ QString GraphModel::unique_name(const QString& base) const {
 }
 
 void GraphModel::push() {
+    vector<GraphLayout::NodeInfo> info;
+    info.reserve(nodes.size());
+    for (const auto& n : nodes) {
+        info.push_back({n.id(), n.kind()});
+    }
+    GraphLayout::Result layout = GraphLayout::compute(info, wires);
+    for (auto& n : nodes) {
+        n.pos = layout.positions[n.id()];
+    }
+    routes = std::move(layout.routes);
+
     vector<std::shared_ptr<GraphNode>> dsp;
     dsp.reserve(nodes.size());
     for (const auto& n : nodes) {
@@ -103,7 +111,7 @@ void GraphModel::apply_all(Node& n) {
     }
 }
 
-int GraphModel::create(const QString& type_id, bool stereo, QPointF pos, int id) {
+int GraphModel::create(const QString& type_id, bool stereo, int id) {
     const int new_id = id > 0 ? id : next_id;
     std::shared_ptr<GraphNode> dsp = engine.create_node(new_id, type_id.toStdString(), stereo);
     if (!dsp) {
@@ -114,7 +122,6 @@ int GraphModel::create(const QString& type_id, bool stereo, QPointF pos, int id)
     n.dsp = std::move(dsp);
     n.type = NodeCatalog::find(type_id.toStdString());
     n.name = unique_name(QString::fromStdString(n.type->name));
-    n.pos = pos;
     for (const auto& p : n.type->params) {
         n.values.insert(QString::fromStdString(p.key), p.def);
     }
@@ -123,11 +130,11 @@ int GraphModel::create(const QString& type_id, bool stereo, QPointF pos, int id)
     return new_id;
 }
 
-int GraphModel::add_node(const QString& type_id, bool stereo, QPointF pos) {
+int GraphModel::add_node(const QString& type_id, bool stereo) {
     if (type_id == "input" || type_id == "output") {
         return 0; // one of each, made with the graph
     }
-    const int id = create(type_id, stereo, pos);
+    const int id = create(type_id, stereo);
     if (id) {
         push();
         emit structure_changed();
@@ -260,8 +267,7 @@ int GraphModel::duplicate_node(int id) {
         return 0;
     }
     const Node copy = *src; // `src` dangles once nodes grows
-    const int new_id =
-        create(QString::fromStdString(copy.type->id), copy.stereo(), copy.pos + QPointF(40, 40));
+    const int new_id = create(QString::fromStdString(copy.type->id), copy.stereo());
     if (!new_id) {
         return 0;
     }
@@ -320,15 +326,6 @@ void GraphModel::set_name(int id, const QString& name) {
     emit modified();
 }
 
-void GraphModel::set_position(int id, QPointF pos) {
-    Node* n = find(id);
-    if (!n || n->pos == pos) {
-        return;
-    }
-    n->pos = pos;
-    emit modified();
-}
-
 expected<void, QString> GraphModel::load_file(int id, const QString& path) {
     Node* n = find(id);
     if (!n || n->type->file == NodeType::File::NONE) {
@@ -372,10 +369,10 @@ void GraphModel::clear() {
 
 void GraphModel::reset_to_default() {
     clear();
-    const int in = create("input", false, {COLUMN_X, 0});
-    const int amp = create("nam", false, {COLUMN_X, ROW_STEP});
-    const int cab = create("ir", false, {COLUMN_X, 2 * ROW_STEP});
-    const int out = create("output", false, {COLUMN_X, 3 * ROW_STEP});
+    const int in = create("input", false);
+    const int amp = create("nam", false);
+    const int cab = create("ir", false);
+    const int out = create("output", false);
     wires = {{in, 0, amp, 0}, {amp, 0, cab, 0}, {cab, 0, out, 0}};
     push();
     emit structure_changed();
@@ -392,8 +389,6 @@ QJsonObject GraphModel::to_json() const {
             o["stereo"] = true;
         }
         o["name"] = n.name;
-        o["x"] = n.pos.x();
-        o["y"] = n.pos.y();
         if (n.kind() != NodeKind::INPUT && n.kind() != NodeKind::OUTPUT) {
             o["enabled"] = n.enabled;
         }
@@ -457,8 +452,7 @@ bool GraphModel::from_v3(const QJsonObject& graph, QStringList* warnings) {
     clear();
     for (const auto& v : node_arr) {
         const QJsonObject o = v.toObject();
-        const int id = create(o["type"].toString(), o["stereo"].toBool(),
-                              {o["x"].toDouble(), o["y"].toDouble()}, o["id"].toInt());
+        const int id = create(o["type"].toString(), o["stereo"].toBool(), o["id"].toInt());
         Node* n = id ? find(id) : nullptr;
         if (!n) {
             continue; // a duplicate ID or a variant the type lacks
@@ -516,8 +510,7 @@ bool GraphModel::from_v2(const QJsonObject& obj, QStringList* warnings) {
     }
 
     clear();
-    double y = 0.0;
-    const int in = create("input", false, {COLUMN_X, y});
+    const int in = create("input", false);
     find(in)->values["gain"] = obj["inputGain"].toDouble(0.0);
     apply_all(*find(in));
 
@@ -562,9 +555,8 @@ bool GraphModel::from_v2(const QJsonObject& obj, QStringList* warnings) {
                              : id == "ir" ? obj["irPath"].toString()
                                           : QString();
 
-        y += ROW_STEP;
-        auto make = [&](QPointF pos) {
-            const int nid = create(id, stereo, pos);
+        auto make = [&] {
+            const int nid = create(id, stereo);
             Node* n = find(nid);
             fill(*n, group);
             n->enabled = enabled;
@@ -577,7 +569,7 @@ bool GraphModel::from_v2(const QJsonObject& obj, QStringList* warnings) {
             return nid;
         };
         if (stereo) {
-            const int nid = make({COLUMN_X, y});
+            const int nid = make();
             wires.push_back({left.first, left.second, nid, 0});
             if (right) {
                 wires.push_back({right->first, right->second, nid, 1});
@@ -586,8 +578,8 @@ bool GraphModel::from_v2(const QJsonObject& obj, QStringList* warnings) {
             right = std::pair{nid, 1};
         } else if (right) {
             // A mono effect after a stereo one ran once per channel: two nodes.
-            const int l = make({COLUMN_X, y});
-            const int r = make({TWIN_X, y});
+            const int l = make();
+            const int r = make();
             find(l)->name = unique_name(find(l)->name + " L");
             find(r)->name = unique_name(QString::fromStdString(type->name) + " R");
             wires.push_back({left.first, left.second, l, 0});
@@ -595,14 +587,13 @@ bool GraphModel::from_v2(const QJsonObject& obj, QStringList* warnings) {
             left = {l, 0};
             right = std::pair{r, 0};
         } else {
-            const int nid = make({COLUMN_X, y});
+            const int nid = make();
             wires.push_back({left.first, left.second, nid, 0});
             left = {nid, 0};
         }
     }
 
-    y += ROW_STEP;
-    const int out = create("output", false, {COLUMN_X, y});
+    const int out = create("output", false);
     Node* o = find(out);
     o->values["gain"] = obj["outputGain"].toDouble(0.0);
     o->values["limiter"] = obj["limiter"].toBool(false) ? 1.0 : 0.0;

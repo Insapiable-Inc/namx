@@ -20,6 +20,7 @@
 #include <QVBoxLayout>
 #include <QWheelEvent>
 
+#include "GraphLayout.h"
 #include "GraphModel.h"
 #include "NodeCatalog.h"
 #include "NodeIcons.h"
@@ -31,17 +32,13 @@ namespace namx
 namespace
 {
 
-constexpr double NODE_W = 230.0;
-constexpr double NODE_H = 72.0;
+using GraphLayout::NODE_H;
+using GraphLayout::NODE_W;
+using GraphLayout::port_x;
 constexpr double PORT_R = 5.5;
 constexpr double PORT_HIT = 11.0; // grab radius around a port
-constexpr double GRID = 10.0; // node positions snap to it
 constexpr double MIN_ZOOM = 0.3;
 constexpr double MAX_ZOOM = 2.5;
-
-double port_x(int count, int i) {
-    return NODE_W * (i + 1) / (count + 1);
-}
 
 // The theme accent of a node's type (Input/Output take the app accent).
 QColor node_accent(const GraphModel::Node& n) {
@@ -62,10 +59,27 @@ QString port_label(NodeKind kind, bool input, int port) {
     return port == 0 ? "L" : "R";
 }
 
-QPainterPath wire_path(QPointF a, QPointF b) {
-    const double dy = std::max(40.0, std::abs(b.y() - a.y()) / 2.0);
-    QPainterPath path(a);
+// A vertical S-curve from an output port down to an input port.
+void curve_to(QPainterPath& path, QPointF b) {
+    const QPointF a = path.currentPosition();
+    const double dy = std::max(24.0, std::abs(b.y() - a.y()) / 2.0);
     path.cubicTo(a + QPointF(0, dy), b - QPointF(0, dy), b);
+}
+
+QPainterPath wire_path(QPointF a, QPointF b) {
+    QPainterPath path(a);
+    curve_to(path, b);
+    return path;
+}
+
+// Through the lanes of the rows it skips: (top, bottom) pairs, straight down each lane.
+QPainterPath routed_path(QPointF a, const vector<QPointF>& lanes, QPointF b) {
+    QPainterPath path(a);
+    for (size_t i = 0; i + 1 < lanes.size(); i += 2) {
+        curve_to(path, lanes[i]);
+        path.lineTo(lanes[i + 1]);
+    }
+    curve_to(path, b);
     return path;
 }
 
@@ -78,7 +92,7 @@ public:
     NodeItem(NodeCanvas& new_canvas, int new_id)
         : id(new_id)
         , canvas(new_canvas) {
-        setFlags(ItemIsMovable | ItemIsSelectable | ItemSendsGeometryChanges);
+        setFlags(ItemIsSelectable); // placed by the layout, never dragged
         setAcceptHoverEvents(true);
     }
 
@@ -184,17 +198,6 @@ public:
     const int id;
 
 protected:
-    QVariant itemChange(GraphicsItemChange change, const QVariant& value) override {
-        if (change == ItemPositionChange) {
-            const QPointF p = value.toPointF();
-            return QPointF(std::round(p.x() / GRID) * GRID, std::round(p.y() / GRID) * GRID);
-        }
-        if (change == ItemPositionHasChanged) {
-            canvas.node_moved(id);
-        }
-        return QGraphicsItem::itemChange(change, value);
-    }
-
     void mousePressEvent(QGraphicsSceneMouseEvent* ev) override {
         if (ev->button() == Qt::LeftButton) {
             if (const auto hit = port_hit(ev->pos())) {
@@ -250,7 +253,6 @@ protected:
             return;
         }
         QGraphicsItem::mouseReleaseEvent(ev);
-        canvas.node_released(id);
     }
 
     void hoverMoveEvent(QGraphicsSceneHoverEvent* ev) override {
@@ -316,8 +318,9 @@ private:
 class WireItem : public QGraphicsPathItem
 {
 public:
-    WireItem(const GraphWire& new_wire, const QColor& new_color)
+    WireItem(const GraphWire& new_wire, vector<QPointF> new_lanes, const QColor& new_color)
         : wire(new_wire)
+        , lanes(std::move(new_lanes))
         , color(new_color) {
         setFlags(ItemIsSelectable);
         setAcceptHoverEvents(true);
@@ -341,6 +344,7 @@ public:
     }
 
     const GraphWire wire;
+    const vector<QPointF> lanes; // GraphModel::route
 
 protected:
     void hoverEnterEvent(QGraphicsSceneHoverEvent*) override {
@@ -463,9 +467,11 @@ void NodeCanvas::rebuild() {
         scene->addItem(item);
         node_items[n.id()] = item;
     }
-    for (const auto& w : model.get_wires()) {
+    for (size_t i = 0; i < model.get_wires().size(); ++i) {
+        const GraphWire& w = model.get_wires()[i];
         const GraphModel::Node* from = model.node(w.from_node);
-        auto* item = new WireItem(w, from ? node_accent(*from) : Theme::wire_drag());
+        auto* item =
+            new WireItem(w, model.route(i), from ? node_accent(*from) : Theme::wire_drag());
         scene->addItem(item);
         wire_items.push_back(item);
     }
@@ -490,18 +496,8 @@ void NodeCanvas::update_wires() {
         if (from == node_items.end() || to == node_items.end()) {
             continue;
         }
-        w->setPath(wire_path(from->second->port_pos(false, w->wire.from_port),
-                             to->second->port_pos(true, w->wire.to_port)));
-    }
-}
-
-void NodeCanvas::node_moved(int /*id*/) {
-    update_wires();
-}
-
-void NodeCanvas::node_released(int /*id*/) {
-    for (const auto& [nid, item] : node_items) {
-        model.set_position(nid, item->pos());
+        w->setPath(routed_path(from->second->port_pos(false, w->wire.from_port), w->lanes,
+                               to->second->port_pos(true, w->wire.to_port)));
     }
 }
 
@@ -522,16 +518,6 @@ int NodeCanvas::selected_node() const {
         }
     }
     return 0;
-}
-
-QPointF NodeCanvas::place_for_new_node() const {
-    if (const int sel = selected_node(); sel) {
-        const auto it = node_items.find(sel);
-        return it->second->pos() + QPointF(NODE_W + 50, 0);
-    }
-    const QPointF c = mapToScene(viewport()->rect().center());
-    return QPointF(std::round((c.x() - NODE_W / 2) / GRID) * GRID,
-                   std::round((c.y() - NODE_H / 2) / GRID) * GRID);
 }
 
 void NodeCanvas::zoom_by(double factor) {
@@ -597,26 +583,24 @@ void NodeCanvas::contextMenuEvent(QContextMenuEvent* ev) {
     } else if (auto* w = dynamic_cast<WireItem*>(item)) {
         show_wire_menu(w->wire, ev->globalPos());
     } else {
-        show_add_menu(mapToScene(ev->pos()), ev->globalPos());
+        show_add_menu(ev->globalPos());
     }
     ev->accept();
 }
 
 void NodeCanvas::mouseDoubleClickEvent(QMouseEvent* ev) {
     if (!itemAt(ev->pos())) {
-        show_add_menu(mapToScene(ev->pos()), ev->globalPosition().toPoint());
+        show_add_menu(ev->globalPosition().toPoint());
         return;
     }
     QGraphicsView::mouseDoubleClickEvent(ev);
 }
 
-void NodeCanvas::show_add_menu(QPointF scene_pos, const QPoint& global_pos) {
+void NodeCanvas::show_add_menu(const QPoint& global_pos) {
     QMenu menu(this);
     menu.addSection("Add Node");
-    const QPointF pos(std::round((scene_pos.x() - NODE_W / 2) / GRID) * GRID,
-                      std::round((scene_pos.y() - NODE_H / 2) / GRID) * GRID);
-    populate_add_menu(&menu, [this, pos](const QString& type, bool stereo) {
-        if (const int id = model.add_node(type, stereo, pos)) {
+    populate_add_menu(&menu, [this](const QString& type, bool stereo) {
+        if (const int id = model.add_node(type, stereo)) {
             QTimer::singleShot(0, this, [this, id] {
                 select_node(id);
             });
@@ -674,16 +658,8 @@ void NodeCanvas::show_node_menu(int id, const QPoint& global_pos) {
 void NodeCanvas::show_wire_menu(const GraphWire& wire, const QPoint& global_pos) {
     QMenu menu(this);
     QMenu* insert = menu.addMenu("Insert Node");
-    QPointF mid;
-    if (node_items.contains(wire.from_node) && node_items.contains(wire.to_node)) {
-        mid = (node_items[wire.from_node]->port_pos(false, wire.from_port) +
-               node_items[wire.to_node]->port_pos(true, wire.to_port)) /
-              2.0;
-    }
-    const QPointF pos(std::round((mid.x() - NODE_W / 2) / GRID) * GRID,
-                      std::round((mid.y() - NODE_H / 2) / GRID) * GRID);
-    populate_add_menu(insert, [this, wire, pos](const QString& type, bool stereo) {
-        const int id = model.add_node(type, stereo, pos);
+    populate_add_menu(insert, [this, wire](const QString& type, bool stereo) {
+        const int id = model.add_node(type, stereo);
         if (id && model.insert_on_wire(id, wire)) {
             QTimer::singleShot(0, this, [this, id] {
                 select_node(id);

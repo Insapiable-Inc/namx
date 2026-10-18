@@ -62,6 +62,8 @@ set(GUI_SOURCES
     src/ui/NodeIcons.h
     src/ui/ParamPanel.cpp
     src/ui/ParamPanel.h
+    src/ui/GraphLayout.cpp
+    src/ui/GraphLayout.h
     src/ui/GraphModel.cpp
     src/ui/GraphModel.h
     src/ui/KnobWidget.cpp
