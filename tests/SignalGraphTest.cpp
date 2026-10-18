@@ -6,6 +6,7 @@
 
 #include "SignalGraph.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstdio>
 
@@ -77,6 +78,17 @@ static void test_rules() {
           "a graph with a loop doesn't compile");
     CHECK(!can_add_wire(loop_nodes, loop_chain, {3, 1, 4, 1}), "a port a node lacks is refused");
     CHECK(!NodeCatalog::create(9, "nam", true), "no stereo Amp variant");
+
+    // Connecting into a taken input replaces its wire; never into a loop.
+    const vector<GraphWire> replaced = with_wire(loop_chain, {1, 0, 3, 0});
+    CHECK(replaced.size() == loop_chain.size() &&
+              std::find(replaced.begin(), replaced.end(), GraphWire{2, 0, 3, 0}) == replaced.end(),
+          "connecting into a taken input replaces the old wire");
+    CHECK(can_connect(loop_nodes, loop_chain, {1, 0, 3, 0}), "a replacing connect is allowed");
+    CHECK(!can_connect(loop_nodes, loop_chain, {3, 0, 2, 0}),
+          "a replacing connect that closes a loop is refused");
+    CHECK(!can_connect(loop_nodes, loop_chain, {2, 0, 2, 0}), "a node can't feed itself");
+    CHECK(!can_connect(loop_nodes, loop_chain, {3, 0, 1, 0}), "nothing feeds the Input");
 }
 
 static void test_processing() {

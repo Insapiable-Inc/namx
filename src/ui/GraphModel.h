@@ -73,6 +73,9 @@ public:
     // whatever its first output fed, so removing a node from a chain keeps it joined.
     bool remove_node(int id);
     bool add_wire(const GraphWire& wire);
+    // The user's connect: like add_wire, but a wire already into that input is
+    // replaced. Refused (nothing changes) when the result would have a loop.
+    bool connect(const GraphWire& wire);
     bool remove_wire(const GraphWire& wire);
     // `wire` becomes source → node (port 0) → target (port 0).
     bool insert_on_wire(int node_id, const GraphWire& wire);
@@ -81,6 +84,7 @@ public:
     bool set_stereo(int id, bool stereo);
     int duplicate_node(int id);
     bool can_add_wire(const GraphWire& wire) const;
+    bool can_connect(const GraphWire& wire) const;
 
     // Node state.
     void set_value(int id, const QString& key, double value);

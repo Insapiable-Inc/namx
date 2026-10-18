@@ -188,6 +188,29 @@ bool GraphModel::can_add_wire(const GraphWire& wire) const {
     return ::namx::can_add_wire(dsp, wires, wire);
 }
 
+bool GraphModel::can_connect(const GraphWire& wire) const {
+    vector<std::shared_ptr<GraphNode>> dsp;
+    dsp.reserve(nodes.size());
+    for (const auto& n : nodes) {
+        dsp.push_back(n.dsp);
+    }
+    return ::namx::can_connect(dsp, wires, wire);
+}
+
+bool GraphModel::connect(const GraphWire& wire) {
+    if (!can_connect(wire)) {
+        return false;
+    }
+    if (std::find(wires.begin(), wires.end(), wire) != wires.end()) {
+        return true; // already connected just so
+    }
+    wires = with_wire(wires, wire);
+    push();
+    emit structure_changed();
+    emit modified();
+    return true;
+}
+
 bool GraphModel::add_wire(const GraphWire& wire) {
     if (!can_add_wire(wire)) {
         return false;

@@ -23,8 +23,9 @@ class WireItem;
 
 // The node network (ui/node-graph): one card per node, signal flowing top to bottom
 // — inputs on a card's top edge, outputs on its bottom edge — and a wire per
-// connection. Cards sit where GraphModel's layout puts them; they can't be dragged. Drag from a port to a port to connect (either direction); drag a wired
-// input away to move or drop its wire. Right-click for menus; Delete removes the
+// connection. Cards sit where GraphModel's layout puts them; they can't be dragged. Drag from a port to a port to connect (either direction); a wire into an
+// input that already has one replaces it, and a wire that would close a loop is
+// refused (drawn red while dragging). Drag a wired input away to move or drop its wire. Right-click for menus; Delete removes the
 // selection; the wheel zooms; dragging the background pans.
 class NodeCanvas : public QGraphicsView
 {

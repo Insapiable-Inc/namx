@@ -157,6 +157,15 @@ expected<unique_ptr<GraphPlan>, string>
 compile_graph(const vector<std::shared_ptr<GraphNode>>& nodes, const vector<GraphWire>& wires,
               size_t capacity);
 
+// `wires` with `wire` connected: a wire already into the same input is replaced (an
+// input takes one wire), a duplicate is not added twice.
+vector<GraphWire> with_wire(const vector<GraphWire>& wires, const GraphWire& wire);
+
+// True when connecting `wire` (replacing whatever feeds that input — with_wire) leaves
+// a valid graph: ports that exist, no loop. A node can't feed itself.
+bool can_connect(const vector<std::shared_ptr<GraphNode>>& nodes, const vector<GraphWire>& wires,
+                 const GraphWire& wire);
+
 // True when adding `wire` keeps the graph acyclic and the target input free.
 bool can_add_wire(const vector<std::shared_ptr<GraphNode>>& nodes, const vector<GraphWire>& wires,
                   const GraphWire& wire);

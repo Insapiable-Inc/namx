@@ -121,6 +121,28 @@ vector<size_t> topological_order(const NodeList& nodes,
 
 } // namespace
 
+vector<GraphWire> with_wire(const vector<GraphWire>& wires, const GraphWire& wire) {
+    vector<GraphWire> next;
+    next.reserve(wires.size() + 1);
+    for (const auto& w : wires) {
+        if (w.to_node != wire.to_node || w.to_port != wire.to_port) {
+            next.push_back(w);
+        }
+    }
+    next.push_back(wire);
+    return next;
+}
+
+bool can_connect(const NodeList& nodes, const vector<GraphWire>& wires, const GraphWire& wire) {
+    const auto index = index_nodes(nodes);
+    if (index.empty() && !nodes.empty()) {
+        return false;
+    }
+    const vector<GraphWire> next = with_wire(wires, wire);
+    return check_wires(nodes, index, next).empty() &&
+           !topological_order(nodes, index, next).empty();
+}
+
 bool can_add_wire(const NodeList& nodes, const vector<GraphWire>& wires, const GraphWire& wire) {
     const auto index = index_nodes(nodes);
     if (index.empty() && !nodes.empty()) {

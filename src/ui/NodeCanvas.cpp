@@ -697,7 +697,7 @@ void NodeCanvas::drag_wire(QPointF scene_pos) {
             wire_drag->from_output
                 ? GraphWire{wire_drag->node, wire_drag->port, target->first, target->second}
                 : GraphWire{target->first, target->second, wire_drag->node, wire_drag->port};
-        ok = model.can_add_wire(w);
+        ok = model.can_connect(w); // red: it would make a loop
     }
     drag_path->setPen(QPen(ok ? Theme::wire_drag() : Theme::status_bad(), 2.0, Qt::DashLine));
     drag_path->setPath(wire_drag->from_output ? wire_path(fixed, free_end)
@@ -719,7 +719,7 @@ void NodeCanvas::end_wire(QPointF scene_pos) {
         const GraphWire w = d.from_output
                                 ? GraphWire{d.node, d.port, target->first, target->second}
                                 : GraphWire{target->first, target->second, d.node, d.port};
-        model.add_wire(w); // refused quietly when it would break the graph
+        model.connect(w); // replaces the input's old wire; refused if it makes a loop
     }
     if (rebuild_pending) {
         QTimer::singleShot(0, this, &NodeCanvas::rebuild);
