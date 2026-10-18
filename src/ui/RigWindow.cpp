@@ -327,6 +327,9 @@ void RigWindow::setup_menus() {
     add("Fit Rig in View", QKeySequence("Ctrl+0"), [this] {
         canvas->fit_all();
     });
+    add("Auto-Organize Rig", QKeySequence("Ctrl+L"), [this] {
+        canvas->auto_organize();
+    });
     add("Find…", QKeySequence::Find, [this] {
         top->focus_search();
     });

@@ -1,6 +1,7 @@
 #include "GraphModel.h"
 
 #include <algorithm>
+#include <cmath>
 #include <optional>
 #include <utility>
 
@@ -79,7 +80,12 @@ QString GraphModel::unique_name(const QString& base) const {
     }
 }
 
-void GraphModel::push() {
+const vector<QPointF>& GraphModel::route(size_t i) const {
+    static const vector<QPointF> NONE;
+    return i < routes.size() ? routes[i] : NONE;
+}
+
+void GraphModel::lay_out() {
     vector<GraphLayout::NodeInfo> info;
     info.reserve(nodes.size());
     for (const auto& n : nodes) {
@@ -90,7 +96,39 @@ void GraphModel::push() {
         n.pos = layout.positions[n.id()];
     }
     routes = std::move(layout.routes);
+}
 
+bool GraphModel::is_organized() const {
+    vector<GraphLayout::NodeInfo> info;
+    info.reserve(nodes.size());
+    for (const auto& n : nodes) {
+        info.push_back({n.id(), n.kind()});
+    }
+    const GraphLayout::Result layout = GraphLayout::compute(info, wires);
+    return std::all_of(nodes.begin(), nodes.end(), [&layout](const Node& n) {
+        const QPointF d = layout.positions.at(n.id()) - n.pos;
+        return std::abs(d.x()) < 0.5 && std::abs(d.y()) < 0.5;
+    });
+}
+
+void GraphModel::auto_organize() {
+    lay_out();
+    emit structure_changed();
+    emit modified();
+}
+
+void GraphModel::set_position(int id, QPointF pos) {
+    Node* n = find(id);
+    if (!n || n->pos == pos) {
+        return;
+    }
+    n->pos = pos;
+    routes.clear(); // the lanes were for the old places
+    emit modified();
+}
+
+void GraphModel::push() {
+    routes.clear();
     vector<std::shared_ptr<GraphNode>> dsp;
     dsp.reserve(nodes.size());
     for (const auto& n : nodes) {
@@ -166,12 +204,29 @@ int GraphModel::create(const QString& type_id, bool stereo, int id) {
     return new_id;
 }
 
-int GraphModel::add_node(const QString& type_id, bool stereo) {
+int GraphModel::add_node(const QString& type_id, bool stereo, std::optional<QPointF> at) {
     if (type_id == "input" || type_id == "output") {
         return 0; // one of each, made with the graph
     }
     const int id = create(type_id, stereo);
     if (id) {
+        if (!at) {
+            // Right of the rig, level with its top.
+            double right = 0.0;
+            double top = 0.0;
+            bool first = true;
+            for (const auto& n : nodes) {
+                if (n.id() == id) {
+                    continue;
+                }
+                right = first ? n.pos.x() + GraphLayout::NODE_W
+                              : std::max(right, n.pos.x() + GraphLayout::NODE_W);
+                top = first ? n.pos.y() : std::min(top, n.pos.y());
+                first = false;
+            }
+            at = QPointF(right + 60.0, top);
+        }
+        find(id)->pos = *at;
         push();
         emit structure_changed();
         emit modified();
@@ -331,6 +386,7 @@ int GraphModel::duplicate_node(int id) {
         return 0;
     }
     Node* n = find(new_id);
+    n->pos = copy.pos + QPointF(36.0, 36.0);
     n->values = copy.values;
     n->enabled = copy.enabled;
     apply_all(*n);
@@ -446,6 +502,7 @@ void GraphModel::reset_to_default() {
     const int out = create("output", false);
     wires = {{in, 0, amp, 0}, {amp, 0, cab, 0}, {cab, 0, out, 0}};
     push();
+    lay_out();
     emit structure_changed();
     emit modified();
 }
@@ -460,6 +517,8 @@ QJsonObject GraphModel::to_json() const {
             o["stereo"] = true;
         }
         o["name"] = n.name;
+        o["x"] = n.pos.x();
+        o["y"] = n.pos.y();
         if (n.kind() != NodeKind::INPUT && n.kind() != NodeKind::OUTPUT) {
             o["enabled"] = n.enabled;
         }
@@ -518,6 +577,7 @@ bool GraphModel::from_v3(const QJsonObject& graph, QStringList* warnings) {
     }
 
     clear();
+    bool placed = true; // every node has a saved position (older files don't)
     vector<int> dropped; // nodes this build doesn't have (the Tuner, global since 2026-10-18)
     for (const auto& v : node_arr) {
         const QJsonObject o = v.toObject();
@@ -537,6 +597,11 @@ bool GraphModel::from_v3(const QJsonObject& graph, QStringList* warnings) {
             n->name = o["name"].toString().trimmed();
         }
         n->enabled = o["enabled"].toBool(true);
+        if (o["x"].isDouble() && o["y"].isDouble()) {
+            n->pos = QPointF(o["x"].toDouble(), o["y"].toDouble());
+        } else {
+            placed = false;
+        }
         const QJsonObject params = o["params"].toObject();
         for (const auto& p : n->type->params) {
             const QString key = QString::fromStdString(p.key);
@@ -592,6 +657,9 @@ bool GraphModel::from_v3(const QJsonObject& graph, QStringList* warnings) {
         }
     }
     push();
+    if (!placed || !dropped.empty() || is_organized()) {
+        lay_out(); // the last keeps the wire lanes of a rig saved as organized
+    }
     emit structure_changed();
     emit modified();
     return true;
@@ -708,6 +776,7 @@ bool GraphModel::from_v2(const QJsonObject& obj, QStringList* warnings) {
         wires.push_back({right->first, right->second, out, 1});
     }
     push();
+    lay_out();
     emit structure_changed();
     emit modified();
     return true;

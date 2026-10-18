@@ -127,10 +127,15 @@ holds the rules, `NodeCatalog` the node types:
   after the input gain, before the graph (Mute silences the graph's input); the top
   bar's Tuner button (Ctrl+T) shows its strip. Older graphs' Tuner nodes are dropped on
   load and the chain rejoined.
-- **Nodes don't float**: `GraphLayout` places every card (all the same size) north to
-  south after each structure change — rows by longest path from the Input, the Output
-  alone at the bottom, a lane for each wire that skips rows, barycenter ordering,
-  unwired nodes parked in a column on the right. Positions aren't saved in presets.
+- **Cards move freely** (user, 2026-10-18; dragging moves every selected card), and
+  positions are saved in presets and the session (`x`, `y`). **Auto-Organize** (canvas
+  right-click, ⋮ menu, Ctrl+L) applies `GraphLayout` once — every card the same size,
+  north to south: rows by longest path from the Input, the Output alone at the bottom,
+  a lane for each wire that skips rows, barycenter ordering, unwired nodes parked in a
+  column on the right. Files without positions (v2, earlier v3) are organized on load.
+  The lanes last until a card moves or the structure changes (then plain curves); a rig
+  loaded exactly as organized gets them back. A new node lands where the menu opened or
+  the wire was dropped (from the ⋮ menu or search: right of the rig).
 - Any number of instances of a type (two amps, two cabs…). Polarity is not a node yet
   (user: could be its own node later).
 - `AudioEngine` compiles the graph (`compile_graph`: topological order, a buffer per
@@ -186,7 +191,7 @@ All effects inherit `EffectBase` (`src/dsp/EffectBase.h` — the header comment 
 | `SignalGraph` | `src/dsp/SignalGraph.h/cpp` | Node kinds and ports, `GraphNode`, `GraphWire`, `compile_graph` / `can_add_wire` / `run_plan`; `IoProcessor` (Input/Output gain, limiter switch), `MergeProcessor` (`tests/SignalGraphTest`) |
 | `NodeCatalog` | `src/dsp/NodeCatalog.h/cpp` | Every node type: name, category, mono/stereo variants, file kind, `ParamSpec`s; `create(id, type, stereo)` |
 | `GraphModel` | `src/ui/GraphModel.h/cpp` | The rig as edited: nodes (name, position, values, file) + wires; every change pushed to the engine; JSON v3 + v2 migration |
-| `NodeCanvas` | `src/ui/NodeCanvas.h/cpp` | The node network (QGraphicsView): cards (fixed, placed by `GraphLayout`), ports, bezier wires, drag-to-connect (onto a wired input replaces its wire; a loop is refused, drawn red), wire pick-up, per-card bypass button, context menus (Add / node / wire: every node type in one flat alphabetical list — no submenus — inserted on a wire from the wire menu; a wire dropped on empty canvas opens the same list and wires the new node to it), zoom tools; Ctrl+click multi-selects and Delete removes the selection (user, 2026-10-18: keep Ctrl+click for that — no Ctrl+click bypass); `NodeIcons` paints the category icons and the power symbol |
+| `NodeCanvas` | `src/ui/NodeCanvas.h/cpp` | The node network (QGraphicsView): cards (draggable; Auto-Organize = `GraphLayout` once), ports, bezier wires, drag-to-connect (onto a wired input replaces its wire; a loop is refused, drawn red), wire pick-up, per-card bypass button, context menus (Add / node / wire: every node type in one flat alphabetical list — no submenus — inserted on a wire from the wire menu; a wire dropped on empty canvas opens the same list and wires the new node to it), zoom tools; Ctrl+click multi-selects and Delete removes the selection (user, 2026-10-18: keep Ctrl+click for that — no Ctrl+click bypass); `NodeIcons` paints the category icons and the power symbol |
 | `ParamPanel` | `src/ui/ParamPanel.h/cpp` | Right panel: the selected node's header (icon, name, I/O, power, ⋮) and its catalog parameters — switches in a row, choices as segments, knobs as `KnobWidget::Form::PANEL` (name with the unit, typeable value field with the bare number, large dial drawn like the canvas cards: flat body, accent arc, no glow — laid out as main's tiles: dial left, label top right, value bottom right) in two columns, synced knobs swapping to their note value; file row for Amp/Cab, Input/Output meters |
 | `TopBar` | `src/ui/TopBar.h/cpp` | Logo, preset name menu + ✎ rename, metronome + BPM (full `TempoBar` in a popup), search over effects/presets/models/IRs, ★, ⋮ menu, ⚙ |
 | `RigWindow` | `src/ui/RigWindow.h/cpp` | The main window: audio start/devices/connections, presets, session, search, Settings, notices (`set_notice`) |
@@ -262,7 +267,7 @@ Browse… and ‹ ›, the search box, drag-and-drop, `namx file…`, presets). 
   `session/…` keys are only read (first launch migrates them) and never written, so
   `main` keeps its own session. First run auto-connects `system:capture_1`/`playback_{1,2}`.
 - **Presets** are `.nampreset` JSON, format 3: `{"version": 3, "graph": {"nodes": [{id,
-  type, stereo?, name, enabled, params, file?}], "wires": [{from, fromPort, to,
+  type, stereo?, name, x, y, enabled, params, file?}], "wires": [{from, fromPort, to,
   toPort}]}}`. v2 files load through the migration; the 8 starters are still v2.
 
 ## NAM core library

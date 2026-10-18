@@ -92,7 +92,7 @@ public:
     NodeItem(NodeCanvas& new_canvas, int new_id)
         : id(new_id)
         , canvas(new_canvas) {
-        setFlags(ItemIsSelectable); // placed by the layout, never dragged
+        setFlags(ItemIsSelectable | ItemIsMovable | ItemSendsGeometryChanges);
         setAcceptHoverEvents(true);
     }
 
@@ -271,6 +271,14 @@ protected:
             return;
         }
         QGraphicsItem::mouseReleaseEvent(ev);
+        canvas.commit_positions(); // every selected card moves with this one
+    }
+
+    QVariant itemChange(GraphicsItemChange change, const QVariant& value) override {
+        if (change == ItemPositionHasChanged) {
+            canvas.node_moved();
+        }
+        return QGraphicsItem::itemChange(change, value);
     }
 
     void hoverMoveEvent(QGraphicsSceneHoverEvent* ev) override {
@@ -375,7 +383,7 @@ public:
     }
 
     const GraphWire wire;
-    const vector<QPointF> lanes; // GraphModel::route
+    vector<QPointF> lanes; // GraphModel::route; dropped once a card moves
 
 protected:
     void hoverEnterEvent(QGraphicsSceneHoverEvent*) override {
@@ -635,20 +643,26 @@ void NodeCanvas::mouseDoubleClickEvent(QMouseEvent* ev) {
 
 void NodeCanvas::show_add_menu(const QPoint& global_pos) {
     QMenu menu(this);
-    populate_add_menu(&menu, [this](const QString& type, bool stereo) {
-        if (const int id = model.add_node(type, stereo)) {
+    const QPointF at = card_at(global_pos);
+    populate_add_menu(&menu, [this, at](const QString& type, bool stereo) {
+        if (const int id = model.add_node(type, stereo, at)) {
             QTimer::singleShot(0, this, [this, id] {
                 select_node(id);
             });
         }
     });
+    menu.addSeparator();
+    menu.addAction("Auto-Organize", this, &NodeCanvas::auto_organize);
     menu.exec(global_pos);
 }
 
 void NodeCanvas::show_connect_menu(int node, int port, bool from_output, const QPoint& global_pos) {
     QMenu menu(this);
-    populate_add_menu(&menu, [this, node, port, from_output](const QString& type, bool stereo) {
-        const int id = model.add_node(type, stereo);
+    // The new card's top edge (or bottom edge) on the drop point.
+    const QPointF drop = mapToScene(mapFromGlobal(global_pos));
+    const QPointF at = drop - QPointF(NODE_W / 2, from_output ? 0.0 : NODE_H);
+    populate_add_menu(&menu, [this, node, port, from_output, at](const QString& type, bool stereo) {
+        const int id = model.add_node(type, stereo, at);
         if (!id) {
             return;
         }
@@ -709,9 +723,10 @@ void NodeCanvas::show_node_menu(int id, const QPoint& global_pos) {
 
 void NodeCanvas::show_wire_menu(const GraphWire& wire, const QPoint& global_pos) {
     QMenu menu(this);
-    // Picking an effect inserts it on the wire.
-    populate_add_menu(&menu, [this, wire](const QString& type, bool stereo) {
-        const int id = model.add_node(type, stereo);
+    // Picking an effect inserts it on the wire, its card where the menu opened.
+    const QPointF at = card_at(global_pos);
+    populate_add_menu(&menu, [this, wire, at](const QString& type, bool stereo) {
+        const int id = model.add_node(type, stereo, at);
         if (id && model.insert_on_wire(id, wire)) {
             QTimer::singleShot(0, this, [this, id] {
                 select_node(id);
@@ -786,6 +801,29 @@ void NodeCanvas::end_wire(QPointF scene_pos) {
     if (rebuild_pending) {
         QTimer::singleShot(0, this, &NodeCanvas::rebuild);
     }
+}
+
+QPointF NodeCanvas::card_at(const QPoint& global_pos) const {
+    return mapToScene(mapFromGlobal(global_pos)) - QPointF(NODE_W / 2, NODE_H / 2);
+}
+
+void NodeCanvas::node_moved() {
+    for (WireItem* w : wire_items) {
+        w->lanes.clear();
+    }
+    update_wires();
+}
+
+void NodeCanvas::commit_positions() {
+    for (const auto& [id, item] : node_items) {
+        model.set_position(id, item->pos());
+    }
+}
+
+void NodeCanvas::auto_organize() {
+    model.auto_organize();
+    // After the queued rebuild.
+    QTimer::singleShot(0, this, &NodeCanvas::fit_all);
 }
 
 bool NodeCanvas::node_at(QPointF scene_pos) const {

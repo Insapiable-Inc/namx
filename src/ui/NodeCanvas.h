@@ -23,11 +23,13 @@ class WireItem;
 
 // The node network (ui/node-graph): one card per node, signal flowing top to bottom
 // — inputs on a card's top edge, outputs on its bottom edge — and a wire per
-// connection. Cards sit where GraphModel's layout puts them; they can't be dragged. Drag from a port to a port to connect (either direction); a wire into an
-// input that already has one replaces it, and a wire that would close a loop is
-// refused (drawn red while dragging); dropping a wire on empty canvas offers a new node
-// wired to it. Drag a wired input away to move or drop its wire. Right-click for menus; Delete removes the
-// selection; the wheel zooms; dragging the background pans.
+// connection. Cards are dragged freely (with every selected card); Auto-Organize lays
+// the rig out once, north to south (GraphLayout). Drag from a port to a port to
+// connect (either direction); a wire into an input that already has one replaces it,
+// and a wire that would close a loop is refused (drawn red while dragging); dropping a
+// wire on empty canvas offers a new node wired to it. Drag a wired input away to move
+// or drop its wire. Right-click for menus; Delete removes the selection; the wheel
+// zooms; dragging the background pans.
 class NodeCanvas : public QGraphicsView
 {
     Q_OBJECT
@@ -44,6 +46,7 @@ public:
     int selected_node() const;
     void zoom_by(double factor);
     void fit_all();
+    void auto_organize(); // GraphModel::auto_organize, then fit the view
 
 signals:
     // The selected node (0 = none).
@@ -80,6 +83,10 @@ private:
     // The port under `scene_pos` on the side opposite the fixed end, if any.
     std::optional<std::pair<int, int>> port_at(QPointF scene_pos, bool want_input) const;
     bool node_at(QPointF scene_pos) const; // a card under `scene_pos`
+    // The top-left of a new card centred on a point of the screen.
+    QPointF card_at(const QPoint& global_pos) const;
+    void node_moved(); // a card is being dragged: its wires follow
+    void commit_positions(); // the drag ended: positions into the model
 
     GraphModel& model;
     QGraphicsScene* scene;

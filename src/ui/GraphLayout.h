@@ -11,8 +11,9 @@
 namespace namx
 {
 
-// Automatic north-to-south layout of the node graph (ui/node-graph): nodes don't
-// float, their place follows from the wiring. Every card is the same size.
+// North-to-south layout of the node graph (ui/node-graph), applied by Auto-Organize
+// (and to files saved without positions): places follow from the wiring. Every card
+// is the same size.
 namespace GraphLayout
 {
 
