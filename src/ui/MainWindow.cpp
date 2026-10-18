@@ -3152,11 +3152,23 @@ void MainWindow::save_connections() {
         return;
     }
 
-    IAudioBackend::PortConnections c = engine->current_connections();
+    // A device unplugged mid-session takes its links with it; saving only the live ones
+    // would launch next time without the guitar or the headphones. Saved ports that no
+    // longer exist are kept, so they connect again once the device is back.
     QSettings s;
-    s.setValue("connections/inputSources", to_string_list(c.input_sources));
-    s.setValue("connections/outputLDests", to_string_list(c.output_l_dests));
-    s.setValue("connections/outputRDests", to_string_list(c.output_r_dests));
+    const auto save = [&](const char* key, const vector<string>& live) {
+        QStringList ports = to_string_list(live);
+        for (const QString& saved : s.value(key).toStringList()) {
+            if (!ports.contains(saved) && !engine->has_port(saved.toStdString())) {
+                ports << saved;
+            }
+        }
+        s.setValue(key, ports);
+    };
+    const IAudioBackend::PortConnections c = engine->current_connections();
+    save("connections/inputSources", c.input_sources);
+    save("connections/outputLDests", c.output_l_dests);
+    save("connections/outputRDests", c.output_r_dests);
     s.setValue("connections/saved", true);
 }
 

@@ -38,6 +38,7 @@ public:
     }
     PortConnections current_connections() const override;
     void apply_connections(const PortConnections& c) override;
+    bool has_port(const string& name) const override;
 
     int xrun_count() const override {
         return xruns.load(std::memory_order_relaxed);

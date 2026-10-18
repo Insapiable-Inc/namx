@@ -226,6 +226,9 @@ public:
             backend->apply_connections(c);
         }
     }
+    bool has_port(const string& name) const {
+        return backend && backend->has_port(name);
+    }
 
     // VU meters
     // The audio thread accumulates the peak (max) until the GUI takes it;

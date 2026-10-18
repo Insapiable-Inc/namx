@@ -1149,10 +1149,14 @@ fix (the commit messages name the item):
       and `apply_connections` only runs at startup/device change, so the outputs stay
       unconnected until a restart. Re-apply the saved connections when the ports reappear
       (JACK port-registration callback → GUI thread).
-- [ ] Quitting after that saves the stripped state: `save_connections` on exit wrote
+- [x] Quitting after that saves the stripped state: `save_connections` on exit wrote
       `inputSources=@Invalid()` and outputs without the interface, so the next launch had
       no guitar and no headphones. Don't let a vanished device's links be forgotten —
       keep saved destinations whose ports are missing instead of overwriting them.
+      Done 2026-10-18: `save_connections` keeps saved ports that no longer exist
+      (`IAudioBackend::has_port`); checked live with a virtual PipeWire device + a
+      missing one — the missing one survives the quit, a link removed by hand to a
+      present device is still forgotten.
 
 ## Phase 27 — Benchmarking: measured against the best (added 2026-10-02; done 2026-10-02 except the loopback latency, moved after v0.0.0 on 2026-10-04)
 

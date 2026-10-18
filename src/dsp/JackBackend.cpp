@@ -198,6 +198,10 @@ void JackBackend::apply_connections(const PortConnections& c) {
     }
 }
 
+bool JackBackend::has_port(const string& name) const {
+    return client && jack_port_by_name(client, name.c_str()) != nullptr;
+}
+
 // JACK callbacks
 
 int JackBackend::jack_process_callback(jack_nframes_t nframes, void* arg) {

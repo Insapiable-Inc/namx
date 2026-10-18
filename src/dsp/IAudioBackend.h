@@ -118,6 +118,12 @@ public:
     virtual void apply_connections(const PortConnections& /*c*/) {
     }
 
+    // True if a port of that full name ("client:port") exists in the graph right now.
+    // False if !supports_port_routing().
+    virtual bool has_port(const string& /*name*/) const {
+        return false;
+    }
+
     // Exclusive device access (WASAPI): the app owns the device, picks its format and
     // the smallest period — the lowest latency, but no other app can use the device.
     // set_exclusive_mode() applies on the next start; if the device refuses, the
