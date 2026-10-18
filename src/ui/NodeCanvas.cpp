@@ -12,6 +12,7 @@
 #include <QInputDialog>
 #include <QKeyEvent>
 #include <QMenu>
+#include <QMouseEvent>
 #include <QPainter>
 #include <QPainterPathStroker>
 #include <QScrollBar>
@@ -408,7 +409,10 @@ NodeCanvas::NodeCanvas(GraphModel& new_model, QWidget* parent)
     setScene(scene);
     scene->setSceneRect(-5000, -5000, 10000, 10000);
     setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
-    setDragMode(ScrollHandDrag);
+    // Left-drag on the background: box selection (Ctrl adds to it); the middle button
+    // pans (mousePressEvent).
+    setDragMode(RubberBandDrag);
+    setRubberBandSelectionMode(Qt::ContainsItemShape);
     setTransformationAnchor(AnchorUnderMouse);
     setViewportUpdateMode(FullViewportUpdate);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -591,6 +595,39 @@ void NodeCanvas::fit_all() {
 void NodeCanvas::wheelEvent(QWheelEvent* ev) {
     zoom_by(std::pow(1.0015, ev->angleDelta().y()));
     ev->accept();
+}
+
+void NodeCanvas::mousePressEvent(QMouseEvent* ev) {
+    if (ev->button() == Qt::MiddleButton) {
+        pan_from = ev->position().toPoint();
+        viewport()->setCursor(Qt::ClosedHandCursor);
+        ev->accept();
+        return;
+    }
+    QGraphicsView::mousePressEvent(ev);
+}
+
+void NodeCanvas::mouseMoveEvent(QMouseEvent* ev) {
+    if (pan_from) {
+        const QPoint now = ev->position().toPoint();
+        const QPoint d = now - *pan_from;
+        pan_from = now;
+        horizontalScrollBar()->setValue(horizontalScrollBar()->value() - d.x());
+        verticalScrollBar()->setValue(verticalScrollBar()->value() - d.y());
+        ev->accept();
+        return;
+    }
+    QGraphicsView::mouseMoveEvent(ev);
+}
+
+void NodeCanvas::mouseReleaseEvent(QMouseEvent* ev) {
+    if (ev->button() == Qt::MiddleButton && pan_from) {
+        pan_from.reset();
+        viewport()->unsetCursor();
+        ev->accept();
+        return;
+    }
+    QGraphicsView::mouseReleaseEvent(ev);
 }
 
 void NodeCanvas::keyPressEvent(QKeyEvent* ev) {

@@ -28,8 +28,9 @@ class WireItem;
 // connect (either direction); a wire into an input that already has one replaces it,
 // and a wire that would close a loop is refused (drawn red while dragging); dropping a
 // wire on empty canvas offers a new node wired to it. Drag a wired input away to move
-// or drop its wire. Right-click for menus; Delete removes the selection; the wheel
-// zooms; dragging the background pans.
+// or drop its wire. Right-click for menus; dragging the background draws a selection
+// box (Ctrl adds to the selection); Delete removes the selection; the wheel zooms; the
+// middle button pans.
 class NodeCanvas : public QGraphicsView
 {
     Q_OBJECT
@@ -55,6 +56,9 @@ signals:
 protected:
     void wheelEvent(QWheelEvent* ev) override;
     void keyPressEvent(QKeyEvent* ev) override;
+    void mousePressEvent(QMouseEvent* ev) override;
+    void mouseMoveEvent(QMouseEvent* ev) override;
+    void mouseReleaseEvent(QMouseEvent* ev) override;
     void contextMenuEvent(QContextMenuEvent* ev) override;
     void mouseDoubleClickEvent(QMouseEvent* ev) override;
     void drawBackground(QPainter* p, const QRectF& rect) override;
@@ -101,6 +105,7 @@ private:
     };
     std::optional<WireDrag> wire_drag;
     bool rebuild_pending = false;
+    std::optional<QPoint> pan_from; // middle-button pan: the last mouse position
     QWidget* zoom_box = nullptr;
 };
 
