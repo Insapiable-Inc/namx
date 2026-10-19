@@ -15,6 +15,7 @@
 #include <QSettings>
 #include <QShortcut>
 #include <QStandardPaths>
+#include <QStyle>
 #include <QUrl>
 #include <QVBoxLayout>
 
@@ -82,17 +83,29 @@ SettingsDialog::SettingsDialog(SettingsTargets new_targets, QWidget* parent)
     setWindowTitle("Settings");
     resize(720, 480);
 
+    // KDE's side panel: flush with the window's edges, an icon per page.
     page_list = new QListWidget;
-    page_list->setFixedWidth(150);
+    page_list->setObjectName("settingsSidebar");
+    page_list->setFixedWidth(160);
+    page_list->setIconSize(QSize(22, 22));
     pages = new QStackedWidget;
-    const std::pair<const char*, QWidget*> all[] = {
-        {"Audio", build_audio_page()},           {"MIDI", build_midi_page()},
-        {"Library", build_library_page()},       {"Tuner", build_tuner_page()},
-        {"Appearance", build_appearance_page()}, {"Shortcuts", build_shortcuts_page()},
+    struct PageEntry
+    {
+        const char* name;
+        const char* icon;
+        QWidget* page;
     };
-    for (const auto& [name, page] : all) {
-        page_list->addItem(name);
-        pages->addWidget(page);
+    const PageEntry all[] = {
+        {"Audio", "preferences-desktop-sound", build_audio_page()},
+        {"MIDI", "audio-midi", build_midi_page()},
+        {"Library", "library-music", build_library_page()},
+        {"Tuner", "music-note-16th", build_tuner_page()},
+        {"Appearance", "preferences-desktop-theme", build_appearance_page()},
+        {"Shortcuts", "preferences-desktop-keyboard-shortcut", build_shortcuts_page()},
+    };
+    for (const PageEntry& entry : all) {
+        page_list->addItem(new QListWidgetItem(QIcon::fromTheme(entry.icon), entry.name));
+        pages->addWidget(entry.page);
     }
     connect(page_list, &QListWidget::currentRowChanged, pages, &QStackedWidget::setCurrentIndex);
     connect(page_list, &QListWidget::currentRowChanged, this,
@@ -101,15 +114,21 @@ SettingsDialog::SettingsDialog(SettingsTargets new_targets, QWidget* parent)
     auto* close = new QPushButton(QIcon::fromTheme("window-close"), "Close");
     connect(close, &QPushButton::clicked, this, &QDialog::close);
 
-    auto* body = new QHBoxLayout;
-    body->addWidget(page_list);
-    body->addWidget(pages, 1);
     auto* buttons = new QHBoxLayout;
     buttons->addStretch();
     buttons->addWidget(close);
-    auto* lay = new QVBoxLayout(this);
-    lay->addLayout(body, 1);
-    lay->addLayout(buttons);
+    auto* content = new QVBoxLayout; // the page and the buttons, in the dialog's margins
+    content->setContentsMargins(style()->pixelMetric(QStyle::PM_LayoutLeftMargin),
+                                style()->pixelMetric(QStyle::PM_LayoutTopMargin),
+                                style()->pixelMetric(QStyle::PM_LayoutRightMargin),
+                                style()->pixelMetric(QStyle::PM_LayoutBottomMargin));
+    content->addWidget(pages, 1);
+    content->addLayout(buttons);
+    auto* lay = new QHBoxLayout(this);
+    lay->setContentsMargins(0, 0, 0, 0);
+    lay->setSpacing(0);
+    lay->addWidget(page_list);
+    lay->addLayout(content, 1);
 
     audio_timer = new QTimer(this);
     audio_timer->setInterval(500);

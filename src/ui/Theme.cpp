@@ -940,6 +940,12 @@ QListView::item:selected {
     border-color: @accent@;
     color: @highlighted_text@;
 }
+/* The Settings sidebar: Union's side panel — no frame of its own, a line on its right. */
+QListView#settingsSidebar {
+    border: none;
+    border-right: 1px solid @frame@;
+    border-radius: 0;
+}
 /* Tables: the same states, square. */
 QTableView {
     background-color: @view@;
