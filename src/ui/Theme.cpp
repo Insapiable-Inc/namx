@@ -110,8 +110,6 @@ struct Colors
     QColor card; // effect cards
     QColor raised; // tool buttons, tooltips
     QColor control; // push buttons, combo boxes
-    QColor control_hover;
-    QColor handle_hover; // scroll handles, hovered
     QColor selection; // hovered / selected list items
     QColor pressed; // pressed buttons: tinted toward the accent
     QColor line; // separators and quiet borders
@@ -135,6 +133,8 @@ struct Colors
     QColor menu_hover; // menu items
     QColor button_frame; // check boxes, table headers: the button 20 % toward the text
     QColor tab; // closed tabs: the view background 17 % toward the text (Union's)
+    QColor bar; // scroll bar handles: the window 7.5 % toward the text (Union's)
+    QColor bar_hover; // … hovered or dragged: a third toward the accent
     // Custom-painted widgets (knobs, switches, fields).
     QColor track;
     QColor track_hover;
@@ -211,8 +211,6 @@ static Colors from_palette(const QPalette& sys, bool dark, const QColor& header)
         button, // card
         mix_colors(button, text, 0.04), // raised
         mix_colors(button, text, 0.08), // control
-        mix_colors(button, text, 0.16), // control_hover
-        mix_colors(w, text, 0.40), // handle_hover
         mix_colors(w, accent, 0.22), // selection
         mix_colors(button, accent, 1.0 / 3), // pressed
         mix_colors(w, text, 0.12), // line
@@ -234,6 +232,8 @@ static Colors from_palette(const QPalette& sys, bool dark, const QColor& header)
         mix_colors(w, accent, 0.3), // menu_hover
         mix_colors(button, text, 0.2), // button_frame
         mix_colors(base, text, 0.17), // tab
+        mix_colors(w, text, 0.075), // bar
+        mix_colors(w, accent, 1.0 / 3), // bar_hover
         mix_colors(button, text, 0.14), // track
         mix_colors(button, text, 0.24), // track_hover
         dark ? mix_colors(button, text, 0.06) : mix_colors(button, white, 0.7), // knob_body_top
@@ -495,50 +495,47 @@ QScrollArea {
 QScrollArea > QWidget > QWidget {
     background: transparent;
 }
-QScrollBar:horizontal {
-    background: @window@;
-    height: 10px;
-    margin: 0;
-    border: none;
-}
-QScrollBar::handle:horizontal {
-    background: @control_hover@;
-    border-radius: 4px;
-    min-width: 24px;
-    margin: 1px;
-}
-QScrollBar::handle:horizontal:hover {
-    background: @handle_hover@;
-}
-QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
-    width: 0;
-    background: none;
-    border: none;
-}
-QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
-    background: none;
-}
+/* Union's: a 20 px track with a frame line on its inner edge and an 8 px pill (6 px from
+   the outer edge, 5 px from the line); hovered or dragged, tinted toward the accent with
+   an accent border. */
 QScrollBar:vertical {
-    background: @window@;
-    width: 10px;
+    background: transparent;
+    width: 20px;
     margin: 0;
     border: none;
+    border-left: 1px solid @frame@;
+}
+QScrollBar:horizontal {
+    background: transparent;
+    height: 20px;
+    margin: 0;
+    border: none;
+    border-top: 1px solid @frame@;
+}
+QScrollBar::handle {
+    background: @bar@;
+    border: 1px solid @frame@;
+    border-radius: 4px;
 }
 QScrollBar::handle:vertical {
-    background: @control_hover@;
-    border-radius: 4px;
     min-height: 24px;
-    margin: 1px;
+    margin: 6px 6px 6px 5px;
 }
-QScrollBar::handle:vertical:hover {
-    background: @handle_hover@;
+QScrollBar::handle:horizontal {
+    min-width: 24px;
+    margin: 5px 6px 6px 6px;
 }
-QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+QScrollBar::handle:hover, QScrollBar::handle:pressed {
+    background: @bar_hover@;
+    border-color: @accent@;
+}
+QScrollBar::add-line, QScrollBar::sub-line {
+    width: 0;
     height: 0;
     background: none;
     border: none;
 }
-QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+QScrollBar::add-page, QScrollBar::sub-page {
     background: none;
 }
 
@@ -1201,8 +1198,6 @@ static QString fill_roles(const char* sheet) {
         {"card", pal.card},
         {"raised", pal.raised},
         {"control", pal.control},
-        {"control_hover", pal.control_hover},
-        {"handle_hover", pal.handle_hover},
         {"selection", pal.selection},
         {"pressed", pal.pressed},
         {"line", pal.line},
@@ -1223,6 +1218,8 @@ static QString fill_roles(const char* sheet) {
         {"menu_hover", pal.menu_hover},
         {"button_frame", pal.button_frame},
         {"tab", pal.tab},
+        {"bar", pal.bar},
+        {"bar_hover", pal.bar_hover},
         {"accent", current_accent},
         {"on_accent", on_accent()},
     };
