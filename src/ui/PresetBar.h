@@ -61,7 +61,7 @@ signals:
     void ab_copy_requested(); // active side → the other one
 
 private:
-    static constexpr int NAME_WIDTH = 260; // the name button
+    static constexpr int NAME_WIDTH = 260; // the name button, at 9 pt (Theme::scaled)
     static constexpr int NAME_CHROME = 44; // its padding + the menu arrow
     void populate_preset_menu(QMenu* menu);
     void activate_slot(int i);

@@ -82,7 +82,8 @@ static vector<string> to_std_strings(const QStringList& list) {
 }
 
 // Fixed columns at the left edge of every row card, so the enable toggles,
-// stereo slots, and first knobs line up vertically across the strip.
+// stereo slots, and first knobs line up vertically across the strip. The lengths
+// holding text are drawn for 9 pt and go through Theme::scaled where used.
 static constexpr int GRIP_COLUMN_WIDTH = 22; // "≡" drag handle
 static constexpr int NAME_COLUMN_WIDTH = 120; // fits "Dynamic Wah"
 static constexpr int ENABLE_SLOT_WIDTH = 74; // toggle + "On"/"Off" caption
@@ -99,7 +100,7 @@ static constexpr int HERO_NAME_MAX_WIDTH = 420;
 // switch stays on the row's vertical centerline.
 static QWidget* make_enable_slot(ToggleSwitch* sw) {
     auto* w = new QWidget;
-    w->setFixedWidth(ENABLE_SLOT_WIDTH);
+    w->setFixedWidth(Theme::scaled(ENABLE_SLOT_WIDTH));
     auto* lay = new QHBoxLayout(w);
     lay->setContentsMargins(0, 0, 0, 0);
     lay->setSpacing(6);
@@ -121,7 +122,7 @@ static QWidget* make_enable_slot(ToggleSwitch* sw) {
 // Toggle and caption sit on one line for the same centering reason.
 static QWidget* make_stereo_slot(ToggleSwitch** out_toggle) {
     auto* w = new QWidget;
-    w->setFixedWidth(STEREO_SLOT_WIDTH);
+    w->setFixedWidth(Theme::scaled(STEREO_SLOT_WIDTH));
     auto* lay = new QHBoxLayout(w);
     lay->setContentsMargins(0, 0, 0, 0);
     lay->setSpacing(6);
@@ -146,7 +147,7 @@ static QWidget* make_stereo_slot(ToggleSwitch** out_toggle) {
 static QWidget* make_sync_slot() {
     auto* w = new QWidget;
     w->setObjectName("syncSlot");
-    w->setFixedWidth(SYNC_SLOT_WIDTH);
+    w->setFixedWidth(Theme::scaled(SYNC_SLOT_WIDTH));
     auto* lay = new QHBoxLayout(w);
     lay->setContentsMargins(0, 0, 0, 0);
     lay->setSpacing(6);
@@ -247,7 +248,8 @@ static void place_across_switch_columns(QWidget* card, QWidget* w) {
     // Main row: grip, name, enable slot, stereo slot, sync slot, …
     QWidget* stereo_slot = row_layout(card)->itemAt(3)->widget();
     QWidget* sync_slot = card->findChild<QWidget*>("syncSlot");
-    const int width = STEREO_SLOT_WIDTH + row_layout(card)->spacing() + SYNC_SLOT_WIDTH;
+    const int width = Theme::scaled(STEREO_SLOT_WIDTH) + row_layout(card)->spacing() +
+                      Theme::scaled(SYNC_SLOT_WIDTH);
     sync_slot->hide(); // a hidden widget takes no space or spacing in the row
     stereo_slot->setFixedWidth(width);
     w->setFixedWidth(width);
@@ -388,14 +390,14 @@ QFrame* MainWindow::make_row_card(const QString& title) {
     auto* card = new QFrame;
     card->setProperty("fxCard", true); // card chrome lives in the Theme QSS
     card->setProperty("displayName", title); // context menu + drag bookkeeping
-    card->setFixedHeight(ROW_CARD_HEIGHT);
+    card->setFixedHeight(Theme::scaled(ROW_CARD_HEIGHT));
     // Card = main row (+ an optional detail row, see addDetailRow).
     auto* outer = new QVBoxLayout(card);
     outer->setContentsMargins(0, 0, 0, 0);
     outer->setSpacing(0);
     auto* row = new QWidget;
     row->setObjectName("cardRow");
-    row->setFixedHeight(ROW_CARD_HEIGHT - 2); // inside the 1 px border
+    row->setFixedHeight(Theme::scaled(ROW_CARD_HEIGHT) - 2); // inside the 1 px border
     outer->addWidget(row);
     outer->addStretch();
     auto* lay = new QHBoxLayout(row);
@@ -415,7 +417,7 @@ QFrame* MainWindow::make_row_card(const QString& title) {
 
     auto* name = new QLabel(title);
     name->setObjectName("fxName");
-    name->setFixedWidth(NAME_COLUMN_WIDTH);
+    name->setFixedWidth(Theme::scaled(NAME_COLUMN_WIDTH));
     lay->addWidget(name, 0, Qt::AlignVCenter);
 
     return card;
@@ -432,8 +434,9 @@ KnobWidget* MainWindow::late_knob(const QString& group, const QString& key, Knob
 // Shows or hides a card's detail rows and resizes the card to fit.
 static void show_details(QWidget* card, QWidget* container, QToolButton* more, bool open) {
     container->setVisible(open);
-    card->setFixedHeight(ROW_CARD_HEIGHT +
-                         (open ? container->layout()->count() * DETAIL_ROW_HEIGHT : 0));
+    card->setFixedHeight(
+        Theme::scaled(ROW_CARD_HEIGHT) +
+        (open ? container->layout()->count() * Theme::scaled(DETAIL_ROW_HEIGHT) : 0));
     more->setText(open ? "▴" : "▾");
     more->setToolTip(open ? "Fewer controls" : "More controls");
 }
@@ -466,11 +469,12 @@ void MainWindow::add_detail_row(QWidget* card, const QList<QWidget*>& widgets) {
         static_cast<QVBoxLayout*>(card->layout())->insertWidget(1, container);
     }
     auto* row = new QWidget;
-    row->setFixedHeight(DETAIL_ROW_HEIGHT);
+    row->setFixedHeight(Theme::scaled(DETAIL_ROW_HEIGHT));
     auto* lay = new QHBoxLayout(row);
     // Indent to the knob column: margin + grip + name + enable, stereo and sync slots.
-    const int indent = 10 + GRIP_COLUMN_WIDTH + NAME_COLUMN_WIDTH + ENABLE_SLOT_WIDTH +
-                       STEREO_SLOT_WIDTH + SYNC_SLOT_WIDTH + 5 * 10;
+    const int indent = 10 + GRIP_COLUMN_WIDTH + Theme::scaled(NAME_COLUMN_WIDTH) +
+                       Theme::scaled(ENABLE_SLOT_WIDTH) + Theme::scaled(STEREO_SLOT_WIDTH) +
+                       Theme::scaled(SYNC_SLOT_WIDTH) + 5 * 10;
     lay->setContentsMargins(indent, 0, 10, 8);
     lay->setSpacing(10);
     for (QWidget* w : widgets) {
@@ -484,7 +488,8 @@ void MainWindow::add_detail_row(QWidget* card, const QList<QWidget*>& widgets) {
     if (!first) {
         // Re-apply the current state with the new height.
         if (more && more->isChecked()) {
-            card->setFixedHeight(ROW_CARD_HEIGHT + rows * DETAIL_ROW_HEIGHT);
+            card->setFixedHeight(Theme::scaled(ROW_CARD_HEIGHT) +
+                                 rows * Theme::scaled(DETAIL_ROW_HEIGHT));
         }
         return;
     }
@@ -1455,7 +1460,7 @@ void MainWindow::setup_ui() {
     library_dock->setFeatures(QDockWidget::DockWidgetClosable);
     library_dock->setWidget(library);
     addDockWidget(Qt::LeftDockWidgetArea, library_dock);
-    resizeDocks({library_dock}, {320}, Qt::Horizontal);
+    resizeDocks({library_dock}, {Theme::scaled(320)}, Qt::Horizontal);
 
     {
         QAction* show = library_dock->toggleViewAction();
@@ -3217,8 +3222,8 @@ void MainWindow::show_file_status(QLabel* name, QLabel* meta, bool loaded, const
         // File names and metadata are untrusted: plain text, never HTML.
         name->setTextFormat(Qt::PlainText);
         meta->setTextFormat(Qt::PlainText);
-        name->setText(
-            name->fontMetrics().elidedText(fresh.name, Qt::ElideMiddle, HERO_NAME_MAX_WIDTH));
+        name->setText(name->fontMetrics().elidedText(fresh.name, Qt::ElideMiddle,
+                                                     Theme::scaled(HERO_NAME_MAX_WIDTH)));
         name->setObjectName("fileStatusOk");
         name->setToolTip(Theme::plain_tooltip(QDir::toNativeSeparators(fresh.path)));
         meta->setText(fresh.summary);

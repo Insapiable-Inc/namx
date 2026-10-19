@@ -79,10 +79,10 @@ SettingsDialog::SettingsDialog(SettingsTargets new_targets, QWidget* parent)
     : QDialog(parent)
     , targets(std::move(new_targets)) {
     setWindowTitle("Settings");
-    resize(720, 480);
+    resize(Theme::scaled(720), Theme::scaled(480));
 
     page_list = new QListWidget;
-    page_list->setFixedWidth(150);
+    page_list->setFixedWidth(Theme::scaled(150));
     pages = new QStackedWidget;
     const std::pair<const char*, QWidget*> all[] = {
         {"Audio", build_audio_page()},           {"MIDI", build_midi_page()},
@@ -177,8 +177,8 @@ void SettingsDialog::refresh_current_page() {
 QWidget* SettingsDialog::build_audio_page() {
     input_combo = new QComboBox;
     output_combo = new QComboBox;
-    input_combo->setMinimumWidth(320);
-    output_combo->setMinimumWidth(320);
+    input_combo->setMinimumWidth(Theme::scaled(320));
+    output_combo->setMinimumWidth(Theme::scaled(320));
     connect(input_combo, &QComboBox::activated, this, [this](int index) {
         choose_device(true, index);
     });

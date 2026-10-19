@@ -13,6 +13,7 @@
 #include <QImage>
 #include <QPalette>
 #include <QPointer>
+#include <QRegularExpression>
 #include <QSettings>
 #include <QStandardPaths>
 #include <QStyle>
@@ -355,7 +356,6 @@ QMainWindow, QDialog {
 }
 QWidget {
     color: @text@;
-    font-size: 9pt;
 }
 
 /* === Menu bar === */
@@ -430,7 +430,7 @@ QLabel#fxGrip {
 }
 QLabel#fxName {
     font-weight: 700;
-    font-size: 10pt;
+    font-size: @pt:10@;
 }
 /* Per-effect accent stripes and name colors are appended in apply(). */
 
@@ -501,7 +501,7 @@ QLabel#toggleCaption {
 QStatusBar {
     background-color: @surface@;
     border-top: 1px solid @line@;
-    min-height: 24px;
+    min-height: @px:24@;
 }
 QStatusBar::item {
     border: none;
@@ -570,7 +570,7 @@ QLabel#presetCaption {
 }
 QToolButton#presetName {
     color: @accent@;
-    font-size: 11pt;
+    font-size: @pt:11@;
     font-weight: 700;
     padding: 3px 10px;
     text-align: left;
@@ -667,7 +667,7 @@ QLineEdit#numberEdit {
     color: @accent@;
     border: 1px solid @border_hover@;
     border-radius: 4px;
-    font-size: 12pt;
+    font-size: @pt:12@;
     font-weight: 700;
     selection-background-color: @accent@;
     selection-color: @on_accent@;
@@ -993,6 +993,15 @@ static QString arrow_url() {
     return path;
 }
 
+qreal font_scale() {
+    const qreal body = QApplication::font().pointSizeF();
+    return body > 0 ? body / 9.0 : 1.0; // a pixel-sized font: as drawn
+}
+
+int scaled(int px) {
+    return std::max(px, static_cast<int>(std::lround(px * font_scale())));
+}
+
 static QString fill_roles(const char* sheet) {
     const Colors& pal = palette();
     const std::pair<const char*, QColor> roles[] = {
@@ -1023,6 +1032,17 @@ static QString fill_roles(const char* sheet) {
     QString qss = QString::fromUtf8(sheet);
     for (const auto& [role, color] : roles) {
         qss.replace(QString("@%1@").arg(QLatin1String(role)), color.name());
+    }
+    // Text larger than the body (@pt:N@, N as drawn at a 9 pt body) grows with the
+    // system font, which the body text follows; so do lengths holding text (@px:N@).
+    // Glyphs in fixed boxes (≡, ‹ ›, ▾, ▶) keep their size, like icons.
+    static const QRegularExpression SIZE("@(pt|px):(\\d+)@");
+    for (QRegularExpressionMatch m = SIZE.match(qss); m.hasMatch(); m = SIZE.match(qss)) {
+        const int n = m.captured(2).toInt();
+        const QString value = m.captured(1) == "pt"
+                                  ? QString::number(n * font_scale(), 'f', 1) + "pt"
+                                  : QString::number(scaled(n)) + "px";
+        qss.replace(m.capturedStart(), m.capturedLength(), value);
     }
     if (qss.contains("@arrow@")) {
         qss.replace("@arrow@", arrow_url());
@@ -1077,7 +1097,8 @@ static void resolve_scheme() {
 }
 
 // Follows the OS while Mode::SYSTEM: a scheme switch (Qt 6.5+) or a new system
-// palette (an accent change; the only signal before 6.5).
+// palette (an accent change; the only signal before 6.5). A new system font in every
+// mode: the larger text sizes are derived from it.
 class SystemThemeWatcher : public QObject
 {
 public:
@@ -1085,8 +1106,9 @@ public:
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override {
-        if (watched == qApp && event->type() == QEvent::ApplicationPaletteChange &&
-            current_mode == Mode::SYSTEM) {
+        const bool palette_change =
+            event->type() == QEvent::ApplicationPaletteChange && current_mode == Mode::SYSTEM;
+        if (watched == qApp && (palette_change || event->type() == QEvent::ApplicationFontChange)) {
             QTimer::singleShot(0, qApp, [] {
                 reapply();
             });

@@ -222,11 +222,13 @@ KnobWidget::KnobWidget(const QString& new_label, double min_val, double max_val,
         // Keeps the dial a usable size while the whole widget stays ~46px
         // tall, so a full effect row fits in ~58px.
         setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-        setFixedWidth(142); // uniform tiles — knob columns align across rows
+        // Uniform tiles — knob columns align across rows: dial and margins, then the
+        // text column, which grows with the font.
+        setFixedWidth(6 + 40 + 7 + Theme::scaled(81) + 8);
         dial->setFixedSize(40, 40);
         name_label->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
         label_value->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-        label_value->setMinimumWidth(64); // steady width while the value changes
+        label_value->setMinimumWidth(Theme::scaled(64)); // steady width while the value changes
 
         auto* layout = new QHBoxLayout(this);
         layout->setContentsMargins(6, 4, 8, 4);

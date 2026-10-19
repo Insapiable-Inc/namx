@@ -235,7 +235,7 @@ QRect LibraryItemDelegate::star_rect(const QRect& row) {
 }
 
 QSize LibraryItemDelegate::sizeHint(const QStyleOptionViewItem& opt, const QModelIndex&) const {
-    return QSize(opt.rect.width(), ROW_HEIGHT);
+    return QSize(opt.rect.width(), Theme::scaled(ROW_HEIGHT));
 }
 
 void LibraryItemDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt,
@@ -339,7 +339,7 @@ LibraryPanel::LibraryPanel(LibraryIndex& new_index, QWidget* parent)
     : QWidget(parent)
     , library_index(new_index) {
     setObjectName("libraryPanel");
-    setMinimumWidth(240);
+    setMinimumWidth(Theme::scaled(240));
 
     QSettings s;
     // One list: begin() and end() must come from the same container.
