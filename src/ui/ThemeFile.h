@@ -22,6 +22,7 @@ struct ThemeSpec
     QColor base; // lists, fields
     QColor button; // effect cards, buttons
     QColor accent; // selections, the app accent
+    QColor header; // the menu bar (KDE's Header colours)
     QColor shadow;
     QColor disabled_text;
     QHash<QString, QColor> effects; // effect ID → accent; missing ones keep ours
@@ -33,6 +34,9 @@ QColor mix_colors(const QColor& a, const QColor& b, double t);
 // Reads a theme file. `effect_ids` are the IDs an `effects` entry may name; anything
 // else is an error, so a typo doesn't fail silently.
 expected<ThemeSpec, QString> load_theme_file(const QString& path, const QStringList& effect_ids);
+
+// Reads a KDE colour scheme at any path — also kdeglobals, which has no extension.
+expected<ThemeSpec, QString> load_kde_colors(const QString& path);
 
 // Copy a theme without losing an existing destination if reading or writing fails.
 expected<void, QString> copy_theme_file(const QString& source, const QString& target);

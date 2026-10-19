@@ -3110,6 +3110,13 @@ void MainWindow::changeEvent(QEvent* ev) {
     if (ev->type() == QEvent::StyleChange || ev->type() == QEvent::FontChange) {
         fit_to_font();
     }
+    // The menu bar takes the window colour while the window is inactive, like KDE's
+    // Header (the stylesheet's QMenuBar[inactive]).
+    if (ev->type() == QEvent::ActivationChange) {
+        menuBar()->setProperty("inactive", !isActiveWindow());
+        menuBar()->style()->unpolish(menuBar());
+        menuBar()->style()->polish(menuBar());
+    }
     // A theme change: the status bar's dots are HTML text, coloured when they were set.
     if (ev->type() == QEvent::StyleChange && lbl_midi && lbl_rig_status) {
         update_rig_status();

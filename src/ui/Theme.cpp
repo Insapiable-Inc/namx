@@ -12,6 +12,7 @@
 #include <QFontMetrics>
 #include <QHash>
 #include <QImage>
+#include <QMenu>
 #include <QPalette>
 #include <QPointer>
 #include <QRegularExpression>
@@ -108,8 +109,8 @@ struct Colors
     QColor control; // push buttons, combo boxes
     QColor control_hover;
     QColor handle_hover; // scroll handles, hovered
-    QColor selection; // hovered / selected menu and list items
-    QColor pressed;
+    QColor selection; // hovered / selected list items
+    QColor pressed; // pressed buttons: tinted toward the accent
     QColor line; // separators and quiet borders
     QColor border; // control borders
     QColor border_hover;
@@ -123,6 +124,13 @@ struct Colors
     QColor text_off; // empty preset slots
     QColor notice; // status bar problems
     QColor shadow;
+    // KDE's: the menu bar's Header background, frames (the background 20 % toward the
+    // text, KDE's frame contrast), and the accent-tinted hover of menu items.
+    QColor header;
+    QColor header_frame; // the line under the menu bar
+    QColor frame; // menu borders, separators, the line over the status bar
+    QColor header_hover; // menu bar items
+    QColor menu_hover; // menu items
     // Custom-painted widgets (knobs, switches, fields).
     QColor track;
     QColor track_hover;
@@ -177,14 +185,15 @@ static QPalette breeze(bool dark) {
     return p;
 }
 
-// Every chrome tone from a palette (the OS's, or Breeze's when forced): the window, base,
-// button, text, shadow and highlight colours as they are, the in-between tones mixed
-// between them.
+// Every chrome tone from a palette (the OS's, or Breeze's when forced) and the menu bar's
+// header colour: the window, base, button, text, shadow and highlight colours as they
+// are, the in-between tones mixed between them.
 // Mixing toward the text colour darkens on a light scheme and lightens on a dark one,
 // so one recipe serves both. Ours stay: the effect accents, the LED colours and the
 // status bar's warning red.
-static Colors from_palette(const QPalette& sys, bool dark) {
+static Colors from_palette(const QPalette& sys, bool dark, const QColor& header) {
     const QColor w = sys.color(QPalette::Window);
+    const QColor accent = sys.color(QPalette::Highlight);
     const QColor base = sys.color(QPalette::Base);
     const QColor button = sys.color(QPalette::Button);
     const QColor text = sys.color(QPalette::WindowText);
@@ -200,8 +209,8 @@ static Colors from_palette(const QPalette& sys, bool dark) {
         mix_colors(button, text, 0.08), // control
         mix_colors(button, text, 0.16), // control_hover
         mix_colors(w, text, 0.40), // handle_hover
-        mix_colors(w, sys.color(QPalette::Highlight), 0.22), // selection
-        mix_colors(button, text, 0.22), // pressed
+        mix_colors(w, accent, 0.22), // selection
+        mix_colors(button, accent, 1.0 / 3), // pressed
         mix_colors(w, text, 0.12), // line
         border,
         mix_colors(w, text, 0.36), // border_hover
@@ -215,6 +224,11 @@ static Colors from_palette(const QPalette& sys, bool dark) {
         mix_colors(text, w, 0.58), // text_off
         QColor(ours.notice),
         sys.color(QPalette::Shadow),
+        header,
+        mix_colors(header, text, 0.2), // header_frame
+        mix_colors(w, text, 0.2), // frame
+        mix_colors(header, accent, 0.3), // header_hover
+        mix_colors(w, accent, 0.3), // menu_hover
         mix_colors(button, text, 0.14), // track
         mix_colors(button, text, 0.24), // track_hover
         dark ? mix_colors(button, text, 0.06) : mix_colors(button, white, 0.7), // knob_body_top
@@ -244,7 +258,12 @@ static bool dark_active = true;
 static QColor current_accent("#3daee9"); // Breeze blue until the system says otherwise
 static QPointer<QWidget> themed_root;
 
-static Colors active = from_palette(breeze(true), true);
+// Breeze's Header background (the menu bar), Dark and Light.
+static QColor breeze_header(bool dark) {
+    return QColor(dark ? "#292c30" : "#dee0e2");
+}
+
+static Colors active = from_palette(breeze(true), true, breeze_header(true));
 
 static const Colors& palette() {
     return active;
@@ -364,39 +383,71 @@ QLabel#madeInChile {
     color: @text@;
     font-weight: 600;
 }
+/* KDE's: the Header colour (the window's while the window is inactive) over a frame
+   line, items hovered with the accent tint and an accent border, the open one filled. */
 QMenuBar {
-    background-color: @surface@;
+    background-color: @header@;
     color: @text@;
-    border-bottom: 1px solid @line@;
+    border-bottom: 1px solid @header_frame@;
     padding: 2px 4px;
+}
+QMenuBar[inactive="true"] {
+    background-color: @window@;
+    border-bottom-color: @frame@;
 }
 QMenuBar::item {
     background: transparent;
-    padding: 4px 10px;
-    border-radius: 4px;
+    padding: 3px 9px;
+    border: 1px solid transparent;
+    border-radius: 5px;
 }
 QMenuBar::item:selected {
-    background-color: @selection@;
+    background-color: @header_hover@;
+    border-color: @accent@;
 }
+QMenuBar::item:pressed {
+    background-color: @accent@;
+    border-color: @accent@;
+    color: @on_accent@;
+}
+/* Breeze's menus: rounded, framed, items rounded inside a 4 px padding; the text leaves
+   Breeze's column for icons and check marks. The corners need a translucent window
+   (apply() gives every menu one). */
 QMenu {
-    background-color: @surface@;
+    background-color: @window@;
     color: @text@;
-    border: 1px solid @line@;
-    padding: 4px 0;
+    border: 1px solid @frame@;
+    border-radius: 5px;
+    padding: 4px;
 }
 QMenu::item {
-    padding: 6px 24px;
+    padding: 5px 24px 5px 33px;
+    border: 1px solid transparent;
+    border-radius: 5px;
 }
 QMenu::item:selected {
-    background-color: @selection@;
+    background-color: @menu_hover@;
+    border-color: @accent@;
+}
+QMenu::item:disabled {
+    color: @disabled_text@;
+    background: transparent;
+    border-color: transparent;
+}
+QMenu::indicator {
+    width: 16px;
+    height: 16px;
+    left: 6px;
 }
 QMenu::separator {
     height: 1px;
-    background: @line@;
-    margin: 4px 6px;
+    background: @frame@;
+    margin: 4px;
 }
 
 /* === Buttons === */
+/* Hover is KDE's: the accent on the border, the fill unchanged; pressed tints the fill
+   toward the accent. Every button below follows it. */
 QPushButton {
     background-color: @control@;
     color: @text@;
@@ -407,11 +458,11 @@ QPushButton {
     font-weight: 500;
 }
 QPushButton:hover {
-    background-color: @control_hover@;
-    border-color: @border_hover@;
+    border-color: @accent@;
 }
 QPushButton:pressed {
     background-color: @pressed@;
+    border-color: @accent@;
 }
 QPushButton:disabled {
     background-color: @disabled_bg@;
@@ -500,8 +551,8 @@ QLabel#toggleCaption {
 
 /* === Status bar (bottom, VS Code style) === */
 QStatusBar {
-    background-color: @surface@;
-    border-top: 1px solid @line@;
+    background-color: @window@;
+    border-top: 1px solid @frame@;
     min-height: 24px;
 }
 QStatusBar::item {
@@ -551,11 +602,11 @@ QToolButton#heroArrow {
     background-color: @raised@;
 }
 QToolButton#heroArrow:hover {
-    background-color: @selection@;
-    border-color: @border_hover@;
+    border-color: @accent@;
 }
 QToolButton#heroArrow:pressed {
     background-color: @pressed@;
+    border-color: @accent@;
 }
 
 /* === Preset bar (top of the rack) === */
@@ -585,7 +636,7 @@ QToolButton#presetName[untitled="true"] {
     font-weight: 500;
 }
 QToolButton#presetName:hover {
-    border-color: @border_hover@;
+    border-color: @accent@;
 }
 QToolButton#presetName::menu-indicator {
     image: url(@arrow@);
@@ -601,8 +652,11 @@ QToolButton#presetSlot, QToolButton#presetAb {
     padding: 3px 8px;
 }
 QToolButton#presetSlot:hover, QToolButton#presetAb:hover {
-    background-color: @selection@;
-    border-color: @border_hover@;
+    border-color: @accent@;
+}
+QToolButton#presetSlot:pressed, QToolButton#presetAb:pressed {
+    background-color: @pressed@;
+    border-color: @accent@;
 }
 /* Push buttons (Save, Tap, A→B…) and menu buttons (4/4, Click…): filled and
    bordered so they read as clickable; menu buttons carry a ▾. */
@@ -614,11 +668,11 @@ QToolButton#presetTool, QToolButton#menuTool {
     padding: 3px 9px;
 }
 QToolButton#presetTool:hover, QToolButton#menuTool:hover {
-    background-color: @selection@;
-    border-color: @border_hover@;
+    border-color: @accent@;
 }
 QToolButton#presetTool:pressed, QToolButton#menuTool:pressed {
     background-color: @pressed@;
+    border-color: @accent@;
 }
 QToolButton#menuTool {
     padding-right: 20px;
@@ -684,7 +738,11 @@ QToolButton#metroPlay {
     font-size: 11pt;
 }
 QToolButton#metroPlay:hover {
-    background-color: @control_hover@;
+    border-color: @accent@;
+}
+QToolButton#metroPlay:pressed {
+    background-color: @pressed@;
+    border-color: @accent@;
 }
 QToolButton#metroPlay:checked {
     color: @on_accent@;
@@ -693,17 +751,22 @@ QToolButton#metroPlay:checked {
 }
 
 /* === Effect card ▾ detail toggle === */
+/* A flat button: KDE gives it just the accent border on hover. */
 QToolButton#cardMore {
     color: @text_muted@;
     background: transparent;
-    border: none;
+    border: 1px solid transparent;
     border-radius: 4px;
     min-width: 22px;
     font-size: 14pt;
 }
 QToolButton#cardMore:hover {
     color: @text@;
-    background-color: @selection@;
+    border-color: @accent@;
+}
+QToolButton#cardMore:pressed {
+    background-color: @pressed@;
+    border-color: @accent@;
 }
 
 /* === MIDI Mappings window === */
@@ -742,7 +805,11 @@ QDialog#midiMappings QToolButton {
     padding: 2px 8px;
 }
 QDialog#midiMappings QToolButton:hover {
-    background-color: @selection@;
+    border-color: @accent@;
+}
+QDialog#midiMappings QToolButton:pressed {
+    background-color: @pressed@;
+    border-color: @accent@;
 }
 QDialog#midiMappings QCheckBox {
     color: @text@;
@@ -777,8 +844,11 @@ QToolButton#libraryMode, QToolButton#libraryTool {
     padding: 3px 9px;
 }
 QToolButton#libraryMode:hover, QToolButton#libraryTool:hover {
-    background-color: @selection@;
-    border-color: @border_hover@;
+    border-color: @accent@;
+}
+QToolButton#libraryMode:pressed, QToolButton#libraryTool:pressed {
+    background-color: @pressed@;
+    border-color: @accent@;
 }
 QToolButton#libraryMode:checked {
     color: @on_accent@;
@@ -853,7 +923,7 @@ QComboBox {
     font-weight: 500;
 }
 QComboBox:hover {
-    border-color: @border_hover@;
+    border-color: @accent@;
 }
 QComboBox:disabled {
     background-color: @disabled_bg@;
@@ -1024,6 +1094,11 @@ static QString fill_roles(const char* sheet) {
         {"text_faint", pal.text_faint},
         {"text_off", pal.text_off},
         {"notice", pal.notice},
+        {"header", pal.header},
+        {"header_frame", pal.header_frame},
+        {"frame", pal.frame},
+        {"header_hover", pal.header_hover},
+        {"menu_hover", pal.menu_hover},
         {"accent", current_accent},
         {"on_accent", on_accent()},
     };
@@ -1058,6 +1133,22 @@ static QPalette palette_of(const ThemeSpec& spec) {
     return p;
 }
 
+// The menu bar's colour while following the system: KDE's Header colour, read from
+// kdeglobals — Qt's palette has no such role — when that file describes the palette in use
+// (its window colour matches); elsewhere (Windows, GNOME) the window's.
+static QColor system_header(const QPalette& system) {
+    const QColor window = system.color(QPalette::Window);
+    const QString path =
+        QStandardPaths::locate(QStandardPaths::GenericConfigLocation, "kdeglobals");
+    if (!path.isEmpty()) {
+        const auto kde = load_kde_colors(path);
+        if (kde && kde->window.rgb() == window.rgb()) {
+            return kde->header;
+        }
+    }
+    return window;
+}
+
 // Reads the scheme and accent the OS asks for (Mode::SYSTEM), the forced Breeze one, or
 // the theme file's.
 static void resolve_scheme() {
@@ -1087,8 +1178,11 @@ static void resolve_scheme() {
     const QPalette source = current_mode == Mode::SYSTEM   ? system
                             : current_mode == Mode::CUSTOM ? palette_of(custom_theme)
                                                            : breeze(dark_active);
+    const QColor header = current_mode == Mode::SYSTEM   ? system_header(system)
+                          : current_mode == Mode::CUSTOM ? custom_theme.header
+                                                         : breeze_header(dark_active);
     current_accent = source.color(QPalette::Highlight);
-    active = from_palette(source, dark_active);
+    active = from_palette(source, dark_active, header);
 }
 
 // Follows the OS while Mode::SYSTEM: a scheme switch (Qt 6.5+) or a new system
@@ -1107,6 +1201,25 @@ protected:
             QTimer::singleShot(0, qApp, [] {
                 reapply();
             });
+        }
+        return QObject::eventFilter(watched, event);
+    }
+};
+
+// Every menu, context menus included, gets a translucent window as it is polished (before
+// its window exists), so the stylesheet's rounded corners show what is behind them — as
+// Breeze does for its menus.
+class RoundedMenus : public QObject
+{
+public:
+    using QObject::QObject;
+
+protected:
+    bool eventFilter(QObject* watched, QEvent* event) override {
+        if (event->type() == QEvent::Polish) {
+            if (auto* menu = qobject_cast<QMenu*>(watched)) {
+                menu->setAttribute(Qt::WA_TranslucentBackground);
+            }
         }
         return QObject::eventFilter(watched, event);
     }
@@ -1171,6 +1284,7 @@ void apply(QApplication& app) {
     app.setStyle("Fusion");
     app.setStyleSheet(fill_roles(APP_STYLE_SHEET));
     app.installEventFilter(new SystemThemeWatcher(&app));
+    app.installEventFilter(new RoundedMenus(&app));
 #if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
     QObject::connect(QGuiApplication::styleHints(), &QStyleHints::colorSchemeChanged, &app, [] {
         if (current_mode == Mode::SYSTEM) {
