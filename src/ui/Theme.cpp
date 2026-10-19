@@ -13,6 +13,7 @@
 #include <QHash>
 #include <QImage>
 #include <QMenu>
+#include <QPainter>
 #include <QPalette>
 #include <QPointer>
 #include <QRegularExpression>
@@ -636,8 +637,10 @@ QToolButton#presetName:hover {
 }
 QToolButton#presetName::menu-indicator {
     image: url(@arrow@);
+    width: 16px;
+    height: 16px;
     subcontrol-position: right center;
-    right: 8px;
+    right: 6px;
 }
 /* Slots and A/B: filled buttons like Save; an empty slot is dimmer. */
 QToolButton#presetSlot, QToolButton#presetAb {
@@ -670,14 +673,17 @@ QToolButton#presetTool:pressed, QToolButton#menuTool:pressed {
     background-color: @pressed@;
     border-color: @accent@;
 }
+/* Union's: the text, 4 px, the 16 px chevron, 6 px to the border. */
 QToolButton#menuTool {
-    padding-right: 20px;
+    padding-right: 26px;
 }
 QToolButton#menuTool::menu-indicator {
     image: url(@arrow@);
+    width: 16px;
+    height: 16px;
     subcontrol-origin: padding;
     subcontrol-position: right center;
-    right: 7px;
+    right: 6px;
 }
 QToolButton#presetSlot {
     color: @text_off@;
@@ -926,16 +932,19 @@ QComboBox:disabled {
     color: @disabled_text@;
     border-color: @disabled_border@;
 }
+/* Union's chevron, 6 px from the border. */
 QComboBox::drop-down {
     border: none;
-    width: 20px;
+    width: 22px;
 }
 QComboBox::down-arrow {
     image: url(@arrow@); /* @2x picked up on HiDPI */
+    width: 16px;
+    height: 16px;
     margin-right: 6px;
 }
 QComboBox::down-arrow:disabled {
-    image: none;
+    image: url(@arrow_disabled@);
 }
 QComboBox QAbstractItemView {
     background-color: @surface@;
@@ -1027,34 +1036,32 @@ QColor status_bad() {
     return readable_on(QColor("#e85a4f"), active.surface, 4.5);
 }
 
-// The ▾ arrow on combo boxes and menu buttons: the resource image where its grey reads
-// on the controls (3:1, as for graphics), else a copy tinted readable, written to the
-// cache folder (style sheets take only files) with its @2x twin.
-static QString arrow_url() {
-    static const QColor ARROW_GREY(153, 160, 172); // the PNGs' colour
-    const QColor tint = readable_on(ARROW_GREY, active.control, 3.0);
-    if (tint == ARROW_GREY) {
-        return ":/icons/down-arrow.png";
-    }
+// The arrow on combo boxes and menu buttons: Union's arrow-down-symbolic, Breeze's 16 px
+// chevron, in `color` (the button text, or its disabled tone). Painted into the cache
+// folder (style sheets take only files) with its @2x twin; empty when that fails.
+static QString chevron_url(const QColor& color) {
     const QString dir = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
-    const QString name = QString("down-arrow-%1").arg(tint.name().mid(1));
+    const QString name = QString("chevron-down-%1").arg(color.name().mid(1));
     const QString path = dir + '/' + name + ".png";
     if (QFileInfo::exists(path) && QFileInfo::exists(dir + '/' + name + "@2x.png")) {
         return path;
     }
     QDir().mkpath(dir);
-    for (const char* suffix : {"", "@2x"}) {
-        QImage image(QString(":/icons/down-arrow%1.png").arg(QLatin1String(suffix)));
-        image = image.convertToFormat(QImage::Format_ARGB32);
-        for (int y = 0; y < image.height(); ++y) {
-            for (int x = 0; x < image.width(); ++x) {
-                QColor c = tint;
-                c.setAlpha(qAlpha(image.pixel(x, y)));
-                image.setPixelColor(x, y, c);
-            }
-        }
-        if (!image.save(dir + '/' + name + QLatin1String(suffix) + ".png")) {
-            return ":/icons/down-arrow.png"; // no cache folder: the grey one beats none
+    // The icon's path (breeze-icons, actions/16/arrow-down-symbolic.svg).
+    const QPolygonF chevron(
+        {{8, 11.707}, {2, 5.707}, {2.707, 5}, {8, 10.293}, {13.293, 5}, {14, 5.707}});
+    for (const int scale : {1, 2}) {
+        QImage image(16 * scale, 16 * scale, QImage::Format_ARGB32_Premultiplied);
+        image.fill(Qt::transparent);
+        QPainter p(&image);
+        p.setRenderHint(QPainter::Antialiasing);
+        p.scale(scale, scale);
+        p.setPen(Qt::NoPen);
+        p.setBrush(color);
+        p.drawPolygon(chevron);
+        p.end();
+        if (!image.save(dir + '/' + name + (scale == 2 ? "@2x" : "") + ".png")) {
+            return {};
         }
     }
     return path;
@@ -1110,7 +1117,8 @@ static QString fill_roles(const char* sheet) {
         qss.replace(m.capturedStart(), m.capturedLength(), QString::number(pt, 'f', 1) + "pt");
     }
     if (qss.contains("@arrow@")) {
-        qss.replace("@arrow@", arrow_url());
+        qss.replace("@arrow@", chevron_url(pal.text));
+        qss.replace("@arrow_disabled@", chevron_url(pal.disabled_text));
     }
     return qss;
 }
