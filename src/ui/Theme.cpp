@@ -402,6 +402,11 @@ void tag_card(QWidget* card, const QString& fx_id) {
 
 static const char* const STYLE_SHEET = R"(
 /* === Keyboard focus (UnionPolish sets visualFocus; the outline is a FocusRing) === */
+/* No focus frame inside the control (Fusion still draws one in styled buttons, check
+   boxes and combo boxes): Union's only indicator is the border and the ring. */
+QAbstractButton, QComboBox, QAbstractSpinBox, QLineEdit {
+    outline: none;
+}
 *[visualFocus="true"] {
     border-color: @accent@;
 }
@@ -458,13 +463,13 @@ QMenuBar::item:pressed {
 /* Union's menus: rounded, framed, 32 px items rounded inside a 4 px padding; the text
    leaves the column for icons and check marks (6 px padding, 16 px icon, 4 px spacing).
    The corners need a translucent window (apply() gives every menu one). */
+/* The menu's body (window colour, frame, 5 px corners) and its shadow are painted by
+   UnionPolish; here only the 4 px padding inside the 1 px frame. */
 QMenu {
-    background-color: @window@;
+    background: transparent;
     color: @text@;
-    border: 1px solid @frame@;
-    border-radius: 5px;
-    padding: 4px;
-    margin: 20px; /* MENU_SHADOW: room for the shadow UnionPolish paints */
+    border: none;
+    padding: 5px;
 }
 QMenu::item {
     padding: 6px 24px 6px 25px;
@@ -1449,26 +1454,32 @@ protected:
     }
 };
 
-// Union's menu shadow (box-shadow: 0 2px 20px rgba(0, 0, 0, 0.2)), painted in the
-// transparent margin the stylesheet leaves around every menu (QMenu's margin).
+// Union's menu body and shadow (box-shadow: 0 2px 20px rgba(0, 0, 0, 0.2)). The window
+// is MENU_SHADOW larger right and below (contents margins, which QMenu counts per side;
+// a stylesheet margin it counts on all four) and the shadow is painted there. The menu's
+// top-left corner stays where Qt and Wayland anchor it — to the menu-bar item, or the
+// parent's row — so the fringe above and left of Union's shadow is left out.
 static constexpr int MENU_SHADOW = 20;
 
-static void paint_menu_shadow(QWidget* menu) {
+static void paint_menu_body(QWidget* menu) {
     QPainter p(menu);
     p.setRenderHint(QPainter::Antialiasing);
-    const QRectF body = QRectF(menu->rect())
-                            .adjusted(MENU_SHADOW, MENU_SHADOW, -MENU_SHADOW, -MENU_SHADOW)
-                            .translated(0, 2);
-    // The shape itself (its 2 px below the menu show), then one ring per pixel outward,
-    // fading as a blur of 20 px does (σ ≈ 7).
+    const QRectF body = QRectF(menu->rect()).adjusted(0, 0, -MENU_SHADOW, -MENU_SHADOW);
+    // The shadow: its shape 2 px down, then one ring per pixel outward, fading as a blur
+    // of 20 px does (σ ≈ 7).
+    const QRectF shadow = body.translated(0, 2);
     QPainterPath shape;
-    shape.addRoundedRect(body, 5, 5);
+    shape.addRoundedRect(shadow, 5, 5);
     p.fillPath(shape, QColor(0, 0, 0, static_cast<int>(std::lround(0.2 * 255))));
     for (int i = 1; i <= MENU_SHADOW; ++i) {
         const double fade = std::exp(-(i * i) / (2.0 * 7.0 * 7.0));
         p.setPen(QPen(QColor(0, 0, 0, static_cast<int>(std::lround(0.2 * 255 * fade))), 1.0));
-        p.drawRoundedRect(body.adjusted(-i + 0.5, -i + 0.5, i - 0.5, i - 0.5), 5 + i, 5 + i);
+        p.drawRoundedRect(shadow.adjusted(-i + 0.5, -i + 0.5, i - 0.5, i - 0.5), 5 + i, 5 + i);
     }
+    // The body: the window colour, framed.
+    p.setPen(QPen(active.frame, 1.0));
+    p.setBrush(active.window);
+    p.drawRoundedRect(body.adjusted(0.5, 0.5, -0.5, -0.5), 5, 5);
 }
 
 // Union's keyboard focus outline: 2 px of the accent at 30 % around the control (around
@@ -1562,9 +1573,8 @@ static QWidget* focus_control(QObject* object) {
 
 // What the stylesheet can't do, done to each widget as it is polished:
 // - every menu, context menus included, gets a translucent window (before its window
-//   exists), so the rounded corners show what is behind them — as Breeze does — and a
-//   shadow in the margin around it, moved back by that margin as it is shown (before its
-//   window appears, so Wayland places it there) to open where it would without one;
+//   exists), so the rounded corners show what is behind them — as Breeze does — room
+//   right and below for its shadow, and its body and shadow painted (paint_menu_body);
 // - a spin box's text keeps Union's 8 px from the border: the stylesheet's padding doesn't
 //   reach the spin box's inner field, its text margins do (2 px are the field's own);
 // - an item view lays its rows out again once polished: rows added before the stylesheet
@@ -1584,6 +1594,7 @@ protected:
         if (event->type() == QEvent::Polish) {
             if (auto* menu = qobject_cast<QMenu*>(watched)) {
                 menu->setAttribute(Qt::WA_TranslucentBackground);
+                menu->setContentsMargins(0, 0, MENU_SHADOW, MENU_SHADOW);
                 // Qt adds an icon column of its own once a menu has icons: the stylesheet
                 // then pads less (QMenu[icons]), so the text stays in Union's place. Once
                 // per menu: the re-polish below comes back here.
@@ -1619,11 +1630,8 @@ protected:
                 container->setFrameShape(QFrame::NoFrame);
                 container->setAttribute(Qt::WA_TranslucentBackground);
             }
-        } else if (event->type() == QEvent::Show && qobject_cast<QMenu*>(watched)) {
-            auto* menu = static_cast<QMenu*>(watched);
-            menu->move(menu->pos() - QPoint(MENU_SHADOW, MENU_SHADOW));
         } else if (event->type() == QEvent::Paint && qobject_cast<QMenu*>(watched)) {
-            paint_menu_shadow(static_cast<QWidget*>(watched)); // under the menu's own painting
+            paint_menu_body(static_cast<QWidget*>(watched)); // under the menu's own items
         } else if (event->type() == QEvent::FocusIn) {
             const Qt::FocusReason reason = static_cast<QFocusEvent*>(event)->reason();
             if (QWidget* control = focus_control(watched);
