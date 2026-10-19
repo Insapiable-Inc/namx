@@ -4,13 +4,16 @@
 #include <cassert>
 #include <cmath>
 
+#include <QAbstractItemView>
 #include <QAbstractSpinBox>
 #include <QApplication>
+#include <QComboBox>
 #include <QDir>
 #include <QEvent>
 #include <QFileInfo>
 #include <QFileSystemWatcher>
 #include <QFontMetrics>
+#include <QFrame>
 #include <QHash>
 #include <QImage>
 #include <QLineEdit>
@@ -23,6 +26,7 @@
 #include <QStandardPaths>
 #include <QStyle>
 #include <QStyleHints>
+#include <QStyledItemDelegate>
 #include <QTextDocument> // Qt::mightBeRichText
 #include <QTimer>
 #include <QVariant>
@@ -135,6 +139,9 @@ struct Colors
     QColor tab; // closed tabs: the view background 17 % toward the text (Union's)
     QColor bar; // scroll bar handles: the window 7.5 % toward the text (Union's)
     QColor bar_hover; // … hovered or dragged: a third toward the accent
+    QColor view; // lists: the palette's base, as is (Union's view background)
+    QColor list_hover; // hovered list rows: the accent at 30 % over the view
+    QColor highlighted_text; // text on the accent: selected rows (the palette's)
     // Custom-painted widgets (knobs, switches, fields).
     QColor track;
     QColor track_hover;
@@ -170,13 +177,14 @@ static QPalette breeze(bool dark) {
         const char* base;
         const char* button;
         const char* highlight;
+        const char* highlighted_text;
         const char* shadow;
         const char* disabled_text;
     };
     static constexpr Roles DARK = {"#202326", "#fcfcfc", "#141618", "#292c30",
-                                   "#3daee9", "#0e0f10", "#686a6c"};
+                                   "#3daee9", "#fcfcfc", "#0e0f10", "#686a6c"};
     static constexpr Roles LIGHT = {"#eff0f1", "#232629", "#ffffff", "#fcfcfc",
-                                    "#3daee9", "#474a4c", "#a0a1a3"};
+                                    "#3daee9", "#ffffff", "#474a4c", "#a0a1a3"};
     const Roles& r = dark ? DARK : LIGHT;
     QPalette p;
     p.setColor(QPalette::Window, QColor(r.window));
@@ -184,6 +192,7 @@ static QPalette breeze(bool dark) {
     p.setColor(QPalette::Base, QColor(r.base));
     p.setColor(QPalette::Button, QColor(r.button));
     p.setColor(QPalette::Highlight, QColor(r.highlight));
+    p.setColor(QPalette::HighlightedText, QColor(r.highlighted_text));
     p.setColor(QPalette::Shadow, QColor(r.shadow));
     p.setColor(QPalette::Disabled, QPalette::WindowText, QColor(r.disabled_text));
     return p;
@@ -234,6 +243,9 @@ static Colors from_palette(const QPalette& sys, bool dark, const QColor& header)
         mix_colors(base, text, 0.17), // tab
         mix_colors(w, text, 0.075), // bar
         mix_colors(w, accent, 1.0 / 3), // bar_hover
+        base, // view
+        mix_colors(base, accent, 0.3), // list_hover
+        sys.color(QPalette::HighlightedText),
         mix_colors(button, text, 0.14), // track
         mix_colors(button, text, 0.24), // track_hover
         dark ? mix_colors(button, text, 0.06) : mix_colors(button, white, 0.7), // knob_body_top
@@ -333,6 +345,12 @@ QColor led_green() {
 }
 QColor led_red() {
     return QColor(palette().led_red);
+}
+QColor list_hover() {
+    return palette().list_hover;
+}
+QColor highlighted_text() {
+    return palette().highlighted_text;
 }
 QColor display_bg() {
     return QColor(palette().display_bg);
@@ -869,31 +887,49 @@ QLineEdit#librarySearch {
 QLineEdit#librarySearch:focus {
     border-color: @accent@;
 }
-QListView#libraryList {
-    background-color: @surface@;
-    border: 1px solid @line@;
-    border-radius: 5px;
-    outline: none;
-}
 QLabel#libraryStatus {
     color: @text_muted@;
     padding-left: 4px;
 }
 
 /* === Dialogs inside the window tree (Library Folders) === */
-QListWidget {
-    background-color: @surface@;
+/* Union's lists: the view background in a frame; rows inset 2 px and rounded, hovered
+   with the accent tint and an accent border, selected in the accent with its text colour.
+   (The library list paints its rows the same way, in LibraryItemDelegate.) */
+QListView {
+    background-color: @view@;
     color: @text@;
-    border: 1px solid @line@;
+    border: 1px solid @frame@;
     border-radius: 5px;
     outline: none;
 }
-QListWidget::item {
-    padding: 4px 6px;
+QListView::item {
+    margin: 2px;
+    padding: 4px;
+    min-height: 22px;
+    border: 1px solid transparent;
+    border-radius: 5px;
 }
-QListWidget::item:selected {
-    background-color: @selection@;
-    color: @text@;
+QListView::item:hover {
+    background-color: @list_hover@;
+    border-color: @accent@;
+}
+QListView::item:selected {
+    background-color: @accent@;
+    border-color: @accent@;
+    color: @highlighted_text@;
+}
+/* Tables: the same states, square. */
+QTableView {
+    background-color: @view@;
+    outline: none;
+}
+QTableView::item:hover {
+    background-color: @list_hover@;
+}
+QTableView::item:selected {
+    background-color: @accent@;
+    color: @highlighted_text@;
 }
 /* Union's tabs, as on the library's sections. */
 QTabWidget::pane {
@@ -1028,6 +1064,7 @@ QComboBox {
     padding: 4px 8px;
     min-height: 20px;
     font-weight: 500;
+    combobox-popup: 0; /* a drop-down list below the box, as Union opens it (Fusion: a menu over it) */
 }
 QComboBox:hover {
     border-color: @accent@;
@@ -1051,20 +1088,30 @@ QComboBox::down-arrow {
 QComboBox::down-arrow:disabled {
     image: url(@arrow_disabled@);
 }
+/* The drop-down: Union's popup — the view background, framed and rounded — with rows
+   drawn like menu items (8 px padding); the row under the mouse is the current one, and
+   it shows the menu's hover: the accent tint and an accent border. */
+QComboBoxPrivateContainer {
+    background: transparent;
+    border: none;
+}
 QComboBox QAbstractItemView {
-    background-color: @surface@;
+    background-color: @view@;
     color: @text@;
-    border: 1px solid @border@;
-    selection-background-color: @selection@;
-    selection-color: @text@;
+    border: 1px solid @frame@;
+    border-radius: 5px;
+    padding: 0 3px;
     outline: none;
 }
 QComboBox QAbstractItemView::item {
-    padding: 4px 8px;
-    min-height: 24px;
+    padding: 8px;
+    border: 1px solid transparent;
+    border-radius: 5px;
 }
-QComboBox QAbstractItemView::item:hover {
-    background-color: @selection@;
+QComboBox QAbstractItemView::item:hover, QComboBox QAbstractItemView::item:selected {
+    background-color: @list_hover@;
+    border-color: @accent@;
+    color: @text@;
 }
 
 )";
@@ -1220,6 +1267,9 @@ static QString fill_roles(const char* sheet) {
         {"tab", pal.tab},
         {"bar", pal.bar},
         {"bar_hover", pal.bar_hover},
+        {"view", pal.view},
+        {"list_hover", pal.list_hover},
+        {"highlighted_text", pal.highlighted_text},
         {"accent", current_accent},
         {"on_accent", on_accent()},
     };
@@ -1268,6 +1318,11 @@ static QPalette palette_of(const ThemeSpec& spec) {
     p.setColor(QPalette::Base, spec.base);
     p.setColor(QPalette::Button, spec.button);
     p.setColor(QPalette::Highlight, spec.accent);
+    // Theme files don't name it: white or the text, whichever reads better on the accent.
+    const QColor white(255, 255, 255);
+    p.setColor(QPalette::HighlightedText,
+               contrast(spec.accent, white) >= contrast(spec.accent, spec.text) ? white
+                                                                                : spec.text);
     p.setColor(QPalette::Shadow, spec.shadow);
     p.setColor(QPalette::Disabled, QPalette::WindowText, spec.disabled_text);
     return p;
@@ -1350,7 +1405,12 @@ protected:
 // - every menu, context menus included, gets a translucent window (before its window
 //   exists), so the rounded corners show what is behind them — as Breeze does;
 // - a spin box's text keeps Union's 8 px from the border: the stylesheet's padding doesn't
-//   reach the spin box's inner field, its text margins do (2 px are the field's own).
+//   reach the spin box's inner field, its text margins do (2 px are the field's own);
+// - an item view lays its rows out again once polished: rows added before the stylesheet
+//   reached it (the Settings sidebar) kept the plain style's height;
+// - a combo box paints its drop-down rows with the standard delegate — its own ignores
+//   the stylesheet's row rules — and the drop-down's window is translucent, so its
+//   corners can be rounded like a menu's.
 class UnionPolish : public QObject
 {
 public:
@@ -1365,6 +1425,18 @@ protected:
                 if (auto* field = spin->findChild<QLineEdit*>()) {
                     field->setTextMargins(6, 0, 0, 0);
                 }
+            } else if (auto* view = qobject_cast<QAbstractItemView*>(watched)) {
+                QTimer::singleShot(0, view, [view] {
+                    view->doItemsLayout();
+                });
+            } else if (auto* combo = qobject_cast<QComboBox*>(watched)) {
+                if (!qobject_cast<QStyledItemDelegate*>(combo->itemDelegate())) {
+                    combo->setItemDelegate(new QStyledItemDelegate(combo));
+                }
+            } else if (watched->inherits("QComboBoxPrivateContainer")) {
+                auto* container = static_cast<QFrame*>(watched);
+                container->setFrameShape(QFrame::NoFrame);
+                container->setAttribute(Qt::WA_TranslucentBackground);
             }
         }
         return QObject::eventFilter(watched, event);

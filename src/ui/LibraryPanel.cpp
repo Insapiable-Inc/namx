@@ -255,14 +255,19 @@ void LibraryItemDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt,
         static_cast<LibraryEntry::Kind>(idx.data(LibraryListModel::KIND_ROLE).toInt());
     const QColor accent = kind_accent(kind);
 
-    if (selected) {
-        p->fillRect(r, Theme::track_hover());
-    } else if (hovered) {
-        p->fillRect(r, Theme::track());
+    // Union's list row: inset 2 px and rounded; hovered = the accent tint and an accent
+    // border, selected = the accent, its text in the highlighted-text colour.
+    const QRectF row = QRectF(r).adjusted(2.5, 2.5, -2.5, -2.5);
+    if (selected || hovered) {
+        p->setPen(Theme::generic_accent());
+        p->setBrush(selected ? Theme::generic_accent() : Theme::list_hover());
+        p->drawRoundedRect(row, 5, 5);
     }
+    const QColor on_row = selected ? Theme::highlighted_text() : QColor();
 
     if (loaded) {
-        p->fillRect(QRect(r.left(), r.top() + 6, ACCENT_BAR, r.height() - 12), accent);
+        p->fillRect(QRect(r.left() + 3, r.top() + 8, ACCENT_BAR, r.height() - 16),
+                    selected ? on_row : accent);
     }
 
     // Star column, then the text block fills what's left.
@@ -271,7 +276,7 @@ void LibraryItemDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt,
         QFont f = opt.font;
         f.setPointSizeF(f.pointSizeF() + 3);
         p->setFont(f);
-        p->setPen(fav ? accent : (selected || hovered ? Theme::dim_text() : Theme::track()));
+        p->setPen(selected ? on_row : fav ? accent : hovered ? Theme::dim_text() : Theme::track());
         p->drawText(star, Qt::AlignCenter, fav ? QStringLiteral("★") : QStringLiteral("☆"));
     }
 
@@ -282,7 +287,7 @@ void LibraryItemDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt,
     name_font.setWeight(loaded ? QFont::DemiBold : QFont::Normal);
     p->setFont(name_font);
     const QFontMetrics nfm(name_font);
-    p->setPen(loaded ? accent : opt.palette.color(QPalette::Text));
+    p->setPen(selected ? on_row : loaded ? accent : opt.palette.color(QPalette::Text));
     const QString name =
         nfm.elidedText(idx.data(LibraryListModel::NAME_ROLE).toString(), Qt::ElideMiddle, width);
     p->drawText(QRect(left, r.top() + 5, width, nfm.height()), Qt::AlignLeft | Qt::AlignVCenter,
@@ -292,7 +297,7 @@ void LibraryItemDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt,
     sub_font.setPointSizeF(sub_font.pointSizeF() - 1);
     p->setFont(sub_font);
     const QFontMetrics sfm(sub_font);
-    p->setPen(Theme::dim_text());
+    p->setPen(selected ? on_row : Theme::dim_text());
     QStringList second;
     const QString folder = idx.data(LibraryListModel::FOLDER_ROLE).toString();
     if (!folder.isEmpty()) {

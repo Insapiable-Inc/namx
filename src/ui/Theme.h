@@ -73,6 +73,11 @@ QColor thumb_bot(); // switch thumb gradient, dark end
 QColor thumb_outline(); // switch thumb edge; invalid = none
 int switch_rim_alpha(bool checked); // the switch track's dark edge
 
+// Rows painted by hand (the library list), like the stylesheet's list rows (Union's):
+// hovered = this tint and an accent border, selected = the accent with this text.
+QColor list_hover();
+QColor highlighted_text();
+
 // Status colours (status bar dots and DSP load, MIDI light, count-in beats, the MIDI
 // Learn glow): fine, warning, trouble. Readable on the status bar in every theme —
 // darkened on a light one.
