@@ -4,6 +4,7 @@
 #include <cassert>
 #include <cmath>
 
+#include <QAbstractSpinBox>
 #include <QApplication>
 #include <QDir>
 #include <QEvent>
@@ -12,6 +13,7 @@
 #include <QFontMetrics>
 #include <QHash>
 #include <QImage>
+#include <QLineEdit>
 #include <QMenu>
 #include <QPainter>
 #include <QPalette>
@@ -131,6 +133,7 @@ struct Colors
     QColor frame; // menu borders, separators, the line over the status bar
     QColor header_hover; // menu bar items
     QColor menu_hover; // menu items
+    QColor button_frame; // check boxes, table headers: the button 20 % toward the text
     // Custom-painted widgets (knobs, switches, fields).
     QColor track;
     QColor track_hover;
@@ -228,6 +231,7 @@ static Colors from_palette(const QPalette& sys, bool dark, const QColor& header)
         mix_colors(w, text, 0.2), // frame
         mix_colors(header, accent, 0.3), // header_hover
         mix_colors(w, accent, 0.3), // menu_hover
+        mix_colors(button, text, 0.2), // button_frame
         mix_colors(button, text, 0.14), // track
         mix_colors(button, text, 0.24), // track_hover
         dark ? mix_colors(button, text, 0.06) : mix_colors(button, white, 0.7), // knob_body_top
@@ -432,8 +436,6 @@ QMenu::item:disabled {
     border-color: transparent;
 }
 QMenu::indicator {
-    width: 16px;
-    height: 16px;
     left: 6px;
 }
 QMenu::separator {
@@ -789,16 +791,6 @@ QDialog#midiMappings QTableWidget {
     border-radius: 5px;
     gridline-color: @line@;
 }
-QDialog#midiMappings QHeaderView::section {
-    background-color: @card@;
-    color: @text_muted@;
-    border: none;
-    border-bottom: 1px solid @line@;
-    padding: 4px 6px;
-    font-weight: 600;
-}
-/* No spin box rule: a style-sheet box makes Fusion drop the arrows, and the palette
-   already reaches them (AA_UseStyleSheetPropagationInWidgetStyles). */
 QDialog#midiMappings QToolButton {
     color: @text@;
     background: transparent;
@@ -812,9 +804,6 @@ QDialog#midiMappings QToolButton:hover {
 QDialog#midiMappings QToolButton:pressed {
     background-color: @pressed@;
     border-color: @accent@;
-}
-QDialog#midiMappings QCheckBox {
-    color: @text@;
 }
 
 /* === Library dock === */
@@ -912,6 +901,100 @@ QTabBar::tab:selected {
 }
 QTabBar::tab:hover {
     color: @text@;
+}
+
+/* === Check boxes, spin boxes, table headers (Settings, MIDI Mappings) === */
+/* Union's check box: a 16 px rounded box in the button colour; checked, tinted toward the
+   accent with an accent border and a check mark. The same box marks checkable list rows
+   and menu items; a menu's exclusive items get the round one with a dot. */
+QCheckBox {
+    spacing: 4px;
+}
+QCheckBox::indicator, QListView::indicator, QMenu::indicator {
+    width: 14px;
+    height: 14px;
+    background-color: @card@;
+    border: 1px solid @button_frame@;
+    border-radius: 5px;
+}
+QCheckBox::indicator:hover, QListView::indicator:hover {
+    border-color: @accent@;
+}
+QCheckBox::indicator:checked, QListView::indicator:checked, QMenu::indicator:checked {
+    background-color: @pressed@;
+    border-color: @accent@;
+    image: url(@check@);
+}
+QMenu::indicator:exclusive {
+    border-radius: 8px;
+}
+QMenu::indicator:exclusive:checked {
+    image: url(@radio@);
+}
+QCheckBox::indicator:disabled, QListView::indicator:disabled {
+    background-color: @disabled_bg@;
+    border-color: @disabled_border@;
+}
+QCheckBox::indicator:checked:disabled, QListView::indicator:checked:disabled {
+    image: url(@check_disabled@);
+}
+/* Union's spin box: a field with stacked chevrons, the accent on the border when hovered
+   or focused. A style-sheet box makes Fusion drop its arrows, so they are given here; the
+   text's left margin is set in UnionPolish. */
+QAbstractSpinBox {
+    background-color: @surface@;
+    color: @text@;
+    border: 1px solid @frame@;
+    border-radius: 5px;
+    padding: 3px 4px;
+    min-height: 20px;
+    selection-background-color: @accent@;
+    selection-color: @on_accent@;
+}
+QAbstractSpinBox:hover, QAbstractSpinBox:focus {
+    border-color: @accent@;
+}
+QAbstractSpinBox:disabled {
+    color: @disabled_text@;
+    border-color: @disabled_border@;
+}
+QAbstractSpinBox::up-button, QAbstractSpinBox::down-button {
+    subcontrol-origin: border;
+    width: 20px;
+    border: none;
+    background: transparent;
+}
+QAbstractSpinBox::up-button {
+    subcontrol-position: top right;
+}
+QAbstractSpinBox::down-button {
+    subcontrol-position: bottom right;
+}
+QAbstractSpinBox::up-arrow {
+    image: url(@arrow_up@);
+    width: 12px;
+    height: 12px;
+}
+QAbstractSpinBox::down-arrow {
+    image: url(@arrow@);
+    width: 12px;
+    height: 12px;
+}
+QAbstractSpinBox::up-arrow:disabled, QAbstractSpinBox::up-arrow:off {
+    image: url(@arrow_up_disabled@);
+}
+QAbstractSpinBox::down-arrow:disabled, QAbstractSpinBox::down-arrow:off {
+    image: url(@arrow_disabled@);
+}
+/* Union's header: the button colour, framed right and below, plain centred text. */
+QHeaderView::section {
+    background-color: @card@;
+    color: @text@;
+    border: none;
+    border-right: 1px solid @button_frame@;
+    border-bottom: 1px solid @button_frame@;
+    padding: 4px;
+    min-height: 22px;
 }
 
 /* === Combo boxes (library sort) === */
@@ -1036,18 +1119,19 @@ QColor status_bad() {
     return readable_on(QColor("#e85a4f"), active.surface, 4.5);
 }
 
-// The arrow on combo boxes and menu buttons: Union's arrow-down-symbolic, Breeze's 16 px
-// chevron, in `color` (the button text, or its disabled tone). Painted into the cache
-// folder (style sheets take only files) with its @2x twin; empty when that fails.
-static QString chevron_url(const QColor& color) {
+// Union's small icons, painted in `color` into the cache folder (style sheets take only
+// files) at 16 px with an @2x twin; the URL is empty when that fails.
+//   chevron-down / chevron-up: breeze-icons' arrow-down-symbolic (combo boxes, menu
+//     buttons, spin boxes), its path as the SVG has it;
+//   check: Union's checkmark.svg, a 2.5 px stroke; radio: Union's radio.svg, a 3 px dot.
+static QString icon_url(const QString& name, const QColor& color) {
     const QString dir = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
-    const QString name = QString("chevron-down-%1").arg(color.name().mid(1));
-    const QString path = dir + '/' + name + ".png";
-    if (QFileInfo::exists(path) && QFileInfo::exists(dir + '/' + name + "@2x.png")) {
+    const QString base = QString("%1-%2").arg(name, color.name().mid(1));
+    const QString path = dir + '/' + base + ".png";
+    if (QFileInfo::exists(path) && QFileInfo::exists(dir + '/' + base + "@2x.png")) {
         return path;
     }
     QDir().mkpath(dir);
-    // The icon's path (breeze-icons, actions/16/arrow-down-symbolic.svg).
     const QPolygonF chevron(
         {{8, 11.707}, {2, 5.707}, {2.707, 5}, {8, 10.293}, {13.293, 5}, {14, 5.707}});
     for (const int scale : {1, 2}) {
@@ -1056,11 +1140,22 @@ static QString chevron_url(const QColor& color) {
         QPainter p(&image);
         p.setRenderHint(QPainter::Antialiasing);
         p.scale(scale, scale);
-        p.setPen(Qt::NoPen);
-        p.setBrush(color);
-        p.drawPolygon(chevron);
+        if (name == "check") {
+            p.setPen(QPen(color, 2.5, Qt::SolidLine, Qt::RoundCap, Qt::MiterJoin));
+            p.drawPolyline(QPolygonF({{4, 8}, {7, 11}, {13, 5}}));
+        } else {
+            p.setPen(Qt::NoPen);
+            p.setBrush(color);
+            if (name == "radio") {
+                p.drawEllipse(QPointF(8, 8), 3, 3);
+            } else if (name == "chevron-up") {
+                p.drawPolygon(QTransform(1, 0, 0, -1, 0, 16).map(chevron));
+            } else {
+                p.drawPolygon(chevron);
+            }
+        }
         p.end();
-        if (!image.save(dir + '/' + name + (scale == 2 ? "@2x" : "") + ".png")) {
+        if (!image.save(dir + '/' + base + (scale == 2 ? "@2x" : "") + ".png")) {
             return {};
         }
     }
@@ -1101,6 +1196,7 @@ static QString fill_roles(const char* sheet) {
         {"frame", pal.frame},
         {"header_hover", pal.header_hover},
         {"menu_hover", pal.menu_hover},
+        {"button_frame", pal.button_frame},
         {"accent", current_accent},
         {"on_accent", on_accent()},
     };
@@ -1116,9 +1212,27 @@ static QString fill_roles(const char* sheet) {
         const qreal pt = m.captured(1).toInt() * font_scale();
         qss.replace(m.capturedStart(), m.capturedLength(), QString::number(pt, 'f', 1) + "pt");
     }
-    if (qss.contains("@arrow@")) {
-        qss.replace("@arrow@", chevron_url(pal.text));
-        qss.replace("@arrow_disabled@", chevron_url(pal.disabled_text));
+    // Icons in the text colour, and in the disabled text colour for disabled controls.
+    struct Icon
+    {
+        const char* placeholder;
+        const char* name;
+        QColor color;
+    };
+    const Icon icons[] = {
+        {"@arrow@", "chevron-down", pal.text},
+        {"@arrow_disabled@", "chevron-down", pal.disabled_text},
+        {"@arrow_up@", "chevron-up", pal.text},
+        {"@arrow_up_disabled@", "chevron-up", pal.disabled_text},
+        {"@check@", "check", pal.text},
+        {"@check_disabled@", "check", pal.disabled_text},
+        {"@radio@", "radio", pal.text},
+        {"@radio_disabled@", "radio", pal.disabled_text},
+    };
+    for (const Icon& icon : icons) {
+        if (qss.contains(QLatin1String(icon.placeholder))) {
+            qss.replace(QLatin1String(icon.placeholder), icon_url(icon.name, icon.color));
+        }
     }
     return qss;
 }
@@ -1209,10 +1323,12 @@ protected:
     }
 };
 
-// Every menu, context menus included, gets a translucent window as it is polished (before
-// its window exists), so the stylesheet's rounded corners show what is behind them — as
-// Breeze does for its menus.
-class RoundedMenus : public QObject
+// What the stylesheet can't do, done to each widget as it is polished:
+// - every menu, context menus included, gets a translucent window (before its window
+//   exists), so the rounded corners show what is behind them — as Breeze does;
+// - a spin box's text keeps Union's 8 px from the border: the stylesheet's padding doesn't
+//   reach the spin box's inner field, its text margins do (2 px are the field's own).
+class UnionPolish : public QObject
 {
 public:
     using QObject::QObject;
@@ -1222,6 +1338,10 @@ protected:
         if (event->type() == QEvent::Polish) {
             if (auto* menu = qobject_cast<QMenu*>(watched)) {
                 menu->setAttribute(Qt::WA_TranslucentBackground);
+            } else if (auto* spin = qobject_cast<QAbstractSpinBox*>(watched)) {
+                if (auto* field = spin->findChild<QLineEdit*>()) {
+                    field->setTextMargins(6, 0, 0, 0);
+                }
             }
         }
         return QObject::eventFilter(watched, event);
@@ -1287,7 +1407,7 @@ void apply(QApplication& app) {
     app.setStyle("Fusion");
     app.setStyleSheet(fill_roles(APP_STYLE_SHEET));
     app.installEventFilter(new SystemThemeWatcher(&app));
-    app.installEventFilter(new RoundedMenus(&app));
+    app.installEventFilter(new UnionPolish(&app));
 #if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
     QObject::connect(QGuiApplication::styleHints(), &QStyleHints::colorSchemeChanged, &app, [] {
         if (current_mode == Mode::SYSTEM) {
