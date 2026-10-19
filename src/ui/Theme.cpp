@@ -436,12 +436,12 @@ QLabel#fileMeta {
     color: @text_dim@;
     padding-left: 8px;
 }
-/* Square, as tall as the buttons beside them (MainWindow::fit_to_font sizes them). */
+/* Square, as wide as they are tall (MainWindow::fit_to_font sizes them). */
 QToolButton#heroArrow {
     color: @text@;
-    font-size: @pt:13@;
+    font-size: @pt:15@;
     font-weight: 600;
-    padding: 0 0 2px 0;
+    padding: 0 0 3px 0;
     border: 1px solid @button_frame@;
     border-radius: 5px;
     background-color: @button@;

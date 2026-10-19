@@ -453,11 +453,14 @@ void MainWindow::fit_to_font() {
     }
     ensurePolished(); // the stylesheet's fonts, before measuring
 
-    // The ‹ › arrows (preset bar, Amplifier and Cabinet rows): squares as tall as a button
-    // beside them (Save), at any font — first: the rows' Sync column holds two of them.
+    // The ‹ › arrows (preset bar, Amplifier and Cabinet rows): squares as wide as their
+    // glyph makes them tall, never shorter than the buttons beside them (Save), at any
+    // font — first: the rows' Sync column holds two of them.
     if (auto* save = findChild<QToolButton*>("presetTool")) {
-        const int side = save->sizeHint().height();
         for (QToolButton* arrow : findChildren<QToolButton*>("heroArrow")) {
+            arrow->setMinimumSize(0, 0); // its own height, not the last fixed one
+            arrow->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
+            const int side = std::max(arrow->sizeHint().height(), save->sizeHint().height());
             arrow->setFixedSize(side, side);
         }
     }
