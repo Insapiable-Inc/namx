@@ -134,6 +134,7 @@ struct Colors
     QColor header_hover; // menu bar items
     QColor menu_hover; // menu items
     QColor button_frame; // check boxes, table headers: the button 20 % toward the text
+    QColor tab; // closed tabs: the view background 17 % toward the text (Union's)
     // Custom-painted widgets (knobs, switches, fields).
     QColor track;
     QColor track_hover;
@@ -232,6 +233,7 @@ static Colors from_palette(const QPalette& sys, bool dark, const QColor& header)
         mix_colors(header, accent, 0.3), // header_hover
         mix_colors(w, accent, 0.3), // menu_hover
         mix_colors(button, text, 0.2), // button_frame
+        mix_colors(base, text, 0.17), // tab
         mix_colors(button, text, 0.14), // track
         mix_colors(button, text, 0.24), // track_hover
         dark ? mix_colors(button, text, 0.06) : mix_colors(button, white, 0.7), // knob_body_top
@@ -810,20 +812,32 @@ QDialog#midiMappings QToolButton:pressed {
 QWidget#libraryPanel {
     background-color: @window@;
 }
+/* Models / IRs / Presets: Union's tabs. Closed ones in the tab tone over a frame line,
+   the outer corners rounded; hovered, tinted toward the accent; the open one in the
+   window colour, framed, with the accent across its top and open at the bottom. */
 QToolButton#librarySection {
-    color: @text_muted@;
-    background: transparent;
-    border: none;
-    border-bottom: 2px solid transparent;
-    padding: 5px 4px;
-    font-weight: 600;
-}
-QToolButton#librarySection:hover {
     color: @text@;
+    background-color: @tab@;
+    border: none;
+    border-bottom: 1px solid @button_frame@;
+    padding: 6px;
+}
+QToolButton#librarySection[tabPosition="first"] {
+    border-top-left-radius: 5px;
+}
+QToolButton#librarySection[tabPosition="last"] {
+    border-top-right-radius: 5px;
+}
+QToolButton#librarySection:hover, QToolButton#librarySection:pressed {
+    background-color: @pressed@;
 }
 QToolButton#librarySection:checked {
-    color: @text@;
-    border-bottom: 2px solid @accent@;
+    background-color: @window@;
+    border: 1px solid @button_frame@;
+    border-top: 3px solid @accent@;
+    border-bottom-color: @window@;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
 }
 /* All / ★ / Recent, Folders…, rescan: filled like the preset bar's buttons;
    the active mode in the accent like A/B. */
@@ -884,23 +898,34 @@ QListWidget::item:selected {
     background-color: @selection@;
     color: @text@;
 }
+/* Union's tabs, as on the library's sections. */
 QTabWidget::pane {
-    border: 1px solid @line@;
-    border-radius: 5px;
+    border: 1px solid @button_frame@;
     top: -1px;
 }
 QTabBar::tab {
-    background: transparent;
-    color: @text_muted@;
-    padding: 6px 14px;
-    border-bottom: 2px solid transparent;
-}
-QTabBar::tab:selected {
     color: @text@;
-    border-bottom: 2px solid @accent@;
+    background-color: @tab@;
+    border: none;
+    border-bottom: 1px solid @button_frame@;
+    padding: 6px 14px;
+}
+QTabBar::tab:first {
+    border-top-left-radius: 5px;
+}
+QTabBar::tab:last {
+    border-top-right-radius: 5px;
 }
 QTabBar::tab:hover {
-    color: @text@;
+    background-color: @pressed@;
+}
+QTabBar::tab:selected {
+    background-color: @window@;
+    border: 1px solid @button_frame@;
+    border-top: 3px solid @accent@;
+    border-bottom-color: @window@;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
 }
 
 /* === Check boxes, spin boxes, table headers (Settings, MIDI Mappings) === */
@@ -1197,6 +1222,7 @@ static QString fill_roles(const char* sheet) {
         {"header_hover", pal.header_hover},
         {"menu_hover", pal.menu_hover},
         {"button_frame", pal.button_frame},
+        {"tab", pal.tab},
         {"accent", current_accent},
         {"on_accent", on_accent()},
     };

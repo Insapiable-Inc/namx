@@ -21,7 +21,6 @@
 #include <QPushButton>
 #include <QSettings>
 #include <QSignalBlocker>
-#include <QTabWidget>
 #include <QTimer>
 #include <QToolButton>
 #include <QVBoxLayout>
@@ -366,10 +365,12 @@ LibraryPanel::LibraryPanel(LibraryIndex& new_index, QWidget* parent)
     // Section switch: Models | IRs | Presets (counts appended by updateCounts).
     {
         auto* row = new QHBoxLayout;
-        row->setSpacing(2);
+        row->setSpacing(0); // tabs, side by side
         for (int i = 0; i < 3; ++i) {
             auto* b = new QToolButton;
             b->setObjectName("librarySection");
+            // The outer tabs round their outer corner (the stylesheet's tabPosition).
+            b->setProperty("tabPosition", i == 0 ? "first" : i == 2 ? "last" : "middle");
             b->setText(SECTION_NAMES[i]);
             b->setCheckable(true);
             b->setAutoRaise(true);
