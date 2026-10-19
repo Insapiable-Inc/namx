@@ -127,7 +127,6 @@ struct Colors
     // KDE's: the menu bar's Header background, frames (the background 20 % toward the
     // text, KDE's frame contrast), and the accent-tinted hover of menu items.
     QColor header;
-    QColor header_frame; // the line under the menu bar
     QColor frame; // menu borders, separators, the line over the status bar
     QColor header_hover; // menu bar items
     QColor menu_hover; // menu items
@@ -225,7 +224,6 @@ static Colors from_palette(const QPalette& sys, bool dark, const QColor& header)
         QColor(ours.notice),
         sys.color(QPalette::Shadow),
         header,
-        mix_colors(header, text, 0.2), // header_frame
         mix_colors(w, text, 0.2), // frame
         mix_colors(header, accent, 0.3), // header_hover
         mix_colors(w, accent, 0.3), // menu_hover
@@ -383,21 +381,19 @@ QLabel#madeInChile {
     color: @text@;
     font-weight: 600;
 }
-/* KDE's: the Header colour (the window's while the window is inactive) over a frame
-   line, items hovered with the accent tint and an accent border, the open one filled. */
+/* Union's (Breeze): the Header colour (the window's while the window is inactive), no
+   line under it; items hovered with the accent tint and an accent border, the open one
+   filled. */
 QMenuBar {
     background-color: @header@;
     color: @text@;
-    border-bottom: 1px solid @header_frame@;
-    padding: 2px 4px;
 }
 QMenuBar[inactive="true"] {
     background-color: @window@;
-    border-bottom-color: @frame@;
 }
 QMenuBar::item {
     background: transparent;
-    padding: 3px 9px;
+    padding: 3px 4px;
     border: 1px solid transparent;
     border-radius: 5px;
 }
@@ -410,9 +406,9 @@ QMenuBar::item:pressed {
     border-color: @accent@;
     color: @on_accent@;
 }
-/* Breeze's menus: rounded, framed, items rounded inside a 4 px padding; the text leaves
-   Breeze's column for icons and check marks. The corners need a translucent window
-   (apply() gives every menu one). */
+/* Union's menus: rounded, framed, 32 px items rounded inside a 4 px padding; the text
+   leaves the column for icons and check marks (6 px padding, 16 px icon, 4 px spacing).
+   The corners need a translucent window (apply() gives every menu one). */
 QMenu {
     background-color: @window@;
     color: @text@;
@@ -421,7 +417,7 @@ QMenu {
     padding: 4px;
 }
 QMenu::item {
-    padding: 5px 24px 5px 33px;
+    padding: 6px 24px 6px 25px;
     border: 1px solid transparent;
     border-radius: 5px;
 }
@@ -1095,7 +1091,6 @@ static QString fill_roles(const char* sheet) {
         {"text_off", pal.text_off},
         {"notice", pal.notice},
         {"header", pal.header},
-        {"header_frame", pal.header_frame},
         {"frame", pal.frame},
         {"header_hover", pal.header_hover},
         {"menu_hover", pal.menu_hover},
