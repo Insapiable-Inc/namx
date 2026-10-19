@@ -127,7 +127,7 @@ TempoBar::TempoBar(Metronome& metronome, QWidget* parent)
 
     setObjectName("tempoBar");
     auto* lay = new QHBoxLayout(this);
-    lay->setContentsMargins(8, 2, 8, 2);
+    lay->setContentsMargins(8, 6, 8, 6); // the knobs' tiles have no margins of their own
     lay->setSpacing(6);
     QSettings s;
 

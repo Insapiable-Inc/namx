@@ -9,7 +9,6 @@
 #include <QEvent>
 #include <QFileInfo>
 #include <QFileSystemWatcher>
-#include <QFont>
 #include <QFontMetrics>
 #include <QHash>
 #include <QImage>
@@ -503,7 +502,7 @@ QLabel#toggleCaption {
 QStatusBar {
     background-color: @surface@;
     border-top: 1px solid @line@;
-    min-height: @status_height@px;
+    min-height: 24px;
 }
 QStatusBar::item {
     border: none;
@@ -1001,15 +1000,6 @@ static qreal font_scale() {
     return body > 0 ? body / 9.0 : 1.0; // a pixel-sized font: as drawn
 }
 
-int text_width(const QString& text, bool bold, qreal pt_at_9) {
-    QFont f = QApplication::font();
-    if (pt_at_9 != 9.0) {
-        f.setPointSizeF(pt_at_9 * font_scale());
-    }
-    f.setBold(bold);
-    return QFontMetrics(f).horizontalAdvance(text);
-}
-
 static QString fill_roles(const char* sheet) {
     const Colors& pal = palette();
     const std::pair<const char*, QColor> roles[] = {
@@ -1049,9 +1039,6 @@ static QString fill_roles(const char* sheet) {
         const qreal pt = m.captured(1).toInt() * font_scale();
         qss.replace(m.capturedStart(), m.capturedLength(), QString::number(pt, 'f', 1) + "pt");
     }
-    // 24 px, or the items' text and padding at a larger system font.
-    qss.replace("@status_height@",
-                QString::number(std::max(24, QFontMetrics(QApplication::font()).height() + 6)));
     if (qss.contains("@arrow@")) {
         qss.replace("@arrow@", arrow_url());
     }

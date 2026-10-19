@@ -83,49 +83,21 @@ static vector<string> to_std_strings(const QStringList& list) {
 }
 
 // Fixed columns at the left edge of every row card, so the enable toggles,
-// stereo slots, and first knobs line up vertically across the strip. Drawn for 9 pt
-// text; a column grows past its width when a larger system font needs it.
+// stereo slots, and first knobs line up vertically across the strip. The sizes are
+// drawn for 9 pt text; fit_to_font widens a column or heightens the rows when
+// what they hold needs more at a larger system font.
 static constexpr int GRIP_COLUMN_WIDTH = 22; // "≡" drag handle
-static constexpr int NAME_COLUMN_WIDTH = 120; // fits "Dynamic Wah"
+static constexpr int NAME_COLUMN_WIDTH = 120; // the card names
 static constexpr int ENABLE_SLOT_WIDTH = 74; // toggle + "On"/"Off" caption
-static constexpr int STEREO_SLOT_WIDTH = 96; // toggle + "Stereo" / "Reverse" / "Mute"
-static constexpr int SYNC_SLOT_WIDTH = 112; // toggle + "Sync" / "Manual" / "Continuous"
-// Every row is exactly as tall as a knob row (40 px dial + knob margins +
-// card margins + border), so knob-less rows and the tuner match the rest.
+static constexpr int STEREO_SLOT_WIDTH = 96; // toggle + "Stereo" (or another caption)
+static constexpr int SYNC_SLOT_WIDTH = 112; // toggle + "Sync" (or another caption)
+// Every row is exactly as tall as a knob row (40 px dial + card margins + border),
+// so knob-less rows and the tuner match the rest.
 static constexpr int ROW_CARD_HEIGHT = 48;
+static constexpr int ROW_MARGIN = 3; // above and below the main row's contents
 static constexpr int DETAIL_ROW_HEIGHT = 54; // the ▾ row of advanced knobs
-
-// A switch column: its 9 pt width, or the switch, its spacing and the widest caption.
-static int switch_column_width(int width_at_9pt, std::initializer_list<const char*> captions) {
-    int widest = 0;
-    for (const char* caption : captions) {
-        widest = std::max(widest, Theme::text_width(caption));
-    }
-    return std::max(width_at_9pt, ToggleSwitch().sizeHint().width() + 6 + widest);
-}
-static int name_column_width() {
-    // The names' bold 10 pt (fxName in the stylesheet); these two are the widest.
-    return std::max({NAME_COLUMN_WIDTH, Theme::text_width("Dynamic Wah", true, 10) + 4,
-                     Theme::text_width("Volume Pedal", true, 10) + 4});
-}
-static int enable_slot_width() {
-    return switch_column_width(ENABLE_SLOT_WIDTH, {"On", "Off"});
-}
-static int stereo_slot_width() {
-    return switch_column_width(STEREO_SLOT_WIDTH, {"Stereo", "Reverse", "Mute"});
-}
-static int sync_slot_width() {
-    return switch_column_width(SYNC_SLOT_WIDTH, {"Sync", "Manual", "Continuous"});
-}
-// Taller only when a knob's two text lines outgrow the dial: the lines, the knob's
-// 4 px margins, the row's 3 px margins and the border, less the 4 px the lines may
-// share with those margins (the space above the letters; KnobWidget aligns for it).
-static int row_card_height() {
-    return std::max(ROW_CARD_HEIGHT, 2 * QFontMetrics(QApplication::font()).height() + 12);
-}
-static int detail_row_height() {
-    return row_card_height() + DETAIL_ROW_HEIGHT - ROW_CARD_HEIGHT;
-}
+static constexpr const char* ENABLE_ON = "On";
+static constexpr const char* ENABLE_OFF = "Off";
 // Loaded file name on the Amplifier/Cabinet rows elides beyond this.
 static constexpr int HERO_NAME_MAX_WIDTH = 420;
 
@@ -133,15 +105,15 @@ static constexpr int HERO_NAME_MAX_WIDTH = 420;
 // switch stays on the row's vertical centerline.
 static QWidget* make_enable_slot(ToggleSwitch* sw) {
     auto* w = new QWidget;
-    w->setFixedWidth(enable_slot_width());
+    w->setFixedWidth(ENABLE_SLOT_WIDTH);
     auto* lay = new QHBoxLayout(w);
     lay->setContentsMargins(0, 0, 0, 0);
     lay->setSpacing(6);
 
-    auto* lbl = new QLabel(sw->isChecked() ? "On" : "Off");
+    auto* lbl = new QLabel(sw->isChecked() ? ENABLE_ON : ENABLE_OFF);
     lbl->setObjectName("toggleCaption");
     QObject::connect(sw, &ToggleSwitch::toggled, lbl, [lbl](bool on) {
-        lbl->setText(on ? "On" : "Off");
+        lbl->setText(on ? ENABLE_ON : ENABLE_OFF);
     });
 
     lay->addWidget(sw, 0, Qt::AlignVCenter);
@@ -155,7 +127,7 @@ static QWidget* make_enable_slot(ToggleSwitch* sw) {
 // Toggle and caption sit on one line for the same centering reason.
 static QWidget* make_stereo_slot(ToggleSwitch** out_toggle) {
     auto* w = new QWidget;
-    w->setFixedWidth(stereo_slot_width());
+    w->setFixedWidth(STEREO_SLOT_WIDTH);
     auto* lay = new QHBoxLayout(w);
     lay->setContentsMargins(0, 0, 0, 0);
     lay->setSpacing(6);
@@ -180,7 +152,7 @@ static QWidget* make_stereo_slot(ToggleSwitch** out_toggle) {
 static QWidget* make_sync_slot() {
     auto* w = new QWidget;
     w->setObjectName("syncSlot");
-    w->setFixedWidth(sync_slot_width());
+    w->setFixedWidth(SYNC_SLOT_WIDTH);
     auto* lay = new QHBoxLayout(w);
     lay->setContentsMargins(0, 0, 0, 0);
     lay->setSpacing(6);
@@ -281,7 +253,7 @@ static void place_across_switch_columns(QWidget* card, QWidget* w) {
     // Main row: grip, name, enable slot, stereo slot, sync slot, …
     QWidget* stereo_slot = row_layout(card)->itemAt(3)->widget();
     QWidget* sync_slot = card->findChild<QWidget*>("syncSlot");
-    const int width = stereo_slot_width() + row_layout(card)->spacing() + sync_slot_width();
+    const int width = STEREO_SLOT_WIDTH + row_layout(card)->spacing() + SYNC_SLOT_WIDTH;
     sync_slot->hide(); // a hidden widget takes no space or spacing in the row
     stereo_slot->setFixedWidth(width);
     w->setFixedWidth(width);
@@ -422,18 +394,18 @@ QFrame* MainWindow::make_row_card(const QString& title) {
     auto* card = new QFrame;
     card->setProperty("fxCard", true); // card chrome lives in the Theme QSS
     card->setProperty("displayName", title); // context menu + drag bookkeeping
-    card->setFixedHeight(row_card_height());
+    card->setFixedHeight(ROW_CARD_HEIGHT);
     // Card = main row (+ an optional detail row, see addDetailRow).
     auto* outer = new QVBoxLayout(card);
     outer->setContentsMargins(0, 0, 0, 0);
     outer->setSpacing(0);
     auto* row = new QWidget;
     row->setObjectName("cardRow");
-    row->setFixedHeight(row_card_height() - 2); // inside the 1 px border
+    row->setFixedHeight(ROW_CARD_HEIGHT - 2); // inside the 1 px border
     outer->addWidget(row);
     outer->addStretch();
     auto* lay = new QHBoxLayout(row);
-    lay->setContentsMargins(10, 3, 10, 3);
+    lay->setContentsMargins(10, ROW_MARGIN, 10, ROW_MARGIN);
     lay->setSpacing(10);
 
     // Grip column: the ≡ handle is the only place a reorder drag can start,
@@ -449,10 +421,112 @@ QFrame* MainWindow::make_row_card(const QString& title) {
 
     auto* name = new QLabel(title);
     name->setObjectName("fxName");
-    name->setFixedWidth(name_column_width());
+    name->setFixedWidth(NAME_COLUMN_WIDTH);
     lay->addWidget(name, 0, Qt::AlignVCenter);
 
     return card;
+}
+
+// A row card's height: its main row and border, plus its detail rows while shown.
+static void fit_card_height(QWidget* card) {
+    int height =
+        card->findChild<QWidget*>("cardRow", Qt::FindDirectChildrenOnly)->maximumHeight() + 2;
+    QWidget* container = card->findChild<QWidget*>("cardDetail", Qt::FindDirectChildrenOnly);
+    if (container && !container->isHidden()) {
+        for (int i = 0; i < container->layout()->count(); ++i) {
+            height += container->layout()->itemAt(i)->widget()->maximumHeight();
+        }
+    }
+    card->setFixedHeight(height);
+}
+
+void MainWindow::fit_to_font() {
+    QList<QFrame*> cards; // the row cards (the Input/Output columns have no main row)
+    for (QFrame* card : findChildren<QFrame*>()) {
+        if (card->findChild<QWidget*>("cardRow", Qt::FindDirectChildrenOnly)) {
+            cards << card;
+        }
+    }
+    if (cards.isEmpty()) {
+        return; // before setup_ui
+    }
+    ensurePolished(); // the stylesheet's fonts, before measuring
+
+    // One text column for every compact knob: the longest name or value any of them shows.
+    // The rows: as tall as a knob tile (the dial, or its two text lines) and the margins.
+    int text_column = KnobWidget::TEXT_COLUMN_WIDTH;
+    QList<KnobWidget*> knobs;
+    for (KnobWidget* k : findChildren<KnobWidget*>()) {
+        if (k->is_compact()) {
+            knobs << k;
+            text_column = std::max(text_column, k->text_width_needed());
+        }
+    }
+    int row_height = ROW_CARD_HEIGHT;
+    for (KnobWidget* k : knobs) {
+        k->set_text_column_width(text_column);
+        row_height = std::max(row_height, k->sizeHint().height() + 2 * ROW_MARGIN + 2);
+    }
+
+    // Main row: grip, name, enable slot, stereo slot, sync slot, … Each column takes
+    // its widest content; a hidden sync slot means a widget spans both switch columns.
+    auto slot = [](QWidget* card, int index) {
+        return row_layout(card)->itemAt(index)->widget();
+    };
+    auto sync_slot = [](QWidget* card) {
+        return card->findChild<QWidget*>("syncSlot");
+    };
+    int name_width = NAME_COLUMN_WIDTH;
+    int enable_width = ENABLE_SLOT_WIDTH;
+    int stereo_width = STEREO_SLOT_WIDTH;
+    int sync_width = SYNC_SLOT_WIDTH;
+    for (QWidget* card : cards) {
+        name_width = std::max(name_width, card->findChild<QLabel*>("fxName")->sizeHint().width());
+        // The caption switches between On and Off: room for the longer one.
+        auto* caption = slot(card, 2)->findChild<QLabel*>("toggleCaption");
+        caption->setMinimumWidth(std::max(caption->fontMetrics().horizontalAdvance(ENABLE_ON),
+                                          caption->fontMetrics().horizontalAdvance(ENABLE_OFF)));
+        enable_width = std::max(enable_width, slot(card, 2)->layout()->sizeHint().width());
+        if (!sync_slot(card)->isHidden()) {
+            stereo_width = std::max(stereo_width, slot(card, 3)->layout()->sizeHint().width());
+            sync_width = std::max(sync_width, sync_slot(card)->layout()->sizeHint().width());
+        }
+    }
+
+    const int spacing = row_layout(cards.first())->spacing();
+    const int indent = 10 + GRIP_COLUMN_WIDTH + name_width + enable_width + stereo_width +
+                       sync_width + 5 * spacing;
+    for (QWidget* card : cards) {
+        card->findChild<QLabel*>("fxName")->setFixedWidth(name_width);
+        slot(card, 2)->setFixedWidth(enable_width);
+        if (sync_slot(card)->isHidden()) {
+            const int across = stereo_width + spacing + sync_width;
+            slot(card, 3)->setFixedWidth(across);
+            slot(card, 3)->layout()->itemAt(0)->widget()->setFixedWidth(across);
+        } else {
+            slot(card, 3)->setFixedWidth(stereo_width);
+            sync_slot(card)->setFixedWidth(sync_width);
+        }
+        card->findChild<QWidget*>("cardRow", Qt::FindDirectChildrenOnly)
+            ->setFixedHeight(row_height - 2);
+        if (QWidget* container = card->findChild<QWidget*>("cardDetail")) {
+            for (int i = 0; i < container->layout()->count(); ++i) {
+                QWidget* row = container->layout()->itemAt(i)->widget();
+                row->setFixedHeight(row_height + DETAIL_ROW_HEIGHT - ROW_CARD_HEIGHT);
+                row->layout()->setContentsMargins(indent, 0, 10, 8);
+            }
+        }
+        fit_card_height(card);
+    }
+
+    // The status bar sizes itself to its items only as they are added — before the
+    // stylesheet and the font reach them.
+    int tallest = 0;
+    for (const QLabel* label : statusBar()->findChildren<QLabel*>()) {
+        tallest = std::max(tallest, label->sizeHint().height());
+    }
+    // Its stylesheet minimum stays the floor; 1 px for the stylesheet's top border.
+    statusBar()->setMinimumHeight(std::max(statusBar()->minimumHeight(), tallest + 1));
 }
 
 KnobWidget* MainWindow::late_knob(const QString& group, const QString& key, KnobWidget* k,
@@ -466,8 +540,7 @@ KnobWidget* MainWindow::late_knob(const QString& group, const QString& key, Knob
 // Shows or hides a card's detail rows and resizes the card to fit.
 static void show_details(QWidget* card, QWidget* container, QToolButton* more, bool open) {
     container->setVisible(open);
-    card->setFixedHeight(row_card_height() +
-                         (open ? container->layout()->count() * detail_row_height() : 0));
+    fit_card_height(card);
     more->setText(open ? "▴" : "▾");
     more->setToolTip(open ? "Fewer controls" : "More controls");
 }
@@ -500,11 +573,12 @@ void MainWindow::add_detail_row(QWidget* card, const QList<QWidget*>& widgets) {
         static_cast<QVBoxLayout*>(card->layout())->insertWidget(1, container);
     }
     auto* row = new QWidget;
-    row->setFixedHeight(detail_row_height());
+    row->setFixedHeight(DETAIL_ROW_HEIGHT);
     auto* lay = new QHBoxLayout(row);
-    // Indent to the knob column: margin + grip + name + enable, stereo and sync slots.
-    const int indent = 10 + GRIP_COLUMN_WIDTH + name_column_width() + enable_slot_width() +
-                       stereo_slot_width() + sync_slot_width() + 5 * 10;
+    // Indent to the knob column: margin + grip + name + enable, stereo and sync slots
+    // (fit_to_font redoes it with the columns' final widths).
+    const int indent = 10 + GRIP_COLUMN_WIDTH + NAME_COLUMN_WIDTH + ENABLE_SLOT_WIDTH +
+                       STEREO_SLOT_WIDTH + SYNC_SLOT_WIDTH + 5 * 10;
     lay->setContentsMargins(indent, 0, 10, 8);
     lay->setSpacing(10);
     for (QWidget* w : widgets) {
@@ -512,13 +586,12 @@ void MainWindow::add_detail_row(QWidget* card, const QList<QWidget*>& widgets) {
     }
     lay->addStretch();
     container->layout()->addWidget(row);
-    const int rows = container->layout()->count();
 
     QToolButton* more = card->findChild<QToolButton*>("cardMore");
     if (!first) {
         // Re-apply the current state with the new height.
         if (more && more->isChecked()) {
-            card->setFixedHeight(row_card_height() + rows * detail_row_height());
+            fit_card_height(card);
         }
         return;
     }
@@ -931,8 +1004,8 @@ void MainWindow::setup_ui() {
                                     });
         pos->set_scroll_step(1.0);
         knob_wah_pos = pos;
-        QWidget* col = make_effect_row("Wah", sw_wah_enable,
-                                       {knob_wah_mix, knob_wah_sens, pos, knob_wah_res});
+        QWidget* col =
+            make_effect_row("Wah", sw_wah_enable, {knob_wah_mix, knob_wah_sens, pos, knob_wah_res});
         sw_wah_reverse = make_reverse_switch(col, "Position");
         put_in_sync_column(col, make_caption_switch(sw_wah_manual, "Manual"));
         connect(sw_wah_manual, &ToggleSwitch::toggled, this, &MainWindow::update_inactive_controls);
@@ -3031,6 +3104,11 @@ void MainWindow::changeEvent(QEvent* ev) {
     QMainWindow::changeEvent(ev);
     if (ev->type() == QEvent::WindowStateChange) {
         update_meter_timer();
+    }
+    // Theme::apply_to sets the stylesheet (the card names' size), or the system font
+    // changed.
+    if (ev->type() == QEvent::StyleChange || ev->type() == QEvent::FontChange) {
+        fit_to_font();
     }
     // A theme change: the status bar's dots are HTML text, coloured when they were set.
     if (ev->type() == QEvent::StyleChange && lbl_midi && lbl_rig_status) {
