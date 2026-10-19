@@ -18,6 +18,7 @@
 #include <QFontMetrics>
 #include <QFrame>
 #include <QHash>
+#include <QIcon>
 #include <QImage>
 #include <QLineEdit>
 #include <QMenu>
@@ -468,6 +469,9 @@ QMenu::item {
     border: 1px solid transparent;
     border-radius: 5px;
 }
+QMenu[icons="true"]::item {
+    padding-left: 6px;
+}
 QMenu::item:selected {
     background-color: @menu_hover@;
     border-color: @accent@;
@@ -477,7 +481,7 @@ QMenu::item:disabled {
     background: transparent;
     border-color: transparent;
 }
-QMenu::indicator {
+QMenu::indicator, QMenu::icon {
     left: 6px;
 }
 QMenu::separator {
@@ -1396,6 +1400,12 @@ static void resolve_scheme() {
                                                          : breeze_header(dark_active);
     current_accent = source.color(QPalette::Highlight);
     active = from_palette(source, dark_active, header);
+    // Breeze's icons come in a light and a dark set and Qt doesn't recolour them: under a
+    // forced theme the set has to match NAM-X's, not the desktop's.
+    const QString icons = QIcon::themeName();
+    if (icons == "breeze" || icons == "breeze-dark") {
+        QIcon::setThemeName(dark_active ? "breeze-dark" : "breeze");
+    }
 }
 
 // Follows the OS while Mode::SYSTEM: a scheme switch (Qt 6.5+) or a new system
@@ -1530,6 +1540,24 @@ protected:
         if (event->type() == QEvent::Polish) {
             if (auto* menu = qobject_cast<QMenu*>(watched)) {
                 menu->setAttribute(Qt::WA_TranslucentBackground);
+                // Qt adds an icon column of its own once a menu has icons: the stylesheet
+                // then pads less (QMenu[icons]), so the text stays in Union's place. Once
+                // per menu: the re-polish below comes back here.
+                if (menu->property("iconWatch").toBool()) {
+                    return QObject::eventFilter(watched, event);
+                }
+                menu->setProperty("iconWatch", true);
+                QObject::connect(menu, &QMenu::aboutToShow, menu, [menu] {
+                    const QList<QAction*> actions = menu->actions();
+                    const bool icons = std::any_of(actions.begin(), actions.end(), [](QAction* a) {
+                        return !a->icon().isNull() && a->isIconVisibleInMenu();
+                    });
+                    if (menu->property("icons").toBool() != icons) {
+                        menu->setProperty("icons", icons);
+                        menu->style()->unpolish(menu);
+                        menu->style()->polish(menu);
+                    }
+                });
             } else if (auto* spin = qobject_cast<QAbstractSpinBox*>(watched)) {
                 if (auto* field = spin->findChild<QLineEdit*>()) {
                     field->setTextMargins(6, 0, 0, 0);

@@ -7,6 +7,7 @@
 #include <QFormLayout>
 #include <QHBoxLayout>
 #include <QHeaderView>
+#include <QIcon>
 #include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
@@ -97,7 +98,7 @@ SettingsDialog::SettingsDialog(SettingsTargets new_targets, QWidget* parent)
     connect(page_list, &QListWidget::currentRowChanged, this,
             &SettingsDialog::refresh_current_page);
 
-    auto* close = new QPushButton("Close");
+    auto* close = new QPushButton(QIcon::fromTheme("window-close"), "Close");
     connect(close, &QPushButton::clicked, this, &QDialog::close);
 
     auto* body = new QHBoxLayout;
@@ -191,7 +192,7 @@ QWidget* SettingsDialog::build_audio_page() {
     buffer_label = new QLabel;
     latency_label = new QLabel;
     xruns_label = new QLabel;
-    auto* reset = new QPushButton("Reset");
+    auto* reset = new QPushButton(QIcon::fromTheme("edit-undo"), "Reset");
     connect(reset, &QPushButton::clicked, &targets.status_bar, &AudioStatusBar::reset_counters);
     auto* xruns = new QHBoxLayout;
     xruns->addWidget(xruns_label);
@@ -338,8 +339,8 @@ QWidget* SettingsDialog::build_library_page() {
     for (size_t section = 0; section < folder_lists.size(); ++section) {
         folder_lists[section] = new QListWidget;
         folder_lists[section]->setMaximumHeight(90);
-        auto* add = new QPushButton("Add…");
-        auto* remove = new QPushButton("Remove");
+        auto* add = new QPushButton(QIcon::fromTheme("list-add"), "Add…");
+        auto* remove = new QPushButton(QIcon::fromTheme("list-remove"), "Remove");
         connect(add, &QPushButton::clicked, this, [this, section] {
             add_folder(section);
         });
@@ -357,7 +358,7 @@ QWidget* SettingsDialog::build_library_page() {
         lay->addLayout(row);
     }
 
-    auto* rescan = new QPushButton("Rescan library");
+    auto* rescan = new QPushButton(QIcon::fromTheme("view-refresh"), "Rescan library");
     connect(rescan, &QPushButton::clicked, &targets.library_index, &LibraryIndex::rescan);
 
     auto* last = new QHBoxLayout;
@@ -442,11 +443,11 @@ QWidget* SettingsDialog::build_appearance_page() {
     theme_box = new QComboBox;
     theme_box->setSizeAdjustPolicy(QComboBox::AdjustToContents);
     connect(theme_box, &QComboBox::activated, this, &SettingsDialog::choose_theme);
-    auto* import_button = new QPushButton("Import…");
+    auto* import_button = new QPushButton(QIcon::fromTheme("document-import"), "Import…");
     import_button->setToolTip("Copy a theme file (.json, or a KDE colour scheme .colors) into "
                               "the themes folder and use it");
     connect(import_button, &QPushButton::clicked, this, &SettingsDialog::import_theme);
-    auto* folder_button = new QPushButton("Open Folder");
+    auto* folder_button = new QPushButton(QIcon::fromTheme("document-open-folder"), "Open Folder");
     folder_button->setToolTip(themes_folder());
     connect(folder_button, &QPushButton::clicked, this, [] {
         QDir().mkpath(themes_folder());

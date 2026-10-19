@@ -12,6 +12,7 @@
 #include <QFileDialog>
 #include <QFontMetrics>
 #include <QHBoxLayout>
+#include <QIcon>
 #include <QKeyEvent>
 #include <QLabel>
 #include <QLineEdit>
@@ -463,7 +464,13 @@ LibraryPanel::LibraryPanel(LibraryIndex& new_index, QWidget* parent)
 
         auto* rescan = new QToolButton;
         rescan->setObjectName("libraryTool");
-        rescan->setText("↻");
+        // The theme's refresh icon; ↻ where there is no icon theme.
+        const QIcon refresh = QIcon::fromTheme("view-refresh");
+        if (refresh.isNull()) {
+            rescan->setText("↻");
+        } else {
+            rescan->setIcon(refresh);
+        }
         rescan->setAutoRaise(true);
         rescan->setFocusPolicy(Qt::NoFocus);
         rescan->setToolTip("Rescan the library folders");

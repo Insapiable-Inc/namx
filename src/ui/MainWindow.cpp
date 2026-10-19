@@ -22,6 +22,7 @@
 #include <QGraphicsDropShadowEffect>
 #include <QGraphicsOpacityEffect>
 #include <QHBoxLayout>
+#include <QIcon>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -720,41 +721,46 @@ void MainWindow::setup_ui() {
         QMenuBar* mb = menuBar();
         mb->setCornerWidget(make_made_in_chile(), Qt::TopRightCorner);
         preset_menu = mb->addMenu("Preset");
-        QAction* act_save = preset_menu->addAction("Save");
+        QAction* act_save = preset_menu->addAction(QIcon::fromTheme("document-save"), "Save");
         act_save->setShortcut(QKeySequence::Save); // Ctrl+S
         connect(act_save, &QAction::triggered, this, &MainWindow::on_save_preset);
-        QAction* act_save_as = preset_menu->addAction("Save As…");
+        QAction* act_save_as =
+            preset_menu->addAction(QIcon::fromTheme("document-save-as"), "Save As…");
         act_save_as->setShortcut(QKeySequence("Ctrl+Shift+S"));
         connect(act_save_as, &QAction::triggered, this, &MainWindow::on_save_preset_as);
-        QAction* act_load = preset_menu->addAction("Open…");
+        QAction* act_load = preset_menu->addAction(QIcon::fromTheme("document-open"), "Open…");
         act_load->setShortcut(QKeySequence::Open); // Ctrl+O
         connect(act_load, &QAction::triggered, this, &MainWindow::on_load_preset);
         preset_menu->addSeparator();
-        connect(preset_menu->addAction("Import…"), &QAction::triggered, this,
-                &MainWindow::on_import_presets);
-        connect(preset_menu->addAction("Export…"), &QAction::triggered, this,
-                &MainWindow::on_export_preset);
+        connect(preset_menu->addAction(QIcon::fromTheme("document-import"), "Import…"),
+                &QAction::triggered, this, &MainWindow::on_import_presets);
+        connect(preset_menu->addAction(QIcon::fromTheme("document-export"), "Export…"),
+                &QAction::triggered, this, &MainWindow::on_export_preset);
         preset_menu->addSeparator();
-        connect(preset_menu->addAction("Show in Folder"), &QAction::triggered, this,
-                &MainWindow::on_locate_preset);
-        connect(preset_menu->addAction("Delete…"), &QAction::triggered, this,
-                &MainWindow::on_delete_preset);
+        connect(preset_menu->addAction(QIcon::fromTheme("document-open-folder"), "Show in Folder"),
+                &QAction::triggered, this, &MainWindow::on_locate_preset);
+        connect(preset_menu->addAction(QIcon::fromTheme("edit-delete"), "Delete…"),
+                &QAction::triggered, this, &MainWindow::on_delete_preset);
         preset_menu->addSeparator();
-        connect(preset_menu->addAction("Reset All to Defaults…"), &QAction::triggered, this,
-                &MainWindow::on_reset_all);
+        connect(
+            preset_menu->addAction(QIcon::fromTheme("document-revert"), "Reset All to Defaults…"),
+            &QAction::triggered, this, &MainWindow::on_reset_all);
 
         library_menu = mb->addMenu("Library"); // filled once the dock exists (below)
         midi_top_menu = mb->addMenu("MIDI"); // filled by setupMidi
 
         QMenu* settings_menu = mb->addMenu("Settings");
-        QAction* act_settings = settings_menu->addAction("Settings…");
+        QAction* act_settings =
+            settings_menu->addAction(QIcon::fromTheme("configure"), "Settings…");
         act_settings->setShortcut(QKeySequence("Ctrl+,"));
         connect(act_settings, &QAction::triggered, this, [this] {
             open_settings(SettingsDialog::Page::AUDIO);
         });
-        connect(settings_menu->addAction("Keyboard Shortcuts…"), &QAction::triggered, this, [this] {
-            open_settings(SettingsDialog::Page::SHORTCUTS);
-        });
+        connect(settings_menu->addAction(QIcon::fromTheme("configure-shortcuts"),
+                                         "Keyboard Shortcuts…"),
+                &QAction::triggered, this, [this] {
+                    open_settings(SettingsDialog::Page::SHORTCUTS);
+                });
         if (appimage::is_running_as_appimage()) {
             // Add / remove the AppImage's launcher; the label follows the current state.
             settings_menu->addSeparator();
@@ -775,16 +781,19 @@ void MainWindow::setup_ui() {
         }
 
         QMenu* help_menu = mb->addMenu("Help");
-        connect(help_menu->addAction("About NAM-X"), &QAction::triggered, this, [this] {
-            QMessageBox::about(
-                this, "About NAM-X",
-                QString("<b>NAM-X</b> v%1<br><br>"
+        connect(
+            help_menu->addAction(QApplication::windowIcon(), "About NAM-X"), &QAction::triggered,
+            this, [this] {
+                QMessageBox::about(
+                    this, "About NAM-X",
+                    QString(
+                        "<b>NAM-X</b> v%1<br><br>"
                         "Standalone player for Neural Amp Modeler profiles.<br>"
                         "Built on <a href=\"https://github.com/sdatkinson/NeuralAmpModelerCore\">"
                         "NeuralAmpModelerCore</a> by Steven Atkinson.<br><br>"
                         "Not affiliated with the official Neural Amp Modeler plugin.")
-                    .arg(QApplication::applicationVersion()));
-        });
+                        .arg(QApplication::applicationVersion()));
+            });
     }
 
     // ---- Preset bar (top): name, ‹ ›, Save, quick slots, A/B, Preset menu.
@@ -1570,25 +1579,27 @@ void MainWindow::setup_ui() {
         show->setShortcut(QKeySequence("Ctrl+L"));
         library_menu->addAction(show);
 
-        QAction* find = library_menu->addAction("Find in Library");
+        QAction* find = library_menu->addAction(QIcon::fromTheme("edit-find"), "Find in Library");
         find->setShortcut(QKeySequence::Find); // Ctrl+F
         connect(find, &QAction::triggered, this, [this] {
             find_in_library();
         });
         library_menu->addSeparator();
-        connect(library_menu->addAction("Folders…"), &QAction::triggered, this, [this] {
-            open_settings(SettingsDialog::Page::LIBRARY);
-        });
+        connect(library_menu->addAction(QIcon::fromTheme("folder"), "Folders…"),
+                &QAction::triggered, this, [this] {
+                    open_settings(SettingsDialog::Page::LIBRARY);
+                });
         connect(library, &LibraryPanel::folders_requested, this, [this] {
             open_settings(SettingsDialog::Page::LIBRARY);
         });
-        connect(library_menu->addAction("Rescan"), &QAction::triggered, library_index,
-                &LibraryIndex::rescan);
+        connect(library_menu->addAction(QIcon::fromTheme("view-refresh"), "Rescan"),
+                &QAction::triggered, library_index, &LibraryIndex::rescan);
         library_menu->addSeparator();
-        connect(library_menu->addAction("Import Model…"), &QAction::triggered, this,
-                &MainWindow::on_import_nam);
-        connect(library_menu->addAction("Import Impulse Response…"), &QAction::triggered, this,
-                &MainWindow::on_import_ir);
+        connect(library_menu->addAction(QIcon::fromTheme("document-import"), "Import Model…"),
+                &QAction::triggered, this, &MainWindow::on_import_nam);
+        connect(library_menu->addAction(QIcon::fromTheme("document-import"),
+                                        "Import Impulse Response…"),
+                &QAction::triggered, this, &MainWindow::on_import_ir);
     }
 }
 
@@ -2063,18 +2074,21 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* ev) {
                 const bool is_amp = card == fx_cols[&engine->get_nam()];
                 const bool is_cab = card == fx_cols[&engine->get_ir()];
                 if (is_amp || is_cab) {
-                    connect(menu.addAction(is_amp ? "Import Model…" : "Import Impulse Response…"),
+                    connect(menu.addAction(QIcon::fromTheme("document-import"),
+                                           is_amp ? "Import Model…" : "Import Impulse Response…"),
                             &QAction::triggered, this,
                             is_amp ? &MainWindow::on_import_nam : &MainWindow::on_import_ir);
                     QAction* unload =
-                        menu.addAction(is_amp ? "Unload Model" : "Unload Impulse Response");
+                        menu.addAction(QIcon::fromTheme("media-eject"),
+                                       is_amp ? "Unload Model" : "Unload Impulse Response");
                     unload->setEnabled(is_amp ? engine->is_model_loaded() : engine->is_ir_loaded());
                     connect(unload, &QAction::triggered, this,
                             is_amp ? &MainWindow::on_unload_nam : &MainWindow::on_unload_ir);
                     menu.addSeparator();
                 }
 
-                QAction* act = menu.addAction("Reset " + name + " to defaults");
+                QAction* act = menu.addAction(QIcon::fromTheme("document-revert"),
+                                              "Reset " + name + " to defaults");
 
                 // A right-click on a switch: MIDI Learn for that switch.
                 for (QWidget* w = card->childAt(card->mapFromGlobal(ce->globalPos()));
