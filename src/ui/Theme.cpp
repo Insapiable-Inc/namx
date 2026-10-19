@@ -141,6 +141,7 @@ struct Colors
     QColor menu_hover; // menu items
     QColor button_frame; // check boxes, table headers: the button 20 % toward the text
     QColor tab; // closed tabs: the view background 17 % toward the text (Union's)
+    QColor checked; // checked buttons: the button 12.5 % toward the text (Union's)
     QColor bar; // scroll bar handles: the window 7.5 % toward the text (Union's)
     QColor bar_hover; // … hovered or dragged: a third toward the accent
     QColor view; // lists: the palette's base, as is (Union's view background)
@@ -245,6 +246,7 @@ static Colors from_palette(const QPalette& sys, bool dark, const QColor& header)
         mix_colors(w, accent, 0.3), // menu_hover
         mix_colors(button, text, 0.2), // button_frame
         mix_colors(base, text, 0.17), // tab
+        mix_colors(button, text, 0.125), // checked
         mix_colors(w, text, 0.075), // bar
         mix_colors(w, accent, 1.0 / 3), // bar_hover
         base, // view
@@ -737,19 +739,18 @@ QToolButton#presetSlot[filled="true"] {
     background-color: @raised@;
     border-color: @border@;
 }
+/* Checked (and the active slot): Union's — the button 12.5 % toward the text, its border
+   and text as they are, so hover still shows the accent border. */
 QToolButton#presetSlot[active="true"] {
-    color: @on_accent@;
-    background-color: @accent@;
-    border-color: @accent@;
+    color: @text@;
+    background-color: @checked@;
 }
 QToolButton#presetAb {
     min-width: 14px;
     font-weight: 700;
 }
 QToolButton#presetAb:checked {
-    color: @on_accent@;
-    background-color: @accent@;
-    border-color: @accent@;
+    background-color: @checked@;
 }
 
 /* === Tempo bar (under the preset bar) === */
@@ -786,9 +787,7 @@ QToolButton#metroPlay:pressed {
     border-color: @accent@;
 }
 QToolButton#metroPlay:checked {
-    color: @on_accent@;
-    background-color: @accent@;
-    border-color: @accent@;
+    background-color: @checked@;
 }
 
 /* === Effect card ▾ detail toggle === */
@@ -875,7 +874,7 @@ QToolButton#librarySection:checked {
     border-top-right-radius: 5px;
 }
 /* All / ★ / Recent, Folders…, rescan: filled like the preset bar's buttons;
-   the active mode in the accent like A/B. */
+   the active mode checked like A/B. */
 QToolButton#libraryMode, QToolButton#libraryTool {
     color: @text@;
     background-color: @raised@;
@@ -891,9 +890,7 @@ QToolButton#libraryMode:pressed, QToolButton#libraryTool:pressed {
     border-color: @accent@;
 }
 QToolButton#libraryMode:checked {
-    color: @on_accent@;
-    background-color: @accent@;
-    border-color: @accent@;
+    background-color: @checked@;
 }
 QLineEdit#librarySearch {
     background-color: @surface@;
@@ -1285,6 +1282,7 @@ static QString fill_roles(const char* sheet) {
         {"menu_hover", pal.menu_hover},
         {"button_frame", pal.button_frame},
         {"tab", pal.tab},
+        {"checked", pal.checked},
         {"bar", pal.bar},
         {"bar_hover", pal.bar_hover},
         {"view", pal.view},
