@@ -4,14 +4,17 @@
 #include <cassert>
 #include <cmath>
 
+#include <QAbstractButton>
 #include <QAbstractItemView>
 #include <QAbstractSpinBox>
 #include <QApplication>
+#include <QCheckBox>
 #include <QComboBox>
 #include <QDir>
 #include <QEvent>
 #include <QFileInfo>
 #include <QFileSystemWatcher>
+#include <QFocusEvent>
 #include <QFontMetrics>
 #include <QFrame>
 #include <QHash>
@@ -26,6 +29,7 @@
 #include <QStandardPaths>
 #include <QStyle>
 #include <QStyleHints>
+#include <QStyleOptionButton>
 #include <QStyledItemDelegate>
 #include <QTextDocument> // Qt::mightBeRichText
 #include <QTimer>
@@ -393,6 +397,22 @@ void tag_card(QWidget* card, const QString& fx_id) {
 }
 
 static const char* const STYLE_SHEET = R"(
+/* === Keyboard focus (UnionPolish sets visualFocus; the outline is a FocusRing) === */
+*[visualFocus="true"] {
+    border-color: @accent@;
+}
+QCheckBox[visualFocus="true"]::indicator {
+    border-color: @accent@;
+}
+/* The ID-styled buttons below outrank the rule above; they get it by name. */
+QToolButton#presetName[visualFocus="true"], QToolButton#presetTool[visualFocus="true"],
+QToolButton#presetSlot[visualFocus="true"], QToolButton#presetAb[visualFocus="true"],
+QToolButton#menuTool[visualFocus="true"], QToolButton#metroPlay[visualFocus="true"],
+QToolButton#heroArrow[visualFocus="true"], QToolButton#libraryMode[visualFocus="true"],
+QToolButton#libraryTool[visualFocus="true"], QLineEdit#librarySearch[visualFocus="true"] {
+    border-color: @accent@;
+}
+
 /* === Window / base === */
 QMainWindow, QDialog {
     background-color: @window@;
@@ -1401,6 +1421,95 @@ protected:
     }
 };
 
+// Union's keyboard focus outline: 2 px of the accent at 30 % around the control (around
+// its box, for a check box). A stylesheet can't draw outside a widget, so this ring sits
+// on the control's parent, following it, until the focus leaves.
+class FocusRing : public QWidget
+{
+public:
+    explicit FocusRing(QWidget* new_target)
+        : QWidget(new_target->parentWidget())
+        , target(new_target) {
+        setAttribute(Qt::WA_TransparentForMouseEvents);
+        setFocusPolicy(Qt::NoFocus);
+        target->installEventFilter(this);
+        follow();
+        show();
+        raise();
+    }
+
+protected:
+    bool eventFilter(QObject*, QEvent* event) override {
+        if (event->type() == QEvent::Move || event->type() == QEvent::Resize) {
+            follow();
+        } else if (event->type() == QEvent::Hide) {
+            hide();
+        }
+        return false;
+    }
+
+    void paintEvent(QPaintEvent*) override {
+        QPainter p(this);
+        p.setRenderHint(QPainter::Antialiasing);
+        QColor ring = current_accent;
+        ring.setAlphaF(0.3f);
+        p.setPen(QPen(ring, 2));
+        p.drawRoundedRect(QRectF(rect()).adjusted(1, 1, -1, -1), 6, 6);
+    }
+
+private:
+    void follow() {
+        QRect area = target->geometry();
+        if (auto* box = qobject_cast<QCheckBox*>(target.data())) {
+            QStyleOptionButton option;
+            option.initFrom(box);
+            const QRect indicator =
+                box->style()->subElementRect(QStyle::SE_CheckBoxIndicator, &option, box);
+            area = QRect(box->mapTo(parentWidget(), indicator.topLeft()), indicator.size());
+        }
+        setGeometry(area.adjusted(-2, -2, 2, 2));
+    }
+
+    QPointer<QWidget> target;
+};
+
+// The control showing keyboard focus: its `visualFocus` property turns its border to the
+// accent (the stylesheet), and the ring surrounds it.
+static QPointer<QWidget> focus_target;
+static QPointer<FocusRing> focus_ring;
+
+static void show_visual_focus(QWidget* target) {
+    if (focus_target) {
+        focus_target->setProperty("visualFocus", false);
+        focus_target->style()->unpolish(focus_target);
+        focus_target->style()->polish(focus_target);
+    }
+    delete focus_ring;
+    focus_target = target;
+    if (!target || !target->parentWidget()) {
+        return;
+    }
+    target->setProperty("visualFocus", true);
+    target->style()->unpolish(target);
+    target->style()->polish(target);
+    focus_ring = new FocusRing(target);
+}
+
+// The controls Union outlines on keyboard focus: buttons, check boxes, combo boxes, spin
+// boxes and text fields (a spin box's own field counts as the spin box).
+static QWidget* focus_control(QObject* object) {
+    auto* widget = qobject_cast<QWidget*>(object);
+    if (qobject_cast<QLineEdit*>(widget) &&
+        qobject_cast<QAbstractSpinBox*>(widget->parentWidget())) {
+        return widget->parentWidget();
+    }
+    if (qobject_cast<QAbstractButton*>(widget) || qobject_cast<QComboBox*>(widget) ||
+        qobject_cast<QAbstractSpinBox*>(widget) || qobject_cast<QLineEdit*>(widget)) {
+        return widget;
+    }
+    return nullptr;
+}
+
 // What the stylesheet can't do, done to each widget as it is polished:
 // - every menu, context menus included, gets a translucent window (before its window
 //   exists), so the rounded corners show what is behind them — as Breeze does;
@@ -1411,6 +1520,8 @@ protected:
 // - a combo box paints its drop-down rows with the standard delegate — its own ignores
 //   the stylesheet's row rules — and the drop-down's window is translucent, so its
 //   corners can be rounded like a menu's.
+// And Union's keyboard focus (FocusRing): shown when Tab brings the focus to a control,
+// gone when the focus leaves it — a click gives focus without the outline.
 class UnionPolish : public QObject
 {
 public:
@@ -1438,6 +1549,16 @@ protected:
                 container->setFrameShape(QFrame::NoFrame);
                 container->setAttribute(Qt::WA_TranslucentBackground);
             }
+        } else if (event->type() == QEvent::FocusIn) {
+            const Qt::FocusReason reason = static_cast<QFocusEvent*>(event)->reason();
+            if (QWidget* control = focus_control(watched);
+                control && control != focus_target &&
+                (reason == Qt::TabFocusReason || reason == Qt::BacktabFocusReason)) {
+                show_visual_focus(control);
+            }
+        } else if (event->type() == QEvent::FocusOut && focus_target &&
+                   focus_control(watched) == focus_target) {
+            show_visual_focus(nullptr);
         }
         return QObject::eventFilter(watched, event);
     }
