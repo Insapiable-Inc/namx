@@ -419,7 +419,7 @@ machine settings (QSettings `midi/*`), not part of presets.
 
 ### Settings
 
-**Settings → Settings…** (`Ctrl+,`) collects the machine settings in one window; every
+**Settings → Configure NAM-X…** (`Ctrl+Shift+,`) collects the machine settings in one window; every
 change applies immediately.
 
 | Page | What's there |

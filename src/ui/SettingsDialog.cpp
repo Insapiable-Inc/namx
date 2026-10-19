@@ -80,7 +80,7 @@ static void collect_menu_shortcuts(QMenu* menu, const QString& path,
 SettingsDialog::SettingsDialog(SettingsTargets new_targets, QWidget* parent)
     : QDialog(parent)
     , targets(std::move(new_targets)) {
-    setWindowTitle("Settings");
+    setWindowTitle("Configure"); // "Configure — NAM-X", as KDE titles it
     resize(720, 480);
 
     // KDE's side panel: flush with the window's edges, an icon per page.

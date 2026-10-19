@@ -751,8 +751,8 @@ void MainWindow::setup_ui() {
 
         QMenu* settings_menu = mb->addMenu("Settings");
         QAction* act_settings =
-            settings_menu->addAction(QIcon::fromTheme("configure"), "Settings…");
-        act_settings->setShortcut(QKeySequence("Ctrl+,"));
+            settings_menu->addAction(QIcon::fromTheme("configure"), "Configure NAM-X…");
+        act_settings->setShortcut(QKeySequence("Ctrl+Shift+,")); // KDE's Preferences key
         connect(act_settings, &QAction::triggered, this, [this] {
             open_settings(SettingsDialog::Page::AUDIO);
         });
