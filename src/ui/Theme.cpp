@@ -144,7 +144,8 @@ struct Colors
     QColor checked; // checked buttons: the button 12.5 % toward the text (Union's)
     QColor bar; // scroll bar handles: the window 7.5 % toward the text (Union's)
     QColor bar_hover; // … hovered or dragged: a third toward the accent
-    QColor view; // lists: the palette's base, as is (Union's view background)
+    QColor view; // lists, fields: the palette's base, as is (Union's view background)
+    QColor view_frame; // their frame: the view 20 % toward the text
     QColor list_hover; // hovered list rows: the accent at 30 % over the view
     QColor highlighted_text; // text on the accent: selected rows (the palette's)
     // Custom-painted widgets (knobs, switches, fields).
@@ -249,6 +250,7 @@ static Colors from_palette(const QPalette& sys, bool dark, const QColor& header)
         mix_colors(w, text, 0.075), // bar
         mix_colors(w, accent, 1.0 / 3), // bar_hover
         base, // view
+        mix_colors(base, text, 0.2), // view_frame
         mix_colors(base, accent, 0.3), // list_hover
         sys.color(QPalette::HighlightedText),
         mix_colors(button, text, 0.14), // track
@@ -763,14 +765,11 @@ QFrame#tempoBar {
     border-radius: 6px;
 }
 QLineEdit#numberEdit {
-    background-color: @window@;
     color: @accent@;
-    border: 1px solid @border_hover@;
-    border-radius: 5px;
+    border-color: @accent@; /* shown only while typing a value */
+    padding: 0;
     font-size: @pt:12@;
     font-weight: 700;
-    selection-background-color: @accent@;
-    selection-color: @on_accent@;
 }
 
 QToolButton#metroPlay {
@@ -896,16 +895,7 @@ QToolButton#libraryMode:checked {
     background-color: @checked@;
 }
 QLineEdit#librarySearch {
-    background-color: @surface@;
-    color: @text@;
-    border: 1px solid @line@;
-    border-radius: 5px;
-    padding: 5px 8px;
-    selection-background-color: @accent@;
-    selection-color: @on_accent@;
-}
-QLineEdit#librarySearch:focus {
-    border-color: @accent@;
+    padding: 6px;
 }
 QLabel#libraryStatus {
     color: @text_muted@;
@@ -919,7 +909,7 @@ QLabel#libraryStatus {
 QListView {
     background-color: @view@;
     color: @text@;
-    border: 1px solid @frame@;
+    border: 1px solid @view_frame@;
     border-radius: 5px;
     outline: none;
 }
@@ -987,6 +977,28 @@ QTabBar::tab:selected {
     border-top-right-radius: 5px;
 }
 
+/* === Text fields === */
+/* Union's: the view background framed with its frame colour, 5 px corners, the accent on
+   the border when hovered or typing. A spin box's own field is bare: the spin box is the
+   field. */
+QLineEdit {
+    background-color: @view@;
+    color: @text@;
+    border: 1px solid @view_frame@;
+    border-radius: 5px;
+    padding: 4px 6px;
+    selection-background-color: @accent@;
+    selection-color: @highlighted_text@;
+}
+QLineEdit:hover, QLineEdit:focus {
+    border-color: @accent@;
+}
+QAbstractSpinBox QLineEdit {
+    background: transparent;
+    border: none;
+    padding: 0;
+}
+
 /* === Check boxes, spin boxes, table headers (Settings, MIDI Mappings) === */
 /* Union's check box: a 16 px rounded box in the button colour; checked, tinted toward the
    accent with an accent border and a check mark. The same box marks checkable list rows
@@ -1026,14 +1038,14 @@ QCheckBox::indicator:checked:disabled, QListView::indicator:checked:disabled {
    or focused. A style-sheet box makes Fusion drop its arrows, so they are given here; the
    text's left margin is set in UnionPolish. */
 QAbstractSpinBox {
-    background-color: @surface@;
+    background-color: @view@;
     color: @text@;
-    border: 1px solid @frame@;
+    border: 1px solid @view_frame@;
     border-radius: 5px;
     padding: 3px 4px;
     min-height: 20px;
     selection-background-color: @accent@;
-    selection-color: @on_accent@;
+    selection-color: @highlighted_text@;
 }
 QAbstractSpinBox:hover, QAbstractSpinBox:focus {
     border-color: @accent@;
@@ -1295,6 +1307,7 @@ static QString fill_roles(const char* sheet) {
         {"bar", pal.bar},
         {"bar_hover", pal.bar_hover},
         {"view", pal.view},
+        {"view_frame", pal.view_frame},
         {"list_hover", pal.list_hover},
         {"highlighted_text", pal.highlighted_text},
         {"accent", current_accent},
@@ -1670,7 +1683,9 @@ void apply_to(QWidget& root) {
     QPalette p;
     p.setColor(QPalette::Window, QColor(pal.window));
     p.setColor(QPalette::WindowText, QColor(pal.text));
-    p.setColor(QPalette::Base, QColor(pal.surface));
+    p.setColor(QPalette::Base, QColor(pal.view));
+    // Union's placeholder: the text 30 % toward the field.
+    p.setColor(QPalette::PlaceholderText, mix_colors(pal.text, pal.view, 0.3));
     p.setColor(QPalette::AlternateBase, QColor(pal.card));
     p.setColor(QPalette::ToolTipBase, QColor(pal.raised));
     p.setColor(QPalette::ToolTipText, QColor(pal.text));
