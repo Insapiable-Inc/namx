@@ -453,6 +453,15 @@ void MainWindow::fit_to_font() {
     }
     ensurePolished(); // the stylesheet's fonts, before measuring
 
+    // The ‹ › arrows (preset bar, Amplifier and Cabinet rows): squares as tall as a button
+    // beside them (Save), at any font — first: the rows' Sync column holds two of them.
+    if (auto* save = findChild<QToolButton*>("presetTool")) {
+        const int side = save->sizeHint().height();
+        for (QToolButton* arrow : findChildren<QToolButton*>("heroArrow")) {
+            arrow->setFixedSize(side, side);
+        }
+    }
+
     // One text column for every compact knob: the longest name or value any of them shows.
     // The rows: as tall as a knob tile (the dial, or its two text lines) and the margins.
     int text_column = KnobWidget::TEXT_COLUMN_WIDTH;
