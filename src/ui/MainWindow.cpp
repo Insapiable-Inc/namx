@@ -520,14 +520,9 @@ void MainWindow::fit_to_font() {
         fit_card_height(card);
     }
 
-    // The status bar sizes itself to its items only as they are added — before the
-    // stylesheet and the font reach them.
-    int tallest = 0;
-    for (const QLabel* label : statusBar()->findChildren<QLabel*>()) {
-        tallest = std::max(tallest, label->sizeHint().height());
-    }
-    // Its stylesheet minimum stays the floor; 1 px for the stylesheet's top border.
-    statusBar()->setMinimumHeight(std::max(statusBar()->minimumHeight(), tallest + 1));
+    // The status bar measures its items when they are added — before the stylesheet and
+    // the font reach them — and again on a layout request.
+    QCoreApplication::postEvent(statusBar(), new QEvent(QEvent::LayoutRequest));
 }
 
 KnobWidget* MainWindow::late_knob(const QString& group, const QString& key, KnobWidget* k,
@@ -3123,13 +3118,6 @@ void MainWindow::changeEvent(QEvent* ev) {
     // changed.
     if (ev->type() == QEvent::StyleChange || ev->type() == QEvent::FontChange) {
         fit_to_font();
-    }
-    // The menu bar takes the window colour while the window is inactive, like KDE's
-    // Header (the stylesheet's QMenuBar[inactive]).
-    if (ev->type() == QEvent::ActivationChange) {
-        menuBar()->setProperty("inactive", !isActiveWindow());
-        menuBar()->style()->unpolish(menuBar());
-        menuBar()->style()->polish(menuBar());
     }
     // A theme change: the status bar's dots are HTML text, coloured when they were set.
     if (ev->type() == QEvent::StyleChange && lbl_midi && lbl_rig_status) {

@@ -532,7 +532,6 @@ Folder**). Two formats are read:
 | `base` | Lists, fields | `window` |
 | `button` | Effect cards, buttons | `window` |
 | `accent` | Selections, the Input/Output knobs, the tempo bar | Breeze blue `#3daee9` |
-| `header` | The menu bar (a KDE scheme's `[Colors:Header]`) | `window` |
 | `shadow`, `disabledText` | Shadows, disabled controls | derived from `window` / `text` |
 | `effects` | Per-effect colour, by effect ID: `tuner`, `transpose`, `gate` (Noise Gate), `comp` (Compressor), `wah`, `flanger`, `phaser`, `drive` (Overdrive), `nam` (Amplifier), `volume` (Volume Pedal), `eq`, `chorus`, `tremolo`, `delay`, `reverb`, `ir` (Cabinet) | NAM-X's own |
 

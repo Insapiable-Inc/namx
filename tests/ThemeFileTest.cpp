@@ -60,7 +60,7 @@ static void test_json(const QTemporaryDir& dir) {
     std::printf("JSON\n");
     const auto full = load_theme_file(write_file(dir, "full.json", R"({
         "name": "Stage", "window": "#101010", "text": "#f0f0f0", "base": "#000000",
-        "button": "#202020", "accent": "#ff8800", "header": "#181818", "shadow": "#050505",
+        "button": "#202020", "accent": "#ff8800", "shadow": "#050505",
         "disabledText": "#707070", "effects": {"nam": "#00ff00", "ir": "red"}
     })"),
                                       EFFECT_IDS);
@@ -69,8 +69,8 @@ static void test_json(const QTemporaryDir& dir) {
         CHECK(full->name == "Stage", "its name");
         CHECK(full->window == QColor("#101010") && full->text == QColor("#f0f0f0") &&
                   full->base == QColor("#000000") && full->button == QColor("#202020") &&
-                  full->accent == QColor("#ff8800") && full->header == QColor("#181818") &&
-                  full->shadow == QColor("#050505") && full->disabled_text == QColor("#707070"),
+                  full->accent == QColor("#ff8800") && full->shadow == QColor("#050505") &&
+                  full->disabled_text == QColor("#707070"),
               "every colour as written");
         CHECK(full->effects.size() == 2 && full->effects.value("nam") == QColor("#00ff00") &&
                   full->effects.value("ir") == QColor(Qt::red),
@@ -83,9 +83,8 @@ static void test_json(const QTemporaryDir& dir) {
     CHECK(minimal.has_value(), "window + text is enough");
     if (minimal) {
         CHECK(minimal->name == "Plain Light", "no name: the file name");
-        CHECK(minimal->base == minimal->window && minimal->button == minimal->window &&
-                  minimal->header == minimal->window,
-              "base, button and header default to the window");
+        CHECK(minimal->base == minimal->window && minimal->button == minimal->window,
+              "base and button default to the window");
         CHECK(minimal->accent == QColor("#3daee9"), "accent defaults to Breeze blue");
         CHECK(near(minimal->shadow, "#474a4c", 4) && near(minimal->disabled_text, "#a0a1a3", 10),
               "shadow and disabled text near Breeze Light's");
@@ -143,12 +142,6 @@ Color=56,56,56
 BackgroundNormal=41,44,48
 ForegroundNormal=252,252,252
 
-[Colors:Header]
-BackgroundNormal=41,44,48
-
-[Colors:Header][Inactive]
-BackgroundNormal=32,35,38
-
 [Colors:Selection]
 BackgroundNormal=61,174,233
 
@@ -170,8 +163,8 @@ Name[es]=Brisa oscuro
         CHECK(breeze->name == "Breeze Dark", "its Name (not a translation)");
         CHECK(breeze->window == QColor("#202326") && breeze->text == QColor("#fcfcfc") &&
                   breeze->base == QColor("#141618") && breeze->button == QColor("#292c30") &&
-                  breeze->accent == QColor("#3daee9") && breeze->header == QColor("#292c30"),
-              "window, text, view, button, selection, header (the active one)");
+                  breeze->accent == QColor("#3daee9"),
+              "window, text, view, button, selection");
         // What Qt's KDE platform theme reports under Breeze Dark (2026-10-09).
         CHECK(near(breeze->shadow, "#0e0f10", 4) && near(breeze->disabled_text, "#686a6c", 10),
               "shadow and disabled text near Qt's");

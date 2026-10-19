@@ -34,9 +34,6 @@ static void fill_defaults(ThemeSpec& spec) {
     if (!spec.button.isValid()) {
         spec.button = spec.window;
     }
-    if (!spec.header.isValid()) {
-        spec.header = spec.window;
-    }
     if (!spec.accent.isValid()) {
         spec.accent = QColor(BREEZE_BLUE);
     }
@@ -78,8 +75,8 @@ expected<void, QString> copy_theme_file(const QString& source, const QString& ta
     return {};
 }
 
-// JSON: {"name", "window", "text", "base", "button", "accent", "header", "shadow",
-// "disabledText", "effects": {"<effect ID>": colour}}; window and text are required.
+// JSON: {"name", "window", "text", "base", "button", "accent", "shadow", "disabledText",
+// "effects": {"<effect ID>": colour}}; window and text are required.
 static expected<ThemeSpec, QString> parse_json(const QByteArray& bytes,
                                                const QStringList& effect_ids) {
     QJsonParseError parse_error;
@@ -96,10 +93,13 @@ static expected<ThemeSpec, QString> parse_json(const QByteArray& bytes,
     spec.name = obj.value("name").toString();
 
     const std::pair<const char*, QColor*> roles[] = {
-        {"window", &spec.window}, {"text", &spec.text},
-        {"base", &spec.base},     {"button", &spec.button},
-        {"accent", &spec.accent}, {"header", &spec.header},
-        {"shadow", &spec.shadow}, {"disabledText", &spec.disabled_text},
+        {"window", &spec.window},
+        {"text", &spec.text},
+        {"base", &spec.base},
+        {"button", &spec.button},
+        {"accent", &spec.accent},
+        {"shadow", &spec.shadow},
+        {"disabledText", &spec.disabled_text},
     };
     for (const auto& [key, color] : roles) {
         if (!obj.contains(key)) {
@@ -150,8 +150,7 @@ static expected<ThemeSpec, QString> parse_json(const QByteArray& bytes,
 }
 
 // KDE colour scheme: INI groups, colours as "r,g,b". Window background and foreground
-// are required; View, Button, Selection and Header backgrounds fill base, button, accent
-// and header.
+// are required; View, Button and Selection backgrounds fill base, button and accent.
 static expected<ThemeSpec, QString> parse_kde_colors(const QByteArray& bytes) {
     QHash<QString, QString> values; // "Group/Key" → value
     QString group;
@@ -178,7 +177,6 @@ static expected<ThemeSpec, QString> parse_kde_colors(const QByteArray& bytes) {
         {"Colors:View/BackgroundNormal", &spec.base},
         {"Colors:Button/BackgroundNormal", &spec.button},
         {"Colors:Selection/BackgroundNormal", &spec.accent},
-        {"Colors:Header/BackgroundNormal", &spec.header},
     };
     for (const auto& [key, color] : roles) {
         const QString value = values.value(key);
@@ -219,18 +217,6 @@ expected<ThemeSpec, QString> load_theme_file(const QString& path, const QStringL
         spec->name = QFileInfo(path).completeBaseName();
     }
     fill_defaults(*spec);
-    return spec;
-}
-
-expected<ThemeSpec, QString> load_kde_colors(const QString& path) {
-    const auto bytes = read_small_file(path);
-    if (!bytes) {
-        return std::unexpected(bytes.error());
-    }
-    auto spec = parse_kde_colors(*bytes);
-    if (spec) {
-        fill_defaults(*spec);
-    }
     return spec;
 }
 

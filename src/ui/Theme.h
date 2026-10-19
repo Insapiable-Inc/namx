@@ -106,7 +106,7 @@ QColor flag_white();
 // per-effect QSS rules) and hands the accent to its knobs and switches.
 void tag_card(QWidget* card, const QString& fx_id);
 
-// Install Fusion + a tooltip-only application stylesheet. Call once after
+// Install the Union style (KDE Plasma 6.8) and follow the system's scheme. Call once after
 // QApplication is constructed.
 void apply(QApplication& app);
 
