@@ -348,7 +348,6 @@ LibraryPanel::LibraryPanel(LibraryIndex& new_index, QWidget* parent)
     : QWidget(parent)
     , library_index(new_index) {
     setObjectName("libraryPanel");
-    setMinimumWidth(240);
 
     QSettings s;
     // One list: begin() and end() must come from the same container.
@@ -421,9 +420,12 @@ LibraryPanel::LibraryPanel(LibraryIndex& new_index, QWidget* parent)
         row->addStretch();
         sort_box = new QComboBox;
         sort_box->setObjectName("librarySort");
-        sort_box->addItems({"Sort by: Name", "Sort by: Newest"});
+        sort_box->addItems({"Sort: Name", "Sort: Newest"});
         sort_box->setToolTip("Sort order");
         sort_box->setFocusPolicy(Qt::NoFocus);
+        // Never narrower than its text: the panel's minimum (and the dock's) comes from this
+        // row, so a large system font widens the library instead of clipping the sort.
+        sort_box->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
         connect(sort_box, &QComboBox::currentIndexChanged, this, &LibraryPanel::set_sort_key);
         row->addWidget(sort_box);
         lay->addLayout(row);
