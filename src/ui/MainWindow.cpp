@@ -895,7 +895,7 @@ void MainWindow::setup_ui() {
         fx_cols[&engine->get_comp()] = col;
     }
 
-    // Dynamic Wah
+    // Wah
     {
         using namespace NAMConstants;
         knob_wah_sens =
@@ -931,7 +931,7 @@ void MainWindow::setup_ui() {
                                     });
         pos->set_scroll_step(1.0);
         knob_wah_pos = pos;
-        QWidget* col = make_effect_row("Dynamic Wah", sw_wah_enable,
+        QWidget* col = make_effect_row("Wah", sw_wah_enable,
                                        {knob_wah_mix, knob_wah_sens, pos, knob_wah_res});
         sw_wah_reverse = make_reverse_switch(col, "Position");
         put_in_sync_column(col, make_caption_switch(sw_wah_manual, "Manual"));

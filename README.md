@@ -124,7 +124,7 @@ Any mono WAV file: PCM 16/24/32-bit or float 32/64-bit, 1 kHz to 768 kHz (it is 
 1. Transpose: -12 to +12 semitones
 1. Noise Gate
 1. Compressor
-1. Dynamic Wah: follows your picking, or a Position knob for an expression pedal
+1. Wah: follows your picking, or a Position knob for an expression pedal
 1. Flanger: mono or stereo
 1. Phaser: a model of the MXR Phase 90 circuit, mono or stereo
 1. Overdrive: a model of the Tube Screamer circuit

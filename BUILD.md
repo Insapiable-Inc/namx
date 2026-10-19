@@ -410,7 +410,7 @@ if one starts off and the other on, each press alternates between them. On an
 expression pedal, setting **Min** above **Max** in Mappings… reverses that row's
 sweep: volume 0→100 % and wah 100→0 % on one pedal crossfade the two.
 
-**Reverse** on the Transpose, Dynamic Wah and Volume Pedal cards flips the pedal for
+**Reverse** on the Transpose, Wah and Volume Pedal cards flips the pedal for
 every controller mapped to Semitones / Position / Volume (heel and toe swap), on top of
 each mapping's Min/Max. It's saved in presets; the knob always shows the real value.
 
@@ -479,7 +479,7 @@ twice the CPU — it is never summed to mono.
 | Transpose | Mix, Semitones (±12); **Reverse** (pedal heel ↔ toe), **Continuous** switch (off = Discrete: whole semitones; on = smooth whammy-style glides, the shifter then stays active at 0 st) | — |
 | Overdrive | Level, Drive, Tone — a Tube Screamer circuit model (the op-amp + diode clipper as a wave digital filter, oversampled) | — |
 | Amplifier | On/Off, ‹ › through the library, Input, Level (see Parameters); the row shows the model and its metadata | — |
-| Dynamic Wah | **Manual** switch (off = Auto: your playing sweeps it), **Reverse** (pedal heel ↔ toe), Mix, Sensitivity (Auto), Position (the sweep in Manual mode — map an expression pedal), Resonance; the controls the current mode ignores are dimmed | — |
+| Wah | **Manual** switch (off = Auto: your playing sweeps it), **Reverse** (pedal heel ↔ toe), Mix, Sensitivity (Auto), Position (the sweep in Manual mode — map an expression pedal), Resonance; the controls the current mode ignores are dimmed | — |
 | Flanger / Phaser / Chorus | Mix, Rate (Sync), Depth, Feedback (not Chorus; Phaser up to 90 %); Flanger **Range**. The Phaser is an MXR Phase 90 model: Depth 50 % and Mix 50 % are the pedal, Feedback 0 % the original "script" circuit | — |
 | Equalizer | Bass, Low-Mid, High-Mid, Treble (±12 dB) | the four band frequencies, Low Cut, High Cut |
 | Delay | Mix, L/Mono Time, R Time (the right repeat's own time, Stereo only — dimmed otherwise; Sync covers both), Feedback (two independent echoes in stereo) | Low/High Cut, Saturation, Shimmer (octave-up repeats) |
