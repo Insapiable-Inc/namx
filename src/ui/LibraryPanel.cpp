@@ -235,7 +235,11 @@ QRect LibraryItemDelegate::star_rect(const QRect& row) {
 }
 
 QSize LibraryItemDelegate::sizeHint(const QStyleOptionViewItem& opt, const QModelIndex&) const {
-    return QSize(opt.rect.width(), Theme::scaled(ROW_HEIGHT));
+    // Taller when a larger font needs it: 5 px, the name, 1 px, the details line, 3 px.
+    QFont sub_font = opt.font;
+    sub_font.setPointSizeF(sub_font.pointSizeF() - 1);
+    const int text = 5 + QFontMetrics(opt.font).height() + 1 + QFontMetrics(sub_font).height() + 3;
+    return QSize(opt.rect.width(), std::max(ROW_HEIGHT, text));
 }
 
 void LibraryItemDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt,
@@ -339,7 +343,7 @@ LibraryPanel::LibraryPanel(LibraryIndex& new_index, QWidget* parent)
     : QWidget(parent)
     , library_index(new_index) {
     setObjectName("libraryPanel");
-    setMinimumWidth(Theme::scaled(240));
+    setMinimumWidth(240);
 
     QSettings s;
     // One list: begin() and end() must come from the same container.

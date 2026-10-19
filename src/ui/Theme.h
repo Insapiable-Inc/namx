@@ -97,14 +97,12 @@ QColor flag_blue();
 QColor flag_red();
 QColor flag_white();
 
-// Text follows the system font. The layout was drawn for 9 pt text: a length that holds
-// text (a caption column, a row's height) is given at 9 pt and scaled to the system
-// font with this, never below `px`, so a smaller font leaves the knobs their room. Read
-// when the widget is built: a font change mid-session resizes text, the columns follow
-// at the next launch.
-int scaled(int px);
-// The system font's size relative to the 9 pt the layout was drawn for.
-qreal font_scale();
+// Text follows the system font; the layout was drawn for 9 pt. A length that holds text
+// (a caption column, a row's height) keeps its 9 pt value and grows only when the text
+// needs more: this is the width of `text` in the system font — bold, and at `pt_at_9`
+// as drawn at a 9 pt body (the stylesheet's @pt:N@), when asked. Read when the widget is
+// built: a font change mid-session resizes text, the columns follow at the next launch.
+int text_width(const QString& text, bool bold = false, qreal pt_at_9 = 9.0);
 
 // Tags a card with its effect ID: sets the `fx` dynamic property (drives the
 // per-effect QSS rules) and hands the accent to its knobs and switches.

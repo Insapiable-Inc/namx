@@ -222,13 +222,19 @@ KnobWidget::KnobWidget(const QString& new_label, double min_val, double max_val,
         // Keeps the dial a usable size while the whole widget stays ~46px
         // tall, so a full effect row fits in ~58px.
         setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-        // Uniform tiles — knob columns align across rows: dial and margins, then the
-        // text column, which grows with the font.
-        setFixedWidth(6 + 40 + 7 + Theme::scaled(81) + 8);
+        // Uniform tiles — knob columns align across rows: dial and margins, then a text
+        // column of 81 px, wider when a larger system font needs it for the longest name
+        // ("L/Mono Time") or a four-digit time.
+        const int text_column =
+            std::max({81, Theme::text_width("L/Mono Time"), Theme::text_width("1000.0 ms", true)});
+        setFixedWidth(6 + 40 + 7 + text_column + 8);
         dial->setFixedSize(40, 40);
-        name_label->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+        // When a large system font squeezes the two lines into the row, the name gives
+        // up the space above its letters, not its descenders.
+        name_label->setAlignment(Qt::AlignLeft | Qt::AlignBottom);
         label_value->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-        label_value->setMinimumWidth(Theme::scaled(64)); // steady width while the value changes
+        // Steady width while the value changes.
+        label_value->setMinimumWidth(std::max(64, Theme::text_width("1000.0 ms", true)));
 
         auto* layout = new QHBoxLayout(this);
         layout->setContentsMargins(6, 4, 8, 4);

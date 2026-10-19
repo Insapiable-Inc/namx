@@ -9,6 +9,8 @@
 #include <QEvent>
 #include <QFileInfo>
 #include <QFileSystemWatcher>
+#include <QFont>
+#include <QFontMetrics>
 #include <QHash>
 #include <QImage>
 #include <QPalette>
@@ -501,7 +503,7 @@ QLabel#toggleCaption {
 QStatusBar {
     background-color: @surface@;
     border-top: 1px solid @line@;
-    min-height: @px:24@;
+    min-height: @status_height@px;
 }
 QStatusBar::item {
     border: none;
@@ -993,13 +995,19 @@ static QString arrow_url() {
     return path;
 }
 
-qreal font_scale() {
+// The system font's size relative to the 9 pt the layout was drawn for.
+static qreal font_scale() {
     const qreal body = QApplication::font().pointSizeF();
     return body > 0 ? body / 9.0 : 1.0; // a pixel-sized font: as drawn
 }
 
-int scaled(int px) {
-    return std::max(px, static_cast<int>(std::lround(px * font_scale())));
+int text_width(const QString& text, bool bold, qreal pt_at_9) {
+    QFont f = QApplication::font();
+    if (pt_at_9 != 9.0) {
+        f.setPointSizeF(pt_at_9 * font_scale());
+    }
+    f.setBold(bold);
+    return QFontMetrics(f).horizontalAdvance(text);
 }
 
 static QString fill_roles(const char* sheet) {
@@ -1034,16 +1042,16 @@ static QString fill_roles(const char* sheet) {
         qss.replace(QString("@%1@").arg(QLatin1String(role)), color.name());
     }
     // Text larger than the body (@pt:N@, N as drawn at a 9 pt body) grows with the
-    // system font, which the body text follows; so do lengths holding text (@px:N@).
-    // Glyphs in fixed boxes (≡, ‹ ›, ▾, ▶) keep their size, like icons.
-    static const QRegularExpression SIZE("@(pt|px):(\\d+)@");
+    // system font, which the body text follows. Glyphs in fixed boxes (≡, ‹ ›, ▾, ▶)
+    // keep their size, like icons.
+    static const QRegularExpression SIZE("@pt:(\\d+)@");
     for (QRegularExpressionMatch m = SIZE.match(qss); m.hasMatch(); m = SIZE.match(qss)) {
-        const int n = m.captured(2).toInt();
-        const QString value = m.captured(1) == "pt"
-                                  ? QString::number(n * font_scale(), 'f', 1) + "pt"
-                                  : QString::number(scaled(n)) + "px";
-        qss.replace(m.capturedStart(), m.capturedLength(), value);
+        const qreal pt = m.captured(1).toInt() * font_scale();
+        qss.replace(m.capturedStart(), m.capturedLength(), QString::number(pt, 'f', 1) + "pt");
     }
+    // 24 px, or the items' text and padding at a larger system font.
+    qss.replace("@status_height@",
+                QString::number(std::max(24, QFontMetrics(QApplication::font()).height() + 6)));
     if (qss.contains("@arrow@")) {
         qss.replace("@arrow@", arrow_url());
     }

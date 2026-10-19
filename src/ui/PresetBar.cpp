@@ -59,7 +59,7 @@ PresetBar::PresetBar(const LibraryIndex& new_index, QWidget* parent)
     name->setMenu(list_menu);
 
     // Fixed width: long names elide and a change of preset never moves ‹ › or Save.
-    name->setFixedWidth(Theme::scaled(NAME_WIDTH));
+    name->setFixedWidth(NAME_WIDTH);
 
     learn_menu_for(prev, "action:presetPrev");
     learn_menu_for(next, "action:presetNext");
@@ -182,8 +182,7 @@ void PresetBar::set_preset(const QString& new_path, bool new_modified) {
     } else {
         // "Name *" when modified since loaded or saved; the name elides, the star stays.
         const QString star = new_modified ? " *" : "";
-        const int room =
-            Theme::scaled(NAME_WIDTH) - NAME_CHROME - name->fontMetrics().horizontalAdvance(star);
+        const int room = NAME_WIDTH - NAME_CHROME - name->fontMetrics().horizontalAdvance(star);
         name->setText(name->fontMetrics().elidedText(QFileInfo(new_path).completeBaseName(),
                                                      Qt::ElideRight, room) +
                       star);
