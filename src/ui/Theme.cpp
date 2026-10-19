@@ -118,7 +118,6 @@ struct Colors
     QColor surface; // bars, menus, lists
     QColor card; // effect cards
     QColor raised; // tool buttons, tooltips
-    QColor control; // push buttons, combo boxes
     QColor selection; // hovered / selected list items
     QColor pressed; // pressed buttons: tinted toward the accent
     QColor line; // separators and quiet borders
@@ -225,7 +224,6 @@ static Colors from_palette(const QPalette& sys, bool dark, const QColor& header)
         mix_colors(w, base, 0.5), // surface
         button, // card
         mix_colors(button, text, 0.04), // raised
-        mix_colors(button, text, 0.08), // control
         mix_colors(w, accent, 0.22), // selection
         mix_colors(button, accent, 1.0 / 3), // pressed
         mix_colors(w, text, 0.12), // line
@@ -491,12 +489,13 @@ QMenu::separator {
 }
 
 /* === Buttons === */
-/* Hover is KDE's: the accent on the border, the fill unchanged; pressed tints the fill
-   toward the accent. Every button below follows it. */
+/* Union's buttons: the palette's button colour as is, framed with it 20 % toward the
+   text, 5 px corners. Hover puts the accent on the border, the fill unchanged; pressed
+   tints the fill toward the accent. Every button below follows it. */
 QPushButton {
-    background-color: @control@;
+    background-color: @button@;
     color: @text@;
-    border: 1px solid @border@;
+    border: 1px solid @button_frame@;
     border-radius: 5px;
     padding: 6px 14px;
     min-height: 20px;
@@ -559,7 +558,7 @@ QScrollBar:horizontal {
 QScrollBar::handle {
     background: @bar@;
     border: 1px solid @frame@;
-    border-radius: 4px;
+    border-radius: 5px;
 }
 QScrollBar::handle:vertical {
     min-height: 24px;
@@ -603,7 +602,7 @@ QStatusBar::item {
 QLabel#statusItem, QLabel#statusAction {
     color: @text_muted@;
     padding: 2px 8px;
-    border-radius: 4px;
+    border-radius: 5px;
 }
 QLabel#statusNotice {
     color: @notice@;
@@ -639,9 +638,9 @@ QToolButton#heroArrow {
     min-width: 22px;
     max-width: 22px;
     padding: 0 0 3px 0;
-    border: 1px solid @border@;
-    border-radius: 4px;
-    background-color: @raised@;
+    border: 1px solid @button_frame@;
+    border-radius: 5px;
+    background-color: @button@;
 }
 QToolButton#heroArrow:hover {
     border-color: @accent@;
@@ -668,9 +667,9 @@ QToolButton#presetName {
     font-weight: 700;
     padding: 3px 10px;
     text-align: left;
-    border: 1px solid @line@;
+    border: 1px solid @button_frame@;
     border-radius: 5px;
-    background-color: @window@;
+    background-color: @button@;
 }
 QToolButton#presetName[untitled="true"] {
     color: @text_muted@;
@@ -690,9 +689,9 @@ QToolButton#presetName::menu-indicator {
 /* Slots and A/B: filled buttons like Save; an empty slot is dimmer. */
 QToolButton#presetSlot, QToolButton#presetAb {
     color: @text@;
-    background-color: @raised@;
-    border: 1px solid @border@;
-    border-radius: 4px;
+    background-color: @button@;
+    border: 1px solid @button_frame@;
+    border-radius: 5px;
     padding: 3px 8px;
 }
 QToolButton#presetSlot:hover, QToolButton#presetAb:hover {
@@ -706,9 +705,9 @@ QToolButton#presetSlot:pressed, QToolButton#presetAb:pressed {
    bordered so they read as clickable; menu buttons carry a ▾. */
 QToolButton#presetTool, QToolButton#menuTool {
     color: @text@;
-    background-color: @raised@;
-    border: 1px solid @border@;
-    border-radius: 4px;
+    background-color: @button@;
+    border: 1px solid @button_frame@;
+    border-radius: 5px;
     padding: 3px 9px;
 }
 QToolButton#presetTool:hover, QToolButton#menuTool:hover {
@@ -740,8 +739,8 @@ QToolButton#presetSlot {
 }
 QToolButton#presetSlot[filled="true"] {
     color: @text@;
-    background-color: @raised@;
-    border-color: @border@;
+    background-color: @button@;
+    border-color: @button_frame@;
 }
 /* Checked (and the active slot): Union's — the button 12.5 % toward the text, its border
    and text as they are, so hover still shows the accent border. */
@@ -767,7 +766,7 @@ QLineEdit#numberEdit {
     background-color: @window@;
     color: @accent@;
     border: 1px solid @border_hover@;
-    border-radius: 4px;
+    border-radius: 5px;
     font-size: @pt:12@;
     font-weight: 700;
     selection-background-color: @accent@;
@@ -776,8 +775,8 @@ QLineEdit#numberEdit {
 
 QToolButton#metroPlay {
     color: @text@;
-    background-color: @control@;
-    border: 1px solid @border@;
+    background-color: @button@;
+    border: 1px solid @button_frame@;
     border-radius: 5px;
     min-width: 26px;
     padding: 3px 6px;
@@ -800,7 +799,7 @@ QToolButton#cardMore {
     color: @text_muted@;
     background: transparent;
     border: 1px solid transparent;
-    border-radius: 4px;
+    border-radius: 5px;
     min-width: 22px;
     font-size: 14pt;
 }
@@ -833,9 +832,9 @@ QDialog#midiMappings QTableWidget {
 }
 QDialog#midiMappings QToolButton {
     color: @text@;
-    background: transparent;
-    border: 1px solid @border@;
-    border-radius: 4px;
+    background-color: @button@;
+    border: 1px solid @button_frame@;
+    border-radius: 5px;
     padding: 2px 8px;
 }
 QDialog#midiMappings QToolButton:hover {
@@ -881,9 +880,9 @@ QToolButton#librarySection:checked {
    the active mode checked like A/B. */
 QToolButton#libraryMode, QToolButton#libraryTool {
     color: @text@;
-    background-color: @raised@;
-    border: 1px solid @border@;
-    border-radius: 4px;
+    background-color: @button@;
+    border: 1px solid @button_frame@;
+    border-radius: 5px;
     padding: 3px 9px;
 }
 QToolButton#libraryMode:hover, QToolButton#libraryTool:hover {
@@ -1084,9 +1083,9 @@ QHeaderView::section {
 
 /* === Combo boxes (library sort) === */
 QComboBox {
-    background-color: @control@;
+    background-color: @button@;
     color: @text@;
-    border: 1px solid @border@;
+    border: 1px solid @button_frame@;
     border-radius: 5px;
     padding: 4px 8px;
     min-height: 20px;
@@ -1270,8 +1269,8 @@ static QString fill_roles(const char* sheet) {
         {"window", pal.window},
         {"surface", pal.surface},
         {"card", pal.card},
+        {"button", pal.card}, // the palette's button colour, as buttons use it
         {"raised", pal.raised},
-        {"control", pal.control},
         {"selection", pal.selection},
         {"pressed", pal.pressed},
         {"line", pal.line},
@@ -1676,7 +1675,7 @@ void apply_to(QWidget& root) {
     p.setColor(QPalette::ToolTipBase, QColor(pal.raised));
     p.setColor(QPalette::ToolTipText, QColor(pal.text));
     p.setColor(QPalette::Text, QColor(pal.text));
-    p.setColor(QPalette::Button, QColor(pal.control));
+    p.setColor(QPalette::Button, QColor(pal.card)); // the palette's button colour (Union's)
     p.setColor(QPalette::ButtonText, QColor(pal.text));
     p.setColor(QPalette::BrightText, QColor("#ffffff"));
     p.setColor(QPalette::Mid, QColor(pal.border));
