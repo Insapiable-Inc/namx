@@ -890,13 +890,6 @@ QStatusBar {
 QStatusBar::item {
     border: none;
 }
-QLineEdit#numberEdit {
-    color: @accent@;
-    border-color: @accent@; /* shown only while typing a value */
-    padding: 0;
-    font-size: @pt:12@;
-    font-weight: 700;
-}
 /* === MIDI Mappings window === */
 QDialog#midiMappings QGroupBox {
     border: 1px solid @line@;

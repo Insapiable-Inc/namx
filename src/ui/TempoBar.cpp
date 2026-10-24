@@ -146,11 +146,10 @@ TempoBar::TempoBar(Metronome& metronome, QWidget* parent)
                            .maximum = TempoSync::MAX_BPM,
                            .decimals = 1,
                            .step = 1.0,
-                           .unit = "BPM",
-                           .reset_value = TempoSync::DEFAULT_BPM},
+                           .unit = "BPM"},
                           this);
-    bpm->setToolTip("Tempo (quarter notes per minute): drag up/down or scroll to change "
-                    "(Shift = fine), click to type, double-click for 120");
+    bpm->setToolTip("Tempo (quarter notes per minute): arrows or scroll to change "
+                    "(Shift = fine), or type a value");
     bpm->set_value(s.value("tempo/bpm", TempoSync::DEFAULT_BPM).toDouble());
     metro.set_bpm(bpm->value());
     connect(bpm, &NumberField::value_changed, this, &TempoBar::on_bpm_field_changed);
