@@ -1555,7 +1555,14 @@ static void show_visual_focus(QWidget* target) {
         focus_target->style()->unpolish(focus_target);
         focus_target->style()->polish(focus_target);
     }
-    delete focus_ring;
+    // Never deleted on the spot: this runs from inside event delivery — a style switch
+    // walks every widget (QStyleSheetStyle::repolish), and freeing the ring under it
+    // segfaulted (2026-10-24).
+    if (focus_ring) {
+        focus_ring->hide();
+        focus_ring->deleteLater();
+        focus_ring = nullptr;
+    }
     focus_target = target;
     if (!target || !target->parentWidget()) {
         return;
