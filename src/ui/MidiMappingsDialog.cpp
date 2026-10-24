@@ -249,15 +249,20 @@ void MidiMappingsDialog::rebuild_table() {
         table->setCellWidget(r, COL_DELETE, del);
     }
     table->resizeColumnsToContents(); // measures the items, not the cell widgets…
+    int row_height = table->verticalHeader()->defaultSectionSize();
     for (int c = 0; c < COL_COUNT; ++c) { // …so the # spin box lost its arrows
         int width = table->columnWidth(c);
         for (int r = 0; r < table->rowCount(); ++r) {
             if (QWidget* w = table->cellWidget(r, c)) {
                 width = std::max(width, w->sizeHint().width() + 2);
+                row_height = std::max(row_height, w->sizeHint().height() + 2);
             }
         }
         table->setColumnWidth(c, width);
     }
+    // The rows likewise: as tall as the tallest widget in them (the style's defaults are
+    // shorter than Union's combo and spin boxes).
+    table->verticalHeader()->setDefaultSectionSize(row_height);
     table->horizontalHeader()->setSectionResizeMode(COL_TARGET, QHeaderView::Stretch);
     rebuilding = false;
 }
