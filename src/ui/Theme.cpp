@@ -1497,6 +1497,12 @@ public:
         setAttribute(Qt::WA_TransparentForMouseEvents);
         setFocusPolicy(Qt::NoFocus);
         target->installEventFilter(this);
+        // A focused control deleted while it shows the ring (a MIDI Mappings row removed)
+        // sends no Hide and its FocusOut no longer names a control: go with it.
+        connect(target, &QObject::destroyed, this, [this] {
+            hide();
+            deleteLater();
+        });
         follow();
         show();
         raise();
