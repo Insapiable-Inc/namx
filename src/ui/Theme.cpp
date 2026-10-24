@@ -27,6 +27,7 @@
 #include <QPalette>
 #include <QPointer>
 #include <QRegularExpression>
+#include <QScopeGuard>
 #include <QSettings>
 #include <QStandardPaths>
 #include <QStyle>
@@ -1823,6 +1824,15 @@ void apply_to(QWidget& root) {
 }
 
 void reapply(bool force) {
+    // Restyling sends events (palette, style changes) that could ask for it again.
+    static bool reapplying = false;
+    if (reapplying) {
+        return;
+    }
+    reapplying = true;
+    const auto done = qScopeGuard([] {
+        reapplying = false;
+    });
     const QColor old_accent = current_accent;
     const QString old_sheet = fill_roles(STYLE_SHEET);
     resolve_scheme();
@@ -1876,12 +1886,22 @@ Mode get_mode() {
     return current_mode;
 }
 
+// A theme picked in Settings is applied on the next turn of the event loop, never from
+// inside the click that picked it: the switch can change the application's style, and
+// the drop-down still handling that click would lose its style objects mid-event (a
+// segfault in QApplication::setStyleSheet, 2026-10-24). The mode is recorded at once.
+static void reapply_soon() {
+    QTimer::singleShot(0, qApp, [] {
+        reapply(true);
+    });
+}
+
 void set_mode(Mode new_mode) {
     assert(new_mode != Mode::CUSTOM);
     current_mode = new_mode;
     QSettings().setValue("ui/theme", static_cast<int>(new_mode));
     watch_custom_file();
-    reapply(true);
+    reapply_soon();
 }
 
 expected<void, QString> set_custom(const QString& path) {
@@ -1896,7 +1916,7 @@ expected<void, QString> set_custom(const QString& path) {
     settings.setValue("ui/theme", static_cast<int>(Mode::CUSTOM));
     settings.setValue("ui/customTheme", path);
     watch_custom_file();
-    reapply(true);
+    reapply_soon();
     return {};
 }
 
