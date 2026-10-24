@@ -109,7 +109,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y cmake ninja-build g++-14 qt6-base-dev qt6-base-dev-tools \
-            qt6-wayland qt6-xdgdesktopportal-platformtheme libjack-jackd2-dev libasound2-dev \
+            qt6-wayland qt6-xdgdesktopportal-platformtheme libqt6svg6 libjack-jackd2-dev libasound2-dev \
             pkg-config libgl1-mesa-dev \
             libfuse2t64 file
       - name: Configure + build (portable)
@@ -145,12 +145,25 @@ jobs:
           mkdir -p AppDir/usr/plugins/platformthemes
           cp /usr/lib/x86_64-linux-gnu/qt6/plugins/platformthemes/libqxdgdesktopportal.so \
              AppDir/usr/plugins/platformthemes/
+          # Qt SVG's plugins: the desktop's icon theme (Breeze, Adwaita…) is SVG, and the
+          # bundled Qt can't use the host's plugins. Only the renderer — the icons stay the
+          # OS's. NAM-X doesn't link Qt SVG, so the Qt plugin wouldn't deploy them.
+          mkdir -p AppDir/usr/plugins/iconengines AppDir/usr/plugins/imageformats
+          cp /usr/lib/x86_64-linux-gnu/qt6/plugins/iconengines/libqsvgicon.so \
+             AppDir/usr/plugins/iconengines/
+          cp /usr/lib/x86_64-linux-gnu/qt6/plugins/imageformats/libqsvg.so \
+             AppDir/usr/plugins/imageformats/
           ./linuxdeploy-x86_64.AppImage --appdir AppDir \
             --desktop-file AppDir/usr/share/applications/io.github.Insapiable_Inc.namx.desktop \
             --icon-file AppDir/usr/share/icons/hicolor/256x256/apps/io.github.Insapiable_Inc.namx.png \
             --deploy-deps-only AppDir/usr/plugins/platformthemes \
+            --deploy-deps-only AppDir/usr/plugins/iconengines \
+            --deploy-deps-only AppDir/usr/plugins/imageformats/libqsvg.so \
             --plugin qt --output appimage
           test -f AppDir/usr/plugins/platformthemes/libqxdgdesktopportal.so
+          test -f AppDir/usr/plugins/iconengines/libqsvgicon.so
+          test -f AppDir/usr/plugins/imageformats/libqsvg.so
+          ls AppDir/usr/lib/libQt6Svg.so.6 # their library, pulled in by --deploy-deps-only
           # libjack must come from the host (JACK or PipeWire), never from the bundle.
           if find AppDir -name 'libjack*' | grep .; then echo 'libjack is bundled'; exit 1; fi
           mkdir -p dist && mv NAM-X-*.AppImage NAM-X-*.zsync dist/

@@ -14,6 +14,7 @@ following code, each under its own license; the license texts are in this folder
 | Signalsmith Stretch — Geraint Luff / Signalsmith Audio | MIT | `signalsmith-stretch-LICENSE.txt` | https://github.com/Signalsmith-Audio/signalsmith-stretch |
 | chowdsp_wdf — Chowdhury-DSP | BSD-3-Clause | `chowdsp_wdf-LICENSE.txt` | https://github.com/Chowdhury-DSP/chowdsp_wdf |
 | Qt 6 — The Qt Company (bundled in the AppImage and the Windows builds as shared libraries) | LGPL-3.0 | `LGPL-3.0.txt` (+ `LICENSE`, the GPL it builds on) | https://download.qt.io/official_releases/qt/ |
+| Qt SVG — The Qt Company (in the AppImage: the plugins that draw the desktop's SVG icons) | LGPL-3.0; part of its SVG parser also HPND-sell-variant (USC/Information Sciences Institute) | `LGPL-3.0.txt`, `QtSvg-ISI-HPND.txt` | https://download.qt.io/official_releases/qt/ |
 
 The exact versions are the submodule commits of the NAM-X release's source tarball. Qt is
 linked dynamically: you can replace the bundled Qt libraries with your own build of the
