@@ -2415,13 +2415,13 @@ void MainWindow::open_paths(const QStringList& paths) {
 }
 
 void MainWindow::knob_param(const QString& group, const QString& key, KnobWidget* knob,
-                            const std::function<void(double)>& apply) {
+                            const std::function<void(double)>& apply, ParamScope scope) {
     connect(knob, &KnobWidget::value_changed, this, apply);
     connect(knob, &KnobWidget::value_changed, this, &MainWindow::schedule_session_save);
     // The widget is the truth from the start: the engine's own default need not match
     // (audit 2026-10-04, Fable item 04 — the Drive card and two Stereo switches didn't).
     apply(knob->value());
-    params.push_back({group, key, knob, nullptr, knob->get_default_value(), false});
+    params.push_back({group, key, knob, nullptr, knob->get_default_value(), false, scope});
     const QString card = target_label_for(knob, group, key);
     midi_mapper->add_knob("param:" + (group.isEmpty() ? key : group + "/" + key), card,
                           key == "syncNote" ? knob->get_label() + " (note)" : knob->get_label(),
@@ -2429,11 +2429,11 @@ void MainWindow::knob_param(const QString& group, const QString& key, KnobWidget
 }
 
 void MainWindow::toggle_param(const QString& group, const QString& key, ToggleSwitch* sw,
-                              const std::function<void(bool)>& apply) {
+                              const std::function<void(bool)>& apply, ParamScope scope) {
     connect(sw, &ToggleSwitch::toggled, this, apply);
     connect(sw, &ToggleSwitch::toggled, this, &MainWindow::schedule_session_save);
     apply(sw->isChecked()); // see knob_param
-    params.push_back({group, key, nullptr, sw, 0.0, sw->isChecked()});
+    params.push_back({group, key, nullptr, sw, 0.0, sw->isChecked(), scope});
     const QString label = key == "stereo" ? "Stereo"
                           : key == "sync" ? "Sync"
                           : key == "mute" ? "Mute"
@@ -2769,6 +2769,7 @@ void MainWindow::set_tempo(double new_bpm) {
             push_synced(s.free_knob);
         }
     }
+    schedule_session_save(); // a preset that syncs keeps its tempo: refresh its `*`
 }
 
 void MainWindow::schedule_session_save() {
@@ -2856,12 +2857,20 @@ void MainWindow::register_parameters() {
         };
     };
 
-    knob_param("", "inputGain", knob_input_gain, [e](double v) {
-        e->set_input_gain(static_cast<float>(v));
-    });
-    knob_param("", "outputGain", knob_output_gain, [e](double v) {
-        e->set_output_gain(static_cast<float>(v));
-    });
+    // Input/Output match the interface and the speakers, not a sound: global, like the
+    // limiter (user, 2026-10-24).
+    knob_param(
+        "", "inputGain", knob_input_gain,
+        [e](double v) {
+            e->set_input_gain(static_cast<float>(v));
+        },
+        ParamScope::GLOBAL);
+    knob_param(
+        "", "outputGain", knob_output_gain,
+        [e](double v) {
+            e->set_output_gain(static_cast<float>(v));
+        },
+        ParamScope::GLOBAL);
 
     toggle_param("tuner", "enabled", sw_tuner_enable, [e](bool b) {
         e->get_tuner().set_enabled(b);
@@ -3096,9 +3105,12 @@ void MainWindow::register_parameters() {
         e->get_volume().set_mid(static_cast<float>(v));
     });
 
-    toggle_param("", "limiter", sw_limiter, [e](bool b) {
-        e->get_limiter().set_enabled(b);
-    });
+    toggle_param(
+        "", "limiter", sw_limiter,
+        [e](bool b) {
+            e->get_limiter().set_enabled(b);
+        },
+        ParamScope::GLOBAL);
 
     for (auto& reg : late_params) {
         reg();
@@ -3441,7 +3453,13 @@ void MainWindow::seed_starter_presets() {
 }
 
 QJsonObject MainWindow::current_preset_json() const {
-    return PresetSerializer::to_json(params, *engine);
+    // The tempo only matters to a preset that syncs something to it; one that doesn't
+    // leaves the tempo (and the metronome) as they are when it loads.
+    const bool syncs = std::ranges::any_of(synced, [](const SyncedParam& s) {
+        return s.sync->isChecked();
+    });
+    return PresetSerializer::to_json(params, *engine,
+                                     syncs ? std::optional<double>(bpm) : std::nullopt);
 }
 
 // Atomic: the old file stays untouched unless the new one was written completely
@@ -3575,7 +3593,7 @@ void MainWindow::on_locate_preset() {
 
 void MainWindow::set_current_preset(const QString& path) {
     preset_path = path;
-    preset_baseline = PresetSerializer::to_json(params, *engine);
+    preset_baseline = current_preset_json();
     ab[0] = ab[1] = QJsonObject();
     ab_active = 0;
     preset_bar->set_ab_state(0);
@@ -3620,8 +3638,8 @@ static bool same_state(const QJsonValue& a, const QJsonValue& b) {
 }
 
 void MainWindow::update_preset_state() {
-    const bool modified = !preset_path.isEmpty() &&
-                          !same_state(PresetSerializer::to_json(params, *engine), preset_baseline);
+    const bool modified =
+        !preset_path.isEmpty() && !same_state(current_preset_json(), preset_baseline);
     if (preset_path == shown_preset_path && modified == shown_preset_modified) {
         return; // the bar repolishes and stats the quick slots on every call
     }
@@ -3673,11 +3691,22 @@ void MainWindow::restore_preset_state() {
     // A baseline saved by an older version lacks parameters added since;
     // those take the live (= restored) values, so an upgrade alone never
     // marks the preset modified.
-    preset_baseline = merge_new_keys(
-        PresetSerializer::upgrade(
-            QJsonDocument::fromJson(s.value("session/presetBaseline").toString().toUtf8())
-                .object()),
-        PresetSerializer::to_json(params, *engine));
+    QJsonObject saved_baseline = PresetSerializer::upgrade(
+        QJsonDocument::fromJson(s.value("session/presetBaseline").toString().toUtf8()).object());
+    // Baselines saved before Input/Output and the limiter became global still hold them.
+    for (const auto& p : params) {
+        if (p.scope != ParamScope::GLOBAL) {
+            continue;
+        }
+        if (p.group.isEmpty()) {
+            saved_baseline.remove(p.key);
+        } else {
+            QJsonObject group = saved_baseline[p.group].toObject();
+            group.remove(p.key);
+            saved_baseline[p.group] = group;
+        }
+    }
+    preset_baseline = merge_new_keys(saved_baseline, current_preset_json());
     library->set_loaded_path(LibraryEntry::Kind::PRESET, path);
     update_preset_state();
 }
@@ -3695,7 +3724,7 @@ void MainWindow::switch_ab(int side) {
     }
     // The side being left keeps the live state; the other side starts as a
     // copy of it the first time it is visited.
-    const QJsonObject live = PresetSerializer::to_json(params, *engine);
+    const QJsonObject live = current_preset_json();
     ab[ab_active] = live;
     ab_active = side;
     if (ab[side].isEmpty()) {
@@ -3725,7 +3754,7 @@ void MainWindow::switch_ab(int side) {
 }
 
 void MainWindow::copy_ab() {
-    ab[1 - ab_active] = PresetSerializer::to_json(params, *engine);
+    ab[1 - ab_active] = current_preset_json();
 }
 
 void MainWindow::on_reset_all() {
@@ -3857,6 +3886,9 @@ PresetSerializer::Applied MainWindow::apply_preset_params(const QJsonObject& obj
     // 2026-10-04 item 07); the sanitizer fills an empty list with every effect.
     const PresetSerializer::Applied applied = PresetSerializer::apply(obj, params);
     apply_chain_order(applied.effect_order);
+    if (applied.tempo) {
+        tempo_bar->set_bpm(*applied.tempo); // → set_tempo, which re-pushes the synced times
+    }
     return applied;
 }
 

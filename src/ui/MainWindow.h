@@ -229,12 +229,15 @@ private:
     // drives preset save/load (PresetSerializer) and session persistence.
     void register_parameters();
     void knob_param(const QString& group, const QString& key, KnobWidget* knob,
-                    const std::function<void(double)>& apply);
+                    const std::function<void(double)>& apply,
+                    ParamScope scope = ParamScope::PRESET);
     void toggle_param(const QString& group, const QString& key, ToggleSwitch* sw,
-                      const std::function<void(bool)>& apply);
+                      const std::function<void(bool)>& apply,
+                      ParamScope scope = ParamScope::PRESET);
 
     // Current preset: name, `*` state, A/B
-    // Serialized state written by Save (registry + order + model/IR).
+    // Serialized state written by Save, compared for `*` and kept by A/B (registry +
+    // order + model/IR, and the tempo while a Sync switch is on).
     QJsonObject current_preset_json() const;
     bool write_preset_file(const QString& path);
     // Makes `path` the current preset with the live state as its baseline
