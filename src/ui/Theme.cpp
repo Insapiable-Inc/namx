@@ -1843,12 +1843,12 @@ void reapply(bool force) {
     if (!themed_root) {
         return;
     }
-    // A new style live: the window's stylesheet is rebuilt on it from scratch (Qt layers a
-    // sheet over the style in use when it is set), and every widget gets the new style's
-    // adjustments — the re-polish didn't pass through the polish filter.
-    if (restyled) {
-        themed_root->setStyleSheet(QString());
-    }
+    // A new style live: every widget gets the new style's adjustments after the sheet (the
+    // re-polish didn't pass through the polish filter). The window's sheet is never cleared
+    // on the way: with no stylesheet left anywhere, Qt drops its stylesheet caches, and
+    // widgets styled before never re-register their clean-up with the new ones — a freed
+    // widget then stays listed, and the next app-wide sheet change walks it (a segfault in
+    // QStyleSheetStyle::repolish → updateObjects, 2026-10-24).
     apply_to(*themed_root);
     if (restyled) {
         for (QWidget* widget : QApplication::allWidgets()) {
