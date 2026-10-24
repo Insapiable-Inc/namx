@@ -6,6 +6,7 @@
 
 #include <QAction>
 #include <QApplication>
+#include <QComboBox>
 #include <QContextMenuEvent>
 #include <QDesktopServices>
 #include <QDir>
@@ -530,6 +531,14 @@ void MainWindow::fit_to_font() {
             }
         }
         fit_card_height(card);
+    }
+
+    // The library's All / ★ / Recent as tall as the Sort box beside them (a native style's
+    // combo box can be taller than NAM-X's own buttons — Union's is).
+    if (auto* sort = findChild<QComboBox*>("librarySort")) {
+        for (QToolButton* mode : findChildren<QToolButton*>("libraryMode")) {
+            mode->setFixedHeight(sort->sizeHint().height());
+        }
     }
 
     // The status bar measures its items when they are added — before the stylesheet and
