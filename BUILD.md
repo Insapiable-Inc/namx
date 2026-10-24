@@ -335,7 +335,9 @@ Gain changes are sample-accurate smoothed (no clicks or zipper noise).
 ### Presets
 
 The bar above the rack holds the current preset. A preset recalls every effect
-setting, the effect order, the input/output gains, and the model and IR (by path).
+setting, the effect order, the tuner's switches, and the model and IR (by path) — and
+the tempo, when one of its Sync switches is on. The Input and Output knobs and the
+output limiter belong to your rig, not to a sound: loading a preset leaves them alone.
 
 | Control | Action |
 |---------|--------|
@@ -379,8 +381,10 @@ The second bar holds the global tempo and the metronome.
 the Reverb **Pre-delay** each have a **Sync** switch: on, the knob picks a note value (4 bars … 1/32, dotted and
 triplets) instead of ms / Hz, and follows the tempo. Delay times are capped at 3000 ms.
 
-The tempo and every metronome setting belong to the session, not to presets: a preset
-stores *note values*, so it fits whatever tempo you're playing at.
+Every metronome setting belongs to the session, not to presets. A preset with a Sync
+switch on also saves the tempo, so its delays and modulation come back exactly as saved
+(loading it sets the tempo, and the metronome follows); a preset without one leaves the
+tempo as it is.
 
 ### MIDI
 

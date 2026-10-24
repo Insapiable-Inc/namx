@@ -19,7 +19,7 @@ namespace namx
 namespace PresetSerializer
 {
 
-QJsonObject to_json(const ParamRegistry& params, AudioEngine& engine) {
+QJsonObject to_json(const ParamRegistry& params, AudioEngine& engine, std::optional<double> tempo) {
     // Widget values mirror the engine (every change flows through the
     // registry connections), so the widgets are the single source here.
     QJsonObject obj;
@@ -33,8 +33,14 @@ QJsonObject to_json(const ParamRegistry& params, AudioEngine& engine) {
         order_arr.append(QString::fromStdString(id));
     }
     obj["effectOrder"] = order_arr;
+    if (tempo) {
+        obj["tempo"] = *tempo;
+    }
 
     for (const auto& p : params) {
+        if (p.scope == ParamScope::GLOBAL) {
+            continue;
+        }
         const QJsonValue v =
             p.knob ? QJsonValue(p.knob->value()) : QJsonValue(p.toggle->isChecked());
         if (p.group.isEmpty()) {
@@ -69,6 +75,9 @@ expected<void, QString> validate(const QJsonObject& obj, const ParamRegistry& pa
     };
     bool known = false; // at least one key this build understands
     for (const auto& p : params) {
+        if (p.scope == ParamScope::GLOBAL) {
+            continue; // ignored on load, whatever it holds
+        }
         const QJsonObject* src = &obj;
         QJsonObject group;
         const QString name = p.group.isEmpty() ? p.key : p.group + "/" + p.key;
@@ -101,6 +110,12 @@ expected<void, QString> validate(const QJsonObject& obj, const ParamRegistry& pa
             }
             known = true;
         }
+    }
+    if (obj.contains("tempo")) {
+        if (!(obj["tempo"].isDouble() && std::isfinite(obj["tempo"].toDouble()))) {
+            return type_error("tempo", "a number");
+        }
+        known = true;
     }
     if (obj.contains("effectOrder")) {
         if (!obj["effectOrder"].isArray()) {
@@ -155,6 +170,9 @@ Applied apply(const QJsonObject& preset, const ParamRegistry& params) {
     // added after the file was saved — falls back to the registered default (effects
     // off). Leaving such effects untouched made them keep the previous preset's state.
     for (const auto& p : params) {
+        if (p.scope == ParamScope::GLOBAL) {
+            continue;
+        }
         const QJsonObject src = p.group.isEmpty() ? obj : obj[p.group].toObject();
         if (p.knob) {
             p.knob->set_value(src.contains(p.key) ? src[p.key].toDouble(p.knob_default)
@@ -175,6 +193,9 @@ Applied apply(const QJsonObject& preset, const ParamRegistry& params) {
     out.ir_path = obj["irPath"].toString();
     out.has_ir_path_b = obj.contains("irPathB");
     out.ir_path_b = obj["irPathB"].toString();
+    if (obj.contains("tempo")) {
+        out.tempo = obj["tempo"].toDouble();
+    }
     return out;
 }
 

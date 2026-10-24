@@ -206,7 +206,9 @@ session persistence and future MIDI mapping consume it too. **When adding an eff
 parameter, register it here — never add hand-written connects, slots, or preset keys.**
 `group`+`key` mirror the preset JSON schema (empty group = top-level key).
 Every rack knob and switch is in presets, the Tuner's On and Mute included (user,
-2026-10-04); `--self-test-and-exit` fails if a rack control (outside the tempo bar) is
+2026-10-04) — except the `ParamScope::GLOBAL` ones, Input, Output and the limiter (user,
+2026-10-24): still registered (session, MIDI), never saved in or applied from a preset;
+`--self-test-and-exit` fails if a rack control (outside the tempo bar) is
 missing from the registry.
 
 ### Loading files
@@ -221,7 +223,7 @@ entry, and refresh the Amplifier/Cabinet hero rows (`update_hero_cards`). Don't 
 ### Persistence
 
 - **QSettings** (org `Insapiable` — `pichulero.cl` until 2026-10-04, migrated once by `main.cpp`; app name set in `main.cpp` — drives the config path): last model/IR/preset paths, audio device IDs, JACK port connections, window geometry + dock state (`window/state`), the library (`library/{model,ir,preset}Roots`, `favorites`, `recents`, `section`, and `modes`/`sorts` — one All/★/Recent mode and one sort per section; the old global `mode`/`sort` only seed them), and the full registry state plus `session/effectOrder` under `session/` (saved on exit + debounced 1 s after any widget change; restored on launch through the widgets). First run auto-connects `system:capture_1`/`playback_{1,2}`.
-- **Presets** (8 starters in `resources/presets/`, seeded once into `<presets>/Starter`) are `.nampreset` JSON files via `QJsonDocument`, schema v2: all registry parameters plus `version`, `namEnabled`, `effectOrder` (stable-ID list), embedded `namPath`/`irPath` (applied on load when the file exists; otherwise a warning, current model/IR kept); older presets may carry a `tone3000` object from the removed integration, which is ignored. v1 files (no `version`) still load. Loading applies values through the widgets, so the UI and engine can't drift.
+- **Presets** (8 starters in `resources/presets/`, seeded once into `<presets>/Starter`) are `.nampreset` JSON files via `QJsonDocument`, schema v2: all registry parameters but the global ones (old files' `inputGain`/`outputGain`/`limiter` are ignored) plus `version`, `tempo` (only while a Sync switch is on; absent = the tempo is left alone), `namEnabled`, `effectOrder` (stable-ID list), embedded `namPath`/`irPath` (applied on load when the file exists; otherwise a warning, current model/IR kept); older presets may carry a `tone3000` object from the removed integration, which is ignored. v1 files (no `version`) still load. Loading applies values through the widgets, so the UI and engine can't drift.
 
 ## NAM core library
 
