@@ -173,10 +173,10 @@ void TunerDisplay::paintEvent(QPaintEvent*) {
     // Sharp marker at the digit's top right.
     if (valid && note.contains('#')) {
         QFont f = font();
-        f.setPixelSize(12);
+        f.setPixelSize(18); // about two thirds of the digit, like a superscript
         f.setBold(true);
         p.setFont(f);
-        const QRectF sharp_rect(digit_x + w + 3.0, digit_y - 3.0, 14.0, 14.0);
+        const QRectF sharp_rect(digit_x + w + 2.0, digit_y - 4.0, 20.0, 20.0);
         QColor halo = digit_color;
         halo.setAlpha(60);
         p.setPen(halo);
