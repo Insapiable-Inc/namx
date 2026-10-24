@@ -138,7 +138,10 @@ jobs:
           # AppImageUpdate / Gear Lever find updates in the GitHub releases.
           LDAI_UPDATE_INFORMATION: gh-releases-zsync|Insapiable-Inc|namx|latest|NAM-X-*-x86_64.AppImage.zsync
         run: |
+          # A tag names the version; a manual run on a branch uses git describe, like the
+          # source job (a branch name like ui/x would put a / in the file name).
           V="${GITHUB_REF_NAME#v}"
+          [ "${GITHUB_REF_TYPE}" = "tag" ] || V="$(git describe --tags --always | sed 's/^v//')"
           export LDAI_OUTPUT="NAM-X-$V-x86_64.AppImage"
           # The XDG portal theme (main.cpp asks for it: the desktop's own file dialogs);
           # the Qt plugin doesn't deploy platform themes on its own.
@@ -264,7 +267,8 @@ jobs:
           cmake --install build-release --component notices --prefix dist\namx
           if ($LASTEXITCODE -ne 0) { throw "installing the license notices failed" }
           if (-not (Test-Path dist\namx\licenses\THIRD-PARTY-NOTICES.md)) { throw "Missing license notices" }
-          $v = "${env:GITHUB_REF_NAME}" -replace '^v',''
+          # A tag names the version; a manual run on a branch uses git describe (no /).
+          $v = if ($env:GITHUB_REF_TYPE -eq 'tag') { "${env:GITHUB_REF_NAME}" -replace '^v','' } else { (git describe --tags --always) -replace '^v','' }
           Compress-Archive -Path dist\namx -DestinationPath "dist\namx-$v-windows-x64.zip"
           Get-FileHash "dist\namx-$v-windows-x64.zip" -Algorithm SHA256 | ForEach-Object { "$($_.Hash.ToLower())  namx-$v-windows-x64.zip" } | Set-Content "dist\namx-$v-windows-x64.zip.sha256"
       - name: Installer (Inno Setup)
@@ -275,7 +279,7 @@ jobs:
             choco install innosetup -y --no-progress
             if ($LASTEXITCODE -ne 0) { throw "Inno Setup install failed" }
           }
-          $v = "${env:GITHUB_REF_NAME}" -replace '^v',''
+          $v = if ($env:GITHUB_REF_TYPE -eq 'tag') { "${env:GITHUB_REF_NAME}" -replace '^v','' } else { (git describe --tags --always) -replace '^v','' }
           & $iscc "/DAppVersion=$v" "/DSourceDir=$PWD\dist\namx" "/DOutputDir=$PWD\dist" packaging\windows\namx.iss
           if ($LASTEXITCODE -ne 0) { throw "ISCC failed" }
           $setup = "namx-$v-windows-x64-setup.exe"
