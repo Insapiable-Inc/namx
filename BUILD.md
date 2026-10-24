@@ -365,7 +365,7 @@ The second bar holds the global tempo and the metronome.
 
 | Control | Action |
 |---------|--------|
-| **BPM** | Drag up/down or scroll (Shift = fine), click to type. 40–240, quarter notes |
+| **BPM** | Arrows or scroll (Shift = fine), or type a value and press Enter. 40–240, quarter notes |
 | **Tap** | Tap the beat; the last four intervals are averaged, a 2 s pause starts over |
 | **▶ / ■** (`Space`) | Start / stop the metronome. It keeps running when you load presets |
 | Beat lights | One column per beat; the current beat lights up (amber during the count-in). Click a beat to cycle its accent: strong → normal → soft → mute |

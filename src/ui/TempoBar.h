@@ -24,6 +24,8 @@ class Metronome;
 
 // One column per beat: height = accent (strong / normal / soft / mute
 // outline), the current beat lit. Clicking a beat cycles its accent.
+// Always as wide as RESERVED_BEATS columns, so changing the meter doesn't shift the
+// controls after it; longer custom bars narrow their columns to fit.
 class BeatLeds : public QWidget
 {
     Q_OBJECT
@@ -45,6 +47,8 @@ protected:
 
 private:
     static constexpr int W = 12, GAP = 4, H = 26;
+    static constexpr int RESERVED_BEATS = 12; // the longest meter in the menu (12/8)
+    qreal column_step() const; // column width + gap
     int beats = 4;
     std::uint32_t accents = 0;
     int beat = -1;
@@ -83,10 +87,17 @@ public:
 signals:
     void bpm_changed(double bpm);
 
+protected:
+    void changeEvent(QEvent* ev) override;
+
 private:
     void tap();
     void set_meter(int beats, int unit, bool reset_accents);
     void update_labels();
+    // Each menu button as wide as its widest choice, so picking another meter,
+    // note, sound or count-in doesn't shift the controls after it. Measured from
+    // the buttons themselves: again on every font or style change.
+    void reserve_label_widths();
     QToolButton* menu_button(const QString& tip);
 
     Metronome& metro;

@@ -30,16 +30,20 @@ BeatLeds::BeatLeds(QWidget* parent)
     : QWidget(parent) {
     setCursor(Qt::PointingHandCursor);
     setToolTip("Beats of the bar. Click a beat to cycle its accent: strong → normal → soft → mute");
+    setFixedSize(sizeHint());
 }
 
 QSize BeatLeds::sizeHint() const {
-    return {beats * W + (beats - 1) * GAP + 2, H};
+    return {RESERVED_BEATS * W + (RESERVED_BEATS - 1) * GAP + 2, H};
+}
+
+qreal BeatLeds::column_step() const {
+    return std::min<qreal>(W + GAP, (width() - 2 + GAP) / static_cast<qreal>(beats));
 }
 
 void BeatLeds::set_pattern(int new_beats, std::uint32_t new_accents) {
     beats = std::clamp(new_beats, 1, Metronome::MAX_BEATS);
     accents = new_accents;
-    setFixedSize(sizeHint());
     update();
 }
 
@@ -55,14 +59,16 @@ void BeatLeds::set_beat(int new_beat, bool new_count_in) {
 void BeatLeds::paintEvent(QPaintEvent*) {
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing);
+    const qreal step = column_step();
+    const qreal column_w = step * W / (W + GAP);
     for (int b = 0; b < beats; ++b) {
         const Metronome::Accent a = Metronome::accent_of(accents, b);
-        const qreal x = 1 + b * (W + GAP);
+        const qreal x = 1 + b * step;
         const qreal h = a == Metronome::Accent::STRONG   ? H - 2
                         : a == Metronome::Accent::NORMAL ? (H - 2) * 0.66
                         : a == Metronome::Accent::SOFT   ? (H - 2) * 0.36
                                                          : (H - 2) * 0.36;
-        const QRectF r(x, H - 1 - h, W, h);
+        const QRectF r(x, H - 1 - h, column_w, h);
         const bool lit = b == beat;
         QColor c = lit ? (count_in ? Theme::status_warn() : Theme::generic_accent())
                        : Theme::track_hover();
@@ -78,7 +84,7 @@ void BeatLeds::paintEvent(QPaintEvent*) {
 }
 
 void BeatLeds::mousePressEvent(QMouseEvent* ev) {
-    const int b = static_cast<int>(ev->position().x()) / (W + GAP);
+    const int b = static_cast<int>((ev->position().x() - 1) / column_step());
     if (b < 0 || b >= beats) {
         return;
     }
@@ -140,11 +146,10 @@ TempoBar::TempoBar(Metronome& metronome, QWidget* parent)
                            .maximum = TempoSync::MAX_BPM,
                            .decimals = 1,
                            .step = 1.0,
-                           .unit = "BPM",
-                           .reset_value = TempoSync::DEFAULT_BPM},
+                           .unit = "BPM"},
                           this);
-    bpm->setToolTip("Tempo (quarter notes per minute): drag up/down or scroll to change "
-                    "(Shift = fine), click to type, double-click for 120");
+    bpm->setToolTip("Tempo (quarter notes per minute): arrows or scroll to change "
+                    "(Shift = fine), or type a value");
     bpm->set_value(s.value("tempo/bpm", TempoSync::DEFAULT_BPM).toDouble());
     metro.set_bpm(bpm->value());
     connect(bpm, &NumberField::value_changed, this, &TempoBar::on_bpm_field_changed);
@@ -182,6 +187,7 @@ TempoBar::TempoBar(Metronome& metronome, QWidget* parent)
     leds = new BeatLeds(this);
     connect(leds, &BeatLeds::accents_changed, this, &TempoBar::on_accents_edited);
     lay->addWidget(leds, 0, Qt::AlignVCenter);
+    lay->addSpacing(6); // a full bar of beats would touch the meter button
 
     // Meter.
     meter_btn = menu_button("Time signature");
@@ -260,6 +266,39 @@ TempoBar::TempoBar(Metronome& metronome, QWidget* parent)
         leds->set_pattern(metro.get_beats(), acc);
     }
     update_labels();
+    reserve_label_widths();
+}
+
+void TempoBar::changeEvent(QEvent* ev) {
+    QFrame::changeEvent(ev);
+    if (ev->type() == QEvent::FontChange || ev->type() == QEvent::StyleChange) {
+        reserve_label_widths();
+    }
+}
+
+void TempoBar::reserve_label_widths() {
+    if (!count_in_btn) {
+        return; // a style change during construction
+    }
+    auto reserve = [](QToolButton* b, const QStringList& texts) {
+        const QString current = b->text();
+        b->setMinimumWidth(0);
+        int widest = 0;
+        for (const QString& t : texts) {
+            b->setText(t);
+            widest = std::max(widest, b->sizeHint().width());
+        }
+        b->setText(current);
+        b->setMinimumWidth(widest);
+    };
+    QStringList meters{QString("%1/16").arg(Metronome::MAX_BEATS)}; // the widest custom one
+    for (const MeterPreset& m : METERS) {
+        meters << QString("%1/%2").arg(m.beats).arg(m.unit);
+    }
+    reserve(meter_btn, meters);
+    reserve(subdiv_btn, {std::begin(SUBDIV_SHORT), std::end(SUBDIV_SHORT)});
+    reserve(sound_btn, {std::begin(SOUND_NAMES), std::end(SOUND_NAMES)});
+    reserve(count_in_btn, {"No count-in", "Count-in 2 · silent"});
 }
 
 void TempoBar::reset_to_defaults() {

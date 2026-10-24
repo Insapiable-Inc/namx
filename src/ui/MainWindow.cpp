@@ -887,16 +887,12 @@ void MainWindow::setup_ui() {
         // not part of presets or the registry.
         QSettings s;
         tuner_ref_hz = std::clamp(s.value("tuner/reference", 440).toInt(), 420, 460);
-        tuner_reference_box = new NumberField({.minimum = 420,
-                                               .maximum = 460,
-                                               .decimals = 0,
-                                               .step = 1,
-                                               .unit = "Hz",
-                                               .reset_value = 440});
+        tuner_reference_box = new NumberField(
+            {.minimum = 420, .maximum = 460, .decimals = 0, .step = 1, .unit = "Hz"});
         NumberField* ref = tuner_reference_box;
         ref->set_value(tuner_ref_hz);
-        ref->setToolTip("Reference pitch (concert pitch is 440 Hz): drag up/down or scroll to "
-                        "change, click to type, double-click for 440");
+        ref->setToolTip("Reference pitch (concert pitch is 440 Hz): arrows or scroll to "
+                        "change, or type a value");
         connect(ref, &NumberField::value_changed, this, [this](double hz) {
             set_tuner_reference(qRound(hz));
         });
