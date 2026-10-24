@@ -4,15 +4,26 @@
 #include <cassert>
 #include <cmath>
 
+#include <QAbstractButton>
+#include <QAbstractItemView>
+#include <QAbstractSpinBox>
 #include <QApplication>
+#include <QCheckBox>
+#include <QComboBox>
 #include <QDir>
 #include <QEvent>
 #include <QFileInfo>
 #include <QFileSystemWatcher>
+#include <QFocusEvent>
+#include <QFontMetrics>
+#include <QFrame>
 #include <QHash>
 #include <QIcon>
 #include <QImage>
+#include <QLineEdit>
+#include <QMenu>
 #include <QPainter>
+#include <QPainterPath>
 #include <QPalette>
 #include <QPointer>
 #include <QRegularExpression>
@@ -20,6 +31,8 @@
 #include <QStandardPaths>
 #include <QStyle>
 #include <QStyleHints>
+#include <QStyleOptionButton>
+#include <QStyledItemDelegate>
 #include <QTextDocument> // Qt::mightBeRichText
 #include <QTimer>
 #include <QVariant>
@@ -106,10 +119,13 @@ struct Colors
     QColor surface; // bars, menus, lists
     QColor card; // effect cards
     QColor raised; // tool buttons, tooltips
+    QColor selection; // hovered / selected list items
     QColor pressed; // pressed buttons: tinted toward the accent
     QColor line; // separators and quiet borders
     QColor border; // control borders
+    QColor border_hover;
     QColor disabled_bg;
+    QColor disabled_border;
     QColor disabled_text;
     QColor text;
     QColor text_dim; // secondary labels
@@ -118,10 +134,19 @@ struct Colors
     QColor text_off; // empty preset slots
     QColor notice; // status bar problems
     QColor shadow;
+    // KDE's: the menu bar's Header background, frames (the background 20 % toward the
+    // text, KDE's frame contrast), and the accent-tinted hover of menu items.
+    QColor header;
+    QColor frame; // menu borders, separators, the line over the status bar
+    QColor header_hover; // menu bar items
+    QColor menu_hover; // menu items
     QColor button_frame; // check boxes, table headers: the button 20 % toward the text
     QColor tab; // closed tabs: the view background 17 % toward the text (Union's)
     QColor checked; // checked buttons: the button 12.5 % toward the text (Union's)
+    QColor bar; // scroll bar handles: the window 7.5 % toward the text (Union's)
+    QColor bar_hover; // … hovered or dragged: a third toward the accent
     QColor view; // lists, fields: the palette's base, as is (Union's view background)
+    QColor view_frame; // their frame: the view 20 % toward the text
     QColor list_hover; // hovered list rows: the accent at 30 % over the view
     QColor highlighted_text; // text on the accent: selected rows (the palette's)
     // Custom-painted widgets (knobs, switches, fields).
@@ -180,13 +205,13 @@ static QPalette breeze(bool dark) {
     return p;
 }
 
-// Every chrome tone from a palette (the OS's, or Breeze's when forced): the window, base,
-// button, text, shadow and highlight colours as they are, the in-between tones mixed
-// between them.
+// Every chrome tone from a palette (the OS's, or Breeze's when forced) and the menu bar's
+// header colour: the window, base, button, text, shadow and highlight colours as they
+// are, the in-between tones mixed between them.
 // Mixing toward the text colour darkens on a light scheme and lightens on a dark one,
 // so one recipe serves both. Ours stay: the effect accents, the LED colours and the
 // status bar's warning red.
-static Colors from_palette(const QPalette& sys, bool dark) {
+static Colors from_palette(const QPalette& sys, bool dark, const QColor& header) {
     const QColor w = sys.color(QPalette::Window);
     const QColor accent = sys.color(QPalette::Highlight);
     const QColor base = sys.color(QPalette::Base);
@@ -201,10 +226,13 @@ static Colors from_palette(const QPalette& sys, bool dark) {
         mix_colors(w, base, 0.5), // surface
         button, // card
         mix_colors(button, text, 0.04), // raised
+        mix_colors(w, accent, 0.22), // selection
         mix_colors(button, accent, 1.0 / 3), // pressed
         mix_colors(w, text, 0.12), // line
         border,
+        mix_colors(w, text, 0.36), // border_hover
         mix_colors(w, button, 0.5), // disabled_bg
+        mix_colors(w, text, 0.08), // disabled_border
         sys.color(QPalette::Disabled, QPalette::WindowText),
         text,
         mix_colors(text, w, 0.22), // text_dim
@@ -213,10 +241,17 @@ static Colors from_palette(const QPalette& sys, bool dark) {
         mix_colors(text, w, 0.58), // text_off
         QColor(ours.notice),
         sys.color(QPalette::Shadow),
+        header,
+        mix_colors(w, text, 0.2), // frame
+        mix_colors(header, accent, 0.3), // header_hover
+        mix_colors(w, accent, 0.3), // menu_hover
         mix_colors(button, text, 0.2), // button_frame
         mix_colors(base, text, 0.17), // tab
         mix_colors(button, text, 0.125), // checked
+        mix_colors(w, text, 0.075), // bar
+        mix_colors(w, accent, 1.0 / 3), // bar_hover
         base, // view
+        mix_colors(base, text, 0.2), // view_frame
         mix_colors(base, accent, 0.3), // list_hover
         sys.color(QPalette::HighlightedText),
         mix_colors(button, text, 0.14), // track
@@ -247,8 +282,36 @@ static QString custom_theme_path;
 static bool dark_active = true;
 static QColor current_accent("#3daee9"); // Breeze blue until the system says otherwise
 static QPointer<QWidget> themed_root;
+// The style the desktop asked for (Union, Breeze, Windows 11…, or -style / QT_STYLE_OVERRIDE),
+// as Qt chose it before NAM-X changed anything; Fusion where nothing else is available.
+static QString native_style;
+// The style in use. Tracked here: with a stylesheet set, QApplication::style() is Qt's
+// stylesheet wrapper, which has no name.
+static QString active_style;
 
-static Colors active = from_palette(breeze(true), true);
+// Fusion carries the Union-like look itself (FUSION_SHEET, UnionPolish); a native style
+// draws the standard widgets its own way.
+static bool fusion_active() {
+    return active_style.compare("fusion", Qt::CaseInsensitive) == 0;
+}
+
+// The desktop's style while following the system; Fusion under a forced theme, since
+// native styles may ignore the palette (Union does: it reads KDE's colour scheme).
+static void choose_style() {
+    const QString wanted = current_mode == Mode::SYSTEM ? native_style : QStringLiteral("Fusion");
+    if (active_style.compare(wanted, Qt::CaseInsensitive) != 0) {
+        if (const QStyle* style = QApplication::setStyle(wanted)) {
+            active_style = style->name();
+        }
+    }
+}
+
+// Breeze's Header background (the menu bar), Dark and Light.
+static QColor breeze_header(bool dark) {
+    return QColor(dark ? "#292c30" : "#dee0e2");
+}
+
+static Colors active = from_palette(breeze(true), true, breeze_header(true));
 
 static const Colors& palette() {
     return active;
@@ -387,12 +450,13 @@ QLabel#fxName {
     font-weight: 700;
     font-size: @pt:10@;
 }
+/* Per-effect accent stripes and name colors are appended in apply(). */
 /* === Scroll area === */
 QScrollArea {
     background: transparent;
     border: none;
 }
-/* The rack itself (through the viewport — not the scroll bars, which Union draws). */
+/* The rack itself (through the viewport — not the scroll bars, which the style draws). */
 QScrollArea > QWidget#qt_scrollarea_viewport > QWidget {
     background: transparent;
 }
@@ -403,7 +467,6 @@ QLabel {
 QLabel#toggleCaption {
     color: @text_dim@;
 }
-/* === Status bar (bottom, VS Code style) === */
 QLabel#statusItem, QLabel#statusAction {
     color: @text_muted@;
     padding: 2px 8px;
@@ -564,13 +627,6 @@ QFrame#tempoBar {
     border: 1px solid @line@;
     border-radius: 6px;
 }
-QLineEdit#numberEdit {
-    color: @accent@;
-    border-color: @accent@; /* shown only while typing a value */
-    padding: 0;
-    font-size: @pt:12@;
-    font-weight: 700;
-}
 QToolButton#metroPlay {
     color: @text@;
     background-color: @button@;
@@ -590,6 +646,7 @@ QToolButton#metroPlay:pressed {
 QToolButton#metroPlay:checked {
     background-color: @checked@;
 }
+/* === Effect card ▾ detail toggle === */
 /* A flat button: KDE gives it just the accent border on hover. */
 QToolButton#cardMore {
     color: @text_muted@;
@@ -663,6 +720,473 @@ QLabel#libraryStatus {
 }
 )";
 
+// The standard widgets drawn Union's way (KDE Plasma 6.8's look) — applied only when the
+// style is Fusion: under a forced theme, or where the desktop's own style isn't available
+// (the AppImage, GNOME). A native style (Union, Breeze, Windows) draws them itself.
+static const char* const FUSION_SHEET = R"(
+/* === Keyboard focus (UnionPolish sets visualFocus; the outline is a FocusRing) === */
+/* No focus frame inside the control (Fusion still draws one in styled buttons, check
+   boxes and combo boxes): Union's only indicator is the border and the ring. */
+QAbstractButton, QComboBox, QAbstractSpinBox, QLineEdit {
+    outline: none;
+}
+*[visualFocus="true"] {
+    border-color: @accent@;
+}
+QCheckBox[visualFocus="true"]::indicator {
+    border-color: @accent@;
+}
+/* The ID-styled buttons below outrank the rule above; they get it by name. */
+QToolButton#presetName[visualFocus="true"], QToolButton#presetTool[visualFocus="true"],
+QToolButton#presetSlot[visualFocus="true"], QToolButton#presetAb[visualFocus="true"],
+QToolButton#menuTool[visualFocus="true"], QToolButton#metroPlay[visualFocus="true"],
+QToolButton#heroArrow[visualFocus="true"], QToolButton#libraryMode[visualFocus="true"],
+QToolButton#libraryTool[visualFocus="true"], QLineEdit#librarySearch[visualFocus="true"] {
+    border-color: @accent@;
+}
+/* Union's (Breeze): the Header colour (the window's while the window is inactive), no
+   line under it; items hovered with the accent tint and an accent border, the open one
+   filled. */
+QMenuBar {
+    background-color: @header@;
+    color: @text@;
+}
+QMenuBar[inactive="true"] {
+    background-color: @window@;
+}
+QMenuBar::item {
+    background: transparent;
+    padding: 3px 4px;
+    border: 1px solid transparent;
+    border-radius: 5px;
+}
+QMenuBar::item:selected {
+    background-color: @header_hover@;
+    border-color: @accent@;
+}
+QMenuBar::item:pressed {
+    background-color: @accent@;
+    border-color: @accent@;
+    color: @on_accent@;
+}
+/* Union's menus: rounded, framed, 32 px items rounded inside a 4 px padding; the text
+   leaves the column for icons and check marks (6 px padding, 16 px icon, 4 px spacing).
+   The corners need a translucent window (apply() gives every menu one). */
+/* The menu's body (window colour, frame, 5 px corners) and its shadow are painted by
+   UnionPolish; here only the 4 px padding inside the 1 px frame. */
+QMenu {
+    background: transparent;
+    color: @text@;
+    border: none;
+    padding: 5px;
+}
+QMenu::item {
+    padding: 6px 24px 6px 25px;
+    border: 1px solid transparent;
+    border-radius: 5px;
+}
+QMenu[icons="true"]::item {
+    padding-left: 6px;
+}
+QMenu::item:selected {
+    background-color: @menu_hover@;
+    border-color: @accent@;
+}
+QMenu::item:disabled {
+    color: @disabled_text@;
+    background: transparent;
+    border-color: transparent;
+}
+QMenu::indicator, QMenu::icon {
+    left: 6px;
+}
+QMenu::separator {
+    height: 1px;
+    background: @frame@;
+    margin: 4px;
+}
+/* === Buttons === */
+/* Union's buttons: the palette's button colour as is, framed with it 20 % toward the
+   text, 5 px corners. Hover puts the accent on the border, the fill unchanged; pressed
+   tints the fill toward the accent. Every button below follows it. */
+QPushButton {
+    background-color: @button@;
+    color: @text@;
+    border: 1px solid @button_frame@;
+    border-radius: 5px;
+    padding: 6px 14px;
+    min-height: 20px;
+    font-weight: 500;
+}
+QPushButton:hover {
+    border-color: @accent@;
+}
+QPushButton:pressed {
+    background-color: @pressed@;
+    border-color: @accent@;
+}
+QPushButton:disabled {
+    background-color: @disabled_bg@;
+    color: @disabled_text@;
+    border-color: @disabled_border@;
+}
+/* Union's: a 20 px track with a frame line on its inner edge and an 8 px pill (6 px from
+   the outer edge, 5 px from the line); hovered or dragged, tinted toward the accent with
+   an accent border. */
+QScrollBar:vertical {
+    background: transparent;
+    width: 20px;
+    margin: 0;
+    border: none;
+    border-left: 1px solid @frame@;
+}
+QScrollBar:horizontal {
+    background: transparent;
+    height: 20px;
+    margin: 0;
+    border: none;
+    border-top: 1px solid @frame@;
+}
+QScrollBar::handle {
+    background: @bar@;
+    border: 1px solid @frame@;
+    border-radius: 5px;
+}
+QScrollBar::handle:vertical {
+    min-height: 24px;
+    margin: 6px 6px 6px 5px;
+}
+QScrollBar::handle:horizontal {
+    min-width: 24px;
+    margin: 5px 6px 6px 6px;
+}
+QScrollBar::handle:hover, QScrollBar::handle:pressed {
+    background: @bar_hover@;
+    border-color: @accent@;
+}
+QScrollBar::add-line, QScrollBar::sub-line {
+    width: 0;
+    height: 0;
+    background: none;
+    border: none;
+}
+QScrollBar::add-page, QScrollBar::sub-page {
+    background: none;
+}
+/* === Status bar (bottom, VS Code style) === */
+QStatusBar {
+    background-color: @window@;
+    border-top: 1px solid @frame@;
+    min-height: 24px;
+}
+QStatusBar::item {
+    border: none;
+}
+QLineEdit#numberEdit {
+    color: @accent@;
+    border-color: @accent@; /* shown only while typing a value */
+    padding: 0;
+    font-size: @pt:12@;
+    font-weight: 700;
+}
+/* === MIDI Mappings window === */
+QDialog#midiMappings QGroupBox {
+    border: 1px solid @line@;
+    border-radius: 6px;
+    margin-top: 14px;
+    padding: 8px;
+}
+QDialog#midiMappings QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 8px;
+    color: @text_muted@;
+}
+QDialog#midiMappings QTableWidget {
+    background-color: @surface@;
+    border: 1px solid @line@;
+    border-radius: 5px;
+    gridline-color: @line@;
+}
+QDialog#midiMappings QToolButton {
+    color: @text@;
+    background-color: @button@;
+    border: 1px solid @button_frame@;
+    border-radius: 5px;
+    padding: 2px 8px;
+}
+QDialog#midiMappings QToolButton:hover {
+    border-color: @accent@;
+}
+QDialog#midiMappings QToolButton:pressed {
+    background-color: @pressed@;
+    border-color: @accent@;
+}
+QLineEdit#librarySearch {
+    padding: 6px;
+}
+/* === Dialogs inside the window tree (Library Folders) === */
+/* Union's lists: the view background in a frame; rows inset 2 px and rounded, hovered
+   with the accent tint and an accent border, selected in the accent with its text colour.
+   (The library list paints its rows the same way, in LibraryItemDelegate.) */
+QListView {
+    background-color: @view@;
+    color: @text@;
+    border: 1px solid @view_frame@;
+    border-radius: 5px;
+    outline: none;
+}
+QListView::item {
+    margin: 2px;
+    padding: 4px;
+    min-height: 22px;
+    border: 1px solid transparent;
+    border-radius: 5px;
+}
+QListView::item:hover {
+    background-color: @list_hover@;
+    border-color: @accent@;
+}
+QListView::item:selected {
+    background-color: @accent@;
+    border-color: @accent@;
+    color: @highlighted_text@;
+}
+/* The Settings sidebar: Union's side panel — no frame of its own, a line on its right. */
+QListView#settingsSidebar {
+    border: none;
+    border-right: 1px solid @frame@;
+    border-radius: 0;
+}
+/* Tables: the same states, square. */
+QTableView {
+    background-color: @view@;
+    outline: none;
+}
+QTableView::item:hover {
+    background-color: @list_hover@;
+}
+QTableView::item:selected {
+    background-color: @accent@;
+    color: @highlighted_text@;
+}
+/* Union's tabs, as on the library's sections. */
+QTabWidget::pane {
+    border: 1px solid @button_frame@;
+    top: -1px;
+}
+QTabBar::tab {
+    color: @text@;
+    background-color: @tab@;
+    border: none;
+    border-bottom: 1px solid @button_frame@;
+    padding: 6px 14px;
+}
+QTabBar::tab:first {
+    border-top-left-radius: 5px;
+}
+QTabBar::tab:last {
+    border-top-right-radius: 5px;
+}
+QTabBar::tab:hover {
+    background-color: @pressed@;
+}
+QTabBar::tab:selected {
+    background-color: @window@;
+    border: 1px solid @button_frame@;
+    border-top: 3px solid @accent@;
+    border-bottom-color: @window@;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+/* === Text fields === */
+/* Union's: the view background framed with its frame colour, 5 px corners, the accent on
+   the border when hovered or typing. A spin box's own field is bare: the spin box is the
+   field. */
+QLineEdit {
+    background-color: @view@;
+    color: @text@;
+    border: 1px solid @view_frame@;
+    border-radius: 5px;
+    padding: 4px 6px;
+    selection-background-color: @accent@;
+    selection-color: @highlighted_text@;
+}
+QLineEdit:hover, QLineEdit:focus {
+    border-color: @accent@;
+}
+QAbstractSpinBox QLineEdit {
+    background: transparent;
+    border: none;
+    padding: 0;
+}
+/* === Check boxes, spin boxes, table headers (Settings, MIDI Mappings) === */
+/* Union's check box: a 16 px rounded box in the button colour; checked, tinted toward the
+   accent with an accent border and a check mark. The same box marks checkable list rows
+   and menu items; a menu's exclusive items get the round one with a dot. */
+QCheckBox {
+    spacing: 4px;
+}
+QCheckBox::indicator, QListView::indicator, QMenu::indicator {
+    width: 14px;
+    height: 14px;
+    background-color: @card@;
+    border: 1px solid @button_frame@;
+    border-radius: 5px;
+}
+QCheckBox::indicator:hover, QListView::indicator:hover {
+    border-color: @accent@;
+}
+QCheckBox::indicator:checked, QListView::indicator:checked, QMenu::indicator:checked {
+    background-color: @pressed@;
+    border-color: @accent@;
+    image: url(@check@);
+}
+QMenu::indicator:exclusive {
+    border-radius: 8px;
+}
+QMenu::indicator:exclusive:checked {
+    image: url(@radio@);
+}
+QCheckBox::indicator:disabled, QListView::indicator:disabled {
+    background-color: @disabled_bg@;
+    border-color: @disabled_border@;
+}
+QCheckBox::indicator:checked:disabled, QListView::indicator:checked:disabled {
+    image: url(@check_disabled@);
+}
+/* Union's spin box: a field with stacked chevrons, the accent on the border when hovered
+   or focused. A style-sheet box makes Fusion drop its arrows, so they are given here; the
+   text's left margin is set in UnionPolish. */
+QAbstractSpinBox {
+    background-color: @view@;
+    color: @text@;
+    border: 1px solid @view_frame@;
+    border-radius: 5px;
+    padding: 3px 4px;
+    min-height: 20px;
+    selection-background-color: @accent@;
+    selection-color: @highlighted_text@;
+}
+QAbstractSpinBox:hover, QAbstractSpinBox:focus {
+    border-color: @accent@;
+}
+QAbstractSpinBox:disabled {
+    color: @disabled_text@;
+    border-color: @disabled_border@;
+}
+QAbstractSpinBox::up-button, QAbstractSpinBox::down-button {
+    subcontrol-origin: border;
+    width: 20px;
+    border: none;
+    background: transparent;
+}
+QAbstractSpinBox::up-button {
+    subcontrol-position: top right;
+}
+QAbstractSpinBox::down-button {
+    subcontrol-position: bottom right;
+}
+QAbstractSpinBox::up-arrow {
+    image: url(@arrow_up@);
+    width: 12px;
+    height: 12px;
+}
+QAbstractSpinBox::down-arrow {
+    image: url(@arrow@);
+    width: 12px;
+    height: 12px;
+}
+QAbstractSpinBox::up-arrow:disabled, QAbstractSpinBox::up-arrow:off {
+    image: url(@arrow_up_disabled@);
+}
+QAbstractSpinBox::down-arrow:disabled, QAbstractSpinBox::down-arrow:off {
+    image: url(@arrow_disabled@);
+}
+/* Union's header: the button colour, framed right and below, plain centred text. */
+QHeaderView::section {
+    background-color: @card@;
+    color: @text@;
+    border: none;
+    border-right: 1px solid @button_frame@;
+    border-bottom: 1px solid @button_frame@;
+    padding: 4px;
+    min-height: 22px;
+}
+/* === Combo boxes (library sort) === */
+QComboBox {
+    background-color: @button@;
+    color: @text@;
+    border: 1px solid @button_frame@;
+    border-radius: 5px;
+    padding: 4px 8px;
+    min-height: 20px;
+    font-weight: 500;
+    combobox-popup: 0; /* a drop-down list below the box, as Union opens it (Fusion: a menu over it) */
+}
+QComboBox:hover {
+    border-color: @accent@;
+}
+QComboBox:disabled {
+    background-color: @disabled_bg@;
+    color: @disabled_text@;
+    border-color: @disabled_border@;
+}
+/* Union's chevron, 6 px from the border. */
+QComboBox::drop-down {
+    border: none;
+    width: 22px;
+}
+QComboBox::down-arrow {
+    image: url(@arrow@); /* @2x picked up on HiDPI */
+    width: 16px;
+    height: 16px;
+    margin-right: 6px;
+}
+QComboBox::down-arrow:disabled {
+    image: url(@arrow_disabled@);
+}
+/* The drop-down: Union's popup — the view background, framed and rounded — with rows
+   drawn like menu items (8 px padding); the row under the mouse is the current one, and
+   it shows the menu's hover: the accent tint and an accent border. */
+QComboBoxPrivateContainer {
+    background: transparent;
+    border: none;
+}
+QComboBox QAbstractItemView {
+    background-color: @view@;
+    color: @text@;
+    border: 1px solid @frame@;
+    border-radius: 5px;
+    padding: 0 3px;
+    outline: none;
+}
+QComboBox QAbstractItemView::item {
+    padding: 8px;
+    border: 1px solid transparent;
+    border-radius: 5px;
+}
+QComboBox QAbstractItemView::item:hover, QComboBox QAbstractItemView::item:selected {
+    background-color: @list_hover@;
+    border-color: @accent@;
+    color: @text@;
+}
+)";
+
+// The only application-wide styling: tooltips are parentless top-levels, so
+// they can't inherit the window stylesheet. Everything else lives in
+// applyTo() — file dialogs are in-process Qt widgets even when "native" on
+// KDE, and an app-wide stylesheet/palette would drag them into the dark
+// theme; scoping to the window keeps them looking like the OS.
+static const char* const APP_STYLE_SHEET = R"(
+QToolTip {
+    background-color: @raised@;
+    color: @text@;
+    border: 1px solid @border@;
+    padding: 4px 6px;
+    border-radius: 4px;
+}
+)";
+
 // WCAG relative luminance and contrast ratio.
 static double luminance(const QColor& c) {
     auto channel = [](double v) {
@@ -720,13 +1244,14 @@ QColor status_bad() {
     return readable_on(QColor("#e85a4f"), active.surface, 4.5);
 }
 
-// The ▾ of NAM-X's menu buttons (preset name, 4/4, Click…): Union's chevron —
-// breeze-icons' arrow-down-symbolic, its path as the SVG has it — in `color`, painted into
-// the cache folder (style sheets take only files) at 16 px with an @2x twin; the URL is
-// empty when that fails.
-static QString chevron_url(const QColor& color) {
+// Union's small icons, painted in `color` into the cache folder (style sheets take only
+// files) at 16 px with an @2x twin; the URL is empty when that fails.
+//   chevron-down / chevron-up: breeze-icons' arrow-down-symbolic (combo boxes, menu
+//     buttons, spin boxes), its path as the SVG has it;
+//   check: Union's checkmark.svg, a 2.5 px stroke; radio: Union's radio.svg, a 3 px dot.
+static QString icon_url(const QString& name, const QColor& color) {
     const QString dir = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
-    const QString base = QString("chevron-down-%1").arg(color.name().mid(1));
+    const QString base = QString("%1-%2").arg(name, color.name().mid(1));
     const QString path = dir + '/' + base + ".png";
     if (QFileInfo::exists(path) && QFileInfo::exists(dir + '/' + base + "@2x.png")) {
         return path;
@@ -740,9 +1265,20 @@ static QString chevron_url(const QColor& color) {
         QPainter p(&image);
         p.setRenderHint(QPainter::Antialiasing);
         p.scale(scale, scale);
-        p.setPen(Qt::NoPen);
-        p.setBrush(color);
-        p.drawPolygon(chevron);
+        if (name == "check") {
+            p.setPen(QPen(color, 2.5, Qt::SolidLine, Qt::RoundCap, Qt::MiterJoin));
+            p.drawPolyline(QPolygonF({{4, 8}, {7, 11}, {13, 5}}));
+        } else {
+            p.setPen(Qt::NoPen);
+            p.setBrush(color);
+            if (name == "radio") {
+                p.drawEllipse(QPointF(8, 8), 3, 3);
+            } else if (name == "chevron-up") {
+                p.drawPolygon(QTransform(1, 0, 0, -1, 0, 16).map(chevron));
+            } else {
+                p.drawPolygon(chevron);
+            }
+        }
         p.end();
         if (!image.save(dir + '/' + base + (scale == 2 ? "@2x" : "") + ".png")) {
             return {};
@@ -764,18 +1300,34 @@ static QString fill_roles(const char* sheet) {
         {"surface", pal.surface},
         {"card", pal.card},
         {"button", pal.card}, // the palette's button colour, as buttons use it
+        {"raised", pal.raised},
+        {"selection", pal.selection},
         {"pressed", pal.pressed},
         {"line", pal.line},
+        {"border", pal.border},
+        {"border_hover", pal.border_hover},
         {"disabled_bg", pal.disabled_bg},
+        {"disabled_border", pal.disabled_border},
+        {"disabled_text", pal.disabled_text},
         {"text", pal.text},
         {"text_dim", pal.text_dim},
         {"text_muted", pal.text_muted},
         {"text_faint", pal.text_faint},
         {"text_off", pal.text_off},
         {"notice", pal.notice},
+        {"header", pal.header},
+        {"frame", pal.frame},
+        {"header_hover", pal.header_hover},
+        {"menu_hover", pal.menu_hover},
         {"button_frame", pal.button_frame},
         {"tab", pal.tab},
         {"checked", pal.checked},
+        {"bar", pal.bar},
+        {"bar_hover", pal.bar_hover},
+        {"view", pal.view},
+        {"view_frame", pal.view_frame},
+        {"list_hover", pal.list_hover},
+        {"highlighted_text", pal.highlighted_text},
         {"accent", current_accent},
         {"on_accent", on_accent()},
     };
@@ -791,8 +1343,27 @@ static QString fill_roles(const char* sheet) {
         const qreal pt = m.captured(1).toInt() * font_scale();
         qss.replace(m.capturedStart(), m.capturedLength(), QString::number(pt, 'f', 1) + "pt");
     }
-    if (qss.contains("@arrow@")) {
-        qss.replace("@arrow@", chevron_url(pal.text));
+    // Icons in the text colour, and in the disabled text colour for disabled controls.
+    struct Icon
+    {
+        const char* placeholder;
+        const char* name;
+        QColor color;
+    };
+    const Icon icons[] = {
+        {"@arrow@", "chevron-down", pal.text},
+        {"@arrow_disabled@", "chevron-down", pal.disabled_text},
+        {"@arrow_up@", "chevron-up", pal.text},
+        {"@arrow_up_disabled@", "chevron-up", pal.disabled_text},
+        {"@check@", "check", pal.text},
+        {"@check_disabled@", "check", pal.disabled_text},
+        {"@radio@", "radio", pal.text},
+        {"@radio_disabled@", "radio", pal.disabled_text},
+    };
+    for (const Icon& icon : icons) {
+        if (qss.contains(QLatin1String(icon.placeholder))) {
+            qss.replace(QLatin1String(icon.placeholder), icon_url(icon.name, icon.color));
+        }
     }
     return qss;
 }
@@ -813,6 +1384,22 @@ static QPalette palette_of(const ThemeSpec& spec) {
     p.setColor(QPalette::Shadow, spec.shadow);
     p.setColor(QPalette::Disabled, QPalette::WindowText, spec.disabled_text);
     return p;
+}
+
+// The menu bar's colour while following the system: KDE's Header colour, read from
+// kdeglobals — Qt's palette has no such role — when that file describes the palette in use
+// (its window colour matches); elsewhere (Windows, GNOME) the window's.
+static QColor system_header(const QPalette& system) {
+    const QColor window = system.color(QPalette::Window);
+    const QString path =
+        QStandardPaths::locate(QStandardPaths::GenericConfigLocation, "kdeglobals");
+    if (!path.isEmpty()) {
+        const auto kde = load_kde_colors(path);
+        if (kde && kde->window.rgb() == window.rgb()) {
+            return kde->header;
+        }
+    }
+    return window;
 }
 
 // Reads the scheme and accent the OS asks for (Mode::SYSTEM), the forced Breeze one, or
@@ -844,8 +1431,11 @@ static void resolve_scheme() {
     const QPalette source = current_mode == Mode::SYSTEM   ? system
                             : current_mode == Mode::CUSTOM ? palette_of(custom_theme)
                                                            : breeze(dark_active);
+    const QColor header = current_mode == Mode::SYSTEM   ? system_header(system)
+                          : current_mode == Mode::CUSTOM ? custom_theme.header
+                                                         : breeze_header(dark_active);
     current_accent = source.color(QPalette::Highlight);
-    active = from_palette(source, dark_active);
+    active = from_palette(source, dark_active, header);
     // Breeze's icons come in a light and a dark set and Qt doesn't recolour them: under a
     // forced theme the set has to match NAM-X's, not the desktop's.
     const QString icons = QIcon::themeName();
@@ -870,6 +1460,216 @@ protected:
             QTimer::singleShot(0, qApp, [] {
                 reapply();
             });
+        }
+        return QObject::eventFilter(watched, event);
+    }
+};
+
+// Union's menu body and shadow (box-shadow: 0 2px 20px rgba(0, 0, 0, 0.2)). The window
+// is MENU_SHADOW larger right and below (contents margins, which QMenu counts per side;
+// a stylesheet margin it counts on all four) and the shadow is painted there. The menu's
+// top-left corner stays where Qt and Wayland anchor it — to the menu-bar item, or the
+// parent's row — so the fringe above and left of Union's shadow is left out.
+static constexpr int MENU_SHADOW = 20;
+
+static void paint_menu_body(QWidget* menu) {
+    QPainter p(menu);
+    p.setRenderHint(QPainter::Antialiasing);
+    const QRectF body = QRectF(menu->rect()).adjusted(0, 0, -MENU_SHADOW, -MENU_SHADOW);
+    // The shadow: its shape 2 px down, then one ring per pixel outward, fading as a blur
+    // of 20 px does (σ ≈ 7).
+    const QRectF shadow = body.translated(0, 2);
+    QPainterPath shape;
+    shape.addRoundedRect(shadow, 5, 5);
+    p.fillPath(shape, QColor(0, 0, 0, static_cast<int>(std::lround(0.2 * 255))));
+    for (int i = 1; i <= MENU_SHADOW; ++i) {
+        const double fade = std::exp(-(i * i) / (2.0 * 7.0 * 7.0));
+        p.setPen(QPen(QColor(0, 0, 0, static_cast<int>(std::lround(0.2 * 255 * fade))), 1.0));
+        p.drawRoundedRect(shadow.adjusted(-i + 0.5, -i + 0.5, i - 0.5, i - 0.5), 5 + i, 5 + i);
+    }
+    // The body: the window colour, framed.
+    p.setPen(QPen(active.frame, 1.0));
+    p.setBrush(active.window);
+    p.drawRoundedRect(body.adjusted(0.5, 0.5, -0.5, -0.5), 5, 5);
+}
+
+// Union's keyboard focus outline: 2 px of the accent at 30 % around the control (around
+// its box, for a check box). A stylesheet can't draw outside a widget, so this ring sits
+// on the control's parent, following it, until the focus leaves.
+class FocusRing : public QWidget
+{
+public:
+    explicit FocusRing(QWidget* new_target)
+        : QWidget(new_target->parentWidget())
+        , target(new_target) {
+        setAttribute(Qt::WA_TransparentForMouseEvents);
+        setFocusPolicy(Qt::NoFocus);
+        target->installEventFilter(this);
+        follow();
+        show();
+        raise();
+    }
+
+protected:
+    bool eventFilter(QObject*, QEvent* event) override {
+        if (event->type() == QEvent::Move || event->type() == QEvent::Resize) {
+            follow();
+        } else if (event->type() == QEvent::Hide) {
+            hide();
+        }
+        return false;
+    }
+
+    void paintEvent(QPaintEvent*) override {
+        QPainter p(this);
+        p.setRenderHint(QPainter::Antialiasing);
+        QColor ring = current_accent;
+        ring.setAlphaF(0.3f);
+        p.setPen(QPen(ring, 2));
+        p.drawRoundedRect(QRectF(rect()).adjusted(1, 1, -1, -1), 6, 6);
+    }
+
+private:
+    void follow() {
+        QRect area = target->geometry();
+        if (auto* box = qobject_cast<QCheckBox*>(target.data())) {
+            QStyleOptionButton option;
+            option.initFrom(box);
+            const QRect indicator =
+                box->style()->subElementRect(QStyle::SE_CheckBoxIndicator, &option, box);
+            area = QRect(box->mapTo(parentWidget(), indicator.topLeft()), indicator.size());
+        }
+        setGeometry(area.adjusted(-2, -2, 2, 2));
+    }
+
+    QPointer<QWidget> target;
+};
+
+// The control showing keyboard focus: its `visualFocus` property turns its border to the
+// accent (the stylesheet), and the ring surrounds it.
+static QPointer<QWidget> focus_target;
+static QPointer<FocusRing> focus_ring;
+
+static void show_visual_focus(QWidget* target) {
+    if (focus_target) {
+        focus_target->setProperty("visualFocus", false);
+        focus_target->style()->unpolish(focus_target);
+        focus_target->style()->polish(focus_target);
+    }
+    delete focus_ring;
+    focus_target = target;
+    if (!target || !target->parentWidget()) {
+        return;
+    }
+    target->setProperty("visualFocus", true);
+    target->style()->unpolish(target);
+    target->style()->polish(target);
+    focus_ring = new FocusRing(target);
+}
+
+// The controls Union outlines on keyboard focus: buttons, check boxes, combo boxes, spin
+// boxes and text fields (a spin box's own field counts as the spin box).
+static QWidget* focus_control(QObject* object) {
+    auto* widget = qobject_cast<QWidget*>(object);
+    if (qobject_cast<QLineEdit*>(widget) &&
+        qobject_cast<QAbstractSpinBox*>(widget->parentWidget())) {
+        return widget->parentWidget();
+    }
+    if (qobject_cast<QAbstractButton*>(widget) || qobject_cast<QComboBox*>(widget) ||
+        qobject_cast<QAbstractSpinBox*>(widget) || qobject_cast<QLineEdit*>(widget)) {
+        return widget;
+    }
+    return nullptr;
+}
+
+// What the stylesheet can't do, done to each widget as it is polished:
+// - every menu, context menus included, gets a translucent window (before its window
+//   exists), so the rounded corners show what is behind them — as Breeze does — room
+//   right and below for its shadow, and its body and shadow painted (paint_menu_body);
+// - a spin box's text keeps Union's 8 px from the border: the stylesheet's padding doesn't
+//   reach the spin box's inner field, its text margins do (2 px are the field's own);
+// - an item view lays its rows out again once polished: rows added before the stylesheet
+//   reached it (the Settings sidebar) kept the plain style's height;
+// - a combo box paints its drop-down rows with the standard delegate — its own ignores
+//   the stylesheet's row rules — and the drop-down's window is translucent, so its
+//   corners can be rounded like a menu's.
+// And Union's keyboard focus (FocusRing): shown when Tab brings the focus to a control,
+// gone when the focus leaves it — a click gives focus without the outline.
+class UnionPolish : public QObject
+{
+public:
+    using QObject::QObject;
+
+protected:
+    bool eventFilter(QObject* watched, QEvent* event) override {
+        if (!fusion_active()) {
+            // A native style draws these itself: take back what Fusion's look added
+            // (the style switches live when the theme mode changes).
+            if (event->type() == QEvent::Polish) {
+                if (auto* menu = qobject_cast<QMenu*>(watched)) {
+                    menu->setContentsMargins(0, 0, 0, 0);
+                } else if (auto* spin = qobject_cast<QAbstractSpinBox*>(watched)) {
+                    if (auto* field = spin->findChild<QLineEdit*>()) {
+                        field->setTextMargins(0, 0, 0, 0);
+                    }
+                }
+            }
+            if (focus_target) {
+                show_visual_focus(nullptr);
+            }
+            return QObject::eventFilter(watched, event);
+        }
+        if (event->type() == QEvent::Polish) {
+            if (auto* menu = qobject_cast<QMenu*>(watched)) {
+                menu->setAttribute(Qt::WA_TranslucentBackground);
+                menu->setContentsMargins(0, 0, MENU_SHADOW, MENU_SHADOW);
+                // Qt adds an icon column of its own once a menu has icons: the stylesheet
+                // then pads less (QMenu[icons]), so the text stays in Union's place. Once
+                // per menu: the re-polish below comes back here.
+                if (menu->property("iconWatch").toBool()) {
+                    return QObject::eventFilter(watched, event);
+                }
+                menu->setProperty("iconWatch", true);
+                QObject::connect(menu, &QMenu::aboutToShow, menu, [menu] {
+                    const QList<QAction*> actions = menu->actions();
+                    const bool icons = std::any_of(actions.begin(), actions.end(), [](QAction* a) {
+                        return !a->icon().isNull() && a->isIconVisibleInMenu();
+                    });
+                    if (menu->property("icons").toBool() != icons) {
+                        menu->setProperty("icons", icons);
+                        menu->style()->unpolish(menu);
+                        menu->style()->polish(menu);
+                    }
+                });
+            } else if (auto* spin = qobject_cast<QAbstractSpinBox*>(watched)) {
+                if (auto* field = spin->findChild<QLineEdit*>()) {
+                    field->setTextMargins(6, 0, 0, 0);
+                }
+            } else if (auto* view = qobject_cast<QAbstractItemView*>(watched)) {
+                QTimer::singleShot(0, view, [view] {
+                    view->doItemsLayout();
+                });
+            } else if (auto* combo = qobject_cast<QComboBox*>(watched)) {
+                if (!qobject_cast<QStyledItemDelegate*>(combo->itemDelegate())) {
+                    combo->setItemDelegate(new QStyledItemDelegate(combo));
+                }
+            } else if (watched->inherits("QComboBoxPrivateContainer")) {
+                auto* container = static_cast<QFrame*>(watched);
+                container->setFrameShape(QFrame::NoFrame);
+                container->setAttribute(Qt::WA_TranslucentBackground);
+            }
+        } else if (event->type() == QEvent::Paint && qobject_cast<QMenu*>(watched)) {
+            paint_menu_body(static_cast<QWidget*>(watched)); // under the menu's own items
+        } else if (event->type() == QEvent::FocusIn) {
+            const Qt::FocusReason reason = static_cast<QFocusEvent*>(event)->reason();
+            if (QWidget* control = focus_control(watched);
+                control && control != focus_target &&
+                (reason == Qt::TabFocusReason || reason == Qt::BacktabFocusReason)) {
+                show_visual_focus(control);
+            }
+        } else if (event->type() == QEvent::FocusOut && focus_target &&
+                   focus_control(watched) == focus_target) {
+            show_visual_focus(nullptr);
         }
         return QObject::eventFilter(watched, event);
     }
@@ -931,11 +1731,12 @@ void apply(QApplication& app) {
     // on the Light theme under a dark desktop. This attribute restores the widget-style
     // propagation, so the window's palette reaches every descendant.
     QApplication::setAttribute(Qt::AA_UseStyleSheetPropagationInWidgetStyles, true);
-    // Union (KDE Plasma 6.8's style engine) draws every standard control; the stylesheet
-    // only styles NAM-X's own pieces. Union takes its colours from KDE's colour scheme,
-    // not from the palette: under a forced theme, its controls keep the desktop's.
-    app.setStyle("Union");
+    native_style = app.style()->name(); // no stylesheet yet: the style itself
+    active_style = native_style;
+    choose_style();
+    app.setStyleSheet(fusion_active() ? fill_roles(APP_STYLE_SHEET) : QString());
     app.installEventFilter(new SystemThemeWatcher(&app));
+    app.installEventFilter(new UnionPolish(&app));
 #if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
     QObject::connect(QGuiApplication::styleHints(), &QStyleHints::colorSchemeChanged, &app, [] {
         if (current_mode == Mode::SYSTEM) {
@@ -977,6 +1778,9 @@ void apply_to(QWidget& root) {
     // and the loaded-file label on the Amplifier/Cabinet rows (knob rings and
     // toggles get theirs pushed by tagCard).
     QString qss = fill_roles(STYLE_SHEET);
+    if (fusion_active()) {
+        qss += fill_roles(FUSION_SHEET);
+    }
     for (const auto& fc : FX_COLORS) {
         qss += QString::fromUtf8("QFrame[fx=\"%1\"] QLabel#fxName { color: %2; }\n"
                                  "QFrame[fx=\"%1\"] QLabel#fileStatusOk { color: %2; }\n")
@@ -992,6 +1796,8 @@ void reapply(bool force) {
     if (!force && old_sheet == fill_roles(STYLE_SHEET)) {
         return; // the event was ours (or changed nothing we use): no loop, no flicker
     }
+    choose_style();
+    qApp->setStyleSheet(fusion_active() ? fill_roles(APP_STYLE_SHEET) : QString());
     if (!themed_root) {
         return;
     }

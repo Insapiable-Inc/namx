@@ -84,8 +84,10 @@ SettingsDialog::SettingsDialog(SettingsTargets new_targets, QWidget* parent)
     resize(720, 480);
 
     // KDE's side panel: flush with the window's edges, an icon per page; the property
-    // asks the style to draw it as one (flat, a line on its edge).
+    // asks a native style to draw it as one (flat, a line on its edge), the name is for
+    // Fusion's stylesheet.
     page_list = new QListWidget;
+    page_list->setObjectName("settingsSidebar");
     page_list->setProperty("_kde_side_panel_view", true);
     page_list->setFixedWidth(160);
     page_list->setIconSize(QSize(22, 22));

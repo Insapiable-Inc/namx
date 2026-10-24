@@ -428,7 +428,7 @@ change applies immediately.
 | MIDI | Input devices on/off, Follow MIDI clock, **Mappings…** |
 | Library | Model / IR / preset folders, rescan |
 | Tuner | Reference pitch, show the detected frequency (also on the tuner card) |
-| Appearance | Theme: **Follow the system** (light or dark and the accent colour, live), **Dark** / **Light** (KDE's Breeze Dark / Breeze Light), or a theme file from the themes folder; **Import…** copies a file there, **Open Folder** shows it (see [File formats](#8-file-formats)) |
+| Appearance | Theme: **Follow the system** (light or dark and the accent colour, live), **Dark** / **Light** (KDE's Breeze Dark / Breeze Light), or a theme file from the themes folder; **Import…** copies a file there, **Open Folder** shows it (see [File formats](#8-file-formats)). Following the system, NAM-X uses the desktop's widget style (Union or Breeze on Plasma, Windows 11 on Windows); a forced theme, or a system without such a style (the AppImage, GNOME), uses Qt's Fusion drawn to look like KDE's Union. To try another style: `namx -style fusion` (or `breeze`, `union`), or `QT_STYLE_OVERRIDE=…` |
 | Shortcuts | Every keyboard shortcut, read from the window (**Settings → Keyboard Shortcuts…**) |
 
 ### Library
@@ -532,6 +532,7 @@ Folder**). Two formats are read:
 | `base` | Lists, fields | `window` |
 | `button` | Effect cards, buttons | `window` |
 | `accent` | Selections, the Input/Output knobs, the tempo bar | Breeze blue `#3daee9` |
+| `header` | The menu bar (a KDE scheme's `[Colors:Header]`) | `window` |
 | `shadow`, `disabledText` | Shadows, disabled controls | derived from `window` / `text` |
 | `effects` | Per-effect colour, by effect ID: `tuner`, `transpose`, `gate` (Noise Gate), `comp` (Compressor), `wah`, `flanger`, `phaser`, `drive` (Overdrive), `nam` (Amplifier), `volume` (Volume Pedal), `eq`, `chorus`, `tremolo`, `delay`, `reverb`, `ir` (Cabinet) | NAM-X's own |
 

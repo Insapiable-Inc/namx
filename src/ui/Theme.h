@@ -106,8 +106,9 @@ QColor flag_white();
 // per-effect QSS rules) and hands the accent to its knobs and switches.
 void tag_card(QWidget* card, const QString& fx_id);
 
-// Install the Union style (KDE Plasma 6.8) and follow the system's scheme. Call once after
-// QApplication is constructed.
+// Picks the style — the desktop's own while following the system, Fusion (with the
+// Union-like stylesheet) under a forced theme or where no native style exists — and
+// follows the system's scheme. Call once after QApplication is constructed.
 void apply(QApplication& app);
 
 // Apply the dark palette + the full stylesheet to the main window's subtree.
