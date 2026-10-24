@@ -480,7 +480,7 @@ twice the CPU — it is never summed to mono.
 
 | Stage | Main controls | ▾ More |
 |-------|---------------|--------|
-| Transpose | Mix, Semitones (±12); **Reverse** (pedal heel ↔ toe), **Continuous** switch (off = Discrete: whole semitones; on = smooth whammy-style glides, the shifter then stays active at 0 st) | — |
+| Transpose | Mix, Semitones (±12); **Reverse** (pedal heel ↔ toe), **Fine** switch (off: whole semitones; on: smooth whammy-style bends between the steps, the shifter then stays active at 0 st) | — |
 | Overdrive | Level, Drive, Tone — a Tube Screamer circuit model (the op-amp + diode clipper as a wave digital filter, oversampled) | — |
 | Amplifier | On/Off, ‹ › through the library, Input, Level (see Parameters); the row shows the model and its metadata | — |
 | Wah | **Manual** switch (off = Auto: your playing sweeps it), **Reverse** (pedal heel ↔ toe), Mix, Sensitivity (Auto), Position (the sweep in Manual mode — map an expression pedal), Resonance; the controls the current mode ignores are dimmed | — |

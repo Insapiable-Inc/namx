@@ -916,7 +916,7 @@ void MainWindow::setup_ui() {
                           engine->get_transpose().set_semitones(static_cast<float>(v));
                       });
         KnobWidget* semis = knob_transpose_semis;
-        semis->set_snap(1.0); // Discrete until the Continuous switch says otherwise
+        semis->set_snap(1.0); // Whole semitones until the Fine switch says otherwise
         semis->set_scroll_step(0.1); // used in continuous mode
         semis->set_value_formatter(&format_semitones);
         semis->setToolTip("Pitch shift in semitones: −1 / −2 for drop tunings, ±12 for octaves "
@@ -931,9 +931,9 @@ void MainWindow::setup_ui() {
         sw_transpose_continuous = new ToggleSwitch;
         sw_transpose_continuous->setCheckable(true);
         sw_transpose_continuous->setToolTip(
-            "Continuous: Semitones glides smoothly (whammy-style bends with an expression "
-            "pedal) · off = Discrete: whole semitones");
-        put_in_sync_column(col, make_caption_switch(sw_transpose_continuous, "Continuous"));
+            "Fine: Semitones moves smoothly between the steps (whammy-style bends with an "
+            "expression pedal) · off: whole semitones");
+        put_in_sync_column(col, make_caption_switch(sw_transpose_continuous, "Fine"));
         Theme::tag_card(col, "transpose");
         fx_cols[&engine->get_transpose()] = col;
     }
