@@ -5,6 +5,7 @@
 
 #include <QFont>
 #include <QPainter>
+#include <QPainterPath>
 
 #include "Common.h"
 #include "LedPaint.h"
@@ -170,21 +171,24 @@ void TunerDisplay::paintEvent(QPaintEvent*) {
         }
     }
 
-    // Sharp marker at the digit's top right.
+    // Sharp marker at the digit's top right: drawn, not a font glyph, so its strokes
+    // are as bold as the segments (a 12–18 px "#" was hard to see on a 2K screen).
     if (valid && note.contains('#')) {
-        QFont f = font();
-        f.setPixelSize(18); // about two thirds of the digit, like a superscript
-        f.setBold(true);
-        p.setFont(f);
-        const QRectF sharp_rect(digit_x + w + 2.0, digit_y - 4.0, 20.0, 20.0);
+        const qreal x0 = digit_x + w + 3.0, y0 = digit_y - 3.0;
+        const qreal size = 17.0, stroke = 2.6, rise = 2.0; // the bars climb to the right
+        QPainterPath sharp;
+        for (const qreal fx : {0.36, 0.68}) { // the two uprights
+            sharp.moveTo(x0 + fx * size, y0 + 1.0);
+            sharp.lineTo(x0 + fx * size, y0 + size + 1.0);
+        }
+        for (const qreal fy : {0.38, 0.72}) { // the two crossbars
+            sharp.moveTo(x0, y0 + fy * size + rise / 2.0);
+            sharp.lineTo(x0 + size, y0 + fy * size - rise / 2.0);
+        }
         QColor halo = digit_color;
         halo.setAlpha(60);
-        p.setPen(halo);
-        for (const QPointF d : {QPointF(1, 0), QPointF(-1, 0), QPointF(0, 1), QPointF(0, -1)}) {
-            p.drawText(sharp_rect.translated(d), Qt::AlignCenter, "#");
-        }
-        p.setPen(digit_color);
-        p.drawText(sharp_rect, Qt::AlignCenter, "#");
+        p.strokePath(sharp, QPen(halo, stroke + 2.0, Qt::SolidLine, Qt::RoundCap));
+        p.strokePath(sharp, QPen(digit_color, stroke, Qt::SolidLine, Qt::RoundCap));
     }
 
     // Signed cents readout, right of the digit
