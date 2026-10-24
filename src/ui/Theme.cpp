@@ -775,7 +775,7 @@ QMenuBar::item:selected {
 QMenuBar::item:pressed {
     background-color: @accent@;
     border-color: @accent@;
-    color: @on_accent@;
+    color: @highlighted_text@;
 }
 /* Union's menus: rounded, framed, 32 px items rounded inside a 4 px padding; the text
    leaves the column for icons and check marks (6 px padding, 16 px icon, 4 px spacing).
@@ -1208,14 +1208,6 @@ static double contrast(const QColor& a, const QColor& b) {
     return (std::max(la, lb) + 0.05) / (std::min(la, lb) + 0.05);
 }
 
-// Text drawn on the accent (checked buttons, selections): the theme's window or text
-// tone, whichever reads better on it.
-static QColor on_accent() {
-    const QColor& a = active.window;
-    const QColor& b = active.text;
-    return contrast(current_accent, a) >= contrast(current_accent, b) ? a : b;
-}
-
 // An effect accent on a light card (name, knob ring and tick, switch): the pale ones
 // (Wah, Chorus…) are darkened until they read (3:1, WCAG's floor for graphics and
 // large text). Dark theme: the accent verbatim, as approved — except under a theme
@@ -1337,7 +1329,6 @@ static QString fill_roles(const char* sheet) {
         {"list_hover", pal.list_hover},
         {"highlighted_text", pal.highlighted_text},
         {"accent", current_accent},
-        {"on_accent", on_accent()},
     };
     QString qss = QString::fromUtf8(sheet);
     for (const auto& [role, color] : roles) {
@@ -1800,7 +1791,8 @@ void apply_to(QWidget& root) {
     p.setColor(QPalette::Dark, QColor(pal.window));
     p.setColor(QPalette::Shadow, QColor(pal.shadow));
     p.setColor(QPalette::Highlight, current_accent);
-    p.setColor(QPalette::HighlightedText, on_accent());
+    // Text on the accent: the scheme's own (Breeze's white), as KDE draws it.
+    p.setColor(QPalette::HighlightedText, QColor(pal.highlighted_text));
 
     p.setColor(QPalette::Disabled, QPalette::Text, QColor(pal.disabled_text));
     p.setColor(QPalette::Disabled, QPalette::WindowText, QColor(pal.disabled_text));
