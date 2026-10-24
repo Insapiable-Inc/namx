@@ -53,10 +53,10 @@ private:
 
 // Global tempo + metronome strip under the preset bar.
 //
-// The tempo is a session setting (QSettings tempo/bpm), not part of presets
-// — a preset stores note values and follows whatever tempo you play at. The
-// metronome's settings live in QSettings metronome/* (excluded from presets
-// too) and it keeps running across preset loads. Space starts/stops it.
+// The tempo is a session setting (QSettings tempo/bpm); a preset stores it only
+// while one of its Sync switches is on, and loading such a preset sets it (set_bpm).
+// The metronome's settings live in QSettings metronome/* (never in presets) and it
+// keeps running across preset loads. Space starts/stops it.
 class TempoBar : public QFrame
 {
     Q_OBJECT
