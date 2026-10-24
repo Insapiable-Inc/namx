@@ -7,6 +7,7 @@
 #include <QFormLayout>
 #include <QHBoxLayout>
 #include <QHeaderView>
+#include <QIcon>
 #include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
@@ -14,6 +15,7 @@
 #include <QSettings>
 #include <QShortcut>
 #include <QStandardPaths>
+#include <QStyle>
 #include <QUrl>
 #include <QVBoxLayout>
 
@@ -78,37 +80,58 @@ static void collect_menu_shortcuts(QMenu* menu, const QString& path,
 SettingsDialog::SettingsDialog(SettingsTargets new_targets, QWidget* parent)
     : QDialog(parent)
     , targets(std::move(new_targets)) {
-    setWindowTitle("Settings");
+    setWindowTitle("Configure"); // "Configure — NAM-X", as KDE titles it
     resize(720, 480);
 
+    // KDE's side panel: flush with the window's edges, an icon per page; the property
+    // asks a native style to draw it as one (flat, a line on its edge), the name is for
+    // Fusion's stylesheet.
     page_list = new QListWidget;
-    page_list->setFixedWidth(150);
+    page_list->setObjectName("settingsSidebar");
+    page_list->setProperty("_kde_side_panel_view", true);
+    page_list->setFixedWidth(160);
+    page_list->setIconSize(QSize(22, 22));
     pages = new QStackedWidget;
-    const std::pair<const char*, QWidget*> all[] = {
-        {"Audio", build_audio_page()},           {"MIDI", build_midi_page()},
-        {"Library", build_library_page()},       {"Tuner", build_tuner_page()},
-        {"Appearance", build_appearance_page()}, {"Shortcuts", build_shortcuts_page()},
+    struct PageEntry
+    {
+        const char* name;
+        const char* icon;
+        QWidget* page;
     };
-    for (const auto& [name, page] : all) {
-        page_list->addItem(name);
-        pages->addWidget(page);
+    const PageEntry all[] = {
+        {"Audio", "preferences-desktop-sound", build_audio_page()},
+        {"MIDI", "audio-midi", build_midi_page()},
+        {"Library", "library-music", build_library_page()},
+        {"Tuner", "music-note-16th", build_tuner_page()},
+        {"Appearance", "preferences-desktop-theme", build_appearance_page()},
+        {"Shortcuts", "preferences-desktop-keyboard-shortcut", build_shortcuts_page()},
+    };
+    for (const PageEntry& entry : all) {
+        page_list->addItem(new QListWidgetItem(QIcon::fromTheme(entry.icon), entry.name));
+        pages->addWidget(entry.page);
     }
     connect(page_list, &QListWidget::currentRowChanged, pages, &QStackedWidget::setCurrentIndex);
     connect(page_list, &QListWidget::currentRowChanged, this,
             &SettingsDialog::refresh_current_page);
 
-    auto* close = new QPushButton("Close");
+    auto* close = new QPushButton(QIcon::fromTheme("window-close"), "Close");
     connect(close, &QPushButton::clicked, this, &QDialog::close);
 
-    auto* body = new QHBoxLayout;
-    body->addWidget(page_list);
-    body->addWidget(pages, 1);
     auto* buttons = new QHBoxLayout;
     buttons->addStretch();
     buttons->addWidget(close);
-    auto* lay = new QVBoxLayout(this);
-    lay->addLayout(body, 1);
-    lay->addLayout(buttons);
+    auto* content = new QVBoxLayout; // the page and the buttons, in the dialog's margins
+    content->setContentsMargins(style()->pixelMetric(QStyle::PM_LayoutLeftMargin),
+                                style()->pixelMetric(QStyle::PM_LayoutTopMargin),
+                                style()->pixelMetric(QStyle::PM_LayoutRightMargin),
+                                style()->pixelMetric(QStyle::PM_LayoutBottomMargin));
+    content->addWidget(pages, 1);
+    content->addLayout(buttons);
+    auto* lay = new QHBoxLayout(this);
+    lay->setContentsMargins(0, 0, 0, 0);
+    lay->setSpacing(0);
+    lay->addWidget(page_list);
+    lay->addLayout(content, 1);
 
     audio_timer = new QTimer(this);
     audio_timer->setInterval(500);
@@ -191,7 +214,7 @@ QWidget* SettingsDialog::build_audio_page() {
     buffer_label = new QLabel;
     latency_label = new QLabel;
     xruns_label = new QLabel;
-    auto* reset = new QPushButton("Reset");
+    auto* reset = new QPushButton(QIcon::fromTheme("edit-undo"), "Reset");
     connect(reset, &QPushButton::clicked, &targets.status_bar, &AudioStatusBar::reset_counters);
     auto* xruns = new QHBoxLayout;
     xruns->addWidget(xruns_label);
@@ -338,8 +361,8 @@ QWidget* SettingsDialog::build_library_page() {
     for (size_t section = 0; section < folder_lists.size(); ++section) {
         folder_lists[section] = new QListWidget;
         folder_lists[section]->setMaximumHeight(90);
-        auto* add = new QPushButton("Add…");
-        auto* remove = new QPushButton("Remove");
+        auto* add = new QPushButton(QIcon::fromTheme("list-add"), "Add…");
+        auto* remove = new QPushButton(QIcon::fromTheme("list-remove"), "Remove");
         connect(add, &QPushButton::clicked, this, [this, section] {
             add_folder(section);
         });
@@ -357,7 +380,7 @@ QWidget* SettingsDialog::build_library_page() {
         lay->addLayout(row);
     }
 
-    auto* rescan = new QPushButton("Rescan library");
+    auto* rescan = new QPushButton(QIcon::fromTheme("view-refresh"), "Rescan library");
     connect(rescan, &QPushButton::clicked, &targets.library_index, &LibraryIndex::rescan);
 
     auto* last = new QHBoxLayout;
@@ -442,11 +465,11 @@ QWidget* SettingsDialog::build_appearance_page() {
     theme_box = new QComboBox;
     theme_box->setSizeAdjustPolicy(QComboBox::AdjustToContents);
     connect(theme_box, &QComboBox::activated, this, &SettingsDialog::choose_theme);
-    auto* import_button = new QPushButton("Import…");
+    auto* import_button = new QPushButton(QIcon::fromTheme("document-import"), "Import…");
     import_button->setToolTip("Copy a theme file (.json, or a KDE colour scheme .colors) into "
                               "the themes folder and use it");
     connect(import_button, &QPushButton::clicked, this, &SettingsDialog::import_theme);
-    auto* folder_button = new QPushButton("Open Folder");
+    auto* folder_button = new QPushButton(QIcon::fromTheme("document-open-folder"), "Open Folder");
     folder_button->setToolTip(themes_folder());
     connect(folder_button, &QPushButton::clicked, this, [] {
         QDir().mkpath(themes_folder());

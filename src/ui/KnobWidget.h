@@ -35,8 +35,8 @@ public:
     };
 
     explicit KnobWidget(const QString& new_label, double min_val, double max_val,
-                        double default_val, const QString& new_unit = "", Form form = Form::COMPACT,
-                        QWidget* parent = nullptr);
+                        double default_val, const QString& new_unit = "",
+                        Form new_form = Form::COMPACT, QWidget* parent = nullptr);
 
     double value() const;
     double get_default_value() const {
@@ -91,6 +91,16 @@ public:
     // Hides the name line; for a knob whose value label names itself ("Type: Plate").
     void set_name_visible(bool on);
 
+    // Compact knobs line up in columns: each tile's text column has one width, set by
+    // the owner from what every knob needs (its name, its widest value in the font in
+    // use) and never below TEXT_COLUMN_WIDTH.
+    static constexpr int TEXT_COLUMN_WIDTH = 81;
+    bool is_compact() const {
+        return form == Form::COMPACT;
+    }
+    int text_width_needed() const;
+    void set_text_column_width(int width);
+
     // Logarithmic dial (frequencies, times, rates): equal travel = equal
     // ratio, so 100 Hz–1 kHz gets as much of the sweep as 1–10 kHz. Values
     // stored in presets don't change — only how the dial maps to them.
@@ -121,6 +131,7 @@ private:
     VerticalDial* dial;
     QLabel* name_label;
     QLabel* label_value;
+    Form form;
     QColor accent;
     double min, max, default_value;
     QString unit;
@@ -137,6 +148,7 @@ private:
 
     double dial_to_value(int d) const;
     int value_to_dial(double v) const;
+    QString text_for(double v) const;
     void update_label();
 };
 

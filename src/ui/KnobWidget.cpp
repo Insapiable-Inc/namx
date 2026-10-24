@@ -6,6 +6,7 @@
 #include <QContextMenuEvent>
 #include <QDial>
 #include <QEvent>
+#include <QFontMetrics>
 #include <QLabel>
 #include <QMenu>
 #include <QMouseEvent>
@@ -173,8 +174,9 @@ private:
 };
 
 KnobWidget::KnobWidget(const QString& new_label, double min_val, double max_val, double default_val,
-                       const QString& new_unit, Form form, QWidget* parent)
+                       const QString& new_unit, Form new_form, QWidget* parent)
     : QWidget(parent)
+    , form(new_form)
     , min(min_val)
     , max(max_val)
     , default_value(default_val)
@@ -218,18 +220,16 @@ KnobWidget::KnobWidget(const QString& new_label, double min_val, double max_val,
         layout->addWidget(dial, 0, Qt::AlignHCenter);
         layout->addWidget(label_value);
     } else {
-        // Compact row form: dial on the left, name over value on the right.
-        // Keeps the dial a usable size while the whole widget stays ~46px
-        // tall, so a full effect row fits in ~58px.
+        // Compact row form: dial on the left, name over value on the right, as tall as
+        // the dial (or the two text lines, at a large font).
         setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-        setFixedWidth(142); // uniform tiles — knob columns align across rows
+        set_text_column_width(TEXT_COLUMN_WIDTH);
         dial->setFixedSize(40, 40);
         name_label->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
         label_value->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-        label_value->setMinimumWidth(64); // steady width while the value changes
 
         auto* layout = new QHBoxLayout(this);
-        layout->setContentsMargins(6, 4, 8, 4);
+        layout->setContentsMargins(6, 0, 8, 0);
         layout->setSpacing(7);
 
         auto* text = new QVBoxLayout;
@@ -297,21 +297,45 @@ void KnobWidget::set_name_visible(bool on) {
     name_label->setVisible(on);
 }
 
-void KnobWidget::update_label() {
-    double v = value();
+QString KnobWidget::text_for(double v) const {
+    if (formatter) {
+        return formatter(v);
+    }
     QString txt =
         int_display ? QString::number(static_cast<int>(std::round(v))) : QString::number(v, 'f', 1);
     if (!unit.isEmpty()) {
         txt += " " + unit;
     }
-    if (formatter) {
-        txt = formatter(v);
-    }
+    return txt;
+}
 
+void KnobWidget::update_label() {
     QPalette p = label_value->palette();
     p.setColor(QPalette::WindowText, accent);
     label_value->setPalette(p);
-    label_value->setText(txt);
+    label_value->setText(text_for(value()));
+}
+
+int KnobWidget::text_width_needed() const {
+    int width = name_label->isHidden() ? 0 : name_label->sizeHint().width();
+    // The widest value: every position of a stepped knob, else the ends of the range
+    // (the most digits, the minus sign) and the default.
+    QList<double> values = {min, max, default_value};
+    if (snap > 0.0 && (max - min) / snap <= 1000.0) {
+        values.clear();
+        for (double v = min; v <= max + snap / 2; v += snap) {
+            values << v;
+        }
+    }
+    const QFontMetrics fm = label_value->fontMetrics();
+    for (const double v : values) {
+        width = std::max(width, fm.horizontalAdvance(text_for(v)));
+    }
+    return width;
+}
+
+void KnobWidget::set_text_column_width(int width) {
+    setFixedWidth(6 + 40 + 7 + width + 8); // margin, dial, spacing, text, margin
 }
 
 static std::function<void(KnobWidget*, QMenu*)>& menu_hook() {

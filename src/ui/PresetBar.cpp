@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <functional>
 
+#include <QActionGroup>
 #include <QContextMenuEvent>
 #include <QDir>
 #include <QFile>
@@ -232,6 +233,10 @@ static QMenu* folder_menu(const QString& folder, QMenu* root, QMap<QString, QMen
 
 void PresetBar::populate_preset_menu(QMenu* menu) {
     menu->clear();
+    // One preset is loaded: the entries are a one-of-many group (radio items), across the
+    // folder submenus. Rebuilt with the menu.
+    qDeleteAll(menu->findChildren<QActionGroup*>(Qt::FindDirectChildrenOnly));
+    auto* group = new QActionGroup(menu);
 
     QList<const LibraryEntry*> presets;
     for (const auto& e : library_index.get_entries()) {
@@ -258,6 +263,7 @@ void PresetBar::populate_preset_menu(QMenu* menu) {
         QAction* a = folder_menu(e->folder, menu, folders)->addAction(e->name);
         a->setCheckable(true);
         a->setChecked(e->path == path);
+        a->setActionGroup(group);
         a->setToolTip(Theme::plain_tooltip(e->summary));
         const QString entry_path = e->path;
         connect(a, &QAction::triggered, this, [this, entry_path] {

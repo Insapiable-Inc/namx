@@ -344,6 +344,7 @@ endif()
 install(FILES LICENSE LICENSE-MIT COPYRIGHT
               packaging/THIRD-PARTY-NOTICES.md
               packaging/licenses/LGPL-3.0.txt
+              packaging/licenses/QtSvg-ISI-HPND.txt
               packaging/licenses/nlohmann-json-MIT.txt
         DESTINATION ${NAM_NOTICES_DIR} COMPONENT notices)
 foreach(notice

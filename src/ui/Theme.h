@@ -73,6 +73,11 @@ QColor thumb_bot(); // switch thumb gradient, dark end
 QColor thumb_outline(); // switch thumb edge; invalid = none
 int switch_rim_alpha(bool checked); // the switch track's dark edge
 
+// Rows painted by hand (the library list), like the stylesheet's list rows (Union's):
+// hovered = this tint and an accent border, selected = the accent with this text.
+QColor list_hover();
+QColor highlighted_text();
+
 // Status colours (status bar dots and DSP load, MIDI light, count-in beats, the MIDI
 // Learn glow): fine, warning, trouble. Readable on the status bar in every theme —
 // darkened on a light one.
@@ -101,8 +106,9 @@ QColor flag_white();
 // per-effect QSS rules) and hands the accent to its knobs and switches.
 void tag_card(QWidget* card, const QString& fx_id);
 
-// Install Fusion + a tooltip-only application stylesheet. Call once after
-// QApplication is constructed.
+// Picks the style — the desktop's own while following the system, Fusion (with the
+// Union-like stylesheet) under a forced theme or where no native style exists — and
+// follows the system's scheme. Call once after QApplication is constructed.
 void apply(QApplication& app);
 
 // Apply the dark palette + the full stylesheet to the main window's subtree.

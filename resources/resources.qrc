@@ -2,8 +2,6 @@
 <RCC version="1.0">
     <qresource prefix="/">
         <file>icons/namx-256.png</file>
-        <file>icons/down-arrow.png</file>
-        <file>icons/down-arrow@2x.png</file>
         <file>presets/Clean Chorus.nampreset</file>
         <file>presets/Tight Rhythm.nampreset</file>
         <file>presets/Lead Delay.nampreset</file>

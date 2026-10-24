@@ -6,6 +6,7 @@
 
 #include <QAction>
 #include <QApplication>
+#include <QComboBox>
 #include <QContextMenuEvent>
 #include <QDesktopServices>
 #include <QDir>
@@ -17,10 +18,12 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QFont>
+#include <QFontMetrics>
 #include <QFrame>
 #include <QGraphicsDropShadowEffect>
 #include <QGraphicsOpacityEffect>
 #include <QHBoxLayout>
+#include <QIcon>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -82,16 +85,21 @@ static vector<string> to_std_strings(const QStringList& list) {
 }
 
 // Fixed columns at the left edge of every row card, so the enable toggles,
-// stereo slots, and first knobs line up vertically across the strip.
+// stereo slots, and first knobs line up vertically across the strip. The sizes are
+// drawn for 9 pt text; fit_to_font widens a column or heightens the rows when
+// what they hold needs more at a larger system font.
 static constexpr int GRIP_COLUMN_WIDTH = 22; // "≡" drag handle
-static constexpr int NAME_COLUMN_WIDTH = 120; // fits "Dynamic Wah"
+static constexpr int NAME_COLUMN_WIDTH = 120; // the card names
 static constexpr int ENABLE_SLOT_WIDTH = 74; // toggle + "On"/"Off" caption
-static constexpr int STEREO_SLOT_WIDTH = 96; // toggle + "Stereo" caption
-static constexpr int SYNC_SLOT_WIDTH = 112; // toggle + "Sync" / "Manual" / "Continuous"
-// Every row is exactly as tall as a knob row (40 px dial + knob margins +
-// card margins + border), so knob-less rows and the tuner match the rest.
+static constexpr int STEREO_SLOT_WIDTH = 96; // toggle + "Stereo" (or another caption)
+static constexpr int SYNC_SLOT_WIDTH = 112; // toggle + "Sync" (or another caption)
+// Every row is exactly as tall as a knob row (40 px dial + card margins + border),
+// so knob-less rows and the tuner match the rest.
 static constexpr int ROW_CARD_HEIGHT = 48;
+static constexpr int ROW_MARGIN = 3; // above and below the main row's contents
 static constexpr int DETAIL_ROW_HEIGHT = 54; // the ▾ row of advanced knobs
+static constexpr const char* ENABLE_ON = "On";
+static constexpr const char* ENABLE_OFF = "Off";
 // Loaded file name on the Amplifier/Cabinet rows elides beyond this.
 static constexpr int HERO_NAME_MAX_WIDTH = 420;
 
@@ -104,10 +112,10 @@ static QWidget* make_enable_slot(ToggleSwitch* sw) {
     lay->setContentsMargins(0, 0, 0, 0);
     lay->setSpacing(6);
 
-    auto* lbl = new QLabel(sw->isChecked() ? "On" : "Off");
+    auto* lbl = new QLabel(sw->isChecked() ? ENABLE_ON : ENABLE_OFF);
     lbl->setObjectName("toggleCaption");
     QObject::connect(sw, &ToggleSwitch::toggled, lbl, [lbl](bool on) {
-        lbl->setText(on ? "On" : "Off");
+        lbl->setText(on ? ENABLE_ON : ENABLE_OFF);
     });
 
     lay->addWidget(sw, 0, Qt::AlignVCenter);
@@ -399,7 +407,7 @@ QFrame* MainWindow::make_row_card(const QString& title) {
     outer->addWidget(row);
     outer->addStretch();
     auto* lay = new QHBoxLayout(row);
-    lay->setContentsMargins(10, 3, 10, 3);
+    lay->setContentsMargins(10, ROW_MARGIN, 10, ROW_MARGIN);
     lay->setSpacing(10);
 
     // Grip column: the ≡ handle is the only place a reorder drag can start,
@@ -421,6 +429,123 @@ QFrame* MainWindow::make_row_card(const QString& title) {
     return card;
 }
 
+// A row card's height: its main row and border, plus its detail rows while shown.
+static void fit_card_height(QWidget* card) {
+    int height =
+        card->findChild<QWidget*>("cardRow", Qt::FindDirectChildrenOnly)->maximumHeight() + 2;
+    QWidget* container = card->findChild<QWidget*>("cardDetail", Qt::FindDirectChildrenOnly);
+    if (container && !container->isHidden()) {
+        for (int i = 0; i < container->layout()->count(); ++i) {
+            height += container->layout()->itemAt(i)->widget()->maximumHeight();
+        }
+    }
+    card->setFixedHeight(height);
+}
+
+void MainWindow::fit_to_font() {
+    QList<QFrame*> cards; // the row cards (the Input/Output columns have no main row)
+    for (QFrame* card : findChildren<QFrame*>()) {
+        if (card->findChild<QWidget*>("cardRow", Qt::FindDirectChildrenOnly)) {
+            cards << card;
+        }
+    }
+    if (cards.isEmpty()) {
+        return; // before setup_ui
+    }
+    ensurePolished(); // the stylesheet's fonts, before measuring
+
+    // The ‹ › arrows (preset bar, Amplifier and Cabinet rows): squares as wide as their
+    // glyph makes them tall, never shorter than the buttons beside them (Save), at any
+    // font — first: the rows' Sync column holds two of them.
+    if (auto* save = findChild<QToolButton*>("presetTool")) {
+        for (QToolButton* arrow : findChildren<QToolButton*>("heroArrow")) {
+            arrow->setMinimumSize(0, 0); // its own height, not the last fixed one
+            arrow->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
+            const int side = std::max(arrow->sizeHint().height(), save->sizeHint().height());
+            arrow->setFixedSize(side, side);
+        }
+    }
+
+    // One text column for every compact knob: the longest name or value any of them shows.
+    // The rows: as tall as a knob tile (the dial, or its two text lines) and the margins.
+    int text_column = KnobWidget::TEXT_COLUMN_WIDTH;
+    QList<KnobWidget*> knobs;
+    for (KnobWidget* k : findChildren<KnobWidget*>()) {
+        if (k->is_compact()) {
+            knobs << k;
+            text_column = std::max(text_column, k->text_width_needed());
+        }
+    }
+    int row_height = ROW_CARD_HEIGHT;
+    for (KnobWidget* k : knobs) {
+        k->set_text_column_width(text_column);
+        row_height = std::max(row_height, k->sizeHint().height() + 2 * ROW_MARGIN + 2);
+    }
+
+    // Main row: grip, name, enable slot, stereo slot, sync slot, … Each column takes
+    // its widest content; a hidden sync slot means a widget spans both switch columns.
+    auto slot = [](QWidget* card, int index) {
+        return row_layout(card)->itemAt(index)->widget();
+    };
+    auto sync_slot = [](QWidget* card) {
+        return card->findChild<QWidget*>("syncSlot");
+    };
+    int name_width = NAME_COLUMN_WIDTH;
+    int enable_width = ENABLE_SLOT_WIDTH;
+    int stereo_width = STEREO_SLOT_WIDTH;
+    int sync_width = SYNC_SLOT_WIDTH;
+    for (QWidget* card : cards) {
+        name_width = std::max(name_width, card->findChild<QLabel*>("fxName")->sizeHint().width());
+        // The caption switches between On and Off: room for the longer one.
+        auto* caption = slot(card, 2)->findChild<QLabel*>("toggleCaption");
+        caption->setMinimumWidth(std::max(caption->fontMetrics().horizontalAdvance(ENABLE_ON),
+                                          caption->fontMetrics().horizontalAdvance(ENABLE_OFF)));
+        enable_width = std::max(enable_width, slot(card, 2)->layout()->sizeHint().width());
+        if (!sync_slot(card)->isHidden()) {
+            stereo_width = std::max(stereo_width, slot(card, 3)->layout()->sizeHint().width());
+            sync_width = std::max(sync_width, sync_slot(card)->layout()->sizeHint().width());
+        }
+    }
+
+    const int spacing = row_layout(cards.first())->spacing();
+    const int indent = 10 + GRIP_COLUMN_WIDTH + name_width + enable_width + stereo_width +
+                       sync_width + 5 * spacing;
+    for (QWidget* card : cards) {
+        card->findChild<QLabel*>("fxName")->setFixedWidth(name_width);
+        slot(card, 2)->setFixedWidth(enable_width);
+        if (sync_slot(card)->isHidden()) {
+            const int across = stereo_width + spacing + sync_width;
+            slot(card, 3)->setFixedWidth(across);
+            slot(card, 3)->layout()->itemAt(0)->widget()->setFixedWidth(across);
+        } else {
+            slot(card, 3)->setFixedWidth(stereo_width);
+            sync_slot(card)->setFixedWidth(sync_width);
+        }
+        card->findChild<QWidget*>("cardRow", Qt::FindDirectChildrenOnly)
+            ->setFixedHeight(row_height - 2);
+        if (QWidget* container = card->findChild<QWidget*>("cardDetail")) {
+            for (int i = 0; i < container->layout()->count(); ++i) {
+                QWidget* row = container->layout()->itemAt(i)->widget();
+                row->setFixedHeight(row_height + DETAIL_ROW_HEIGHT - ROW_CARD_HEIGHT);
+                row->layout()->setContentsMargins(indent, 0, 10, 8);
+            }
+        }
+        fit_card_height(card);
+    }
+
+    // The library's All / ★ / Recent as tall as the Sort box beside them (a native style's
+    // combo box can be taller than NAM-X's own buttons — Union's is).
+    if (auto* sort = findChild<QComboBox*>("librarySort")) {
+        for (QToolButton* mode : findChildren<QToolButton*>("libraryMode")) {
+            mode->setFixedHeight(sort->sizeHint().height());
+        }
+    }
+
+    // The status bar measures its items when they are added — before the stylesheet and
+    // the font reach them — and again on a layout request.
+    QCoreApplication::postEvent(statusBar(), new QEvent(QEvent::LayoutRequest));
+}
+
 KnobWidget* MainWindow::late_knob(const QString& group, const QString& key, KnobWidget* k,
                                   std::function<void(double)> apply) {
     late_params.push_back([this, group, key, k, apply] {
@@ -432,8 +557,7 @@ KnobWidget* MainWindow::late_knob(const QString& group, const QString& key, Knob
 // Shows or hides a card's detail rows and resizes the card to fit.
 static void show_details(QWidget* card, QWidget* container, QToolButton* more, bool open) {
     container->setVisible(open);
-    card->setFixedHeight(ROW_CARD_HEIGHT +
-                         (open ? container->layout()->count() * DETAIL_ROW_HEIGHT : 0));
+    fit_card_height(card);
     more->setText(open ? "▴" : "▾");
     more->setToolTip(open ? "Fewer controls" : "More controls");
 }
@@ -468,7 +592,8 @@ void MainWindow::add_detail_row(QWidget* card, const QList<QWidget*>& widgets) {
     auto* row = new QWidget;
     row->setFixedHeight(DETAIL_ROW_HEIGHT);
     auto* lay = new QHBoxLayout(row);
-    // Indent to the knob column: margin + grip + name + enable, stereo and sync slots.
+    // Indent to the knob column: margin + grip + name + enable, stereo and sync slots
+    // (fit_to_font redoes it with the columns' final widths).
     const int indent = 10 + GRIP_COLUMN_WIDTH + NAME_COLUMN_WIDTH + ENABLE_SLOT_WIDTH +
                        STEREO_SLOT_WIDTH + SYNC_SLOT_WIDTH + 5 * 10;
     lay->setContentsMargins(indent, 0, 10, 8);
@@ -478,13 +603,12 @@ void MainWindow::add_detail_row(QWidget* card, const QList<QWidget*>& widgets) {
     }
     lay->addStretch();
     container->layout()->addWidget(row);
-    const int rows = container->layout()->count();
 
     QToolButton* more = card->findChild<QToolButton*>("cardMore");
     if (!first) {
         // Re-apply the current state with the new height.
         if (more && more->isChecked()) {
-            card->setFixedHeight(ROW_CARD_HEIGHT + rows * DETAIL_ROW_HEIGHT);
+            fit_card_height(card);
         }
         return;
     }
@@ -613,41 +737,46 @@ void MainWindow::setup_ui() {
         QMenuBar* mb = menuBar();
         mb->setCornerWidget(make_made_in_chile(), Qt::TopRightCorner);
         preset_menu = mb->addMenu("Preset");
-        QAction* act_save = preset_menu->addAction("Save");
+        QAction* act_save = preset_menu->addAction(QIcon::fromTheme("document-save"), "Save");
         act_save->setShortcut(QKeySequence::Save); // Ctrl+S
         connect(act_save, &QAction::triggered, this, &MainWindow::on_save_preset);
-        QAction* act_save_as = preset_menu->addAction("Save As…");
+        QAction* act_save_as =
+            preset_menu->addAction(QIcon::fromTheme("document-save-as"), "Save As…");
         act_save_as->setShortcut(QKeySequence("Ctrl+Shift+S"));
         connect(act_save_as, &QAction::triggered, this, &MainWindow::on_save_preset_as);
-        QAction* act_load = preset_menu->addAction("Open…");
+        QAction* act_load = preset_menu->addAction(QIcon::fromTheme("document-open"), "Open…");
         act_load->setShortcut(QKeySequence::Open); // Ctrl+O
         connect(act_load, &QAction::triggered, this, &MainWindow::on_load_preset);
         preset_menu->addSeparator();
-        connect(preset_menu->addAction("Import…"), &QAction::triggered, this,
-                &MainWindow::on_import_presets);
-        connect(preset_menu->addAction("Export…"), &QAction::triggered, this,
-                &MainWindow::on_export_preset);
+        connect(preset_menu->addAction(QIcon::fromTheme("document-import"), "Import…"),
+                &QAction::triggered, this, &MainWindow::on_import_presets);
+        connect(preset_menu->addAction(QIcon::fromTheme("document-export"), "Export…"),
+                &QAction::triggered, this, &MainWindow::on_export_preset);
         preset_menu->addSeparator();
-        connect(preset_menu->addAction("Show in Folder"), &QAction::triggered, this,
-                &MainWindow::on_locate_preset);
-        connect(preset_menu->addAction("Delete…"), &QAction::triggered, this,
-                &MainWindow::on_delete_preset);
+        connect(preset_menu->addAction(QIcon::fromTheme("document-open-folder"), "Show in Folder"),
+                &QAction::triggered, this, &MainWindow::on_locate_preset);
+        connect(preset_menu->addAction(QIcon::fromTheme("edit-delete"), "Delete…"),
+                &QAction::triggered, this, &MainWindow::on_delete_preset);
         preset_menu->addSeparator();
-        connect(preset_menu->addAction("Reset All to Defaults…"), &QAction::triggered, this,
-                &MainWindow::on_reset_all);
+        connect(
+            preset_menu->addAction(QIcon::fromTheme("document-revert"), "Reset All to Defaults…"),
+            &QAction::triggered, this, &MainWindow::on_reset_all);
 
         library_menu = mb->addMenu("Library"); // filled once the dock exists (below)
         midi_top_menu = mb->addMenu("MIDI"); // filled by setupMidi
 
         QMenu* settings_menu = mb->addMenu("Settings");
-        QAction* act_settings = settings_menu->addAction("Settings…");
-        act_settings->setShortcut(QKeySequence("Ctrl+,"));
+        QAction* act_settings =
+            settings_menu->addAction(QIcon::fromTheme("configure"), "Configure NAM-X…");
+        act_settings->setShortcut(QKeySequence("Ctrl+Shift+,")); // KDE's Preferences key
         connect(act_settings, &QAction::triggered, this, [this] {
             open_settings(SettingsDialog::Page::AUDIO);
         });
-        connect(settings_menu->addAction("Keyboard Shortcuts…"), &QAction::triggered, this, [this] {
-            open_settings(SettingsDialog::Page::SHORTCUTS);
-        });
+        connect(settings_menu->addAction(QIcon::fromTheme("configure-shortcuts"),
+                                         "Keyboard Shortcuts…"),
+                &QAction::triggered, this, [this] {
+                    open_settings(SettingsDialog::Page::SHORTCUTS);
+                });
         if (appimage::is_running_as_appimage()) {
             // Add / remove the AppImage's launcher; the label follows the current state.
             settings_menu->addSeparator();
@@ -668,16 +797,19 @@ void MainWindow::setup_ui() {
         }
 
         QMenu* help_menu = mb->addMenu("Help");
-        connect(help_menu->addAction("About NAM-X"), &QAction::triggered, this, [this] {
-            QMessageBox::about(
-                this, "About NAM-X",
-                QString("<b>NAM-X</b> v%1<br><br>"
+        connect(
+            help_menu->addAction(QApplication::windowIcon(), "About NAM-X"), &QAction::triggered,
+            this, [this] {
+                QMessageBox::about(
+                    this, "About NAM-X",
+                    QString(
+                        "<b>NAM-X</b> v%1<br><br>"
                         "Standalone player for Neural Amp Modeler profiles.<br>"
                         "Built on <a href=\"https://github.com/sdatkinson/NeuralAmpModelerCore\">"
                         "NeuralAmpModelerCore</a> by Steven Atkinson.<br><br>"
                         "Not affiliated with the official Neural Amp Modeler plugin.")
-                    .arg(QApplication::applicationVersion()));
-        });
+                        .arg(QApplication::applicationVersion()));
+            });
     }
 
     // ---- Preset bar (top): name, ‹ ›, Save, quick slots, A/B, Preset menu.
@@ -861,7 +993,7 @@ void MainWindow::setup_ui() {
         fx_cols[&engine->get_comp()] = col;
     }
 
-    // Dynamic Wah
+    // Wah
     {
         using namespace NAMConstants;
         knob_wah_sens =
@@ -897,8 +1029,8 @@ void MainWindow::setup_ui() {
                                     });
         pos->set_scroll_step(1.0);
         knob_wah_pos = pos;
-        QWidget* col = make_effect_row("Dynamic Wah", sw_wah_enable,
-                                       {knob_wah_mix, knob_wah_sens, pos, knob_wah_res});
+        QWidget* col =
+            make_effect_row("Wah", sw_wah_enable, {knob_wah_mix, knob_wah_sens, pos, knob_wah_res});
         sw_wah_reverse = make_reverse_switch(col, "Position");
         put_in_sync_column(col, make_caption_switch(sw_wah_manual, "Manual"));
         connect(sw_wah_manual, &ToggleSwitch::toggled, this, &MainWindow::update_inactive_controls);
@@ -1463,25 +1595,27 @@ void MainWindow::setup_ui() {
         show->setShortcut(QKeySequence("Ctrl+L"));
         library_menu->addAction(show);
 
-        QAction* find = library_menu->addAction("Find in Library");
+        QAction* find = library_menu->addAction(QIcon::fromTheme("edit-find"), "Find in Library");
         find->setShortcut(QKeySequence::Find); // Ctrl+F
         connect(find, &QAction::triggered, this, [this] {
             find_in_library();
         });
         library_menu->addSeparator();
-        connect(library_menu->addAction("Folders…"), &QAction::triggered, this, [this] {
-            open_settings(SettingsDialog::Page::LIBRARY);
-        });
+        connect(library_menu->addAction(QIcon::fromTheme("folder"), "Folders…"),
+                &QAction::triggered, this, [this] {
+                    open_settings(SettingsDialog::Page::LIBRARY);
+                });
         connect(library, &LibraryPanel::folders_requested, this, [this] {
             open_settings(SettingsDialog::Page::LIBRARY);
         });
-        connect(library_menu->addAction("Rescan"), &QAction::triggered, library_index,
-                &LibraryIndex::rescan);
+        connect(library_menu->addAction(QIcon::fromTheme("view-refresh"), "Rescan"),
+                &QAction::triggered, library_index, &LibraryIndex::rescan);
         library_menu->addSeparator();
-        connect(library_menu->addAction("Import Model…"), &QAction::triggered, this,
-                &MainWindow::on_import_nam);
-        connect(library_menu->addAction("Import Impulse Response…"), &QAction::triggered, this,
-                &MainWindow::on_import_ir);
+        connect(library_menu->addAction(QIcon::fromTheme("document-import"), "Import Model…"),
+                &QAction::triggered, this, &MainWindow::on_import_nam);
+        connect(library_menu->addAction(QIcon::fromTheme("document-import"),
+                                        "Import Impulse Response…"),
+                &QAction::triggered, this, &MainWindow::on_import_ir);
     }
 }
 
@@ -1956,18 +2090,21 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* ev) {
                 const bool is_amp = card == fx_cols[&engine->get_nam()];
                 const bool is_cab = card == fx_cols[&engine->get_ir()];
                 if (is_amp || is_cab) {
-                    connect(menu.addAction(is_amp ? "Import Model…" : "Import Impulse Response…"),
+                    connect(menu.addAction(QIcon::fromTheme("document-import"),
+                                           is_amp ? "Import Model…" : "Import Impulse Response…"),
                             &QAction::triggered, this,
                             is_amp ? &MainWindow::on_import_nam : &MainWindow::on_import_ir);
                     QAction* unload =
-                        menu.addAction(is_amp ? "Unload Model" : "Unload Impulse Response");
+                        menu.addAction(QIcon::fromTheme("media-eject"),
+                                       is_amp ? "Unload Model" : "Unload Impulse Response");
                     unload->setEnabled(is_amp ? engine->is_model_loaded() : engine->is_ir_loaded());
                     connect(unload, &QAction::triggered, this,
                             is_amp ? &MainWindow::on_unload_nam : &MainWindow::on_unload_ir);
                     menu.addSeparator();
                 }
 
-                QAction* act = menu.addAction("Reset " + name + " to defaults");
+                QAction* act = menu.addAction(QIcon::fromTheme("document-revert"),
+                                              "Reset " + name + " to defaults");
 
                 // A right-click on a switch: MIDI Learn for that switch.
                 for (QWidget* w = card->childAt(card->mapFromGlobal(ce->globalPos()));
@@ -2997,6 +3134,18 @@ void MainWindow::changeEvent(QEvent* ev) {
     QMainWindow::changeEvent(ev);
     if (ev->type() == QEvent::WindowStateChange) {
         update_meter_timer();
+    }
+    // Theme::apply_to sets the stylesheet (the card names' size), or the system font
+    // changed.
+    if (ev->type() == QEvent::StyleChange || ev->type() == QEvent::FontChange) {
+        fit_to_font();
+    }
+    // The menu bar takes the window colour while the window is inactive, like KDE's
+    // Header (Fusion's stylesheet: QMenuBar[inactive]).
+    if (ev->type() == QEvent::ActivationChange) {
+        menuBar()->setProperty("inactive", !isActiveWindow());
+        menuBar()->style()->unpolish(menuBar());
+        menuBar()->style()->polish(menuBar());
     }
     // A theme change: the status bar's dots are HTML text, coloured when they were set.
     if (ev->type() == QEvent::StyleChange && lbl_midi && lbl_rig_status) {

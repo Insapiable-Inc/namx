@@ -410,7 +410,7 @@ if one starts off and the other on, each press alternates between them. On an
 expression pedal, setting **Min** above **Max** in Mappings… reverses that row's
 sweep: volume 0→100 % and wah 100→0 % on one pedal crossfade the two.
 
-**Reverse** on the Transpose, Dynamic Wah and Volume Pedal cards flips the pedal for
+**Reverse** on the Transpose, Wah and Volume Pedal cards flips the pedal for
 every controller mapped to Semitones / Position / Volume (heel and toe swap), on top of
 each mapping's Min/Max. It's saved in presets; the knob always shows the real value.
 
@@ -419,7 +419,7 @@ machine settings (QSettings `midi/*`), not part of presets.
 
 ### Settings
 
-**Settings → Settings…** (`Ctrl+,`) collects the machine settings in one window; every
+**Settings → Configure NAM-X…** (`Ctrl+Shift+,`) collects the machine settings in one window; every
 change applies immediately.
 
 | Page | What's there |
@@ -428,7 +428,7 @@ change applies immediately.
 | MIDI | Input devices on/off, Follow MIDI clock, **Mappings…** |
 | Library | Model / IR / preset folders, rescan |
 | Tuner | Reference pitch, show the detected frequency (also on the tuner card) |
-| Appearance | Theme: **Follow the system** (light or dark and the accent colour, live), **Dark** / **Light** (KDE's Breeze Dark / Breeze Light), or a theme file from the themes folder; **Import…** copies a file there, **Open Folder** shows it (see [File formats](#8-file-formats)) |
+| Appearance | Theme: **Follow the system** (light or dark and the accent colour, live), **Dark** / **Light** (KDE's Breeze Dark / Breeze Light), or a theme file from the themes folder; **Import…** copies a file there, **Open Folder** shows it (see [File formats](#8-file-formats)). Following the system, NAM-X uses the desktop's widget style (Union or Breeze on Plasma, Windows 11 on Windows); a forced theme, or a system without such a style (the AppImage, GNOME), uses Qt's Fusion drawn to look like KDE's Union. To try another style: `namx -style fusion` (or `breeze`, `union`), or `QT_STYLE_OVERRIDE=…` |
 | Shortcuts | Every keyboard shortcut, read from the window (**Settings → Keyboard Shortcuts…**) |
 
 ### Library
@@ -479,7 +479,7 @@ twice the CPU — it is never summed to mono.
 | Transpose | Mix, Semitones (±12); **Reverse** (pedal heel ↔ toe), **Continuous** switch (off = Discrete: whole semitones; on = smooth whammy-style glides, the shifter then stays active at 0 st) | — |
 | Overdrive | Level, Drive, Tone — a Tube Screamer circuit model (the op-amp + diode clipper as a wave digital filter, oversampled) | — |
 | Amplifier | On/Off, ‹ › through the library, Input, Level (see Parameters); the row shows the model and its metadata | — |
-| Dynamic Wah | **Manual** switch (off = Auto: your playing sweeps it), **Reverse** (pedal heel ↔ toe), Mix, Sensitivity (Auto), Position (the sweep in Manual mode — map an expression pedal), Resonance; the controls the current mode ignores are dimmed | — |
+| Wah | **Manual** switch (off = Auto: your playing sweeps it), **Reverse** (pedal heel ↔ toe), Mix, Sensitivity (Auto), Position (the sweep in Manual mode — map an expression pedal), Resonance; the controls the current mode ignores are dimmed | — |
 | Flanger / Phaser / Chorus | Mix, Rate (Sync), Depth, Feedback (not Chorus; Phaser up to 90 %); Flanger **Range**. The Phaser is an MXR Phase 90 model: Depth 50 % and Mix 50 % are the pedal, Feedback 0 % the original "script" circuit | — |
 | Equalizer | Bass, Low-Mid, High-Mid, Treble (±12 dB) | the four band frequencies, Low Cut, High Cut |
 | Delay | Mix, L/Mono Time, R Time (the right repeat's own time, Stereo only — dimmed otherwise; Sync covers both), Feedback (two independent echoes in stereo) | Low/High Cut, Saturation, Shimmer (octave-up repeats) |
@@ -532,6 +532,7 @@ Folder**). Two formats are read:
 | `base` | Lists, fields | `window` |
 | `button` | Effect cards, buttons | `window` |
 | `accent` | Selections, the Input/Output knobs, the tempo bar | Breeze blue `#3daee9` |
+| `header` | The menu bar (a KDE scheme's `[Colors:Header]`) | `window` |
 | `shadow`, `disabledText` | Shadows, disabled controls | derived from `window` / `text` |
 | `effects` | Per-effect colour, by effect ID: `tuner`, `transpose`, `gate` (Noise Gate), `comp` (Compressor), `wah`, `flanger`, `phaser`, `drive` (Overdrive), `nam` (Amplifier), `volume` (Volume Pedal), `eq`, `chorus`, `tremolo`, `delay`, `reverb`, `ir` (Cabinet) | NAM-X's own |
 

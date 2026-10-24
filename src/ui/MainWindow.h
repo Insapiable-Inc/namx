@@ -135,6 +135,10 @@ private:
     // Row-card scaffold: [≡ grip | name label]. The caller appends its
     // controls to the card's QHBoxLayout.
     QFrame* make_row_card(const QString& title);
+    // Sizes the rack's columns and rows, and the status bar, to what they hold in the
+    // font in use (see the column constants in MainWindow.cpp). On every stylesheet or
+    // font change.
+    void fit_to_font();
     // Full effect row: scaffold + enable toggle + stereo slot + knobs.
     QWidget* make_effect_row(const QString& title, ToggleSwitch*& toggle_out,
                              const std::initializer_list<KnobWidget*>& knobs,

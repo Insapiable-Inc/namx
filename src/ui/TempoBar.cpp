@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <utility>
 
+#include <QActionGroup>
 #include <QHBoxLayout>
 #include <QInputDialog>
 #include <QLabel>
@@ -127,7 +128,7 @@ TempoBar::TempoBar(Metronome& metronome, QWidget* parent)
 
     setObjectName("tempoBar");
     auto* lay = new QHBoxLayout(this);
-    lay->setContentsMargins(8, 2, 8, 2);
+    lay->setContentsMargins(8, 6, 8, 6); // the knobs' tiles have no margins of their own
     lay->setSpacing(6);
     QSettings s;
 
@@ -410,10 +411,15 @@ void TempoBar::on_accents_edited(std::uint32_t accents) {
 void TempoBar::populate_meter_menu() {
     QMenu* m = meter_btn->menu();
     m->clear();
+    // One meter at a time: a one-of-many group (radio items; none checked for a custom
+    // meter). Rebuilt with the menu.
+    qDeleteAll(m->findChildren<QActionGroup*>(Qt::FindDirectChildrenOnly));
+    auto* group = new QActionGroup(m);
     for (const auto& mp : METERS) {
         QAction* a = m->addAction(QString("%1/%2").arg(mp.beats).arg(mp.unit));
         a->setCheckable(true);
         a->setChecked(mp.beats == metro.get_beats() && mp.unit == metro.get_unit());
+        a->setActionGroup(group);
         connect(a, &QAction::triggered, this, [this, mp] {
             set_meter(mp.beats, mp.unit, true);
         });

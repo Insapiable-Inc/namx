@@ -12,6 +12,7 @@
 #include <QGroupBox>
 #include <QHBoxLayout>
 #include <QHeaderView>
+#include <QIcon>
 #include <QLabel>
 #include <QMessageBox>
 #include <QPushButton>
@@ -103,13 +104,13 @@ MidiMappingsDialog::MidiMappingsDialog(MidiMapper& new_mapper, MidiInput* new_in
 
     // Buttons
     auto* row = new QHBoxLayout;
-    auto* add = new QPushButton("Add");
+    auto* add = new QPushButton(QIcon::fromTheme("list-add"), "Add");
     connect(add, &QPushButton::clicked, this, &MidiMappingsDialog::add_mapping);
-    auto* load = new QPushButton("Load…");
+    auto* load = new QPushButton(QIcon::fromTheme("document-open"), "Load…");
     connect(load, &QPushButton::clicked, this, &MidiMappingsDialog::load_mappings);
-    auto* save = new QPushButton("Save…");
+    auto* save = new QPushButton(QIcon::fromTheme("document-save"), "Save…");
     connect(save, &QPushButton::clicked, this, &MidiMappingsDialog::save_mappings);
-    auto* defaults = new QPushButton("Defaults");
+    auto* defaults = new QPushButton(QIcon::fromTheme("document-revert"), "Defaults");
     defaults->setToolTip("Program changes 0–7 → slots 1–8; everything else unmapped");
     connect(defaults, &QPushButton::clicked, this, [this] {
         if (QMessageBox::question(this, "MIDI Mappings",
@@ -118,7 +119,7 @@ MidiMappingsDialog::MidiMappingsDialog(MidiMapper& new_mapper, MidiInput* new_in
             mapper.set_mappings(MidiMapper::default_mappings());
         }
     });
-    auto* close = new QPushButton("Close");
+    auto* close = new QPushButton(QIcon::fromTheme("window-close"), "Close");
     connect(close, &QPushButton::clicked, this, &QDialog::accept);
     row->addWidget(add);
     row->addWidget(load);
@@ -248,15 +249,20 @@ void MidiMappingsDialog::rebuild_table() {
         table->setCellWidget(r, COL_DELETE, del);
     }
     table->resizeColumnsToContents(); // measures the items, not the cell widgets…
+    int row_height = table->verticalHeader()->defaultSectionSize();
     for (int c = 0; c < COL_COUNT; ++c) { // …so the # spin box lost its arrows
         int width = table->columnWidth(c);
         for (int r = 0; r < table->rowCount(); ++r) {
             if (QWidget* w = table->cellWidget(r, c)) {
                 width = std::max(width, w->sizeHint().width() + 2);
+                row_height = std::max(row_height, w->sizeHint().height() + 2);
             }
         }
         table->setColumnWidth(c, width);
     }
+    // The rows likewise: as tall as the tallest widget in them (the style's defaults are
+    // shorter than Union's combo and spin boxes).
+    table->verticalHeader()->setDefaultSectionSize(row_height);
     table->horizontalHeader()->setSectionResizeMode(COL_TARGET, QHeaderView::Stretch);
     rebuilding = false;
 }

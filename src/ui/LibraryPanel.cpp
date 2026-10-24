@@ -12,6 +12,7 @@
 #include <QFileDialog>
 #include <QFontMetrics>
 #include <QHBoxLayout>
+#include <QIcon>
 #include <QKeyEvent>
 #include <QLabel>
 #include <QLineEdit>
@@ -21,7 +22,6 @@
 #include <QPushButton>
 #include <QSettings>
 #include <QSignalBlocker>
-#include <QTabWidget>
 #include <QTimer>
 #include <QToolButton>
 #include <QVBoxLayout>
@@ -235,7 +235,11 @@ QRect LibraryItemDelegate::star_rect(const QRect& row) {
 }
 
 QSize LibraryItemDelegate::sizeHint(const QStyleOptionViewItem& opt, const QModelIndex&) const {
-    return QSize(opt.rect.width(), ROW_HEIGHT);
+    // Taller when a larger font needs it: 5 px, the name, 1 px, the details line, 3 px.
+    QFont sub_font = opt.font;
+    sub_font.setPointSizeF(sub_font.pointSizeF() - 1);
+    const int text = 5 + QFontMetrics(opt.font).height() + 1 + QFontMetrics(sub_font).height() + 3;
+    return QSize(opt.rect.width(), std::max(ROW_HEIGHT, text));
 }
 
 void LibraryItemDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt,
@@ -252,14 +256,19 @@ void LibraryItemDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt,
         static_cast<LibraryEntry::Kind>(idx.data(LibraryListModel::KIND_ROLE).toInt());
     const QColor accent = kind_accent(kind);
 
-    if (selected) {
-        p->fillRect(r, Theme::track_hover());
-    } else if (hovered) {
-        p->fillRect(r, Theme::track());
+    // Union's list row: inset 2 px and rounded; hovered = the accent tint and an accent
+    // border, selected = the accent, its text in the highlighted-text colour.
+    const QRectF row = QRectF(r).adjusted(2.5, 2.5, -2.5, -2.5);
+    if (selected || hovered) {
+        p->setPen(Theme::generic_accent());
+        p->setBrush(selected ? Theme::generic_accent() : Theme::list_hover());
+        p->drawRoundedRect(row, 5, 5);
     }
+    const QColor on_row = selected ? Theme::highlighted_text() : QColor();
 
     if (loaded) {
-        p->fillRect(QRect(r.left(), r.top() + 6, ACCENT_BAR, r.height() - 12), accent);
+        p->fillRect(QRect(r.left() + 3, r.top() + 8, ACCENT_BAR, r.height() - 16),
+                    selected ? on_row : accent);
     }
 
     // Star column, then the text block fills what's left.
@@ -268,7 +277,7 @@ void LibraryItemDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt,
         QFont f = opt.font;
         f.setPointSizeF(f.pointSizeF() + 3);
         p->setFont(f);
-        p->setPen(fav ? accent : (selected || hovered ? Theme::dim_text() : Theme::track()));
+        p->setPen(selected ? on_row : fav ? accent : hovered ? Theme::dim_text() : Theme::track());
         p->drawText(star, Qt::AlignCenter, fav ? QStringLiteral("★") : QStringLiteral("☆"));
     }
 
@@ -279,7 +288,7 @@ void LibraryItemDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt,
     name_font.setWeight(loaded ? QFont::DemiBold : QFont::Normal);
     p->setFont(name_font);
     const QFontMetrics nfm(name_font);
-    p->setPen(loaded ? accent : opt.palette.color(QPalette::Text));
+    p->setPen(selected ? on_row : loaded ? accent : opt.palette.color(QPalette::Text));
     const QString name =
         nfm.elidedText(idx.data(LibraryListModel::NAME_ROLE).toString(), Qt::ElideMiddle, width);
     p->drawText(QRect(left, r.top() + 5, width, nfm.height()), Qt::AlignLeft | Qt::AlignVCenter,
@@ -289,7 +298,7 @@ void LibraryItemDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt,
     sub_font.setPointSizeF(sub_font.pointSizeF() - 1);
     p->setFont(sub_font);
     const QFontMetrics sfm(sub_font);
-    p->setPen(Theme::dim_text());
+    p->setPen(selected ? on_row : Theme::dim_text());
     QStringList second;
     const QString folder = idx.data(LibraryListModel::FOLDER_ROLE).toString();
     if (!folder.isEmpty()) {
@@ -339,7 +348,6 @@ LibraryPanel::LibraryPanel(LibraryIndex& new_index, QWidget* parent)
     : QWidget(parent)
     , library_index(new_index) {
     setObjectName("libraryPanel");
-    setMinimumWidth(240);
 
     QSettings s;
     // One list: begin() and end() must come from the same container.
@@ -362,10 +370,12 @@ LibraryPanel::LibraryPanel(LibraryIndex& new_index, QWidget* parent)
     // Section switch: Models | IRs | Presets (counts appended by updateCounts).
     {
         auto* row = new QHBoxLayout;
-        row->setSpacing(2);
+        row->setSpacing(0); // tabs, side by side
         for (int i = 0; i < 3; ++i) {
             auto* b = new QToolButton;
             b->setObjectName("librarySection");
+            // The outer tabs round their outer corner (the stylesheet's tabPosition).
+            b->setProperty("tabPosition", i == 0 ? "first" : i == 2 ? "last" : "middle");
             b->setText(SECTION_NAMES[i]);
             b->setCheckable(true);
             b->setAutoRaise(true);
@@ -410,9 +420,12 @@ LibraryPanel::LibraryPanel(LibraryIndex& new_index, QWidget* parent)
         row->addStretch();
         sort_box = new QComboBox;
         sort_box->setObjectName("librarySort");
-        sort_box->addItems({"Sort by: Name", "Sort by: Newest"});
+        sort_box->addItems({"Sort: Name", "Sort: Newest"});
         sort_box->setToolTip("Sort order");
         sort_box->setFocusPolicy(Qt::NoFocus);
+        // Never narrower than its text: the panel's minimum (and the dock's) comes from this
+        // row, so a large system font widens the library instead of clipping the sort.
+        sort_box->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
         connect(sort_box, &QComboBox::currentIndexChanged, this, &LibraryPanel::set_sort_key);
         row->addWidget(sort_box);
         lay->addLayout(row);
@@ -453,7 +466,13 @@ LibraryPanel::LibraryPanel(LibraryIndex& new_index, QWidget* parent)
 
         auto* rescan = new QToolButton;
         rescan->setObjectName("libraryTool");
-        rescan->setText("↻");
+        // The theme's refresh icon; ↻ where there is no icon theme.
+        const QIcon refresh = QIcon::fromTheme("view-refresh");
+        if (refresh.isNull()) {
+            rescan->setText("↻");
+        } else {
+            rescan->setIcon(refresh);
+        }
         rescan->setAutoRaise(true);
         rescan->setFocusPolicy(Qt::NoFocus);
         rescan->setToolTip("Rescan the library folders");
