@@ -66,6 +66,11 @@
     <display_length compare="ge">1280</display_length>
   </requires>
   <releases>
+    <release version="0.0.1" date="2026-10-24">
+      <description>
+        <p>Native look: NAM-X follows the desktop's widget style (Union/Breeze on Plasma, Windows 11 on Windows) and system font; three theme-switch crashes fixed; the AppImage draws SVG icon themes. Presets leave the Input, Output and limiter alone and keep their tempo when a Sync switch is on; the tempo and tuner reference fields are standard spin boxes.</p>
+      </description>
+    </release>
     <release version="0.0.0" date="2026-10-18">
       <description>
         <p>First public release: reorderable effects chain, library panel, presets, MIDI control, tuner and metronome, JACK/PipeWire and WASAPI backends.</p>
