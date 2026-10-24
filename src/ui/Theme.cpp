@@ -30,6 +30,7 @@
 #include <QSettings>
 #include <QStandardPaths>
 #include <QStyle>
+#include <QStyleFactory>
 #include <QStyleHints>
 #include <QStyleOptionButton>
 #include <QStyledItemDelegate>
@@ -296,14 +297,20 @@ static bool fusion_active() {
 }
 
 // The desktop's style while following the system; Fusion under a forced theme, since
-// native styles may ignore the palette (Union does: it reads KDE's colour scheme).
-static void choose_style() {
+// native styles may ignore the palette (Union does: it reads KDE's colour scheme). True
+// when it changed the style.
+static bool choose_style() {
     const QString wanted = current_mode == Mode::SYSTEM ? native_style : QStringLiteral("Fusion");
     if (active_style.compare(wanted, Qt::CaseInsensitive) != 0) {
-        if (const QStyle* style = QApplication::setStyle(wanted)) {
+        // Named before it is installed: installing it re-polishes every widget, and the
+        // polish filter has to know which style it is polishing for.
+        if (QStyle* style = QStyleFactory::create(wanted)) {
             active_style = style->name();
+            QApplication::setStyle(style);
+            return true;
         }
     }
+    return false;
 }
 
 // Breeze's Header background (the menu bar), Dark and Light.
@@ -1595,6 +1602,78 @@ static QWidget* focus_control(QObject* object) {
 //   corners can be rounded like a menu's.
 // And Union's keyboard focus (FocusRing): shown when Tab brings the focus to a control,
 // gone when the focus leaves it — a click gives focus without the outline.
+// Whether a menu has icons (the stylesheet's QMenu[icons]); re-polished when it changes.
+static void update_menu_icons(QMenu* menu) {
+    const QList<QAction*> actions = menu->actions();
+    const bool icons = std::any_of(actions.begin(), actions.end(), [](QAction* a) {
+        return !a->icon().isNull() && a->isIconVisibleInMenu();
+    });
+    if (menu->property("icons").toBool() != icons) {
+        menu->setProperty("icons", icons);
+        menu->style()->unpolish(menu);
+        menu->style()->polish(menu);
+    }
+}
+
+// The per-widget part of Fusion's Union-like look, or — under a native style — taking it
+// back. Run as each widget is polished, and on every existing widget when the style
+// changes live (QApplication::setStyle re-polishes through the style alone, without the
+// Polish event the filter sees).
+static void adjust_for_style(QWidget* widget) {
+    if (!fusion_active()) {
+        if (auto* menu = qobject_cast<QMenu*>(widget)) {
+            menu->setContentsMargins(0, 0, 0, 0);
+            QEvent restyled(QEvent::StyleChange); // measured again, under this style
+            QCoreApplication::sendEvent(menu, &restyled);
+        } else if (auto* spin = qobject_cast<QAbstractSpinBox*>(widget)) {
+            if (auto* field = spin->findChild<QLineEdit*>()) {
+                field->setTextMargins(0, 0, 0, 0);
+            }
+        }
+        return;
+    }
+    if (auto* menu = qobject_cast<QMenu*>(widget)) {
+        if (!menu->testAttribute(Qt::WA_TranslucentBackground)) {
+            menu->setAttribute(Qt::WA_TranslucentBackground);
+            // A window's transparency is fixed when it is created: a menu that has been
+            // shown already gets a new window (it is hidden now; setParent recreates it).
+            if (menu->testAttribute(Qt::WA_WState_Created)) {
+                menu->setParent(menu->parentWidget(), menu->windowFlags());
+            }
+        }
+        menu->setContentsMargins(0, 0, MENU_SHADOW, MENU_SHADOW);
+        // It measures its items once and keeps them: measured again, under this style.
+        QEvent restyled(QEvent::StyleChange);
+        QCoreApplication::sendEvent(menu, &restyled);
+        // Qt adds an icon column of its own once a menu has icons: the stylesheet then
+        // pads less (QMenu[icons]), so the text stays in Union's place. Settled now and
+        // before each showing (actions come and go) — before the menu measures itself.
+        update_menu_icons(menu);
+        if (!menu->property("iconWatch").toBool()) {
+            menu->setProperty("iconWatch", true);
+            QObject::connect(menu, &QMenu::aboutToShow, menu, [menu] {
+                update_menu_icons(menu);
+            });
+        }
+    } else if (auto* spin = qobject_cast<QAbstractSpinBox*>(widget)) {
+        if (auto* field = spin->findChild<QLineEdit*>()) {
+            field->setTextMargins(6, 0, 0, 0);
+        }
+    } else if (auto* view = qobject_cast<QAbstractItemView*>(widget)) {
+        QTimer::singleShot(0, view, [view] {
+            view->doItemsLayout();
+        });
+    } else if (auto* combo = qobject_cast<QComboBox*>(widget)) {
+        if (!qobject_cast<QStyledItemDelegate*>(combo->itemDelegate())) {
+            combo->setItemDelegate(new QStyledItemDelegate(combo));
+        }
+    } else if (widget->inherits("QComboBoxPrivateContainer")) {
+        auto* container = static_cast<QFrame*>(widget);
+        container->setFrameShape(QFrame::NoFrame);
+        container->setAttribute(Qt::WA_TranslucentBackground);
+    }
+}
+
 class UnionPolish : public QObject
 {
 public:
@@ -1602,63 +1681,17 @@ public:
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override {
+        if (event->type() == QEvent::Polish && watched->isWidgetType()) {
+            adjust_for_style(static_cast<QWidget*>(watched));
+            return QObject::eventFilter(watched, event);
+        }
         if (!fusion_active()) {
-            // A native style draws these itself: take back what Fusion's look added
-            // (the style switches live when the theme mode changes).
-            if (event->type() == QEvent::Polish) {
-                if (auto* menu = qobject_cast<QMenu*>(watched)) {
-                    menu->setContentsMargins(0, 0, 0, 0);
-                } else if (auto* spin = qobject_cast<QAbstractSpinBox*>(watched)) {
-                    if (auto* field = spin->findChild<QLineEdit*>()) {
-                        field->setTextMargins(0, 0, 0, 0);
-                    }
-                }
-            }
             if (focus_target) {
                 show_visual_focus(nullptr);
             }
             return QObject::eventFilter(watched, event);
         }
-        if (event->type() == QEvent::Polish) {
-            if (auto* menu = qobject_cast<QMenu*>(watched)) {
-                menu->setAttribute(Qt::WA_TranslucentBackground);
-                menu->setContentsMargins(0, 0, MENU_SHADOW, MENU_SHADOW);
-                // Qt adds an icon column of its own once a menu has icons: the stylesheet
-                // then pads less (QMenu[icons]), so the text stays in Union's place. Once
-                // per menu: the re-polish below comes back here.
-                if (menu->property("iconWatch").toBool()) {
-                    return QObject::eventFilter(watched, event);
-                }
-                menu->setProperty("iconWatch", true);
-                QObject::connect(menu, &QMenu::aboutToShow, menu, [menu] {
-                    const QList<QAction*> actions = menu->actions();
-                    const bool icons = std::any_of(actions.begin(), actions.end(), [](QAction* a) {
-                        return !a->icon().isNull() && a->isIconVisibleInMenu();
-                    });
-                    if (menu->property("icons").toBool() != icons) {
-                        menu->setProperty("icons", icons);
-                        menu->style()->unpolish(menu);
-                        menu->style()->polish(menu);
-                    }
-                });
-            } else if (auto* spin = qobject_cast<QAbstractSpinBox*>(watched)) {
-                if (auto* field = spin->findChild<QLineEdit*>()) {
-                    field->setTextMargins(6, 0, 0, 0);
-                }
-            } else if (auto* view = qobject_cast<QAbstractItemView*>(watched)) {
-                QTimer::singleShot(0, view, [view] {
-                    view->doItemsLayout();
-                });
-            } else if (auto* combo = qobject_cast<QComboBox*>(watched)) {
-                if (!qobject_cast<QStyledItemDelegate*>(combo->itemDelegate())) {
-                    combo->setItemDelegate(new QStyledItemDelegate(combo));
-                }
-            } else if (watched->inherits("QComboBoxPrivateContainer")) {
-                auto* container = static_cast<QFrame*>(watched);
-                container->setFrameShape(QFrame::NoFrame);
-                container->setAttribute(Qt::WA_TranslucentBackground);
-            }
-        } else if (event->type() == QEvent::Paint && qobject_cast<QMenu*>(watched)) {
+        if (event->type() == QEvent::Paint && qobject_cast<QMenu*>(watched)) {
             paint_menu_body(static_cast<QWidget*>(watched)); // under the menu's own items
         } else if (event->type() == QEvent::FocusIn) {
             const Qt::FocusReason reason = static_cast<QFocusEvent*>(event)->reason();
@@ -1796,12 +1829,23 @@ void reapply(bool force) {
     if (!force && old_sheet == fill_roles(STYLE_SHEET)) {
         return; // the event was ours (or changed nothing we use): no loop, no flicker
     }
-    choose_style();
+    const bool restyled = choose_style();
     qApp->setStyleSheet(fusion_active() ? fill_roles(APP_STYLE_SHEET) : QString());
     if (!themed_root) {
         return;
     }
+    // A new style live: the window's stylesheet is rebuilt on it from scratch (Qt layers a
+    // sheet over the style in use when it is set), and every widget gets the new style's
+    // adjustments — the re-polish didn't pass through the polish filter.
+    if (restyled) {
+        themed_root->setStyleSheet(QString());
+    }
     apply_to(*themed_root);
+    if (restyled) {
+        for (QWidget* widget : QApplication::allWidgets()) {
+            adjust_for_style(widget);
+        }
+    }
     // Widgets holding the app accent (untagged knobs and switches) take the new one;
     // effect accents stay. Custom-painted widgets read the chrome tones when they paint.
     if (old_accent != current_accent) {
