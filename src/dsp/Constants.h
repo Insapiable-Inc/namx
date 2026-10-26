@@ -114,6 +114,11 @@ constexpr double TREMOLO_DEPTH_MIN = 0.0;
 constexpr double TREMOLO_DEPTH_MAX = 100.0;
 constexpr double TREMOLO_DEPTH_DEFAULT = 50.0;
 
+// The TR-2 type's Wave: 0–100 % of the pedal's knob (7:00–5:00), triangle → square.
+constexpr double TREMOLO_WAVE_MIN = 0.0;
+constexpr double TREMOLO_WAVE_MAX = 100.0;
+constexpr double TREMOLO_WAVE_DEFAULT = 50.0;
+
 // Delay
 // 20 ms floor keeps the delay line at least one sample long; 3 s covers synced
 // note values at slow tempos (a dotted half at 80 BPM is 1125 ms) without drifting
