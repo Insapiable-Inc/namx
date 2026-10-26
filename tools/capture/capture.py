@@ -14,8 +14,9 @@ latency and shows the level that actually left the interface.
     capture.py plan PLAN                              # the plan's takes and total time
     capture.py run SESSION PLAN                       # walk through the plan (resumable)
 
-SESSION is a folder outside the repo, one per pedal and day (e.g.
-~/Captures/boss/tr-2/2026-10-27). Its rig.json holds the ports and the reference level.
+SESSION is a folder under captures/, one per pedal and day (e.g.
+captures/boss/tr-2/2026-10-26). Its rig.json holds the ports and the reference level.
+The WAVs are git-ignored (too large for the repo); the JSON files and fits are committed.
 Each take writes TAKE.wav (float32; channel 1 = pedal, channel 2 = loopback),
 TAKE.json (knob settings, signal, level, latency, peaks, xruns) and played/TAKE.wav.
 
@@ -184,16 +185,17 @@ def find_latency(loop, marker_start, rate):
     return index - marker_start, quality
 
 
-def check_take(recorded, marker_start, rate, bypass, expect_signal):
-    """Measurements for the sidecar, and the problems worth redoing a take for."""
-    pedal_peak, loop_peak = dbfs(recorded[:, 0]), dbfs(recorded[:, 1])
+def check_take(recorded, marker_start, body_start, rate, bypass, expect_signal):
+    """Measurements for the sidecar, and the problems worth redoing a take for. Peaks are
+    over the signal and tail, after the marker, which always plays at the reference."""
+    pedal_peak, loop_peak = dbfs(recorded[body_start:, 0]), dbfs(recorded[body_start:, 1])
     latency, quality = find_latency(recorded[:, 1], marker_start, rate)
     problems = []
     if pedal_peak >= CLIP_DBFS:
         problems.append("the pedal input clipped: lower the pedal's Level or the input gain")
     if loop_peak >= CLIP_DBFS:
         problems.append("the loopback input clipped")
-    if loop_peak < SILENT_DBFS:
+    if dbfs(recorded[:, 1]) < SILENT_DBFS:  # the marker included: silence takes have one
         problems.append("the loopback is silent: check its cable and ports")
     elif quality < 0.5:
         problems.append(f"the marker wasn't found clearly in the loopback ({quality:.2f})")
@@ -209,8 +211,8 @@ def check_take(recorded, marker_start, rate, bypass, expect_signal):
 def record_take(engine, rig, session, name, spec, extra):
     played, marker_start, body_start = signals.build(spec, engine.rate, rig["ref_dbfs"])
     recorded, xruns = engine.play_record(played)
-    measured, problems = check_take(recorded, marker_start, engine.rate, extra.get("bypass", False),
-                                    spec["type"] != "silence")
+    measured, problems = check_take(recorded, marker_start, body_start, engine.rate,
+                                    extra.get("bypass", False), spec["type"] != "silence")
     if xruns:
         problems.append(f"{xruns} xrun(s) during the take: redo it, or raise the quantum")
     (session / "played").mkdir(exist_ok=True)
