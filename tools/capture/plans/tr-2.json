@@ -1,0 +1,309 @@
+{
+  "pedal": "Boss TR-2",
+  "comment": "Knob positions are clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise.",
+  "knobs": [
+    "Rate",
+    "Wave",
+    "Depth"
+  ],
+  "takes": [
+    {
+      "name": "bypass-sweep-12",
+      "bypass": true,
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12
+      }
+    },
+    {
+      "name": "bypass-sweep-6",
+      "bypass": true,
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -6
+      }
+    },
+    {
+      "name": "bypass-sweep-0",
+      "bypass": true,
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": 0
+      }
+    },
+    {
+      "name": "bypass-sine",
+      "bypass": true,
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 20
+      }
+    },
+    {
+      "name": "depth0-sweep-12",
+      "settings": {
+        "Rate": "12:00",
+        "Wave": "12:00",
+        "Depth": "7:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12
+      },
+      "note": "Depth at minimum: the pedal's own tone and gain, and whether it distorts with level."
+    },
+    {
+      "name": "depth0-sweep-6",
+      "settings": {
+        "Rate": "12:00",
+        "Wave": "12:00",
+        "Depth": "7:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -6
+      },
+      "note": "Depth at minimum: the pedal's own tone and gain, and whether it distorts with level."
+    },
+    {
+      "name": "depth0-sweep-0",
+      "settings": {
+        "Rate": "12:00",
+        "Wave": "12:00",
+        "Depth": "7:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": 0
+      },
+      "note": "Depth at minimum: the pedal's own tone and gain, and whether it distorts with level."
+    },
+    {
+      "name": "depth-0700",
+      "settings": {
+        "Rate": "12:00",
+        "Wave": "12:00",
+        "Depth": "7:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 20
+      }
+    },
+    {
+      "name": "depth-0930",
+      "settings": {
+        "Rate": "12:00",
+        "Wave": "12:00",
+        "Depth": "9:30"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 20
+      }
+    },
+    {
+      "name": "depth-1200",
+      "settings": {
+        "Rate": "12:00",
+        "Wave": "12:00",
+        "Depth": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 20
+      }
+    },
+    {
+      "name": "depth-0230",
+      "settings": {
+        "Rate": "12:00",
+        "Wave": "12:00",
+        "Depth": "2:30"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 20
+      }
+    },
+    {
+      "name": "wave-1200",
+      "settings": {
+        "Rate": "12:00",
+        "Wave": "12:00",
+        "Depth": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 20
+      }
+    },
+    {
+      "name": "noise-floor",
+      "settings": {
+        "Rate": "12:00",
+        "Wave": "12:00",
+        "Depth": "5:00"
+      },
+      "signal": {
+        "type": "silence",
+        "seconds": 10
+      },
+      "note": "No signal: hum, hiss and any LFO tick bleeding into the output."
+    },
+    {
+      "name": "wave-0930",
+      "settings": {
+        "Rate": "12:00",
+        "Wave": "9:30",
+        "Depth": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 20
+      }
+    },
+    {
+      "name": "wave-0700",
+      "settings": {
+        "Rate": "12:00",
+        "Wave": "7:00",
+        "Depth": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 20
+      }
+    },
+    {
+      "name": "wave-0230",
+      "settings": {
+        "Rate": "12:00",
+        "Wave": "2:30",
+        "Depth": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 20
+      }
+    },
+    {
+      "name": "wave-0500",
+      "settings": {
+        "Rate": "12:00",
+        "Wave": "5:00",
+        "Depth": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 20
+      }
+    },
+    {
+      "name": "rate-0700",
+      "settings": {
+        "Rate": "7:00",
+        "Wave": "12:00",
+        "Depth": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 20
+      }
+    },
+    {
+      "name": "rate-0930",
+      "settings": {
+        "Rate": "9:30",
+        "Wave": "12:00",
+        "Depth": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 20
+      }
+    },
+    {
+      "name": "rate-0230",
+      "settings": {
+        "Rate": "2:30",
+        "Wave": "12:00",
+        "Depth": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 20
+      }
+    },
+    {
+      "name": "rate-0500",
+      "settings": {
+        "Rate": "5:00",
+        "Wave": "12:00",
+        "Depth": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 20
+      }
+    },
+    {
+      "name": "cross-max",
+      "settings": {
+        "Rate": "5:00",
+        "Wave": "5:00",
+        "Depth": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 20
+      }
+    },
+    {
+      "name": "cross-min",
+      "settings": {
+        "Rate": "7:00",
+        "Wave": "7:00",
+        "Depth": "2:30"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 20
+      }
+    }
+  ]
+}
