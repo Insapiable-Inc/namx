@@ -8,12 +8,14 @@ carrier, gain relative to bypass):
 
     tri(phase)  triangle, +1 at phase 0, -1 at phase 0.5
     v = u0 + D * (G * (tri + beta) - kappa)      D = Depth map (1 at 5:00), G = Wave map
-    G is divided by sqrt(1 + (rate / corner)^2): the swing shrinks at fast rates
     gain = top * smooth(clamp(v))                clamp: soft limit to [0, 1] (sharpness s)
-                                                 smooth: one-pole low-pass, time constant tau
+                                                 smooth: one-pole, falling with tau_down,
+                                                 rising with tau_up (slower)
 
 Wave is a plain gain on an offset triangle: the clamp is what squares it off, and Depth
 pulls the whole swing towards a rest point above the clamp's top (full level at Depth 0).
+The gain drops about twice as fast as it recovers (fast attack, slow release), which is
+what rounds the fast settings' rising edges and makes them creep up to the top.
 Rate is measured directly per take. Outside the LFO: the pedal's level and low cut
 (pedal on at minimum depth against bypass), distortion and noise.
 """
@@ -30,7 +32,7 @@ import analysis
 
 POSITIONS = ["7:00", "9:30", "12:00", "2:30", "5:00"]
 KNOB_FRACTION = [0.0, 0.25, 0.5, 0.75, 1.0]  # of the 300° rotation
-BINS = 128
+BINS = 256
 CARRIER_HZ = 1000.0
 
 
@@ -46,7 +48,7 @@ SHAPE_TAKES |= {"cross-max": (4, 4), "cross-min": (0, 3)}
 RATE_TAKES = {"7:00": "rate-0700", "9:30": "rate-0930", "12:00": "wave-1200",
               "2:30": "rate-0230", "5:00": "rate-0500"}
 
-GLOBALS = ["u0", "beta", "kappa", "sharpness", "top", "tau_s", "rate_corner_hz"]
+GLOBALS = ["u0", "beta", "kappa", "sharpness", "top", "tau_down_s", "tau_up_s"]
 
 
 def triangle(phase):
@@ -57,18 +59,25 @@ def soft_clamp(v, sharpness):
     return (np.logaddexp(0, sharpness * v) - np.logaddexp(0, sharpness * (v - 1))) / sharpness
 
 
-def smooth_cycle(x, lfo_hz, tau):
-    """A one-pole low-pass applied to a periodic cycle (in the frequency domain)."""
-    k = np.fft.rfftfreq(len(x), 1 / len(x))
-    return np.fft.irfft(np.fft.rfft(x) / (1 + 2j * np.pi * k * lfo_hz * tau), len(x))
+def smooth_cycle(x, lfo_hz, tau_down, tau_up, cycles=3):
+    """A one-pole follower with separate falling and rising time constants, run over a
+    periodic cycle until it settles (the last of `cycles` passes is returned)."""
+    dt = 1 / (lfo_hz * len(x))
+    down, up = 1 - np.exp(-dt / tau_down), 1 - np.exp(-dt / tau_up)
+    y = x[-1]
+    out = np.empty_like(x)
+    for _ in range(cycles):
+        for i, target in enumerate(x):
+            y += (up if target > y else down) * (target - y)
+            out[i] = y
+    return out
 
 
 def model_cycle(constants, wave_gain, depth, lfo_hz, phase_offset, bins=BINS):
-    u0, beta, kappa, sharpness, top, tau, corner = constants
+    u0, beta, kappa, sharpness, top, tau_down, tau_up = constants
     phase = (np.arange(bins) + 0.5) / bins
-    gain = wave_gain / np.sqrt(1 + (lfo_hz / corner) ** 2)
-    v = u0 + depth * (gain * (triangle(np.mod(phase - phase_offset, 1)) + beta) - kappa)
-    return top * smooth_cycle(soft_clamp(v, sharpness), lfo_hz, tau)
+    v = u0 + depth * (wave_gain * (triangle(np.mod(phase - phase_offset, 1)) + beta) - kappa)
+    return top * smooth_cycle(soft_clamp(v, sharpness), lfo_hz, tau_down, tau_up)
 
 
 def measure_cycles(session):
@@ -102,10 +111,10 @@ def fit(cycles):
                         offsets[i]) - cycles[n][1] for i, n in enumerate(names)])
 
     # Starting point and bounds: the values the exploration settled on, widely bracketed.
-    start = [1.24, 0.38, 0.93, 25, 1.05, 0.006, 40]
+    start = [1.24, 0.38, 0.93, 25, 1.05, 0.003, 0.008]
     start += [0.6, 1.1, 1.5, 2.8, 4] + [0.05, 0.3, 0.5, 0.8]
-    low = [0, -2, -5, 1, 0.8, 0, 2] + [0] * 9
-    high = [5, 3, 5, 300, 1.3, 0.05, 1000] + [50] * 5 + [3] * 4
+    low = [0, -2, -5, 1, 0.8, 1e-5, 1e-5] + [0] * 9
+    high = [5, 3, 5, 300, 1.3, 0.05, 0.05] + [50] * 5 + [3] * 4
     start += [0] * len(names)
     low += [-0.2] * len(names)
     high += [0.2] * len(names)
@@ -179,16 +188,16 @@ def plot_explainers(out, session, constants, wave, depth, rates, tone):
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    u0, beta, kappa, sharpness, top, tau, corner = constants
+    u0, beta, kappa, sharpness, top, tau_down, tau_up = constants
     phase = (np.arange(512) + 0.5) / 512
     tri = triangle(phase)
     lfo_hz = rates["12:00"]
     colors = ["C0", "C1", "C2", "C3", "C4"]
 
     def stages(g, d):
-        v = u0 + d * (g / np.sqrt(1 + (lfo_hz / corner) ** 2) * (tri + beta) - kappa)
+        v = u0 + d * (g * (tri + beta) - kappa)
         clamped = soft_clamp(v, sharpness)
-        return v, clamped, top * smooth_cycle(clamped, lfo_hz, tau)
+        return v, clamped, top * smooth_cycle(clamped, lfo_hz, tau_down, tau_up)
 
     # What the fit is made from: one second of a take and its envelope.
     take = analysis.Take(session, "wave-1200")
@@ -228,7 +237,7 @@ def plot_explainers(out, session, constants, wave, depth, rates, tone):
     axes[1].legend(fontsize=8, loc="upper center")
     titles = ["1. triangle LFO: tri", r"2. control: $v = u_0 + D\,(G\,(tri+\beta) - \kappa)$",
               f"3. soft clamp to [0, 1] (s = {sharpness:.1f})",
-              f"4. one-pole smoothing ({tau * 1000:.1f} ms) × top → gain"]
+              f"4. smoothing (down {tau_down * 1000:.1f} ms, up {tau_up * 1000:.1f} ms) × top"]
     for axis, title in zip(axes, titles):
         axis.set_title(title, fontsize=10)
         axis.set_xlabel("LFO phase (cycles)")
@@ -303,8 +312,8 @@ def main():
     result = {
         "pedal": "Boss TR-2",
         "session": session.name,
-        "model": "gain = top * smooth(clamp01(u0 + D * (G / sqrt(1 + (rate / rate_corner_hz)^2)"
-                 " * (tri + beta) - kappa)))",
+        "model": "gain = top * follow(clamp01(u0 + D * (G * (tri + beta) - kappa)));"
+                 " follow = one-pole, tau_down falling, tau_up rising",
         "constants": {k: round(float(v), 5) for k, v in zip(GLOBALS, constants)},
         "knob_fraction": KNOB_FRACTION,
         "rate_hz": rates,
