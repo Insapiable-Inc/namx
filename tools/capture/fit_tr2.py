@@ -173,6 +173,122 @@ def plot(path, cycles, constants, wave, depth, offsets):
     plt.close(figure)
 
 
+def plot_explainers(out, session, constants, wave, depth, rates, tone):
+    """Figures that explain the fit: the raw data, the model's stages, Depth, the knob maps."""
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    u0, beta, kappa, sharpness, top, tau, corner = constants
+    phase = (np.arange(512) + 0.5) / 512
+    tri = triangle(phase)
+    lfo_hz = rates["12:00"]
+    colors = ["C0", "C1", "C2", "C3", "C4"]
+
+    def stages(g, d):
+        v = u0 + d * (g / np.sqrt(1 + (lfo_hz / corner) ** 2) * (tri + beta) - kappa)
+        clamped = soft_clamp(v, sharpness)
+        return v, clamped, top * smooth_cycle(clamped, lfo_hz, tau)
+
+    # What the fit is made from: one second of a take and its envelope.
+    take = analysis.Take(session, "wave-1200")
+    reference = analysis.Take(session, "bypass-sine")
+    rate = take.rate
+    x = take.signal()
+    env = analysis.envelope(x, rate)
+    level = np.median(analysis.envelope(reference.signal(), rate)[rate:-rate])
+    window = slice(5 * rate, 6 * rate)
+    t = np.arange(rate) / rate
+    figure, axes = plt.subplots(2, 1, figsize=(13, 5), sharex=True)
+    axes[0].plot(t, x[window], lw=0.3, label="pedal output (1 kHz sine through the TR-2)")
+    axes[0].plot(t, env[window], "C3", label="envelope (Hilbert, 300 Hz low-pass)")
+    axes[0].plot(t, -env[window], "C3")
+    axes[0].legend(fontsize=8, loc="upper right")
+    axes[0].set_ylabel("sample value")
+    axes[1].plot(t, env[window] / level, "C3")
+    axes[1].set_ylabel("gain re bypass")
+    axes[1].set_xlabel("seconds")
+    axes[1].grid(alpha=0.3)
+    figure.suptitle("Take wave-1200 (Rate 12:00, Wave 12:00, Depth 5:00), one second: each take's "
+                    "envelope is averaged into one LFO cycle, and the model is fitted to those")
+    figure.tight_layout()
+    figure.savefig(out / "tr-2-raw.png", dpi=110)
+    plt.close(figure)
+
+    # The model's stages, for three Wave settings at full Depth.
+    figure, axes = plt.subplots(1, 4, figsize=(17, 4))
+    axes[0].plot(phase, tri, "k", lw=1)
+    for position, color in (("7:00", "C0"), ("12:00", "C1"), ("5:00", "C3")):
+        g = wave[POSITIONS.index(position)]
+        v, clamped, gain = stages(g, 1.0)
+        axes[1].plot(phase, v, color, label=f"Wave {position} (G = {g:.2f})")
+        axes[2].plot(phase, clamped, color)
+        axes[3].plot(phase, gain, color)
+    axes[1].axhspan(0, 1, color="0.9", zorder=0)
+    axes[1].legend(fontsize=8, loc="upper center")
+    titles = ["1. triangle LFO: tri", r"2. control: $v = u_0 + D\,(G\,(tri+\beta) - \kappa)$",
+              f"3. soft clamp to [0, 1] (s = {sharpness:.1f})",
+              f"4. one-pole smoothing ({tau * 1000:.1f} ms) × top → gain"]
+    for axis, title in zip(axes, titles):
+        axis.set_title(title, fontsize=10)
+        axis.set_xlabel("LFO phase (cycles)")
+        axis.grid(alpha=0.3)
+    figure.suptitle(f"The model, Wave at three settings (Depth 5:00, Rate 12:00 = "
+                    f"{lfo_hz:.2f} Hz); grey band = the clamp's window")
+    figure.tight_layout()
+    figure.savefig(out / "tr-2-model.png", dpi=110)
+    plt.close(figure)
+
+    # Depth: the swing pivots around the rest point u0, above the clamp.
+    figure, axes = plt.subplots(1, 2, figsize=(12, 4))
+    g = wave[POSITIONS.index("12:00")]
+    for position, d, color in zip(POSITIONS, depth, colors):
+        v, _, gain = stages(g, d)
+        axes[0].plot(phase, v, color, label=f"Depth {position} (D = {d:.2f})")
+        axes[1].plot(phase, gain, color)
+    axes[0].axhspan(0, 1, color="0.9", zorder=0)
+    axes[0].axhline(u0, ls=":", c="k", lw=1)
+    axes[0].annotate(f"rest point u0 = {u0:.2f}", (0.5, u0), (0.5, u0 + 0.6), ha="center",
+                     fontsize=8, arrowprops={"arrowstyle": "->"})
+    axes[0].set_title("control v: Depth scales the swing toward u0 (above the clamp)", fontsize=10)
+    axes[1].set_title("resulting gain", fontsize=10)
+    for axis in axes:
+        axis.set_xlabel("LFO phase (cycles)")
+        axis.grid(alpha=0.3)
+    axes[0].legend(fontsize=8, loc="lower right")
+    figure.suptitle("Depth at Wave 12:00, Rate 12:00")
+    figure.tight_layout()
+    figure.savefig(out / "tr-2-depth.png", dpi=110)
+    plt.close(figure)
+
+    # Knob maps and the pedal's own tone.
+    figure, axes = plt.subplots(1, 4, figsize=(18, 4))
+    fraction = np.array(KNOB_FRACTION)
+    axes[0].semilogy(fraction, [rates[p] for p in POSITIONS], "o-")
+    axes[0].set_title("Rate → f (Hz, log scale)", fontsize=10)
+    axes[1].plot(fraction, wave, "o-")
+    axes[1].set_title("Wave → G", fontsize=10)
+    axes[2].plot(fraction, depth, "o-")
+    axes[2].set_title("Depth → D (5:00 fixed at 1)", fontsize=10)
+    for axis in axes[:3]:
+        axis.set_xticks(fraction, POSITIONS)
+        axis.set_xlabel("knob (clock)")
+        axis.grid(alpha=0.3, which="both")
+    for label, values in tone["on_minus_bypass_db"].items():
+        axes[3].semilogx(tone["bands_hz"], values, "o-", label=f"input {label}")
+    f = np.logspace(np.log10(20), np.log10(20000), 200)
+    axes[3].semilogx(f, 20 * np.log10(top) - 10 * np.log10(1 + (70 / f) ** 2), "k:",
+                     label="first-order 70 Hz low cut × top")
+    axes[3].set_title("pedal on (Depth 7:00) minus bypass, dB", fontsize=10)
+    axes[3].set_xlabel("Hz")
+    axes[3].legend(fontsize=7)
+    axes[3].grid(alpha=0.3, which="both")
+    figure.suptitle("Knob maps (7:00 = fully counter-clockwise) and the pedal's own tone")
+    figure.tight_layout()
+    figure.savefig(out / "tr-2-knobs-tone.png", dpi=110)
+    plt.close(figure)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("session")
@@ -203,6 +319,7 @@ def main():
         json.dump(result, file, indent=2)
         file.write("\n")
     plot(out / "tr-2-cycles.png", cycles, constants, wave, depth, offsets)
+    plot_explainers(out, session, constants, wave, depth, rates, result["tone"])
 
     print("Constants: " + ", ".join(f"{k} {v:g}" for k, v in result["constants"].items()))
     for title, values in (("Rate (Hz)", rates), ("Wave gain G", result["wave_gain_G"]),
@@ -211,7 +328,7 @@ def main():
     worst = max(fit_error, key=lambda n: fit_error[n]["rms"])
     print(f"Fit error (gain, rms): worst {worst} {fit_error[worst]['rms']}, median "
           f"{np.median([e['rms'] for e in fit_error.values()]):.4f}")
-    print(f"Wrote {out / 'tr-2.json'} and {out / 'tr-2-cycles.png'}")
+    print(f"Wrote {out / 'tr-2.json'} and the figures (tr-2-*.png) next to it")
 
 
 if __name__ == "__main__":
