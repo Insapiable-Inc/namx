@@ -13,3 +13,6 @@
 .idea/
 *.DS_Store
 __pycache__/
+
+# Pedal captures: the audio stays local (large); sidecars, rig and fits are committed
+captures/**/*.wav
