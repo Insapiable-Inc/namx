@@ -195,7 +195,9 @@ xruns and a 9.5 ms round trip (455–456 samples):
   2:30).
 - 10 s of silence with the pedal on at Depth 5:00 (noise and LFO bleed).
 
-The pedal ran on a battery. The WAVs are not in git (240 MB); the sidecars and the rig
+The pedal ran on a battery that was not fresh: it measured 8.37 V (no load) right after
+the session. A sagging supply can move an analog pedal's LFO speed and headroom a
+little, so a recapture on a 9 V adapter may differ slightly. The WAVs are not in git (240 MB); the sidecars and the rig
 are.
 
 ## Figures
