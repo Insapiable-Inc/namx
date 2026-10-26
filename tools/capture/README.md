@@ -100,6 +100,21 @@ What it took, 2026-10-26:
 - **Noise:** with the bypassed pedal the input sits at −93.7 dBFS RMS, 80 dB under the
   reference; mains hum at 50/150 Hz is at −129/−132 dBFS, nothing from the computer's
   PSU, drives or monitor shows above the measurement floor.
+- **After a session, put everything back**: the Pro Audio profile renames the card's
+  ports, so every saved connection breaks — NAM-X's (it restores them by port name at
+  launch, and saves whatever it is connected to when it quits) and any virtual device
+  fed from the card (here a "Voz (Scarlett In 1)" microphone, which fell back to another
+  card's input). Restore the profile, the routing and the pad:
+
+  ```
+  pactl set-card-profile alsa_card.usb-Focusrite_Scarlett_8i6_USB_F8FXD3B190BDA0-00 \
+      output:analog-surround-21+input:multichannel-input
+  amixer -c 3 cset numid=26 11; amixer -c 3 cset numid=27 12
+  amixer -c 3 sset "Line In 2 Pad" nocap
+  ```
+
+  then restart NAM-X (or reconnect it from the status bar) before closing it, so it
+  doesn't save the broken connections.
 - **PipeWire quantum 128** gave no xruns. If takes report xruns, raise it for the session
   (`pw-metadata -n settings 0 clock.force-quantum 1024`, back with `0`).
 
