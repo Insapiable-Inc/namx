@@ -226,3 +226,49 @@ That table is the parameter set of a "DD-8 voicings" Delay for NAM-X: one delay 
 saturation curve, a loop filter, a level, and (Tape) a pitch wander.
 
 ![DD-8 Warm](2026-10-26-warm/fit/dd-8-warm.svg)
+
+# Reverse mode
+
+Session [`2026-10-27-reverse/`](2026-10-27-reverse/), plan
+[`plans/dd-8-reverse.json`](../../../tools/capture/plans/dd-8-reverse.json): 18 takes, the
+same rig, MODE on REVERSE. Analysed by hand (scratch scripts) on 2026-10-27; no analysis
+script yet. New signals for it: `plucks` and `pluck-train` (a 1 kHz tone with a 2 ms
+attack and a 0.3 s exponential decay, like a picked note — reversed, it swells).
+
+**How it works:** a note **starts a chunk**; the chunk is recorded for a length set by
+Time, then **played back reversed** right after it ends; while the input continues, the
+next chunk follows, with a short fade at each join.
+
+- **Triggered by the playing:** isolated plucks at irregular times (2.9, 11.2 and 15.0 s
+  into a take) came back with identical timing, to the millisecond — the swell starts
+  599 ms after the note, peaks at 1118 ms and cuts off at 1174 ms (Time 12:00) — where a
+  free-running grid would shift them. Two plucks 0.25 s apart land in one chunk and come
+  back reversed together. A held tone is chopped at a fixed length while it lasts.
+  Lone one-sample clicks don't come back at all (too little energy to trigger, it seems;
+  a −27 dB blip 9.1 ms after each is all that shows).
+- **The reversal is clean:** a pluck's swell rises 2.9 dB per 100 ms, its decay mirrored.
+- **Chunk length** (the joins' spacing in held tones) — a range of its own, much longer
+  than the plain delay's:
+
+  | Time | 9:00 | 12:00 | 3:00 | 5:00 |
+  |---|---|---|---|---|
+  | chunk (ms) | 221.8 | 573.85 | 1562 | ~2497 |
+  | the fade at each join (ms, below −3 dB) | 25 | 45 | 101 | ~360 (less certain) |
+  | Standard's delay at that position (ms) | 169.6 | 385.6 | 582.6 | 799.6 |
+
+  At Time 12:00 the joins are 573.85 ± 0.2 ms apart over 26 joins, each a dip to
+  −70…−77 dB.
+- **Level is a dry/wet balance here:** at **5:00 the dry signal is muted** (−68 dB re
+  bypass) and the reversed note is −2.0 dB re the pluck; at **12:00 the dry is back at
+  unity** and the reversed note is −12.6 dB (about Standard's taper).
+- **Feedback keeps everything reversed:** at Feedback 12:00 the repeats are swells too,
+  never flipped back to a forward note — the main ones every two chunk lengths (~1.15 s),
+  ~8.5 dB quieter each, with weaker swells (−21, −29 dB) in the chunks between.
+
+**Test design, a lesson:** the first takes' plucks were 4.000 s apart — almost exactly
+7 chunks at Time 12:00 — so they would have come back identical on a fixed grid too; it
+took irregular onsets to tell "triggered" from "grid". The first pass also read the
+held tone's joins as alternating deep and shallow dips: a coarse 50 ms sampling.
+
+**Not measured:** the onset detector's threshold (how quiet a note still triggers), the
+fade's exact shape, the tone of the reversed signal, and the 5:00 chunk precisely.
