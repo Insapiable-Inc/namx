@@ -240,6 +240,44 @@
         "tail": 2
       },
       "note": "E.Level down: the manual says the filter shapes only the chorus sound; checks it. Afterwards both filter knobs back fully clockwise."
+    },
+    {
+      "name": "sweep-check",
+      "settings": {
+        "E.Level": "5:00",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Low": "5:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 2
+      },
+      "note": "Check: the mono takes are 1-1.5 dB darker at 6-10 kHz than the wet-only ones. HIGH turned firmly to its clockwise stop: the same as 'sweep'?"
+    },
+    {
+      "name": "high-0300-check",
+      "settings": {
+        "E.Level": "5:00",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Low": "5:00",
+        "High": "3:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 2
+      },
+      "note": "HIGH at 3:00: how far from 'sweep-check' (wet only: 1.2 dB at 6.4 kHz)?"
     }
   ]
 }

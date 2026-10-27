@@ -472,6 +472,25 @@
         "tail": 2
       },
       "note": "Both fully counter-clockwise: is the filter the product of the two? Afterwards both back fully clockwise, and the plug out of OUTPUT B."
+    },
+    {
+      "name": "sweep-check",
+      "settings": {
+        "E.Level": "5:00",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Low": "5:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 2
+      },
+      "note": "Check (a plug back in OUTPUT B; HIGH firmly at its clockwise stop): the same as 'sweep'? Against the mono session's sweep-check."
     }
   ]
 }
