@@ -12,7 +12,7 @@ namespace namx
 
 // The Boss TR-2 Tremolo's gain, a grey-box model fitted to captures of a real one
 // (2026-10-26; the study, its data and the fits are in captures/boss/tr-2/README.md,
-// tools/capture/fit_tr2.py reproduces the numbers).
+// tools/capture/fit_tr2.py reproduces the numbers). Frozen: the sound was chosen by ear.
 //
 //   tri  = 1 − 4·min(φ, 1 − φ)                   triangle LFO, +1 at φ = 0
 //   v    = u0 + D·(G·(tri + β) − κ)              G from the Wave knob, D from Depth
@@ -47,22 +47,10 @@ struct Voicing
     std::array<float, 5> top; // gain at the top of the cycle
 };
 
-// The first capture, on a tired battery (8.37 V): approved by ear 2026-10-26, so its
-// numbers stay as they were (one top level for every Depth: the battery held it flat).
-constexpr Voicing BATTERY{
-    1.25425f,
-    0.42844f,
-    0.96141f,
-    18.3909f,
-    0.00346,
-    0.00866,
-    {0.6422f, 1.1268f, 1.4826f, 2.7587f, 3.4550f},
-    {0.1432f, 0.2218f, 0.4937f, 0.7928f, 1.0f},
-    {1.05787f, 1.05787f, 1.05787f, 1.05787f, 1.05787f},
-};
-
-// The recapture on a 9 V supply (the pedal as designed): the top of the cycle drops to
-// unity as Depth nears maximum. Median error 1.3 % of full gain.
+// The capture on a 9 V supply (the pedal as designed, session 2026-10-26-psu): the top of
+// the cycle drops to unity as Depth nears maximum. Median error 1.3 % of full gain. Chosen
+// over the first capture's voicing (a tired battery, ~0.45 dB hot on the tops at full
+// Depth; git history, e1eaa67) after an A/B on 2026-10-26 — frozen since.
 constexpr Voicing SUPPLY{
     1.10998f,
     0.43044f,

@@ -260,19 +260,20 @@ Written by `fit_tr2.py` into each session's `fit/` (links: supply session):
 
 ## Implementing it
 
-**In NAM-X:** the Tremolo's Type knob (`src/dsp/Tr2Tremolo.h`, used by
-`TremoloProcessor`; preset keys `tremolo/type` and `tremolo/wave`):
+**In NAM-X:** the Tremolo's **Type: TR-2** (`src/dsp/Tr2Tremolo.h`, used by
+`TremoloProcessor`; preset keys `tremolo/type` = 1 and `tremolo/wave`), voiced by the
+**supply session's fit** — frozen since 2026-10-26 (branch `dsp/tremolo-tr2`). Depth and
+Wave are the pedal's knobs as 0–100 % of their rotation (7:00–5:00) through the maps
+above; Rate stays in Hz (the TR-2 spans 1.09–13.6 Hz of the Tremolo's 0.5–15). So Depth
+0 % keeps the pedal's small ripple, as the real one does. Stereo is the Tremolo's usual
+auto-pan: a second gain 180° apart with its own follower. DspGoldenTest guards it
+(`tremolo-tr2`, `tremolo-tr2-stereo`).
 
-| Type | `tremolo/type` | Voicing |
-|---|---|---|
-| Sine | 0 (default) | the original sine tremolo |
-| TR-2 batt | 1 | the battery session's fit as it was when approved by ear (2026-10-26): one top level, 1.05787, for every Depth |
-| TR-2 9 V | 2 | the supply session's fit, top level by Depth — added for an A/B against the approved one |
-
-Depth and Wave are the pedal's knobs as 0–100 % of their rotation (7:00–5:00) through the
-maps above; Rate stays in Hz (the TR-2 spans 1.09–13.6 Hz of the Tremolo's 0.5–15). So
-Depth 0 % keeps the pedal's small ripple, as the real one does. Stereo is the Tremolo's
-usual auto-pan: a second gain 180° apart with its own follower.
+**History:** the first TR-2 in NAM-X was voiced by the battery session (one top level,
+1.05787, for every Depth) and approved by ear. After the supply recapture both voicings
+sat side by side ("TR-2 batt", "TR-2 9 V") for an A/B; the difference was hard to hear
+and the 9 V voicing is the closer one, so it became the only TR-2 (the battery voicing is
+in git history, e1eaa67).
 
 **Checked against the recordings:** a 1 kHz sine rendered through `TremoloProcessor` at
 each of the 15 measured settings (that session's measured rates, the knob positions as
@@ -280,25 +281,52 @@ percentages), analysed exactly like the takes:
 
 | C++ voicing | against | median rms | overall |
 |---|---|---|---|
-| TR-2 batt | battery recordings | 0.0165 | 0.0179 |
-| TR-2 9 V | supply recordings | 0.0147 | 0.0165 |
-| TR-2 batt | supply recordings | 0.0413 | 0.0418 |
+| battery (retired) | battery recordings | 0.0165 | 0.0179 |
+| **9 V (the TR-2)** | supply recordings | **0.0147** | 0.0165 |
+| battery (retired) | supply recordings | 0.0413 | 0.0418 |
 
-The last row is the battery's effect, measured: the approved voicing is ~3× further from
-the pedal on a proper supply than either voicing is from its own session. Overlaid on the real
-pedal (supply session), the difference is almost only the flat tops at full Depth: the
-battery voicing sits ~0.05 (~0.45 dB) high there, while the edges' timing and steepness
-match — which is why the two are hard to tell apart by ear (2026-10-26). The edge spikes
-at Wave 2:30–5:00 are the model's own limit, in both voicings; wave-0930's large batt
+The last row is the battery's effect, measured: the battery voicing is ~3× further from
+the pedal on a proper supply than either voicing is from its own session. Overlaid on the
+real pedal (supply session), the difference is almost only the flat tops at full Depth:
+the battery voicing sits ~0.05 (~0.45 dB) high there, while the edges' timing and
+steepness match — which is why the two were hard to tell apart by ear. The edge spikes at
+Wave 2:30–5:00 are the model's own limit, in both voicings; wave-0930's large battery
 error is where the knob landed in each session, not the battery:
 
 ![Both voicings against the real pedal](voicings-vs-supply.svg)
- DspGoldenTest
-guards all three (`tremolo-tr2`, `tremolo-tr2-stereo`, `tremolo-tr2-supply`).
 
-
-Everything runs per sample and is cheap: a phase accumulator, the triangle, the soft
-clamp (one exp and one log: ln((1 + e^(s·v)) / (1 + e^(s·v − s))) / s, with s·v clamped
-to ±40 to keep e^x finite), the follower and a one-pole high-pass. The follower and the
-high-pass keep state per channel (and per LFO for an auto-panning stereo variant). Knob
+Everything runs per sample and is cheap (~0.1 % of a core): a phase accumulator, the
+triangle, the soft clamp (one exp and one log: ln((1 + e^(s·v)) / (1 + e^(s·v − s))) / s,
+with s·v clamped to ±40 to keep e^x finite), the follower and a one-pole high-pass. The
+follower and the high-pass keep state per channel (and per LFO for the auto-pan). Knob
 positions map to G, D and T by interpolating the tables above.
+
+## Open questions
+
+What the model still misses, all at 0.01–0.02 of full gain (≈ 0.1–0.2 dB, or a fraction
+of a millisecond on an edge) — visible on zoomed plots of the supply session, below what
+an A/B of two voicings 0.45 dB apart could reveal. The measurement repeats to a median
+0.0012 (each take's first half against its second), so these are the model's, not noise.
+
+1. **A small overshoot at the knees** where the gain leaves and rejoins the top: the real
+   pedal rises ~0.015 above its plateau (depth-0930 at phase 0.35/0.65, depth-1200 at
+   0.25/0.8). A clamp can't overshoot.
+2. **A rounder tip at the bottom of a shallow dip** (depth-1200 at 0.5): the model's
+   triangle tip is sharper.
+3. **A clean drop to silence on the fastest square setting** (cross-max at ~0.4): the
+   model's falling follower slows down exponentially near zero; the real pedal doesn't.
+
+Tried on the supply session, 2026-10-26 (median rms over the 15 takes; current 0.0128):
+
+| Variant | median | What it did |
+|---|---|---|
+| Separate sharpness for the clamp's top and bottom corners | 0.0125 | top came out ~16× sharper (263 vs 16); depth-0930 knees 20 % better, wave-1200 and rate-0230 a little worse; no overshoot ([figure](split-sharpness.svg)) |
+| Smoothing the control *before* the clamp, instead of after | 0.0212 | fixes the round tip (depth-1200 0.010 → 0.0055) but breaks the square settings (cross-max 0.026 → 0.070) |
+| Smoothing before (symmetric, fitted 2.7 ms) *and* the follower after | 0.0129 | no gain: the pre-smoothing barely helps the tip once the follower is there |
+| Top level sagging with overdrive past the clamp's edge (to explain both the overshoot and T by Depth with 3 numbers) | 0.0184 | tilts the flat tops, which stay flat on the real pedal |
+
+Not tried: a follower whose speed depends on its level (faster towards silence, as a
+light-dependent resistor's can), ringing in the gain element, AC coupling on the control
+line, a non-triangular LFO. The schematic would be the best guide.
+
+![Separate top and bottom clamp sharpness](split-sharpness.svg)

@@ -9,7 +9,7 @@ namespace namx
 {
 
 void TremoloProcessor::process_block_mono(float* buf, size_t nframes) {
-    if (type.load() != SINE) {
+    if (type.load() == TR2) {
         tr2_mono(buf, nframes);
         return;
     }
@@ -26,7 +26,7 @@ void TremoloProcessor::process_block_mono(float* buf, size_t nframes) {
 }
 
 void TremoloProcessor::process_block_dual(float* l, float* r, size_t nframes) {
-    if (type.load() != SINE) {
+    if (type.load() == TR2) {
         tr2_dual(l, r, nframes);
         return;
     }
@@ -45,7 +45,7 @@ void TremoloProcessor::process_block_dual(float* l, float* r, size_t nframes) {
 }
 
 void TremoloProcessor::process_block_stereo_out(float* l, float* r, size_t nframes) {
-    if (type.load() != SINE) {
+    if (type.load() == TR2) {
         tr2_stereo_out(l, r, nframes);
         return;
     }
@@ -64,11 +64,10 @@ void TremoloProcessor::process_block_stereo_out(float* l, float* r, size_t nfram
 }
 
 TremoloProcessor::Tr2Block TremoloProcessor::tr2_block() const {
-    const bool supply = type.load() == TR2_SUPPLY;
-    const tr2::Voicing& m = supply ? tr2::SUPPLY : tr2::BATTERY;
+    const tr2::Voicing& m = tr2::SUPPLY;
     const float depth_fraction = depth_pct.load() / 100.0f;
     return {m,
-            supply ? supply_coefficients : battery_coefficients,
+            tr2_coefficients,
             rate_hz.load() / static_cast<float>(sample_rate),
             tr2::knob_map(m.wave_gain, wave_pct.load() / 100.0f),
             tr2::knob_map(m.depth, depth_fraction),

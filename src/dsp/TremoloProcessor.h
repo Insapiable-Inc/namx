@@ -14,18 +14,15 @@ namespace namx
 //
 // Types (preset values — append only):
 //   SINE  a sine LFO, gain 1 − depth·(1 − sin)/2 (the original NAM-X tremolo);
-//   TR2   the Boss TR-2 model (Tr2Tremolo.h), the battery capture's voicing (approved by
-//         ear): Depth and Wave follow the pedal's knob maps (0–100 % = 7:00–5:00), and the
-//         audio gets the pedal's 70 Hz low cut;
-//   TR2_SUPPLY  the same model fitted to the recapture on a 9 V supply.
+//   TR2   the Boss TR-2 model (Tr2Tremolo.h): Depth and Wave follow the pedal's knob maps
+//         (0–100 % = 7:00–5:00), and the audio gets the pedal's 70 Hz low cut.
 class TremoloProcessor : public EffectBase
 {
 public:
     enum Type
     {
         SINE = 0,
-        TR2 = 1,
-        TR2_SUPPLY = 2
+        TR2 = 1
     };
 
     bool supports_stereo_out() const override {
@@ -44,7 +41,7 @@ public:
         depth_pct.store(pct);
     }
     void set_type(int t) {
-        type.store(t == TR2 || t == TR2_SUPPLY ? t : SINE);
+        type.store(t == TR2 ? TR2 : SINE);
     }
     // The TR-2's Wave knob, 0–100 % (TR2 type only): triangle → square.
     void set_wave_pct(float pct) {
@@ -60,8 +57,7 @@ public:
 
 protected:
     void on_sample_rate_changed(double sr) override {
-        battery_coefficients.prepare(tr2::BATTERY, sr);
-        supply_coefficients.prepare(tr2::SUPPLY, sr);
+        tr2_coefficients.prepare(tr2::SUPPLY, sr);
         reset();
     }
     void sync_right_channel() override {
@@ -73,7 +69,7 @@ protected:
     void process_block_stereo_out(float* l, float* r, size_t nframes) override;
 
 private:
-    // The TR-2 types' versions of the three paths.
+    // The TR2 type's versions of the three paths.
     struct Tr2Block
     {
         const tr2::Voicing& voicing;
@@ -101,8 +97,7 @@ private:
     atomic<float> wave_pct{50.0f};
 
     float phase{0.0f};
-    tr2::Coefficients battery_coefficients;
-    tr2::Coefficients supply_coefficients;
+    tr2::Coefficients tr2_coefficients;
     // The right follower runs the auto-pan's offset LFO in stereo out; in dual mode both
     // channels share the left one's gain.
     tr2::Follower follower_l;
