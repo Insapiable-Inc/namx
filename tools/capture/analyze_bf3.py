@@ -2,7 +2,10 @@
 """Measures the Boss BF-3 Flanger (STANDARD mode) from one mono session (Guitar In ->
 Output A; plans/bf-3-standard.json). Findings: captures/boss/bf-3/README.md.
 
-    analyze_bf3.py SESSION      # writes SESSION/fit/bf-3.{json,svg}
+    analyze_bf3.py SESSION [CHECKS]     # writes SESSION/fit/bf-3.{json,svg}
+
+CHECKS (plans/bf-3-standard-checks.json): the model's sweep against click takes at other
+knob combinations, and whether a plug in Output B changes what Output A carries.
 
 What it measures:
   dry path         the dry part of a static sweep against the bypass sweep: delay, gain
@@ -374,6 +377,44 @@ def depth_law(rows, shape, manual):
     return out
 
 
+def checks(session, static, result):
+    """Each check take's sweep against the model's (fed the take's own LFO rate: the knobs
+    are set by eye, a second time), and the Manual 7:00 sweep with and without a plug in
+    Output B."""
+    shape, depth = result["shape"], result["depth"]
+    manual = result["manual_delay_ms_after_dry"]
+    out = {}
+    for path in sorted(session.glob("*.json")):
+        meta = json.load(open(path))
+        if meta.get("signal", {}).get("period") != 0.025 or not meta.get("settings"):
+            continue
+        delays, settings = click_delays(session, path.stem, static)
+        row = {"settings": settings,
+               "measured_ms": rounded(np.percentile(delays, [0.5, 99.5]), 3)}
+        position = depth["positions"][settings["Depth"]]
+        floor = ((1 - position["blend"]) * manual[settings["Manual"]]
+                 + position["blend"] * depth["low_ms"])
+        if np.ptp(delays) > 0.05:
+            rate, _ = analysis.lfo_frequency(delays, CLICK_RATE, low=0.03, high=19.9)
+            s = lfo_shape(rate, shape["smoothing_hz"], shape["power"], bins=400)
+            row["lfo_hz"] = round(float(rate), 3)
+            row["model_ms"] = rounded([floor + position["swing_ms"] * s.min(),
+                                       floor + position["swing_ms"] * s.max()], 3)
+        else:
+            row["model_ms"] = [round(float(floor), 3)] * 2
+        out[path.stem] = row
+    split = {}
+    for name in ("manual-0700", "b-plugged-manual-0700"):
+        h = impulse(session, name)
+        split[name] = (window(h, -1, WET_SPLIT_MS), window(h, WET_SPLIT_MS, 500))
+    plain, plugged = split["manual-0700"], split["b-plugged-manual-0700"]
+    out["output_b_plugged_db"] = {
+        part: {str(f): round(band_db(plugged[k], f) - band_db(plain[k], f), 2)
+               for f in (250, 1000, 4000, 10000)}
+        for k, part in enumerate(("dry", "wet"))}
+    return out
+
+
 def plot(out_dir, result, static, cycles):
     import matplotlib
     matplotlib.use("Agg")
@@ -443,6 +484,7 @@ def plot(out_dir, result, static, cycles):
 def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("session")
+    parser.add_argument("checks", nargs="?")
     args = parser.parse_args()
     session = pathlib.Path(args.session).expanduser()
     if not (session / "rig.json").exists():
@@ -463,6 +505,11 @@ def main():
     result["shape"] = fit_shape(result["sweep"], cycles)
     result["depth"] = depth_law(result["sweep"], result["shape"],
                                 result["manual_delay_ms_after_dry"])
+
+    if args.checks:
+        checks_session = pathlib.Path(args.checks).expanduser()
+        result["checks"] = checks(checks_session, static, result)
+        result["sessions"] = [session.name, checks_session.name]
 
     out_dir = session / "fit"
     out_dir.mkdir(exist_ok=True)

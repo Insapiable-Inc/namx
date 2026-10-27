@@ -6,11 +6,13 @@ Output B):
 | Session | What it gives |
 |---|---|
 | [`2026-10-27-standard/`](2026-10-27-standard/) | the dry path, the wet tone, Manual's delay, Res's feedback, saturation, the sweep (Rate, Depth, Manual), noise |
+| [`2026-10-27-standard-checks/`](2026-10-27-standard-checks/) | the model's sweep at knob combinations it wasn't fitted to; Output B in use |
 
 Same rig and playback level as the TR-2, DD-8 and CE-5 ([`tools/capture/README.md`](../../../tools/capture/README.md)).
-Plan: `tools/capture/plans/bf-3-standard.json` (31 takes; `manual-0900` and `manual-0500`
-redone, only the second recordings kept). Analysis:
-`tools/capture/analyze_bf3.py captures/boss/bf-3/2026-10-27-standard` →
+Plans: `tools/capture/plans/bf-3-standard.json` (31 takes; `manual-0900` and `manual-0500`
+redone, only the second recordings kept), `tools/capture/plans/bf-3-standard-checks.json`
+(8). Analysis:
+`tools/capture/analyze_bf3.py captures/boss/bf-3/2026-10-27-standard captures/boss/bf-3/2026-10-27-standard-checks` →
 [`2026-10-27-standard/fit/bf-3.json`](2026-10-27-standard/fit/bf-3.json) and the figure below.
 
 The knobs: Manual, Res, Depth, Rate, and MODE (STANDARD, ULTRA, GATE/PAN, MOMENTARY).
@@ -162,10 +164,33 @@ smoothing, i.e. as at Rate 7:00):
 At Depth 5:00 Manual hardly matters (the manual: "no function"): 0.36–13.28 ms at Manual
 12:00, 0.46–13.38 at 7:00.
 
+## Checks
+
+A second, short session (knobs set again by eye) against the model, fed each take's own
+LFO rate:
+
+| Take | Measured, ms | Model, ms |
+|---|---|---|
+| Depth 3:00, Manual 9:00 | 1.373–10.815 | 1.366–10.817 |
+| Depth 9:00, Manual 3:00 | 0.558–1.534 | 0.565–1.543 |
+| Rate 3:00 (2.25 Hz this time), Depth 5:00 | 0.815–7.007 | 0.922–6.957 |
+| Res 5:00, Depth 12:00 | 0.884–5.193 | 0.907–5.214 (Res left out) |
+| Depth minimum, Manual 12:00 | 1.983 | 2.005 (Manual set again) |
+
+Depth's floor law holds at Depth positions it was derived from one Manual position for.
+At a fast rate and full Depth the model's floor is 0.1 ms high: the smoothing lifts the
+bottom of a 14.6 ms swing a little more than the pedal's does. Res doesn't touch the
+sweep at maximum either. (Whether the loop's gain changes while the delay moves isn't
+measured: the full-scale clicks clip.)
+
+**Output B:** a plug in it (other end loose) changes nothing on Output A — dry and wet
+within 0.00 dB at 250 Hz–10 kHz. No wet-only trick as on the CE-5; what B itself carries
+is still unknown.
+
 ## Takes and lessons
 
-- 31 takes. `manual-0900` and `manual-0500` were redone during the session (the first
-  recordings are overwritten).
+- 31 takes, plus 8 checks. `manual-0900` and `manual-0500` were redone during the session
+  (the first recordings are overwritten).
 - **Clicks for a flanger's sweep.** The CE-5's held-tone phase is ambiguous by whole
   periods; a flanger's delay goes from 0.3 to 14 ms, so the click train (one reading per
   25 ms) was the right call. Only the 10 Hz rate is too fast for it.
@@ -180,11 +205,13 @@ At Depth 5:00 Manual hardly matters (the manual: "no function"): 0.36–13.28 ms
 
 - **ULTRA:** the manual says a stronger effect; what it changes (Res, Depth, the mix)
   needs a short plan.
-- **GATE/PAN:** in mono the sound is gated 32 times per flanger cycle; in stereo it pans.
-  A tremolo-like measurement (the TR-2's).
+- **GATE/PAN:** in mono the sound is gated on and off 32 times per flanger cycle (16 on
+  the way up, 16 down); in stereo it pans. Left out (user, 2026-10-27): a special effect
+  with no NAM-X counterpart.
 - **MOMENTARY** (STANDARD's sound while the pedal is held, the sweep starting from the low
   end) and tap tempo: not planned.
-- **Stereo:** what Output B carries isn't documented.
+- **Stereo:** what Output B carries isn't documented, and plugging it doesn't change A.
+  NAM-X's Flanger sits in the mono section before the amp, so not planned.
 
 ## For NAM-X
 
