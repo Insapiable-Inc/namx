@@ -45,7 +45,8 @@ CLIP_DBFS = -0.1
 SILENT_DBFS = -60.0
 DEFAULT_REF_DBFS = -20.0
 CALIBRATION_SECONDS = 2.0
-QUIET_DBFS = -75.0  # the pedal input's peak, per 0.1 s, counted as silent (noise peaks ~-85)
+QUIET_DBFS = -75.0  # the pedal input's peak, per 0.1 s, counted as silent (noise peaks ~-85);
+# a plan's "quiet_dbfs" overrides it for a pedal whose own hiss is louder (the CE-5's BBD)
 QUIET_HOLD_S = 0.5
 QUIET_WAIT_S = 30.0
 
@@ -256,17 +257,18 @@ def record_take(engine, rig, session, name, spec, extra):
     return problems
 
 
-def wait_for_silence(engine):
+def wait_for_silence(engine, quiet_dbfs):
     """Listens to the pedal input until it stays quiet for QUIET_HOLD_S: a delay with high
     Feedback keeps repeating after a take, and those repeats would land in the next one.
-    Returns whether it fell silent, and how long that took (s)."""
+    "Quiet" is a peak under quiet_dbfs. Returns whether it fell silent, and how long that
+    took (s)."""
     rate = engine.rate
     engine.start(np.zeros(int(QUIET_WAIT_S * rate), np.float32))
     quiet = 0
     while not engine.done.wait(0.1):
         now = engine.pos
         level = dbfs(engine.recorded[max(0, now - rate // 10):now, 0])
-        quiet = quiet + 1 if level < QUIET_DBFS else 0
+        quiet = quiet + 1 if level < quiet_dbfs else 0
         print(f"\r  waiting for the pedal to fall silent: {level:6.1f} dBFS ", end="", flush=True)
         if quiet * 0.1 >= QUIET_HOLD_S:
             engine.active = False
@@ -461,7 +463,7 @@ def cmd_run(args):
                 # Checked right before recording, so nothing done after the check can leak
                 # in; and a recording only starts if the pedal was already quiet at Enter,
                 # never when it falls silent while knobs are still being set.
-                quiet, waited = wait_for_silence(engine)
+                quiet, waited = wait_for_silence(engine, plan.get("quiet_dbfs", QUIET_DBFS))
                 if not quiet:
                     print("  Still sounding after 30 s: turn Feedback down, or switch the "
                           "pedal off and on; then set the knobs and press Enter.")

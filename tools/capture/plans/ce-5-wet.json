@@ -1,6 +1,7 @@
 {
   "pedal": "Boss CE-5 Chorus Ensemble (wet only: Input -> Output A, a plug in Output B)",
-  "comment": "The effect sound alone (manual: with OUTPUT B in use, OUTPUT A carries only the effect sound): wet tone, base delay, E.Level, saturation, the LFO (Rate x Depth on held tones), compander, noise, and the filter last. Filter (manual): LOW = outer knob, HIGH = inner, independent; both shape only the chorus sound; clockwise widens the band, so fully clockwise (5:00) is the most open and the default here. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise; 9:00 and 3:00 pointer horizontal.",
+  "comment": "The effect sound alone (manual: with OUTPUT B in use, OUTPUT A carries only the effect sound): wet tone, base delay, E.Level, saturation, the LFO (Rate x Depth on held tones), compander, noise, and the filter last. Filter (manual): LOW = outer knob, HIGH = inner, independent; both shape only the chorus sound; clockwise widens the band, so fully clockwise (5:00) is the most open and the default here. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise; 9:00 and 3:00 pointer horizontal. quiet_dbfs: the pedal's own hiss peaks at -65 to -73 dBFS when on (-84 RMS; wet only, E.Level 5:00), above the default -75; a chorus leaves no long tail to wait for.",
+  "quiet_dbfs": -60,
   "knobs": [
     "E.Level",
     "Rate",

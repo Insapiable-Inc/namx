@@ -1,6 +1,7 @@
 {
   "pedal": "Boss CE-5 Chorus Ensemble (mono: Input -> Output A only, which then carries dry + effect)",
-  "comment": "The mix as heard in mono: the dry path, the dry/wet balance against the wet-only session (plans/ce-5-wet.json, which carries the LFO and the filter), E.Level, saturation, noise, and whether the filter touches the dry. Filter (manual): LOW = outer knob, HIGH = inner, independent; both shape only the chorus sound; clockwise widens the band, so fully clockwise (5:00) is the most open and the default here. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise; 9:00 and 3:00 pointer horizontal.",
+  "comment": "The mix as heard in mono: the dry path, the dry/wet balance against the wet-only session (plans/ce-5-wet.json, which carries the LFO and the filter), E.Level, saturation, noise, and whether the filter touches the dry. Filter (manual): LOW = outer knob, HIGH = inner, independent; both shape only the chorus sound; clockwise widens the band, so fully clockwise (5:00) is the most open and the default here. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise; 9:00 and 3:00 pointer horizontal. quiet_dbfs: the pedal's own hiss peaks at -65 to -73 dBFS when on (-84 RMS; wet only, E.Level 5:00), above the default -75; a chorus leaves no long tail to wait for.",
+  "quiet_dbfs": -60,
   "knobs": [
     "E.Level",
     "Rate",
