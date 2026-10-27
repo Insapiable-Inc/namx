@@ -712,6 +712,10 @@ void MainWindow::update_inactive_controls() {
     set_inactive(knob_del_right_time, knob_del_right_time, mono_delay, why_mono);
     KnobWidget* right_note = sync_of(knob_del_right_time).note_knob;
     set_inactive(right_note, right_note, mono_delay, why_mono);
+    const bool dd8 = std::lround(knob_del_type->value()) != DelayProcessor::DIGITAL;
+    const QString why_dd8 = "the DD-8 types have the pedal's own saturation and no shimmer";
+    set_inactive(knob_del_saturation, knob_del_saturation, dd8, why_dd8);
+    set_inactive(knob_del_shimmer, knob_del_shimmer, dd8, why_dd8);
 
     const bool manual = sw_wah_manual->isChecked();
     set_inactive(knob_wah_sens, knob_wah_sens, manual,
@@ -1278,10 +1282,31 @@ void MainWindow::setup_ui() {
         knob_del_right_time->set_scroll_step(1.0);
         knob_del_right_time->setToolTip(
             "Right repeat time (Stereo on): different from L/Mono Time for a wide, uneven bounce");
-        QWidget* col =
-            make_effect_row("Delay", sw_delay_enable,
-                            {knob_del_mix, knob_del_time, knob_del_right_time, knob_del_feedback},
-                            &sw_delay_stereo);
+        knob_del_type = late_knob(
+            "delay", "type", new KnobWidget("Type", 0.0, DelayProcessor::TYPE_COUNT - 1.0, 0.0, ""),
+            [this](double v) {
+                engine->get_delay().set_type(static_cast<int>(std::lround(v)));
+            });
+        knob_del_type->set_snap(1.0);
+        knob_del_type->set_scroll_step(1.0);
+        knob_del_type->set_name_visible(false); // "Type: Digital", like the Tremolo's
+        knob_del_type->set_value_formatter([](double v) {
+            static const QString names[DelayProcessor::TYPE_COUNT] = {
+                "Digital", "DD-8 Standard", "DD-8 Analog", "DD-8 Tape", "DD-8 Warm", "DD-8 Mod"};
+            return "Type: " +
+                   names[std::clamp<long>(std::lround(v), 0, DelayProcessor::TYPE_COUNT - 1)];
+        });
+        knob_del_type->setToolTip(
+            "Digital: NAM-X's delay · DD-8: models of a Boss DD-8's Standard, Analog, Tape, Warm "
+            "and Mod modes, measured from the real pedal. In the DD-8 types Mix is the pedal's "
+            "Level (the dry stays at full level) and Feedback its knob: at maximum the repeats "
+            "never fade (Analog slowly builds up)");
+        connect(knob_del_type, &KnobWidget::value_changed, this,
+                &MainWindow::update_inactive_controls);
+        QWidget* col = make_effect_row(
+            "Delay", sw_delay_enable,
+            {knob_del_mix, knob_del_time, knob_del_right_time, knob_del_feedback, knob_del_type},
+            &sw_delay_stereo);
         add_tempo_sync(col, knob_del_time, "L/Mono Time", true, 8 /* 1/8. */, DELAY_TIME_MIN,
                        DELAY_TIME_MAX, [this](double v) {
                            engine->get_delay().set_time(static_cast<float>(v));
@@ -1323,7 +1348,7 @@ void MainWindow::setup_ui() {
                 //     "100 % = ping-pong between the sides · 0 % = two separate echoes"),
                 low_cut,
                 high_cut,
-                make_delay_pct_knob(
+                knob_del_saturation = make_delay_pct_knob(
                     "saturation", "Saturation", DELAY_SAT_MIN, DELAY_SAT_MAX, DELAY_SAT_DEFAULT,
                     [this](double v) {
                         engine->get_delay().set_saturation(static_cast<float>(v));
@@ -1337,7 +1362,7 @@ void MainWindow::setup_ui() {
                 //         engine->get_delay().set_modulation(static_cast<float>(v));
                 //     },
                 //     "Wobble on the repeats (tape flutter / chorused echoes)"),
-                make_delay_pct_knob(
+                knob_del_shimmer = make_delay_pct_knob(
                     "shimmer", "Shimmer", 0.0, 100.0, 0.0,
                     [this](double v) {
                         engine->get_delay().set_shimmer_pct(static_cast<float>(v));

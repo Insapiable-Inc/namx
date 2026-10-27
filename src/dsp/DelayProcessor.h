@@ -1,9 +1,12 @@
 #pragma once
 
+#include <algorithm>
+#include <array>
 #include <atomic>
 
 #include "Common.h"
 #include "Constants.h"
+#include "Dd8Delay.h"
 #include "DelayLine.h"
 #include "EffectBase.h"
 #include "StretchShifter.h"
@@ -21,9 +24,27 @@ namespace namx
 // Every mode: Low/High Cut and Saturation act inside the feedback loop, so
 // each repeat is darker / dirtier than the last (tape/analog character);
 // Modulation wobbles the delay time (tape flutter / chorus on the repeats).
+//
+// Type picks the engine: Digital (the above, the default) or one of the Boss DD-8's
+// modes (Dd8Delay.h), the same lines and stereo layout with the pedal's voicing — its
+// clip, filters, Feedback map and LFO. There Mix is the pedal's Level (an audio taper,
+// the dry stays at unity), Feedback 0–90 % is the pedal's 7:00–5:00, and Saturation,
+// Modulation and Shimmer are the voicing's own (the knobs are ignored).
 class DelayProcessor : public EffectBase
 {
 public:
+    // Type values (preset key delay/type): append only.
+    enum Type : int
+    {
+        DIGITAL = 0,
+        DD8_STANDARD = 1,
+        DD8_ANALOG = 2,
+        DD8_TAPE = 3,
+        DD8_WARM = 4,
+        DD8_MOD = 5,
+    };
+    static constexpr int TYPE_COUNT = 6;
+
     bool supports_stereo_out() const override {
         return true;
     }
@@ -62,6 +83,12 @@ public:
     void set_shimmer_pct(float pct) {
         shimmer_pct.store(pct);
     }
+    void set_type(int new_type) {
+        type.store(std::clamp(new_type, 0, TYPE_COUNT - 1));
+    }
+    int get_type() const {
+        return type.load();
+    }
 
     float time() const {
         return time_ms.load();
@@ -84,6 +111,9 @@ private:
     {
         DelayLine samples;
         float hp_x = 0.0f, hp_y = 0.0f, lp = 0.0f;
+        // DD-8 types: the voicing's chains and loop low-pass.
+        dd8::ChainState dd8_loop, dd8_out;
+        float dd8_loop_lp = 0.0f;
         // Read before this sample's push(), so "d samples ago" is d - 1 behind the
         // newest sample in the line.
         float read(float delay_samples) const {
@@ -109,6 +139,27 @@ private:
     float loop(int line, float d, float read_delay, const Params& p);
     static float saturate(float x, float amount);
 
+    // DD-8 types: per-block values, and one line's tap (the wet it adds to the output and
+    // what goes back into the loop).
+    struct Dd8Params
+    {
+        const dd8::Voicing* voicing;
+        const dd8::Coefficients* k;
+        float fb, level, ceiling;
+        float lfo_inc, lfo_depth, flutter_inc, flutter_depth; // per sample, samples
+    };
+    struct Tap
+    {
+        float wet, back;
+    };
+    Dd8Params dd8_params(int dd8_type) const;
+    float dd8_mod(const Dd8Params& q); // advances the LFOs
+    Tap dd8_tap(Line& l, float read_delay, const Params& p, const Dd8Params& q) const;
+    void dd8_block_mono(float* buf, size_t nframes);
+    void dd8_block_dual(float* l, float* r, size_t nframes);
+    void dd8_block_stereo_out(float* l, float* r, size_t nframes);
+    void type_edge(int current_type);
+
     atomic<float> time_ms{250.0f};
     atomic<float> feedback_pct{40.0f};
     atomic<float> mix_pct{30.0f};
@@ -119,6 +170,10 @@ private:
     atomic<float> sat_pct{0.0f};
     atomic<float> mod_pct{0.0f};
     atomic<float> shimmer_pct{0.0f};
+    atomic<int> type{DIGITAL};
+    int last_type = DIGITAL; // audio thread
+    std::array<dd8::Coefficients, TYPE_COUNT - 1> dd8_coefficients{}; // per DD-8 type
+    float dd8_lfo_phase = 0.0f, dd8_flutter_phase = 0.0f;
     StretchShifter shift[2]; // +12 st, per line (Shimmer)
     bool shim_on = false; // last block's Shimmer > 0 (audio thread)
     void shimmer_edge(float shimmer);
