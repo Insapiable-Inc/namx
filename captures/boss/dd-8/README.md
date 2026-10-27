@@ -11,6 +11,8 @@ does one thing: **the repeats hard-clip about 3 dB below a hot guitar's peaks**,
 the dry signal stays clean. Everything else is a textbook digital delay.
 
 ![DD-8 Standard: repeats and the wet path's clip](2026-10-26-standard/fit/dd-8-standard.svg)
+![DD-8 Standard: the knobs](2026-10-26-standard/fit/dd-8-standard-knobs.svg)
+![DD-8 Standard: tone, clip, Feedback 5:00, no modulation](2026-10-26-standard/fit/dd-8-standard-details.svg)
 
 ## The model
 
@@ -52,21 +54,26 @@ y = x_dry + Level · LP10k( delay_T( clip(x) + F · repeats ) )
 
   | Feedback | 7:00 | 9:00 | 12:00 | 3:00 | 5:00 |
   |---|---|---|---|---|---|
-  | dB per repeat | one repeat only | −12.2 | −7.07 | ≈ −0.6 | > 0: **self-oscillates** |
+  | dB per repeat | one repeat only | −12.2 | −7.07 | ≈ −0.6 | **≈ 0: the repeats never fade** |
   | extra loss at 4 / 8 kHz | | −0.3 / −1.4 | −0.4 / −1.4 | −0.8 / −0.9 | |
 
   The first repeat's level doesn't depend on Feedback. Over 9:00–3:00 the loss per repeat
   is close to linear in dB (5–6.5 dB per 30 % of rotation); at 7:00 the loop is off. At
-  **5:00 the pedal oscillates on its own**: the output sat at a steady −11.6…−12.0 dBFS
-  before and after a quiet test click — exactly the wet path's clip ceiling (−11.9 dBFS
-  in the bursts), which is what limits the runaway.
+  **5:00 the loop gain is unity**: a −12 dB test click's repeats stayed level for 15
+  repeats (+0.02 dB per repeat) — a hold, not a runaway. (The take also shows tall pulses
+  at the clip's ceiling: the start marker's echoes, which played at the reference level,
+  clipped going in, and then circulated without fading. First read as self-oscillation;
+  corrected the same day.)
 - **Knob curves, in short:** Time near-linear with a steeper top end; Level an audio
   (logarithmic) taper — −33.6 / −13.4 / −2.6 dB at 9:00 / 12:00 / 3:00 where a linear
   pot would give −14 / −6 / −1.9 dB (amplitude ≈ position^2.2–2.4 in the lower half);
-  Feedback linear in dB across the middle. The end values are exact (the knob's stops);
-  the in-between fractions assume stops at 7:00 and 5:00 (300°).
-- **Wet tone:** the first repeat against the dry: flat to 4 kHz (±0.5 dB), −2.6 dB at
-  8 kHz, −30 dB at 16 kHz: a low-pass around 10 kHz. Each pass through the loop adds the
+  Feedback steady in dB across the middle, levelling off at unity at 5:00. The end values
+  are exact (the knob's stops); the in-between fractions assume stops at 7:00 and 5:00
+  (300°). How far a by-eye setting can be off: "Time 12:00" set twice gave 385.62 and
+  392.96 ms, about 5° apart; 3:00 (pointer horizontal) repeated to the sample.
+- **Wet tone:** the first repeat against the dry (−12 dB take, re 1 kHz): flat to 4 kHz
+  (±0.6 dB, +1.5 dB at 63 Hz), −2.1 dB at 8 kHz, −29.5 dB at 16 kHz: a low-pass around
+  10 kHz. Each pass through the loop adds the
   small high-frequency loss above.
 - **No modulation:** a held 1 kHz tone through Feedback 12:00 comes out as one spectral
   line; the only sidebands (±3.25 Hz) are 103 dB down.
@@ -106,6 +113,5 @@ and a gentle extra high cut in the loop. Not done yet.
 
 ## Not measured yet
 
-The stereo outputs (B jacks), what the Time knob does to the repeats while it moves, the
-self-oscillation's own character (its tone and build-up, from a quiet start), and the
-other modes (Analog, Tape, Mod, Shimmer…).
+The stereo outputs (B jacks), what the Time knob does to the repeats while it moves, and
+the other modes (Analog, Tape, Mod, Shimmer…).

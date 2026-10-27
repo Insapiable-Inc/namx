@@ -109,14 +109,17 @@ def measure_sweeps(session):
             steps[f"{f0} Hz"] = [round(float(b - a), 2) for a, b in zip(levels, levels[1:])]
         out["feedback_db_per_repeat"][position] = steps
         responses[f"feedback-{tag(position)}-m12"] = h
-    # The wet path's tone: the first repeat against the dry impulse (Feedback 7:00, Time 12:00).
-    h = responses["time-1200"]
+    # The wet path's tone: the first repeat against the dry impulse, from a -12 dB take
+    # (the full-level ones clip in the wet path); the first repeat doesn't depend on Feedback.
+    h = responses["feedback-1200-m12"]
     dry_window = h[:1024] * np.hanning(2048)[1024:]
     dry_db = analysis.third_octave_db(np.pad(dry_window, (0, rate - 1024)), rate)
     segment = h[noon - 256:noon - 256 + 1024] * np.hanning(1024)
     rep_db = analysis.third_octave_db(np.pad(segment, (0, rate - 1024)), rate)
-    out["wet_minus_dry_db"] = {"bands_hz": analysis.THIRD_OCTAVES_HZ,
-                               "db": [round(float(v), 2) for v in rep_db - dry_db]}
+    shape = rep_db - dry_db
+    shape -= shape[analysis.THIRD_OCTAVES_HZ.index(1000)]
+    out["wet_tone_db_re_1khz"] = {"bands_hz": analysis.THIRD_OCTAVES_HZ,
+                                  "db": [round(float(v), 2) for v in shape]}
     return out, responses, rate
 
 
@@ -152,13 +155,26 @@ def click_delay_ms(session, name, period_s=1.5):
     return delays
 
 
-def self_oscillation(session):
-    """Feedback 5:00: the output's peak per half second, dBFS (a steady level = oscillating)."""
+def feedback_max(session):
+    """Feedback 5:00: the take's own delay (from the autocorrelation) and the -12 dB test
+    click's repeats against the click, dB. A flat sequence is a loop gain of 1: the repeats
+    neither fade nor grow. (The start marker's echoes also circulate, at the clip's ceiling:
+    the marker plays at the reference level.)"""
     take = analysis.Take(session, "feedback-0500")
-    x, rate = take.signal(0.5), take.rate
-    half = rate // 2
-    return [round(float(20 * np.log10(np.abs(x[i:i + half]).max())), 2)
-            for i in range(0, len(x) - half, half)]
+    env, rate = np.abs(take.signal(0.5)), take.rate
+    lags = np.fft.irfft(np.abs(np.fft.rfft(env, 2 * len(env))) ** 2)[:len(env)]  # autocorrelation
+    low, high = int(0.3 * rate), int(0.5 * rate)
+    delay = low + int(np.argmax(lags[low:high]))
+    click = int(np.argmax(env[:300]))
+    repeats = []
+    for n in range(1, 64):
+        at = click + n * delay
+        if at + 100 > len(env):
+            break
+        repeats.append(round(float(20 * np.log10(env[at - 100:at + 100].max() / env[click])), 2))
+    trend = float(np.polyfit(np.arange(len(repeats)), repeats, 1)[0])
+    return {"delay_ms": round(delay / rate * 1000, 2), "click_repeats_db": repeats,
+            "trend_db_per_repeat": round(trend, 3)}
 
 
 def plot(out_dir, result, responses, rate):
@@ -208,6 +224,120 @@ def plot(out_dir, result, responses, rate):
     plt.close(figure)
 
 
+def plot_knobs(out_dir, result):
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    figure, axes = plt.subplots(1, 3, figsize=(17, 4.8))
+    frac = result["knob_fraction"]
+    ticks = [0, 0.2, 0.5, 0.8, 1]
+    tick_labels = KNOB_POSITIONS
+
+    points = [(frac[p], v) for p, v in result["time_ms"].items()]
+    extra = {"2:00 (approx.)": 0.7, "1:00 (approx.)": 0.6}
+    points += [(extra[p], v[0]) for p, v in result["time_ms_clicks"].items() if p in extra]
+    points.sort()
+    x, y = zip(*points)
+    axes[0].plot(x, y, "o-", label="measured")
+    axes[0].plot([0, 1], [y[0], y[-1]], "k:", label="straight line between the stops")
+    axes[0].set_ylabel("delay (ms)")
+    axes[0].set_title("Time: near-linear, steeper from 3:00 to 5:00\n(1:00 and 2:00 set "
+                      "approximately; 3:00 measured twice, identical)", fontsize=10)
+
+    level = [(frac[p], v) for p, v in result["level_db"].items() if v is not None]
+    x, y = zip(*level)
+    axes[1].plot(x, y, "o-", label="measured (re 5:00 = +4.5 dB over the dry)")
+    xs = np.linspace(0.05, 1, 100)
+    axes[1].plot(xs, 20 * np.log10(xs), "k:", label="a linear knob")
+    axes[1].set_ylabel("wet level, dB re 5:00")
+    axes[1].set_title("Level: an audio (logarithmic) taper\n(7:00: no wet at all)", fontsize=10)
+
+    fb = [(frac[p], float(np.mean(v["1000 Hz"])))
+          for p, v in result["feedback_db_per_repeat"].items()]
+    fb.append((1.0, result["feedback_0500"]["trend_db_per_repeat"]))
+    x, y = zip(*fb)
+    axes[2].plot(x, y, "o-", label="measured (-12 dB sweeps; 5:00 from a click)")
+    axes[2].axhline(0, color="C3", lw=1)
+    axes[2].annotate("5:00: unity, repeats never fade", (1, 0), (0.45, 2.0), color="C3",
+                     fontsize=9, arrowprops={"arrowstyle": "->", "color": "C3"})
+    axes[2].set_ylim(-14, 4)
+    axes[2].set_ylabel("level change per repeat (dB)")
+    axes[2].set_title("Feedback: steady in dB across the middle, levelling off at 0 dB\n"
+                      "(7:00: one repeat only)", fontsize=10)
+    for axis in axes:
+        axis.set_xticks(ticks, tick_labels)
+        axis.set_xlabel("knob (7:00 = fully counter-clockwise)")
+        axis.grid(alpha=0.3)
+        axis.legend(fontsize=8)
+    figure.suptitle("Boss DD-8 Standard: what the knobs do")
+    figure.tight_layout()
+    figure.savefig(out_dir / "dd-8-standard-knobs.svg", metadata={"Date": None})
+    plt.close(figure)
+
+
+def plot_details(out_dir, session, result, responses, rate):
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    figure, axes = plt.subplots(2, 2, figsize=(15, 9))
+
+    tone = result["wet_tone_db_re_1khz"]
+    axes[0, 0].semilogx(tone["bands_hz"], tone["db"], "o-")
+    axes[0, 0].set_ylim(-35, 5)
+    axes[0, 0].set_xlabel("Hz (third-octave bands)")
+    axes[0, 0].set_ylabel("first repeat against the dry, dB re 1 kHz")
+    axes[0, 0].set_title("The repeat's tone (-12 dB take): flat to 4 kHz, a low-pass around "
+                         "10 kHz", fontsize=10)
+
+    reference = analysis.Take(session, "bypass-bursts").signal(1)
+    bursts = analysis.Take(session, "bursts").signal(1)
+    t = np.arange(int(0.003 * rate)) / rate * 1000
+    for level, color in ((-6, "C0"), (0, "C1"), (3, "C3")):
+        k = BURST_LEVELS_DB.index(level)
+        at = int(k * BURST_PERIOD_S * rate) + int(DELAY_AT_NOON_S * rate) + int(0.15 * rate)
+        axes[0, 1].plot(t, bursts[at:at + len(t)], color=color, label=f"input {level:+d} dB")
+    axes[0, 1].axhline(10 ** (-11.9 / 20), color="k", lw=0.8, ls=":")
+    axes[0, 1].axhline(-(10 ** (-11.9 / 20)), color="k", lw=0.8, ls=":")
+    axes[0, 1].set_xlabel("ms")
+    axes[0, 1].set_ylabel("output sample value")
+    axes[0, 1].set_title("A repeat of a 1 kHz burst: clean at -6 dB, flat-topped at 0 and +3 dB\n"
+                         "(dotted: the ceiling, -11.9 dBFS at Level 5:00)", fontsize=10)
+    axes[0, 1].legend(fontsize=8)
+
+    oscillation = analysis.Take(session, "feedback-0500").signal(0.5)
+    tt = np.arange(len(oscillation)) / rate
+    axes[1, 0].plot(tt, oscillation, lw=0.3)
+    axes[1, 0].axhline(10 ** (-11.9 / 20), color="k", lw=0.8, ls=":")
+    axes[1, 0].set_xlabel("seconds")
+    axes[1, 0].set_ylabel("output sample value")
+    fb_max = result["feedback_0500"]
+    axes[1, 0].set_title(f"Feedback 5:00: repeats that never fade (the test click's: "
+                         f"{fb_max['trend_db_per_repeat']:+.3f} dB per repeat)\n"
+                         "the tall pulses are the start marker's echoes, held at the clip's "
+                         "ceiling (dotted)", fontsize=10)
+
+    held = analysis.Take(session, "hold-sine").signal()[4 * rate:20 * rate]
+    window = np.blackman(len(held))
+    spectrum = np.abs(np.fft.rfft(held * window)) / (window.sum() / 2)
+    f = np.fft.rfftfreq(len(held), 1 / rate)
+    band = (f > 985) & (f < 1015)
+    db = 20 * np.log10(spectrum[band] / spectrum[band].max() + 1e-12)
+    axes[1, 1].plot(f[band], db)
+    axes[1, 1].set_ylim(-140, 5)
+    axes[1, 1].set_xlabel("Hz")
+    axes[1, 1].set_ylabel("dB re the 1 kHz line")
+    axes[1, 1].set_title("A held 1 kHz tone through Feedback 12:00: one line, no modulation\n"
+                         "(the largest sidebands, ±3.25 Hz, are 103 dB down)", fontsize=10)
+    for axis in axes.flat:
+        axis.grid(alpha=0.3, which="both")
+    figure.suptitle("Boss DD-8 Standard: details")
+    figure.tight_layout()
+    figure.savefig(out_dir / "dd-8-standard-details.svg", metadata={"Date": None})
+    plt.close(figure)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("session")
@@ -226,7 +356,7 @@ def main():
         "time_ms_clicks": {p: click_delay_ms(session, n) for p, n in (
             ("3:00 (set again)", "time-0300-again"), ("2:00 (approx.)", "time-0200"),
             ("1:00 (approx.)", "time-0100"))},
-        "feedback_0500_peak_dbfs_per_half_second": self_oscillation(session),
+        "feedback_0500": feedback_max(session),
     }
     out_dir = session / "fit"
     out_dir.mkdir(exist_ok=True)
@@ -234,10 +364,14 @@ def main():
         json.dump(result, file, indent=2)
         file.write("\n")
     plot(out_dir, result, responses, rate)
+    plot_knobs(out_dir, result)
+    plot_details(out_dir, session, result, responses, rate)
 
     print("Time (ms):     " + "  ".join(f"{p} {v}" for p, v in result["time_ms"].items()))
     print("Time, clicks:  " + "  ".join(f"{p} {v}" for p, v in result["time_ms_clicks"].items()))
-    print(f"Feedback 5:00: output peak {result['feedback_0500_peak_dbfs_per_half_second']} dBFS")
+    fb_max = result["feedback_0500"]
+    print(f"Feedback 5:00: repeats {fb_max['trend_db_per_repeat']:+} dB per repeat "
+          f"(delay {fb_max['delay_ms']} ms)")
     print("Level (dB):    " + "  ".join(f"{p} {v}" for p, v in result["level_db"].items()))
     for p, steps in result["feedback_db_per_repeat"].items():
         print(f"Feedback {p:>5}: {steps['1000 Hz']} dB per repeat at 1 kHz")
@@ -247,7 +381,7 @@ def main():
     for row in result["bursts"]["bursts"]:
         print(f"Burst {row['input_db']:+3d} dB: wet {row['wet_gain_db']:+.2f} dB, "
               f"H3 {row['h3_db']} dB")
-    print(f"Wrote {out_dir / 'dd-8-standard.json'} and dd-8-standard.svg")
+    print(f"Wrote {out_dir / 'dd-8-standard.json'} and the figures (dd-8-standard*.svg)")
 
 
 if __name__ == "__main__":
