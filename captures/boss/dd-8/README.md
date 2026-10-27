@@ -115,3 +115,30 @@ and a gentle extra high cut in the loop. Not done yet.
 
 The stereo outputs (B jacks), what the Time knob does to the repeats while it moves, and
 the other modes (Analog, Tape, Mod, Shimmer…).
+
+# Analog mode (preliminary)
+
+Session [`2026-10-26-analog/`](2026-10-26-analog/), plan
+[`plans/dd-8-analog.json`](../../../tools/capture/plans/dd-8-analog.json): 14 takes, the
+same rig, MODE on ANALOG. Analysed by hand (scratch scripts) on 2026-10-26; no analysis
+script yet — the numbers below are from that pass.
+
+| | Standard | Analog |
+|---|---|---|
+| Delay range (Time 7:00 → 5:00) | 19.65 – 799.60 ms | the same: 19.85 – 799.81 ms (9:00 169.83 ms) |
+| First repeat's tone, re 1 kHz (−12 dB) | flat to 4 kHz; −2.1 dB at 8 kHz | **flat to 2 kHz (+0.4); −19.0 dB at 4 kHz, −50 dB at 8 kHz** |
+| Repeat level against input level (bursts, Level 5:00) | flat (+4.46 dB) up to the clip | **rises ~2.3 dB per 6 dB**: −6.9 / −4.5 / −2.5 / +0.1 / +1.9 dB at −30 / −24 / −18 / −12 / −6 dB, then +0.4 / −1.2 dB at 0 / +3 dB |
+| Distortion of the repeat | H3 ≈ −80 dB, hard clip from ~0 dB | **softer, earlier:** H3 −67 dB at −12, −44 dB at −6, −18 dB at 0; H2 −64 dB from −6 dB; the same ceiling (~−12 dBFS peak) |
+| Feedback per repeat, 9:00 / 12:00 / 3:00 (−12 dB) | −12.2 / −7.07 / −0.6 dB | −12.0 / −7.9 / ≈ −1.5 dB (noisier at 3:00) |
+| Modulation (held 1 kHz tone) | none (−103 dB) | **none** (nothing above −116 dB) |
+| Noise | −101.1 dBFS | −101.2 dBFS |
+
+So Analog is Standard's delay with a much darker repeat (a steep low-pass just above
+2 kHz), a level-dependent repeat gain and a softer, earlier saturation — the sound of a
+bucket-brigade delay, without its clock wobble. The level-dependent gain is the same
+from 5 ms to 280 ms into each burst (it settles in under 5 ms, or is static) and stays
+clean at low levels (H3 −77 dB at −30 dB), so it is neither a slow compander nor a plain
+waveshaper; possibly a very fast expander. **To do:** a level-step take (as for
+Standard) to find its time constants, whether the low-pass sits in the loop (the 4 kHz
+level of later repeats), an analysis script, and the knob positions set by hand again —
+"Time 12:00" measured 392.83 ms in one take and 385.83 ms in others.
