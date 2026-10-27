@@ -22,13 +22,15 @@ is the setting every take uses unless it says otherwise.
 ## The model
 
 ```
-mono out = 1.31 · x(t − 0.98 ms)  +  wet
-wet      = E(E.Level) · HighLP · LowHP · LP10k · HP60( clip(x) ) (t − d(t))
+x'       = clip_in(x)                                   (≈ +2 dB re the guitar's peak)
+mono out = 1.31 · x'(t − 0.98 ms)  +  wet
+wet      = clip_wet( E(E.Level) · HighLP · LowHP · LP10k · HP60( x' ) (t − d(t)) )
 d(t)     = d_min + swing · tri(f_LFO · t)^~1.2          (tri: 0 at the bottom, 1 at the top)
 ```
 
-The order of the linear stages (filters, delay, E.Level) can't be told apart from outside;
-where the clip sits relative to E.Level isn't measured yet (see *Open questions*).
+The order of the linear stages (filters, delay, E.Level) can't be told apart from outside.
+The two clips are what the bursts show (see *Saturation*); `clip_wet` sits after at least
+part of E.Level's gain.
 
 ## It's digital
 
@@ -43,7 +45,8 @@ A plain-reading result worth stating first, because a CE-5 is easy to assume ana
   6.37–6.54 ms right through that cliff (an analog low-pass this steep would add hundreds
   of µs near its corner). That is a digital, linear-phase filter.
 - No level wobble (the LFO moves the level by 0.01–0.06 dB), no compander breathing, no
-  saturation below the clip.
+  saturation below the clips — and the dry path clips too, at the same level as the
+  wet at a low E.Level (the input converter).
 
 The LFO's shape (below) is the one bucket-brigade choruses have, so it may be imitated.
 
@@ -86,11 +89,21 @@ rotation), with a floor at the bottom.
 
 ### Saturation
 
-Bursts at 1 kHz (Depth minimum, E.Level 5:00), against the input level re the guitar's
-peak: **perfectly linear up to −2 dB** (gain within 0.02 dB, 3rd harmonic −92 to −63 dB,
-rising with level), then a **hard clip**: −0.44 dB and H3 −33 dB at 0 dB, −1.63 / −21 dB
-at +2 dB, −3.24 / −18 dB at +4 dB. 2nd harmonic below −52 dB throughout: symmetric. A
-hard-played guitar peaks right at the knee — the DD-8 clips 3 dB earlier.
+Bursts at 1 kHz (Depth minimum), against the input level re the guitar's peak, in
+three places:
+
+| input (dB) | −2 | 0 | +2 | +4 |
+|---|---|---|---|---|
+| wet, E.Level 5:00: gain re linear / H3 | −0.02 / −63 | **−0.44 / −33** | −1.63 / −21 | −3.24 / −18 |
+| wet, E.Level 12:00 | +0.06 / −74 | +0.07 / −73 | **−0.21 / −35** | −1.42 / −23 |
+| mono dry (E.Level down) | −0.02 / −77 | −0.02 / −72 | **−0.30 / −35** | −1.51 / −22 |
+
+Perfectly linear below the knee (gain within 0.02 dB), then a **hard clip** (2nd harmonic
+below −52 dB: symmetric). **Two clips:** the dry path and the wet at E.Level 12:00 clip
+alike at about **+2 dB** — the pedal's input (its converter), before the split; at
+E.Level 5:00 the wet clips **2 dB earlier**, at 0 dB, so a second ceiling sits after
+(part of) E.Level's gain. A hard-played guitar peaks right at the wet's knee with E.Level
+up — the DD-8 clips 3 dB earlier still.
 
 ### The filter
 
@@ -134,7 +147,16 @@ input.
 
 The rate rises exponentially and faster towards the top (0.29, 0.40, 0.52, 0.62 octaves
 per clock hour across the four intervals): 0.25 → 5.9 Hz, 4.6 octaves. The swing at a
-fixed Depth falls by a quarter from the slowest to the fastest Rate.
+fixed Depth shrinks as Rate goes up:
+
+| Depth | Rate 7:00 | 12:00 | 5:00 | fastest / slowest |
+|---|---|---|---|---|
+| 12:00 | 5.72–7.39 ms (1.67) | 5.84–7.25 (1.41) | 5.93–7.14 (1.21) | 0.72 |
+| 5:00 | 5.49–8.07 ms (2.58) | 5.71–8.07 (2.36) | 5.90–7.98 (2.08) | 0.81 |
+
+Not a fixed fraction (−28 % against −19 %), and not a smoothing filter on the LFO either
+(the swing is already down 15 % at 0.86 Hz): the Rate setting itself scales the depth. At
+full Depth the top stays at ~8.07 ms and the bottom rises with Rate.
 
 | Depth (Rate 12:00) | 7:00 | 9:00 | 12:00 | 3:00 | 5:00 |
 |---|---|---|---|---|---|
@@ -152,11 +174,12 @@ while the top climbs 1.67 ms; the bottom levels off near 5.7 ms.
 ends — what a triangle on a bucket-brigade clock gives (delay ∝ 1/clock).
 
 **The absolute delay** is only known modulo 1 ms from a 1 kHz tone; the analysis picks the
-period that puts the mean nearest the Depth-minimum delay (6.41 ms). Checked at Rate 7:00
-/ Depth 12:00, where a sweep's low end pins the delay without ambiguity (the discarded
-first `dry-sweep` take, which was recorded at exactly those settings): the sweep gives
-5.77–7.33 ms, the held tone 5.72–7.39 ms. The deeper settings follow by continuity but are
-not checked directly.
+period that puts the mean nearest the Depth-minimum delay (6.41 ms). Checked twice:
+- at Rate 7:00 / Depth 12:00, where a sweep's low end pins the delay (the discarded first
+  `dry-sweep` take, recorded at exactly those settings): sweep 5.77–7.33 ms, held tone
+  5.72–7.39 ms;
+- at full Depth with a 200 Hz tone, whose 5 ms period no swing reaches, against one at
+  minimum Depth: 5.73–8.10 ms (mean 6.79), the 1 kHz tone 5.71–8.07 (mean 6.78).
 
 ### Noise
 
@@ -170,7 +193,8 @@ settling?), 84 dB down; not worth modelling.
 
 ## Takes and lessons
 
-- 27 wet-only takes (`sweep-check` added after the mono session), 14 mono. The first mono
+- 32 wet-only takes (`sweep-check` added after the mono session; five more for the open
+  questions), 15 mono (`bursts-dry` added). The first mono
   `dry-sweep` was recorded at E.Level 5:00 / Rate 7:00 / Depth ~12:00 instead of 7:00 /
   12:00 / 7:00 — told apart from the recording alone (the wet matched the E.Level 5:00
   sweep band for band, the delay swung 1.56 ms at 0.245 Hz; Rate 7:00 is 0.250 Hz) — and
@@ -183,15 +207,13 @@ settling?), 84 dB down; not worth modelling.
 - **Wet-only mode** (a plug in Output B) made the chorus measurable on its own; worth
   checking for on every stereo pedal.
 
-## Open questions (a short extra session)
+## Questions answered by the extra takes
 
-1. **The absolute delay at deep settings:** a held 200 Hz tone (period 5 ms, longer than
-   any swing) at Depth 5:00 against one at Depth 7:00.
-2. **Is the clip before or after E.Level?** Bursts at E.Level 12:00: the same knee input
-   level means before.
-3. **Does the dry path clip?** Bursts in mono at E.Level 7:00.
-4. **Rate × Depth:** is the swing's fall with Rate a fixed fraction at every Depth?
-   Depth 5:00 at Rate 7:00 and 5:00.
+The first analysis left four; a short extra session (takes appended to both plans)
+settled them: the absolute delay at full Depth (200 Hz tones: 5.73–8.10 ms, as assumed),
+where the clip sits (two clips, see *Saturation*), whether the dry path clips (yes, at
+~+2 dB), and how Rate and Depth interact (the swing shrinks with Rate by a
+Depth-dependent fraction, see *The LFO*).
 
 ## For NAM-X
 
@@ -199,5 +221,6 @@ NAM-X's Chorus has a Vintage mode (triangle LFO, a darker BBD-style wet). A CE-5
 would be: dry +2.3 dB (or unity with the wet 2.3 dB lower), a 5.7–8.1 ms delay with the
 bowed triangle above and Depth raising mainly the top, a 60 Hz high-pass and a 10 kHz
 brick wall on the wet, the two tone knobs as a resonant high-pass shelf and a first-order
-low-pass, and a hard clip at the guitar's peak. As a new mode to A/B, not a change to the
+low-pass, a hard clip ~2 dB over the guitar's peak on the input and one on the wet that
+E.Level pushes to the guitar's peak. As a new mode to A/B, not a change to the
 current ones.

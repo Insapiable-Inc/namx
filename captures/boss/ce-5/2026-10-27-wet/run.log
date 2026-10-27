@@ -40,3 +40,46 @@ Take both-0700 was recorded twice (redo), same result.
   Enter = next, r = redo: (Enter)
 
 All 27 takes are in captures/boss/ce-5/2026-10-27-wet.
+
+=== 2026-10-27T11:56:36 · run tools/capture/plans/ce-5-wet.json · tool 00330bab56718595669c578dfe49288c199b4b2d
+
+[28/32] hold-200hz-depth-0700: 200 Hz sine, 10 s
+  pedal ON · E.Level 5:00 · Rate 12:00 · Depth 7:00 · Low 5:00 · High 5:00
+  Extra (open question 1; a plug in OUTPUT B, filters open): a 200 Hz tone, whose 5 ms period no swing reaches, at minimum Depth: the reference.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -10.0 dBFS · loopback -12.9 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[29/32] hold-200hz-depth-0500: 200 Hz sine, 20 s
+  pedal ON · E.Level 5:00 · Rate 12:00 · Depth 5:00 (changed) · Low 5:00 · High 5:00
+  The same at full Depth: the absolute delay at the deepest setting.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -10.0 dBFS · loopback -12.9 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[30/32] hold-rate-0700-depth-0500: 1000 Hz sine, 40 s
+  pedal ON · E.Level 5:00 · Rate 7:00 (changed) · Depth 5:00 · Low 5:00 · High 5:00
+  Extra (open question 4): Rate x Depth.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -11.2 dBFS · loopback -13.0 dBFS · latency 576 samples (12.00 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[31/32] hold-rate-0500-depth-0500: 1000 Hz sine, 20 s
+  pedal ON · E.Level 5:00 · Rate 5:00 (changed) · Depth 5:00 · Low 5:00 · High 5:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -11.2 dBFS · loopback -13.0 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[32/32] bursts-level-1200: 1000 Hz at -30/-24/-18/-12/-8/-6/-4/-2/0/2/4 dB, 0.3 s each + 0.9 s gaps
+  pedal ON · E.Level 12:00 (changed) · Rate 12:00 (changed) · Depth 7:00 (changed) · Low 5:00 · High 5:00
+  Extra (open question 2): E.Level at 12:00. The same knee input level means the clip is before E.Level.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -21.5 dBFS · loopback -9.0 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+All 32 takes are in captures/boss/ce-5/2026-10-27-wet.

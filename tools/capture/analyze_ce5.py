@@ -14,7 +14,9 @@ What it measures:
                    both-0700 against the sum of the two
   LFO              held 1 kHz tones: rate, absolute delay (min, mean, max), cycle shape
                    (delay = min + swing * triangle^power), the level wobble
-  bursts           the wet path's gain and harmonics against the input level
+  200 Hz tones     the absolute delay at full Depth, without the 1 kHz tones' ambiguity
+  bursts           the wet path's gain and harmonics against the input level (E.Level 5:00
+                   and 12:00), and the mono dry path's (E.Level down)
   note-off, noise  the noise floor after a note stops, and with nothing played
 
 Every sweep is deconvolved into an impulse response; the dry arrives at ~1 ms, the wet at
@@ -233,7 +235,7 @@ def shape_fit(cycle):
 
 def lfo(wet, base_ms):
     out, cycles = {}, {}
-    for path in sorted(wet.glob("hold-*.json")):
+    for path in sorted(p for p in wet.glob("hold-*.json") if "200hz" not in p.stem):
         t = analysis.Take(wet, path.stem)
         played, _ = soundfile.read(wet / "played" / f"{path.stem}.wav")
         delay, level, period_ms = delay_trace(t, played)
@@ -256,12 +258,31 @@ def lfo(wet, base_ms):
     return out, cycles
 
 
-def bursts(wet, base_ms):
-    t = analysis.Take(wet, "bursts")
-    played, _ = soundfile.read(wet / "played" / "bursts.wav")
+def absolute_delay(wet, base_ms):
+    """A 200 Hz tone's period (5 ms) is longer than any swing: the full-Depth take's delay
+    against the minimum-Depth one's, both through the same filters, is unambiguous."""
+    traces = {}
+    for depth in ("0700", "0500"):
+        name = f"hold-200hz-depth-{depth}"
+        t = analysis.Take(wet, name)
+        played, _ = soundfile.read(wet / "played" / f"{name}.wav")
+        traces[depth], _, period_ms = delay_trace(t, played)
+    reference = traces["0700"].mean()
+    deep = traces["0500"] - reference
+    deep -= period_ms * np.round(deep.mean() / period_ms)
+    deep += base_ms
+    return {"reference_swing_ms": round(float(np.ptp(traces["0700"])), 3),
+            "depth_0500_delay_ms": {"min": round(float(np.percentile(deep, 0.5)), 3),
+                                    "mean": round(float(deep.mean()), 3),
+                                    "max": round(float(np.percentile(deep, 99.5)), 3)}}
+
+
+def bursts(session, name, lag_ms):
+    t = analysis.Take(session, name)
+    played, _ = soundfile.read(session / "played" / f"{name}.wav")
     spec = t.meta["signal"]
     x = played[t.meta["signal_start"]:]
-    lag = int(round(base_ms / 1000 * RATE))
+    lag = int(round(lag_ms / 1000 * RATE))
     period = spec["step_seconds"] + spec["gap_seconds"]
     rows, first = [], None
     for k, level in enumerate(spec["levels_db"]):
@@ -341,13 +362,16 @@ def plot(out_dir, result, curves, cycles):
     axis.set_title("One LFO cycle, folded (Rate 12:00)", fontsize=10)
     axis.legend(fontsize=8)
     axis = axes[1, 2]
-    rows = result["bursts"]
-    axis.plot([r["input_db"] for r in rows], [r["re_linear_db"] for r in rows], "o-",
-              label="gain re linear, dB")
-    axis.plot([r["input_db"] for r in rows], [r["h3_db"] / 10 for r in rows], "x:",
-              label="3rd harmonic, dB / 10")
+    for key, label in (("bursts", "wet, E.Level 5:00"), ("bursts_level_1200", "wet, E.Level 12:00"),
+                       ("bursts_mono_dry", "mono dry (E.Level down)")):
+        rows = result[key]
+        line, = axis.plot([r["input_db"] for r in rows], [r["re_linear_db"] for r in rows], "o-",
+                          label=f"{label}: gain re linear")
+        axis.plot([r["input_db"] for r in rows], [r["h3_db"] / 10 for r in rows], "x:",
+                  color=line.get_color(), label=f"{label}: H3 / 10")
     axis.set_xlabel("input, dB re the guitar's peak")
-    axis.set_title("The wet path against the input level (bursts, Depth min)", fontsize=10)
+    axis.set_ylabel("dB")
+    axis.set_title("Against the input level (bursts, Depth min)", fontsize=10)
     axis.legend(fontsize=8)
     for axis in axes.flat:
         axis.grid(alpha=0.3, which="both")
@@ -373,7 +397,10 @@ def main():
               "elevel_wet_db_1khz": elevel(wet, mono)}
     result["filter"], curves = filters(wet)
     result["lfo"], cycles = lfo(wet, result["wet_tone"]["delay_ms"])
-    result["bursts"] = bursts(wet, result["wet_tone"]["delay_ms"])
+    result["absolute_delay_200hz"] = absolute_delay(wet, result["wet_tone"]["delay_ms"])
+    result["bursts"] = bursts(wet, "bursts", result["wet_tone"]["delay_ms"])
+    result["bursts_level_1200"] = bursts(wet, "bursts-level-1200", result["wet_tone"]["delay_ms"])
+    result["bursts_mono_dry"] = bursts(mono, "bursts-dry", result["dry_path"]["delay_ms_re_bypass"])
     result["note_off"] = note_off(wet)
     result["noise"] = {"wet_only": noise(wet), "mono": noise(mono)}
 

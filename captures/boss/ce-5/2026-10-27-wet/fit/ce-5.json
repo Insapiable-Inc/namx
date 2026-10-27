@@ -349,6 +349,24 @@
       },
       "level_wobble_db": 0.03
     },
+    "hold-rate-0500-depth-0500": {
+      "rate": "5:00",
+      "depth": "5:00",
+      "lfo_hz": 5.934,
+      "delay_ms": {
+        "min": 5.898,
+        "mean": 6.875,
+        "max": 7.981
+      },
+      "swing_ms_peak_to_peak": 2.083,
+      "shape": {
+        "min_ms": 5.854,
+        "swing_ms": 2.248,
+        "power": 1.2,
+        "rms_us": 48.8
+      },
+      "level_wobble_db": 0.11
+    },
     "hold-rate-0500": {
       "rate": "5:00",
       "depth": "12:00",
@@ -366,6 +384,24 @@
         "rms_us": 28.1
       },
       "level_wobble_db": 0.06
+    },
+    "hold-rate-0700-depth-0500": {
+      "rate": "7:00",
+      "depth": "5:00",
+      "lfo_hz": 0.25,
+      "delay_ms": {
+        "min": 5.492,
+        "mean": 6.575,
+        "max": 8.071
+      },
+      "swing_ms_peak_to_peak": 2.579,
+      "shape": {
+        "min_ms": 5.495,
+        "swing_ms": 2.648,
+        "power": 1.4,
+        "rms_us": 17.4
+      },
+      "level_wobble_db": 0.01
     },
     "hold-rate-0700": {
       "rate": "7:00",
@@ -420,6 +456,14 @@
         "rms_us": 23.1
       },
       "level_wobble_db": 0.01
+    }
+  },
+  "absolute_delay_200hz": {
+    "reference_swing_ms": 0.033,
+    "depth_0500_delay_ms": {
+      "min": 5.733,
+      "mean": 6.793,
+      "max": 8.1
     }
   },
   "bursts": [
@@ -499,6 +543,164 @@
       "re_linear_db": -3.24,
       "h2_db": -52.8,
       "h3_db": -17.8
+    }
+  ],
+  "bursts_level_1200": [
+    {
+      "input_db": -30,
+      "gain_db": -19.11,
+      "re_linear_db": 0.0,
+      "h2_db": -100.8,
+      "h3_db": -88.9
+    },
+    {
+      "input_db": -24,
+      "gain_db": -19.1,
+      "re_linear_db": 0.01,
+      "h2_db": -88.5,
+      "h3_db": -76.8
+    },
+    {
+      "input_db": -18,
+      "gain_db": -19.1,
+      "re_linear_db": 0.02,
+      "h2_db": -91.3,
+      "h3_db": -73.3
+    },
+    {
+      "input_db": -12,
+      "gain_db": -19.09,
+      "re_linear_db": 0.03,
+      "h2_db": -87.0,
+      "h3_db": -72.4
+    },
+    {
+      "input_db": -8,
+      "gain_db": -19.08,
+      "re_linear_db": 0.03,
+      "h2_db": -83.4,
+      "h3_db": -73.7
+    },
+    {
+      "input_db": -6,
+      "gain_db": -19.07,
+      "re_linear_db": 0.04,
+      "h2_db": -82.0,
+      "h3_db": -74.7
+    },
+    {
+      "input_db": -4,
+      "gain_db": -19.07,
+      "re_linear_db": 0.05,
+      "h2_db": -81.3,
+      "h3_db": -74.8
+    },
+    {
+      "input_db": -2,
+      "gain_db": -19.06,
+      "re_linear_db": 0.06,
+      "h2_db": -80.3,
+      "h3_db": -73.8
+    },
+    {
+      "input_db": 0,
+      "gain_db": -19.05,
+      "re_linear_db": 0.07,
+      "h2_db": -79.1,
+      "h3_db": -73.1
+    },
+    {
+      "input_db": 2,
+      "gain_db": -19.32,
+      "re_linear_db": -0.21,
+      "h2_db": -45.3,
+      "h3_db": -35.3
+    },
+    {
+      "input_db": 4,
+      "gain_db": -20.53,
+      "re_linear_db": -1.42,
+      "h2_db": -43.4,
+      "h3_db": -22.8
+    }
+  ],
+  "bursts_mono_dry": [
+    {
+      "input_db": -30,
+      "gain_db": -9.03,
+      "re_linear_db": 0.0,
+      "h2_db": -83.1,
+      "h3_db": -75.2
+    },
+    {
+      "input_db": -24,
+      "gain_db": -9.02,
+      "re_linear_db": 0.0,
+      "h2_db": -85.8,
+      "h3_db": -91.0
+    },
+    {
+      "input_db": -18,
+      "gain_db": -9.03,
+      "re_linear_db": -0.0,
+      "h2_db": -80.6,
+      "h3_db": -84.2
+    },
+    {
+      "input_db": -12,
+      "gain_db": -9.04,
+      "re_linear_db": -0.01,
+      "h2_db": -73.3,
+      "h3_db": -80.2
+    },
+    {
+      "input_db": -8,
+      "gain_db": -9.04,
+      "re_linear_db": -0.02,
+      "h2_db": -68.9,
+      "h3_db": -79.8
+    },
+    {
+      "input_db": -6,
+      "gain_db": -9.04,
+      "re_linear_db": -0.02,
+      "h2_db": -66.7,
+      "h3_db": -79.9
+    },
+    {
+      "input_db": -4,
+      "gain_db": -9.05,
+      "re_linear_db": -0.02,
+      "h2_db": -64.4,
+      "h3_db": -79.2
+    },
+    {
+      "input_db": -2,
+      "gain_db": -9.04,
+      "re_linear_db": -0.02,
+      "h2_db": -62.0,
+      "h3_db": -77.3
+    },
+    {
+      "input_db": 0,
+      "gain_db": -9.04,
+      "re_linear_db": -0.02,
+      "h2_db": -59.1,
+      "h3_db": -72.0
+    },
+    {
+      "input_db": 2,
+      "gain_db": -9.33,
+      "re_linear_db": -0.3,
+      "h2_db": -45.7,
+      "h3_db": -34.5
+    },
+    {
+      "input_db": 4,
+      "gain_db": -10.54,
+      "re_linear_db": -1.51,
+      "h2_db": -43.8,
+      "h3_db": -22.1
     }
   ],
   "note_off": {

@@ -135,3 +135,19 @@ All 12 takes are in captures/boss/ce-5/2026-10-27-mono.
   Enter = next, r = redo: (Enter)
 
 All 14 takes are in captures/boss/ce-5/2026-10-27-mono.
+
+=== 2026-10-27T11:55:37 · run tools/capture/plans/ce-5.json · tool 00330bab56718595669c578dfe49288c199b4b2d
+
+[15/15] bursts-dry: 1000 Hz at -30/-24/-18/-12/-8/-6/-4/-2/0/2/4 dB, 0.3 s each + 0.9 s gaps
+  pedal ON · E.Level 7:00 (changed) · Rate 12:00 · Depth 7:00 · Low 5:00 · High 5:00 (changed)
+  Extra (open question 3): E.Level fully down, filters open. Does the dry path clip?
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -10.7 dBFS · loopback -9.0 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: r
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -10.8 dBFS · loopback -9.0 dBFS · latency 503 samples (10.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+All 15 takes are in captures/boss/ce-5/2026-10-27-mono.
