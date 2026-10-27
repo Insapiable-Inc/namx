@@ -18,7 +18,8 @@ SESSION is a folder under captures/, one per pedal and day (e.g.
 captures/boss/tr-2/2026-10-26). Its rig.json holds the ports and the reference level.
 The WAVs are git-ignored (too large for the repo); the JSON files and fits are committed.
 Each take writes TAKE.wav (float32; channel 1 = pedal, channel 2 = loopback),
-TAKE.json (knob settings, signal, level, latency, peaks, xruns) and played/TAKE.wav.
+TAKE.json (knob settings, signal, level, latency, peaks, xruns) and played/TAKE.wav; run
+appends its console transcript (answers and problems included) to SESSION/run.log.
 
 Needs the JACK client for Python (Arch: python-jack-client) plus numpy, scipy and
 soundfile.
@@ -428,9 +429,43 @@ def cmd_plan(args):
     print(f"\n{len(plan['takes'])} takes, {seconds / 60:.1f} min of audio.")
 
 
+class RunLog:
+    """Copies the console output to a file as well, so a session's transcript stays with it.
+    A line rewritten in place with \\r (the silence meter) keeps only its last state."""
+
+    def __init__(self, path, console):
+        self.file = open(path, "a", encoding="utf-8")
+        self.console = console
+        self.line = ""
+
+    def write(self, text):
+        self.console.write(text)
+        self.line += text
+        while "\n" in self.line:
+            line, self.line = self.line.split("\n", 1)
+            self.file.write(line.rsplit("\r", 1)[-1].rstrip() + "\n")
+        self.file.flush()
+        return len(text)
+
+    def typed(self, answer):
+        """What was typed at a prompt: the terminal echoes it, the file needs it."""
+        self.line += (answer or "(Enter)") + "\n"
+        self.write("")
+
+    def flush(self):
+        self.console.flush()
+
+    def close(self):
+        if self.line:
+            self.write("\n")
+        self.file.close()
+
+
 def ask(prompt, choices):
     while True:
         answer = input(prompt).strip().lower()
+        if isinstance(sys.stdout, RunLog):
+            sys.stdout.typed(answer)
         if answer in choices:
             return answer
 
@@ -439,6 +474,9 @@ def cmd_run(args):
     session = pathlib.Path(args.session).expanduser()
     rig = load_rig(session)
     plan = load_plan(args.plan)
+    sys.stdout = RunLog(session / "run.log", sys.stdout)
+    print(f"\n=== {datetime.datetime.now().isoformat(timespec='seconds')} · run {args.plan} "
+          f"· tool {tool_commit()}")
     if not rig["calibration"]:
         print("Warning: this rig isn't calibrated; levels use the default reference.")
     engine = Engine(rig)
@@ -488,6 +526,8 @@ def cmd_run(args):
         print("\nStopped; the takes recorded so far are kept.")
     finally:
         engine.close()
+        sys.stdout.close()
+        sys.stdout = sys.stdout.console
 
 
 def main():

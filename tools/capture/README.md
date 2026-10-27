@@ -162,6 +162,8 @@ A session is one pedal on one day: `captures/<maker>/<pedal>/<date>/`.
   sample rate, reference level, `marker_start` and `signal_start` (samples, in the
   played file), `latency_samples` and its correlation quality, peaks, xruns, SHA-256 of
   what was played, time, the tool's git commit, and a copy of the rig.
+- `run.log`: every `run`'s console transcript, appended (answers, redos, problems):
+  read it instead of copying the terminal.
 - `fit/`: a fit script's output (parameters JSON and figures).
 
 A take as played: 0.3 s silence, a 50 ms Hann-windowed log chirp (200 Hz–10 kHz) at the
