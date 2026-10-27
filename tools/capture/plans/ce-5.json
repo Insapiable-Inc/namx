@@ -1,0 +1,554 @@
+{
+  "pedal": "Boss CE-5 Chorus Ensemble (mono: Input -> Output A only, which then carries dry + effect)",
+  "comment": "LFO (Rate x Depth), base delay, wet tone, dry/wet balance, level and saturation, compander, noise, then the filter last. Filter (manual): LOW = outer knob, HIGH = inner, independent; both shape only the chorus sound; clockwise widens the band, so fully clockwise (5:00) is the most open and the default here. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise; 9:00 and 3:00 pointer horizontal.",
+  "knobs": [
+    "E.Level",
+    "Rate",
+    "Depth",
+    "Low",
+    "High"
+  ],
+  "takes": [
+    {
+      "name": "bypass-sweep",
+      "bypass": true,
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 2
+      }
+    },
+    {
+      "name": "bypass-bursts",
+      "bypass": true,
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -30,
+          -24,
+          -18,
+          -12,
+          -8,
+          -6,
+          -4,
+          -2,
+          0,
+          2,
+          4
+        ],
+        "step_seconds": 0.3,
+        "gap_seconds": 0.9,
+        "tail": 1
+      }
+    },
+    {
+      "name": "dry-sweep",
+      "settings": {
+        "E.Level": "7:00",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Low": "5:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 2
+      },
+      "note": "Both filter knobs fully clockwise (widest band) until the filter block. E.Level fully down: the dry path with the pedal on."
+    },
+    {
+      "name": "dry-hold-sine",
+      "settings": {
+        "E.Level": "7:00",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Low": "5:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 20,
+        "tail": 2
+      },
+      "note": "The dry tone, for subtracting from the held-tone takes."
+    },
+    {
+      "name": "bursts",
+      "settings": {
+        "E.Level": "5:00",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Low": "5:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -30,
+          -24,
+          -18,
+          -12,
+          -8,
+          -6,
+          -4,
+          -2,
+          0,
+          2,
+          4
+        ],
+        "step_seconds": 0.3,
+        "gap_seconds": 0.9,
+        "tail": 1
+      },
+      "note": "Level and saturation; Depth at minimum."
+    },
+    {
+      "name": "sweep",
+      "settings": {
+        "E.Level": "5:00",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Low": "5:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 2
+      },
+      "note": "Depth at minimum: the base delay, the wet tone and the dry/wet balance."
+    },
+    {
+      "name": "sweep-level-0900",
+      "settings": {
+        "E.Level": "9:00",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Low": "5:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 2
+      },
+      "note": "E.Level map."
+    },
+    {
+      "name": "sweep-level-1200",
+      "settings": {
+        "E.Level": "12:00",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Low": "5:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 2
+      }
+    },
+    {
+      "name": "sweep-level-0300",
+      "settings": {
+        "E.Level": "3:00",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Low": "5:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 2
+      }
+    },
+    {
+      "name": "hold-rate-0700",
+      "settings": {
+        "E.Level": "5:00",
+        "Rate": "7:00",
+        "Depth": "12:00",
+        "Low": "5:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 40,
+        "tail": 2
+      },
+      "note": "The LFO: rate, depth, shape."
+    },
+    {
+      "name": "hold-rate-0900",
+      "settings": {
+        "E.Level": "5:00",
+        "Rate": "9:00",
+        "Depth": "12:00",
+        "Low": "5:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 30,
+        "tail": 2
+      }
+    },
+    {
+      "name": "hold-rate-1200",
+      "settings": {
+        "E.Level": "5:00",
+        "Rate": "12:00",
+        "Depth": "12:00",
+        "Low": "5:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 20,
+        "tail": 2
+      }
+    },
+    {
+      "name": "hold-rate-0300",
+      "settings": {
+        "E.Level": "5:00",
+        "Rate": "3:00",
+        "Depth": "12:00",
+        "Low": "5:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 20,
+        "tail": 2
+      }
+    },
+    {
+      "name": "hold-rate-0500",
+      "settings": {
+        "E.Level": "5:00",
+        "Rate": "5:00",
+        "Depth": "12:00",
+        "Low": "5:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 20,
+        "tail": 2
+      }
+    },
+    {
+      "name": "hold-depth-0900",
+      "settings": {
+        "E.Level": "5:00",
+        "Rate": "12:00",
+        "Depth": "9:00",
+        "Low": "5:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 20,
+        "tail": 2
+      }
+    },
+    {
+      "name": "hold-depth-0300",
+      "settings": {
+        "E.Level": "5:00",
+        "Rate": "12:00",
+        "Depth": "3:00",
+        "Low": "5:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 20,
+        "tail": 2
+      }
+    },
+    {
+      "name": "hold-depth-0500",
+      "settings": {
+        "E.Level": "5:00",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Low": "5:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 20,
+        "tail": 2
+      }
+    },
+    {
+      "name": "hold-depth-0700",
+      "settings": {
+        "E.Level": "5:00",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Low": "5:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 20,
+        "tail": 2
+      }
+    },
+    {
+      "name": "note-off",
+      "settings": {
+        "E.Level": "5:00",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Low": "5:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -12
+        ],
+        "step_seconds": 2,
+        "tail": 4
+      },
+      "note": "A 2 s note, then 4 s: the compander's breathing as the note stops."
+    },
+    {
+      "name": "noise-floor",
+      "settings": {
+        "E.Level": "5:00",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Low": "5:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "silence",
+        "seconds": 10
+      },
+      "note": "No signal: hiss, hum."
+    },
+    {
+      "name": "low-0300",
+      "settings": {
+        "E.Level": "5:00",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Low": "3:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 2
+      },
+      "note": "Filter block: LOW (outer knob) narrows the band step by step, HIGH stays fully clockwise."
+    },
+    {
+      "name": "low-1200",
+      "settings": {
+        "E.Level": "5:00",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Low": "12:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 2
+      }
+    },
+    {
+      "name": "low-0900",
+      "settings": {
+        "E.Level": "5:00",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Low": "9:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 2
+      }
+    },
+    {
+      "name": "low-0700",
+      "settings": {
+        "E.Level": "5:00",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Low": "7:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 2
+      }
+    },
+    {
+      "name": "high-0300",
+      "settings": {
+        "E.Level": "5:00",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Low": "5:00",
+        "High": "3:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 2
+      },
+      "note": "LOW back fully clockwise; HIGH (inner knob) narrows step by step."
+    },
+    {
+      "name": "high-1200",
+      "settings": {
+        "E.Level": "5:00",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Low": "5:00",
+        "High": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 2
+      }
+    },
+    {
+      "name": "high-0900",
+      "settings": {
+        "E.Level": "5:00",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Low": "5:00",
+        "High": "9:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 2
+      }
+    },
+    {
+      "name": "high-0700",
+      "settings": {
+        "E.Level": "5:00",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Low": "5:00",
+        "High": "7:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 2
+      }
+    },
+    {
+      "name": "both-0700",
+      "settings": {
+        "E.Level": "5:00",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Low": "7:00",
+        "High": "7:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 2
+      },
+      "note": "Both fully counter-clockwise (narrowest): is the filter the product of the two?"
+    },
+    {
+      "name": "both-0700-dry",
+      "settings": {
+        "E.Level": "7:00",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Low": "7:00",
+        "High": "7:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 2
+      },
+      "note": "E.Level down: the manual says the filter shapes only the chorus sound; checks it. Afterwards both filter knobs back fully clockwise."
+    }
+  ]
+}
