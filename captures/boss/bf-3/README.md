@@ -6,6 +6,7 @@ Output B):
 | Session | What it gives |
 |---|---|
 | [`2026-10-27-standard/`](2026-10-27-standard/) | the dry path, the wet tone, Manual's delay, Res's feedback, saturation, the sweep (Rate, Depth, Manual), noise |
+| [`2026-10-27-ultra/`](2026-10-27-ultra/) | ULTRA against STANDARD (`plans/bf-3-ultra.json`, 11 takes; first look below) |
 | [`2026-10-27-standard-checks/`](2026-10-27-standard-checks/) | the model's sweep at knob combinations it wasn't fitted to; Output B in use |
 
 Same rig and playback level as the TR-2, DD-8 and CE-5 ([`tools/capture/README.md`](../../../tools/capture/README.md)).
@@ -187,6 +188,26 @@ measured: the full-scale clicks clip.)
 within 0.00 dB at 250 Hz–10 kHz. No wet-only trick as on the CE-5; what B itself carries
 is still unknown.
 
+## ULTRA (first look)
+
+**Three taps instead of one.** At Res minimum the wet is three copies of the input at
+**d/2, d and 3d/2** after the dry, where d is STANDARD's delay for the same knobs (Manual
+7:00: 7.35, 14.66, 22.00 ms; Manual 12:00: 1.04, 2.04, 3.08 ms), then nothing (−43 dB):
+not feedback. The middle tap sweeps exactly like STANDARD's single one (Rate 12:00:
+0.91–5.22 ms, STANDARD 0.91–5.22; Depth 5:00: 0.36–13.24, STANDARD 0.36–13.28); the
+other two follow it at ×0.50 and ×1.50 throughout (1.98 ± 0.01 and 2.97 ± 0.01 times the
+first tap). Three combs on top of each other: the "stronger flanger effect".
+
+- Levels at 1 kHz re bypass: the taps +0.8, +0.6, +0.4 dB; the dry +1.0 dB (STANDARD's
+  +1.8). Each tap has STANDARD's wet tone (the second against the first: within 0.3 dB
+  to 4 kHz, −1 to −2 dB above 8 kHz).
+- The clip: the same, +0.53 dB re the guitar's peak (0.13 dB rms).
+- **Res: not identified yet.** At Res 3:00 the echoes decay ~0.67 per d/2 from the third
+  copy on, but no single loop fits (feedback from any one tap, or from their sum, leaves
+  18–27 % against a 2.4 % floor), and the first tap drops 0.8 dB. Weak feedback (Res
+  9:00, Manual 7:00) would show which tap feeds the loop: each first echo lands at its
+  own multiple of d/2.
+
 ## Takes and lessons
 
 - 31 takes, plus 8 checks. `manual-0900` and `manual-0500` were redone during the session
@@ -203,8 +224,7 @@ is still unknown.
 
 ## Still to capture
 
-- **ULTRA:** the manual says a stronger effect; what it changes (Res, Depth, the mix)
-  needs a short plan.
+- **ULTRA:** measured (above), except its Res loop.
 - **GATE/PAN:** in mono the sound is gated on and off 32 times per flanger cycle (16 on
   the way up, 16 down); in stereo it pans. Left out (user, 2026-10-27): a special effect
   with no NAM-X counterpart.
