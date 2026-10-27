@@ -1,6 +1,7 @@
 {
   "pedal": "Boss BF-3 Flanger, STANDARD mode (mono: Guitar In -> Output A)",
   "comment": "Digital (a Boss DSP and an AK4552 converter at ~44.1 kHz): delay 0.3-14.4 ms (Guitar In), LFO period 0.1-18 s (service notes). No dry/wet knob and no wet-only output known, so the sweep is read from click trains: each click's echo sits at the current delay. Static sweeps at minimum Depth for Manual's delay, the wet's tone and Res's feedback. Tap tempo not used. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise; 9:00 and 3:00 pointer horizontal.",
+  "quiet_dbfs": -60,
   "knobs": [
     "Manual",
     "Res",
