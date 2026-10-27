@@ -1,6 +1,6 @@
 {
   "pedal": "Boss BF-3 Flanger, STANDARD mode (mono: Guitar In -> Output A)",
-  "comment": "Checks for the Standard model (captures/boss/bf-3/README.md), all click trains read like the main session's: Depth's floor blend at a second Manual position for Depth 9:00 and 3:00 (measured there only at Manual 12:00), the Rate smoothing at full Depth (measured only at Depth 12:00), and Res with the sweep running. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise.",
+  "comment": "Checks for the Standard model (captures/boss/bf-3/README.md), all click trains read like the main session's: Depth's floor blend at a second Manual position for Depth 9:00 and 3:00 (measured there only at Manual 12:00), the Rate smoothing at full Depth (measured only at Depth 12:00), and Res with the sweep running. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise. Last: the Manual 7:00 sweep without and then with a plug in Output B (the other end loose), to see whether B in use changes what Output A carries (on the CE-5 it made A wet-only).",
   "quiet_dbfs": -60,
   "knobs": [
     "Manual",
@@ -98,6 +98,42 @@
         "tail": 0.5
       },
       "note": "Res at maximum with the sweep running."
+    },
+    {
+      "name": "manual-0700",
+      "settings": {
+        "Manual": "7:00",
+        "Res": "7:00",
+        "Depth": "7:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 2
+      },
+      "note": "Nothing in Output B yet: this session's reference."
+    },
+    {
+      "name": "b-plugged-manual-0700",
+      "settings": {
+        "Manual": "7:00",
+        "Res": "7:00",
+        "Depth": "7:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 2
+      },
+      "note": "Before recording: plug the patch cable into Output B (other end loose). Output A stays recorded as always."
     }
   ]
 }
