@@ -54,9 +54,9 @@ A jump: −30 dB, then 0 dB, then −30 dB, 4 s each; the gain every 1 ms agains
 | recovery after the drop, 63 % / 90 %, ms | 458 / 716 | 354 / 554 | 124 / 191 | 62 / 94 | 44 / 65 |
 
 **Attack mostly sets the release** (×10 faster toward 5:00), the clamp-down only modestly.
-The recovery is a straight line in dB (a constant dB per second, ~37 dB/s at 7:00): a
-log-domain detector. When the loud tone hits, the first few ms pass at the quiet gain
-before the compressor clamps down. Sustain doesn't change the timing (Sustain 5:00 =
+The recovery is an exponential approach in dB — fast at first, slowing toward the quiet
+gain (a 6-second-wide plot makes it look straight; it isn't). When the loud tone hits, the first cycle or two pass at the quiet gain
+before the compressor clamps down (a pick: one big first cycle, clamped within 2–3 ms). Sustain doesn't change the timing (Sustain 5:00 =
 Sustain 12:00 at Attack 12:00).
 
 **Picked notes** (220 Hz bursts, 3 s apart, Sustain 12:00): the pick spikes 12–13 dB over
@@ -93,6 +93,6 @@ mostly treble hiss; no howling at full Sustain with this rig.
 
 NAM-X's Compressor is a feedforward design with Threshold, Ratio, Attack and Release. A
 CS-3 type would be: a fixed output ceiling (~66:1), Sustain as the gain ahead of it, Attack
-as one knob setting the release (44–458 ms, linear in dB) and a little of the attack
+as one knob setting the release (44–458 ms to 63 %, exponential in dB) and a little of the attack
 (6–14 ms), the Tone tilt, and Level. As a new type to A/B, not a change to the current
 compressor.
