@@ -131,10 +131,14 @@ tools/capture/capture.py plan tools/capture/plans/<pedal>.json       # list the 
 tools/capture/capture.py run <session> tools/capture/plans/<pedal>.json
 ```
 
-`run` is interactive (run it in a terminal): it names the knobs to set, marking the ones
+`run` is interactive (run it in a terminal). Before each take it listens to the pedal and
+waits until it is silent (a delay with high Feedback keeps repeating after a take, and you
+can't hear it: its output only goes to the interface); if it still sounds after 30 s it
+asks you to turn Feedback down. It names the knobs to set, marking the ones
 that changed since the last take, records, prints the take's peaks, latency and xruns,
 and flags problems (clipping, a silent channel or loopback, an unclear marker, xruns)
-with a redo option. It skips takes already recorded, so stopping and running it again
+with a redo option; a bypass take with sound where nothing was played (the pedal left on)
+is flagged too. It skips takes already recorded, so stopping and running it again
 resumes. Knob positions are clock positions: 7:00 fully counter-clockwise, 5:00 fully
 clockwise. Positions between those are set by eye; the fits treat them as approximate.
 

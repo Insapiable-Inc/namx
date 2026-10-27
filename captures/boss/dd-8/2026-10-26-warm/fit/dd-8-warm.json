@@ -1,0 +1,263 @@
+{
+  "pedal": "Boss DD-8, Warm mode",
+  "mode": "Warm",
+  "session": "2026-10-26-warm",
+  "delay_ms_clicks": {
+    "7:00": 19.62,
+    "9:00": 172.6,
+    "3:00": 588.56,
+    "5:00": 799.58
+  },
+  "bursts": {
+    "delay_ms": 378.62,
+    "rows": [
+      {
+        "input_db": -30,
+        "gain_db": 2.85,
+        "re_linear_db": 0.0,
+        "peak_dbfs": -40.59,
+        "h2_db": -95.2,
+        "h3_db": -80.5,
+        "h5_db": -96.7
+      },
+      {
+        "input_db": -24,
+        "gain_db": 2.85,
+        "re_linear_db": -0.0,
+        "peak_dbfs": -34.61,
+        "h2_db": -96.3,
+        "h3_db": -74.4,
+        "h5_db": -91.3
+      },
+      {
+        "input_db": -18,
+        "gain_db": 2.84,
+        "re_linear_db": -0.01,
+        "peak_dbfs": -28.62,
+        "h2_db": -90.1,
+        "h3_db": -70.2,
+        "h5_db": -81.2
+      },
+      {
+        "input_db": -12,
+        "gain_db": 2.84,
+        "re_linear_db": -0.02,
+        "peak_dbfs": -22.63,
+        "h2_db": -84.0,
+        "h3_db": -68.5,
+        "h5_db": -74.1
+      },
+      {
+        "input_db": -8,
+        "gain_db": 2.83,
+        "re_linear_db": -0.02,
+        "peak_dbfs": -18.63,
+        "h2_db": -79.4,
+        "h3_db": -68.9,
+        "h5_db": -71.1
+      },
+      {
+        "input_db": -6,
+        "gain_db": 2.83,
+        "re_linear_db": -0.02,
+        "peak_dbfs": -16.63,
+        "h2_db": -77.1,
+        "h3_db": -69.6,
+        "h5_db": -69.9
+      },
+      {
+        "input_db": -4,
+        "gain_db": 2.83,
+        "re_linear_db": -0.02,
+        "peak_dbfs": -14.63,
+        "h2_db": -74.7,
+        "h3_db": -70.7,
+        "h5_db": -68.9
+      },
+      {
+        "input_db": -2,
+        "gain_db": 2.83,
+        "re_linear_db": -0.02,
+        "peak_dbfs": -12.63,
+        "h2_db": -72.1,
+        "h3_db": -72.2,
+        "h5_db": -68.0
+      },
+      {
+        "input_db": 0,
+        "gain_db": 1.73,
+        "re_linear_db": -1.13,
+        "peak_dbfs": -12.06,
+        "h2_db": -71.2,
+        "h3_db": -22.7,
+        "h5_db": -35.5
+      },
+      {
+        "input_db": 2,
+        "gain_db": 0.04,
+        "re_linear_db": -2.81,
+        "peak_dbfs": -11.99,
+        "h2_db": -61.4,
+        "h3_db": -17.5,
+        "h5_db": -30.3
+      },
+      {
+        "input_db": 4,
+        "gain_db": -1.76,
+        "re_linear_db": -4.61,
+        "peak_dbfs": -11.84,
+        "h2_db": -58.4,
+        "h3_db": -16.0,
+        "h5_db": -25.5
+      }
+    ]
+  },
+  "steps": {
+    "delay_ms": 378.62,
+    "levels_db": [
+      -30,
+      -12,
+      -30
+    ],
+    "wet_gain_db": {
+      "settled, first level": 2.85,
+      "2-6 ms after the jump": 2.83,
+      "10-20 ms after": 2.84,
+      "50-100 ms after": 2.84,
+      "settled, second level": 2.84,
+      "2-6 ms after the jump back": 2.89,
+      "50-100 ms after it": 2.85,
+      "0.3-0.5 s after it": 2.85,
+      "settled, back": 2.85
+    }
+  },
+  "tone": {
+    "delay_ms": 378.58,
+    "bands_hz": [
+      31.5,
+      63,
+      125,
+      250,
+      500,
+      1000,
+      2000,
+      4000,
+      8000,
+      16000
+    ],
+    "db_re_1khz": [
+      2.12,
+      3.13,
+      2.12,
+      1.64,
+      1.0,
+      0.0,
+      -0.67,
+      -1.56,
+      -4.72,
+      -18.2
+    ]
+  },
+  "feedback_db_per_repeat": {},
+  "feedback_0500": {
+    "delay_ms": 385.94,
+    "click_repeats_db": [
+      -4.18,
+      -4.49,
+      -4.73,
+      -4.89,
+      -4.98,
+      -5.01,
+      -5.0,
+      -4.94,
+      -4.85,
+      -4.74,
+      -4.6,
+      -4.44,
+      -4.27,
+      -4.03,
+      -3.73,
+      -3.43
+    ],
+    "trend_db_per_repeat": 0.06
+  },
+  "feedback_bursts": {
+    "3:00": {
+      "delay_ms": 385.94,
+      "first_repeat_re_burst_db": 2.84,
+      "db_per_repeat": [
+        -0.82,
+        -0.82,
+        -0.82,
+        -0.82,
+        -0.82,
+        -0.82,
+        -0.82,
+        -0.82,
+        -0.82,
+        -0.82,
+        -0.82,
+        -0.82
+      ],
+      "median_db_per_repeat": -0.82
+    },
+    "9:00": {
+      "delay_ms": 385.58,
+      "first_repeat_re_burst_db": 2.84,
+      "db_per_repeat": [
+        -11.53,
+        -11.56,
+        -11.58,
+        -11.57,
+        -11.55,
+        -10.69,
+        -6.18,
+        -1.09,
+        0.22,
+        0.34,
+        -1.6,
+        0.28
+      ],
+      "median_db_per_repeat": -11.56
+    },
+    "12:00": {
+      "delay_ms": 385.96,
+      "first_repeat_re_burst_db": 2.85,
+      "db_per_repeat": [
+        -7.43,
+        -7.44,
+        -7.45,
+        -7.46,
+        -7.47,
+        -7.46,
+        -7.46,
+        -7.35,
+        -7.0,
+        -5.74,
+        -1.19,
+        -1.12
+      ],
+      "median_db_per_repeat": -7.46
+    }
+  },
+  "wow_flutter": {
+    "mean_cents": -0.0,
+    "rms_cents": 0.02,
+    "peak_to_peak_cents": 0.06,
+    "level_range_db": 0.01,
+    "wow (0.3-6 Hz)": {
+      "strongest_hz": 4.18,
+      "rms_cents": 0.0
+    },
+    "flutter (6-60 Hz)": {
+      "strongest_hz": 59.65,
+      "rms_cents": 0.0
+    }
+  },
+  "time_glide": {
+    "delay_change_ms": 210.0,
+    "deepest_cents": -205.4,
+    "level_range_db": 2.51
+  },
+  "noise_dbfs": -101.2
+}

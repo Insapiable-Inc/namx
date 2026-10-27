@@ -45,6 +45,9 @@ CLIP_DBFS = -0.1
 SILENT_DBFS = -60.0
 DEFAULT_REF_DBFS = -20.0
 CALIBRATION_SECONDS = 2.0
+QUIET_DBFS = -75.0  # the pedal input's peak, per 0.1 s, counted as silent (noise peaks ~-85)
+QUIET_HOLD_S = 0.5
+QUIET_WAIT_S = 30.0
 
 
 def dbfs(x):
@@ -253,6 +256,26 @@ def record_take(engine, rig, session, name, spec, extra):
     return problems
 
 
+def wait_for_silence(engine):
+    """Listens to the pedal input until it stays quiet for QUIET_HOLD_S: a delay with high
+    Feedback keeps repeating after a take, and those repeats would land in the next one.
+    Returns False if it is still sounding after QUIET_WAIT_S."""
+    rate = engine.rate
+    engine.start(np.zeros(int(QUIET_WAIT_S * rate), np.float32))
+    quiet = 0
+    while not engine.done.wait(0.1):
+        now = engine.pos
+        level = dbfs(engine.recorded[max(0, now - rate // 10):now, 0])
+        quiet = quiet + 1 if level < QUIET_DBFS else 0
+        print(f"\r  waiting for the pedal to fall silent: {level:6.1f} dBFS ", end="", flush=True)
+        if quiet * 0.1 >= QUIET_HOLD_S:
+            engine.active = False
+            print("\r  the pedal is silent." + " " * 30)
+            return True
+    print()
+    return False
+
+
 def cmd_ports(_args):
     jack = import_jack()
     client = jack.Client(CLIENT_NAME + "-ports", no_start_server=True)
@@ -434,6 +457,11 @@ def cmd_run(args):
                 break
             # A skipped take stays unrecorded; the next run offers it again.
             while True:
+                while not wait_for_silence(engine):
+                    answer = ask("  Still sounding: turn Feedback down. Enter = wait again, "
+                                 "r = record anyway: ", {"", "r"})
+                    if answer == "r":
+                        break
                 extra = {"pedal": plan["pedal"], "bypass": bool(take.get("bypass")),
                          "settings": take.get("settings", {}), "note": take.get("note", "")}
                 problems = record_take(engine, rig, session, name, take["signal"], extra)

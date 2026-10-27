@@ -188,3 +188,41 @@ fading); its retake (`-again`) is the one used. Retakes with high Feedback need 
 pedal silent first: at 3:00 and above it keeps repeating on its own.
 
 ![DD-8 Tape](2026-10-26-tape/fit/dd-8-tape.svg)
+
+# Warm mode
+
+Session [`2026-10-26-warm/`](2026-10-26-warm/), plan
+[`plans/dd-8-warm.json`](../../../tools/capture/plans/dd-8-warm.json) (the Tape plan with
+feedback from bursts): 17 takes. `analyze_dd8_mode.py` →
+[`fit/dd-8-warm.json`](2026-10-26-warm/fit/dd-8-warm.json).
+
+Warm is Standard with a **warm tilt** on the repeats:
+
+| | Standard | **Warm** |
+|---|---|---|
+| First repeat's tone, re 1 kHz | flat to 4 kHz, −2.1 dB at 8 kHz | **+2.1 / +3.1 / +2.1 / +1.6 / +1.0 dB at 31.5 / 63 / 125 / 250 / 500 Hz, −0.7 / −1.6 / −4.7 / −18 dB at 2 / 4 / 8 / 16 kHz** |
+| Repeat level, Level 5:00 | +4.46 dB | **+2.85 dB**, constant (level steps: no attack or release) |
+| Distortion | linear to −4 dB, hard knee | **linear to −2 dB** (H3 −68…−80 dB), then a hard knee: −1.13 dB and H3 −22.7 dB at 0 dB, −4.6 / −16 dB at +4; the same ceiling (~−11.8 dBFS) |
+| Fade per repeat, 9:00 / 12:00 / 3:00 (bursts) | −12.2 / −7.07 / −0.6 dB | −11.6 / −7.46 / −0.82 dB |
+| Feedback 5:00 | holds | holds (+0.06 dB per repeat) |
+| Wow | none | none (0.02 cents rms) |
+| Turning Time | — | glides, as Analog and Tape (+210 ms, dips to −205 cents) |
+| Delay range / noise | 19.65 – 799.6 ms / −101.1 dBFS | 19.62 – 799.58 ms / −101.2 dBFS |
+
+## The four voicings side by side
+
+Standard, Analog, Tape and Warm share the delay line, the Time range, the hard ceiling
+before the Level knob and Feedback's shape; what changes is the voicing:
+
+| | Standard | Analog | Tape | Warm |
+|---|---|---|---|---|
+| Repeat level (Level 5:00) | +4.46 dB | +6.03 dB | +7.9 dB | +2.85 dB |
+| Tone | flat, ~10 kHz low-pass | flat to 2 kHz, steep low-pass **in the loop** | ~150 Hz – 5 kHz band | a tilt: lows up 2–3 dB, highs gently down |
+| Distortion before the ceiling | none: hard knee at −3 dB | soft knee from −8 dB | knee at −7 dB, low-level H3 | none: hard knee at −1 dB |
+| Pitch | steady | steady | wow 0.53 Hz + flutter 6.7 Hz | steady |
+| Feedback 3:00 / 5:00 | −0.6 dB / holds | −1.4 dB / slow runaway | −0.04 dB / holds | −0.82 dB / holds |
+
+That table is the parameter set of a "DD-8 voicings" Delay for NAM-X: one delay with a
+saturation curve, a loop filter, a level, and (Tape) a pitch wander.
+
+![DD-8 Warm](2026-10-26-warm/fit/dd-8-warm.svg)
