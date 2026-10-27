@@ -1,13 +1,23 @@
 # Boss TR-2 Tremolo
 
-Captured 2026-10-26, session [`2026-10-26/`](2026-10-26/). Rig, tools and method:
-[`tools/capture/README.md`](../../../tools/capture/README.md). Fit:
-`tools/capture/fit_tr2.py captures/boss/tr-2/2026-10-26` (~10 s) → [`2026-10-26/fit/`](2026-10-26/fit/).
+Two sessions, 2026-10-26, same rig and calibration
+([`tools/capture/README.md`](../../../tools/capture/README.md)):
+
+| Session | Power | Role |
+|---|---|---|
+| [`2026-10-26-psu/`](2026-10-26-psu/) | 9 V power supply | **the reference**: the pedal as designed |
+| [`2026-10-26/`](2026-10-26/) | a tired battery (8.37 V without load after the session) | the first capture; NAM-X's first TR-2 voicing was fitted to it and approved by ear |
+
+Fit either with `tools/capture/fit_tr2.py captures/boss/tr-2/<session>` (~10 s) →
+`<session>/fit/`.
 
 The TR-2 has three knobs, **Rate**, **Wave** and **Depth**, and is mono. This study
 finds what its gain does over time at any setting, and what the pedal does to the sound
-besides. The result is a model of seven constants and two knob maps that matches every
-recorded cycle to a median 1.5 % of full gain.
+besides. The result is a model of six constants and three knob maps that matches every
+recorded cycle of the supply session to a median 1.3 % of full gain. The pedal is analog:
+with it on, the signal arrives no later than bypassed (0.0002 ms at minimum Depth; at full
+Depth the 1 kHz carrier is even 25 µs *early*, the 70 Hz low cut's phase lead plus whole-
+sample alignment), where any A/D/A path would add a millisecond or more.
 
 ## The model
 
@@ -40,7 +50,7 @@ y(t) = g(t) · HP70(x(t))
    a = 1 − exp(−1 / (τ · fs)),   τ = τ_down if c[n] < g[n−1] else τ_up
    g[n] = g[n−1] + a · (c[n] − g[n−1])
    ```
-6. **Gain:** top · g.
+6. **Gain:** T · g, T (the level at the top of the cycle) from the Depth knob.
 7. **Tone, outside the LFO:** a first-order high-pass at ~70 Hz on the audio.
 
 How the knobs work, in words:
@@ -49,11 +59,13 @@ How the knobs work, in words:
   inside the clamp's window: the gain follows it, a triangle (Wave 7:00). A large G
   overshoots both edges: the clamp flattens the top and the bottom into a square (Wave
   5:00). There is no separate shaping circuit in the model; the clamp does it all.
-- **Depth pulls the whole swing towards a rest point above the clamp's top** (u0 =
-  1.25 > 1). At low Depth the control barely dips below 1: the gain hardly moves. At
-  full Depth it dives below 0: the gain reaches silence for part of every cycle. The
-  offset β makes the gain spend more of the cycle at full level than at silence.
-- **The gain drops about 2.5× faster than it recovers** (τ_down 3.5 ms, τ_up 8.7 ms):
+- **Depth pulls the whole swing towards a rest point above the clamp's top** (u0 > 1).
+  At low Depth the control barely dips below 1: the gain hardly moves. At full Depth it
+  dives below 0: the gain reaches silence for part of every cycle. The offset β makes
+  the gain spend more of the cycle at full level than at silence. **Depth also sets the
+  top level:** +0.35 to +0.58 dB over bypass up to 2:30, falling to unity (−0.04 dB)
+  at 5:00.
+- **The gain drops about 2.5× faster than it recovers** (τ_down 3.5 ms, τ_up 9.2 ms):
   on fast, square settings it leaves the top almost at once and creeps back up to it.
   A gain element with a fast attack and slow release behaves like this (a light-dependent
   resistor lit by an LED is the classic one); the model doesn't depend on what the
@@ -61,80 +73,104 @@ How the knobs work, in words:
 
 ### Parameters
 
-| Constant | Value | Meaning |
-|---|---|---|
-| u0 | 1.2543 | rest point of the control (above 1: full level at Depth 0) |
-| β | 0.42844 | DC offset added to the triangle before the Wave gain |
-| κ | 0.96141 | offset subtracted before Depth scales the swing |
-| s | 18.391 | clamp sharpness |
-| top | 1.05787 | gain at the top of the cycle: +0.49 dB over bypass |
-| τ_down | 3.46 ms | follower time constant while the gain falls |
-| τ_up | 8.66 ms | follower time constant while the gain rises |
+| Constant | Supply (reference) | Battery | Meaning |
+|---|---|---|---|
+| u0 | 1.1100 | 1.2372 | rest point of the control (above 1: full level at Depth 0) |
+| β | 0.43044 | 0.42832 | DC offset added to the triangle before the Wave gain |
+| κ | 0.80716 | 0.94378 | offset subtracted before Depth scales the swing |
+| s | 32.387 | 18.439 | clamp sharpness |
+| τ_down | 3.52 ms | 3.46 ms | follower time constant while the gain falls |
+| τ_up | 9.21 ms | 8.67 ms | follower time constant while the gain rises |
 
-| Knob position | 7:00 | 9:30 | 12:00 | 2:30 | 5:00 |
+| Knob map, supply (battery) | 7:00 | 9:30 | 12:00 | 2:30 | 5:00 |
 |---|---|---|---|---|---|
-| Rate → f (Hz) | 1.0930 | 2.7491 | 5.0517 | 8.8147 | 13.5843 |
-| Wave → G | 0.6422 | 1.1268 | 1.4826 | 2.7587 | 3.4550 |
-| Depth → D | 0.1432 | 0.2218 | 0.4937 | 0.7928 | 1 (fixed) |
+| Rate → f (Hz) | 1.0932 (1.0930) | 2.7225 (2.7491) | 5.0928 (5.0517) | 8.3682 (8.8147) | 13.6106 (13.5843) |
+| Wave → G | 0.6086 (0.6394) | 0.8973 (1.1260) | 1.4543 (1.4793) | 2.9215 (2.7585) | 3.5130 (3.4576) |
+| Depth → D | 0.0278 (0.1122) | 0.1515 (0.2136) | 0.4603 (0.4907) | 0.7878 (0.7931) | 1 (fixed) |
+| Depth → T | 1.0452 (1.0477) | 1.0578 (1.0583) | 1.0690 (1.0646) | 1.0410 (1.0650) | 0.9952 (1.0579) |
 
 D at 5:00 is fixed at 1: D and G only appear together in the swing, so one of them
 has to set the scale. 7:00 = fully counter-clockwise, 5:00 = fully clockwise; the
-positions between were set by eye, so their maps carry a few degrees of uncertainty
-(7:00 and 5:00 are exact). Between positions, interpolate. Rate was measured directly
-(each take's LFO frequency), not fitted; the Wave knob doesn't move it (5.046–5.056 Hz
-across the Wave takes, 0.2 %).
+positions between were set by eye in each session, so their maps carry a few degrees of
+uncertainty (7:00 and 5:00 are exact) — that, not the power, is most of the difference
+in the middle columns (compare Rate 12:00 and 2:30, set by eye; Rate 7:00 and 5:00 agree
+to 0.02 % and 0.2 %). Between positions, interpolate. Rate was measured directly (each
+take's LFO frequency), not fitted; the Wave knob doesn't move it (0.2 %). The constants
+trade off against each other (u0, κ, D and T especially), so compare the sessions by
+their curves, not parameter by parameter.
 
 ### How well it fits
 
 Per take, the error between the model and the measured averaged cycle, in units of the
-pedal's full gain (bypass = 1):
+pedal's full gain (bypass = 1), supply session (battery in brackets):
 
 | Take | Rate · Wave · Depth | rms | max |
 |---|---|---|---|
-| depth-0700 | 12:00 · 12:00 · 7:00 | 0.010 | 0.014 |
-| depth-0930 | 12:00 · 12:00 · 9:30 | 0.010 | 0.031 |
-| depth-1200 | 12:00 · 12:00 · 12:00 | 0.015 | 0.044 |
-| depth-0230 | 12:00 · 12:00 · 2:30 | 0.022 | 0.051 |
-| wave-0700 | 12:00 · 7:00 · 5:00 | 0.017 | 0.029 |
-| wave-0930 | 12:00 · 9:30 · 5:00 | 0.005 | 0.011 |
-| wave-1200 | 12:00 · 12:00 · 5:00 | 0.009 | 0.022 |
-| wave-0230 | 12:00 · 2:30 · 5:00 | 0.013 | 0.051 |
-| wave-0500 | 12:00 · 5:00 · 5:00 | 0.021 | 0.077 |
-| rate-0700 | 7:00 · 12:00 · 5:00 | 0.015 | 0.034 |
-| rate-0930 | 9:30 · 12:00 · 5:00 | 0.009 | 0.020 |
-| rate-0230 | 2:30 · 12:00 · 5:00 | 0.016 | 0.042 |
-| rate-0500 | 5:00 · 12:00 · 5:00 | 0.026 | 0.074 |
-| cross-max | 5:00 · 5:00 · 5:00 | 0.025 | 0.051 |
-| cross-min | 7:00 · 7:00 · 2:30 | 0.020 | 0.052 |
+| depth-0700 | 12:00 · 12:00 · 7:00 | 0.000 (0.004) | 0.001 (0.007) |
+| depth-0930 | 12:00 · 12:00 · 9:30 | 0.013 (0.011) | 0.036 (0.033) |
+| depth-1200 | 12:00 · 12:00 · 12:00 | 0.010 (0.014) | 0.025 (0.040) |
+| depth-0230 | 12:00 · 12:00 · 2:30 | 0.020 (0.021) | 0.047 (0.052) |
+| wave-0700 | 12:00 · 7:00 · 5:00 | 0.016 (0.017) | 0.034 (0.030) |
+| wave-0930 | 12:00 · 9:30 · 5:00 | 0.008 (0.005) | 0.018 (0.011) |
+| wave-1200 | 12:00 · 12:00 · 5:00 | 0.007 (0.009) | 0.017 (0.021) |
+| wave-0230 | 12:00 · 2:30 · 5:00 | 0.012 (0.013) | 0.052 (0.051) |
+| wave-0500 | 12:00 · 5:00 · 5:00 | 0.019 (0.021) | 0.075 (0.077) |
+| rate-0700 | 7:00 · 12:00 · 5:00 | 0.012 (0.015) | 0.033 (0.034) |
+| rate-0930 | 9:30 · 12:00 · 5:00 | 0.007 (0.010) | 0.025 (0.020) |
+| rate-0230 | 2:30 · 12:00 · 5:00 | 0.014 (0.016) | 0.034 (0.042) |
+| rate-0500 | 5:00 · 12:00 · 5:00 | 0.023 (0.026) | 0.067 (0.074) |
+| cross-max | 5:00 · 5:00 · 5:00 | 0.026 (0.025) | 0.051 (0.051) |
+| cross-min | 7:00 · 7:00 · 2:30 | 0.023 (0.020) | 0.041 (0.050) |
 
-All 15 takes over 256 phase bins: rms 0.017. The two cross takes are the check on the
-structure: their Wave and Depth values are shared with other takes, and no other take
-combines them. Figure: [`fit/tr-2-cycles.png`](2026-10-26/fit/tr-2-cycles.png).
+Median rms: supply 0.0128, battery 0.0149. The two cross takes are the check on the
+structure: their knob values are shared with other takes, and no other take combines
+them. Figure: [`2026-10-26-psu/fit/tr-2-cycles.png`](2026-10-26-psu/fit/tr-2-cycles.png).
 
-**Not modelled:** at the slowest rate (1.09 Hz: rate-0700, cross-min) the real top sags
-by ~3 % just before each fall. Small; leave it unless it's audible.
-
-![Measured against model](2026-10-26/fit/tr-2-cycles.png)
+![Measured against model, supply session](2026-10-26-psu/fit/tr-2-cycles.png)
 
 ### The pedal's own sound
 
-From the Depth 7:00 sweeps against the bypass sweeps at the same levels (−12, −6 and
-0 dB re the reference):
+From the Depth 7:00 sweeps against the bypass sweeps at the same levels:
 
 | Third-octave band (Hz) | 31.5 | 63 | 125 | 250 | 500 | 1k | 2k | 4k | 8k | 16k |
 |---|---|---|---|---|---|---|---|---|---|---|
-| on − bypass (dB, at 0 dB) | −8.33 | −3.78 | −1.10 | −0.02 | +0.29 | +0.37 | +0.39 | +0.39 | +0.39 | +0.40 |
+| on − bypass, supply (dB) | −8.28 | −3.73 | −1.05 | +0.03 | +0.34 | +0.43 | +0.45 | +0.45 | +0.45 | +0.45 |
+| on − bypass, battery (dB) | −8.33 | −3.78 | −1.10 | −0.02 | +0.29 | +0.37 | +0.39 | +0.39 | +0.39 | +0.40 |
 
-- **A low cut close to first order at ~70 Hz**, and +0.4 dB of level. The 70 Hz corner
-  was read off this response (the dotted curve in `tr-2-knobs-tone.png`), not fitted by
-  least squares. The level shows as `top` in the gain model (+0.49 dB, measured on the
-  1 kHz carrier's envelope; the sweep says +0.37–0.40 dB at 1 kHz — a 0.1 dB
-  disagreement between two methods).
-- **Linear:** 0 dB against −12 dB input gives +11.94…11.97 dB in every band.
+- **A low cut close to first order at ~70 Hz**, and +0.4 dB of level at minimum Depth
+  (T at 7:00 in the gain model: +0.39 dB). The 70 Hz corner was read off this response
+  (the dotted curve in `tr-2-knobs-tone.png`), not fitted by least squares.
+- **Linear:** 0 dB against −12 dB input gives +11.94…12.04 dB in every band.
 - **Distortion:** H2 −61 dB, H3 −70 dB re the fundamental (bypass: −65, −76): inaudible.
-- **Noise:** −86.9 dBFS RMS with the pedal on (−93.7 bypassed), ~73 dB under the
-  reference peak. The LFO bleeds through at 5.05 Hz at −84 dBFS: sub-audio and ~70 dB
-  down, inaudible.
+- **Noise:** −96.6 dBFS RMS with the pedal on (supply; −86.9 on the battery): ~83 dB
+  under the reference peak. The LFO's bleed is sub-audio and ~70 dB down, inaudible.
+
+## Battery against power supply
+
+The first session ran on a battery that measured 8.37 V afterwards. To find out whether
+that mattered without recapturing everything, `plans/tr-2-check.json` recorded 9 of the
+23 takes on a 9 V supply, favouring exact knob positions; it showed a difference, so the
+other 14 followed into the same session.
+
+| | Battery (8.37 V) | 9 V supply |
+|---|---|---|
+| Bypass level (control) | | +0.014 dB |
+| LFO rate, Rate 7:00 / 5:00 (exact) | 1.0930 / 13.584 Hz | 1.0932 / 13.611 Hz (+0.02 / +0.2 %) |
+| Dip timing, edges, depth of the dips | | identical |
+| Tone and gain at minimum Depth | +0.39 dB | +0.45 dB |
+| **Top of the cycle at full Depth** | **1.05–1.07** | **0.98–0.995 (~0.5 dB lower)** |
+| A ~3 % sag at the top of the slowest setting | present | **gone** (a battery artifact) |
+| Noise | −86.9 dBFS | −96.6 dBFS |
+
+So the tired battery left the character alone (speed, shape, the fast fall and slow
+rise) but held the top of the cycle ~0.5 dB high at full Depth, and added the slow
+setting's sag. On the supply the top level depends on Depth; one constant for it fitted
+the battery session (0.0150) but split the difference on the supply (0.0232). Making it
+a Depth map fixed the supply fit (0.0128) and left the battery fit as it was (its map
+comes out flat). The comparison, five takes of the check overlaid (each session's own
+bypass as reference), the curves coinciding except the flat tops at full Depth:
+
+![Battery against supply](battery-vs-supply.png)
 
 ## How the model was found
 
@@ -142,7 +178,8 @@ The data: a 1 kHz sine through the pedal for 20 s per setting, its envelope (Hil
 magnitude, 300 Hz low-pass) divided by the bypass take's — the gain relative to bypass
 — and the median over all cycles per phase bin: one averaged LFO cycle per take,
 phase 0 at the fundamental's peak (`analysis.py`). Figure:
-[`fit/tr-2-raw.png`](2026-10-26/fit/tr-2-raw.png).
+[`fit/tr-2-raw.png`](2026-10-26-psu/fit/tr-2-raw.png). Steps 1–7 used the battery
+session; step 8 came with the supply session.
 
 1. **First look.** Rate 1.09–13.6 Hz; Depth 5:00 reaches silence; the pedal adds +0.4
    dB; Depth 7:00 still ripples by 2 %; and Depth and Wave interact (at Depth 2:30, the
@@ -174,17 +211,21 @@ phase 0 at the fundamental's peak (`analysis.py`). Figure:
    with a follower with separate fall and rise times (3.5 / 8.7 ms) made the
    rate-dependent swing term unnecessary (it ran off to its bound), dropped one
    parameter, and brought the rms from 0.029 to 0.017 (cross-max 7 % → 2.5 %).
+8. **The top level as a Depth map** (supply session): with one constant the supply fit
+   was 0.0232; its tops sit at 1.05–1.07 up to Depth 2:30 and ~1.00 at 5:00. One T per
+   Depth position: 0.0128.
 
 The fit (`fit_tr2.py`): `scipy.optimize.least_squares` over all 15 sine takes jointly,
-7 constants + 5 G + 4 D + one phase offset per take (aligning the cycles only), 256
-phase bins per cycle. The follower is nonlinear, so it is simulated over three cycles
-per take and the last one compared. Convergence was checked by refitting from the
+6 constants + 5 G + 4 D + 5 T + one phase offset per take (aligning the cycles only),
+256 phase bins per cycle. The follower is nonlinear, so it is simulated over three
+cycles per take and the last one compared. Convergence was checked by refitting from the
 solution with tolerances at 1e-12: identical parameters.
 
 ## The measurements
 
 `tools/capture/plans/tr-2.json`, 23 takes, 7.2 min of audio, all at 48 kHz with zero
-xruns and a 9.5 ms round trip (455–456 samples):
+xruns; the round trip was 455–456 samples, and 504 in the supply session's last takes
+(PipeWire changed it mid-session — each take measures its own):
 
 - 4 bypass takes: log sweeps 20 Hz–20 kHz at −12, −6, 0 dB, and the 1 kHz sine (the
   gain reference).
@@ -195,32 +236,32 @@ xruns and a 9.5 ms round trip (455–456 samples):
   2:30).
 - 10 s of silence with the pedal on at Depth 5:00 (noise and LFO bleed).
 
-The pedal ran on a battery that was not fresh: it measured 8.37 V (no load) right after
-the session. A sagging supply can move an analog pedal's LFO speed and headroom a
-little, so a recapture on a 9 V adapter may differ slightly. The WAVs are not in git (240 MB); the sidecars and the rig
-are.
+The supply session took 9 of these first (the check plan) and the other 14 later, the
+knobs set again by eye in between. The WAVs are not in git (~240 MB per session); the
+sidecars and the rigs are.
 
 ## Figures
 
-All written by `fit_tr2.py`:
+Written by `fit_tr2.py` into each session's `fit/` (links: supply session):
 
-- [`tr-2-raw.png`](2026-10-26/fit/tr-2-raw.png): one second of a take and its envelope.
-- [`tr-2-model.png`](2026-10-26/fit/tr-2-model.png): the model's stages for Wave 7:00,
-  12:00 and 5:00.
-- [`tr-2-depth.png`](2026-10-26/fit/tr-2-depth.png): Depth pivoting the swing around u0.
-- [`tr-2-knobs-tone.png`](2026-10-26/fit/tr-2-knobs-tone.png): the knob maps and the
-  pedal's frequency response.
-- [`tr-2-cycles.png`](2026-10-26/fit/tr-2-cycles.png): all 15 takes, measured against
-  the model.
+- [`tr-2-raw.png`](2026-10-26-psu/fit/tr-2-raw.png): one second of a take and its envelope.
+- [`tr-2-model.png`](2026-10-26-psu/fit/tr-2-model.png): the model's stages for Wave
+  7:00, 12:00 and 5:00.
+- [`tr-2-depth.png`](2026-10-26-psu/fit/tr-2-depth.png): Depth pivoting the swing
+  around u0, with each position's top level.
+- [`tr-2-knobs-tone.png`](2026-10-26-psu/fit/tr-2-knobs-tone.png): the knob maps and
+  the pedal's frequency response.
+- [`tr-2-cycles.png`](2026-10-26-psu/fit/tr-2-cycles.png): all 15 takes, measured
+  against the model.
 
-![The model's stages](2026-10-26/fit/tr-2-model.png)
-![Depth](2026-10-26/fit/tr-2-depth.png)
-![Knob maps and tone](2026-10-26/fit/tr-2-knobs-tone.png)
+![The model's stages](2026-10-26-psu/fit/tr-2-model.png)
+![Depth](2026-10-26-psu/fit/tr-2-depth.png)
+![Knob maps and tone](2026-10-26-psu/fit/tr-2-knobs-tone.png)
 
 ## Implementing it
 
-Everything runs per sample and is cheap: a phase accumulator, the triangle, two
-softplus terms (`x > 0 ? x + log1p(exp(−x)) : log1p(exp(x))` avoids overflow), the
-follower and a one-pole high-pass. The follower and the high-pass keep state per channel
-(and per LFO for an auto-panning stereo variant). Knob positions map to G and D by
-interpolating the tables above.
+Everything runs per sample and is cheap: a phase accumulator, the triangle, the soft
+clamp (one exp and one log: ln((1 + e^(s·v)) / (1 + e^(s·v − s))) / s, with s·v clamped
+to ±40 to keep e^x finite), the follower and a one-pole high-pass. The follower and the
+high-pass keep state per channel (and per LFO for an auto-panning stereo variant). Knob
+positions map to G, D and T by interpolating the tables above.
