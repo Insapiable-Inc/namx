@@ -237,6 +237,25 @@
     "trend_db_per_repeat": 0.003
   },
   "feedback_bursts": {
+    "3:00 (again)": {
+      "delay_ms": 386.38,
+      "first_repeat_re_burst_db": 7.83,
+      "db_per_repeat": [
+        -0.04,
+        -0.04,
+        -0.02,
+        -0.04,
+        -0.05,
+        -0.04,
+        -0.03,
+        -0.04,
+        -0.04,
+        -0.03,
+        -0.04,
+        -0.04
+      ],
+      "median_db_per_repeat": -0.04
+    },
     "3:00": {
       "delay_ms": 386.27,
       "first_repeat_re_burst_db": 7.84,
@@ -255,6 +274,25 @@
         -0.03
       ],
       "median_db_per_repeat": -0.04
+    },
+    "9:00 (again)": {
+      "delay_ms": 385.92,
+      "first_repeat_re_burst_db": 7.83,
+      "db_per_repeat": [
+        -10.72,
+        -10.77,
+        -10.81,
+        -10.77,
+        -10.79,
+        -10.68,
+        -9.87,
+        -5.56,
+        -0.67,
+        0.52,
+        -1.09,
+        0.0
+      ],
+      "median_db_per_repeat": -10.77
     },
     "9:00": {
       "delay_ms": 386.92,

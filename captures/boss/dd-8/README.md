@@ -154,3 +154,37 @@ contradicted it; against the Standard session's clean `bypass-bursts` (the same 
 rig) the repeat gain is flat. Nothing else here depends on those two takes (the tone
 compares each repeat with the dry impulse in its own take). `capture.py` now flags a
 bypass take with sound where nothing was played.
+
+# Tape mode
+
+Session [`2026-10-26-tape/`](2026-10-26-tape/), plan
+[`plans/dd-8-tape.json`](../../../tools/capture/plans/dd-8-tape.json): 22 takes, the same
+rig, MODE on TAPE. Measured with `tools/capture/analyze_dd8_mode.py
+captures/boss/dd-8/2026-10-26-tape` → [`fit/dd-8-tape.json`](2026-10-26-tape/fit/dd-8-tape.json)
+and the figure below (the same script reproduces the Analog numbers).
+
+| | Standard | Analog | **Tape** |
+|---|---|---|---|
+| Delay range (Time 7:00 → 5:00) | 19.65 – 799.6 ms | 19.85 – 799.81 ms | **19.96 – 800.44 ms** (9:00 172.75) |
+| Repeat level, Level 5:00 | +4.46 dB | +6.03 dB | **+7.9 dB**, constant (level steps: no attack or release) |
+| First repeat's tone, re 1 kHz (−12 dB) | flat to 4 kHz, −2 dB at 8 kHz | flat to 2 kHz, −19 dB at 4 kHz | **band-limited: −15.2 / −9.6 / −3.2 dB at 31.5 / 63 / 125 Hz, +1.2 dB at 250 Hz, flat to 2 kHz, −1.7 dB at 4 kHz, −13.9 dB at 8 kHz, −37 dB at 16 kHz** (roughly 150 Hz – 5 kHz) |
+| Distortion, output vs linear / H3 | linear to −4 dB, hard knee | soft knee from −8 dB | **some low-level H3 (−66…−74 dB), linear to −8 dB (−0.07), then a knee: −0.45 / −31.5 dB at −6, −2.0 / −19 dB at −4, −5.8 / −14 dB at 0**; the same ceiling (~−11.8 dBFS peak) |
+| Fade per repeat, Feedback 9:00 / 12:00 / 3:00 (bursts, −12 dB) | −12.2 / −7.07 / −0.6 dB | −12.0 / −7.9 / −1.40 dB | **−10.8 / −6.65 / −0.04 dB** (3:00 measured twice, identical) |
+| Feedback 5:00 | holds (unity) | slow runaway (+0.4 dB/repeat) | **holds** (+0.003 dB per repeat) |
+| Wow and flutter (held 1 kHz tone, one repeat) | none | none (0.06 cents rms) | **yes: 1.7 cents rms, 8 cents peak to peak; wow at 0.53 Hz (2.0 cents rms), flutter at 6.7 Hz (0.6 cents rms); the level wobbles 2.4 dB** |
+| Turning Time while playing | — | slides in small glides | **the same:** +201 ms, dips to −196 cents, level within 2.6 dB |
+| Noise | −101.1 dBFS | −101.2 dBFS | −101.2 dBFS |
+
+So Tape is the delay with a **worn-tape voicing**: a narrow band (thin lows, dark highs),
+**real wow and flutter** on the repeats, hotter repeats that saturate earlier, and a
+Feedback knob whose top third sustains almost indefinitely.
+
+**Notes:** the Feedback sweeps don't work in Tape — the wow wanders the delay, which the
+deconvolution assumes fixed (the per-repeat numbers came out erratic) — so its feedback
+comes from 50 ms bursts with each repeat's level read directly (`feedback-burst-*`,
+`analyze_dd8_mode.burst_decays`). The first `feedback-burst-0900` was recorded with
+Feedback elsewhere (the output sat at the clip ceiling for 8 s, the repeats never
+fading); its retake (`-again`) is the one used. Retakes with high Feedback need the
+pedal silent first: at 3:00 and above it keeps repeating on its own.
+
+![DD-8 Tape](2026-10-26-tape/fit/dd-8-tape.svg)

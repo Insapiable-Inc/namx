@@ -23,6 +23,7 @@ tone fitted before the first repeat arrives.
 import argparse
 import json
 import pathlib
+import re
 import sys
 
 import numpy as np
@@ -177,8 +178,10 @@ def burst_decays(session):
     out = {}
     for path in sorted(session.glob("feedback-burst*.json")):
         stem = path.stem
-        position = "3:00" if stem == "feedback-burst" else \
-            f"{int(stem[-4:-2])}:{stem[-2:]}"
+        clock = re.search(r"(\d\d)(\d\d)", stem)
+        position = f"{int(clock[1])}:{clock[2]}" if clock else "3:00"
+        if stem.endswith("-again"):
+            position += " (again)"
         x = take(session, stem).signal(8)
         period = self_delay(x)
         levels = []
