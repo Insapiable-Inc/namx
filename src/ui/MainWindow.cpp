@@ -712,6 +712,9 @@ void MainWindow::update_inactive_controls() {
     set_inactive(knob_del_right_time, knob_del_right_time, mono_delay, why_mono);
     KnobWidget* right_note = sync_of(knob_del_right_time).note_knob;
     set_inactive(right_note, right_note, mono_delay, why_mono);
+    const bool bf3 = std::lround(knob_fl_type->value()) != FlangerProcessor::FLANGER;
+    set_inactive(knob_fl_mix, knob_fl_mix, bf3,
+                 "the BF-3 types have no mix: the pedal's dry/wet balance is fixed");
 
     const bool manual = sw_wah_manual->isChecked();
     set_inactive(knob_wah_sens, knob_wah_sens, manual,
@@ -1153,6 +1156,33 @@ void MainWindow::setup_ui() {
         knob_fl_feedback->set_scroll_step(1.0);
         knob_fl_mix->set_scroll_step(1.0);
 
+        knob_fl_type =
+            late_knob("flanger", "type",
+                      new KnobWidget("Type", 0.0, FlangerProcessor::TYPE_COUNT - 1.0, 0.0, ""),
+                      [this](double v) {
+                          engine->get_flanger().set_type(static_cast<int>(std::lround(v)));
+                      });
+        knob_fl_type->set_snap(1.0);
+        knob_fl_type->set_scroll_step(1.0);
+        knob_fl_type->set_name_visible(false); // "Type: Flanger", like the Chorus's
+        knob_fl_type->set_value_formatter([](double v) {
+            switch (std::lround(v)) {
+                case FlangerProcessor::BF3_STANDARD:
+                    return QString("Type: BF-3 Standard");
+                case FlangerProcessor::BF3_ULTRA:
+                    return QString("Type: BF-3 Ultra");
+                default:
+                    return QString("Type: Flanger");
+            }
+        });
+        knob_fl_type->setToolTip(
+            "Flanger: NAM-X's flanger · BF-3 Standard / Ultra: a model of a Boss BF-3 Flanger's "
+            "two modes, measured from the real pedal (Ultra: four evenly spaced copies, a "
+            "stronger comb; its Res is approximate). In the BF-3 types Range is the pedal's "
+            "Manual (100 % = the long, low end), Depth its Depth, Feedback its Res (0–99 %); "
+            "Mix does nothing (the pedal's balance is fixed); Stereo gives the same on both sides");
+        connect(knob_fl_type, &KnobWidget::value_changed, this,
+                &MainWindow::update_inactive_controls);
         QWidget* col = make_effect_row("Flanger", sw_flanger_enable,
                                        {knob_fl_mix, knob_fl_rate, knob_fl_depth, knob_fl_feedback},
                                        &sw_flanger_stereo);
@@ -1168,8 +1198,10 @@ void MainWindow::setup_ui() {
                           engine->get_flanger().set_range_pct(static_cast<float>(v));
                       });
         range->set_scroll_step(1.0);
-        range->setToolTip("Sweep length: low = short, metallic · high = long jet sweep");
+        range->setToolTip("Sweep length: low = short, metallic · high = long jet sweep. "
+                          "BF-3 types: the pedal's Manual (100 % = fully counter-clockwise)");
         append_to_row(col, range);
+        append_to_row(col, knob_fl_type);
         Theme::tag_card(col, "flanger");
 
         fx_cols[&engine->get_flanger()] = col;

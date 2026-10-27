@@ -252,7 +252,16 @@ first tap). Three combs on top of each other: the "stronger flanger effect".
 
 ## For NAM-X
 
-NAM-X's Flanger could get a BF-3 Standard type: the model above with Manual, Res, Depth
-and Rate as five-point maps (interpolated: delays in log, gains in dB), the tone chain as
-data (`BiquadChain.h`, from the DD-8/CE-5 branches), and the clip. As a new type to A/B,
-not a change to the current flanger.
+The Flanger's **BF-3 Standard** and **BF-3 Ultra** types (`src/dsp/Bf3Flanger.h`, branch
+`dsp/flanger-bf3`): the model above. Range is the pedal's Manual (100 % = 7:00, the long
+end), Depth its Depth, Feedback its Res (0–99 %; negative counts as 0), Rate stays in Hz
+(NAM-X's 0.05–2 Hz: the pedal's top 2–10 Hz is out of reach); Mix is dimmed (the pedal's
+balance is fixed); Stereo gives the mono pedal on both sides. The clip is placed against an
+assumed −6 dBFS guitar peak, as for the DD-8 and CE-5. Ultra's loop is the best reading
+above, with its gains calibrated by rendering the model against the pedal's echo levels.
+
+Rendered and measured like the pedal (Standard): Manual's delays exact at all five
+positions, dry and wet levels exact, the wet's tone within 0.6 dB, Res per pass within
+0.06 dB, the sweep's range within 0.03 ms at every Rate/Depth/Manual take. Ultra: the taps
+within 0.02 ms and 0.2 dB, the echo levels per d/2 slot within 0.6–1.9 dB rms (Res 9:00 …
+5:00). Not approved by ear yet.

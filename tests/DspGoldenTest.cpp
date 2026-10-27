@@ -256,6 +256,22 @@ static unique_ptr<FlangerProcessor> make_flanger_stereo() {
     return fx;
 }
 
+// The BF-3 types: Standard at its defaults with Res up; Ultra in stereo with Manual long,
+// Depth and Res high and a fast Rate (the smoothing at work); the test signal reaches the clip.
+static unique_ptr<FlangerProcessor> make_flanger_bf3(int type, bool stereo) {
+    auto fx = make_unique<FlangerProcessor>();
+    fx->set_type(type);
+    fx->set_stereo_mode(stereo);
+    fx->set_feedback_pct(80.0f);
+    if (stereo) {
+        fx->set_rate_hz(2.0f);
+        fx->set_depth_pct(90.0f);
+        fx->set_range_pct(80.0f);
+        fx->set_feedback_pct(95.0f);
+    }
+    return fx;
+}
+
 static unique_ptr<PhaserProcessor> make_phaser_feedback() {
     auto fx = make_unique<PhaserProcessor>();
     fx->set_rate_hz(1.0f);
@@ -469,6 +485,12 @@ void DspGoldenTest::initTestCase() {
     both("wah-pedal", &make_wah_pedal);
     both("flanger", &make_flanger);
     both("flanger-stereo", &make_flanger_stereo);
+    both("flanger-bf3-standard", [] {
+        return make_flanger_bf3(FlangerProcessor::BF3_STANDARD, false);
+    });
+    both("flanger-bf3-ultra-stereo", [] {
+        return make_flanger_bf3(FlangerProcessor::BF3_ULTRA, true);
+    });
     both("phaser", [] {
         return make_unique<PhaserProcessor>();
     });
