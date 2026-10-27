@@ -1,0 +1,60 @@
+{
+  "take": "stairs-sustain-0700",
+  "pedal": "Boss CS-3 Compression Sustainer (mono)",
+  "bypass": false,
+  "settings": {
+    "Level": "12:00",
+    "Tone": "12:00",
+    "Attack": "12:00",
+    "Sustain": "7:00"
+  },
+  "note": "Every knob at 12:00 except as listed. A 1 kHz staircase from -48 to +3 dB, 1.5 s per step: the gain against the input level once it settles.",
+  "signal": {
+    "type": "steps",
+    "freq": 1000,
+    "levels_db": [
+      -48,
+      -42,
+      -36,
+      -30,
+      -24,
+      -18,
+      -12,
+      -6,
+      -3,
+      0,
+      3
+    ],
+    "step_seconds": 1.5,
+    "gap_seconds": 0,
+    "tail": 3
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -37.76,
+    "loop": -9.96
+  },
+  "latency_samples": 583,
+  "latency_quality": 0.998,
+  "xruns": 0,
+  "played_sha256": "996553d725973644ab31a158b458b5af0028d4ca5c56bf1e9dcd9523fb011451",
+  "recorded_at": "2026-10-27T17:43:06",
+  "tool_commit": "159006f54a86d23d2f0e7c663ddd122bd2570b03",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX4",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Scarlett 8i6 3rd gen; pedal feed: analogue out 3 (PCM 3, direct routing); loopback: out 4 -> line in 5; pedal into input 2, INST, AIR off, pad ON, gain min; no reamp box; calibration from the TR-2/DD-8 sessions; CS-3 on a 9 V power supply; Input -> Output"
+  }
+}

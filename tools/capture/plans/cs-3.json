@@ -1,0 +1,617 @@
+{
+  "pedal": "Boss CS-3 Compression Sustainer (mono)",
+  "comment": "Analog (1986): a uPC1252H2 VCA, op-amps M5218L/BA718; a transistor peak detector (4.7 uF / 1 MOhm: release up to seconds). Pots: Level 50k audio, Tone 20k linear, Attack 250k (in the detector), Sustain 20k linear. Manual: Level fully counter-clockwise mutes; Sustain counter-clockwise = a limiter, clockwise = more sustain (may hiss or howl near the top); Attack clockwise keeps the pick's attack; Tone clockwise brighter. Nominal input and output -20 dBu. Knobs at 12:00 unless a take says otherwise. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise.",
+  "quiet_dbfs": -60,
+  "knobs": [
+    "Level",
+    "Tone",
+    "Attack",
+    "Sustain"
+  ],
+  "takes": [
+    {
+      "name": "bypass-sweep",
+      "bypass": true,
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      }
+    },
+    {
+      "name": "bypass-stairs",
+      "bypass": true,
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -48,
+          -42,
+          -36,
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          -3,
+          0,
+          3
+        ],
+        "step_seconds": 1.5,
+        "gap_seconds": 0,
+        "tail": 3
+      }
+    },
+    {
+      "name": "bypass-jump",
+      "bypass": true,
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -30,
+          0,
+          -30
+        ],
+        "step_seconds": 4,
+        "gap_seconds": 0,
+        "tail": 4
+      }
+    },
+    {
+      "name": "bypass-plucks",
+      "bypass": true,
+      "signal": {
+        "type": "plucks",
+        "freq": 220,
+        "period": 3,
+        "count": 4,
+        "decay_seconds": 0.6,
+        "tail": 2
+      }
+    },
+    {
+      "name": "stairs-sustain-0700",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "12:00",
+        "Sustain": "7:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -48,
+          -42,
+          -36,
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          -3,
+          0,
+          3
+        ],
+        "step_seconds": 1.5,
+        "gap_seconds": 0,
+        "tail": 3
+      },
+      "note": "Every knob at 12:00 except as listed. A 1 kHz staircase from -48 to +3 dB, 1.5 s per step: the gain against the input level once it settles."
+    },
+    {
+      "name": "stairs-sustain-0900",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "12:00",
+        "Sustain": "9:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -48,
+          -42,
+          -36,
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          -3,
+          0,
+          3
+        ],
+        "step_seconds": 1.5,
+        "gap_seconds": 0,
+        "tail": 3
+      }
+    },
+    {
+      "name": "stairs-sustain-1200",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "12:00",
+        "Sustain": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -48,
+          -42,
+          -36,
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          -3,
+          0,
+          3
+        ],
+        "step_seconds": 1.5,
+        "gap_seconds": 0,
+        "tail": 3
+      }
+    },
+    {
+      "name": "stairs-sustain-0300",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "12:00",
+        "Sustain": "3:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -48,
+          -42,
+          -36,
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          -3,
+          0,
+          3
+        ],
+        "step_seconds": 1.5,
+        "gap_seconds": 0,
+        "tail": 3
+      }
+    },
+    {
+      "name": "stairs-sustain-0500",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "12:00",
+        "Sustain": "5:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -48,
+          -42,
+          -36,
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          -3,
+          0,
+          3
+        ],
+        "step_seconds": 1.5,
+        "gap_seconds": 0,
+        "tail": 3
+      }
+    },
+    {
+      "name": "jump-attack-0700",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "7:00",
+        "Sustain": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -30,
+          0,
+          -30
+        ],
+        "step_seconds": 4,
+        "gap_seconds": 0,
+        "tail": 4
+      },
+      "note": "-30 dB, then 0 dB, then -30 dB, 4 s each: how fast the gain clamps down (attack) and recovers (release)."
+    },
+    {
+      "name": "jump-attack-0900",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "9:00",
+        "Sustain": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -30,
+          0,
+          -30
+        ],
+        "step_seconds": 4,
+        "gap_seconds": 0,
+        "tail": 4
+      }
+    },
+    {
+      "name": "jump-attack-1200",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "12:00",
+        "Sustain": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -30,
+          0,
+          -30
+        ],
+        "step_seconds": 4,
+        "gap_seconds": 0,
+        "tail": 4
+      }
+    },
+    {
+      "name": "jump-attack-0300",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "3:00",
+        "Sustain": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -30,
+          0,
+          -30
+        ],
+        "step_seconds": 4,
+        "gap_seconds": 0,
+        "tail": 4
+      }
+    },
+    {
+      "name": "jump-attack-0500",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "5:00",
+        "Sustain": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -30,
+          0,
+          -30
+        ],
+        "step_seconds": 4,
+        "gap_seconds": 0,
+        "tail": 4
+      }
+    },
+    {
+      "name": "jump-sustain-0700",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "12:00",
+        "Sustain": "7:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -30,
+          0,
+          -30
+        ],
+        "step_seconds": 4,
+        "gap_seconds": 0,
+        "tail": 4
+      }
+    },
+    {
+      "name": "jump-sustain-0500",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "12:00",
+        "Sustain": "5:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -30,
+          0,
+          -30
+        ],
+        "step_seconds": 4,
+        "gap_seconds": 0,
+        "tail": 4
+      }
+    },
+    {
+      "name": "plucks-attack-0700",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "7:00",
+        "Sustain": "12:00"
+      },
+      "signal": {
+        "type": "plucks",
+        "freq": 220,
+        "period": 3,
+        "count": 4,
+        "decay_seconds": 0.6,
+        "tail": 2
+      },
+      "note": "Four picked-note-like 220 Hz bursts, 3 s apart: how much of the pick's attack gets through."
+    },
+    {
+      "name": "plucks-attack-1200",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "12:00",
+        "Sustain": "12:00"
+      },
+      "signal": {
+        "type": "plucks",
+        "freq": 220,
+        "period": 3,
+        "count": 4,
+        "decay_seconds": 0.6,
+        "tail": 2
+      }
+    },
+    {
+      "name": "plucks-attack-0500",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "5:00",
+        "Sustain": "12:00"
+      },
+      "signal": {
+        "type": "plucks",
+        "freq": 220,
+        "period": 3,
+        "count": 4,
+        "decay_seconds": 0.6,
+        "tail": 2
+      }
+    },
+    {
+      "name": "tone-0700",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "7:00",
+        "Attack": "12:00",
+        "Sustain": "7:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      },
+      "note": "Sustain at minimum (limiter) and a quiet sweep, so the compression barely moves: the Tone knob's filter."
+    },
+    {
+      "name": "tone-0900",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "9:00",
+        "Attack": "12:00",
+        "Sustain": "7:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      }
+    },
+    {
+      "name": "tone-1200",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "12:00",
+        "Sustain": "7:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      }
+    },
+    {
+      "name": "tone-0300",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "3:00",
+        "Attack": "12:00",
+        "Sustain": "7:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      }
+    },
+    {
+      "name": "tone-0500",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "5:00",
+        "Attack": "12:00",
+        "Sustain": "7:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      }
+    },
+    {
+      "name": "level-0700",
+      "settings": {
+        "Level": "7:00",
+        "Tone": "12:00",
+        "Attack": "12:00",
+        "Sustain": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 3,
+        "level_db": -24,
+        "tail": 1
+      },
+      "note": "A steady 1 kHz tone at -24 dB: the output level per Level position (7:00 should mute)."
+    },
+    {
+      "name": "level-0900",
+      "settings": {
+        "Level": "9:00",
+        "Tone": "12:00",
+        "Attack": "12:00",
+        "Sustain": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 3,
+        "level_db": -24,
+        "tail": 1
+      }
+    },
+    {
+      "name": "level-1200",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "12:00",
+        "Sustain": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 3,
+        "level_db": -24,
+        "tail": 1
+      }
+    },
+    {
+      "name": "level-0300",
+      "settings": {
+        "Level": "3:00",
+        "Tone": "12:00",
+        "Attack": "12:00",
+        "Sustain": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 3,
+        "level_db": -24,
+        "tail": 1
+      }
+    },
+    {
+      "name": "level-0500",
+      "settings": {
+        "Level": "5:00",
+        "Tone": "12:00",
+        "Attack": "12:00",
+        "Sustain": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 3,
+        "level_db": -24,
+        "tail": 1
+      }
+    },
+    {
+      "name": "noise-sustain-0700",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "12:00",
+        "Sustain": "7:00"
+      },
+      "signal": {
+        "type": "silence",
+        "seconds": 10
+      },
+      "note": "Nothing played: the noise floor (a compressor raises it as it adds gain)."
+    },
+    {
+      "name": "noise-sustain-0500",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "12:00",
+        "Sustain": "5:00"
+      },
+      "signal": {
+        "type": "silence",
+        "seconds": 10
+      }
+    }
+  ]
+}

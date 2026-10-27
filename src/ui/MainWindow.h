@@ -340,6 +340,8 @@ private:
     KnobWidget* knob_comp_attack = nullptr;
     KnobWidget* knob_comp_release = nullptr;
     KnobWidget* knob_comp_makeup = nullptr;
+    KnobWidget* knob_comp_type = nullptr;
+    KnobWidget* knob_comp_cs3_tone = nullptr; // CS-3 type only
 
     ToggleSwitch* sw_wah_enable = nullptr;
     KnobWidget* knob_wah_sens = nullptr;

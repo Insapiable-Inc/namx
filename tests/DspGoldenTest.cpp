@@ -237,6 +237,18 @@ static unique_ptr<CompressorProcessor> make_compressor() {
     return fx;
 }
 
+// The CS-3 type: Sustain about 12:00, a fast Attack (short recovery), Tone brighter, some
+// Level; the test signal's swells cross the ceiling.
+static unique_ptr<CompressorProcessor> make_compressor_cs3() {
+    auto fx = make_unique<CompressorProcessor>();
+    fx->set_type(CompressorProcessor::CS3);
+    fx->set_threshold(-38.0f);
+    fx->set_release(62.0f);
+    fx->set_cs3_tone_pct(70.0f);
+    fx->set_makeup(10.0f);
+    return fx;
+}
+
 static unique_ptr<DynamicWahProcessor> make_wah_pedal() {
     auto fx = make_unique<DynamicWahProcessor>();
     fx->set_pedal_mode(true);
@@ -518,6 +530,7 @@ void DspGoldenTest::initTestCase() {
 
     both("gate", &make_gate);
     both("compressor", &make_compressor);
+    both("compressor-cs3", &make_compressor_cs3);
     both("wah", [] {
         return make_unique<DynamicWahProcessor>();
     });

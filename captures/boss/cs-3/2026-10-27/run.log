@@ -1,0 +1,228 @@
+
+=== 2026-10-27T17:40:30 · run tools/capture/plans/cs-3.json · tool 159006f54a86d23d2f0e7c663ddd122bd2570b03
+
+[1/31] bypass-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -36.9 dBFS · loopback -36.6 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[2/31] bypass-stairs: 1000 Hz at -48/-42/-36/-30/-24/-18/-12/-6/-3/0/3 dB, 1.5 s each
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -10.6 dBFS · loopback -10.0 dBFS · latency 503 samples (10.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[3/31] bypass-jump: 1000 Hz at -30/0/-30 dB, 4 s each
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.5 dBFS · loopback -13.0 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[4/31] bypass-plucks: 4 220 Hz plucks every 3 s (decay 0.6 s)
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.6 dBFS · loopback -13.0 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[5/31] stairs-sustain-0700: 1000 Hz at -48/-42/-36/-30/-24/-18/-12/-6/-3/0/3 dB, 1.5 s each
+  pedal ON · Level 12:00 · Tone 12:00 · Attack 12:00 · Sustain 7:00 (switch it on)
+  Every knob at 12:00 except as listed. A 1 kHz staircase from -48 to +3 dB, 1.5 s per step: the gain against the input level once it settles.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -37.8 dBFS · loopback -10.0 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[6/31] stairs-sustain-0900: 1000 Hz at -48/-42/-36/-30/-24/-18/-12/-6/-3/0/3 dB, 1.5 s each
+  pedal ON · Level 12:00 · Tone 12:00 · Attack 12:00 · Sustain 9:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -37.8 dBFS · loopback -10.0 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[7/31] stairs-sustain-1200: 1000 Hz at -48/-42/-36/-30/-24/-18/-12/-6/-3/0/3 dB, 1.5 s each
+  pedal ON · Level 12:00 · Tone 12:00 · Attack 12:00 · Sustain 12:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -37.8 dBFS · loopback -10.0 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[8/31] stairs-sustain-0300: 1000 Hz at -48/-42/-36/-30/-24/-18/-12/-6/-3/0/3 dB, 1.5 s each
+  pedal ON · Level 12:00 · Tone 12:00 · Attack 12:00 · Sustain 3:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -37.8 dBFS · loopback -10.0 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[9/31] stairs-sustain-0500: 1000 Hz at -48/-42/-36/-30/-24/-18/-12/-6/-3/0/3 dB, 1.5 s each
+  pedal ON · Level 12:00 · Tone 12:00 · Attack 12:00 · Sustain 5:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -37.8 dBFS · loopback -10.0 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[10/31] jump-attack-0700: 1000 Hz at -30/0/-30 dB, 4 s each
+  pedal ON · Level 12:00 · Tone 12:00 · Attack 7:00 (changed) · Sustain 12:00 (changed)
+  -30 dB, then 0 dB, then -30 dB, 4 s each: how fast the gain clamps down (attack) and recovers (release).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -27.0 dBFS · loopback -13.0 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[11/31] jump-attack-0900: 1000 Hz at -30/0/-30 dB, 4 s each
+  pedal ON · Level 12:00 · Tone 12:00 · Attack 9:00 (changed) · Sustain 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -27.0 dBFS · loopback -13.0 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[12/31] jump-attack-1200: 1000 Hz at -30/0/-30 dB, 4 s each
+  pedal ON · Level 12:00 · Tone 12:00 · Attack 12:00 (changed) · Sustain 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -26.8 dBFS · loopback -13.0 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[13/31] jump-attack-0300: 1000 Hz at -30/0/-30 dB, 4 s each
+  pedal ON · Level 12:00 · Tone 12:00 · Attack 3:00 (changed) · Sustain 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -26.7 dBFS · loopback -13.0 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[14/31] jump-attack-0500: 1000 Hz at -30/0/-30 dB, 4 s each
+  pedal ON · Level 12:00 · Tone 12:00 · Attack 5:00 (changed) · Sustain 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -26.6 dBFS · loopback -13.0 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[15/31] jump-sustain-0700: 1000 Hz at -30/0/-30 dB, 4 s each
+  pedal ON · Level 12:00 · Tone 12:00 · Attack 12:00 (changed) · Sustain 7:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -32.6 dBFS · loopback -13.0 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[16/31] jump-sustain-0500: 1000 Hz at -30/0/-30 dB, 4 s each
+  pedal ON · Level 12:00 · Tone 12:00 · Attack 12:00 · Sustain 5:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -26.8 dBFS · loopback -13.0 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[17/31] plucks-attack-0700: 4 220 Hz plucks every 3 s (decay 0.6 s)
+  pedal ON · Level 12:00 · Tone 12:00 · Attack 7:00 (changed) · Sustain 12:00 (changed)
+  Four picked-note-like 220 Hz bursts, 3 s apart: how much of the pick's attack gets through.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -27.9 dBFS · loopback -13.0 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[18/31] plucks-attack-1200: 4 220 Hz plucks every 3 s (decay 0.6 s)
+  pedal ON · Level 12:00 · Tone 12:00 · Attack 12:00 (changed) · Sustain 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -27.7 dBFS · loopback -13.0 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[19/31] plucks-attack-0500: 4 220 Hz plucks every 3 s (decay 0.6 s)
+  pedal ON · Level 12:00 · Tone 12:00 · Attack 5:00 (changed) · Sustain 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -27.4 dBFS · loopback -13.0 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[20/31] tone-0700: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Level 12:00 · Tone 7:00 (changed) · Attack 12:00 (changed) · Sustain 7:00 (changed)
+  Sustain at minimum (limiter) and a quiet sweep, so the compression barely moves: the Tone knob's filter.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -53.2 dBFS · loopback -36.6 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[21/31] tone-0900: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Level 12:00 · Tone 9:00 (changed) · Attack 12:00 · Sustain 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -53.2 dBFS · loopback -36.6 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[22/31] tone-1200: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Level 12:00 · Tone 12:00 (changed) · Attack 12:00 · Sustain 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -52.3 dBFS · loopback -36.6 dBFS · latency 454 samples (9.46 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[23/31] tone-0300: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Level 12:00 · Tone 3:00 (changed) · Attack 12:00 · Sustain 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -47.3 dBFS · loopback -36.6 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[24/31] tone-0500: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Level 12:00 · Tone 5:00 (changed) · Attack 12:00 · Sustain 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -43.2 dBFS · loopback -36.6 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[25/31] level-0700: 1000 Hz sine, 3 s at -24 dB
+  pedal ON · Level 7:00 (changed) · Tone 12:00 (changed) · Attack 12:00 · Sustain 12:00 (changed)
+  A steady 1 kHz tone at -24 dB: the output level per Level position (7:00 should mute).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -92.9 dBFS · loopback -37.0 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  PROBLEM: the pedal channel is silent: is it on?
+  Enter = keep, r = redo: (Enter)
+
+[26/31] level-0900: 1000 Hz sine, 3 s at -24 dB
+  pedal ON · Level 9:00 (changed) · Tone 12:00 · Attack 12:00 · Sustain 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -54.3 dBFS · loopback -37.0 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[27/31] level-1200: 1000 Hz sine, 3 s at -24 dB
+  pedal ON · Level 12:00 (changed) · Tone 12:00 · Attack 12:00 · Sustain 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -38.4 dBFS · loopback -37.0 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[28/31] level-0300: 1000 Hz sine, 3 s at -24 dB
+  pedal ON · Level 3:00 (changed) · Tone 12:00 · Attack 12:00 · Sustain 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -27.3 dBFS · loopback -37.0 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[29/31] level-0500: 1000 Hz sine, 3 s at -24 dB
+  pedal ON · Level 5:00 (changed) · Tone 12:00 · Attack 12:00 · Sustain 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -23.4 dBFS · loopback -37.0 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[30/31] noise-sustain-0700: silence, 10 s
+  pedal ON · Level 12:00 (changed) · Tone 12:00 · Attack 12:00 · Sustain 7:00 (changed)
+  Nothing played: the noise floor (a compressor raises it as it adds gain).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -94.0 dBFS · loopback -92.4 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[31/31] noise-sustain-0500: silence, 10 s
+  pedal ON · Level 12:00 · Tone 12:00 · Attack 12:00 · Sustain 5:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -81.8 dBFS · loopback -92.5 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+All 31 takes are in captures/boss/cs-3/2026-10-27.

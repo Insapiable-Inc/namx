@@ -723,6 +723,12 @@ void MainWindow::update_inactive_controls() {
     const bool bf3 = std::lround(knob_fl_type->value()) != FlangerProcessor::FLANGER;
     set_inactive(knob_fl_mix, knob_fl_mix, bf3,
                  "the BF-3 types have no mix: the pedal's dry/wet balance is fixed");
+    const bool cs3 = std::lround(knob_comp_type->value()) == CompressorProcessor::CS3;
+    const QString why_cs3 = "the CS-3 has a fixed ratio and one Attack knob (here Release)";
+    set_inactive(knob_comp_ratio, knob_comp_ratio, cs3, why_cs3);
+    set_inactive(knob_comp_attack, knob_comp_attack, cs3, why_cs3);
+    set_inactive(knob_comp_cs3_tone, knob_comp_cs3_tone, !cs3,
+                 "the CS-3 type's Tone knob (the Compressor type has none)");
 
     const bool manual = sw_wah_manual->isChecked();
     set_inactive(knob_wah_sens, knob_wah_sens, manual,
@@ -990,11 +996,42 @@ void MainWindow::setup_ui() {
         knob_comp_release->set_scroll_step(10.0);
         knob_comp_makeup->set_scroll_step(0.5);
 
+        knob_comp_type =
+            late_knob("compressor", "type",
+                      new KnobWidget("Type", 0.0, CompressorProcessor::TYPE_COUNT - 1.0, 0.0, ""),
+                      [this](double v) {
+                          engine->get_comp().set_type(static_cast<int>(std::lround(v)));
+                      });
+        knob_comp_type->set_snap(1.0);
+        knob_comp_type->set_scroll_step(1.0);
+        knob_comp_type->set_name_visible(false); // "Type: Compressor", like the Chorus's
+        knob_comp_type->set_value_formatter([](double v) {
+            return std::lround(v) == CompressorProcessor::CS3 ? QString("Type: CS-3")
+                                                              : QString("Type: Compressor");
+        });
+        knob_comp_type->setToolTip(
+            "Compressor: NAM-X's compressor · CS-3: a model of a Boss CS-3 Compression "
+            "Sustainer, measured from the real pedal — a fixed output ceiling. In CS-3, "
+            "Threshold is the pedal's Sustain (the input level that reaches the ceiling; lower "
+            "= more sustain), Release its Attack knob (how fast the gain comes back: short "
+            "keeps every pick's attack), Level the output, Tone (▾) its Tone; Ratio and Attack "
+            "do nothing");
+        connect(knob_comp_type, &KnobWidget::value_changed, this,
+                &MainWindow::update_inactive_controls);
         QWidget* col = make_effect_row("Compressor", sw_comp_enable,
                                        {knob_comp_thresh, knob_comp_ratio, knob_comp_attack,
-                                        knob_comp_release, knob_comp_makeup});
+                                        knob_comp_release, knob_comp_makeup, knob_comp_type});
         gr_comp = new GainReductionMeter(20.0f, Theme::accent("comp"));
         place_across_switch_columns(col, gr_comp);
+        knob_comp_cs3_tone =
+            late_knob("compressor", "cs3Tone", new KnobWidget("Tone", 0.0, 100.0, 50.0, "%"),
+                      [this](double v) {
+                          engine->get_comp().set_cs3_tone_pct(static_cast<float>(v));
+                      });
+        knob_comp_cs3_tone->set_scroll_step(1.0);
+        knob_comp_cs3_tone->setToolTip("CS-3 type: the pedal's Tone knob. 50 % is 12:00; up "
+                                       "brightens, down darkens (a tilt around 1 kHz)");
+        add_detail_row(col, {knob_comp_cs3_tone});
         Theme::tag_card(col, "comp");
 
         fx_cols[&engine->get_comp()] = col;
