@@ -27,7 +27,10 @@ y = x_dry + Level · LP10k( delay_T( clip(x) + F · repeats ) )
   likely): a hard ceiling about **3 dB below the reference** (the hardest bridge-humbucker
   peak, `rig.json`). Below it the wet path is linear (3rd harmonic ≈ −80 dB); at the
   reference the repeat loses 2.5 dB and has a 3rd harmonic at −18 dB, at +3 dB −15 dB. So
-  how hard you play, not where Level sits, decides whether the repeats distort. No
+  how hard you play, not where Level sits, decides whether the repeats distort. In 2 dB
+  steps (`bursts-fine`): perfectly linear up to −4 dB (−0.01 dB, H3 −73 dB), then a hard
+  knee — −0.81 dB and H3 −25 dB at −2 dB, −2.47 / −18 dB at 0, −6.24 / −14 dB at +4 dB;
+  the output peak stops at −11.9 dBFS (Level 5:00). No
   compressor: the wet gain is the same at the start, middle and end of a 0.3 s burst and
   follows a level step within 2 ms.
 - **Delay time** (Time knob, Feedback at minimum = one repeat):
@@ -131,7 +134,8 @@ script yet.
 | First repeat's tone, re 1 kHz (−12 dB) | flat to 4 kHz; −2.1 dB at 8 kHz | **flat to 2 kHz (+0.4); −19.0 dB at 4 kHz, −50 dB at 8 kHz** |
 | Each further repeat (Feedback 12:00, re the 1 kHz loss) | about the same at all frequencies | **another ~10 dB lower at 3.15 kHz and ~18 dB at 4 kHz: the filter is inside the loop**, every repeat darker |
 | Fade per repeat, Feedback 9:00 / 12:00 / 3:00 | −12.2 / −7.07 / −0.6 dB | −12.0 / −7.9 / **−1.40** dB (3:00 from a burst: exactly −1.40 dB for 15 repeats, −17 → −36 dBFS, so nothing level-dependent in the loop) |
-| Distortion of the repeat | H3 ≈ −80 dB to −6 dB, then a hard clip | **earlier and softer:** H3 −67 dB at −12, **−44 dB at −6**, −18 dB at 0; some 2nd harmonic (−63 dB from −6 dB); the same ceiling (~−12.1 dBFS peak at Level 5:00), and like Standard's before the Level knob (the same onset at Level 12:00) |
+| Feedback 5:00 | unity: the repeats hold (+0.02 dB per repeat) | **a slow runaway:** a −12 dB click's repeats dip to −14.5 dB, then grow +0.4 dB per repeat (to −8 dB after 16), held by the clip at the ceiling — the classic analog-delay oscillation |
+| Distortion of the repeat (2 dB steps, `bursts-fine`), output vs linear / H3 | linear to −4 dB (−0.01 / −73 dB), then a hard knee: −0.81 / −25 dB at −2, −2.47 / −18 dB at 0, −6.24 / −14 dB at +4 | **a soft knee in front of the same ceiling:** −0.00 / −64 dB at −12, −0.04 / −57 at −8, −0.26 / −44 at −6, −0.76 / −39 at −4, −2.33 / −22 at −2, −4.14 / −18 at 0, −7.99 / −16 dB at +4; some 2nd harmonic (−62 dB from −6 dB); the ceiling (~−12.0 dBFS peak at Level 5:00) is reached ~1.5 dB earlier; like Standard's, before the Level knob (the same onset at Level 12:00) |
 | Modulation (held 1 kHz tone) | none (−103 dB) | **none** (nothing above −116 dB) |
 | Noise | −101.1 dBFS | −101.2 dBFS |
 

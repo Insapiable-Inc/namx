@@ -321,6 +321,87 @@
         "tail": 1
       },
       "note": "Level at 12:00: is the level-dependent gain before or after the Level knob?"
+    },
+    {
+      "name": "bypass-bursts-fine",
+      "bypass": true,
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -12,
+          -10,
+          -8,
+          -6,
+          -4,
+          -2,
+          0,
+          2,
+          4
+        ],
+        "step_seconds": 0.3,
+        "gap_seconds": 0.9,
+        "tail": 1
+      },
+      "note": "Pedal OFF \u2014 really off this time: the tool now checks the gaps."
+    },
+    {
+      "name": "bursts-fine",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "7:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -12,
+          -10,
+          -8,
+          -6,
+          -4,
+          -2,
+          0,
+          2,
+          4
+        ],
+        "step_seconds": 0.3,
+        "gap_seconds": 0.9,
+        "tail": 1
+      },
+      "note": "MODE on ANALOG. The saturation curve in 2 dB steps."
+    },
+    {
+      "name": "feedback-0500",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "5:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 6.0,
+        "count": 1,
+        "level_db": -12,
+        "tail": 0.5
+      },
+      "note": "One quiet click, then 6 s: hold, fade or run away? Turn Feedback down after it."
+    },
+    {
+      "name": "time-glide",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "7:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 20,
+        "tail": 2
+      },
+      "note": "Optional (s to skip). After ~5 s, turn Time slowly from 12:00 to 3:00 over ~10 s, then leave it."
     }
   ]
 }
