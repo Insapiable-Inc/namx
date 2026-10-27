@@ -18,6 +18,8 @@ Specs (JSON objects in a plan):
     {"type": "noise", "seconds": 10, "seed": 1}                # white, peak-normalized
     {"type": "clicks", "period": 2.0, "count": 5}              # one-sample impulses
     {"type": "silence", "seconds": 10}
+    {"type": "steps", "freq": 1000, "levels_db": [-24, 0, -24], "step_seconds": 3,
+     "gap_seconds": 0}                                         # a sine through levels
 
 plus optional "level_db" (default 0) and "tail" (seconds after the signal, default 1).
 """
@@ -37,8 +39,9 @@ TYPES = {
     "noise": {"seconds"},
     "clicks": {"period", "count"},
     "silence": {"seconds"},
+    "steps": {"freq", "levels_db", "step_seconds"},
 }
-OPTIONAL = {"level_db", "tail", "seed"}
+OPTIONAL = {"level_db", "tail", "seed", "gap_seconds"}
 
 
 def validate(spec):
@@ -56,6 +59,8 @@ def validate(spec):
 def body_seconds(spec):
     if spec["type"] == "clicks":
         return spec["period"] * spec["count"]
+    if spec["type"] == "steps":
+        return len(spec["levels_db"]) * (spec["step_seconds"] + spec.get("gap_seconds", 0))
     return spec["seconds"]
 
 
@@ -76,6 +81,11 @@ def describe(spec):
         return f"white noise, {spec['seconds']:g} s{level_text}"
     if kind == "clicks":
         return f"{spec['count']} clicks every {spec['period']:g} s{level_text}"
+    if kind == "steps":
+        gap = spec.get("gap_seconds", 0)
+        gap_text = f" + {gap:g} s gaps" if gap else ""
+        levels = "/".join(f"{v:g}" for v in spec["levels_db"])
+        return f"{spec['freq']:g} Hz at {levels} dB, {spec['step_seconds']:g} s each{gap_text}"
     return f"silence, {spec['seconds']:g} s"
 
 
@@ -100,8 +110,24 @@ def marker(rate):
     return x * np.hanning(len(x))
 
 
+def steps(rate, freq, levels_db, step_seconds, gap_seconds):
+    """A sine through `levels_db` (peak re 1), each held `step_seconds` and followed by
+    `gap_seconds` of silence; the phase runs on through the steps. Level changes take 1 ms
+    (raised cosine) so a step is sharp for a compressor but not a broadband click."""
+    step, gap, ramp = int(step_seconds * rate), int(gap_seconds * rate), int(0.001 * rate)
+    gains = []
+    for level in levels_db:
+        gains += [np.full(step, 10 ** (level / 20)), np.zeros(gap)]
+    g = np.concatenate(gains)
+    if ramp > 1:
+        kernel = np.hanning(2 * ramp + 1)
+        g = np.convolve(g, kernel / kernel.sum(), mode="same")
+    t = np.arange(len(g)) / rate
+    return g * np.sin(2 * np.pi * freq * t)
+
+
 def body(spec, rate):
-    """The signal itself, peak 1 (silence: zeros)."""
+    """The signal itself, peak 1 (silence: zeros; steps: peak per its levels)."""
     kind = spec["type"]
     if kind == "sine":
         t = np.arange(int(spec["seconds"] * rate)) / rate
@@ -112,6 +138,9 @@ def body(spec, rate):
         rng = np.random.default_rng(spec.get("seed", 1))
         x = fade(rng.standard_normal(int(spec["seconds"] * rate)), rate)
         return x / np.max(np.abs(x))
+    if kind == "steps":
+        return steps(rate, spec["freq"], spec["levels_db"], spec["step_seconds"],
+                     spec.get("gap_seconds", 0))
     if kind == "clicks":
         period = int(spec["period"] * rate)
         x = np.zeros(period * spec["count"])

@@ -1,0 +1,91 @@
+{
+  "pedal": "Boss DD-8 (Standard mode, mono: Input A -> Output A)",
+  "comment": "Dynamics of the wet path. Feedback at minimum (one repeat), Time 12:00 (385.6 ms). Bursts: 0.3 s tones with 0.9 s gaps, so each repeat lands in silence: the static curve. Steps: -24 -> 0 -> -24 dB, 3 s each: attack and release, wet = pedal - bypass (the dry path is analog and untouched). Levels in dB re the reference (the guitar's peak).",
+  "knobs": [
+    "Level",
+    "Feedback",
+    "Time"
+  ],
+  "takes": [
+    {
+      "name": "bypass-bursts",
+      "bypass": true,
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          0,
+          3
+        ],
+        "step_seconds": 0.3,
+        "gap_seconds": 0.9,
+        "tail": 1
+      }
+    },
+    {
+      "name": "bypass-steps",
+      "bypass": true,
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -24,
+          0,
+          -24
+        ],
+        "step_seconds": 3,
+        "tail": 2
+      }
+    },
+    {
+      "name": "bursts",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "7:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          0,
+          3
+        ],
+        "step_seconds": 0.3,
+        "gap_seconds": 0.9,
+        "tail": 1
+      },
+      "note": "Each repeat lands in the gap: how loud is it at each level?"
+    },
+    {
+      "name": "steps",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "7:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -24,
+          0,
+          -24
+        ],
+        "step_seconds": 3,
+        "tail": 2
+      },
+      "note": "Level jumps: how fast does the wet path react?"
+    }
+  ]
+}
