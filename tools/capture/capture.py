@@ -259,7 +259,7 @@ def record_take(engine, rig, session, name, spec, extra):
 def wait_for_silence(engine):
     """Listens to the pedal input until it stays quiet for QUIET_HOLD_S: a delay with high
     Feedback keeps repeating after a take, and those repeats would land in the next one.
-    Returns False if it is still sounding after QUIET_WAIT_S."""
+    Returns whether it fell silent, and how long that took (s)."""
     rate = engine.rate
     engine.start(np.zeros(int(QUIET_WAIT_S * rate), np.float32))
     quiet = 0
@@ -271,18 +271,9 @@ def wait_for_silence(engine):
         if quiet * 0.1 >= QUIET_HOLD_S:
             engine.active = False
             print("\r  the pedal is silent." + " " * 30)
-            return True
+            return True, now / rate
     print()
-    return False
-
-
-def settle(engine):
-    """Waits until the pedal is silent, or the user says to go on."""
-    while not wait_for_silence(engine):
-        answer = ask("  Still sounding: turn Feedback down, or switch the pedal off and on. "
-                     "Enter = wait again, g = go on anyway: ", {"", "g"})
-        if answer == "g":
-            return
+    return False, QUIET_WAIT_S
 
 
 def cmd_ports(_args):
@@ -464,12 +455,20 @@ def cmd_run(args):
                 print(f"  {take['note']}")
             answer = None
             while True:
-                # Silence first, then the knobs: settings changed while the pedal is quiet
-                # can't make it sound.
-                settle(engine)
                 answer = ask("  Enter = record, s = skip, q = quit: ", {"", "s", "q"})
                 if answer != "":
                     break
+                # Checked right before recording, so nothing done after the check can leak
+                # in; and a recording only starts if the pedal was already quiet at Enter,
+                # never when it falls silent while knobs are still being set.
+                quiet, waited = wait_for_silence(engine)
+                if not quiet:
+                    print("  Still sounding after 30 s: turn Feedback down, or switch the "
+                          "pedal off and on; then set the knobs and press Enter.")
+                    continue
+                if waited > 1.0:
+                    print(f"  Silent now (after {waited:.0f} s): set the knobs, then Enter.")
+                    continue
                 extra = {"pedal": plan["pedal"], "bypass": bool(take.get("bypass")),
                          "settings": take.get("settings", {}), "note": take.get("note", "")}
                 problems = record_take(engine, rig, session, name, take["signal"], extra)
