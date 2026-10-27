@@ -207,12 +207,20 @@ first tap). Three combs on top of each other: the "stronger flanger effect".
   +1.8). Each tap has STANDARD's wet tone (the second against the first: within 0.3 dB
   to 4 kHz, −1 to −2 dB above 8 kHz).
 - The clip: the same, +0.53 dB re the guitar's peak (0.13 dB rms).
-- **Res: not pinned down.** From the −24 dB sweeps (the −12 dB ones clipped from Res
-  12:00 up): a loop from the middle tap — STANDARD's engine with two extra read taps —
-  fits best in the time domain (per pass at 1 kHz −14.7, −8.0, −4.2, −2.3 dB for Res
-  9:00…5:00, close to STANDARD's), degrading from the 20 % floor to 25 % at Res 5:00; but a
-  frequency-domain fit ranks it worst, and Res also seems to move the taps' levels. The
-  data is clean; the structure is still open.
+- **The dry is the fourth copy:** dry, d/2, d, 3d/2 — evenly spaced and nearly equal
+  (+1.0, +0.8, +0.6, +0.4 dB re bypass at 1 kHz). Four equal copies make the comb seen
+  in the sweeps: a big peak every 2/d (every other STANDARD peak), two small ones between,
+  and much deeper notches than STANDARD's (whose dry and wet differ by 1.6 dB).
+- **Res: best reading so far, not proven.** From the −24 dB sweeps (the −12 dB ones
+  clipped from Res 12:00 up): feedback from the middle copy (d), re-entering *before*
+  the dry/copies split (so the echoes come through the dry too), with Res also turning
+  copies 2 and 3 down (×0.9/0.85 at 9:00 … ×0.76/0.61 at 5:00). It beats every other
+  wiring tried (from copy 1, copy 3, their sum, the whole output; after the split) at
+  every Res position, and its gain per pass at 1 kHz — −15.9, −8.1, −4.2, −2.5 dB for
+  9:00…5:00 — is close to STANDARD's (−16.7, −8.1, −3.5, −1.4): Ultra likely reuses
+  STANDARD's loop. But it leaves 3–23 % (9:00…5:00) against a 0.2 % floor. Finer Res
+  positions wouldn't help: Res 9:00 is already weak enough (second-order echoes 18–25 dB
+  under the first-order ones); what's missing is the model.
 
 ## Takes and lessons
 
