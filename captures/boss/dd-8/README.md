@@ -1,3 +1,28 @@
+# Boss DD-8 Digital Delay
+
+Measured 2026-10-26/27, mono (Input A → Output A), on a 9 V supply, one session per mode
+under this folder. The modes at a glance — details in each section below:
+
+| Mode | In one line | Session |
+|---|---|---|
+| [Standard](#boss-dd-8-digital-delay--standard-mode) | clean digital delay; analog dry; the repeats hard-clip ~3 dB under a hot guitar's peak; ~10 kHz low-pass; Feedback 5:00 holds | `2026-10-26-standard` |
+| [Analog](#analog-mode) | darker on every pass (a ~2 kHz low-pass inside the loop), +1.6 dB, a soft knee; Feedback 5:00 runs away slowly | `2026-10-26-analog` |
+| [Tape](#tape-mode) | a ~150 Hz – 5 kHz band, wow (0.53 Hz) and flutter (6.7 Hz), +3.4 dB, Feedback 3:00 near infinite | `2026-10-26-tape` |
+| [Warm](#warm-mode) | Standard with a warm tilt (lows +2–3 dB, highs gently down), −1.6 dB | `2026-10-26-warm` |
+| [Mod](#mod-mode) | Standard plus a 1.51 Hz sine LFO, ±0.62 ms of delay | `2026-10-27-mod` |
+| [Reverse](#reverse-mode) | onset-triggered chunks (0.22–2.5 s) played backwards; Level as dry/wet | `2026-10-27-reverse` |
+| [Shimmer](#shimmer-mode-minimal) | plain echoes plus an octave-up diffuse wash; not pursued | `2026-10-27-shimmer` |
+| GLT | not measured (low priority) | |
+| Warp, Looper, +RV | excluded | |
+
+Standard, Analog, Tape, Warm and Mod are one engine — the same delay line and Time range,
+the same clip ceiling before the Level knob, the same Feedback knob — with a parameter set
+each (repeat level, tone filter and where it sits, saturation curve, modulation): see
+[the four voicings side by side](#the-four-voicings-side-by-side).
+
+Scripts: `tools/capture/analyze_dd8.py` (Standard), `tools/capture/analyze_dd8_mode.py`
+(Analog, Tape, Warm, Mod); Reverse and Shimmer were analysed by hand (no script yet).
+
 # Boss DD-8 Digital Delay — Standard mode
 
 Captured 2026-10-26, session [`2026-10-26-standard/`](2026-10-26-standard/): mono (Input A

@@ -2,15 +2,17 @@
 
 Tools for measuring real pedals through an audio interface and fitting models of them,
 so NAM-X's own effects can be voiced after the real thing. Started 2026-10-26 with a
-collection of Boss pedals; the first one done is the TR-2 tremolo
-([`captures/boss/tr-2/README.md`](../../captures/boss/tr-2/README.md)).
+collection of Boss pedals. Done so far: the TR-2 tremolo and the DD-8 delay — see
+[`captures/README.md`](../../captures/README.md) for every pedal's status and what's next.
 
 | File | What it does |
 |---|---|
 | `capture.py` | Guided recording through JACK: ports, metering, level calibration, plan-driven takes |
-| `signals.py` | Deterministic test signals (sine, exponential sweep, noise, clicks, silence) and the take layout |
+| `signals.py` | Deterministic test signals (sine, exponential sweep, noise, clicks, silence, steps, plucks, pluck-train), the take layout, and each signal's silent stretches |
 | `analysis.py` | Reading sessions back: aligned takes, envelopes, LFO frequency and cycle folding, band levels, harmonics |
 | `fit_tr2.py` | The TR-2 model fit: parameters, fit errors, tone, and the figures |
+| `analyze_dd8.py` | The DD-8's Standard mode: deconvolved sweeps (dry path, delay times, Level/Feedback maps, tone), bursts (the clip), and figures |
+| `analyze_dd8_mode.py` | Any other DD-8 mode recorded with the Analog/Tape/Warm/Mod plans: bursts, steps, tone, feedback (sweeps and bursts), Feedback 5:00, wow/flutter and LFO (rate, delay swing, shape), Time turned by hand, delays, noise |
 | `plans/*.json` | One plan per pedal: the takes, their knob settings and signals |
 
 Needs Python with numpy, scipy, soundfile and matplotlib, plus the JACK client for Python
@@ -190,7 +192,7 @@ were recorded before e63d826, so they include the marker and all read about −1
 3. Explore the data in a scratch script first; write `fit_<pedal>.py` when the model
    structure is settled, and document the study in `captures/<maker>/<pedal>/README.md`.
 
-## Lessons from the TR-2
+## Lessons
 
 - **Look at the data before choosing a model.** The first guess (a triangle morphing
   into a square) was wrong; the clamp showed up in the first plot of averaged cycles.
@@ -202,3 +204,27 @@ were recorded before e63d826, so they include the marker and all read about −1
   amplitude fell on one straight line per knob, which gave the formula.
 - **Look hard at the measured-vs-model plots:** the asymmetric smoothing (fast fall,
   slow rise) showed as the fast takes' edges not matching.
+
+From the DD-8:
+
+- **Check the references.** A "bypass" take recorded with the pedal still on made the
+  Analog mode look like it had an expander. `run` now flags a bypass take with sound
+  where nothing was played (`signals.silent_windows`: burst gaps, between clicks, tails).
+- **The pedal can't be heard during captures** (its output only goes to the interface),
+  so `run` checks for silence after each Enter: a delay with high Feedback keeps
+  repeating, and switching the pedal off and on clears it.
+- **Time-varying effects break deconvolution.** Tape's wow and Mod's LFO wander the
+  delay, and a swept measurement of feedback or tone comes out scattered. Bursts, with
+  each repeat's level read directly, are robust.
+- **Design tests that can tell hypotheses apart.** Plucks 4.000 s apart came back with
+  identical timing in Reverse — but 4 s was ~7 chunk lengths, so a fixed grid predicted
+  the same. Irregular onsets settled it (triggered by the playing).
+- **Cross-check every surprising result with a different kind of take** before writing
+  it down: the "compressor" (a clip, seen through full-level sweeps), the "runaway" at
+  Feedback 5:00 (a hold: the start marker's echoes at the clip ceiling), the "±2.4 dB
+  wobble" (an analysis edge effect) — all caught that way.
+- **Knob positions the player can set:** 7:00, 9:00 (pointer left), 12:00, 3:00
+  (pointer right), 5:00 = 0, 20, 50, 80, 100 % of the rotation. By eye, "12:00" set
+  twice differed by ~5°; 3:00 repeated to the sample.
+- **Signal levels:** the DD-8's repeats clip ~3 dB under a hot guitar's peaks, so
+  anything meant to be linear (sweeps for tone or feedback) goes at −12 dB.
