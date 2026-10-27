@@ -272,3 +272,30 @@ held tone's joins as alternating deep and shallow dips: a coarse 50 ms sampling.
 
 **Not measured:** the onset detector's threshold (how quiet a note still triggers), the
 fade's exact shape, the tone of the reversed signal, and the 5:00 chunk precisely.
+
+# Mod mode
+
+Session [`2026-10-27-mod/`](2026-10-27-mod/), plan
+[`plans/dd-8-mod.json`](../../../tools/capture/plans/dd-8-mod.json): 15 takes.
+`analyze_dd8_mode.py` → [`fit/dd-8-mod.json`](2026-10-27-mod/fit/dd-8-mod.json) (its
+`modulation` section: one entry per held-tone take).
+
+**Mod is Standard with a sine LFO on the delay time:**
+
+| | |
+|---|---|
+| LFO rate | **1.51 Hz** (1.509–1.514), the same at Time 9:00, 12:00 and 3:00 and at Feedback 12:00 |
+| Depth | **±0.62 ms of delay** (1.23–1.34 ms peak to peak), the same at every Time setting — a fixed depth in ms, chorus-like, not a fraction of the delay; about ±13 cents of pitch (7.4 cents rms) |
+| Waveform | close to a sine: the folded delay cycle's H2 −41…−49 dB, H3 −25…−35 dB (a triangle has H3 −19 dB); the 9.08 Hz "flutter" line is the LFO's 6th harmonic |
+| Over the repeats | no build-up: the same depth at Feedback 12:00 |
+| Repeat level and clip | Standard's: +4.47 dB (Level 5:00), linear to −4 dB, the hard knee between −4 and −2 dB, the same ceiling |
+| Fade per repeat, 9:00 / 12:00 / 3:00 (bursts) | −12.2 / −7.45 / −0.84 dB |
+| Delay range / noise | 19.79 – 800.08 ms / −101.2 dBFS |
+
+**Not measured reliably:** the repeat's tone (the modulation smears the sweep's
+deconvolution, ±5 dB scatter; everything else matching Standard suggests its tone too,
+unverified), and Feedback 5:00 (the test click's repeats vanish after two — the pedal
+was switched off and on just before, to silence it).
+
+For the CE-5 / BF-3 captures: the DD-8's modulation is a 1.5 Hz sine of ±0.6 ms on the
+clean Standard engine.

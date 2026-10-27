@@ -276,6 +276,15 @@ def wait_for_silence(engine):
     return False
 
 
+def settle(engine):
+    """Waits until the pedal is silent, or the user says to go on."""
+    while not wait_for_silence(engine):
+        answer = ask("  Still sounding: turn Feedback down, or switch the pedal off and on. "
+                     "Enter = wait again, g = go on anyway: ", {"", "g"})
+        if answer == "g":
+            return
+
+
 def cmd_ports(_args):
     jack = import_jack()
     client = jack.Client(CLIENT_NAME + "-ports", no_start_server=True)
@@ -453,21 +462,24 @@ def cmd_run(args):
             print(f"  {settings_text(take, previous, plan['knobs'])}")
             if take.get("note"):
                 print(f"  {take['note']}")
-            if ask("  Enter = record, s = skip, q = quit: ", {"", "s", "q"}) == "q":
-                break
-            # A skipped take stays unrecorded; the next run offers it again.
+            answer = None
             while True:
-                while not wait_for_silence(engine):
-                    answer = ask("  Still sounding: turn Feedback down. Enter = wait again, "
-                                 "r = record anyway: ", {"", "r"})
-                    if answer == "r":
-                        break
+                # Silence first, then the knobs: settings changed while the pedal is quiet
+                # can't make it sound.
+                settle(engine)
+                answer = ask("  Enter = record, s = skip, q = quit: ", {"", "s", "q"})
+                if answer != "":
+                    break
                 extra = {"pedal": plan["pedal"], "bypass": bool(take.get("bypass")),
                          "settings": take.get("settings", {}), "note": take.get("note", "")}
                 problems = record_take(engine, rig, session, name, take["signal"], extra)
                 prompt = "  Enter = keep, r = redo: " if problems else "  Enter = next, r = redo: "
                 if ask(prompt, {"", "r"}) == "":
                     break
+            if answer == "q":
+                break
+            if answer == "s":
+                continue  # a skipped take stays unrecorded; the next run offers it again
             previous = take
         else:
             print(f"\nAll {len(takes)} takes are in {session}.")

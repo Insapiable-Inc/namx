@@ -219,8 +219,8 @@ def pitch_and_level(wet, cutoff=30.0):
     return freq, level
 
 
-def wow_flutter(session):
-    t = take(session, "hold-sine")
+def wow_flutter(session, name="hold-sine"):
+    t = take(session, name)
     if not t:
         return None
     wet, freq = wet_of_tone(t, t.meta["signal"]["seconds"])
@@ -238,6 +238,22 @@ def wow_flutter(session):
         out[label] = {"strongest_hz": round(float(fr[m][np.argmax(spectrum[m])]), 2),
                       "rms_cents": round(float(np.sqrt(2 * np.sum(spectrum[m] ** 2))
                                                / np.sum(np.hanning(len(cents)))), 2)}
+    # The delay itself: pitch is the delay's rate of change (f_out / f = 1 - d(delay)/dt).
+    delay_ms = np.cumsum(1 - f[steady] / freq) / RATE * 1000
+    delay_ms = scipy.signal.detrend(delay_ms)
+    m = (fr > 0.1) & (fr < 20)
+    rate = float(fr[m][np.argmax(spectrum[m])])
+    out["lfo_hz"] = round(rate, 3)
+    out["delay_swing_ms_peak_to_peak"] = round(float(np.percentile(delay_ms, 99.5)
+                                                     - np.percentile(delay_ms, 0.5)), 3)
+    # One LFO cycle, folded: its harmonics tell a sine (none) from a triangle (H3 -19 dB).
+    phase = (np.arange(len(delay_ms)) / RATE * rate) % 1.0
+    bins = (phase * 64).astype(int)
+    cycle = np.array([np.median(delay_ms[bins == k]) for k in range(64)])
+    harmonics = np.abs(np.fft.rfft(cycle - cycle.mean()))
+    out["lfo_shape"] = {"h2_db": round(db(harmonics[2] / harmonics[1]), 1),
+                        "h3_db": round(db(harmonics[3] / harmonics[1]), 1),
+                        "cycle_ms": [round(float(v), 4) for v in cycle]}
     return out, (np.arange(len(f)) / RATE, 1200 * np.log2(np.maximum(f, 1) / freq), level)
 
 
@@ -348,6 +364,11 @@ def main():
     hold = wow_flutter(session)
     if hold:
         result["wow_flutter"], traces["hold"] = hold
+    result["modulation"] = {}
+    for path in sorted(session.glob("hold-sine-*.json")):
+        measured = wow_flutter(session, path.stem)
+        if measured:
+            result["modulation"][path.stem] = measured[0]
     turn = glide(session)
     if turn:
         result["time_glide"], traces["glide"] = turn
