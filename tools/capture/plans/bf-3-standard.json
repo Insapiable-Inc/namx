@@ -1,0 +1,541 @@
+{
+  "pedal": "Boss BF-3 Flanger, STANDARD mode (mono: Guitar In -> Output A)",
+  "comment": "Digital (a Boss DSP and an AK4552 converter at ~44.1 kHz): delay 0.3-14.4 ms (Guitar In), LFO period 0.1-18 s (service notes). No dry/wet knob and no wet-only output known, so the sweep is read from click trains: each click's echo sits at the current delay. Static sweeps at minimum Depth for Manual's delay, the wet's tone and Res's feedback. Tap tempo not used. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise; 9:00 and 3:00 pointer horizontal.",
+  "knobs": [
+    "Manual",
+    "Res",
+    "Depth",
+    "Rate"
+  ],
+  "takes": [
+    {
+      "name": "bypass-sweep",
+      "bypass": true,
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 2
+      },
+      "note": "MODE on STANDARD for the whole plan. Guitar In, Output A only (nothing in B)."
+    },
+    {
+      "name": "bypass-bursts",
+      "bypass": true,
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -30,
+          -24,
+          -18,
+          -12,
+          -8,
+          -6,
+          -4,
+          -2,
+          0,
+          2,
+          4
+        ],
+        "step_seconds": 0.3,
+        "gap_seconds": 0.9,
+        "tail": 1
+      }
+    },
+    {
+      "name": "bypass-clicks",
+      "bypass": true,
+      "signal": {
+        "type": "clicks",
+        "period": 0.025,
+        "count": 80,
+        "tail": 0.5
+      }
+    },
+    {
+      "name": "still-clicks",
+      "settings": {
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "7:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 0.025,
+        "count": 400,
+        "tail": 0.5
+      },
+      "note": "Depth at minimum: does the sweep stop? (a click every 25 ms; each one's echo shows the delay)"
+    },
+    {
+      "name": "manual-0700",
+      "settings": {
+        "Manual": "7:00",
+        "Res": "7:00",
+        "Depth": "7:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 2
+      },
+      "note": "Depth and Res at minimum: the delay Manual sets, and the wet's level and tone."
+    },
+    {
+      "name": "manual-0900",
+      "settings": {
+        "Manual": "9:00",
+        "Res": "7:00",
+        "Depth": "7:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 2
+      }
+    },
+    {
+      "name": "manual-1200",
+      "settings": {
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "7:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 2
+      }
+    },
+    {
+      "name": "manual-0300",
+      "settings": {
+        "Manual": "3:00",
+        "Res": "7:00",
+        "Depth": "7:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 2
+      }
+    },
+    {
+      "name": "manual-0500",
+      "settings": {
+        "Manual": "5:00",
+        "Res": "7:00",
+        "Depth": "7:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 2
+      }
+    },
+    {
+      "name": "res-0900",
+      "settings": {
+        "Manual": "12:00",
+        "Res": "9:00",
+        "Depth": "7:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 2
+      },
+      "note": "Manual 12:00, Depth at minimum: Res's feedback per pass (the echoes inside the response)."
+    },
+    {
+      "name": "res-1200",
+      "settings": {
+        "Manual": "12:00",
+        "Res": "12:00",
+        "Depth": "7:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 2
+      }
+    },
+    {
+      "name": "res-0300",
+      "settings": {
+        "Manual": "12:00",
+        "Res": "3:00",
+        "Depth": "7:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 2
+      }
+    },
+    {
+      "name": "res-0500",
+      "settings": {
+        "Manual": "12:00",
+        "Res": "5:00",
+        "Depth": "7:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 2
+      }
+    },
+    {
+      "name": "res-0300-manual-0700",
+      "settings": {
+        "Manual": "7:00",
+        "Res": "3:00",
+        "Depth": "7:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 2
+      },
+      "note": "Does the feedback depend on the delay? Res 3:00 at both ends of Manual."
+    },
+    {
+      "name": "res-0300-manual-0500",
+      "settings": {
+        "Manual": "5:00",
+        "Res": "3:00",
+        "Depth": "7:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 2
+      }
+    },
+    {
+      "name": "bursts",
+      "settings": {
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "7:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -30,
+          -24,
+          -18,
+          -12,
+          -8,
+          -6,
+          -4,
+          -2,
+          0,
+          2,
+          4
+        ],
+        "step_seconds": 0.3,
+        "gap_seconds": 0.9,
+        "tail": 1
+      },
+      "note": "Manual 12:00, Res and Depth at minimum: level and saturation."
+    },
+    {
+      "name": "bursts-res-0500",
+      "settings": {
+        "Manual": "12:00",
+        "Res": "5:00",
+        "Depth": "7:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -30,
+          -24,
+          -18,
+          -12,
+          -8,
+          -6,
+          -4,
+          -2,
+          0,
+          2,
+          4
+        ],
+        "step_seconds": 0.3,
+        "gap_seconds": 0.9,
+        "tail": 1
+      },
+      "note": "Res fully up: does the loop saturate?"
+    },
+    {
+      "name": "res-0500-click",
+      "settings": {
+        "Manual": "12:00",
+        "Res": "5:00",
+        "Depth": "7:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 4.0,
+        "count": 1,
+        "level_db": -12,
+        "tail": 0.5
+      },
+      "note": "One quiet click, then 4 s: does Res 5:00 ring on, fade or run away? Afterwards Res back to minimum."
+    },
+    {
+      "name": "rate-0700",
+      "settings": {
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "12:00",
+        "Rate": "7:00"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 0.025,
+        "count": 1800,
+        "tail": 0.5
+      },
+      "note": "The sweep, Res at minimum, Depth 12:00: a click every 25 ms reads the delay 40 times a second. Rate 7:00 may be an 18 s cycle."
+    },
+    {
+      "name": "rate-0900",
+      "settings": {
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "12:00",
+        "Rate": "9:00"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 0.025,
+        "count": 1200,
+        "tail": 0.5
+      }
+    },
+    {
+      "name": "rate-1200",
+      "settings": {
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "12:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 0.025,
+        "count": 800,
+        "tail": 0.5
+      }
+    },
+    {
+      "name": "rate-0300",
+      "settings": {
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "12:00",
+        "Rate": "3:00"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 0.025,
+        "count": 600,
+        "tail": 0.5
+      }
+    },
+    {
+      "name": "rate-0500",
+      "settings": {
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "12:00",
+        "Rate": "5:00"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 0.025,
+        "count": 400,
+        "tail": 0.5
+      }
+    },
+    {
+      "name": "depth-0900",
+      "settings": {
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "9:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 0.025,
+        "count": 800,
+        "tail": 0.5
+      },
+      "note": "Rate back to 12:00: Depth's range."
+    },
+    {
+      "name": "depth-0300",
+      "settings": {
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "3:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 0.025,
+        "count": 800,
+        "tail": 0.5
+      }
+    },
+    {
+      "name": "depth-0500",
+      "settings": {
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "5:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 0.025,
+        "count": 800,
+        "tail": 0.5
+      }
+    },
+    {
+      "name": "depth-0500-manual-0700",
+      "settings": {
+        "Manual": "7:00",
+        "Res": "7:00",
+        "Depth": "5:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 0.025,
+        "count": 800,
+        "tail": 0.5
+      },
+      "note": "Depth at maximum: the manual says Manual then does nothing. Manual at 7:00 to check."
+    },
+    {
+      "name": "sweep-manual-0900",
+      "settings": {
+        "Manual": "9:00",
+        "Res": "7:00",
+        "Depth": "12:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 0.025,
+        "count": 800,
+        "tail": 0.5
+      },
+      "note": "Depth 12:00: how Manual moves the sweep."
+    },
+    {
+      "name": "sweep-manual-0300",
+      "settings": {
+        "Manual": "3:00",
+        "Res": "7:00",
+        "Depth": "12:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 0.025,
+        "count": 800,
+        "tail": 0.5
+      }
+    },
+    {
+      "name": "sweep-res-1200",
+      "settings": {
+        "Manual": "12:00",
+        "Res": "12:00",
+        "Depth": "12:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 0.025,
+        "count": 800,
+        "tail": 0.5
+      },
+      "note": "Manual and Depth 12:00 with some Res: the flanger as played."
+    },
+    {
+      "name": "noise-floor",
+      "settings": {
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "7:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "silence",
+        "seconds": 10
+      },
+      "note": "Res and Depth at minimum: no signal."
+    }
+  ]
+}
