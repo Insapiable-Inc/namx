@@ -288,6 +288,16 @@ static unique_ptr<TremoloProcessor> make_tremolo_stereo() {
     return fx;
 }
 
+static unique_ptr<TremoloProcessor> make_tremolo_tr2(bool stereo) {
+    auto fx = make_unique<TremoloProcessor>();
+    fx->set_type(TremoloProcessor::TR2);
+    fx->set_rate_hz(7.0f);
+    fx->set_depth_pct(85.0f);
+    fx->set_wave_pct(70.0f);
+    fx->set_stereo_mode(stereo);
+    return fx;
+}
+
 static unique_ptr<DelayProcessor> make_delay() {
     auto fx = make_unique<DelayProcessor>();
     fx->set_time(180.0f);
@@ -488,6 +498,12 @@ void DspGoldenTest::initTestCase() {
         return make_unique<TremoloProcessor>();
     });
     both("tremolo-stereo", &make_tremolo_stereo);
+    both("tremolo-tr2", [] {
+        return make_tremolo_tr2(false);
+    });
+    both("tremolo-tr2-stereo", [] {
+        return make_tremolo_tr2(true);
+    });
     both("delay", &make_delay);
     both("delay-stereo-mod-sat", &make_delay_stereo_mod_sat);
     both("delay-shimmer", &make_delay_shimmer);

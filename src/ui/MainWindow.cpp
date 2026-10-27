@@ -1249,8 +1249,34 @@ void MainWindow::setup_ui() {
         knob_tr_rate->set_scroll_step(0.1);
         knob_tr_depth->set_scroll_step(1.0);
 
-        QWidget* col = make_effect_row("Tremolo", sw_tremolo_enable, {knob_tr_depth, knob_tr_rate},
-                                       &sw_tremolo_stereo);
+        KnobWidget* wave = late_knob(
+            "tremolo", "wave",
+            new KnobWidget("Wave", TREMOLO_WAVE_MIN, TREMOLO_WAVE_MAX, TREMOLO_WAVE_DEFAULT, "%"),
+            [this](double v) {
+                engine->get_tremolo().set_wave_pct(static_cast<float>(v));
+            });
+        wave->set_scroll_step(1.0);
+        wave->setToolTip("TR-2 type only: the pedal's Wave knob, from a triangle (0 %) to a "
+                         "square (100 %)");
+        KnobWidget* tr_type = late_knob(
+            "tremolo", "type", new KnobWidget("Type", 0.0, 1.0, 0.0, ""), [this](double v) {
+                engine->get_tremolo().set_type(static_cast<int>(std::lround(v)));
+            });
+        tr_type->set_snap(1.0);
+        tr_type->set_scroll_step(1.0);
+        tr_type->set_name_visible(false); // "Type: Sine", like the Reverb's
+        tr_type->set_value_formatter([](double v) {
+            // Index order is the preset value (tremolo/type): Sine, TR2.
+            static const char* const names[] = {"Sine", "TR-2"};
+            return QString("Type: %1")
+                .arg(names[std::clamp(static_cast<int>(std::lround(v)), 0, 1)]);
+        });
+        tr_type->setToolTip("Sine: a smooth sine tremolo · TR-2: a model of a Boss TR-2, "
+                            "measured from the real pedal (Depth and Wave follow its knobs)");
+
+        QWidget* col =
+            make_effect_row("Tremolo", sw_tremolo_enable,
+                            {knob_tr_depth, knob_tr_rate, wave, tr_type}, &sw_tremolo_stereo);
         add_tempo_sync(col, knob_tr_rate, "Rate", false, 10 /* 1/8 */, TREMOLO_RATE_MIN,
                        TREMOLO_RATE_MAX, [this](double v) {
                            engine->get_tremolo().set_rate_hz(static_cast<float>(v));

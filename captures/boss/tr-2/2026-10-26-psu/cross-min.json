@@ -1,0 +1,44 @@
+{
+  "take": "cross-min",
+  "pedal": "Boss TR-2",
+  "bypass": false,
+  "settings": {
+    "Rate": "7:00",
+    "Wave": "7:00",
+    "Depth": "2:30"
+  },
+  "note": "",
+  "signal": {
+    "type": "sine",
+    "freq": 1000,
+    "seconds": 20
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -13.01,
+    "loop": -12.96
+  },
+  "latency_samples": 504,
+  "latency_quality": 0.998,
+  "xruns": 0,
+  "played_sha256": "6e773b8d17d932757f40939b0cf36553a7d7a00de543d2e807183e84e40514b8",
+  "recorded_at": "2026-10-26T21:10:05",
+  "tool_commit": "5b9cde652dc0d10b261014fd797db3c19c72ae47",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX4",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Scarlett 8i6 3rd gen; pedal feed: analogue out 3 (PCM 3, direct routing); loopback: out 4 -> line in 5; pedal into input 2, INST, AIR off, pad ON, gain min; no reamp box; calibration copied from 2026-10-26 (same rig, same playback level); TR-2 on a 9 V power supply (the battery session's battery measured 8.37 V)"
+  }
+}
