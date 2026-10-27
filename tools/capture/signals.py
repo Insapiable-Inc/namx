@@ -22,6 +22,8 @@ Specs (JSON objects in a plan):
      "gap_seconds": 0}                                         # a sine through levels
     {"type": "plucks", "freq": 1000, "period": 3, "count": 4, "decay_seconds": 0.3}
                                                                # picked-note-like bursts
+    {"type": "pluck-train", "freq": 1000, "onsets": [0, 2.9, 6.6], "decay_seconds": 0.3,
+     "seconds": 10}                                            # plucks at given times
 
 plus optional "level_db" (default 0) and "tail" (seconds after the signal, default 1).
 """
@@ -43,6 +45,7 @@ TYPES = {
     "silence": {"seconds"},
     "steps": {"freq", "levels_db", "step_seconds"},
     "plucks": {"freq", "period", "count", "decay_seconds"},
+    "pluck-train": {"freq", "onsets", "decay_seconds", "seconds"},
 }
 OPTIONAL = {"level_db", "tail", "seed", "gap_seconds"}
 
@@ -89,6 +92,11 @@ def silent_windows(spec):
         for k in range(spec["count"]):
             if quiet_after + 0.05 < spec["period"]:
                 windows.append((k * spec["period"] + quiet_after, (k + 1) * spec["period"] - 0.01))
+    if kind == "pluck-train":
+        ends = list(spec["onsets"][1:]) + [spec["seconds"]]
+        for onset, end in zip(spec["onsets"], ends):
+            if onset + 7 * spec["decay_seconds"] + 0.05 < end:
+                windows.append((onset + 7 * spec["decay_seconds"], end - 0.01))
     if kind == "clicks" and spec["period"] > 0.1:
         for k in range(spec["count"]):
             windows.append((k * spec["period"] + 0.05, (k + 1) * spec["period"] - 0.01))
@@ -114,6 +122,9 @@ def describe(spec):
     if kind == "plucks":
         return (f"{spec['count']} {spec['freq']:g} Hz plucks every {spec['period']:g} s "
                 f"(decay {spec['decay_seconds']:g} s){level_text}")
+    if kind == "pluck-train":
+        onsets = ", ".join(f"{t:g}" for t in spec["onsets"])
+        return f"{spec['freq']:g} Hz plucks at {onsets} s (decay {spec['decay_seconds']:g} s)"
     if kind == "steps":
         gap = spec.get("gap_seconds", 0)
         gap_text = f" + {gap:g} s gaps" if gap else ""
@@ -174,6 +185,15 @@ def body(spec, rate):
     if kind == "steps":
         return steps(rate, spec["freq"], spec["levels_db"], spec["step_seconds"],
                      spec.get("gap_seconds", 0))
+    if kind == "pluck-train":
+        x = np.zeros(int(spec["seconds"] * rate))
+        for onset in spec["onsets"]:
+            start = int(onset * rate)
+            t = np.arange(len(x) - start) / rate
+            attack = np.minimum(t / 0.002, 1.0)
+            x[start:] += (attack * np.exp(-t / spec["decay_seconds"])
+                          * np.sin(2 * np.pi * spec["freq"] * t))
+        return x / np.max(np.abs(x))
     if kind == "plucks":
         period = int(spec["period"] * rate)
         t = np.arange(period) / rate

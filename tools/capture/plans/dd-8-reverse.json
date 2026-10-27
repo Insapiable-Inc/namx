@@ -181,6 +181,117 @@
         "seconds": 10
       },
       "note": "Feedback back at 7:00."
+    },
+    {
+      "name": "bypass-plucks-irregular",
+      "bypass": true,
+      "signal": {
+        "type": "pluck-train",
+        "freq": 1000,
+        "onsets": [
+          0,
+          2.9,
+          6.6,
+          6.85,
+          11.2,
+          15.0
+        ],
+        "decay_seconds": 0.3,
+        "seconds": 18,
+        "tail": 4
+      },
+      "note": "Pedal OFF."
+    },
+    {
+      "name": "plucks-irregular",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "7:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "pluck-train",
+        "freq": 1000,
+        "onsets": [
+          0,
+          2.9,
+          6.6,
+          6.85,
+          11.2,
+          15.0
+        ],
+        "decay_seconds": 0.3,
+        "seconds": 18,
+        "tail": 4
+      },
+      "note": "MODE on REVERSE. Plucks at irregular times (and a pair 0.25 s apart): triggered by the playing, or a fixed grid?"
+    },
+    {
+      "name": "hold-sine-time-0900",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "7:00",
+        "Time": "9:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 10,
+        "tail": 4
+      },
+      "note": "The chunk length at Time 9:00."
+    },
+    {
+      "name": "hold-sine-time-0300",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "7:00",
+        "Time": "3:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 10,
+        "tail": 4
+      }
+    },
+    {
+      "name": "hold-sine-time-0500",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "7:00",
+        "Time": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 10,
+        "tail": 4
+      }
+    },
+    {
+      "name": "plucks-irregular-level1200",
+      "settings": {
+        "Level": "12:00",
+        "Feedback": "7:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "pluck-train",
+        "freq": 1000,
+        "onsets": [
+          0,
+          2.9,
+          6.6,
+          6.85,
+          11.2,
+          15.0
+        ],
+        "decay_seconds": 0.3,
+        "seconds": 18,
+        "tail": 4
+      },
+      "note": "Level 12:00, Time back at 12:00: does the dry signal come back?"
     }
   ]
 }
