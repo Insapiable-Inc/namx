@@ -285,7 +285,15 @@ percentages), analysed exactly like the takes:
 | TR-2 batt | supply recordings | 0.0413 | 0.0418 |
 
 The last row is the battery's effect, measured: the approved voicing is ~3× further from
-the pedal on a proper supply than either voicing is from its own session. DspGoldenTest
+the pedal on a proper supply than either voicing is from its own session. Overlaid on the real
+pedal (supply session), the difference is almost only the flat tops at full Depth: the
+battery voicing sits ~0.05 (~0.45 dB) high there, while the edges' timing and steepness
+match — which is why the two are hard to tell apart by ear (2026-10-26). The edge spikes
+at Wave 2:30–5:00 are the model's own limit, in both voicings; wave-0930's large batt
+error is where the knob landed in each session, not the battery:
+
+![Both voicings against the real pedal](voicings-vs-supply.svg)
+ DspGoldenTest
 guards all three (`tremolo-tr2`, `tremolo-tr2-stereo`, `tremolo-tr2-supply`).
 
 
