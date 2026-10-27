@@ -116,29 +116,36 @@ and a gentle extra high cut in the loop. Not done yet.
 The stereo outputs (B jacks), what the Time knob does to the repeats while it moves, and
 the other modes (Analog, Tape, Mod, Shimmer…).
 
-# Analog mode (preliminary)
+# Analog mode
 
 Session [`2026-10-26-analog/`](2026-10-26-analog/), plan
-[`plans/dd-8-analog.json`](../../../tools/capture/plans/dd-8-analog.json): 14 takes, the
+[`plans/dd-8-analog.json`](../../../tools/capture/plans/dd-8-analog.json): 19 takes, the
 same rig, MODE on ANALOG. Analysed by hand (scratch scripts) on 2026-10-26; no analysis
-script yet — the numbers below are from that pass.
+script yet.
 
 | | Standard | Analog |
 |---|---|---|
 | Delay range (Time 7:00 → 5:00) | 19.65 – 799.60 ms | the same: 19.85 – 799.81 ms (9:00 169.83 ms) |
+| Repeat level, Level 5:00 | +4.46 dB over the dry | **+6.03 dB**, constant from −30 to −12 dB (bursts); level steps −30 → −12 → −30 dB: +6.05 dB throughout, no attack or release |
+| Level 12:00 | −14.9 dB re 5:00 | −14.3 dB re 5:00 |
 | First repeat's tone, re 1 kHz (−12 dB) | flat to 4 kHz; −2.1 dB at 8 kHz | **flat to 2 kHz (+0.4); −19.0 dB at 4 kHz, −50 dB at 8 kHz** |
-| Repeat level against input level (bursts, Level 5:00) | flat (+4.46 dB) up to the clip | **rises ~2.3 dB per 6 dB**: −6.9 / −4.5 / −2.5 / +0.1 / +1.9 dB at −30 / −24 / −18 / −12 / −6 dB, then +0.4 / −1.2 dB at 0 / +3 dB |
-| Distortion of the repeat | H3 ≈ −80 dB, hard clip from ~0 dB | **softer, earlier:** H3 −67 dB at −12, −44 dB at −6, −18 dB at 0; H2 −64 dB from −6 dB; the same ceiling (~−12 dBFS peak) |
-| Feedback per repeat, 9:00 / 12:00 / 3:00 (−12 dB) | −12.2 / −7.07 / −0.6 dB | −12.0 / −7.9 / ≈ −1.5 dB (noisier at 3:00) |
+| Each further repeat (Feedback 12:00, re the 1 kHz loss) | about the same at all frequencies | **another ~10 dB lower at 3.15 kHz and ~18 dB at 4 kHz: the filter is inside the loop**, every repeat darker |
+| Fade per repeat, Feedback 9:00 / 12:00 / 3:00 | −12.2 / −7.07 / −0.6 dB | −12.0 / −7.9 / **−1.40** dB (3:00 from a burst: exactly −1.40 dB for 15 repeats, −17 → −36 dBFS, so nothing level-dependent in the loop) |
+| Distortion of the repeat | H3 ≈ −80 dB to −6 dB, then a hard clip | **earlier and softer:** H3 −67 dB at −12, **−44 dB at −6**, −18 dB at 0; some 2nd harmonic (−63 dB from −6 dB); the same ceiling (~−12.1 dBFS peak at Level 5:00), and like Standard's before the Level knob (the same onset at Level 12:00) |
 | Modulation (held 1 kHz tone) | none (−103 dB) | **none** (nothing above −116 dB) |
 | Noise | −101.1 dBFS | −101.2 dBFS |
 
-So Analog is Standard's delay with a much darker repeat (a steep low-pass just above
-2 kHz), a level-dependent repeat gain and a softer, earlier saturation — the sound of a
-bucket-brigade delay, without its clock wobble. The level-dependent gain is the same
-from 5 ms to 280 ms into each burst (it settles in under 5 ms, or is static) and stays
-clean at low levels (H3 −77 dB at −30 dB), so it is neither a slow compander nor a plain
-waveshaper; possibly a very fast expander. **To do:** a level-step take (as for
-Standard) to find its time constants, whether the low-pass sits in the loop (the 4 kHz
-level of later repeats), an analysis script, and the knob positions set by hand again —
-"Time 12:00" measured 392.83 ms in one take and 385.83 ms in others.
+So Analog is Standard's delay with **a darker loop that darkens every repeat** (a steep
+low-pass just above 2 kHz, applied on each pass), **repeats 1.6 dB louder**, and **a
+softer, earlier saturation** under the same ceiling — a bucket-brigade delay's character,
+without its clock wobble or compander.
+
+**A wrong turn, corrected the same day:** the first pass's two bypass takes
+(`bypass-sweep`, `bypass-bursts`) were recorded with the pedal still on — their gaps and
+tails hold repeats (−12 and −38 dBFS) where a bypassed pedal is silent. Measured against
+that `bypass-bursts`, the repeat seemed to grow with the input level (−6.9 dB at −30 dB up
+to +1.9 dB at −6 dB), which read as an expander. The level steps and the feedback burst
+contradicted it; against the Standard session's clean `bypass-bursts` (the same signal and
+rig) the repeat gain is flat. Nothing else here depends on those two takes (the tone
+compares each repeat with the dry impulse in its own take). `capture.py` now flags a
+bypass take with sound where nothing was played.

@@ -230,6 +230,97 @@
         "type": "silence",
         "seconds": 10
       }
+    },
+    {
+      "name": "bypass-steps",
+      "bypass": true,
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -30,
+          -12,
+          -30
+        ],
+        "step_seconds": 3,
+        "tail": 2
+      }
+    },
+    {
+      "name": "bypass-burst",
+      "bypass": true,
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -6
+        ],
+        "step_seconds": 0.05,
+        "tail": 8
+      }
+    },
+    {
+      "name": "steps",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "7:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -30,
+          -12,
+          -30
+        ],
+        "step_seconds": 3,
+        "tail": 2
+      },
+      "note": "MODE still on ANALOG. Level jumps below the saturation: how fast does the repeat's gain follow?"
+    },
+    {
+      "name": "feedback-burst",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "3:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -6
+        ],
+        "step_seconds": 0.05,
+        "tail": 8
+      },
+      "note": "One 50 ms burst, then 8 s of repeats: do they fade faster as they get quieter?"
+    },
+    {
+      "name": "bursts-level1200",
+      "settings": {
+        "Level": "12:00",
+        "Feedback": "7:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          0,
+          3
+        ],
+        "step_seconds": 0.3,
+        "gap_seconds": 0.9,
+        "tail": 1
+      },
+      "note": "Level at 12:00: is the level-dependent gain before or after the Level knob?"
     }
   ]
 }

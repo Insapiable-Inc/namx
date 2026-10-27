@@ -185,9 +185,12 @@ def find_latency(loop, marker_start, rate):
     return index - marker_start, quality
 
 
-def check_take(recorded, marker_start, body_start, rate, bypass, expect_signal):
+def check_take(recorded, marker_start, body_start, spec, rate, bypass):
     """Measurements for the sidecar, and the problems worth redoing a take for. Peaks are
-    over the signal and tail, after the marker, which always plays at the reference."""
+    over the signal and tail, after the marker, which always plays at the reference. A
+    bypass take must fall silent once the signal ends: anything there is the pedal's own
+    repeats or tail (a DD-8 left on once spoiled a reference take that way)."""
+    expect_signal = spec["type"] != "silence"
     pedal_peak, loop_peak = dbfs(recorded[body_start:, 0]), dbfs(recorded[body_start:, 1])
     latency, quality = find_latency(recorded[:, 1], marker_start, rate)
     problems = []
@@ -201,6 +204,14 @@ def check_take(recorded, marker_start, body_start, rate, bypass, expect_signal):
         problems.append(f"the marker wasn't found clearly in the loopback ({quality:.2f})")
     if expect_signal and pedal_peak < SILENT_DBFS:
         problems.append("the pedal channel is silent" + ("" if bypass else ": is it on?"))
+    if bypass:
+        start = body_start + latency
+        quiet = [recorded[start + int(a * rate):start + int(b * rate), 0]
+                 for a, b in signals.silent_windows(spec)]
+        leak = max((dbfs(q) for q in quiet if len(q)), default=-float("inf"))
+        if leak >= SILENT_DBFS:
+            problems.append(f"sound where nothing was played ({leak:.0f} dBFS): is the pedal "
+                            "really bypassed?")
     return {
         "peaks_dbfs": {"pedal": round(pedal_peak, 2), "loop": round(loop_peak, 2)},
         "latency_samples": latency,
@@ -211,8 +222,8 @@ def check_take(recorded, marker_start, body_start, rate, bypass, expect_signal):
 def record_take(engine, rig, session, name, spec, extra):
     played, marker_start, body_start = signals.build(spec, engine.rate, rig["ref_dbfs"])
     recorded, xruns = engine.play_record(played)
-    measured, problems = check_take(recorded, marker_start, body_start, engine.rate,
-                                    extra.get("bypass", False), spec["type"] != "silence")
+    measured, problems = check_take(recorded, marker_start, body_start, spec, engine.rate,
+                                    extra.get("bypass", False))
     if xruns:
         problems.append(f"{xruns} xrun(s) during the take: redo it, or raise the quantum")
     (session / "played").mkdir(exist_ok=True)

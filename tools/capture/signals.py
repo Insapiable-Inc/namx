@@ -69,6 +69,26 @@ def total_seconds(spec):
             + spec.get("tail", DEFAULT_TAIL_SECONDS))
 
 
+def silent_windows(spec):
+    """Stretches (start, end), seconds from the signal's start, where nothing is played:
+    the gaps between bursts, the space between clicks, the tail. A bypassed pedal's output
+    must be silent there too."""
+    windows = []
+    kind = spec["type"]
+    if kind == "steps" and spec.get("gap_seconds", 0) > 0.1:
+        period = spec["step_seconds"] + spec["gap_seconds"]
+        for i in range(len(spec["levels_db"])):
+            windows.append((i * period + spec["step_seconds"] + 0.05, (i + 1) * period - 0.01))
+    if kind == "clicks" and spec["period"] > 0.1:
+        for k in range(spec["count"]):
+            windows.append((k * spec["period"] + 0.05, (k + 1) * spec["period"] - 0.01))
+    tail = spec.get("tail", DEFAULT_TAIL_SECONDS)
+    if tail > 0.2:
+        start = body_seconds(spec)
+        windows.append((start + 0.1, start + tail))
+    return windows
+
+
 def describe(spec):
     level = spec.get("level_db", 0)
     level_text = f" at {level:+g} dB" if level else ""
