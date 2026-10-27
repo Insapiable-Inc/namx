@@ -91,8 +91,16 @@ mostly treble hiss; no howling at full Sustain with this rig.
 
 ## For NAM-X
 
-NAM-X's Compressor is a feedforward design with Threshold, Ratio, Attack and Release. A
-CS-3 type would be: a fixed output ceiling (~66:1), Sustain as the gain ahead of it, Attack
-as one knob setting the release (44–458 ms to 63 %, exponential in dB) and a little of the attack
-(6–14 ms), the Tone tilt, and Level. As a new type to A/B, not a change to the current
-compressor.
+The Compressor's **CS-3** type (`src/dsp/Cs3Compressor.h`, branch `dsp/compressor-cs3`): a
+peak detector on |x| into a hard-knee ceiling (~85:1, the knee fitted at 0.02 dB), Tone after
+the gain. The knobs keep their units: Threshold is Sustain as the input level that reaches
+the ceiling (−52.8 to −20.3 dBFS, the pedal's span, re an assumed −6 dBFS guitar peak),
+Release is the Attack knob as the gain's 63 % recovery (44–458 ms; the clamp-down follows
+from the same position), Level is the output on top of the pedal at full Level, Tone (▾) the
+pedal's Tone (50 % = 12:00); Ratio and Attack are dimmed.
+
+Rendered and measured like the pedal: the jumps' gain envelopes within 0.27–0.34 dB rms
+(recovery within 6 ms, clamp-down within 2 ms — the detector's time constants are
+calibrated so); the static curve within 0.5 dB at Sustain 7:00–12:00, up to 1.2 dB high
+around the knee at 3:00–5:00; Tone within 0.4 dB with its 1 kHz level shift; picked notes
+hold level like the pedal's, their pick spike 1–1.5 dB smaller. Not approved by ear yet.
