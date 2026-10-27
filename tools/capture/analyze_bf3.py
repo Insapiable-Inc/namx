@@ -2,10 +2,12 @@
 """Measures the Boss BF-3 Flanger (STANDARD mode) from one mono session (Guitar In ->
 Output A; plans/bf-3-standard.json). Findings: captures/boss/bf-3/README.md.
 
-    analyze_bf3.py SESSION [CHECKS]     # writes SESSION/fit/bf-3.{json,svg}
+    analyze_bf3.py SESSION [CHECKS [QUIET]]     # writes SESSION/fit/bf-3.{json,svg}
 
 CHECKS (plans/bf-3-standard-checks.json): the model's sweep against click takes at other
-knob combinations, and whether a plug in Output B changes what Output A carries.
+knob combinations, and whether a plug in Output B changes what Output A carries. QUIET
+(plans/bf-3-res-quiet.json): Res 5:00 again at -24 dB — at -12 dB the comb's peaks reached
+the output clip, which flattens the ripple.
 
 What it measures:
   dry path         the dry part of a static sweep against the bypass sweep: delay, gain
@@ -485,6 +487,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("session")
     parser.add_argument("checks", nargs="?")
+    parser.add_argument("quiet", nargs="?")
     args = parser.parse_args()
     session = pathlib.Path(args.session).expanduser()
     if not (session / "rig.json").exists():
@@ -510,6 +513,15 @@ def main():
         checks_session = pathlib.Path(args.checks).expanduser()
         result["checks"] = checks(checks_session, static, result)
         result["sessions"] = [session.name, checks_session.name]
+
+    if args.quiet:
+        quiet = pathlib.Path(args.quiet).expanduser()
+        result["res"]["pass_db_from_ripple_manual_1200"]["5:00"] = dict(zip(
+            ("500", "1000", "2000", "4000"), rounded(ripple_db(
+                quiet, "std-manual-1200-24", "std-res-0500-24", 1.6, [500, 1000, 2000, 4000]))))
+        result["res"]["res_0500_note"] = ("from the -24 dB redo (" + quiet.name
+                                          + "); the -12 dB take clipped")
+        result["sessions"] = result.get("sessions", [session.name]) + [quiet.name]
 
     out_dir = session / "fit"
     out_dir.mkdir(exist_ok=True)

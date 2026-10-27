@@ -7,6 +7,7 @@ Output B):
 |---|---|
 | [`2026-10-27-standard/`](2026-10-27-standard/) | the dry path, the wet tone, Manual's delay, Res's feedback, saturation, the sweep (Rate, Depth, Manual), noise |
 | [`2026-10-27-ultra/`](2026-10-27-ultra/) | ULTRA against STANDARD (`plans/bf-3-ultra.json`, 11 takes; first look below) |
+| [`2026-10-27-ultra-res/`](2026-10-27-ultra-res/), [`2026-10-27-res-quiet/`](2026-10-27-res-quiet/) | Ultra's Res at Manual 7:00 (the first at −12 dB, clipped from Res 12:00 up; the second at −24 dB), and Standard's Res 5:00 at −24 dB |
 | [`2026-10-27-standard-checks/`](2026-10-27-standard-checks/) | the model's sweep at knob combinations it wasn't fitted to; Output B in use |
 
 Same rig and playback level as the TR-2, DD-8 and CE-5 ([`tools/capture/README.md`](../../../tools/capture/README.md)).
@@ -91,7 +92,11 @@ loop's phase:
 
 | Res | 7:00 | 9:00 | 12:00 | 3:00 | 5:00 |
 |---|---|---|---|---|---|
-| per pass at 1 kHz, dB | (none) | −16.7 | −8.1 | −3.5 | −2.3 |
+| per pass at 1 kHz, dB | (none) | −16.7 | −8.1 | −3.5 | −1.4 |
+
+Res 5:00 is from a redo at −24 dB (`2026-10-27-res-quiet`): at −12 dB the comb's peaks
+reached the output clip and flattened the ripple (−2.3 dB then). Res 3:00 at Manual 12:00
+peaked 1.5 dB under the clip; its −3.5 agrees with the clean Manual 7:00 echo.
 
 At Manual 7:00 the ripple gives −3.06 dB for Res 3:00 (the echo itself: −3.15): **the
 feedback doesn't depend on the delay**. Res changes neither the dry (+0.04 dB) nor the
@@ -99,7 +104,7 @@ first wet copy (−0.02 dB) — no input pad to make room for the resonance.
 
 Res 5:00 is stable: one click at −12 dB rings out within 50 ms (−60 → −93 dBFS rms per
 50 ms; `res-0500-click`). With the loop's high and low cuts the most a pass can keep is
-−2.3 dB at 1 kHz, so the BF-3 never self-oscillates.
+−1.4 dB at 1 kHz, so the BF-3 never self-oscillates.
 
 ### Saturation
 
@@ -202,11 +207,12 @@ first tap). Three combs on top of each other: the "stronger flanger effect".
   +1.8). Each tap has STANDARD's wet tone (the second against the first: within 0.3 dB
   to 4 kHz, −1 to −2 dB above 8 kHz).
 - The clip: the same, +0.53 dB re the guitar's peak (0.13 dB rms).
-- **Res: not identified yet.** At Res 3:00 the echoes decay ~0.67 per d/2 from the third
-  copy on, but no single loop fits (feedback from any one tap, or from their sum, leaves
-  18–27 % against a 2.4 % floor), and the first tap drops 0.8 dB. Weak feedback (Res
-  9:00, Manual 7:00) would show which tap feeds the loop: each first echo lands at its
-  own multiple of d/2.
+- **Res: not pinned down.** From the −24 dB sweeps (the −12 dB ones clipped from Res
+  12:00 up): a loop from the middle tap — STANDARD's engine with two extra read taps —
+  fits best in the time domain (per pass at 1 kHz −14.7, −8.0, −4.2, −2.3 dB for Res
+  9:00…5:00, close to STANDARD's), degrading from the 20 % floor to 25 % at Res 5:00; but a
+  frequency-domain fit ranks it worst, and Res also seems to move the taps' levels. The
+  data is clean; the structure is still open.
 
 ## Takes and lessons
 
@@ -218,6 +224,9 @@ first tap). Three combs on top of each other: the "stronger flanger effect".
 - **Don't compare two takes' fine timing.** The pedal's own clock puts its output up to
   a sample apart per take; anything that needs two takes aligned to a fraction of a
   sample (a dry template, a subtraction) has to fit the shift, or work inside one take.
+- **Resonant settings need a quieter sweep.** At −12 dB the comb's peaks with Res up
+  reached the output clip (Standard Res 5:00, Ultra from Res 12:00): check a take's peak
+  against the clip before fitting it; −24 dB is clear.
 - **Feedback from the ripple, not a complex fit.** Solving for the loop gain from the
   comb's complex response hinged on the loop's phase (and a sample of timing); the
   ripple's depth doesn't.

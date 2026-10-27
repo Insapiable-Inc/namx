@@ -256,5 +256,7 @@ From the BF-3:
 - **A digital pedal runs on its own clock:** its output lands up to a sample apart from
   take to take, which the loopback can't see. Fit the shift when one take's template is
   used on another, or measure inside one take.
+- **Resonant settings need a quieter sweep:** with Res up the comb's peaks reached the
+  output clip at −12 dB (the run log's peak against the clip tells); −24 dB is clear.
 - **Loop gain from the comb's ripple depth** (max/min of the wet over its no-feedback
   twin), not from a complex fit that hinges on the loop's phase.
