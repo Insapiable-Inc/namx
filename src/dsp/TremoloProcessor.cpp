@@ -9,7 +9,7 @@ namespace namx
 {
 
 void TremoloProcessor::process_block_mono(float* buf, size_t nframes) {
-    if (type.load() == TR2) {
+    if (type.load() != SINE) {
         tr2_mono(buf, nframes);
         return;
     }
@@ -26,7 +26,7 @@ void TremoloProcessor::process_block_mono(float* buf, size_t nframes) {
 }
 
 void TremoloProcessor::process_block_dual(float* l, float* r, size_t nframes) {
-    if (type.load() == TR2) {
+    if (type.load() != SINE) {
         tr2_dual(l, r, nframes);
         return;
     }
@@ -45,7 +45,7 @@ void TremoloProcessor::process_block_dual(float* l, float* r, size_t nframes) {
 }
 
 void TremoloProcessor::process_block_stereo_out(float* l, float* r, size_t nframes) {
-    if (type.load() == TR2) {
+    if (type.load() != SINE) {
         tr2_stereo_out(l, r, nframes);
         return;
     }
@@ -63,52 +63,58 @@ void TremoloProcessor::process_block_stereo_out(float* l, float* r, size_t nfram
     }
 }
 
+TremoloProcessor::Tr2Block TremoloProcessor::tr2_block() const {
+    const bool supply = type.load() == TR2_SUPPLY;
+    const tr2::Voicing& m = supply ? tr2::SUPPLY : tr2::BATTERY;
+    const float depth_fraction = depth_pct.load() / 100.0f;
+    return {m,
+            supply ? supply_coefficients : battery_coefficients,
+            rate_hz.load() / static_cast<float>(sample_rate),
+            tr2::knob_map(m.wave_gain, wave_pct.load() / 100.0f),
+            tr2::knob_map(m.depth, depth_fraction),
+            tr2::knob_map(m.top, depth_fraction)};
+}
+
 void TremoloProcessor::tr2_mono(float* buf, size_t nframes) {
-    const float ph_inc = rate_hz.load() / static_cast<float>(sample_rate);
-    const float wave_gain = tr2::knob_map(tr2::WAVE_GAIN, wave_pct.load() / 100.0f);
-    const float depth = tr2::knob_map(tr2::DEPTH, depth_pct.load() / 100.0f);
-    const tr2::Coefficients& k = tr2_coefficients;
+    const Tr2Block b = tr2_block();
 
     for (size_t i = 0; i < nframes; ++i) {
-        const float gain = follower_l.step(tr2::target(phase, wave_gain, depth), k);
-        buf[i] = gain * low_cut_l.process(buf[i], k);
-        advance_phase(ph_inc);
+        const float g = follower_l.step(tr2::target(b.voicing, phase, b.wave_gain, b.depth), b.k);
+        buf[i] = b.top * g * low_cut_l.process(buf[i], b.k);
+        advance_phase(b.ph_inc);
     }
 }
 
 void TremoloProcessor::tr2_dual(float* l, float* r, size_t nframes) {
-    const float ph_inc = rate_hz.load() / static_cast<float>(sample_rate);
-    const float wave_gain = tr2::knob_map(tr2::WAVE_GAIN, wave_pct.load() / 100.0f);
-    const float depth = tr2::knob_map(tr2::DEPTH, depth_pct.load() / 100.0f);
-    const tr2::Coefficients& k = tr2_coefficients;
+    const Tr2Block b = tr2_block();
 
     for (size_t i = 0; i < nframes; ++i) {
         // One gain for both channels (an identical mono effect per channel); the low
         // cut keeps state per channel.
-        const float gain = follower_l.step(tr2::target(phase, wave_gain, depth), k);
-        l[i] = gain * low_cut_l.process(l[i], k);
-        r[i] = gain * low_cut_r.process(r[i], k);
-        advance_phase(ph_inc);
+        const float gain =
+            b.top * follower_l.step(tr2::target(b.voicing, phase, b.wave_gain, b.depth), b.k);
+        l[i] = gain * low_cut_l.process(l[i], b.k);
+        r[i] = gain * low_cut_r.process(r[i], b.k);
+        advance_phase(b.ph_inc);
     }
     follower_r = follower_l;
 }
 
 void TremoloProcessor::tr2_stereo_out(float* l, float* r, size_t nframes) {
-    const float ph_inc = rate_hz.load() / static_cast<float>(sample_rate);
-    const float wave_gain = tr2::knob_map(tr2::WAVE_GAIN, wave_pct.load() / 100.0f);
-    const float depth = tr2::knob_map(tr2::DEPTH, depth_pct.load() / 100.0f);
-    const tr2::Coefficients& k = tr2_coefficients;
+    const Tr2Block b = tr2_block();
 
     for (size_t i = 0; i < nframes; ++i) {
         // The same input on both sides: one low cut, two gains 180° apart (auto-pan).
-        const float x = low_cut_l.process(l[i], k);
+        const float x = low_cut_l.process(l[i], b.k);
         float phase_r = phase + 0.5f;
         if (phase_r >= 1.0f) {
             phase_r -= 1.0f;
         }
-        l[i] = follower_l.step(tr2::target(phase, wave_gain, depth), k) * x;
-        r[i] = follower_r.step(tr2::target(phase_r, wave_gain, depth), k) * x;
-        advance_phase(ph_inc);
+        l[i] =
+            b.top * follower_l.step(tr2::target(b.voicing, phase, b.wave_gain, b.depth), b.k) * x;
+        r[i] =
+            b.top * follower_r.step(tr2::target(b.voicing, phase_r, b.wave_gain, b.depth), b.k) * x;
+        advance_phase(b.ph_inc);
     }
     low_cut_r = low_cut_l;
 }

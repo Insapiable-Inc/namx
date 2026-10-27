@@ -260,6 +260,35 @@ Written by `fit_tr2.py` into each session's `fit/` (links: supply session):
 
 ## Implementing it
 
+**In NAM-X:** the Tremolo's Type knob (`src/dsp/Tr2Tremolo.h`, used by
+`TremoloProcessor`; preset keys `tremolo/type` and `tremolo/wave`):
+
+| Type | `tremolo/type` | Voicing |
+|---|---|---|
+| Sine | 0 (default) | the original sine tremolo |
+| TR-2 batt | 1 | the battery session's fit as it was when approved by ear (2026-10-26): one top level, 1.05787, for every Depth |
+| TR-2 9 V | 2 | the supply session's fit, top level by Depth — added for an A/B against the approved one |
+
+Depth and Wave are the pedal's knobs as 0–100 % of their rotation (7:00–5:00) through the
+maps above; Rate stays in Hz (the TR-2 spans 1.09–13.6 Hz of the Tremolo's 0.5–15). So
+Depth 0 % keeps the pedal's small ripple, as the real one does. Stereo is the Tremolo's
+usual auto-pan: a second gain 180° apart with its own follower.
+
+**Checked against the recordings:** a 1 kHz sine rendered through `TremoloProcessor` at
+each of the 15 measured settings (that session's measured rates, the knob positions as
+percentages), analysed exactly like the takes:
+
+| C++ voicing | against | median rms | overall |
+|---|---|---|---|
+| TR-2 batt | battery recordings | 0.0165 | 0.0179 |
+| TR-2 9 V | supply recordings | 0.0147 | 0.0165 |
+| TR-2 batt | supply recordings | 0.0413 | 0.0418 |
+
+The last row is the battery's effect, measured: the approved voicing is ~3× further from
+the pedal on a proper supply than either voicing is from its own session. DspGoldenTest
+guards all three (`tremolo-tr2`, `tremolo-tr2-stereo`, `tremolo-tr2-supply`).
+
+
 Everything runs per sample and is cheap: a phase accumulator, the triangle, the soft
 clamp (one exp and one log: ln((1 + e^(s·v)) / (1 + e^(s·v − s))) / s, with s·v clamped
 to ±40 to keep e^x finite), the follower and a one-pole high-pass. The follower and the
