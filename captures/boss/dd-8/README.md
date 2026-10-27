@@ -133,11 +133,16 @@ y = x_dry + Level · LP10k( delay_T( clip(x) + F · repeats ) )
 
 ## Implementing it
 
-NAM-X's Delay already has a delay line, feedback, Low/High Cut and saturation. A DD-8
-Standard voicing would add: the analog dry path (no change), a hard clip on the wet
-input at the reference level − 3 dB, the measured Time range (20–800 ms), the Level
-taper with +4.5 dB at maximum, the Feedback map, a ~10 kHz low-pass in the wet path
-and a gentle extra high cut in the loop. Not done yet.
+Done 2026-10-27 (branch `dsp/delay-dd8`): NAM-X's Delay has a Type knob — Digital (its
+own) or DD-8 Standard, Analog, Tape, Warm, Mod (`src/dsp/Dd8Delay.h`), built from
+[the voicings side by side](#the-four-voicings-side-by-side). Rendered and measured like
+the pedal, the C++ gives the repeat levels within 0.15 dB, the Feedback map within
+0.05 dB per repeat, the clip curves within 0.4 dB and the tones within ~1–2 dB (Analog
+−58 dB at 8 kHz against −50: a plain 6th-order Butterworth at 2.78 kHz, so no band in the
+loop can rise above 1 kHz and run away). Choices beyond the data: the clip is calibrated
+to a guitar peak of −6 dBFS after the amp model; Tape's band and Warm's tilt sit on the
+output (their loop placement wasn't measured); Tape's 2.4 dB level wobble is left out;
+a static clip overstates the pedal's third harmonic by 3–6 dB. Not approved by ear yet.
 
 ## Not measured yet
 

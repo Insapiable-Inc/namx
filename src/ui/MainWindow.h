@@ -380,6 +380,9 @@ private:
     KnobWidget* knob_del_right_time = nullptr;
     KnobWidget* knob_del_feedback = nullptr;
     KnobWidget* knob_del_mix = nullptr;
+    KnobWidget* knob_del_type = nullptr;
+    QWidget* knob_del_saturation = nullptr; // Digital type only
+    QWidget* knob_del_shimmer = nullptr; // Digital type only
 
     ToggleSwitch* sw_reverb_enable = nullptr;
     KnobWidget* knob_rev_room = nullptr;

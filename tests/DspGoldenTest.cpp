@@ -325,6 +325,19 @@ static unique_ptr<DelayProcessor> make_delay_shimmer() {
     return fx;
 }
 
+// A DD-8 type, high Feedback and Level so the voicing's loop, clip and LFO all show; the
+// test signal's peaks (~-7 dBFS) reach the clip.
+static unique_ptr<DelayProcessor> make_delay_dd8(int type, bool stereo) {
+    auto fx = make_unique<DelayProcessor>();
+    fx->set_type(type);
+    fx->set_stereo_mode(stereo);
+    fx->set_time(180.0f);
+    fx->set_right_time(270.0f);
+    fx->set_feedback_pct(70.0f);
+    fx->set_mix_pct(80.0f);
+    return fx;
+}
+
 static unique_ptr<ReverbProcessor> make_reverb() {
     auto fx = make_unique<ReverbProcessor>();
     fx->set_pre_delay(30.0f);
@@ -507,6 +520,14 @@ void DspGoldenTest::initTestCase() {
     both("delay", &make_delay);
     both("delay-stereo-mod-sat", &make_delay_stereo_mod_sat);
     both("delay-shimmer", &make_delay_shimmer);
+    for (int type = DelayProcessor::DD8_STANDARD; type < DelayProcessor::TYPE_COUNT; ++type) {
+        both("delay-dd8-" + std::to_string(type), [type] {
+            return make_delay_dd8(type, false);
+        });
+    }
+    both("delay-dd8-tape-stereo", [] {
+        return make_delay_dd8(DelayProcessor::DD8_TAPE, true);
+    });
     both("reverb", &make_reverb);
     both("reverb-hall", &make_reverb_hall);
     both("reverb-room", &make_reverb_room);

@@ -18,6 +18,11 @@ void DelayProcessor::on_sample_rate_changed(double sr) {
         s.prepare(sr, 12.0f);
     }
     glide_k = 1.0f - std::exp(-1.0f / (0.08f * static_cast<float>(sr)));
+    constexpr std::array<const dd8::Voicing*, TYPE_COUNT - 1> voicings{
+        &dd8::STANDARD, &dd8::ANALOG, &dd8::TAPE, &dd8::WARM, &dd8::MOD};
+    for (size_t i = 0; i < voicings.size(); ++i) {
+        dd8_coefficients[i].prepare(*voicings[i], sr);
+    }
     reset();
 }
 
@@ -30,6 +35,9 @@ void DelayProcessor::sync_right_channel() {
     lines[1].hp_x = lines[0].hp_x;
     lines[1].hp_y = lines[0].hp_y;
     lines[1].lp = lines[0].lp;
+    lines[1].dd8_loop = lines[0].dd8_loop;
+    lines[1].dd8_out = lines[0].dd8_out;
+    lines[1].dd8_loop_lp = lines[0].dd8_loop_lp;
     del_now[1] = del_now[0];
     shift[1].reset();
 }
@@ -38,8 +46,12 @@ void DelayProcessor::reset() {
     for (auto& l : lines) {
         l.samples.clear();
         l.hp_x = l.hp_y = l.lp = 0.0f;
+        l.dd8_loop.reset();
+        l.dd8_out.reset();
+        l.dd8_loop_lp = 0.0f;
     }
     mod_phase = 0.0f;
+    dd8_lfo_phase = dd8_flutter_phase = 0.0f;
     del_now[0] = del_now[1] = -1.0f;
     for (auto& s : shift) {
         s.reset();
@@ -85,7 +97,13 @@ DelayProcessor::Params DelayProcessor::params() const {
                                                                             500.0f, 0.45f * fs) /
                              fs);
     p.sat_drive = std::clamp(sat_pct.load(), 0.0f, 100.0f) / 100.0f;
-    p.mod_depth = 0.003f * fs * std::clamp(mod_pct.load(), 0.0f, 100.0f) / 100.0f; // up to ±3 ms
+    const int current_type = type.load();
+    if (current_type == DIGITAL) {
+        p.mod_depth = 0.003f * fs * std::clamp(mod_pct.load(), 0.0f, 100.0f) / 100.0f; // ±3 ms
+    } else {
+        const dd8::Voicing& v = *dd8_params(current_type).voicing;
+        p.mod_depth = (v.lfo_ms + v.flutter_ms) * fs / 1000.0f; // headroom for the voicing's LFO
+    }
     p.ph_inc = 0.55f / fs; // 0.55 Hz wobble
     p.shimmer = std::clamp(shimmer_pct.load(), 0.0f, 100.0f) / 100.0f;
     const float max_d = static_cast<float>(lines[0].samples.size()) - 2.0f - p.mod_depth;
@@ -116,8 +134,122 @@ float DelayProcessor::saturate(float x, float amount) {
     return x + amount * (t - x);
 }
 
+void DelayProcessor::type_edge(int current_type) {
+    // A new voicing starts its filters and LFOs from rest; the repeats in the line stay.
+    if (current_type != last_type) {
+        for (auto& l : lines) {
+            l.dd8_loop.reset();
+            l.dd8_out.reset();
+            l.dd8_loop_lp = 0.0f;
+        }
+        dd8_lfo_phase = dd8_flutter_phase = 0.0f;
+        last_type = current_type;
+    }
+}
+
+DelayProcessor::Dd8Params DelayProcessor::dd8_params(int dd8_type) const {
+    constexpr std::array<const dd8::Voicing*, TYPE_COUNT - 1> voicings{
+        &dd8::STANDARD, &dd8::ANALOG, &dd8::TAPE, &dd8::WARM, &dd8::MOD};
+    const size_t index = static_cast<size_t>(std::clamp(dd8_type, 1, TYPE_COUNT - 1) - 1);
+    const dd8::Voicing& v = *voicings[index];
+    const float fs = static_cast<float>(sample_rate);
+    Dd8Params q;
+    q.voicing = &v;
+    q.k = &dd8_coefficients[index];
+    // Feedback 0–90 % is the pedal's knob, 7:00–5:00; Mix 0–100 % its Level.
+    q.fb = dd8::knob_gain(v.feedback_db, feedback_pct.load() /
+                                             static_cast<float>(NAMConstants::DELAY_FEEDBACK_MAX));
+    std::array<float, 4> level_db = dd8::LEVEL_DB;
+    for (float& db : level_db) {
+        db += v.repeat_db;
+    }
+    q.level = dd8::knob_gain(level_db, mix_pct.load() / 100.0f);
+    q.ceiling = dd8::db_to_gain(dd8::REFERENCE_DBFS + v.ceiling_db);
+    q.lfo_inc = v.lfo_hz / fs;
+    q.lfo_depth = v.lfo_ms * fs / 1000.0f;
+    q.flutter_inc = v.flutter_hz / fs;
+    q.flutter_depth = v.flutter_ms * fs / 1000.0f;
+    return q;
+}
+
+float DelayProcessor::dd8_mod(const Dd8Params& q) {
+    constexpr float TWO_PI = 2.0f * std::numbers::pi_v<float>;
+    if (q.lfo_depth <= 0.0f && q.flutter_depth <= 0.0f) {
+        return 0.0f;
+    }
+    const float mod = q.lfo_depth * std::sin(TWO_PI * dd8_lfo_phase) +
+                      q.flutter_depth * std::sin(TWO_PI * dd8_flutter_phase);
+    dd8_lfo_phase += q.lfo_inc;
+    dd8_lfo_phase -= dd8_lfo_phase >= 1.0f ? 1.0f : 0.0f;
+    dd8_flutter_phase += q.flutter_inc;
+    dd8_flutter_phase -= dd8_flutter_phase >= 1.0f ? 1.0f : 0.0f;
+    return mod;
+}
+
+DelayProcessor::Tap DelayProcessor::dd8_tap(Line& l, float read_delay, const Params& p,
+                                            const Dd8Params& q) const {
+    // The loop chain and the user's cuts act on every pass; the out chain on what is heard.
+    const float r = tone(l, l.dd8_loop.process(l.read(read_delay), q.k->loop), p);
+    l.dd8_loop_lp += q.k->loop_low_pass * (r - l.dd8_loop_lp);
+    return {q.level * l.dd8_out.process(r, q.k->out), l.dd8_loop_lp};
+}
+
+void DelayProcessor::dd8_block_mono(float* buf, size_t nframes) {
+    const Params p = params();
+    const Dd8Params q = dd8_params(last_type);
+    const dd8::Voicing& v = *q.voicing;
+    Line& l = lines[0];
+    for (size_t i = 0; i < nframes; ++i) {
+        const float rd = glide(0, p.del_l) + dd8_mod(q);
+        const Tap t = dd8_tap(l, rd, p, q);
+        l.push(dd8::clip(buf[i] + q.fb * t.back, q.ceiling, v.knee));
+        buf[i] += t.wet;
+    }
+}
+
+void DelayProcessor::dd8_block_dual(float* l, float* r, size_t nframes) {
+    const Params p = params();
+    const Dd8Params q = dd8_params(last_type);
+    const dd8::Voicing& v = *q.voicing;
+    for (size_t i = 0; i < nframes; ++i) {
+        const float mod = dd8_mod(q);
+        const Tap t_l = dd8_tap(lines[0], glide(0, p.del_l) + mod, p, q);
+        const Tap t_r = dd8_tap(lines[1], glide(1, p.del_r) - mod, p, q);
+        lines[0].push(dd8::clip(l[i] + q.fb * t_l.back, q.ceiling, v.knee));
+        lines[1].push(dd8::clip(r[i] + q.fb * t_r.back, q.ceiling, v.knee));
+        l[i] += t_l.wet;
+        r[i] += t_r.wet;
+    }
+}
+
+void DelayProcessor::dd8_block_stereo_out(float* l, float* r, size_t nframes) {
+    // The Digital type's layout: Cross-feed c = 1 ping-pong, 0 two independent lines.
+    const Params p = params();
+    const Dd8Params q = dd8_params(last_type);
+    const dd8::Voicing& v = *q.voicing;
+    const float c = p.cross;
+    for (size_t i = 0; i < nframes; ++i) {
+        const float x = l[i];
+        const float mod = dd8_mod(q);
+        const Tap t_l = dd8_tap(lines[0], glide(0, p.del_l) + mod, p, q);
+        const Tap t_r = dd8_tap(lines[1], glide(1, p.del_r) - mod, p, q);
+        lines[0].push(
+            dd8::clip(x + q.fb * ((1.0f - c) * t_l.back + c * t_r.back), q.ceiling, v.knee));
+        lines[1].push(dd8::clip((1.0f - c) * x + q.fb * ((1.0f - c) * t_r.back + c * t_l.back),
+                                q.ceiling, v.knee));
+        l[i] = x + t_l.wet;
+        r[i] = r[i] + t_r.wet;
+    }
+}
+
 void DelayProcessor::process_block_mono(float* buf, size_t nframes) {
     if (lines[0].samples.empty()) {
+        return;
+    }
+    type_edge(type.load());
+    if (last_type != DIGITAL) {
+        shimmer_edge(0.0f);
+        dd8_block_mono(buf, nframes);
         return;
     }
     const Params p = params();
@@ -140,6 +272,12 @@ void DelayProcessor::process_block_mono(float* buf, size_t nframes) {
 void DelayProcessor::process_block_dual(float* l, float* r, size_t nframes) {
     // Stereo input: independent line per channel (no cross-feedback).
     if (lines[0].samples.empty()) {
+        return;
+    }
+    type_edge(type.load());
+    if (last_type != DIGITAL) {
+        shimmer_edge(0.0f);
+        dd8_block_dual(l, r, nframes);
         return;
     }
     const Params p = params();
@@ -165,6 +303,12 @@ void DelayProcessor::process_block_stereo_out(float* l, float* r, size_t nframes
     // Cross-feed c: 1 = ping-pong (input → left only, repeats alternate),
     // 0 = two independent lines (input into both, L/R times).
     if (lines[0].samples.empty()) {
+        return;
+    }
+    type_edge(type.load());
+    if (last_type != DIGITAL) {
+        shimmer_edge(0.0f);
+        dd8_block_stereo_out(l, r, nframes);
         return;
     }
     const Params p = params();
