@@ -1,0 +1,292 @@
+{
+  "pedal": "Boss DD-8 (Standard mode, mono: Input A -> Output A)",
+  "comment": "Exploratory pass for Standard mode. Knob positions are clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise; 9:00 and 3:00 (pointer horizontal) are 20 % and 80 % of the rotation, easier to set than 9:30/2:30. MODE stays on Standard throughout. Feedback 5:00 is left out (delays often self-oscillate there).",
+  "knobs": [
+    "Level",
+    "Feedback",
+    "Time"
+  ],
+  "takes": [
+    {
+      "name": "bypass-sweep",
+      "bypass": true,
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": 0,
+        "tail": 4
+      }
+    },
+    {
+      "name": "bypass-clicks",
+      "bypass": true,
+      "signal": {
+        "type": "clicks",
+        "period": 2.5,
+        "count": 4,
+        "tail": 3
+      }
+    },
+    {
+      "name": "level-0700",
+      "settings": {
+        "Level": "7:00",
+        "Feedback": "7:00",
+        "Time": "7:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": 0,
+        "tail": 4
+      },
+      "note": "Level at minimum: the dry path alone (is it untouched? does it arrive late?)."
+    },
+    {
+      "name": "time-0700",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "7:00",
+        "Time": "7:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": 0,
+        "tail": 4
+      },
+      "note": "Feedback at minimum: the delay time and the single repeat's filter."
+    },
+    {
+      "name": "time-0900",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "7:00",
+        "Time": "9:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": 0,
+        "tail": 4
+      },
+      "note": "Feedback at minimum: the delay time and the single repeat's filter."
+    },
+    {
+      "name": "time-0300",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "7:00",
+        "Time": "3:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": 0,
+        "tail": 4
+      },
+      "note": "Feedback at minimum: the delay time and the single repeat's filter."
+    },
+    {
+      "name": "time-0500",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "7:00",
+        "Time": "5:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": 0,
+        "tail": 4
+      },
+      "note": "Feedback at minimum: the delay time and the single repeat's filter."
+    },
+    {
+      "name": "time-1200",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "7:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": 0,
+        "tail": 4
+      },
+      "note": "Feedback at minimum: the delay time and the single repeat's filter."
+    },
+    {
+      "name": "level-0900",
+      "settings": {
+        "Level": "9:00",
+        "Feedback": "7:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": 0,
+        "tail": 4
+      }
+    },
+    {
+      "name": "level-1200",
+      "settings": {
+        "Level": "12:00",
+        "Feedback": "7:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": 0,
+        "tail": 4
+      }
+    },
+    {
+      "name": "level-0300",
+      "settings": {
+        "Level": "3:00",
+        "Feedback": "7:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": 0,
+        "tail": 4
+      }
+    },
+    {
+      "name": "feedback-0900",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "9:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": 0,
+        "tail": 8
+      },
+      "note": "Long tail: every repeat, for the feedback gain and how each repeat darkens."
+    },
+    {
+      "name": "feedback-1200",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": 0,
+        "tail": 8
+      },
+      "note": "Long tail: every repeat, for the feedback gain and how each repeat darkens."
+    },
+    {
+      "name": "feedback-0300",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "3:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": 0,
+        "tail": 8
+      },
+      "note": "Long tail: every repeat, for the feedback gain and how each repeat darkens."
+    },
+    {
+      "name": "feedback-1200-m12",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 8
+      },
+      "note": "The same at -12 dB: is it linear?"
+    },
+    {
+      "name": "feedback-1200-clicks",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 2.5,
+        "count": 4,
+        "tail": 3
+      }
+    },
+    {
+      "name": "hold-sine",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 20,
+        "tail": 4
+      },
+      "note": "A held tone: any pitch or level wobble in the repeats is hidden modulation."
+    },
+    {
+      "name": "noise-floor",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "silence",
+        "seconds": 10
+      }
+    }
+  ]
+}
