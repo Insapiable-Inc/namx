@@ -402,6 +402,21 @@
         "tail": 2
       },
       "note": "Optional (s to skip). After ~5 s, turn Time slowly from 12:00 to 3:00 over ~10 s, then leave it."
+    },
+    {
+      "name": "time-glide-turn",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "7:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 25,
+        "tail": 2
+      },
+      "note": "TURN THE KNOB WHILE IT RECORDS: press Enter, count to 5, then turn Time slowly from 12:00 to 3:00 over about 10 seconds, then let go and wait for the end (25 s)."
     }
   ]
 }
