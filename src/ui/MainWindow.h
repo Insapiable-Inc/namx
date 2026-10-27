@@ -368,6 +368,9 @@ private:
     KnobWidget* knob_ch_rate = nullptr;
     KnobWidget* knob_ch_depth = nullptr;
     KnobWidget* knob_ch_mix = nullptr;
+    KnobWidget* knob_ch_type = nullptr;
+    KnobWidget* knob_ch_ce5_low = nullptr; // CE-5 type only
+    KnobWidget* knob_ch_ce5_high = nullptr; // CE-5 type only
 
     ToggleSwitch* sw_tremolo_enable = nullptr;
     ToggleSwitch* sw_tremolo_stereo = nullptr;
