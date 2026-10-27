@@ -1,0 +1,207 @@
+{
+  "pedal": "Boss BF-3 Flanger, ULTRA mode (mono: Guitar In -> Output A)",
+  "comment": "What ULTRA changes against STANDARD (manual: 'a stronger flanger effect'): the dry/wet levels and the wet's tone (Manual 7:00, Depth minimum), Res's gain per pass (the clean echo and the comb's ripple at Manual 12:00), Manual's range, the clip, and the sweep (click trains at the Standard session's settings). Read with analyze_bf3.py's methods, against plans/bf-3-standard.json's session. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise.",
+  "quiet_dbfs": -60,
+  "knobs": [
+    "Manual",
+    "Res",
+    "Depth",
+    "Rate"
+  ],
+  "takes": [
+    {
+      "name": "bypass-sweep",
+      "bypass": true,
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 2
+      }
+    },
+    {
+      "name": "manual-0700",
+      "settings": {
+        "Manual": "7:00",
+        "Res": "7:00",
+        "Depth": "7:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 2
+      },
+      "note": "MODE on ULTRA. Depth minimum: the dry and the wet split in time; their levels and tone against Standard's."
+    },
+    {
+      "name": "res-0300-manual-0700",
+      "settings": {
+        "Manual": "7:00",
+        "Res": "3:00",
+        "Depth": "7:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 2
+      },
+      "note": "The clean echo: Res's gain per pass."
+    },
+    {
+      "name": "manual-1200",
+      "settings": {
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "7:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 2
+      }
+    },
+    {
+      "name": "bursts",
+      "settings": {
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "7:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -30,
+          -24,
+          -18,
+          -12,
+          -8,
+          -6,
+          -4,
+          -2,
+          0,
+          2,
+          4
+        ],
+        "step_seconds": 0.3,
+        "gap_seconds": 0.9,
+        "tail": 1
+      },
+      "note": "The clip."
+    },
+    {
+      "name": "res-1200",
+      "settings": {
+        "Manual": "12:00",
+        "Res": "12:00",
+        "Depth": "7:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 2
+      }
+    },
+    {
+      "name": "res-0500",
+      "settings": {
+        "Manual": "12:00",
+        "Res": "5:00",
+        "Depth": "7:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 2
+      }
+    },
+    {
+      "name": "manual-0500",
+      "settings": {
+        "Manual": "5:00",
+        "Res": "7:00",
+        "Depth": "7:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 2
+      },
+      "note": "The short end of Manual."
+    },
+    {
+      "name": "rate-1200",
+      "settings": {
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "12:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 0.025,
+        "count": 800,
+        "tail": 0.5
+      },
+      "note": "The sweep at the middle settings."
+    },
+    {
+      "name": "rate-0300",
+      "settings": {
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "12:00",
+        "Rate": "3:00"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 0.025,
+        "count": 600,
+        "tail": 0.5
+      }
+    },
+    {
+      "name": "depth-0500",
+      "settings": {
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "5:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 0.025,
+        "count": 800,
+        "tail": 0.5
+      },
+      "note": "The full sweep."
+    }
+  ]
+}
