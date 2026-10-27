@@ -1,0 +1,220 @@
+{
+  "pedal": "Boss DD-8, Standard mode",
+  "session": "2026-10-26-standard",
+  "knob_fraction": {
+    "7:00": 0.0,
+    "9:00": 0.2,
+    "12:00": 0.5,
+    "3:00": 0.8,
+    "5:00": 1.0
+  },
+  "time_ms": {
+    "7:00": 19.65,
+    "9:00": 169.62,
+    "12:00": 385.62,
+    "3:00": 582.6,
+    "5:00": 799.6
+  },
+  "level_db": {
+    "7:00": null,
+    "9:00": -33.59,
+    "12:00": -13.42,
+    "3:00": -2.64,
+    "5:00": 0.0
+  },
+  "feedback_db_per_repeat": {
+    "9:00": {
+      "1000 Hz": [
+        -12.23,
+        -12.23,
+        -12.24
+      ],
+      "4000 Hz": [
+        -12.56,
+        -12.56,
+        -12.57
+      ],
+      "8000 Hz": [
+        -13.67,
+        -13.68,
+        -13.69
+      ]
+    },
+    "12:00": {
+      "1000 Hz": [
+        -7.07,
+        -7.07,
+        -7.09
+      ],
+      "4000 Hz": [
+        -7.43,
+        -7.45,
+        -7.34
+      ],
+      "8000 Hz": [
+        -8.51,
+        -8.52,
+        -8.53
+      ]
+    },
+    "3:00": {
+      "1000 Hz": [
+        -0.46,
+        -0.79,
+        -0.69
+      ],
+      "4000 Hz": [
+        -1.29,
+        -1.04,
+        -0.59
+      ],
+      "8000 Hz": [
+        -1.39,
+        -1.13,
+        -1.33
+      ]
+    }
+  },
+  "dry": {
+    "time-0700": {
+      "delay_samples_re_bypass": 0,
+      "gain_db_re_bypass": -0.12
+    },
+    "time-0900": {
+      "delay_samples_re_bypass": 0,
+      "gain_db_re_bypass": -0.13
+    },
+    "time-1200": {
+      "delay_samples_re_bypass": 0,
+      "gain_db_re_bypass": -0.15
+    },
+    "time-0300": {
+      "delay_samples_re_bypass": 0,
+      "gain_db_re_bypass": -0.17
+    },
+    "time-0500": {
+      "delay_samples_re_bypass": 0,
+      "gain_db_re_bypass": -0.2
+    },
+    "level-0700": {
+      "delay_samples_re_bypass": 0,
+      "gain_db_re_bypass": -0.0
+    }
+  },
+  "wet_minus_dry_db": {
+    "bands_hz": [
+      31.5,
+      63,
+      125,
+      250,
+      500,
+      1000,
+      2000,
+      4000,
+      8000,
+      16000
+    ],
+    "db": [
+      -2.15,
+      -1.13,
+      -2.26,
+      -2.58,
+      -2.66,
+      -3.11,
+      -4.55,
+      -7.17,
+      -9.62,
+      -36.11
+    ]
+  },
+  "bursts": {
+    "bursts": [
+      {
+        "input_db": -30,
+        "wet_gain_db": 4.46,
+        "repeat_peak_dbfs": -38.98,
+        "h3_db": -85.7
+      },
+      {
+        "input_db": -24,
+        "wet_gain_db": 4.46,
+        "repeat_peak_dbfs": -32.99,
+        "h3_db": -79.6
+      },
+      {
+        "input_db": -18,
+        "wet_gain_db": 4.45,
+        "repeat_peak_dbfs": -27.0,
+        "h3_db": -78.2
+      },
+      {
+        "input_db": -12,
+        "wet_gain_db": 4.44,
+        "repeat_peak_dbfs": -21.01,
+        "h3_db": -81.4
+      },
+      {
+        "input_db": -6,
+        "wet_gain_db": 4.43,
+        "repeat_peak_dbfs": -15.02,
+        "h3_db": -79.5
+      },
+      {
+        "input_db": 0,
+        "wet_gain_db": 1.96,
+        "repeat_peak_dbfs": -11.96,
+        "h3_db": -17.7
+      },
+      {
+        "input_db": 3,
+        "wet_gain_db": -0.87,
+        "repeat_peak_dbfs": -11.82,
+        "h3_db": -14.8
+      }
+    ],
+    "bursts-level1200": [
+      {
+        "input_db": -30,
+        "wet_gain_db": -10.42,
+        "repeat_peak_dbfs": -53.79,
+        "h3_db": -93.2
+      },
+      {
+        "input_db": -24,
+        "wet_gain_db": -10.41,
+        "repeat_peak_dbfs": -47.83,
+        "h3_db": -75.6
+      },
+      {
+        "input_db": -18,
+        "wet_gain_db": -10.4,
+        "repeat_peak_dbfs": -41.84,
+        "h3_db": -72.0
+      },
+      {
+        "input_db": -12,
+        "wet_gain_db": -10.39,
+        "repeat_peak_dbfs": -35.83,
+        "h3_db": -70.4
+      },
+      {
+        "input_db": -6,
+        "wet_gain_db": -10.37,
+        "repeat_peak_dbfs": -29.82,
+        "h3_db": -71.9
+      },
+      {
+        "input_db": 0,
+        "wet_gain_db": -12.15,
+        "repeat_peak_dbfs": -26.56,
+        "h3_db": -17.1
+      },
+      {
+        "input_db": 3,
+        "wet_gain_db": -14.64,
+        "repeat_peak_dbfs": -26.33,
+        "h3_db": -13.0
+      }
+    ]
+  }
+}

@@ -287,6 +287,40 @@
         "type": "silence",
         "seconds": 10
       }
+    },
+    {
+      "name": "feedback-0900-m12",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "9:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 8
+      },
+      "note": "At -12 dB, below the wet path's clip: a clean feedback measurement."
+    },
+    {
+      "name": "feedback-0300-m12",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "3:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 8
+      },
+      "note": "At -12 dB, below the wet path's clip: a clean feedback measurement."
     }
   ]
 }

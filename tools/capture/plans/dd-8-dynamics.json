@@ -86,6 +86,31 @@
         "tail": 2
       },
       "note": "Level jumps: how fast does the wet path react?"
+    },
+    {
+      "name": "bursts-level1200",
+      "settings": {
+        "Level": "12:00",
+        "Feedback": "7:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          0,
+          3
+        ],
+        "step_seconds": 0.3,
+        "gap_seconds": 0.9,
+        "tail": 1
+      },
+      "note": "Same bursts with Level at 12:00: does the repeat clip at the same input level (clip before Level) or the same output level (after)?"
     }
   ]
 }
