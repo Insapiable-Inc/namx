@@ -1,0 +1,42 @@
+=== 2026-10-27 · run tools/capture/plans/ce-5-wet.json · rebuilt afterwards from the sidecars and the terminal output (run.log didn't exist yet)
+Takes 2 and 3 first failed the silence wait (the CE-5's hiss peaks at -65..-73 dBFS, over the -75 threshold); fixed by the plan's quiet_dbfs -60 (e37b451), then the run resumed at take 2.
+Take both-0700 was recorded twice (redo), same result.
+
+[1/26] bypass-sweep: pedal OFF · pedal peak -24.9 dBFS · loopback -24.6 dBFS · latency 450 samples · xruns 0 · 2026-10-27T10:59:43
+[2/26] bursts: E.Level 5:00 · Rate 12:00 · Depth 7:00 · Low 5:00 · High 5:00 · pedal peak -10.1 dBFS · loopback -9.0 dBFS · latency 456 samples · xruns 0 · 2026-10-27T11:03:24
+[3/26] sweep: E.Level 5:00 · Rate 12:00 · Depth 7:00 · Low 5:00 · High 5:00 · pedal peak -21.6 dBFS · loopback -24.6 dBFS · latency 456 samples · xruns 0 · 2026-10-27T11:03:40
+[4/26] sweep-level-0900: E.Level 9:00 · Rate 12:00 · Depth 7:00 · Low 5:00 · High 5:00 · pedal peak -41.6 dBFS · loopback -24.6 dBFS · latency 577 samples · xruns 0 · 2026-10-27T11:04:06
+[5/26] sweep-level-1200: E.Level 12:00 · Rate 12:00 · Depth 7:00 · Low 5:00 · High 5:00 · pedal peak -34.9 dBFS · loopback -24.6 dBFS · latency 577 samples · xruns 0 · 2026-10-27T11:04:35
+[6/26] sweep-level-0300: E.Level 3:00 · Rate 12:00 · Depth 7:00 · Low 5:00 · High 5:00 · pedal peak -26.6 dBFS · loopback -24.6 dBFS · latency 577 samples · xruns 0 · 2026-10-27T11:04:59
+[7/26] hold-rate-0700: E.Level 5:00 · Rate 7:00 · Depth 12:00 · Low 5:00 · High 5:00 · pedal peak -11.3 dBFS · loopback -13.0 dBFS · latency 577 samples · xruns 0 · 2026-10-27T11:06:05
+[8/26] hold-rate-0900: E.Level 5:00 · Rate 9:00 · Depth 12:00 · Low 5:00 · High 5:00 · pedal peak -11.3 dBFS · loopback -13.0 dBFS · latency 454 samples · xruns 0 · 2026-10-27T11:07:05
+[9/26] hold-rate-1200: E.Level 5:00 · Rate 12:00 · Depth 12:00 · Low 5:00 · High 5:00 · pedal peak -11.2 dBFS · loopback -12.6 dBFS · latency 583 samples · xruns 0 · 2026-10-27T11:07:42
+[10/26] hold-rate-0300: E.Level 5:00 · Rate 3:00 · Depth 12:00 · Low 5:00 · High 5:00 · pedal peak -11.3 dBFS · loopback -13.0 dBFS · latency 454 samples · xruns 0 · 2026-10-27T11:08:20
+[11/26] hold-rate-0500: E.Level 5:00 · Rate 5:00 · Depth 12:00 · Low 5:00 · High 5:00 · pedal peak -11.2 dBFS · loopback -13.0 dBFS · latency 583 samples · xruns 0 · 2026-10-27T11:08:53
+[12/26] hold-depth-0900: E.Level 5:00 · Rate 12:00 · Depth 9:00 · Low 5:00 · High 5:00 · pedal peak -11.3 dBFS · loopback -13.0 dBFS · latency 449 samples · xruns 0 · 2026-10-27T11:09:34
+[13/26] hold-depth-0300: E.Level 5:00 · Rate 12:00 · Depth 3:00 · Low 5:00 · High 5:00 · pedal peak -11.3 dBFS · loopback -13.0 dBFS · latency 449 samples · xruns 0 · 2026-10-27T11:10:12
+[14/26] hold-depth-0500: E.Level 5:00 · Rate 12:00 · Depth 5:00 · Low 5:00 · High 5:00 · pedal peak -11.3 dBFS · loopback -13.0 dBFS · latency 449 samples · xruns 0 · 2026-10-27T11:10:42
+[15/26] hold-depth-0700: E.Level 5:00 · Rate 12:00 · Depth 7:00 · Low 5:00 · High 5:00 · pedal peak -11.3 dBFS · loopback -13.0 dBFS · latency 583 samples · xruns 0 · 2026-10-27T11:11:15
+[16/26] note-off: E.Level 5:00 · Rate 12:00 · Depth 7:00 · Low 5:00 · High 5:00 · pedal peak -22.5 dBFS · loopback -24.9 dBFS · latency 583 samples · xruns 0 · 2026-10-27T11:11:59
+[17/26] noise-floor: E.Level 5:00 · Rate 12:00 · Depth 7:00 · Low 5:00 · High 5:00 · pedal peak -65.0 dBFS · loopback -92.3 dBFS · latency 583 samples · xruns 0 · 2026-10-27T11:12:19
+[18/26] low-0300: E.Level 5:00 · Rate 12:00 · Depth 7:00 · Low 3:00 · High 5:00 · pedal peak -21.3 dBFS · loopback -24.6 dBFS · latency 583 samples · xruns 0 · 2026-10-27T11:13:08
+[19/26] low-1200: E.Level 5:00 · Rate 12:00 · Depth 7:00 · Low 12:00 · High 5:00 · pedal peak -20.9 dBFS · loopback -24.6 dBFS · latency 455 samples · xruns 0 · 2026-10-27T11:13:38
+[20/26] low-0900: E.Level 5:00 · Rate 12:00 · Depth 7:00 · Low 9:00 · High 5:00 · pedal peak -21.0 dBFS · loopback -24.6 dBFS · latency 455 samples · xruns 0 · 2026-10-27T11:14:05
+[21/26] low-0700: E.Level 5:00 · Rate 12:00 · Depth 7:00 · Low 7:00 · High 5:00 · pedal peak -21.0 dBFS · loopback -24.6 dBFS · latency 577 samples · xruns 0 · 2026-10-27T11:14:24
+[22/26] high-0300: E.Level 5:00 · Rate 12:00 · Depth 7:00 · Low 5:00 · High 3:00 · pedal peak -21.6 dBFS · loopback -24.6 dBFS · latency 454 samples · xruns 0 · 2026-10-27T11:14:52
+[23/26] high-1200: E.Level 5:00 · Rate 12:00 · Depth 7:00 · Low 5:00 · High 12:00 · pedal peak -21.8 dBFS · loopback -24.6 dBFS · latency 455 samples · xruns 0 · 2026-10-27T11:15:16
+[24/26] high-0900: E.Level 5:00 · Rate 12:00 · Depth 7:00 · Low 5:00 · High 9:00 · pedal peak -22.5 dBFS · loopback -24.6 dBFS · latency 456 samples · xruns 0 · 2026-10-27T11:15:38
+[25/26] high-0700: E.Level 5:00 · Rate 12:00 · Depth 7:00 · Low 5:00 · High 7:00 · pedal peak -23.6 dBFS · loopback -24.6 dBFS · latency 456 samples · xruns 0 · 2026-10-27T11:15:56
+[26/26] both-0700: E.Level 5:00 · Rate 12:00 · Depth 7:00 · Low 7:00 · High 7:00 · pedal peak -29.3 dBFS · loopback -24.6 dBFS · latency 456 samples · xruns 0 · 2026-10-27T11:16:43
+
+=== 2026-10-27T11:37:04 · run tools/capture/plans/ce-5-wet.json · tool 1a547dcf43700818efdebb6e12f8be6aa5378768
+
+[27/27] sweep-check: sweep 20-20000 Hz, 10 s at -12 dB
+  pedal ON · E.Level 5:00 · Rate 12:00 · Depth 7:00 · Low 5:00 (changed) · High 5:00 (changed)
+  Check (a plug back in OUTPUT B; HIGH firmly at its clockwise stop): the same as 'sweep'? Against the mono session's sweep-check.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -21.6 dBFS · loopback -24.6 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+All 27 takes are in captures/boss/ce-5/2026-10-27-wet.

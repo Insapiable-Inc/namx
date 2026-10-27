@@ -1,0 +1,137 @@
+
+=== 2026-10-27T11:20:03 · run tools/capture/plans/ce-5.json · tool 15bb70ee7452b3d5c81e5ba64a4c0d477b44ee47
+
+[1/12] bypass-sweep: sweep 20-20000 Hz, 10 s at -12 dB
+  pedal OFF (bypassed)
+  Nothing in OUTPUT B: OUTPUT A carries the dry and effect sounds mixed.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -24.9 dBFS · loopback -24.6 dBFS · latency 454 samples (9.46 ms) · xruns 0
+  Enter = next, r = redo: r
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -24.9 dBFS · loopback -24.6 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[2/12] bypass-bursts: 1000 Hz at -30/-24/-18/-12/-8/-6/-4/-2/0/2/4 dB, 0.3 s each + 0.9 s gaps
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -9.5 dBFS · loopback -9.0 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[3/12] dry-sweep: sweep 20-20000 Hz, 10 s at -12 dB
+  pedal ON · E.Level 7:00 · Rate 12:00 · Depth 7:00 · Low 5:00 · High 5:00 (switch it on)
+  Both filter knobs fully clockwise. E.Level fully down: the dry path with the pedal on.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -17.4 dBFS · loopback -24.6 dBFS · latency 578 samples (12.04 ms) · xruns 0
+  Enter = next, r = redo: r
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -17.4 dBFS · loopback -24.6 dBFS · latency 578 samples (12.04 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[4/12] bursts: 1000 Hz at -30/-24/-18/-12/-8/-6/-4/-2/0/2/4 dB, 0.3 s each + 0.9 s gaps
+  pedal ON · E.Level 5:00 (changed) · Rate 12:00 · Depth 7:00 · Low 5:00 · High 5:00
+  Depth at minimum: level and saturation of the mix.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -10.1 dBFS · loopback -9.0 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[5/12] sweep: sweep 20-20000 Hz, 10 s at -12 dB
+  pedal ON · E.Level 5:00 · Rate 12:00 · Depth 7:00 · Low 5:00 · High 5:00
+  Depth at minimum: the dry/wet balance (against the wet-only sweep).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -17.5 dBFS · loopback -24.6 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[6/12] sweep-level-0900: sweep 20-20000 Hz, 10 s at -12 dB
+  pedal ON · E.Level 9:00 (changed) · Rate 12:00 · Depth 7:00 · Low 5:00 · High 5:00
+  E.Level map of the mix.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -23.4 dBFS · loopback -24.1 dBFS · latency 582 samples (12.12 ms) · xruns 0
+  Enter = next, r = redo: r
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -23.9 dBFS · loopback -24.6 dBFS · latency 454 samples (9.46 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[7/12] sweep-level-1200: sweep 20-20000 Hz, 10 s at -12 dB
+  pedal ON · E.Level 12:00 (changed) · Rate 12:00 · Depth 7:00 · Low 5:00 · High 5:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -22.8 dBFS · loopback -24.6 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[8/12] sweep-level-0300: sweep 20-20000 Hz, 10 s at -12 dB
+  pedal ON · E.Level 3:00 (changed) · Rate 12:00 · Depth 7:00 · Low 5:00 · High 5:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -20.2 dBFS · loopback -24.6 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[9/12] hold-sine: 1000 Hz sine, 20 s
+  pedal ON · E.Level 5:00 (changed) · Rate 12:00 · Depth 12:00 (changed) · Low 5:00 · High 5:00
+  Cross-check of the mix against the wet-only held tone.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -10.0 dBFS · loopback -13.0 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[10/12] noise-floor: silence, 10 s
+  pedal ON · E.Level 5:00 · Rate 12:00 · Depth 7:00 (changed) · Low 5:00 · High 5:00
+  No signal: hiss of the mix.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -64.1 dBFS · loopback -92.6 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[11/12] both-0700: sweep 20-20000 Hz, 10 s at -12 dB
+  pedal ON · E.Level 5:00 · Rate 12:00 · Depth 7:00 · Low 7:00 (changed) · High 7:00 (changed)
+  Filter at its narrowest, in the mix.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -21.0 dBFS · loopback -24.6 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[12/12] both-0700-dry: sweep 20-20000 Hz, 10 s at -12 dB
+  pedal ON · E.Level 7:00 (changed) · Rate 12:00 · Depth 7:00 · Low 7:00 · High 7:00
+  E.Level down: the manual says the filter shapes only the chorus sound; checks it. Afterwards both filter knobs back fully clockwise.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -24.0 dBFS · loopback -24.6 dBFS · latency 582 samples (12.12 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+All 12 takes are in captures/boss/ce-5/2026-10-27-mono.
+
+=== 2026-10-27T11:34:38 · run tools/capture/plans/ce-5.json · tool 1a547dcf43700818efdebb6e12f8be6aa5378768
+
+[3/14] dry-sweep: sweep 20-20000 Hz, 10 s at -12 dB
+  pedal ON · E.Level 7:00 · Rate 12:00 · Depth 7:00 · Low 5:00 · High 5:00 (switch it on)
+  Both filter knobs fully clockwise. E.Level fully down: the dry path with the pedal on.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -24.0 dBFS · loopback -24.6 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[13/14] sweep-check: sweep 20-20000 Hz, 10 s at -12 dB
+  pedal ON · E.Level 5:00 (changed) · Rate 12:00 · Depth 7:00 · Low 5:00 (changed) · High 5:00 (changed)
+  Check: the mono takes are 1-1.5 dB darker at 6-10 kHz than the wet-only ones. HIGH turned firmly to its clockwise stop: the same as 'sweep'?
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -17.4 dBFS · loopback -24.6 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[14/14] high-0300-check: sweep 20-20000 Hz, 10 s at -12 dB
+  pedal ON · E.Level 5:00 · Rate 12:00 · Depth 7:00 · Low 5:00 · High 3:00 (changed)
+  HIGH at 3:00: how far from 'sweep-check' (wet only: 1.2 dB at 6.4 kHz)?
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -17.5 dBFS · loopback -24.6 dBFS · latency 582 samples (12.12 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+All 14 takes are in captures/boss/ce-5/2026-10-27-mono.
