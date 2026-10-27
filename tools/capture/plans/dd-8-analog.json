@@ -1,0 +1,235 @@
+{
+  "pedal": "Boss DD-8 (Analog mode, mono: Input A -> Output A)",
+  "comment": "Analog mode, trimmed to compare with Standard (plans/dd-8-standard.json): tone and saturation, delay range, feedback, modulation, noise. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise; 9:00 and 3:00 pointer horizontal.",
+  "knobs": [
+    "Level",
+    "Feedback",
+    "Time"
+  ],
+  "takes": [
+    {
+      "name": "bypass-sweep",
+      "bypass": true,
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 4
+      }
+    },
+    {
+      "name": "bypass-bursts",
+      "bypass": true,
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          0,
+          3
+        ],
+        "step_seconds": 0.3,
+        "gap_seconds": 0.9,
+        "tail": 1
+      }
+    },
+    {
+      "name": "bursts",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "7:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          0,
+          3
+        ],
+        "step_seconds": 0.3,
+        "gap_seconds": 0.9,
+        "tail": 1
+      },
+      "note": "MODE on ANALOG. Each burst's repeat lands in the gap: level and saturation against the input."
+    },
+    {
+      "name": "time-1200-m12",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "7:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 4
+      },
+      "note": "One repeat, below Standard's clip: the analog voicing's tone."
+    },
+    {
+      "name": "time-1200",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "7:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": 0,
+        "tail": 4
+      },
+      "note": "The same at full level: does it saturate differently from Standard?"
+    },
+    {
+      "name": "time-0900",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "7:00",
+        "Time": "9:00"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 2.0,
+        "count": 3,
+        "tail": 2.0
+      }
+    },
+    {
+      "name": "time-0700",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "7:00",
+        "Time": "7:00"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 2.0,
+        "count": 3,
+        "tail": 2.0
+      }
+    },
+    {
+      "name": "time-0300",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "7:00",
+        "Time": "3:00"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 2.0,
+        "count": 3,
+        "tail": 2.0
+      }
+    },
+    {
+      "name": "time-0500",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "7:00",
+        "Time": "5:00"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 2.0,
+        "count": 3,
+        "tail": 2.0
+      },
+      "note": "The longest delay (clicks 2 s apart: tell me if repeats overlap the next click)."
+    },
+    {
+      "name": "feedback-0300-m12",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "3:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 8
+      },
+      "note": "Long tail: how fast the repeats fade and darken."
+    },
+    {
+      "name": "feedback-1200-m12",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 8
+      }
+    },
+    {
+      "name": "feedback-0900-m12",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "9:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 8
+      }
+    },
+    {
+      "name": "hold-sine",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 20,
+        "tail": 4
+      },
+      "note": "A held tone: any wobble from the emulated chip's clock shows here."
+    },
+    {
+      "name": "noise-floor",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "silence",
+        "seconds": 10
+      }
+    }
+  ]
+}
