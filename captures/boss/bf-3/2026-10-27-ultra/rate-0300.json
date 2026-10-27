@@ -1,0 +1,46 @@
+{
+  "take": "rate-0300",
+  "pedal": "Boss BF-3 Flanger, ULTRA mode (mono: Guitar In -> Output A)",
+  "bypass": false,
+  "settings": {
+    "Manual": "12:00",
+    "Res": "7:00",
+    "Depth": "12:00",
+    "Rate": "3:00"
+  },
+  "note": "",
+  "signal": {
+    "type": "clicks",
+    "period": 0.025,
+    "count": 600,
+    "tail": 0.5
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -22.75,
+    "loop": -13.97
+  },
+  "latency_samples": 576,
+  "latency_quality": 0.998,
+  "xruns": 0,
+  "played_sha256": "5437e80a574aca4cdb98d62e589d46245cbf3be7d137d8564f75b944b5f96eb4",
+  "recorded_at": "2026-10-27T15:22:53",
+  "tool_commit": "954e584a13314cc8958a88f10c9361bb4eabf557",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX4",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Scarlett 8i6 3rd gen; pedal feed: analogue out 3 (PCM 3, direct routing); loopback: out 4 -> line in 5; pedal into input 2, INST, AIR off, pad ON, gain min; no reamp box; calibration from the TR-2/DD-8 sessions; BF-3 on a 9 V power supply; MODE Ultra; Guitar In -> Output A, nothing in Output B"
+  }
+}

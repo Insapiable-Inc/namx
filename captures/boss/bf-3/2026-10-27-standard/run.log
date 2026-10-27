@@ -1,0 +1,243 @@
+
+=== 2026-10-27T14:19:07 · run tools/capture/plans/bf-3-standard.json · tool 62c122d638f9173c38e4b7a2f03e4116c45b5c1b
+
+[1/31] bypass-sweep: sweep 20-20000 Hz, 10 s at -12 dB
+  pedal OFF (bypassed)
+  MODE on STANDARD for the whole plan. Guitar In, Output A only (nothing in B).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -25.0 dBFS · loopback -24.6 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[2/31] bypass-bursts: 1000 Hz at -30/-24/-18/-12/-8/-6/-4/-2/0/2/4 dB, 0.3 s each + 0.9 s gaps
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -9.6 dBFS · loopback -9.0 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[3/31] bypass-clicks: 80 clicks every 0.025 s
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -14.3 dBFS · loopback -14.0 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[4/31] still-clicks: 400 clicks every 0.025 s
+  pedal ON · Manual 12:00 · Res 7:00 · Depth 7:00 · Rate 12:00 (switch it on)
+  Depth at minimum: does the sweep stop? (a click every 25 ms; each one's echo shows the delay)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -21.9 dBFS · loopback -14.0 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[5/31] manual-0700: sweep 20-20000 Hz, 10 s at -12 dB
+  pedal ON · Manual 7:00 (changed) · Res 7:00 · Depth 7:00 · Rate 12:00
+  Depth and Res at minimum: the delay Manual sets, and the wet's level and tone.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -18.9 dBFS · loopback -24.3 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[6/31] manual-0900: sweep 20-20000 Hz, 10 s at -12 dB
+  pedal ON · Manual 9:00 (changed) · Res 7:00 · Depth 7:00 · Rate 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -18.9 dBFS · loopback -24.6 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: r
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -18.8 dBFS · loopback -24.6 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[7/31] manual-1200: sweep 20-20000 Hz, 10 s at -12 dB
+  pedal ON · Manual 12:00 (changed) · Res 7:00 · Depth 7:00 · Rate 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -18.9 dBFS · loopback -24.6 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[8/31] manual-0300: sweep 20-20000 Hz, 10 s at -12 dB
+  pedal ON · Manual 3:00 (changed) · Res 7:00 · Depth 7:00 · Rate 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -18.9 dBFS · loopback -24.6 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[9/31] manual-0500: sweep 20-20000 Hz, 10 s at -12 dB
+  pedal ON · Manual 5:00 (changed) · Res 7:00 · Depth 7:00 · Rate 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.2 dBFS · loopback -24.6 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  Enter = next, r = redo: r
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.2 dBFS · loopback -24.6 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[10/31] res-0900: sweep 20-20000 Hz, 10 s at -12 dB
+  pedal ON · Manual 12:00 (changed) · Res 9:00 (changed) · Depth 7:00 · Rate 12:00
+  Manual 12:00, Depth at minimum: Res's feedback per pass (the echoes inside the response).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -18.1 dBFS · loopback -24.6 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[11/31] res-1200: sweep 20-20000 Hz, 10 s at -12 dB
+  pedal ON · Manual 12:00 · Res 12:00 (changed) · Depth 7:00 · Rate 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -16.2 dBFS · loopback -24.6 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[12/31] res-0300: sweep 20-20000 Hz, 10 s at -12 dB
+  pedal ON · Manual 12:00 · Res 3:00 (changed) · Depth 7:00 · Rate 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -12.4 dBFS · loopback -24.6 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[13/31] res-0500: sweep 20-20000 Hz, 10 s at -12 dB
+  pedal ON · Manual 12:00 · Res 5:00 (changed) · Depth 7:00 · Rate 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -11.0 dBFS · loopback -24.6 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[14/31] res-0300-manual-0700: sweep 20-20000 Hz, 10 s at -12 dB
+  pedal ON · Manual 7:00 (changed) · Res 3:00 (changed) · Depth 7:00 · Rate 12:00
+  Does the feedback depend on the delay? Res 3:00 at both ends of Manual.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -15.1 dBFS · loopback -24.6 dBFS · latency 448 samples (9.33 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[15/31] res-0300-manual-0500: sweep 20-20000 Hz, 10 s at -12 dB
+  pedal ON · Manual 5:00 (changed) · Res 3:00 · Depth 7:00 · Rate 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -14.5 dBFS · loopback -24.6 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[16/31] bursts: 1000 Hz at -30/-24/-18/-12/-8/-6/-4/-2/0/2/4 dB, 0.3 s each + 0.9 s gaps
+  pedal ON · Manual 12:00 (changed) · Res 7:00 (changed) · Depth 7:00 · Rate 12:00
+  Manual 12:00, Res and Depth at minimum: level and saturation.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -10.8 dBFS · loopback -9.0 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[17/31] bursts-res-0500: 1000 Hz at -30/-24/-18/-12/-8/-6/-4/-2/0/2/4 dB, 0.3 s each + 0.9 s gaps
+  pedal ON · Manual 12:00 · Res 5:00 (changed) · Depth 7:00 · Rate 12:00
+  Res fully up: does the loop saturate?
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -10.6 dBFS · loopback -9.0 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[18/31] res-0500-click: 1 clicks every 4 s at -12 dB
+  pedal ON · Manual 12:00 · Res 5:00 · Depth 7:00 · Rate 12:00
+  One quiet click, then 4 s: does Res 5:00 ring on, fade or run away? Afterwards Res back to minimum.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -31.8 dBFS · loopback -26.0 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[19/31] rate-0700: 1800 clicks every 0.025 s
+  pedal ON · Manual 12:00 · Res 7:00 (changed) · Depth 12:00 (changed) · Rate 7:00 (changed)
+  The sweep, Res at minimum, Depth 12:00: a click every 25 ms reads the delay 40 times a second. Rate 7:00 may be an 18 s cycle.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -21.9 dBFS · loopback -14.0 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[20/31] rate-0900: 1200 clicks every 0.025 s
+  pedal ON · Manual 12:00 · Res 7:00 · Depth 12:00 · Rate 9:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -21.9 dBFS · loopback -14.0 dBFS · latency 576 samples (12.00 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[21/31] rate-1200: 800 clicks every 0.025 s
+  pedal ON · Manual 12:00 · Res 7:00 · Depth 12:00 · Rate 12:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -21.9 dBFS · loopback -14.0 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[22/31] rate-0300: 600 clicks every 0.025 s
+  pedal ON · Manual 12:00 · Res 7:00 · Depth 12:00 · Rate 3:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -21.9 dBFS · loopback -14.0 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[23/31] rate-0500: 400 clicks every 0.025 s
+  pedal ON · Manual 12:00 · Res 7:00 · Depth 12:00 · Rate 5:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -21.9 dBFS · loopback -14.0 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[24/31] depth-0900: 800 clicks every 0.025 s
+  pedal ON · Manual 12:00 · Res 7:00 · Depth 9:00 (changed) · Rate 12:00 (changed)
+  Rate back to 12:00: Depth's range.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -21.9 dBFS · loopback -14.0 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[25/31] depth-0300: 800 clicks every 0.025 s
+  pedal ON · Manual 12:00 · Res 7:00 · Depth 3:00 (changed) · Rate 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -21.9 dBFS · loopback -14.0 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[26/31] depth-0500: 800 clicks every 0.025 s
+  pedal ON · Manual 12:00 · Res 7:00 · Depth 5:00 (changed) · Rate 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -21.9 dBFS · loopback -14.0 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[27/31] depth-0500-manual-0700: 800 clicks every 0.025 s
+  pedal ON · Manual 7:00 (changed) · Res 7:00 · Depth 5:00 · Rate 12:00
+  Depth at maximum: the manual says Manual then does nothing. Manual at 7:00 to check.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -21.9 dBFS · loopback -14.0 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[28/31] sweep-manual-0900: 800 clicks every 0.025 s
+  pedal ON · Manual 9:00 (changed) · Res 7:00 · Depth 12:00 (changed) · Rate 12:00
+  Depth 12:00: how Manual moves the sweep.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -21.9 dBFS · loopback -14.0 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[29/31] sweep-manual-0300: 800 clicks every 0.025 s
+  pedal ON · Manual 3:00 (changed) · Res 7:00 · Depth 12:00 · Rate 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -21.9 dBFS · loopback -14.0 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[30/31] sweep-res-1200: 800 clicks every 0.025 s
+  pedal ON · Manual 12:00 (changed) · Res 12:00 (changed) · Depth 12:00 · Rate 12:00
+  Manual and Depth 12:00 with some Res: the flanger as played.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -21.9 dBFS · loopback -14.0 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[31/31] noise-floor: silence, 10 s
+  pedal ON · Manual 12:00 · Res 7:00 (changed) · Depth 7:00 (changed) · Rate 12:00
+  Res and Depth at minimum: no signal.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -66.3 dBFS · loopback -92.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+All 31 takes are in captures/boss/bf-3/2026-10-27-standard.

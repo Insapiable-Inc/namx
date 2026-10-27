@@ -1,0 +1,56 @@
+
+=== 2026-10-27T15:33:01 · run tools/capture/plans/bf-3-ultra-res.json · tool a925498a7ce3dddb30c0a799a4a210f72ec8f851
+
+[1/6] bypass-sweep: sweep 20-20000 Hz, 10 s at -12 dB
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -25.0 dBFS · loopback -24.6 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[2/6] manual-0700: sweep 20-20000 Hz, 10 s at -12 dB
+  pedal ON · Manual 7:00 · Res 7:00 · Depth 7:00 · Rate 12:00 (switch it on)
+  MODE on ULTRA. Res minimum: this session's reference.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -14.8 dBFS · loopback -24.6 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[3/6] res-0900-manual-0700: sweep 20-20000 Hz, 10 s at -12 dB
+  pedal ON · Manual 7:00 · Res 9:00 (changed) · Depth 7:00 · Rate 12:00
+  Weak feedback: each tap's first echo lands at its own multiple of d/2.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -14.1 dBFS · loopback -24.6 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[4/6] res-1200-manual-0700: sweep 20-20000 Hz, 10 s at -12 dB
+  pedal ON · Manual 7:00 · Res 12:00 (changed) · Depth 7:00 · Rate 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -12.4 dBFS · loopback -24.6 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[5/6] res-0300-manual-0700: sweep 20-20000 Hz, 10 s at -12 dB
+  pedal ON · Manual 7:00 · Res 3:00 (changed) · Depth 7:00 · Rate 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -12.4 dBFS · loopback -24.6 dBFS · latency 454 samples (9.46 ms) · xruns 0
+  Enter = next, r = redo: r
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -11.3 dBFS · loopback -24.6 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: r
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -11.3 dBFS · loopback -24.6 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[6/6] res-0500-manual-0700: sweep 20-20000 Hz, 10 s at -12 dB
+  pedal ON · Manual 7:00 · Res 5:00 (changed) · Depth 7:00 · Rate 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -11.1 dBFS · loopback -24.6 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+All 6 takes are in captures/boss/bf-3/2026-10-27-ultra-res.

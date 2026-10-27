@@ -2,7 +2,7 @@
 
 Tools for measuring real pedals through an audio interface and fitting models of them,
 so NAM-X's own effects can be voiced after the real thing. Started 2026-10-26 with a
-collection of Boss pedals. Done so far: the TR-2 tremolo, the DD-8 delay and the CE-5 chorus — see
+collection of Boss pedals. Done so far: the TR-2 tremolo, the DD-8 delay, the CE-5 chorus and the BF-3 flanger's Standard mode — see
 [`captures/README.md`](../../captures/README.md) for every pedal's status and what's next.
 
 | File | What it does |
@@ -14,6 +14,7 @@ collection of Boss pedals. Done so far: the TR-2 tremolo, the DD-8 delay and the
 | `analyze_dd8.py` | The DD-8's Standard mode: deconvolved sweeps (dry path, delay times, Level/Feedback maps, tone), bursts (the clip), and figures |
 | `analyze_dd8_mode.py` | Any other DD-8 mode recorded with the Analog/Tape/Warm/Mod plans: bursts, steps, tone, feedback (sweeps and bursts), Feedback 5:00, wow/flutter and LFO (rate, delay swing, shape), Time turned by hand, delays, noise |
 | `analyze_ce5.py` | The CE-5 (wet-only + mono sessions): dry and wet split by time in the deconvolved sweeps (delay, gain, tone, group delay), E.Level, the filters (corner, slope, floor), the LFO from held tones' phase (rate, absolute delay, bowed-triangle shape), bursts, note-off, noise |
+| `analyze_bf3.py` | The BF-3 (Standard, mono): dry and wet split in time at Manual 7:00 (delay, gain, tone), Manual's delay from the comb, Res from the clean echo and the comb's ripple depth, the output clip, the sweep from click trains (delay per click, LFO rate, smoothed-triangle^power shape, Depth's floor blend and swing) |
 | `plans/*.json` | One plan per pedal: the takes, their knob settings and signals |
 
 Needs Python with numpy, scipy, soundfile and matplotlib, plus the JACK client for Python
@@ -246,3 +247,16 @@ From the CE-5:
   knobs (wet level, LFO rate, delay swing). `run.log` now keeps every session's transcript.
 - **Flat group delay through a steep cut means digital:** an analog filter that steep
   delays the frequencies near its corner.
+
+From the BF-3:
+
+- **Click trains read a flanger's sweep:** a click every 25 ms, each echo at the current
+  delay — no period ambiguity at 0.3–15 ms. Only an LFO near 10 Hz (4 clicks a cycle) is
+  too fast; its swing comes from the fundamental of the four phases.
+- **A digital pedal runs on its own clock:** its output lands up to a sample apart from
+  take to take, which the loopback can't see. Fit the shift when one take's template is
+  used on another, or measure inside one take.
+- **Resonant settings need a quieter sweep:** with Res up the comb's peaks reached the
+  output clip at −12 dB (the run log's peak against the clip tells); −24 dB is clear.
+- **Loop gain from the comb's ripple depth** (max/min of the wet over its no-feedback
+  twin), not from a complex fit that hinges on the loop's phase.

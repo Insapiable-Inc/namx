@@ -353,6 +353,7 @@ private:
     KnobWidget* knob_fl_depth = nullptr;
     KnobWidget* knob_fl_feedback = nullptr;
     KnobWidget* knob_fl_mix = nullptr;
+    KnobWidget* knob_fl_type = nullptr;
 
     ToggleSwitch* sw_phaser_enable = nullptr;
     ToggleSwitch* sw_phaser_stereo = nullptr;
