@@ -342,6 +342,42 @@
         "tail": 8
       },
       "note": "One 50 ms burst, then 8 s of repeats, each read directly (the wow spoils the sweep method)."
+    },
+    {
+      "name": "feedback-burst-0900-again",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "9:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -12
+        ],
+        "step_seconds": 0.05,
+        "tail": 8
+      },
+      "note": "Set Feedback fresh to 9:00 (pointing LEFT, horizontal). Before pressing Enter, let any leftover repeats die out (turn Feedback fully down for a moment if they don't)."
+    },
+    {
+      "name": "feedback-burst-0300-again",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "3:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -12
+        ],
+        "step_seconds": 0.05,
+        "tail": 8
+      },
+      "note": "Set Feedback fresh to 3:00 (pointing RIGHT, horizontal). Before pressing Enter, let any leftover repeats die out (turn Feedback fully down for a moment if they don't)."
     }
   ]
 }
