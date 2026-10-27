@@ -5,6 +5,7 @@
 #include <cmath>
 #include <numbers>
 
+#include "BiquadChain.h"
 #include "Common.h"
 
 namespace namx
@@ -45,26 +46,8 @@ constexpr std::array<float, 4> KNOB_AT{0.2f, 0.5f, 0.8f, 1.0f};
 // Level, dB re 5:00 (an audio taper; the same in every mode within ~1 dB).
 constexpr std::array<float, 4> LEVEL_DB{-33.6f, -13.4f, -2.6f, 0.0f};
 
-enum class Kind : int
-{
-    NONE,
-    LOW_PASS,
-    HIGH_PASS,
-    PEAK,
-    LOW_SHELF,
-};
-
-// One RBJ biquad of a chain.
-struct Section
-{
-    Kind kind = Kind::NONE;
-    float hz = 0.0f;
-    float q = 0.707f;
-    float gain_db = 0.0f;
-};
-
 constexpr size_t CHAIN = 4;
-using Chain = std::array<Section, CHAIN>;
+using Chain = FilterChain<CHAIN>;
 
 struct Voicing
 {
@@ -85,18 +68,18 @@ struct Voicing
 // 8 kHz (measured −19 / −50). No peak above its 1 kHz gain, so it can sit in the loop
 // without a band running away at high Feedback.
 constexpr Chain ANALOG_LOOP{{
-    {Kind::LOW_PASS, 2780.0f, 0.5176f, 0.0f},
-    {Kind::LOW_PASS, 2780.0f, 0.7071f, 0.0f},
-    {Kind::LOW_PASS, 2780.0f, 1.9319f, 0.0f},
+    {FilterKind::LOW_PASS, 2780.0f, 0.5176f, 0.0f},
+    {FilterKind::LOW_PASS, 2780.0f, 0.7071f, 0.0f},
+    {FilterKind::LOW_PASS, 2780.0f, 1.9319f, 0.0f},
     {},
 }};
 
 // The first repeat's tone, re 1 kHz: flat to 4 kHz, −2.1 dB at 8 kHz, −29.5 dB at 16 kHz,
 // +1.5 dB at 63 Hz (fitted within 0.2 dB per third octave).
 constexpr Chain STANDARD_OUT{{
-    {Kind::LOW_PASS, 6248.9f, 0.721f, 0.0f},
-    {Kind::LOW_PASS, 11118.6f, 2.5f, 0.0f},
-    {Kind::PEAK, 60.3f, 0.917f, 1.61f},
+    {FilterKind::LOW_PASS, 6248.9f, 0.721f, 0.0f},
+    {FilterKind::LOW_PASS, 11118.6f, 2.5f, 0.0f},
+    {FilterKind::PEAK, 60.3f, 0.917f, 1.61f},
     {},
 }};
 
@@ -129,10 +112,10 @@ constexpr Voicing TAPE{
     .ceiling_db = -7.75f,
     .feedback_db = {-10.8f, -6.65f, -0.04f, 0.003f},
     .out = {{
-        {Kind::HIGH_PASS, 62.5f, 0.4f, 0.0f},
-        {Kind::LOW_PASS, 12809.8f, 1.437f, 0.0f},
-        {Kind::LOW_PASS, 3510.1f, 1.023f, 0.0f},
-        {Kind::PEAK, 320.5f, 0.867f, 3.57f},
+        {FilterKind::HIGH_PASS, 62.5f, 0.4f, 0.0f},
+        {FilterKind::LOW_PASS, 12809.8f, 1.437f, 0.0f},
+        {FilterKind::LOW_PASS, 3510.1f, 1.023f, 0.0f},
+        {FilterKind::PEAK, 320.5f, 0.867f, 3.57f},
     }},
     .loop_low_pass_hz = LOOP_LOW_PASS_HZ,
     .lfo_hz = 0.53f,
@@ -148,9 +131,9 @@ constexpr Voicing WARM{
     .ceiling_db = -2.46f,
     .feedback_db = {-11.6f, -7.46f, -0.82f, 0.06f},
     .out = {{
-        {Kind::LOW_SHELF, 504.3f, 0.429f, 3.45f},
-        {Kind::LOW_PASS, 7168.2f, 0.598f, 0.0f},
-        {Kind::LOW_PASS, 13778.6f, 2.5f, 0.0f},
+        {FilterKind::LOW_SHELF, 504.3f, 0.429f, 3.45f},
+        {FilterKind::LOW_PASS, 7168.2f, 0.598f, 0.0f},
+        {FilterKind::LOW_PASS, 13778.6f, 2.5f, 0.0f},
         {},
     }},
     .loop_low_pass_hz = LOOP_LOW_PASS_HZ,
@@ -200,124 +183,11 @@ inline float clip(float x, float ceiling, float knee) {
     return x / std::pow(1.0f + std::pow(u, knee), 1.0f / knee);
 }
 
-struct Biquad
-{
-    float b0 = 1.0f, b1 = 0.0f, b2 = 0.0f, a1 = 0.0f, a2 = 0.0f;
-
-    // The Audio EQ Cookbook's designs; NONE (or a frequency past Nyquist for a low-pass)
-    // stays a pass-through.
-    void design(const Section& s, double sr) {
-        *this = Biquad{};
-        if (s.kind == Kind::NONE || s.hz >= 0.49 * sr) {
-            return;
-        }
-        const double w = 2.0 * std::numbers::pi * s.hz / sr;
-        const double c = std::cos(w);
-        const double alpha = std::sin(w) / (2.0 * s.q);
-        const double a = std::pow(10.0, s.gain_db / 40.0);
-        double nb0 = 1.0, nb1 = 0.0, nb2 = 0.0, na0 = 1.0, na1 = 0.0, na2 = 0.0;
-        switch (s.kind) {
-            case Kind::LOW_PASS:
-                nb0 = nb2 = (1.0 - c) / 2.0;
-                nb1 = 1.0 - c;
-                na0 = 1.0 + alpha;
-                na1 = -2.0 * c;
-                na2 = 1.0 - alpha;
-                break;
-            case Kind::HIGH_PASS:
-                nb0 = nb2 = (1.0 + c) / 2.0;
-                nb1 = -(1.0 + c);
-                na0 = 1.0 + alpha;
-                na1 = -2.0 * c;
-                na2 = 1.0 - alpha;
-                break;
-            case Kind::PEAK:
-                nb0 = 1.0 + alpha * a;
-                nb1 = -2.0 * c;
-                nb2 = 1.0 - alpha * a;
-                na0 = 1.0 + alpha / a;
-                na1 = -2.0 * c;
-                na2 = 1.0 - alpha / a;
-                break;
-            case Kind::LOW_SHELF: {
-                const double root = 2.0 * std::sqrt(a) * alpha;
-                nb0 = a * ((a + 1.0) - (a - 1.0) * c + root);
-                nb1 = 2.0 * a * ((a - 1.0) - (a + 1.0) * c);
-                nb2 = a * ((a + 1.0) - (a - 1.0) * c - root);
-                na0 = (a + 1.0) + (a - 1.0) * c + root;
-                na1 = -2.0 * ((a - 1.0) + (a + 1.0) * c);
-                na2 = (a + 1.0) + (a - 1.0) * c - root;
-                break;
-            }
-            case Kind::NONE:
-                break;
-        }
-        b0 = static_cast<float>(nb0 / na0);
-        b1 = static_cast<float>(nb1 / na0);
-        b2 = static_cast<float>(nb2 / na0);
-        a1 = static_cast<float>(na1 / na0);
-        a2 = static_cast<float>(na2 / na0);
-    }
-};
-
-// One chain's coefficients at one sample rate, scaled to unity at 1 kHz: the fits are
-// "re 1 kHz", and the repeat levels and the Feedback map were measured there.
-struct ChainCoefficients
-{
-    std::array<Biquad, CHAIN> sections{};
-    size_t count = 0; // sections in use (the chains are packed from the front)
-    float gain = 1.0f;
-
-    void design(const Chain& chain, double sr) {
-        count = 0;
-        for (const Section& s : chain) {
-            if (s.kind != Kind::NONE) {
-                sections[count++].design(s, sr);
-            }
-        }
-        const double w = 2.0 * std::numbers::pi * 1000.0 / sr;
-        double magnitude = 1.0;
-        for (size_t i = 0; i < count; ++i) {
-            const Biquad& b = sections[i];
-            // |H(e^jw)| from the numerator and denominator polynomials.
-            const double num_re = b.b0 + b.b1 * std::cos(w) + b.b2 * std::cos(2.0 * w);
-            const double num_im = -(b.b1 * std::sin(w) + b.b2 * std::sin(2.0 * w));
-            const double den_re = 1.0 + b.a1 * std::cos(w) + b.a2 * std::cos(2.0 * w);
-            const double den_im = -(b.a1 * std::sin(w) + b.a2 * std::sin(2.0 * w));
-            magnitude *= std::hypot(num_re, num_im) / std::hypot(den_re, den_im);
-        }
-        gain = static_cast<float>(1.0 / magnitude);
-    }
-};
-
-// A chain's state (transposed direct form II, one per section).
-struct ChainState
-{
-    std::array<float, CHAIN> z1{};
-    std::array<float, CHAIN> z2{};
-
-    float process(float x, const ChainCoefficients& k) {
-        for (size_t i = 0; i < k.count; ++i) {
-            const Biquad& b = k.sections[i];
-            const float y = b.b0 * x + z1[i];
-            z1[i] = b.b1 * x - b.a1 * y + z2[i];
-            z2[i] = b.b2 * x - b.a2 * y;
-            x = y;
-        }
-        return x * k.gain;
-    }
-
-    void reset() {
-        z1.fill(0.0f);
-        z2.fill(0.0f);
-    }
-};
-
 // A voicing's filters at one sample rate.
 struct Coefficients
 {
-    ChainCoefficients loop;
-    ChainCoefficients out;
+    BiquadChain<CHAIN> loop;
+    BiquadChain<CHAIN> out;
     float loop_low_pass = 1.0f; // one-pole coefficient (1: pass-through)
 
     void prepare(const Voicing& v, double sr) {

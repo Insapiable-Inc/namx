@@ -112,7 +112,7 @@ private:
         DelayLine samples;
         float hp_x = 0.0f, hp_y = 0.0f, lp = 0.0f;
         // DD-8 types: the voicing's chains and loop low-pass.
-        dd8::ChainState dd8_loop, dd8_out;
+        BiquadChainState<dd8::CHAIN> dd8_loop, dd8_out;
         float dd8_loop_lp = 0.0f;
         // Read before this sample's push(), so "d samples ago" is d - 1 behind the
         // newest sample in the line.
