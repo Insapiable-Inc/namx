@@ -14,8 +14,8 @@ The collection: 17 Boss pedals, on a Focusrite Scarlett 8i6 (3rd gen).
 |---|---|---|---|
 | **TR-2** Tremolo | modulation (amplitude) | **Done.** Grey-box model (clamped offset triangle, fast-fall/slow-rise follower, Depth-dependent top level), fitted to a battery and a 9 V session; in NAM-X as the Tremolo's TR-2 type, frozen (branch `dsp/tremolo-tr2`) | [`boss/tr-2/README.md`](boss/tr-2/README.md) |
 | **DD-8** Digital Delay | delay | **Done:** Standard, Analog, Tape, Warm, Mod, Reverse; Shimmer minimal (an octave-up wash beside plain echoes, not pursued). Not done: GLT (low priority). Excluded by choice: Warp, Looper, +RV. Not in NAM-X yet: the four "voicings" (Standard/Analog/Tape/Warm) are one engine with a parameter set each — the study's side-by-side table | [`boss/dd-8/README.md`](boss/dd-8/README.md) |
-| **CE-5** Chorus Ensemble | modulation | **Next.** See below | |
-| BF-3 Flanger | modulation | after the CE-5 (same tools) | |
+| **CE-5** Chorus Ensemble | modulation | **Measured** 2026-10-27, wet-only (a plug in Output B) and mono sessions: a digital chorus — dry 0.98 ms late at +2.3 dB, wet 5.4 ms after it with a 60 Hz low cut and a 10 kHz linear-phase wall; bowed-triangle LFO 0.25–5.9 Hz, Depth raising mainly the top (5.7–8.1 ms); Low = resonant high-pass shelf, High = first-order low-pass; hard clip at the guitar's peak. Four open questions → a short extra session (takes appended to its plans) | [`boss/ce-5/README.md`](boss/ce-5/README.md) |
+| BF-3 Flanger | modulation | **Next** (the CE-5's tools: wet-only via Output B if it has one, `analyze_ce5.py`'s delay trace) | |
 | CS-3 Compressor | dynamics | quick: bursts and level steps were built for this | |
 | SD-1, DS-1, JB-2, HM-2W | drives | NAM captures (a different workflow: NAM's trainer); a NAM "pedal" before the amp needs ROADMAP Phase 24. The SD-1 also cross-checks NAM-X's Tube Screamer model | |
 | NS-2 Noise Suppressor, AW-3 Dynamic Wah | dynamics | bursts, steps | |
@@ -29,29 +29,15 @@ The collection: 17 Boss pedals, on a Focusrite Scarlett 8i6 (3rd gen).
 Every pedal on a 9 V supply, not a battery: the TR-2's tired battery (8.37 V) held the top
 of its cycle ~0.5 dB high at full Depth, and a drained battery won't boot the DD-8.
 
-## Next: the CE-5
+## Next: the BF-3
 
-A chorus is a short modulated delay, mixed with the dry signal; the DD-8's Mod mode
-(Standard + a 1.51 Hz sine LFO of ±0.62 ms, a fixed depth) is the comparison. What to
-measure, with the existing tools:
-
-- the **LFO**: held tones (`hold-sine…`, one take per Rate position and per Depth
-  position): `analyze_dd8_mode.wow_flutter` gives the rate, the delay swing in ms and the
-  folded waveform (it subtracts the dry tone fitted before the first repeat arrives — with
-  a chorus's few-ms delay that window is too short: fit the dry from the bypass take
-  instead);
-- the **base delay** (a few ms, not 20–800): too short for the click method; read it from
-  a deconvolved sweep (`analyze_dd8.impulse_response`) at minimum Depth, or from the phase
-  of a held tone;
-- the **wet tone** (a bucket-brigade chorus is dark) and the **dry/wet balance**, from
-  sweeps at minimum Depth;
-- **level and saturation** (bursts and the `-12 dB` rule), **noise** (BBD hiss, the
-  compander's breathing: a level step);
-- the CE-5's knobs (Level, Rate, Depth, Filter): check the panel before writing the plan;
-  positions 7:00 / 9:00 / 12:00 / 3:00 / 5:00. Mono first (stereo outputs later).
-
-A new analysis script (`analyze_ce5.py`, or a generic chorus one) will be needed; the
-plan can start from `plans/dd-8-mod.json`.
+A flanger is the CE-5's structure with a shorter delay and feedback. Start from
+`plans/ce-5-wet.json` / `plans/ce-5.json` and `analyze_ce5.py`: held tones per Rate and
+Depth position (the delay trace from the tone's phase — at a flanger's ~1 ms a 1 kHz tone
+is ambiguous by whole periods, so add a 200 Hz one), sweeps at minimum Depth (the delay,
+the tone), bursts, noise; and the BF-3's own knobs (Manual, Res — the feedback, from
+sweeps: the comb's peak height) and modes: check the panel and manual first. If it has
+two outputs, look for a wet-only mode as on the CE-5.
 
 ## Starting a session
 

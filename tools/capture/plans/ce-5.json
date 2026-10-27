@@ -278,6 +278,37 @@
         "tail": 2
       },
       "note": "HIGH at 3:00: how far from 'sweep-check' (wet only: 1.2 dB at 6.4 kHz)?"
+    },
+    {
+      "name": "bursts-dry",
+      "settings": {
+        "E.Level": "7:00",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Low": "5:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -30,
+          -24,
+          -18,
+          -12,
+          -8,
+          -6,
+          -4,
+          -2,
+          0,
+          2,
+          4
+        ],
+        "step_seconds": 0.3,
+        "gap_seconds": 0.9,
+        "tail": 1
+      },
+      "note": "Extra (open question 3): E.Level fully down, filters open. Does the dry path clip?"
     }
   ]
 }

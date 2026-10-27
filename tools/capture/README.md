@@ -2,7 +2,7 @@
 
 Tools for measuring real pedals through an audio interface and fitting models of them,
 so NAM-X's own effects can be voiced after the real thing. Started 2026-10-26 with a
-collection of Boss pedals. Done so far: the TR-2 tremolo and the DD-8 delay — see
+collection of Boss pedals. Done so far: the TR-2 tremolo, the DD-8 delay and the CE-5 chorus — see
 [`captures/README.md`](../../captures/README.md) for every pedal's status and what's next.
 
 | File | What it does |
@@ -13,6 +13,7 @@ collection of Boss pedals. Done so far: the TR-2 tremolo and the DD-8 delay — 
 | `fit_tr2.py` | The TR-2 model fit: parameters, fit errors, tone, and the figures |
 | `analyze_dd8.py` | The DD-8's Standard mode: deconvolved sweeps (dry path, delay times, Level/Feedback maps, tone), bursts (the clip), and figures |
 | `analyze_dd8_mode.py` | Any other DD-8 mode recorded with the Analog/Tape/Warm/Mod plans: bursts, steps, tone, feedback (sweeps and bursts), Feedback 5:00, wow/flutter and LFO (rate, delay swing, shape), Time turned by hand, delays, noise |
+| `analyze_ce5.py` | The CE-5 (wet-only + mono sessions): dry and wet split by time in the deconvolved sweeps (delay, gain, tone, group delay), E.Level, the filters (corner, slope, floor), the LFO from held tones' phase (rate, absolute delay, bowed-triangle shape), bursts, note-off, noise |
 | `plans/*.json` | One plan per pedal: the takes, their knob settings and signals |
 
 Needs Python with numpy, scipy, soundfile and matplotlib, plus the JACK client for Python
@@ -230,3 +231,18 @@ From the DD-8:
   twice differed by ~5°; 3:00 repeated to the sample.
 - **Signal levels:** the DD-8's repeats clip ~3 dB under a hot guitar's peaks, so
   anything meant to be linear (sweeps for tone or feedback) goes at −12 dB.
+
+From the CE-5:
+
+- **A pedal's own hiss can be louder than the silence threshold.** `run` waits for a
+  peak under −75 dBFS before each take; the CE-5 hisses at −65 to −73 even when idle. A
+  plan can set its own `quiet_dbfs`.
+- **Look for a wet-only output.** With a plug in Output B (other end loose), the CE-5's
+  Output A carries only the effect sound: no dry to separate.
+- **Split dry and wet in time, not by subtraction:** windowing the impulse response
+  between the dry (1 ms) and the wet (6.4 ms) needs no alignment; subtracting another
+  take's dry does, to a fraction of a sample (the loopback latency can be a sample out).
+- **A wrong take can be read back:** the mis-set `dry-sweep` gave away all three wrong
+  knobs (wet level, LFO rate, delay swing). `run.log` now keeps every session's transcript.
+- **Flat group delay through a steep cut means digital:** an analog filter that steep
+  delays the frequencies near its corner.

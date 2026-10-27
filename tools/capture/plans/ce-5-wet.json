@@ -491,6 +491,104 @@
         "tail": 2
       },
       "note": "Check (a plug back in OUTPUT B; HIGH firmly at its clockwise stop): the same as 'sweep'? Against the mono session's sweep-check."
+    },
+    {
+      "name": "hold-200hz-depth-0700",
+      "settings": {
+        "E.Level": "5:00",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Low": "5:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 200,
+        "seconds": 10,
+        "tail": 2
+      },
+      "note": "Extra (open question 1; a plug in OUTPUT B, filters open): a 200 Hz tone, whose 5 ms period no swing reaches, at minimum Depth: the reference."
+    },
+    {
+      "name": "hold-200hz-depth-0500",
+      "settings": {
+        "E.Level": "5:00",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Low": "5:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 200,
+        "seconds": 20,
+        "tail": 2
+      },
+      "note": "The same at full Depth: the absolute delay at the deepest setting."
+    },
+    {
+      "name": "hold-rate-0700-depth-0500",
+      "settings": {
+        "E.Level": "5:00",
+        "Rate": "7:00",
+        "Depth": "5:00",
+        "Low": "5:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 40,
+        "tail": 2
+      },
+      "note": "Extra (open question 4): Rate x Depth."
+    },
+    {
+      "name": "hold-rate-0500-depth-0500",
+      "settings": {
+        "E.Level": "5:00",
+        "Rate": "5:00",
+        "Depth": "5:00",
+        "Low": "5:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 20,
+        "tail": 2
+      }
+    },
+    {
+      "name": "bursts-level-1200",
+      "settings": {
+        "E.Level": "12:00",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Low": "5:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -30,
+          -24,
+          -18,
+          -12,
+          -8,
+          -6,
+          -4,
+          -2,
+          0,
+          2,
+          4
+        ],
+        "step_seconds": 0.3,
+        "gap_seconds": 0.9,
+        "tail": 1
+      },
+      "note": "Extra (open question 2): E.Level at 12:00. The same knee input level means the clip is before E.Level."
     }
   ]
 }
