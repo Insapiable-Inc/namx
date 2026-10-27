@@ -2,15 +2,18 @@
 
 Tools for measuring real pedals through an audio interface and fitting models of them,
 so NAM-X's own effects can be voiced after the real thing. Started 2026-10-26 with a
-collection of Boss pedals; the first one done is the TR-2 tremolo
-([`captures/boss/tr-2/README.md`](../../captures/boss/tr-2/README.md)).
+collection of Boss pedals. Done so far: the TR-2 tremolo, the DD-8 delay and the CE-5 chorus — see
+[`captures/README.md`](../../captures/README.md) for every pedal's status and what's next.
 
 | File | What it does |
 |---|---|
 | `capture.py` | Guided recording through JACK: ports, metering, level calibration, plan-driven takes |
-| `signals.py` | Deterministic test signals (sine, exponential sweep, noise, clicks, silence) and the take layout |
+| `signals.py` | Deterministic test signals (sine, exponential sweep, noise, clicks, silence, steps, plucks, pluck-train), the take layout, and each signal's silent stretches |
 | `analysis.py` | Reading sessions back: aligned takes, envelopes, LFO frequency and cycle folding, band levels, harmonics |
 | `fit_tr2.py` | The TR-2 model fit: parameters, fit errors, tone, and the figures |
+| `analyze_dd8.py` | The DD-8's Standard mode: deconvolved sweeps (dry path, delay times, Level/Feedback maps, tone), bursts (the clip), and figures |
+| `analyze_dd8_mode.py` | Any other DD-8 mode recorded with the Analog/Tape/Warm/Mod plans: bursts, steps, tone, feedback (sweeps and bursts), Feedback 5:00, wow/flutter and LFO (rate, delay swing, shape), Time turned by hand, delays, noise |
+| `analyze_ce5.py` | The CE-5 (wet-only + mono sessions): dry and wet split by time in the deconvolved sweeps (delay, gain, tone, group delay), E.Level, the filters (corner, slope, floor), the LFO from held tones' phase (rate, absolute delay, bowed-triangle shape), bursts, note-off, noise |
 | `plans/*.json` | One plan per pedal: the takes, their knob settings and signals |
 
 Needs Python with numpy, scipy, soundfile and matplotlib, plus the JACK client for Python
@@ -131,10 +134,17 @@ tools/capture/capture.py plan tools/capture/plans/<pedal>.json       # list the 
 tools/capture/capture.py run <session> tools/capture/plans/<pedal>.json
 ```
 
-`run` is interactive (run it in a terminal): it names the knobs to set, marking the ones
+`run` is interactive (run it in a terminal). After you press Enter it listens to the pedal
+first: a delay with high Feedback keeps repeating after a take, and you can't hear it (its
+output only goes to the interface). If the pedal is already quiet it records at once; if
+it had to wait, it says so and asks for Enter again (so a take never starts while you are
+still setting knobs); if it still sounds after 30 s it suggests turning Feedback down or
+switching the pedal off and on (which clears the repeats). It names the knobs to set,
+marking the ones
 that changed since the last take, records, prints the take's peaks, latency and xruns,
 and flags problems (clipping, a silent channel or loopback, an unclear marker, xruns)
-with a redo option. It skips takes already recorded, so stopping and running it again
+with a redo option; a bypass take with sound where nothing was played (the pedal left on)
+is flagged too. It skips takes already recorded, so stopping and running it again
 resumes. Knob positions are clock positions: 7:00 fully counter-clockwise, 5:00 fully
 clockwise. Positions between those are set by eye; the fits treat them as approximate.
 
@@ -153,6 +163,8 @@ A session is one pedal on one day: `captures/<maker>/<pedal>/<date>/`.
   sample rate, reference level, `marker_start` and `signal_start` (samples, in the
   played file), `latency_samples` and its correlation quality, peaks, xruns, SHA-256 of
   what was played, time, the tool's git commit, and a copy of the rig.
+- `run.log`: every `run`'s console transcript, appended (answers, redos, problems):
+  read it instead of copying the terminal.
 - `fit/`: a fit script's output (parameters JSON and figures).
 
 A take as played: 0.3 s silence, a 50 ms Hann-windowed log chirp (200 Hz–10 kHz) at the
@@ -183,7 +195,7 @@ were recorded before e63d826, so they include the marker and all read about −1
 3. Explore the data in a scratch script first; write `fit_<pedal>.py` when the model
    structure is settled, and document the study in `captures/<maker>/<pedal>/README.md`.
 
-## Lessons from the TR-2
+## Lessons
 
 - **Look at the data before choosing a model.** The first guess (a triangle morphing
   into a square) was wrong; the clamp showed up in the first plot of averaged cycles.
@@ -195,3 +207,42 @@ were recorded before e63d826, so they include the marker and all read about −1
   amplitude fell on one straight line per knob, which gave the formula.
 - **Look hard at the measured-vs-model plots:** the asymmetric smoothing (fast fall,
   slow rise) showed as the fast takes' edges not matching.
+
+From the DD-8:
+
+- **Check the references.** A "bypass" take recorded with the pedal still on made the
+  Analog mode look like it had an expander. `run` now flags a bypass take with sound
+  where nothing was played (`signals.silent_windows`: burst gaps, between clicks, tails).
+- **The pedal can't be heard during captures** (its output only goes to the interface),
+  so `run` checks for silence after each Enter: a delay with high Feedback keeps
+  repeating, and switching the pedal off and on clears it.
+- **Time-varying effects break deconvolution.** Tape's wow and Mod's LFO wander the
+  delay, and a swept measurement of feedback or tone comes out scattered. Bursts, with
+  each repeat's level read directly, are robust.
+- **Design tests that can tell hypotheses apart.** Plucks 4.000 s apart came back with
+  identical timing in Reverse — but 4 s was ~7 chunk lengths, so a fixed grid predicted
+  the same. Irregular onsets settled it (triggered by the playing).
+- **Cross-check every surprising result with a different kind of take** before writing
+  it down: the "compressor" (a clip, seen through full-level sweeps), the "runaway" at
+  Feedback 5:00 (a hold: the start marker's echoes at the clip ceiling), the "±2.4 dB
+  wobble" (an analysis edge effect) — all caught that way.
+- **Knob positions the player can set:** 7:00, 9:00 (pointer left), 12:00, 3:00
+  (pointer right), 5:00 = 0, 20, 50, 80, 100 % of the rotation. By eye, "12:00" set
+  twice differed by ~5°; 3:00 repeated to the sample.
+- **Signal levels:** the DD-8's repeats clip ~3 dB under a hot guitar's peaks, so
+  anything meant to be linear (sweeps for tone or feedback) goes at −12 dB.
+
+From the CE-5:
+
+- **A pedal's own hiss can be louder than the silence threshold.** `run` waits for a
+  peak under −75 dBFS before each take; the CE-5 hisses at −65 to −73 even when idle. A
+  plan can set its own `quiet_dbfs`.
+- **Look for a wet-only output.** With a plug in Output B (other end loose), the CE-5's
+  Output A carries only the effect sound: no dry to separate.
+- **Split dry and wet in time, not by subtraction:** windowing the impulse response
+  between the dry (1 ms) and the wet (6.4 ms) needs no alignment; subtracting another
+  take's dry does, to a fraction of a sample (the loopback latency can be a sample out).
+- **A wrong take can be read back:** the mis-set `dry-sweep` gave away all three wrong
+  knobs (wet level, LFO rate, delay swing). `run.log` now keeps every session's transcript.
+- **Flat group delay through a steep cut means digital:** an analog filter that steep
+  delays the frequencies near its corner.

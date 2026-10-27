@@ -12,6 +12,8 @@ import scipy.optimize
 import scipy.signal
 import soundfile
 
+import signals
+
 ENVELOPE_CUTOFF_HZ = 300.0
 THIRD_OCTAVES_HZ = [31.5, 63, 125, 250, 500, 1000, 2000, 4000, 8000, 16000]
 
@@ -27,8 +29,7 @@ class Take:
 
     def signal(self, extra_seconds=0.0):
         """The pedal channel over the signal (plus some of the tail)."""
-        spec = self.meta["signal"]
-        seconds = spec["seconds"] if "seconds" in spec else spec["period"] * spec["count"]
+        seconds = signals.body_seconds(self.meta["signal"])
         return self.pedal[self.start:self.start + int((seconds + extra_seconds) * self.rate)]
 
 

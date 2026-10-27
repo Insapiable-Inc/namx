@@ -1,0 +1,263 @@
+{
+  "pedal": "Boss DD-8 (Mod mode, mono: Input A -> Output A)",
+  "comment": "Mod mode: the modulation (rate, depth, shape; against Time; over the repeats), level and saturation, tone, delay range, feedback, noise. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise; 9:00 and 3:00 pointer horizontal.",
+  "knobs": [
+    "Level",
+    "Feedback",
+    "Time"
+  ],
+  "takes": [
+    {
+      "name": "bypass-sweep",
+      "bypass": true,
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 4
+      }
+    },
+    {
+      "name": "bypass-bursts",
+      "bypass": true,
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -30,
+          -24,
+          -18,
+          -12,
+          -8,
+          -6,
+          -4,
+          -2,
+          0,
+          2,
+          4
+        ],
+        "step_seconds": 0.3,
+        "gap_seconds": 0.9,
+        "tail": 1
+      }
+    },
+    {
+      "name": "bursts",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "7:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -30,
+          -24,
+          -18,
+          -12,
+          -8,
+          -6,
+          -4,
+          -2,
+          0,
+          2,
+          4
+        ],
+        "step_seconds": 0.3,
+        "gap_seconds": 0.9,
+        "tail": 1
+      },
+      "note": "MODE on MOD. Each repeat lands in a gap: level and saturation against the input."
+    },
+    {
+      "name": "time-1200-m12",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "7:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 4
+      },
+      "note": "One repeat: the voicing's tone."
+    },
+    {
+      "name": "hold-sine",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "7:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 30,
+        "tail": 4
+      },
+      "note": "30 s held tone, one repeat: the modulation's rate, depth and shape."
+    },
+    {
+      "name": "hold-sine-time-0900",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "7:00",
+        "Time": "9:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 20,
+        "tail": 4
+      },
+      "note": "Does the depth follow the delay time?"
+    },
+    {
+      "name": "hold-sine-time-0300",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "7:00",
+        "Time": "3:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 20,
+        "tail": 4
+      }
+    },
+    {
+      "name": "time-0500",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "7:00",
+        "Time": "5:00"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 2.0,
+        "count": 3,
+        "tail": 2.0
+      }
+    },
+    {
+      "name": "time-0700",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "7:00",
+        "Time": "7:00"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 2.0,
+        "count": 3,
+        "tail": 2.0
+      }
+    },
+    {
+      "name": "hold-sine-feedback-1200",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 20,
+        "tail": 4
+      },
+      "note": "Time back at 12:00, Feedback 12:00: does the wobble build up over the repeats?"
+    },
+    {
+      "name": "feedback-burst-1200",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -12
+        ],
+        "step_seconds": 0.05,
+        "tail": 8
+      },
+      "note": "Feedback 12:00 (straight up). One 50 ms burst, then 8 s of repeats."
+    },
+    {
+      "name": "feedback-burst-0900",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "9:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -12
+        ],
+        "step_seconds": 0.05,
+        "tail": 8
+      },
+      "note": "Feedback 9:00 (pointing LEFT, horizontal). One 50 ms burst, then 8 s of repeats."
+    },
+    {
+      "name": "feedback-burst-0300",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "3:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -12
+        ],
+        "step_seconds": 0.05,
+        "tail": 8
+      },
+      "note": "Feedback 3:00 (pointing RIGHT, horizontal). One 50 ms burst, then 8 s of repeats."
+    },
+    {
+      "name": "feedback-0500",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "5:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 6.0,
+        "count": 1,
+        "level_db": -12,
+        "tail": 0.5
+      },
+      "note": "One quiet click, then 6 s: hold, fade or run away? Afterwards turn Feedback fully down."
+    },
+    {
+      "name": "noise-floor",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "7:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "silence",
+        "seconds": 10
+      },
+      "note": "Feedback at 7:00. No signal: hiss, hum, any emulated noise."
+    }
+  ]
+}

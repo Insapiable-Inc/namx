@@ -18,6 +18,12 @@ Specs (JSON objects in a plan):
     {"type": "noise", "seconds": 10, "seed": 1}                # white, peak-normalized
     {"type": "clicks", "period": 2.0, "count": 5}              # one-sample impulses
     {"type": "silence", "seconds": 10}
+    {"type": "steps", "freq": 1000, "levels_db": [-24, 0, -24], "step_seconds": 3,
+     "gap_seconds": 0}                                         # a sine through levels
+    {"type": "plucks", "freq": 1000, "period": 3, "count": 4, "decay_seconds": 0.3}
+                                                               # picked-note-like bursts
+    {"type": "pluck-train", "freq": 1000, "onsets": [0, 2.9, 6.6], "decay_seconds": 0.3,
+     "seconds": 10}                                            # plucks at given times
 
 plus optional "level_db" (default 0) and "tail" (seconds after the signal, default 1).
 """
@@ -37,8 +43,11 @@ TYPES = {
     "noise": {"seconds"},
     "clicks": {"period", "count"},
     "silence": {"seconds"},
+    "steps": {"freq", "levels_db", "step_seconds"},
+    "plucks": {"freq", "period", "count", "decay_seconds"},
+    "pluck-train": {"freq", "onsets", "decay_seconds", "seconds"},
 }
-OPTIONAL = {"level_db", "tail", "seed"}
+OPTIONAL = {"level_db", "tail", "seed", "gap_seconds"}
 
 
 def validate(spec):
@@ -56,12 +65,46 @@ def validate(spec):
 def body_seconds(spec):
     if spec["type"] == "clicks":
         return spec["period"] * spec["count"]
+    if spec["type"] == "steps":
+        return len(spec["levels_db"]) * (spec["step_seconds"] + spec.get("gap_seconds", 0))
+    if spec["type"] == "plucks":
+        return spec["period"] * spec["count"]
     return spec["seconds"]
 
 
 def total_seconds(spec):
     return (LEAD_SECONDS + MARKER_SECONDS + GAP_SECONDS + body_seconds(spec)
             + spec.get("tail", DEFAULT_TAIL_SECONDS))
+
+
+def silent_windows(spec):
+    """Stretches (start, end), seconds from the signal's start, where nothing is played:
+    the gaps between bursts, the space between clicks, the tail. A bypassed pedal's output
+    must be silent there too."""
+    windows = []
+    kind = spec["type"]
+    if kind == "steps" and spec.get("gap_seconds", 0) > 0.1:
+        period = spec["step_seconds"] + spec["gap_seconds"]
+        for i in range(len(spec["levels_db"])):
+            windows.append((i * period + spec["step_seconds"] + 0.05, (i + 1) * period - 0.01))
+    if kind == "plucks":
+        quiet_after = 7 * spec["decay_seconds"]  # -60 dB
+        for k in range(spec["count"]):
+            if quiet_after + 0.05 < spec["period"]:
+                windows.append((k * spec["period"] + quiet_after, (k + 1) * spec["period"] - 0.01))
+    if kind == "pluck-train":
+        ends = list(spec["onsets"][1:]) + [spec["seconds"]]
+        for onset, end in zip(spec["onsets"], ends):
+            if onset + 7 * spec["decay_seconds"] + 0.05 < end:
+                windows.append((onset + 7 * spec["decay_seconds"], end - 0.01))
+    if kind == "clicks" and spec["period"] > 0.1:
+        for k in range(spec["count"]):
+            windows.append((k * spec["period"] + 0.05, (k + 1) * spec["period"] - 0.01))
+    tail = spec.get("tail", DEFAULT_TAIL_SECONDS)
+    if tail > 0.2:
+        start = body_seconds(spec)
+        windows.append((start + 0.1, start + tail))
+    return windows
 
 
 def describe(spec):
@@ -76,6 +119,17 @@ def describe(spec):
         return f"white noise, {spec['seconds']:g} s{level_text}"
     if kind == "clicks":
         return f"{spec['count']} clicks every {spec['period']:g} s{level_text}"
+    if kind == "plucks":
+        return (f"{spec['count']} {spec['freq']:g} Hz plucks every {spec['period']:g} s "
+                f"(decay {spec['decay_seconds']:g} s){level_text}")
+    if kind == "pluck-train":
+        onsets = ", ".join(f"{t:g}" for t in spec["onsets"])
+        return f"{spec['freq']:g} Hz plucks at {onsets} s (decay {spec['decay_seconds']:g} s)"
+    if kind == "steps":
+        gap = spec.get("gap_seconds", 0)
+        gap_text = f" + {gap:g} s gaps" if gap else ""
+        levels = "/".join(f"{v:g}" for v in spec["levels_db"])
+        return f"{spec['freq']:g} Hz at {levels} dB, {spec['step_seconds']:g} s each{gap_text}"
     return f"silence, {spec['seconds']:g} s"
 
 
@@ -100,8 +154,24 @@ def marker(rate):
     return x * np.hanning(len(x))
 
 
+def steps(rate, freq, levels_db, step_seconds, gap_seconds):
+    """A sine through `levels_db` (peak re 1), each held `step_seconds` and followed by
+    `gap_seconds` of silence; the phase runs on through the steps. Level changes take 1 ms
+    (raised cosine) so a step is sharp for a compressor but not a broadband click."""
+    step, gap, ramp = int(step_seconds * rate), int(gap_seconds * rate), int(0.001 * rate)
+    gains = []
+    for level in levels_db:
+        gains += [np.full(step, 10 ** (level / 20)), np.zeros(gap)]
+    g = np.concatenate(gains)
+    if ramp > 1:
+        kernel = np.hanning(2 * ramp + 1)
+        g = np.convolve(g, kernel / kernel.sum(), mode="same")
+    t = np.arange(len(g)) / rate
+    return g * np.sin(2 * np.pi * freq * t)
+
+
 def body(spec, rate):
-    """The signal itself, peak 1 (silence: zeros)."""
+    """The signal itself, peak 1 (silence: zeros; steps: peak per its levels)."""
     kind = spec["type"]
     if kind == "sine":
         t = np.arange(int(spec["seconds"] * rate)) / rate
@@ -112,6 +182,24 @@ def body(spec, rate):
         rng = np.random.default_rng(spec.get("seed", 1))
         x = fade(rng.standard_normal(int(spec["seconds"] * rate)), rate)
         return x / np.max(np.abs(x))
+    if kind == "steps":
+        return steps(rate, spec["freq"], spec["levels_db"], spec["step_seconds"],
+                     spec.get("gap_seconds", 0))
+    if kind == "pluck-train":
+        x = np.zeros(int(spec["seconds"] * rate))
+        for onset in spec["onsets"]:
+            start = int(onset * rate)
+            t = np.arange(len(x) - start) / rate
+            attack = np.minimum(t / 0.002, 1.0)
+            x[start:] += (attack * np.exp(-t / spec["decay_seconds"])
+                          * np.sin(2 * np.pi * spec["freq"] * t))
+        return x / np.max(np.abs(x))
+    if kind == "plucks":
+        period = int(spec["period"] * rate)
+        t = np.arange(period) / rate
+        attack = np.minimum(t / 0.002, 1.0)  # a 2 ms rise: sharp, but not a click
+        one = attack * np.exp(-t / spec["decay_seconds"]) * np.sin(2 * np.pi * spec["freq"] * t)
+        return np.tile(one, spec["count"])
     if kind == "clicks":
         period = int(spec["period"] * rate)
         x = np.zeros(period * spec["count"])

@@ -18,7 +18,8 @@ SESSION is a folder under captures/, one per pedal and day (e.g.
 captures/boss/tr-2/2026-10-26). Its rig.json holds the ports and the reference level.
 The WAVs are git-ignored (too large for the repo); the JSON files and fits are committed.
 Each take writes TAKE.wav (float32; channel 1 = pedal, channel 2 = loopback),
-TAKE.json (knob settings, signal, level, latency, peaks, xruns) and played/TAKE.wav.
+TAKE.json (knob settings, signal, level, latency, peaks, xruns) and played/TAKE.wav; run
+appends its console transcript (answers and problems included) to SESSION/run.log.
 
 Needs the JACK client for Python (Arch: python-jack-client) plus numpy, scipy and
 soundfile.
@@ -45,6 +46,10 @@ CLIP_DBFS = -0.1
 SILENT_DBFS = -60.0
 DEFAULT_REF_DBFS = -20.0
 CALIBRATION_SECONDS = 2.0
+QUIET_DBFS = -75.0  # the pedal input's peak, per 0.1 s, counted as silent (noise peaks ~-85);
+# a plan's "quiet_dbfs" overrides it for a pedal whose own hiss is louder (the CE-5's BBD)
+QUIET_HOLD_S = 0.5
+QUIET_WAIT_S = 30.0
 
 
 def dbfs(x):
@@ -185,9 +190,12 @@ def find_latency(loop, marker_start, rate):
     return index - marker_start, quality
 
 
-def check_take(recorded, marker_start, body_start, rate, bypass, expect_signal):
+def check_take(recorded, marker_start, body_start, spec, rate, bypass):
     """Measurements for the sidecar, and the problems worth redoing a take for. Peaks are
-    over the signal and tail, after the marker, which always plays at the reference."""
+    over the signal and tail, after the marker, which always plays at the reference. A
+    bypass take must fall silent once the signal ends: anything there is the pedal's own
+    repeats or tail (a DD-8 left on once spoiled a reference take that way)."""
+    expect_signal = spec["type"] != "silence"
     pedal_peak, loop_peak = dbfs(recorded[body_start:, 0]), dbfs(recorded[body_start:, 1])
     latency, quality = find_latency(recorded[:, 1], marker_start, rate)
     problems = []
@@ -201,6 +209,14 @@ def check_take(recorded, marker_start, body_start, rate, bypass, expect_signal):
         problems.append(f"the marker wasn't found clearly in the loopback ({quality:.2f})")
     if expect_signal and pedal_peak < SILENT_DBFS:
         problems.append("the pedal channel is silent" + ("" if bypass else ": is it on?"))
+    if bypass:
+        start = body_start + latency
+        quiet = [recorded[start + int(a * rate):start + int(b * rate), 0]
+                 for a, b in signals.silent_windows(spec)]
+        leak = max((dbfs(q) for q in quiet if len(q)), default=-float("inf"))
+        if leak >= SILENT_DBFS:
+            problems.append(f"sound where nothing was played ({leak:.0f} dBFS): is the pedal "
+                            "really bypassed?")
     return {
         "peaks_dbfs": {"pedal": round(pedal_peak, 2), "loop": round(loop_peak, 2)},
         "latency_samples": latency,
@@ -211,8 +227,8 @@ def check_take(recorded, marker_start, body_start, rate, bypass, expect_signal):
 def record_take(engine, rig, session, name, spec, extra):
     played, marker_start, body_start = signals.build(spec, engine.rate, rig["ref_dbfs"])
     recorded, xruns = engine.play_record(played)
-    measured, problems = check_take(recorded, marker_start, body_start, engine.rate,
-                                    extra.get("bypass", False), spec["type"] != "silence")
+    measured, problems = check_take(recorded, marker_start, body_start, spec, engine.rate,
+                                    extra.get("bypass", False))
     if xruns:
         problems.append(f"{xruns} xrun(s) during the take: redo it, or raise the quantum")
     (session / "played").mkdir(exist_ok=True)
@@ -240,6 +256,27 @@ def record_take(engine, rig, session, name, spec, extra):
     for problem in problems:
         print(f"  PROBLEM: {problem}")
     return problems
+
+
+def wait_for_silence(engine, quiet_dbfs):
+    """Listens to the pedal input until it stays quiet for QUIET_HOLD_S: a delay with high
+    Feedback keeps repeating after a take, and those repeats would land in the next one.
+    "Quiet" is a peak under quiet_dbfs. Returns whether it fell silent, and how long that
+    took (s)."""
+    rate = engine.rate
+    engine.start(np.zeros(int(QUIET_WAIT_S * rate), np.float32))
+    quiet = 0
+    while not engine.done.wait(0.1):
+        now = engine.pos
+        level = dbfs(engine.recorded[max(0, now - rate // 10):now, 0])
+        quiet = quiet + 1 if level < quiet_dbfs else 0
+        print(f"\r  waiting for the pedal to fall silent: {level:6.1f} dBFS ", end="", flush=True)
+        if quiet * 0.1 >= QUIET_HOLD_S:
+            engine.active = False
+            print("\r  the pedal is silent." + " " * 30)
+            return True, now / rate
+    print()
+    return False, QUIET_WAIT_S
 
 
 def cmd_ports(_args):
@@ -392,9 +429,43 @@ def cmd_plan(args):
     print(f"\n{len(plan['takes'])} takes, {seconds / 60:.1f} min of audio.")
 
 
+class RunLog:
+    """Copies the console output to a file as well, so a session's transcript stays with it.
+    A line rewritten in place with \\r (the silence meter) keeps only its last state."""
+
+    def __init__(self, path, console):
+        self.file = open(path, "a", encoding="utf-8")
+        self.console = console
+        self.line = ""
+
+    def write(self, text):
+        self.console.write(text)
+        self.line += text
+        while "\n" in self.line:
+            line, self.line = self.line.split("\n", 1)
+            self.file.write(line.rsplit("\r", 1)[-1].rstrip() + "\n")
+        self.file.flush()
+        return len(text)
+
+    def typed(self, answer):
+        """What was typed at a prompt: the terminal echoes it, the file needs it."""
+        self.line += (answer or "(Enter)") + "\n"
+        self.write("")
+
+    def flush(self):
+        self.console.flush()
+
+    def close(self):
+        if self.line:
+            self.write("\n")
+        self.file.close()
+
+
 def ask(prompt, choices):
     while True:
         answer = input(prompt).strip().lower()
+        if isinstance(sys.stdout, RunLog):
+            sys.stdout.typed(answer)
         if answer in choices:
             return answer
 
@@ -403,6 +474,9 @@ def cmd_run(args):
     session = pathlib.Path(args.session).expanduser()
     rig = load_rig(session)
     plan = load_plan(args.plan)
+    sys.stdout = RunLog(session / "run.log", sys.stdout)
+    print(f"\n=== {datetime.datetime.now().isoformat(timespec='seconds')} · run {args.plan} "
+          f"· tool {tool_commit()}")
     if not rig["calibration"]:
         print("Warning: this rig isn't calibrated; levels use the default reference.")
     engine = Engine(rig)
@@ -419,16 +493,32 @@ def cmd_run(args):
             print(f"  {settings_text(take, previous, plan['knobs'])}")
             if take.get("note"):
                 print(f"  {take['note']}")
-            if ask("  Enter = record, s = skip, q = quit: ", {"", "s", "q"}) == "q":
-                break
-            # A skipped take stays unrecorded; the next run offers it again.
+            answer = None
             while True:
+                answer = ask("  Enter = record, s = skip, q = quit: ", {"", "s", "q"})
+                if answer != "":
+                    break
+                # Checked right before recording, so nothing done after the check can leak
+                # in; and a recording only starts if the pedal was already quiet at Enter,
+                # never when it falls silent while knobs are still being set.
+                quiet, waited = wait_for_silence(engine, plan.get("quiet_dbfs", QUIET_DBFS))
+                if not quiet:
+                    print("  Still sounding after 30 s: turn Feedback down, or switch the "
+                          "pedal off and on; then set the knobs and press Enter.")
+                    continue
+                if waited > 1.0:
+                    print(f"  Silent now (after {waited:.0f} s): set the knobs, then Enter.")
+                    continue
                 extra = {"pedal": plan["pedal"], "bypass": bool(take.get("bypass")),
                          "settings": take.get("settings", {}), "note": take.get("note", "")}
                 problems = record_take(engine, rig, session, name, take["signal"], extra)
                 prompt = "  Enter = keep, r = redo: " if problems else "  Enter = next, r = redo: "
                 if ask(prompt, {"", "r"}) == "":
                     break
+            if answer == "q":
+                break
+            if answer == "s":
+                continue  # a skipped take stays unrecorded; the next run offers it again
             previous = take
         else:
             print(f"\nAll {len(takes)} takes are in {session}.")
@@ -436,6 +526,8 @@ def cmd_run(args):
         print("\nStopped; the takes recorded so far are kept.")
     finally:
         engine.close()
+        sys.stdout.close()
+        sys.stdout = sys.stdout.console
 
 
 def main():

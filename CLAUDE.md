@@ -31,7 +31,7 @@ namx/
 ├── tests/             # MidiMapperTest, DspGoldenTest, WavReaderTest, NamProcessorTest, LibraryIndexTest, ThemeFileTest (-DNAM_BUILD_TESTS=ON)
 ├── bench/             # namx-bench, instructions.py (CPU regression) (-DNAM_BUILD_BENCH=ON)
 ├── tools/capture/     # Pedal captures: JACK capture tool, test signals, analysis, model fits (README.md = method + rig)
-├── captures/          # Capture sessions per pedal (<maker>/<pedal>/<date>/); WAVs git-ignored, sidecars + fits committed; a README per pedal study
+├── captures/          # Capture sessions per pedal (<maker>/<pedal>/<date>/); WAVs git-ignored, sidecars + fits committed; a README per pedal study; captures/README.md = every pedal's status and what's next
 └── external/          # Git submodules (CMake: EXTERNAL_DIR, NAM_ROOT, NAM_DEPS_PATH)
     ├── NeuralAmpModelerCore/  # NAM core — our fork (Insapiable-Inc), branch `namx` = upstream 0.6.0 (0b3d3c9, merged 2026-10-18) + our weight-check fix; brings Eigen, nlohmann/json, AudioDSPTools in its Dependencies/
     ├── signalsmith-linear/    # MIT FFT for the cab convolution

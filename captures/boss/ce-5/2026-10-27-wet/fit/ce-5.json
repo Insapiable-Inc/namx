@@ -1,0 +1,753 @@
+{
+  "pedal": "Boss CE-5 Chorus Ensemble",
+  "sessions": [
+    "2026-10-27-wet",
+    "2026-10-27-mono"
+  ],
+  "dry_path": {
+    "delay_ms_re_bypass": 0.981,
+    "gain_db_re_bypass_1khz": 2.32,
+    "flatness_db_50_16k": 1.77,
+    "group_delay_ms": {
+      "0.3k": 1.129,
+      "1k": 0.992,
+      "3k": 0.967,
+      "10k": 0.981,
+      "14k": 0.979
+    },
+    "filters_closed_minus_open_db_1khz": 0.0
+  },
+  "wet_tone": {
+    "delay_ms": 6.414,
+    "delay_ms_re_dry": 5.434,
+    "gain_db_1khz": -6.16,
+    "bands_hz": [
+      31.5,
+      63,
+      125,
+      250,
+      500,
+      1000,
+      2000,
+      4000,
+      8000,
+      16000
+    ],
+    "db_re_1khz": [
+      -23.59,
+      -5.64,
+      1.22,
+      0.58,
+      0.2,
+      0.0,
+      -0.18,
+      -0.36,
+      -0.69,
+      -34.18
+    ],
+    "high_end_db_re_1khz": {
+      "8k": -0.1,
+      "10k": -3.5,
+      "12k": -10.5,
+      "14k": -25.0,
+      "16k": -43.6,
+      "18k": -64.5
+    },
+    "group_delay_ms": {
+      "0.3k": 6.671,
+      "1k": 6.464,
+      "3k": 6.483,
+      "8k": 6.381,
+      "10k": 6.37,
+      "12k": 6.523,
+      "14k": 6.542
+    },
+    "mono_wet_minus_wet_only_db": {
+      "sweep": [
+        14.81,
+        2.17,
+        -0.47,
+        0.09,
+        -0.12,
+        0.03,
+        -0.01,
+        -0.09,
+        -2.08,
+        -2.8
+      ],
+      "sweep-check": [
+        14.75,
+        2.13,
+        -0.45,
+        0.23,
+        -0.05,
+        0.03,
+        0.01,
+        -0.11,
+        -2.11,
+        -0.41
+      ]
+    },
+    "wet_only_check_minus_sweep_db": [
+      0.19,
+      0.05,
+      0.04,
+      -0.1,
+      -0.05,
+      0.03,
+      0.04,
+      0.1,
+      -0.09,
+      -0.03
+    ],
+    "mono_wet_re_dry_1khz_db": 2.43
+  },
+  "elevel_wet_db_1khz": {
+    "7:00": {
+      "wet_only_db": null,
+      "mono_db": -29.68
+    },
+    "9:00": {
+      "wet_only_db": -26.17,
+      "mono_db": -25.63
+    },
+    "12:00": {
+      "wet_only_db": -19.45,
+      "mono_db": -19.3
+    },
+    "3:00": {
+      "wet_only_db": -11.14,
+      "mono_db": -11.5
+    },
+    "5:00": {
+      "wet_only_db": -6.16,
+      "mono_db": -6.13
+    }
+  },
+  "filter": {
+    "low": {
+      "3:00": {
+        "corner_hz": 103.9,
+        "slope_db_per_octave": 0.9,
+        "floor_db": -6.5,
+        "db_re_open": [
+          -6.5,
+          -6.5,
+          -0.7,
+          0.4,
+          0.1,
+          0.1,
+          0.0,
+          0.1,
+          0.2,
+          -2.7
+        ]
+      },
+      "12:00": {
+        "corner_hz": 314.6,
+        "slope_db_per_octave": 11.5,
+        "floor_db": -26.2,
+        "db_re_open": [
+          -26.2,
+          -28.4,
+          -21.6,
+          -7.2,
+          1.6,
+          0.8,
+          0.2,
+          0.1,
+          -0.0,
+          -1.5
+        ]
+      },
+      "9:00": {
+        "corner_hz": 730.7,
+        "slope_db_per_octave": 13.5,
+        "floor_db": -39.5,
+        "db_re_open": [
+          -39.5,
+          -42.6,
+          -37.0,
+          -23.4,
+          -10.1,
+          1.1,
+          1.1,
+          0.3,
+          -0.2,
+          -1.2
+        ]
+      },
+      "7:00": {
+        "corner_hz": 778.1,
+        "slope_db_per_octave": 13.4,
+        "floor_db": -37.0,
+        "db_re_open": [
+          -37.0,
+          -42.8,
+          -38.2,
+          -24.5,
+          -11.3,
+          0.6,
+          1.2,
+          0.5,
+          0.0,
+          -0.5
+        ]
+      }
+    },
+    "high": {
+      "3:00": {
+        "corner_hz": 10169.8,
+        "slope_db_per_octave": null,
+        "db_re_open": [
+          0.3,
+          -0.0,
+          -0.0,
+          -0.2,
+          -0.1,
+          -0.1,
+          -0.2,
+          -0.5,
+          -1.8,
+          -7.1
+        ]
+      },
+      "12:00": {
+        "corner_hz": 3404.5,
+        "slope_db_per_octave": 4.1,
+        "db_re_open": [
+          0.3,
+          -0.2,
+          -0.3,
+          -0.4,
+          -0.4,
+          -0.6,
+          -1.5,
+          -3.8,
+          -7.7,
+          -12.6
+        ]
+      },
+      "9:00": {
+        "corner_hz": 982.1,
+        "slope_db_per_octave": 5.0,
+        "db_re_open": [
+          -1.0,
+          -0.9,
+          -0.9,
+          -1.1,
+          -1.6,
+          -3.1,
+          -6.5,
+          -11.3,
+          -16.8,
+          -22.6
+        ]
+      },
+      "7:00": {
+        "corner_hz": 352.0,
+        "slope_db_per_octave": 4.2,
+        "db_re_open": [
+          -1.4,
+          -1.9,
+          -2.1,
+          -2.6,
+          -4.0,
+          -7.2,
+          -12.1,
+          -17.6,
+          -22.9,
+          -30.7
+        ]
+      }
+    },
+    "both_0700_minus_sum_db_max": 1.62
+  },
+  "lfo": {
+    "hold-depth-0300": {
+      "rate": "12:00",
+      "depth": "3:00",
+      "lfo_hz": 0.892,
+      "delay_ms": {
+        "min": 5.735,
+        "mean": 6.687,
+        "max": 7.819
+      },
+      "swing_ms_peak_to_peak": 2.084,
+      "shape": {
+        "min_ms": 5.737,
+        "swing_ms": 2.133,
+        "power": 1.25,
+        "rms_us": 34.5
+      },
+      "level_wobble_db": 0.02
+    },
+    "hold-depth-0500": {
+      "rate": "12:00",
+      "depth": "5:00",
+      "lfo_hz": 0.892,
+      "delay_ms": {
+        "min": 5.709,
+        "mean": 6.779,
+        "max": 8.071
+      },
+      "swing_ms_peak_to_peak": 2.362,
+      "shape": {
+        "min_ms": 5.713,
+        "swing_ms": 2.422,
+        "power": 1.27,
+        "rms_us": 39.3
+      },
+      "level_wobble_db": 0.02
+    },
+    "hold-depth-0700": {
+      "rate": "12:00",
+      "depth": "7:00",
+      "lfo_hz": 0.893,
+      "delay_ms": {
+        "min": 6.368,
+        "mean": 6.385,
+        "max": 6.401
+      },
+      "swing_ms_peak_to_peak": 0.033,
+      "shape": null,
+      "level_wobble_db": 0.01
+    },
+    "hold-depth-0900": {
+      "rate": "12:00",
+      "depth": "9:00",
+      "lfo_hz": 0.892,
+      "delay_ms": {
+        "min": 6.078,
+        "mean": 6.377,
+        "max": 6.691
+      },
+      "swing_ms_peak_to_peak": 0.613,
+      "shape": {
+        "min_ms": 6.078,
+        "swing_ms": 0.621,
+        "power": 1.07,
+        "rms_us": 10.2
+      },
+      "level_wobble_db": 0.01
+    },
+    "hold-rate-0300": {
+      "rate": "3:00",
+      "depth": "12:00",
+      "lfo_hz": 2.515,
+      "delay_ms": {
+        "min": 5.915,
+        "mean": 6.526,
+        "max": 7.207
+      },
+      "swing_ms_peak_to_peak": 1.293,
+      "shape": {
+        "min_ms": 5.903,
+        "swing_ms": 1.339,
+        "power": 1.15,
+        "rms_us": 27.7
+      },
+      "level_wobble_db": 0.03
+    },
+    "hold-rate-0500-depth-0500": {
+      "rate": "5:00",
+      "depth": "5:00",
+      "lfo_hz": 5.934,
+      "delay_ms": {
+        "min": 5.898,
+        "mean": 6.875,
+        "max": 7.981
+      },
+      "swing_ms_peak_to_peak": 2.083,
+      "shape": {
+        "min_ms": 5.854,
+        "swing_ms": 2.248,
+        "power": 1.2,
+        "rms_us": 48.8
+      },
+      "level_wobble_db": 0.11
+    },
+    "hold-rate-0500": {
+      "rate": "5:00",
+      "depth": "12:00",
+      "lfo_hz": 5.934,
+      "delay_ms": {
+        "min": 5.932,
+        "mean": 6.509,
+        "max": 7.138
+      },
+      "swing_ms_peak_to_peak": 1.206,
+      "shape": {
+        "min_ms": 5.907,
+        "swing_ms": 1.293,
+        "power": 1.15,
+        "rms_us": 28.1
+      },
+      "level_wobble_db": 0.06
+    },
+    "hold-rate-0700-depth-0500": {
+      "rate": "7:00",
+      "depth": "5:00",
+      "lfo_hz": 0.25,
+      "delay_ms": {
+        "min": 5.492,
+        "mean": 6.575,
+        "max": 8.071
+      },
+      "swing_ms_peak_to_peak": 2.579,
+      "shape": {
+        "min_ms": 5.495,
+        "swing_ms": 2.648,
+        "power": 1.4,
+        "rms_us": 17.4
+      },
+      "level_wobble_db": 0.01
+    },
+    "hold-rate-0700": {
+      "rate": "7:00",
+      "depth": "12:00",
+      "lfo_hz": 0.25,
+      "delay_ms": {
+        "min": 5.72,
+        "mean": 6.471,
+        "max": 7.385
+      },
+      "swing_ms_peak_to_peak": 1.665,
+      "shape": {
+        "min_ms": 5.719,
+        "swing_ms": 1.691,
+        "power": 1.23,
+        "rms_us": 7.0
+      },
+      "level_wobble_db": 0.01
+    },
+    "hold-rate-0900": {
+      "rate": "9:00",
+      "depth": "12:00",
+      "lfo_hz": 0.375,
+      "delay_ms": {
+        "min": 5.764,
+        "mean": 6.487,
+        "max": 7.332
+      },
+      "swing_ms_peak_to_peak": 1.568,
+      "shape": {
+        "min_ms": 5.771,
+        "swing_ms": 1.59,
+        "power": 1.23,
+        "rms_us": 13.1
+      },
+      "level_wobble_db": 0.01
+    },
+    "hold-rate-1200": {
+      "rate": "12:00",
+      "depth": "12:00",
+      "lfo_hz": 0.858,
+      "delay_ms": {
+        "min": 5.836,
+        "mean": 6.504,
+        "max": 7.25
+      },
+      "swing_ms_peak_to_peak": 1.414,
+      "shape": {
+        "min_ms": 5.835,
+        "swing_ms": 1.44,
+        "power": 1.17,
+        "rms_us": 23.1
+      },
+      "level_wobble_db": 0.01
+    }
+  },
+  "absolute_delay_200hz": {
+    "reference_swing_ms": 0.033,
+    "depth_0500_delay_ms": {
+      "min": 5.733,
+      "mean": 6.793,
+      "max": 8.1
+    }
+  },
+  "bursts": [
+    {
+      "input_db": -30,
+      "gain_db": -6.17,
+      "re_linear_db": 0.0,
+      "h2_db": -78.0,
+      "h3_db": -91.6
+    },
+    {
+      "input_db": -24,
+      "gain_db": -6.16,
+      "re_linear_db": 0.01,
+      "h2_db": -81.1,
+      "h3_db": -83.4
+    },
+    {
+      "input_db": -18,
+      "gain_db": -6.17,
+      "re_linear_db": 0.0,
+      "h2_db": -75.0,
+      "h3_db": -77.6
+    },
+    {
+      "input_db": -12,
+      "gain_db": -6.17,
+      "re_linear_db": -0.0,
+      "h2_db": -68.6,
+      "h3_db": -71.6
+    },
+    {
+      "input_db": -8,
+      "gain_db": -6.17,
+      "re_linear_db": -0.0,
+      "h2_db": -64.3,
+      "h3_db": -67.6
+    },
+    {
+      "input_db": -6,
+      "gain_db": -6.17,
+      "re_linear_db": -0.0,
+      "h2_db": -61.9,
+      "h3_db": -66.0
+    },
+    {
+      "input_db": -4,
+      "gain_db": -6.18,
+      "re_linear_db": -0.01,
+      "h2_db": -59.3,
+      "h3_db": -64.7
+    },
+    {
+      "input_db": -2,
+      "gain_db": -6.18,
+      "re_linear_db": -0.02,
+      "h2_db": -56.1,
+      "h3_db": -63.4
+    },
+    {
+      "input_db": 0,
+      "gain_db": -6.61,
+      "re_linear_db": -0.44,
+      "h2_db": -52.8,
+      "h3_db": -33.2
+    },
+    {
+      "input_db": 2,
+      "gain_db": -7.8,
+      "re_linear_db": -1.63,
+      "h2_db": -55.4,
+      "h3_db": -21.4
+    },
+    {
+      "input_db": 4,
+      "gain_db": -9.41,
+      "re_linear_db": -3.24,
+      "h2_db": -52.8,
+      "h3_db": -17.8
+    }
+  ],
+  "bursts_level_1200": [
+    {
+      "input_db": -30,
+      "gain_db": -19.11,
+      "re_linear_db": 0.0,
+      "h2_db": -100.8,
+      "h3_db": -88.9
+    },
+    {
+      "input_db": -24,
+      "gain_db": -19.1,
+      "re_linear_db": 0.01,
+      "h2_db": -88.5,
+      "h3_db": -76.8
+    },
+    {
+      "input_db": -18,
+      "gain_db": -19.1,
+      "re_linear_db": 0.02,
+      "h2_db": -91.3,
+      "h3_db": -73.3
+    },
+    {
+      "input_db": -12,
+      "gain_db": -19.09,
+      "re_linear_db": 0.03,
+      "h2_db": -87.0,
+      "h3_db": -72.4
+    },
+    {
+      "input_db": -8,
+      "gain_db": -19.08,
+      "re_linear_db": 0.03,
+      "h2_db": -83.4,
+      "h3_db": -73.7
+    },
+    {
+      "input_db": -6,
+      "gain_db": -19.07,
+      "re_linear_db": 0.04,
+      "h2_db": -82.0,
+      "h3_db": -74.7
+    },
+    {
+      "input_db": -4,
+      "gain_db": -19.07,
+      "re_linear_db": 0.05,
+      "h2_db": -81.3,
+      "h3_db": -74.8
+    },
+    {
+      "input_db": -2,
+      "gain_db": -19.06,
+      "re_linear_db": 0.06,
+      "h2_db": -80.3,
+      "h3_db": -73.8
+    },
+    {
+      "input_db": 0,
+      "gain_db": -19.05,
+      "re_linear_db": 0.07,
+      "h2_db": -79.1,
+      "h3_db": -73.1
+    },
+    {
+      "input_db": 2,
+      "gain_db": -19.32,
+      "re_linear_db": -0.21,
+      "h2_db": -45.3,
+      "h3_db": -35.3
+    },
+    {
+      "input_db": 4,
+      "gain_db": -20.53,
+      "re_linear_db": -1.42,
+      "h2_db": -43.4,
+      "h3_db": -22.8
+    }
+  ],
+  "bursts_mono_dry": [
+    {
+      "input_db": -30,
+      "gain_db": -9.03,
+      "re_linear_db": 0.0,
+      "h2_db": -83.1,
+      "h3_db": -75.2
+    },
+    {
+      "input_db": -24,
+      "gain_db": -9.02,
+      "re_linear_db": 0.0,
+      "h2_db": -85.8,
+      "h3_db": -91.0
+    },
+    {
+      "input_db": -18,
+      "gain_db": -9.03,
+      "re_linear_db": -0.0,
+      "h2_db": -80.6,
+      "h3_db": -84.2
+    },
+    {
+      "input_db": -12,
+      "gain_db": -9.04,
+      "re_linear_db": -0.01,
+      "h2_db": -73.3,
+      "h3_db": -80.2
+    },
+    {
+      "input_db": -8,
+      "gain_db": -9.04,
+      "re_linear_db": -0.02,
+      "h2_db": -68.9,
+      "h3_db": -79.8
+    },
+    {
+      "input_db": -6,
+      "gain_db": -9.04,
+      "re_linear_db": -0.02,
+      "h2_db": -66.7,
+      "h3_db": -79.9
+    },
+    {
+      "input_db": -4,
+      "gain_db": -9.05,
+      "re_linear_db": -0.02,
+      "h2_db": -64.4,
+      "h3_db": -79.2
+    },
+    {
+      "input_db": -2,
+      "gain_db": -9.04,
+      "re_linear_db": -0.02,
+      "h2_db": -62.0,
+      "h3_db": -77.3
+    },
+    {
+      "input_db": 0,
+      "gain_db": -9.04,
+      "re_linear_db": -0.02,
+      "h2_db": -59.1,
+      "h3_db": -72.0
+    },
+    {
+      "input_db": 2,
+      "gain_db": -9.33,
+      "re_linear_db": -0.3,
+      "h2_db": -45.7,
+      "h3_db": -34.5
+    },
+    {
+      "input_db": 4,
+      "gain_db": -10.54,
+      "re_linear_db": -1.51,
+      "h2_db": -43.8,
+      "h3_db": -22.1
+    }
+  ],
+  "note_off": {
+    "noise_floor_dbfs": -84.1,
+    "after_note_dbfs": {
+      "0.02-0.05 s": -91.0,
+      "0.05-0.1 s": -95.9,
+      "0.1-0.15 s": -87.8,
+      "0.15-0.3 s": -84.4,
+      "0.3-0.6 s": -83.9,
+      "0.6-1.0 s": -84.1,
+      "1.0-2.0 s": -84.0,
+      "2.0-3.5 s": -84.1
+    }
+  },
+  "noise": {
+    "wet_only": {
+      "rms_dbfs": -84.1,
+      "peak_dbfs": -65.0,
+      "third_octaves_db_re_1khz": [
+        -35.3,
+        -16.5,
+        -6.2,
+        -4.0,
+        -1.7,
+        0.0,
+        0.0,
+        -1.2,
+        -3.0,
+        -23.3
+      ]
+    },
+    "mono": {
+      "rms_dbfs": -81.9,
+      "peak_dbfs": -64.1,
+      "third_octaves_db_re_1khz": [
+        -19.8,
+        -12.3,
+        -15.2,
+        -5.2,
+        -3.6,
+        0.0,
+        -0.3,
+        -2.0,
+        -3.6,
+        -7.8
+      ]
+    }
+  }
+}
