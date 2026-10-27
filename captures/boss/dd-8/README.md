@@ -299,3 +299,25 @@ was switched off and on just before, to silence it).
 
 For the CE-5 / BF-3 captures: the DD-8's modulation is a 1.5 Hz sine of ±0.6 ms on the
 clean Standard engine.
+
+# Shimmer mode (minimal)
+
+Session [`2026-10-27-shimmer/`](2026-10-27-shimmer/), plan
+[`plans/dd-8-shimmer.json`](../../../tools/capture/plans/dd-8-shimmer.json): 3 takes, only
+to answer one question — a reverb-like wash, or octave-shifted repeats? Analysed by hand:
+energy per band (0.5, 1, 2, 4, 8 kHz) in 50 ms steps after a 50 ms 1 kHz burst.
+
+**Both, side by side:** the repeats stay plain echoes, and an octave-up wash runs next to
+them.
+
+- **The echoes:** discrete, at 1 kHz (unshifted), one per delay time (0.40 s at Time
+  12:00), fading 4–8 dB per repeat at Feedback 12:00, with silent gaps at 1 kHz.
+- **The octave:** at 2 kHz, **diffuse** — it starts ~0.2 s after the note, before the first
+  echo, swells to −13 dB at 0.35 s and fades smoothly (−19, −26, −34, −43, −49 dB over the
+  next 0.35 s); with Feedback it keeps going between the echoes (−9 to −45 dB for 3 s),
+  refreshed by each.
+- **No stacking:** almost nothing at 4 kHz (mostly below −60 dB) and nothing at 8 kHz —
+  not a pitch shifter inside the delay loop climbing an octave per pass.
+
+So Shimmer is a delay feeding an octave-up diffuser: a reverb-style effect. Not pursued
+further (2026-10-27): NAM-X's Reverb and Delay Shimmers cover that ground.
