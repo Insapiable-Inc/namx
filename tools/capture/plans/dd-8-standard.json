@@ -321,6 +321,65 @@
         "tail": 8
       },
       "note": "At -12 dB, below the wet path's clip: a clean feedback measurement."
+    },
+    {
+      "name": "time-0300-again",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "7:00",
+        "Time": "3:00"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 1.5,
+        "count": 3,
+        "tail": 1.5
+      },
+      "note": "Set Time to 3:00 afresh (turn away and back): is the first 3:00 repeatable?"
+    },
+    {
+      "name": "time-0200",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "7:00",
+        "Time": "2:00"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 1.5,
+        "count": 3,
+        "tail": 1.5
+      }
+    },
+    {
+      "name": "time-0100",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "7:00",
+        "Time": "1:00"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 1.5,
+        "count": 3,
+        "tail": 1.5
+      }
+    },
+    {
+      "name": "feedback-0500",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "5:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 6.0,
+        "count": 1,
+        "level_db": -12,
+        "tail": 0.5
+      },
+      "note": "One quiet click, then 6 s: do the repeats grow (self-oscillation) or fade? Turn Feedback down after it."
     }
   ]
 }

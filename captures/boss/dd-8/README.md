@@ -30,11 +30,16 @@ y = x_dry + Level · LP10k( delay_T( clip(x) + F · repeats ) )
   follows a level step within 2 ms.
 - **Delay time** (Time knob, Feedback at minimum = one repeat):
 
-  | Time | 7:00 | 9:00 | 12:00 | 3:00 | 5:00 |
-  |---|---|---|---|---|---|
-  | delay (ms) | 19.65 | 169.62 | 385.62 | 582.60 | 799.60 |
+  | Time | 7:00 | 9:00 | 12:00 | 1:00* | 2:00* | 3:00 | 5:00 |
+  |---|---|---|---|---|---|---|---|
+  | fraction of the rotation | 0 | 0.2 | 0.5 | 0.6 | 0.7 | 0.8 | 1 |
+  | delay (ms) | 19.65 | 169.62 | 385.62 | 469.62 | 525.60 | 582.60 | 799.60 |
 
-  Repeats land exactly on multiples of it (to the sample over 7 repeats).
+  \* set approximately. Close to linear up to 3:00 (56–84 ms per 10 % of rotation), then
+  the last stretch to 5:00 covers twice that (108 ms per 10 %): use the points, linear in
+  between, not a formula. 3:00 set a second time gave 582.60 ms again, to the sample, so
+  the bend is the knob's, not the placement's. Repeats land exactly on multiples of the
+  delay (to the sample over 7 repeats).
 - **Wet level** (Level knob), the first repeat against Level 5:00, which is **+4.46 dB
   over the dry** (bursts):
 
@@ -47,10 +52,19 @@ y = x_dry + Level · LP10k( delay_T( clip(x) + F · repeats ) )
 
   | Feedback | 7:00 | 9:00 | 12:00 | 3:00 | 5:00 |
   |---|---|---|---|---|---|
-  | dB per repeat | one repeat only | −12.2 | −7.07 | ≈ −0.6 | not measured (likely self-oscillates) |
+  | dB per repeat | one repeat only | −12.2 | −7.07 | ≈ −0.6 | > 0: **self-oscillates** |
   | extra loss at 4 / 8 kHz | | −0.3 / −1.4 | −0.4 / −1.4 | −0.8 / −0.9 | |
 
-  The first repeat's level doesn't depend on Feedback.
+  The first repeat's level doesn't depend on Feedback. Over 9:00–3:00 the loss per repeat
+  is close to linear in dB (5–6.5 dB per 30 % of rotation); at 7:00 the loop is off. At
+  **5:00 the pedal oscillates on its own**: the output sat at a steady −11.6…−12.0 dBFS
+  before and after a quiet test click — exactly the wet path's clip ceiling (−11.9 dBFS
+  in the bursts), which is what limits the runaway.
+- **Knob curves, in short:** Time near-linear with a steeper top end; Level an audio
+  (logarithmic) taper — −33.6 / −13.4 / −2.6 dB at 9:00 / 12:00 / 3:00 where a linear
+  pot would give −14 / −6 / −1.9 dB (amplitude ≈ position^2.2–2.4 in the lower half);
+  Feedback linear in dB across the middle. The end values are exact (the knob's stops);
+  the in-between fractions assume stops at 7:00 and 5:00 (300°).
 - **Wet tone:** the first repeat against the dry: flat to 4 kHz (±0.5 dB), −2.6 dB at
   8 kHz, −30 dB at 16 kHz: a low-pass around 10 kHz. Each pass through the loop adds the
   small high-frequency loss above.
@@ -66,7 +80,8 @@ y = x_dry + Level · LP10k( delay_T( clip(x) + F · repeats ) )
   [`plans/dd-8-standard.json`](../../../tools/capture/plans/dd-8-standard.json): bypass,
   Level 7:00 (dry alone), Time at five positions, Level at three, Feedback at three (8 s
   tails), a −12 dB repeat for linearity, clicks, a held sine, silence; then two more
-  Feedback takes at −12 dB.
+  Feedback takes at −12 dB, and four click takes: Time at 3:00 set again, 2:00 and 1:00
+  (delay read straight off the clicks), and Feedback 5:00 (one −12 dB click, 6 s).
 - **The full-level sweeps clip in the wet path**, which first looked like a compressor
   (repeats 6.4 dB lower, relative to the dry, than at −12 dB) and made a spurious "echo"
   at 81 ms in the deconvolution (gone at −12 dB). Their delay times and the relative
@@ -91,5 +106,6 @@ and a gentle extra high cut in the loop. Not done yet.
 
 ## Not measured yet
 
-Feedback at 5:00 (self-oscillation?), the stereo outputs (B jacks), what the Time knob
-does to the repeats while it moves, and the other modes (Analog, Tape, Mod, Shimmer…).
+The stereo outputs (B jacks), what the Time knob does to the repeats while it moves, the
+self-oscillation's own character (its tone and build-up, from a quiet start), and the
+other modes (Analog, Tape, Mod, Shimmer…).

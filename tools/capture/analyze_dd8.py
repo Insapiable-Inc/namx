@@ -138,6 +138,29 @@ def measure_bursts(session, name):
     return rows
 
 
+def click_delay_ms(session, name, period_s=1.5):
+    """The delay from each click to its repeat (Feedback at minimum), clicks 1 and 2 (the
+    first can carry the start marker's own echo)."""
+    take = analysis.Take(session, name)
+    x, rate = take.signal(1.5), take.rate
+    delays = []
+    for c in (1, 2):
+        seg = np.abs(x[int(c * period_s * rate):int((c + 1) * period_s * rate)])
+        dry = int(np.argmax(seg[:100]))
+        seg[:dry + 200] = 0
+        delays.append(round((int(np.argmax(seg)) - dry) / rate * 1000, 2))
+    return delays
+
+
+def self_oscillation(session):
+    """Feedback 5:00: the output's peak per half second, dBFS (a steady level = oscillating)."""
+    take = analysis.Take(session, "feedback-0500")
+    x, rate = take.signal(0.5), take.rate
+    half = rate // 2
+    return [round(float(20 * np.log10(np.abs(x[i:i + half]).max())), 2)
+            for i in range(0, len(x) - half, half)]
+
+
 def plot(out_dir, result, responses, rate):
     import matplotlib
     matplotlib.use("Agg")
@@ -200,6 +223,10 @@ def main():
         "knob_fraction": {p: clock_fraction(p) for p in KNOB_POSITIONS},
         **sweeps,
         "bursts": {name: measure_bursts(session, name) for name in ("bursts", "bursts-level1200")},
+        "time_ms_clicks": {p: click_delay_ms(session, n) for p, n in (
+            ("3:00 (set again)", "time-0300-again"), ("2:00 (approx.)", "time-0200"),
+            ("1:00 (approx.)", "time-0100"))},
+        "feedback_0500_peak_dbfs_per_half_second": self_oscillation(session),
     }
     out_dir = session / "fit"
     out_dir.mkdir(exist_ok=True)
@@ -209,6 +236,8 @@ def main():
     plot(out_dir, result, responses, rate)
 
     print("Time (ms):     " + "  ".join(f"{p} {v}" for p, v in result["time_ms"].items()))
+    print("Time, clicks:  " + "  ".join(f"{p} {v}" for p, v in result["time_ms_clicks"].items()))
+    print(f"Feedback 5:00: output peak {result['feedback_0500_peak_dbfs_per_half_second']} dBFS")
     print("Level (dB):    " + "  ".join(f"{p} {v}" for p, v in result["level_db"].items()))
     for p, steps in result["feedback_db_per_repeat"].items():
         print(f"Feedback {p:>5}: {steps['1000 Hz']} dB per repeat at 1 kHz")
