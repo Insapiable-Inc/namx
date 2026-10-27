@@ -13,6 +13,7 @@ void ChorusProcessor::on_sample_rate_changed(double sr) {
     const size_t length = static_cast<size_t>((BASE_MS + MAX_DEPTH_MS + 5.0f) * sr / 1000.0f) + 4;
     line_l.resize(length);
     line_r.resize(length);
+    ce5_tone.prepare(sr);
     reset();
 }
 
@@ -21,6 +22,7 @@ void ChorusProcessor::sync_right_channel() {
         line_r.copy_from(line_l);
     }
     vint_lp[1] = vint_lp[0];
+    ce5_state[1] = ce5_state[0];
 }
 
 void ChorusProcessor::reset() {
@@ -28,6 +30,80 @@ void ChorusProcessor::reset() {
     line_r.clear();
     lfo_phase = 0.0f;
     vint_lp[0] = vint_lp[1] = 0.0f;
+    ce5_state[0].reset();
+    ce5_state[1].reset();
+}
+
+void ChorusProcessor::type_edge(int current_type) {
+    // A new engine starts its tone filters from rest; the line and the LFO keep going.
+    if (current_type != last_type) {
+        ce5_state[0].reset();
+        ce5_state[1].reset();
+        last_type = current_type;
+    }
+}
+
+ChorusProcessor::Ce5Block ChorusProcessor::ce5_block() {
+    Ce5Block b;
+    b.fs = static_cast<float>(sample_rate);
+    const float rate = rate_hz.load();
+    b.sweep.set(depth_pct.load() / 100.0f, rate);
+    b.ph_inc = rate / b.fs;
+    b.level = ce5::db_to_gain(ce5::knob_map(ce5::ELEVEL_DB, mix_pct.load() / 100.0f));
+    b.input_ceiling = ce5::db_to_gain(ce5::REFERENCE_DBFS + ce5::INPUT_CEILING_DB);
+    b.wet_ceiling = ce5::db_to_gain(ce5::REFERENCE_DBFS + ce5::WET_CEILING_DB);
+    b.dry_gain = ce5::db_to_gain(ce5::DRY_GAIN_DB);
+    ce5_tone.set_knobs(std::clamp(ce5_low_pct.load(), 0.0f, 100.0f) / 100.0f,
+                       std::clamp(ce5_high_pct.load(), 0.0f, 100.0f) / 100.0f, sample_rate);
+    return b;
+}
+
+ChorusProcessor::Ce5Out ChorusProcessor::ce5_sample(DelayLine& line, ce5::ToneState& state, float x,
+                                                    float phase, const Ce5Block& b) {
+    const float in = std::clamp(x, -b.input_ceiling, b.input_ceiling);
+    line.push(in);
+    const float delayed = line.interpolate(b.sweep.delay_ms(phase) * b.fs / 1000.0f);
+    const float wet = std::clamp(b.level * delayed, -b.wet_ceiling, b.wet_ceiling);
+    return {b.dry_gain * in, state.process(wet, ce5_tone)};
+}
+
+void ChorusProcessor::ce5_advance(const Ce5Block& b) {
+    lfo_phase += b.ph_inc;
+    if (lfo_phase >= 1.0f) {
+        lfo_phase -= 1.0f;
+    }
+}
+
+void ChorusProcessor::ce5_mono(float* buf, size_t nframes) {
+    const Ce5Block b = ce5_block();
+    for (size_t i = 0; i < nframes; ++i) {
+        const Ce5Out o = ce5_sample(line_l, ce5_state[0], buf[i], lfo_phase, b);
+        buf[i] = o.dry + o.wet;
+        ce5_advance(b);
+    }
+}
+
+void ChorusProcessor::ce5_dual(float* l, float* r, size_t nframes) {
+    // Stereo input: the mono pedal on each channel, one LFO.
+    const Ce5Block b = ce5_block();
+    for (size_t i = 0; i < nframes; ++i) {
+        const Ce5Out o_l = ce5_sample(line_l, ce5_state[0], l[i], lfo_phase, b);
+        const Ce5Out o_r = ce5_sample(line_r, ce5_state[1], r[i], lfo_phase, b);
+        l[i] = o_l.dry + o_l.wet;
+        r[i] = o_r.dry + o_r.wet;
+        ce5_advance(b);
+    }
+}
+
+void ChorusProcessor::ce5_stereo_out(float* l, float* r, size_t nframes) {
+    // The pedal's two outputs: A (left) the chorus alone, B (right) the dry alone.
+    const Ce5Block b = ce5_block();
+    for (size_t i = 0; i < nframes; ++i) {
+        const Ce5Out o = ce5_sample(line_l, ce5_state[0], l[i], lfo_phase, b);
+        l[i] = o.wet;
+        r[i] = o.dry;
+        ce5_advance(b);
+    }
 }
 
 float ChorusProcessor::tap(const DelayLine& line, float phase, float depth, float fs,
@@ -65,6 +141,11 @@ void ChorusProcessor::process_block_mono(float* buf, size_t nframes) {
     if (line_l.empty()) {
         return; // no sample rate yet (audit 2026-10-04, Fable item 17)
     }
+    type_edge(type.load());
+    if (last_type == CE5) {
+        ce5_mono(buf, nframes);
+        return;
+    }
     const float depth = depth_pct.load() / 100.0f;
     const float mix = mix_pct.load() / 100.0f;
     const float fs = static_cast<float>(sample_rate);
@@ -89,6 +170,11 @@ void ChorusProcessor::process_block_mono(float* buf, size_t nframes) {
 void ChorusProcessor::process_block_dual(float* l, float* r, size_t nframes) {
     if (line_l.empty()) {
         return; // no sample rate yet (audit 2026-10-04, Fable item 17)
+    }
+    type_edge(type.load());
+    if (last_type == CE5) {
+        ce5_dual(l, r, nframes);
+        return;
     }
     const float depth = depth_pct.load() / 100.0f;
     const float mix = mix_pct.load() / 100.0f;
@@ -119,6 +205,11 @@ void ChorusProcessor::process_block_dual(float* l, float* r, size_t nframes) {
 void ChorusProcessor::process_block_stereo_out(float* l, float* r, size_t nframes) {
     if (line_l.empty()) {
         return; // no sample rate yet (audit 2026-10-04, Fable item 17)
+    }
+    type_edge(type.load());
+    if (last_type == CE5) {
+        ce5_stereo_out(l, r, nframes);
+        return;
     }
     const float depth = depth_pct.load() / 100.0f;
     const float mix = mix_pct.load() / 100.0f;

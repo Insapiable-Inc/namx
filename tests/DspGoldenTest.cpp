@@ -282,6 +282,22 @@ static unique_ptr<EQProcessor> make_eq() {
     return fx;
 }
 
+// The CE-5 type: mono mode with the filters open, and stereo mode (the pedal's two outputs)
+// with both filters part-way down, deeper and faster; the test signal reaches both clips.
+static unique_ptr<ChorusProcessor> make_chorus_ce5(bool stereo) {
+    auto fx = make_unique<ChorusProcessor>();
+    fx->set_type(ChorusProcessor::CE5);
+    fx->set_stereo_mode(stereo);
+    fx->set_mix_pct(100.0f);
+    if (stereo) {
+        fx->set_rate_hz(2.0f);
+        fx->set_depth_pct(80.0f);
+        fx->set_ce5_low_pct(50.0f);
+        fx->set_ce5_high_pct(40.0f);
+    }
+    return fx;
+}
+
 static unique_ptr<TremoloProcessor> make_tremolo_stereo() {
     auto fx = make_unique<TremoloProcessor>();
     fx->set_stereo_mode(true);
@@ -506,6 +522,12 @@ void DspGoldenTest::initTestCase() {
     }
     both("chorus-mono-mode", [] {
         return make_unique<ChorusProcessor>();
+    });
+    both("chorus-ce5", [] {
+        return make_chorus_ce5(false);
+    });
+    both("chorus-ce5-stereo-filters", [] {
+        return make_chorus_ce5(true);
     });
     both("tremolo", [] {
         return make_unique<TremoloProcessor>();

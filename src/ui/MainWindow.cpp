@@ -716,6 +716,10 @@ void MainWindow::update_inactive_controls() {
     const QString why_dd8 = "the DD-8 types have the pedal's own saturation and no shimmer";
     set_inactive(knob_del_saturation, knob_del_saturation, dd8, why_dd8);
     set_inactive(knob_del_shimmer, knob_del_shimmer, dd8, why_dd8);
+    const bool ce5 = std::lround(knob_ch_type->value()) == ChorusProcessor::CE5;
+    const QString why_ce5 = "the CE-5 type's filter knobs (the Chorus type has none)";
+    set_inactive(knob_ch_ce5_low, knob_ch_ce5_low, !ce5, why_ce5);
+    set_inactive(knob_ch_ce5_high, knob_ch_ce5_high, !ce5, why_ce5);
 
     const bool manual = sw_wah_manual->isChecked();
     set_inactive(knob_wah_sens, knob_wah_sens, manual,
@@ -1220,9 +1224,29 @@ void MainWindow::setup_ui() {
         knob_ch_depth->set_scroll_step(1.0);
         knob_ch_mix->set_scroll_step(1.0);
 
-        QWidget* col =
-            make_effect_row("Chorus", sw_chorus_enable, {knob_ch_mix, knob_ch_rate, knob_ch_depth},
-                            &sw_chorus_stereo);
+        knob_ch_type =
+            late_knob("chorus", "type",
+                      new KnobWidget("Type", 0.0, ChorusProcessor::TYPE_COUNT - 1.0, 0.0, ""),
+                      [this](double v) {
+                          engine->get_chorus().set_type(static_cast<int>(std::lround(v)));
+                      });
+        knob_ch_type->set_snap(1.0);
+        knob_ch_type->set_scroll_step(1.0);
+        knob_ch_type->set_name_visible(false); // "Type: Chorus", like the Tremolo's
+        knob_ch_type->set_value_formatter([](double v) {
+            return std::lround(v) == ChorusProcessor::CE5 ? QString("Type: CE-5")
+                                                          : QString("Type: Chorus");
+        });
+        knob_ch_type->setToolTip(
+            "Chorus: NAM-X's chorus · CE-5: a model of a Boss CE-5 Chorus Ensemble, measured "
+            "from the real pedal. In CE-5, Mix is the pedal's E.Level (the dry stays, and the "
+            "chorus never fully mutes), Depth its knob, Low and High (▾) its filter knobs; "
+            "Stereo gives its two outputs, the chorus left and the dry right");
+        connect(knob_ch_type, &KnobWidget::value_changed, this,
+                &MainWindow::update_inactive_controls);
+        QWidget* col = make_effect_row("Chorus", sw_chorus_enable,
+                                       {knob_ch_mix, knob_ch_rate, knob_ch_depth, knob_ch_type},
+                                       &sw_chorus_stereo);
         add_tempo_sync(col, knob_ch_rate, "Rate", false, 2 /* 1/1 */, CHORUS_RATE_MIN,
                        CHORUS_RATE_MAX, [this](double v) {
                            engine->get_chorus().set_rate_hz(static_cast<float>(v));
@@ -1238,6 +1262,23 @@ void MainWindow::setup_ui() {
         // mode->setToolTip("Normal · Tri (three voices) · Vintage (darker, triangle LFO) · "
         //                  "Spatial (wider stereo)");
         // append_to_row(col, mode);
+        knob_ch_ce5_low = late_knob(
+            "chorus", "ce5Low", new KnobWidget("Low", 0.0, 100.0, 100.0, "%"), [this](double v) {
+                engine->get_chorus().set_ce5_low_pct(static_cast<float>(v));
+            });
+        knob_ch_ce5_low->set_scroll_step(1.0);
+        knob_ch_ce5_low->setToolTip("CE-5 type: the pedal's Low filter (the outer knob). 100 % "
+                                    "is fully clockwise, open; turning it down thins the "
+                                    "chorus sound's bass");
+        knob_ch_ce5_high = late_knob(
+            "chorus", "ce5High", new KnobWidget("High", 0.0, 100.0, 100.0, "%"), [this](double v) {
+                engine->get_chorus().set_ce5_high_pct(static_cast<float>(v));
+            });
+        knob_ch_ce5_high->set_scroll_step(1.0);
+        knob_ch_ce5_high->setToolTip("CE-5 type: the pedal's High filter (the inner knob). 100 % "
+                                     "is fully clockwise, open; turning it down darkens the "
+                                     "chorus sound");
+        add_detail_row(col, {knob_ch_ce5_low, knob_ch_ce5_high});
         Theme::tag_card(col, "chorus");
 
         fx_cols[&engine->get_chorus()] = col;

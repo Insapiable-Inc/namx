@@ -217,10 +217,20 @@ Depth-dependent fraction, see *The LFO*).
 
 ## For NAM-X
 
-NAM-X's Chorus has a Vintage mode (triangle LFO, a darker BBD-style wet). A CE-5 voicing
-would be: dry +2.3 dB (or unity with the wet 2.3 dB lower), a 5.7–8.1 ms delay with the
-bowed triangle above and Depth raising mainly the top, a 60 Hz high-pass and a 10 kHz
-brick wall on the wet, the two tone knobs as a resonant high-pass shelf and a first-order
-low-pass, a hard clip ~2 dB over the guitar's peak on the input and one on the wet that
-E.Level pushes to the guitar's peak. As a new mode to A/B, not a change to the
-current ones.
+Done 2026-10-27 (branch `dsp/chorus-ce5`): the Chorus has a Type knob, Chorus | CE-5
+(`src/dsp/Ce5Chorus.h`), with Low and High in its ▾ row. Mix is E.Level, Depth the pedal's
+knob, Rate stays in Hz; Stereo gives the pedal's two outputs (chorus left, dry right).
+
+Fits behind it: the mono output's tone in 7 biquads (within 0.7 dB to 16 kHz); **Low is a
+single resonant low shelf at Q 1.12 at every position** (103 Hz / −6 dB at 3:00 to
+315 Hz / −41 dB at 7:00, within 0.2–0.4 dB rms) and High a one-pole low-pass with a small
+broadband drop (639 Hz – 9.5 kHz, within 0.3 dB rms); the clips, an input one at +1.2 dB
+over the reference and a wet one 1.0 dB under the wet at E.Level 5:00 (within 0.07 dB;
+they predict the E.Level 12:00 bursts to 0.1 dB). Rendered and measured like the pedal,
+the C++ gives E.Level within 0.01 dB, the filters within 0.3 dB, the delay swing within
+0.05 ms at Rate 12:00 (0.15 ms at the Rate × Depth extremes: one mean swing-vs-Rate
+curve), the wet 5.42 ms after the dry (pedal 5.43; the tone chain's own 0.07 ms taken
+off), the tone within 1.5 dB (1–3 dB darker above 10 kHz). Choices beyond the data: the
+clips are calibrated to a guitar peak of −6 dBFS after the amp model (as the DD-8's);
+the dry isn't delayed by the pedal's 0.98 ms converter latency (only the spacing
+matters); one tone (the mono output's) in both modes. Not approved by ear yet.
