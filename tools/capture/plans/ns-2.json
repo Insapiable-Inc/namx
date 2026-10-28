@@ -1,0 +1,1040 @@
+{
+  "pedal": "Boss NS-2 Noise Suppressor (mono, Input -> Output)",
+  "comment": "Only Input and Output are used; Send and Return stay empty (with nothing in Return, the Send is passed straight to it inside the pedal). Mode on Reduction except the last take. Threshold and Decay at 12:00 unless a take says otherwise; the takes are ordered by setting, for the fewest knob turns. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise.",
+  "quiet_dbfs": -60,
+  "knobs": [
+    "Threshold",
+    "Decay",
+    "Mode"
+  ],
+  "takes": [
+    {
+      "name": "bypass-sweep",
+      "bypass": true,
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 2
+      }
+    },
+    {
+      "name": "bypass-stairs",
+      "bypass": true,
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -80,
+          -76,
+          -72,
+          -68,
+          -64,
+          -60,
+          -56,
+          -52,
+          -48,
+          -44,
+          -40,
+          -36,
+          -32,
+          -28,
+          -24,
+          -20,
+          -16,
+          -12,
+          -8,
+          -4,
+          0,
+          -4,
+          -8,
+          -12,
+          -16,
+          -20,
+          -24,
+          -28,
+          -32,
+          -36,
+          -40,
+          -44,
+          -48,
+          -52,
+          -56,
+          -60,
+          -64,
+          -68,
+          -72,
+          -76,
+          -80
+        ],
+        "step_seconds": 1.5,
+        "gap_seconds": 0,
+        "tail": 4
+      }
+    },
+    {
+      "name": "bypass-stairs-110",
+      "bypass": true,
+      "signal": {
+        "type": "steps",
+        "freq": 110,
+        "levels_db": [
+          -80,
+          -76,
+          -72,
+          -68,
+          -64,
+          -60,
+          -56,
+          -52,
+          -48,
+          -44,
+          -40,
+          -36,
+          -32,
+          -28,
+          -24,
+          -20,
+          -16,
+          -12,
+          -8,
+          -4,
+          0,
+          -4,
+          -8,
+          -12,
+          -16,
+          -20,
+          -24,
+          -28,
+          -32,
+          -36,
+          -40,
+          -44,
+          -48,
+          -52,
+          -56,
+          -60,
+          -64,
+          -68,
+          -72,
+          -76,
+          -80
+        ],
+        "step_seconds": 1.5,
+        "gap_seconds": 0,
+        "tail": 4
+      }
+    },
+    {
+      "name": "bypass-stairs-3000",
+      "bypass": true,
+      "signal": {
+        "type": "steps",
+        "freq": 3000,
+        "levels_db": [
+          -80,
+          -76,
+          -72,
+          -68,
+          -64,
+          -60,
+          -56,
+          -52,
+          -48,
+          -44,
+          -40,
+          -36,
+          -32,
+          -28,
+          -24,
+          -20,
+          -16,
+          -12,
+          -8,
+          -4,
+          0,
+          -4,
+          -8,
+          -12,
+          -16,
+          -20,
+          -24,
+          -28,
+          -32,
+          -36,
+          -40,
+          -44,
+          -48,
+          -52,
+          -56,
+          -60,
+          -64,
+          -68,
+          -72,
+          -76,
+          -80
+        ],
+        "step_seconds": 1.5,
+        "gap_seconds": 0,
+        "tail": 4
+      }
+    },
+    {
+      "name": "bypass-jump",
+      "bypass": true,
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -84,
+          -12,
+          -84
+        ],
+        "step_seconds": 4,
+        "gap_seconds": 0,
+        "tail": 2
+      }
+    },
+    {
+      "name": "bypass-plucks",
+      "bypass": true,
+      "signal": {
+        "type": "plucks",
+        "freq": 220,
+        "period": 4,
+        "count": 3,
+        "decay_seconds": 0.6,
+        "tail": 2
+      }
+    },
+    {
+      "name": "bypass-silence",
+      "bypass": true,
+      "signal": {
+        "type": "silence",
+        "seconds": 10
+      }
+    },
+    {
+      "name": "stairs-threshold-0700",
+      "settings": {
+        "Threshold": "7:00",
+        "Decay": "12:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -80,
+          -76,
+          -72,
+          -68,
+          -64,
+          -60,
+          -56,
+          -52,
+          -48,
+          -44,
+          -40,
+          -36,
+          -32,
+          -28,
+          -24,
+          -20,
+          -16,
+          -12,
+          -8,
+          -4,
+          0,
+          -4,
+          -8,
+          -12,
+          -16,
+          -20,
+          -24,
+          -28,
+          -32,
+          -36,
+          -40,
+          -44,
+          -48,
+          -52,
+          -56,
+          -60,
+          -64,
+          -68,
+          -72,
+          -76,
+          -80
+        ],
+        "step_seconds": 1.5,
+        "gap_seconds": 0,
+        "tail": 4
+      },
+      "note": "A 1 kHz staircase from -80 to 0 dB and back down, 4 dB and 1.5 s per step: the static curve (how deep the reduction is under the threshold) and any hysteresis between the way up and the way down."
+    },
+    {
+      "name": "jump-threshold-0700",
+      "settings": {
+        "Threshold": "7:00",
+        "Decay": "12:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -84,
+          -12,
+          -84
+        ],
+        "step_seconds": 4,
+        "gap_seconds": 0,
+        "tail": 2
+      },
+      "note": "A 1 kHz tone at -84, -12, -84 dB, 4 s each: how fast the gate opens, and how it closes (Decay)."
+    },
+    {
+      "name": "plucks-threshold-0700",
+      "settings": {
+        "Threshold": "7:00",
+        "Decay": "12:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "plucks",
+        "freq": 220,
+        "period": 4,
+        "count": 3,
+        "decay_seconds": 0.6,
+        "tail": 2
+      },
+      "note": "Three picked-note bursts at 220 Hz, 4 s apart: where a decaying note gets cut and how it fades."
+    },
+    {
+      "name": "stairs-threshold-0900",
+      "settings": {
+        "Threshold": "9:00",
+        "Decay": "12:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -80,
+          -76,
+          -72,
+          -68,
+          -64,
+          -60,
+          -56,
+          -52,
+          -48,
+          -44,
+          -40,
+          -36,
+          -32,
+          -28,
+          -24,
+          -20,
+          -16,
+          -12,
+          -8,
+          -4,
+          0,
+          -4,
+          -8,
+          -12,
+          -16,
+          -20,
+          -24,
+          -28,
+          -32,
+          -36,
+          -40,
+          -44,
+          -48,
+          -52,
+          -56,
+          -60,
+          -64,
+          -68,
+          -72,
+          -76,
+          -80
+        ],
+        "step_seconds": 1.5,
+        "gap_seconds": 0,
+        "tail": 4
+      },
+      "note": "A 1 kHz staircase from -80 to 0 dB and back down, 4 dB and 1.5 s per step: the static curve (how deep the reduction is under the threshold) and any hysteresis between the way up and the way down."
+    },
+    {
+      "name": "jump-threshold-0900",
+      "settings": {
+        "Threshold": "9:00",
+        "Decay": "12:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -84,
+          -12,
+          -84
+        ],
+        "step_seconds": 4,
+        "gap_seconds": 0,
+        "tail": 2
+      },
+      "note": "A 1 kHz tone at -84, -12, -84 dB, 4 s each: how fast the gate opens, and how it closes (Decay)."
+    },
+    {
+      "name": "plucks-threshold-0900",
+      "settings": {
+        "Threshold": "9:00",
+        "Decay": "12:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "plucks",
+        "freq": 220,
+        "period": 4,
+        "count": 3,
+        "decay_seconds": 0.6,
+        "tail": 2
+      },
+      "note": "Three picked-note bursts at 220 Hz, 4 s apart: where a decaying note gets cut and how it fades."
+    },
+    {
+      "name": "jump-decay-0700",
+      "settings": {
+        "Threshold": "12:00",
+        "Decay": "7:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -84,
+          -12,
+          -84
+        ],
+        "step_seconds": 4,
+        "gap_seconds": 0,
+        "tail": 2
+      },
+      "note": "A 1 kHz tone at -84, -12, -84 dB, 4 s each: how fast the gate opens, and how it closes (Decay)."
+    },
+    {
+      "name": "plucks-decay-0700",
+      "settings": {
+        "Threshold": "12:00",
+        "Decay": "7:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "plucks",
+        "freq": 220,
+        "period": 4,
+        "count": 3,
+        "decay_seconds": 0.6,
+        "tail": 2
+      },
+      "note": "Three picked-note bursts at 220 Hz, 4 s apart: where a decaying note gets cut and how it fades."
+    },
+    {
+      "name": "jump-decay-0900",
+      "settings": {
+        "Threshold": "12:00",
+        "Decay": "9:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -84,
+          -12,
+          -84
+        ],
+        "step_seconds": 4,
+        "gap_seconds": 0,
+        "tail": 2
+      },
+      "note": "A 1 kHz tone at -84, -12, -84 dB, 4 s each: how fast the gate opens, and how it closes (Decay)."
+    },
+    {
+      "name": "plucks-decay-0900",
+      "settings": {
+        "Threshold": "12:00",
+        "Decay": "9:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "plucks",
+        "freq": 220,
+        "period": 4,
+        "count": 3,
+        "decay_seconds": 0.6,
+        "tail": 2
+      },
+      "note": "Three picked-note bursts at 220 Hz, 4 s apart: where a decaying note gets cut and how it fades."
+    },
+    {
+      "name": "sweep",
+      "settings": {
+        "Threshold": "12:00",
+        "Decay": "12:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 2
+      },
+      "note": "A -12 dB sweep, well over the threshold: the open gate's frequency response."
+    },
+    {
+      "name": "stairs-threshold-1200",
+      "settings": {
+        "Threshold": "12:00",
+        "Decay": "12:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -80,
+          -76,
+          -72,
+          -68,
+          -64,
+          -60,
+          -56,
+          -52,
+          -48,
+          -44,
+          -40,
+          -36,
+          -32,
+          -28,
+          -24,
+          -20,
+          -16,
+          -12,
+          -8,
+          -4,
+          0,
+          -4,
+          -8,
+          -12,
+          -16,
+          -20,
+          -24,
+          -28,
+          -32,
+          -36,
+          -40,
+          -44,
+          -48,
+          -52,
+          -56,
+          -60,
+          -64,
+          -68,
+          -72,
+          -76,
+          -80
+        ],
+        "step_seconds": 1.5,
+        "gap_seconds": 0,
+        "tail": 4
+      },
+      "note": "A 1 kHz staircase from -80 to 0 dB and back down, 4 dB and 1.5 s per step: the static curve (how deep the reduction is under the threshold) and any hysteresis between the way up and the way down."
+    },
+    {
+      "name": "stairs-110",
+      "settings": {
+        "Threshold": "12:00",
+        "Decay": "12:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 110,
+        "levels_db": [
+          -80,
+          -76,
+          -72,
+          -68,
+          -64,
+          -60,
+          -56,
+          -52,
+          -48,
+          -44,
+          -40,
+          -36,
+          -32,
+          -28,
+          -24,
+          -20,
+          -16,
+          -12,
+          -8,
+          -4,
+          0,
+          -4,
+          -8,
+          -12,
+          -16,
+          -20,
+          -24,
+          -28,
+          -32,
+          -36,
+          -40,
+          -44,
+          -48,
+          -52,
+          -56,
+          -60,
+          -64,
+          -68,
+          -72,
+          -76,
+          -80
+        ],
+        "step_seconds": 1.5,
+        "gap_seconds": 0,
+        "tail": 4
+      },
+      "note": "The staircase at 110 Hz: does the detector care about pitch (a low-E-ish fundamental)?"
+    },
+    {
+      "name": "stairs-3000",
+      "settings": {
+        "Threshold": "12:00",
+        "Decay": "12:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 3000,
+        "levels_db": [
+          -80,
+          -76,
+          -72,
+          -68,
+          -64,
+          -60,
+          -56,
+          -52,
+          -48,
+          -44,
+          -40,
+          -36,
+          -32,
+          -28,
+          -24,
+          -20,
+          -16,
+          -12,
+          -8,
+          -4,
+          0,
+          -4,
+          -8,
+          -12,
+          -16,
+          -20,
+          -24,
+          -28,
+          -32,
+          -36,
+          -40,
+          -44,
+          -48,
+          -52,
+          -56,
+          -60,
+          -64,
+          -68,
+          -72,
+          -76,
+          -80
+        ],
+        "step_seconds": 1.5,
+        "gap_seconds": 0,
+        "tail": 4
+      },
+      "note": "The staircase at 3 kHz: does the detector care about pitch?"
+    },
+    {
+      "name": "jump-12",
+      "settings": {
+        "Threshold": "12:00",
+        "Decay": "12:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -84,
+          -12,
+          -84
+        ],
+        "step_seconds": 4,
+        "gap_seconds": 0,
+        "tail": 2
+      },
+      "note": "A 1 kHz tone at -84, -12, -84 dB, 4 s each: how fast the gate opens, and how it closes (Decay)."
+    },
+    {
+      "name": "plucks-12",
+      "settings": {
+        "Threshold": "12:00",
+        "Decay": "12:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "plucks",
+        "freq": 220,
+        "period": 4,
+        "count": 3,
+        "decay_seconds": 0.6,
+        "tail": 2
+      },
+      "note": "Three picked-note bursts at 220 Hz, 4 s apart: where a decaying note gets cut and how it fades."
+    },
+    {
+      "name": "silence-threshold-1200",
+      "settings": {
+        "Threshold": "12:00",
+        "Decay": "12:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "silence",
+        "seconds": 10
+      },
+      "note": "Nothing played: the closed gate's noise floor."
+    },
+    {
+      "name": "jump-decay-0300",
+      "settings": {
+        "Threshold": "12:00",
+        "Decay": "3:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -84,
+          -12,
+          -84
+        ],
+        "step_seconds": 4,
+        "gap_seconds": 0,
+        "tail": 2
+      },
+      "note": "A 1 kHz tone at -84, -12, -84 dB, 4 s each: how fast the gate opens, and how it closes (Decay)."
+    },
+    {
+      "name": "plucks-decay-0300",
+      "settings": {
+        "Threshold": "12:00",
+        "Decay": "3:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "plucks",
+        "freq": 220,
+        "period": 4,
+        "count": 3,
+        "decay_seconds": 0.6,
+        "tail": 2
+      },
+      "note": "Three picked-note bursts at 220 Hz, 4 s apart: where a decaying note gets cut and how it fades."
+    },
+    {
+      "name": "jump-decay-0500",
+      "settings": {
+        "Threshold": "12:00",
+        "Decay": "5:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -84,
+          -12,
+          -84
+        ],
+        "step_seconds": 4,
+        "gap_seconds": 0,
+        "tail": 2
+      },
+      "note": "A 1 kHz tone at -84, -12, -84 dB, 4 s each: how fast the gate opens, and how it closes (Decay)."
+    },
+    {
+      "name": "plucks-decay-0500",
+      "settings": {
+        "Threshold": "12:00",
+        "Decay": "5:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "plucks",
+        "freq": 220,
+        "period": 4,
+        "count": 3,
+        "decay_seconds": 0.6,
+        "tail": 2
+      },
+      "note": "Three picked-note bursts at 220 Hz, 4 s apart: where a decaying note gets cut and how it fades."
+    },
+    {
+      "name": "stairs-threshold-0300",
+      "settings": {
+        "Threshold": "3:00",
+        "Decay": "12:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -80,
+          -76,
+          -72,
+          -68,
+          -64,
+          -60,
+          -56,
+          -52,
+          -48,
+          -44,
+          -40,
+          -36,
+          -32,
+          -28,
+          -24,
+          -20,
+          -16,
+          -12,
+          -8,
+          -4,
+          0,
+          -4,
+          -8,
+          -12,
+          -16,
+          -20,
+          -24,
+          -28,
+          -32,
+          -36,
+          -40,
+          -44,
+          -48,
+          -52,
+          -56,
+          -60,
+          -64,
+          -68,
+          -72,
+          -76,
+          -80
+        ],
+        "step_seconds": 1.5,
+        "gap_seconds": 0,
+        "tail": 4
+      },
+      "note": "A 1 kHz staircase from -80 to 0 dB and back down, 4 dB and 1.5 s per step: the static curve (how deep the reduction is under the threshold) and any hysteresis between the way up and the way down."
+    },
+    {
+      "name": "jump-threshold-0300",
+      "settings": {
+        "Threshold": "3:00",
+        "Decay": "12:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -84,
+          -12,
+          -84
+        ],
+        "step_seconds": 4,
+        "gap_seconds": 0,
+        "tail": 2
+      },
+      "note": "A 1 kHz tone at -84, -12, -84 dB, 4 s each: how fast the gate opens, and how it closes (Decay)."
+    },
+    {
+      "name": "plucks-threshold-0300",
+      "settings": {
+        "Threshold": "3:00",
+        "Decay": "12:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "plucks",
+        "freq": 220,
+        "period": 4,
+        "count": 3,
+        "decay_seconds": 0.6,
+        "tail": 2
+      },
+      "note": "Three picked-note bursts at 220 Hz, 4 s apart: where a decaying note gets cut and how it fades."
+    },
+    {
+      "name": "stairs-threshold-0500",
+      "settings": {
+        "Threshold": "5:00",
+        "Decay": "12:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -80,
+          -76,
+          -72,
+          -68,
+          -64,
+          -60,
+          -56,
+          -52,
+          -48,
+          -44,
+          -40,
+          -36,
+          -32,
+          -28,
+          -24,
+          -20,
+          -16,
+          -12,
+          -8,
+          -4,
+          0,
+          -4,
+          -8,
+          -12,
+          -16,
+          -20,
+          -24,
+          -28,
+          -32,
+          -36,
+          -40,
+          -44,
+          -48,
+          -52,
+          -56,
+          -60,
+          -64,
+          -68,
+          -72,
+          -76,
+          -80
+        ],
+        "step_seconds": 1.5,
+        "gap_seconds": 0,
+        "tail": 4
+      },
+      "note": "A 1 kHz staircase from -80 to 0 dB and back down, 4 dB and 1.5 s per step: the static curve (how deep the reduction is under the threshold) and any hysteresis between the way up and the way down."
+    },
+    {
+      "name": "jump-threshold-0500",
+      "settings": {
+        "Threshold": "5:00",
+        "Decay": "12:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -84,
+          -12,
+          -84
+        ],
+        "step_seconds": 4,
+        "gap_seconds": 0,
+        "tail": 2
+      },
+      "note": "A 1 kHz tone at -84, -12, -84 dB, 4 s each: how fast the gate opens, and how it closes (Decay)."
+    },
+    {
+      "name": "plucks-threshold-0500",
+      "settings": {
+        "Threshold": "5:00",
+        "Decay": "12:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "plucks",
+        "freq": 220,
+        "period": 4,
+        "count": 3,
+        "decay_seconds": 0.6,
+        "tail": 2
+      },
+      "note": "Three picked-note bursts at 220 Hz, 4 s apart: where a decaying note gets cut and how it fades."
+    },
+    {
+      "name": "silence-threshold-0500",
+      "settings": {
+        "Threshold": "5:00",
+        "Decay": "12:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "silence",
+        "seconds": 10
+      },
+      "note": "Nothing played at the top threshold."
+    },
+    {
+      "name": "mute",
+      "settings": {
+        "Threshold": "5:00",
+        "Decay": "12:00",
+        "Mode": "Mute"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -24,
+          0
+        ],
+        "step_seconds": 3,
+        "gap_seconds": 0,
+        "tail": 1
+      },
+      "note": "Mode on Mute: should be silent whatever is played."
+    }
+  ]
+}

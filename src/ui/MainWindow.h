@@ -333,6 +333,7 @@ private:
     KnobWidget* knob_gate_thresh = nullptr;
     KnobWidget* knob_gate_attack = nullptr;
     KnobWidget* knob_gate_release = nullptr;
+    KnobWidget* knob_gate_type = nullptr;
 
     ToggleSwitch* sw_comp_enable = nullptr;
     KnobWidget* knob_comp_thresh = nullptr;

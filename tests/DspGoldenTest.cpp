@@ -229,6 +229,16 @@ static unique_ptr<NoiseGateProcessor> make_gate() {
     return fx;
 }
 
+// The NS-2 type: opening near the top of its range so the test signal's quiet parts close
+// it, Decay about 3:00.
+static unique_ptr<NoiseGateProcessor> make_gate_ns2() {
+    auto fx = make_unique<NoiseGateProcessor>();
+    fx->set_type(NoiseGateProcessor::NS2);
+    fx->set_threshold(-40.0f);
+    fx->set_release(220.0f);
+    return fx;
+}
+
 static unique_ptr<CompressorProcessor> make_compressor() {
     auto fx = make_unique<CompressorProcessor>();
     fx->set_threshold(-24.0f);
@@ -529,6 +539,7 @@ void DspGoldenTest::initTestCase() {
     };
 
     both("gate", &make_gate);
+    both("gate-ns2", &make_gate_ns2);
     both("compressor", &make_compressor);
     both("compressor-cs3", &make_compressor_cs3);
     both("wah", [] {
@@ -670,6 +681,7 @@ void DspGoldenTest::tuner_detects_pitch() {
 void DspGoldenTest::mono_to_stereo_edge() {
     const std::map<string, std::function<unique_ptr<EffectBase>()>> makers = {
         {"gate", make_gate},
+        {"gate-ns2", make_gate_ns2},
         {"compressor", make_compressor},
         {"wah", make_wah_pedal},
         {"flanger", make_flanger},
