@@ -1,0 +1,280 @@
+{
+  "pedal": "Boss PH-3 Phase Shifter, Step, Rise and Fall (mono: Input -> Output A)",
+  "comment": "Step (its step rate and how far the steps jump), Rise (the endless upward sweep: its speed, how the notches enter and leave) and Fall as a mirror check. Mono: Input -> Output A only (nothing in B). No tap tempo, no expression pedal. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise; 9:00 and 3:00 pointer horizontal. Noise takes: the notches tracked frame by frame (the sweep moves); sweeps at Depth minimum: the static response, if the notches hold still there. Takes ordered by setting, for the fewest knob turns.",
+  "quiet_dbfs": -60,
+  "knobs": [
+    "Mode",
+    "Rate",
+    "Depth",
+    "Res"
+  ],
+  "takes": [
+    {
+      "name": "bypass-sweep",
+      "bypass": true,
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      }
+    },
+    {
+      "name": "bypass-noise",
+      "bypass": true,
+      "signal": {
+        "type": "noise",
+        "seconds": 10,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 2
+      }
+    },
+    {
+      "name": "step-rate-1200",
+      "settings": {
+        "Mode": "Step",
+        "Rate": "12:00",
+        "Depth": "12:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 12,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 2
+      },
+      "note": "Pedal on, MODE STEP."
+    },
+    {
+      "name": "step-rate-0700",
+      "settings": {
+        "Mode": "Step",
+        "Rate": "7:00",
+        "Depth": "12:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 40,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 2
+      }
+    },
+    {
+      "name": "step-rate-0500",
+      "settings": {
+        "Mode": "Step",
+        "Rate": "5:00",
+        "Depth": "12:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 10,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 2
+      }
+    },
+    {
+      "name": "step-depth-0500",
+      "settings": {
+        "Mode": "Step",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 12,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 2
+      },
+      "note": "Rate back to 12:00."
+    },
+    {
+      "name": "step-depth-0500-res-0500",
+      "settings": {
+        "Mode": "Step",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "5:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 12,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 2
+      }
+    },
+    {
+      "name": "step-depth-0700-res-0500",
+      "settings": {
+        "Mode": "Step",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Res": "5:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 12,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 2
+      }
+    },
+    {
+      "name": "rise-depth-0700-res-0500",
+      "settings": {
+        "Mode": "Rise",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Res": "5:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 12,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 2
+      },
+      "note": "MODE RISE."
+    },
+    {
+      "name": "rise-depth-0500-res-0500",
+      "settings": {
+        "Mode": "Rise",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "5:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 12,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 2
+      }
+    },
+    {
+      "name": "rise-rate-1200",
+      "settings": {
+        "Mode": "Rise",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 12,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 2
+      }
+    },
+    {
+      "name": "rise-depth-1200",
+      "settings": {
+        "Mode": "Rise",
+        "Rate": "12:00",
+        "Depth": "12:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 12,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 2
+      }
+    },
+    {
+      "name": "rise-rate-0700",
+      "settings": {
+        "Mode": "Rise",
+        "Rate": "7:00",
+        "Depth": "12:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 40,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 2
+      }
+    },
+    {
+      "name": "rise-rate-0500",
+      "settings": {
+        "Mode": "Rise",
+        "Rate": "5:00",
+        "Depth": "12:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 10,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 2
+      }
+    },
+    {
+      "name": "fall-rate-0500",
+      "settings": {
+        "Mode": "Fall",
+        "Rate": "5:00",
+        "Depth": "12:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 10,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 2
+      },
+      "note": "MODE FALL."
+    },
+    {
+      "name": "fall-rate-1200",
+      "settings": {
+        "Mode": "Fall",
+        "Rate": "12:00",
+        "Depth": "12:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 12,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 2
+      }
+    },
+    {
+      "name": "fall-depth-0500-res-0500",
+      "settings": {
+        "Mode": "Fall",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "5:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 12,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 2
+      }
+    }
+  ]
+}
