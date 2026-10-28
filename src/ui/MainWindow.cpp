@@ -707,6 +707,8 @@ static void set_inactive(QWidget* w, QWidget* tip, bool inactive, const QString&
 }
 
 void MainWindow::update_inactive_controls() {
+    const bool ns2 = std::lround(knob_gate_type->value()) == NoiseGateProcessor::NS2;
+    set_inactive(knob_gate_attack, knob_gate_attack, ns2, "the NS-2 opens at once");
     const bool mono_delay = !sw_delay_stereo->isChecked();
     const QString why_mono = "with Stereo off the delay is one line, at L/Mono Time";
     set_inactive(knob_del_right_time, knob_del_right_time, mono_delay, why_mono);
@@ -951,8 +953,30 @@ void MainWindow::setup_ui() {
         knob_gate_attack->set_scroll_step(1.0);
         knob_gate_release->set_scroll_step(10.0);
 
-        QWidget* col = make_effect_row("Noise Gate", sw_gate_enable,
-                                       {knob_gate_thresh, knob_gate_attack, knob_gate_release});
+        knob_gate_type =
+            late_knob("noiseGate", "type",
+                      new KnobWidget("Type", 0.0, NoiseGateProcessor::TYPE_COUNT - 1.0, 0.0, ""),
+                      [this](double v) {
+                          engine->get_gate().set_type(static_cast<int>(std::lround(v)));
+                      });
+        knob_gate_type->set_snap(1.0);
+        knob_gate_type->set_scroll_step(1.0);
+        knob_gate_type->set_name_visible(false); // "Type: Gate", like the Compressor's
+        knob_gate_type->set_value_formatter([](double v) {
+            return std::lround(v) == NoiseGateProcessor::NS2 ? QString("Type: NS-2")
+                                                             : QString("Type: Gate");
+        });
+        knob_gate_type->setToolTip(
+            "Gate: NAM-X's gate · NS-2: a model of a Boss NS-2 Noise Suppressor (Reduction "
+            "mode), measured from the real pedal — it opens at once and turns the sound down "
+            "gradually rather than muting it. In NS-2, Threshold is where it opens (the pedal's "
+            "range, about -74 to -32 dB), Release its Decay (how long a dying note stays open); "
+            "Attack does nothing");
+        connect(knob_gate_type, &KnobWidget::value_changed, this,
+                &MainWindow::update_inactive_controls);
+        QWidget* col = make_effect_row(
+            "Noise Gate", sw_gate_enable,
+            {knob_gate_thresh, knob_gate_attack, knob_gate_release, knob_gate_type});
         gr_gate = new GainReductionMeter(40.0f, Theme::accent("gate"));
         place_across_switch_columns(col, gr_gate);
         Theme::tag_card(col, "gate");
