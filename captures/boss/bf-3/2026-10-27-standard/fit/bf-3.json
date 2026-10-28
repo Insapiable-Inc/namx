@@ -743,5 +743,110 @@
     "2026-10-27-standard",
     "2026-10-27-standard-checks",
     "2026-10-27-res-quiet"
-  ]
+  ],
+  "model_fit": {
+    "combs": {
+      "manual-0700": {
+        "own_ms": 14.6994,
+        "rms_db": 0.93,
+        "rms_db_at_table_ms": 1.01
+      },
+      "manual-0900": {
+        "own_ms": 9.0831,
+        "rms_db": 0.99,
+        "rms_db_at_table_ms": 1.11
+      },
+      "manual-1200": {
+        "own_ms": 2.0146,
+        "rms_db": 1.31,
+        "rms_db_at_table_ms": 1.84
+      },
+      "manual-0300": {
+        "own_ms": 0.7101,
+        "rms_db": 0.97,
+        "rms_db_at_table_ms": 2.02
+      },
+      "manual-0500": {
+        "own_ms": 0.4576,
+        "rms_db": 0.97,
+        "rms_db_at_table_ms": 2.44
+      },
+      "res-0900": {
+        "own_ms": 2.072,
+        "rms_db": 1.39,
+        "rms_db_at_table_ms": 6.52
+      },
+      "res-1200": {
+        "own_ms": 2.0708,
+        "rms_db": 1.05,
+        "rms_db_at_table_ms": 6.44
+      },
+      "res-0300": {
+        "own_ms": 2.0708,
+        "rms_db": 0.98,
+        "rms_db_at_table_ms": 6.46
+      },
+      "std-res-0500-24": {
+        "own_ms": 1.9841,
+        "rms_db": 1.11,
+        "rms_db_at_table_ms": 2.86
+      },
+      "res-0300-manual-0700": {
+        "own_ms": 14.6935,
+        "rms_db": 0.84,
+        "rms_db_at_table_ms": 1.02
+      },
+      "res-0300-manual-0500": {
+        "own_ms": 0.457,
+        "rms_db": 1.11,
+        "rms_db_at_table_ms": 1.72
+      }
+    },
+    "cycles": {
+      "rate-0700": {
+        "lfo_hz": 0.0553,
+        "rms_us": 45.9
+      },
+      "rate-0900": {
+        "lfo_hz": 0.1228,
+        "rms_us": 72.9
+      },
+      "rate-1200": {
+        "lfo_hz": 0.3258,
+        "rms_us": 59.3
+      },
+      "rate-0300": {
+        "lfo_hz": 2.5235,
+        "rms_us": 36.1
+      },
+      "depth-0900": {
+        "lfo_hz": 0.3229,
+        "rms_us": 31.9
+      },
+      "depth-0500": {
+        "lfo_hz": 0.3228,
+        "rms_us": 324.6
+      },
+      "sweep-manual-0900": {
+        "lfo_hz": 0.3219,
+        "rms_us": 62.4
+      },
+      "depth-0300-manual-0900": {
+        "lfo_hz": 0.3235,
+        "rms_us": 227.9
+      },
+      "depth-0900-manual-0300": {
+        "lfo_hz": 0.3221,
+        "rms_us": 27.6
+      },
+      "rate-0300-depth-0500": {
+        "lfo_hz": 2.247,
+        "rms_us": 193.7
+      },
+      "sweep-res-0500": {
+        "lfo_hz": 0.3296,
+        "rms_us": 71.8
+      }
+    }
+  }
 }

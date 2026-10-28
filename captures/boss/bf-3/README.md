@@ -189,6 +189,31 @@ bottom of a 14.6 ms swing a little more than the pedal's does. Res doesn't touch
 sweep at maximum either. (Whether the loop's gain changes while the delay moves isn't
 measured: the full-scale clicks clip.)
 
+### The model against the data
+
+NAM-X's model (`src/dsp/Bf3Flanger.h`, its constants copied into `analyze_bf3.py`) against
+every take, one panel each:
+[`2026-10-27-standard/fit/bf-3-fit.svg`](2026-10-27-standard/fit/bf-3-fit.svg) (rms per
+panel in `bf-3.json` → `model_fit`).
+
+- **The static combs** (11 takes, Depth minimum; the sweep still): 0.84–1.39 dB rms over
+  100 Hz–10 kHz at each take's own delay. Manual is set by hand, so a take's delay is fitted
+  within ±4 % of the table's: the Res takes at Manual 12:00 sat at 2.07 ms against the
+  Manual take's 2.015 — at the table's 2.005 ms their notches drift apart above 2 kHz
+  (6.5 dB rms). Notch depths, peak heights and Res's resonance all land.
+- **What it misses: below ~200 Hz.** The model has a dip around 100 Hz (to −4 dB at
+  Manual 3:00 and 5:00) where the pedal rises smoothly — up to ~6 dB at 100 Hz. The wet's
+  level there matches (the tone fit holds to 90 Hz), so it's likely the phase: the model's
+  two high-passes turn the wet against the dry at ~100 Hz, the pedal's low cut doesn't.
+  Not fixed yet.
+- **The sweep** (11 cycles, 4 of them the check session's): 28–73 µs rms at Depth up to
+  12:00 and every Rate; 190–325 µs at Depth 3:00 and 5:00 (2–3 % of a 10–13 ms swing), the
+  pedal's peak a little earlier and narrower than the model's.
+- **One pass round the loop** (Res 3:00) within 1 dB from 250 Hz to 8 kHz (1.3 at 125 Hz,
+  2.2 at 10 kHz); at 63 Hz and 16 kHz the pedal's pass is 11 and 7 dB above the model's,
+  where it is already 16–20 dB down.
+- **The clip:** the gain loss against the input level, both Res settings, within 0.14 dB.
+
 **Output B:** a plug in it (other end loose) changes nothing on Output A — dry and wet
 within 0.00 dB at 250 Hz–10 kHz. No wet-only trick as on the CE-5; what B itself carries
 is still unknown.

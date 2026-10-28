@@ -2,7 +2,7 @@
 """Measures the Boss BF-3 Flanger (STANDARD mode) from one mono session (Guitar In ->
 Output A; plans/bf-3-standard.json). Findings: captures/boss/bf-3/README.md.
 
-    analyze_bf3.py SESSION [CHECKS [QUIET]]     # writes SESSION/fit/bf-3.{json,svg}
+    analyze_bf3.py SESSION [CHECKS [QUIET]]     # writes SESSION/fit/bf-3.{json,svg}, bf-3-fit.svg
 
 CHECKS (plans/bf-3-standard-checks.json): the model's sweep against click takes at other
 knob combinations, and whether a plug in Output B changes what Output A carries. QUIET
@@ -479,8 +479,190 @@ def plot(out_dir, result, static, cycles):
         axis.grid(alpha=0.3, which="both")
     figure.suptitle("Boss BF-3 Flanger, STANDARD")
     figure.tight_layout()
+    matplotlib.rcParams["svg.hashsalt"] = "bf-3"
     figure.savefig(out_dir / "bf-3.svg", metadata={"Date": None})
     plt.close(figure)
+
+
+# --- the model against the data (NAM-X's src/dsp/Bf3Flanger.h, STANDARD)
+
+MODEL = {
+    "tone": [("hp", 191.8, 0.519), ("hp", 94.0, 1.556), ("lp", 6293.0, 0.542),
+             ("lp", 17471.7, 0.923)],
+    "tone_delay_ms": 0.068, "dry_db": 1.79, "wet_db": 3.41, "ceiling_db": 0.55,
+    "manual_ms": [14.673, 9.065, 2.005, 0.701, 0.447], "low_ms": 0.33,
+    "blend": [0.0, 0.368, 0.657, 0.882, 0.984], "swing_ms": [0.0, 1.102, 4.867, 10.655, 14.582],
+    "res": [0.0, 0.146, 0.394, 0.668, 0.849], "smoothing_hz": 1.53, "power": 2.5,
+}
+COMB_TAKES = ["manual-0700", "manual-0900", "manual-1200", "manual-0300", "manual-0500",
+              "res-0900", "res-1200", "res-0300", "res-0300-manual-0700", "res-0300-manual-0500"]
+SWEEP_TAKES = ["rate-0700", "rate-0900", "rate-1200", "rate-0300", "depth-0900", "depth-0500",
+               "sweep-manual-0900"]
+CHECK_TAKES = ["depth-0300-manual-0900", "depth-0900-manual-0300", "rate-0300-depth-0500",
+               "sweep-res-0500"]
+
+
+def model_tone(f):
+    """TONE as the app designs it (RBJ biquads at RATE), unity at 1 kHz."""
+    def chain(x):
+        h = np.ones(len(x), dtype=complex)
+        for kind, f0, q in MODEL["tone"]:
+            w = 2 * np.pi * f0 / RATE
+            c, alpha = np.cos(w), np.sin(w) / (2 * q)
+            b = [(1 - c) / 2, 1 - c, (1 - c) / 2] if kind == "lp" else [(1 + c) / 2, -(1 + c), (1 + c) / 2]
+            h *= scipy.signal.freqz(b, [1 + alpha, -2 * c, 1 - alpha], worN=x, fs=RATE)[1]
+        return h
+    return chain(np.maximum(f, 1e-3)) / np.abs(chain(np.array([1000.0]))[0])
+
+
+def model_response(delay_ms, res_position):
+    """STANDARD with the sweep still: dry + wet · TONE·z / (1 − r · TONE·z), z the delay."""
+    z = model_tone(FREQS) * np.exp(-2j * np.pi * FREQS * (delay_ms - MODEL["tone_delay_ms"]) / 1000)
+    r = MODEL["res"][POSITIONS.index(res_position)]
+    return 10 ** (MODEL["dry_db"] / 20) + 10 ** (MODEL["wet_db"] / 20) * z / (1 - r * z)
+
+
+def fine_db(spectrum, width=1.01):
+    """Power over ±1 % in frequency: keeps the comb, drops the bin noise."""
+    total = np.concatenate([[0], np.cumsum(np.abs(spectrum) ** 2)])
+    low = np.searchsorted(FREQS, FREQS / width)
+    high = np.searchsorted(FREQS, FREQS * width, side="right")
+    return 10 * np.log10((total[high] - total[low]) / np.maximum(high - low, 1) + 1e-30)
+
+
+def comb_fit(session, bypass_name, name):
+    """A static take against the model, at the table's delay and at the take's own (Manual
+    is set by hand: the Res takes sat 3 % off the Manual takes' 2.005 ms)."""
+    settings = json.load(open(session / f"{name}.json"))["settings"]
+    measured = fine_db(np.fft.rfft(impulse(session, name))
+                       / np.fft.rfft(impulse(session, bypass_name)))
+    band = (FREQS >= 100) & (FREQS <= 10000)
+    table = MODEL["manual_ms"][POSITIONS.index(settings["Manual"])]
+
+    def rms(delay_ms):
+        e = fine_db(model_response(delay_ms, settings["Res"]))[band] - measured[band]
+        return float(np.sqrt(np.mean(e ** 2)))
+
+    own = min(table * np.linspace(0.96, 1.04, 401), key=rms)
+    return {"settings": settings, "measured_db": measured, "table_ms": table,
+            "own_ms": float(own), "rms_db_table": rms(table), "rms_db_own": rms(own),
+            "model_db": fine_db(model_response(own, settings["Res"]))}
+
+
+def cycle_fit(session, name, static):
+    """A click take's folded cycle against the model's at the take's own LFO rate, the
+    model's phase rolled onto the take's."""
+    delays, settings = click_delays(session, name, static)
+    rate, phase = analysis.lfo_frequency(delays, CLICK_RATE, low=0.03, high=19.9)
+    cycle = analysis.fold_cycle(delays, CLICK_RATE, rate, phase, SHAPE_BINS)
+    cycle = np.roll(cycle, -int(np.argmin(cycle)))
+    manual = MODEL["manual_ms"][POSITIONS.index(settings["Manual"])]
+    depth = POSITIONS.index(settings["Depth"])
+    floor = (1 - MODEL["blend"][depth]) * manual + MODEL["blend"][depth] * MODEL["low_ms"]
+    model = floor + MODEL["swing_ms"][depth] * lfo_shape(rate, MODEL["smoothing_hz"],
+                                                        MODEL["power"])
+    model = min((np.roll(model, k) for k in range(SHAPE_BINS)),
+                key=lambda m: np.sum((m - cycle) ** 2))
+    return {"settings": settings, "lfo_hz": float(rate), "cycle": cycle, "model": model,
+            "rms_us": float(np.sqrt(np.mean((model - cycle) ** 2)) * 1000)}
+
+
+def plot_fit(out_dir, session, static, result, checks_session=None, quiet=None):
+    """fit/bf-3-fit.svg: every static comb, sweep cycle, the wet tone, one pass round the
+    loop and the clip against the model; the rms per panel goes to the result."""
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    combs = [(session, "bypass-sweep", n) for n in COMB_TAKES]
+    if quiet:
+        combs.insert(8, (quiet, "bypass-sweep-24", "std-res-0500-24"))
+    sweeps = [(session, n, "") for n in SWEEP_TAKES]
+    if checks_session:
+        sweeps += [(checks_session, n, " (check)") for n in CHECK_TAKES]
+    panels = len(combs) + len(sweeps) + 2
+    columns = 4
+    rows = -(-panels // columns)
+    figure = plt.figure(figsize=(20, 4.3 * rows), layout="constrained")
+    grid = figure.add_gridspec(rows, columns)
+    axes = iter(figure.add_subplot(grid[k // columns, k % columns]) for k in range(panels))
+    summary = {"combs": {}, "cycles": {}}
+
+    keep = (FREQS >= 60) & (FREQS <= 16000)
+    for i, (s, bypass_name, name) in enumerate(combs):
+        fit = comb_fit(s, bypass_name, name)
+        axis = next(axes)
+        axis.semilogx(FREQS[keep], fit["measured_db"][keep], lw=1, label="pedal")
+        axis.semilogx(FREQS[keep], fit["model_db"][keep], lw=1, ls="--", label="model")
+        axis.set_ylim(-30, 18)
+        settings = fit["settings"]
+        axis.set_title(f"{name}: Manual {settings['Manual']}, Res {settings['Res']}\n"
+                       f"{fit['own_ms']:.3f} ms (table {fit['table_ms']:.3f}): "
+                       f"{fit['rms_db_own']:.2f} dB rms ({fit['rms_db_table']:.2f})", fontsize=9)
+        if i == 0:
+            axis.set_ylabel("dB re bypass")
+            axis.legend(fontsize=8)
+        summary["combs"][name] = {"own_ms": round(fit["own_ms"], 4),
+                                  "rms_db": round(fit["rms_db_own"], 2),
+                                  "rms_db_at_table_ms": round(fit["rms_db_table"], 2)}
+    x = np.arange(SHAPE_BINS) / SHAPE_BINS
+    for i, (s, name, tag) in enumerate(sweeps):
+        fit = cycle_fit(s, name, static)
+        axis = next(axes)
+        axis.plot(x, fit["cycle"], lw=1.2, label="pedal")
+        axis.plot(x, fit["model"], lw=1.2, ls="--", label="model")
+        settings = fit["settings"]
+        axis.set_title(f"{name}{tag}: Manual {settings['Manual']}, Depth {settings['Depth']}, "
+                       f"{fit['lfo_hz']:.3g} Hz\n{fit['rms_us']:.0f} µs rms", fontsize=9)
+        if i == 0:
+            axis.set_ylabel("delay after the dry, ms")
+            axis.legend(fontsize=8)
+        summary["cycles"][name] = {"lfo_hz": round(fit["lfo_hz"], 4),
+                                   "rms_us": round(fit["rms_us"], 1)}
+
+    axis = next(axes)
+    tone = fine_db(model_tone(FREQS), 1.03)
+    wet = fine_db(static.wet_tone, 1.03)
+    wide = (FREQS >= 60) & (FREQS <= 18000)
+    axis.semilogx(FREQS[wide], wet[wide] - np.interp(1000, FREQS, wet), label="pedal: the wet")
+    axis.semilogx(FREQS[wide], tone[wide], "--", label="model: TONE")
+    passes = result["res"]["pass_db_res_0300_manual_0700"]
+    hz = np.array([int(k) for k in passes])
+    axis.semilogx(hz, list(passes.values()), "o", label="pedal: one pass, Res 3:00")
+    axis.semilogx(hz, 20 * np.log10(MODEL["res"][3]) + np.interp(hz, FREQS, tone), "x--",
+                  label="model: r(3:00) · TONE")
+    axis.set_ylim(-35, 5)
+    axis.set_title("The wet's tone (Manual 7:00) and one pass round the loop, dB re 1 kHz",
+                   fontsize=9)
+    axis.legend(fontsize=8)
+
+    axis = next(axes)
+    burst = np.sin(2 * np.pi * 1000 * np.arange(4800) / RATE)
+    ceiling = 10 ** (MODEL["ceiling_db"] / 20)
+    bypass = result["bypass_bursts"][0]["gain_db"]
+    for key, label in (("bursts", "Res 7:00"), ("bursts_res_0500", "Res 5:00")):
+        rows_ = result[key]
+        linear = rows_[0]["gain_db"]
+        levels = np.array([r["input_db"] for r in rows_])
+        peaks = 10 ** ((levels + linear - bypass) / 20)
+        model = [db(np.std(np.clip(p * burst, -ceiling, ceiling)) / np.std(p * burst))
+                 for p in peaks]
+        line, = axis.plot(levels, [r["gain_db"] - linear for r in rows_], "o",
+                          label=f"pedal, {label}")
+        axis.plot(levels, model, "--", color=line.get_color(), label=f"model, {label}")
+    axis.set_xlabel("input, dB re the guitar's peak")
+    axis.set_ylabel("1 kHz gain re its linear gain, dB")
+    axis.set_title(f"The clip, hard at +{MODEL['ceiling_db']} dB: bursts at 1 kHz\n"
+                   "(Manual 12:00, Depth minimum)", fontsize=9)
+    axis.legend(fontsize=8)
+
+    for axis in figure.axes:
+        axis.grid(alpha=0.3, which="both")
+    figure.suptitle("Boss BF-3 Flanger, STANDARD: NAM-X's model (Bf3Flanger.h) against the pedal")
+    matplotlib.rcParams["svg.hashsalt"] = "bf-3-fit"
+    figure.savefig(out_dir / "bf-3-fit.svg", metadata={"Date": None})
+    plt.close(figure)
+    return summary
 
 
 def main():
@@ -525,6 +707,10 @@ def main():
 
     out_dir = session / "fit"
     out_dir.mkdir(exist_ok=True)
+    result["model_fit"] = plot_fit(
+        out_dir, session, static, result,
+        pathlib.Path(args.checks).expanduser() if args.checks else None,
+        pathlib.Path(args.quiet).expanduser() if args.quiet else None)
     with open(out_dir / "bf-3.json", "w", encoding="utf-8") as file:
         json.dump(result, file, indent=2)
         file.write("\n")
