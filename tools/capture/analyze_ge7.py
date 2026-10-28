@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Measures the Boss GE-7 Equalizer from its three sessions (plans/ge-7.json, ge-7-level.json,
-ge-7-retake.json). Findings: captures/boss/ge-7/README.md.
+"""Measures the Boss GE-7 Equalizer from its four sessions (plans/ge-7.json, ge-7-level.json,
+ge-7-retake.json, ge-7-marks.json). Findings: captures/boss/ge-7/README.md.
 
-    analyze_ge7.py SESSION LEVEL_SESSION RETAKE_SESSION
+    analyze_ge7.py SESSION LEVEL_SESSION RETAKE_SESSION MARKS_SESSION
         # writes SESSION/fit/ge-7.{json,svg}, ge-7-fit.svg
 
 What it measures:
@@ -11,7 +11,8 @@ What it measures:
              with seven slider pots between its two inputs, each wiper into a series RLC
              (a gyrator) to ground, the top band a series RC instead; then the Level stage,
              the same circuit with a resistor for the RLC, its gain rolling off at
-             GBW / its noise gain
+             GBW / its noise gain. The sliders' law: one wiper position per printed mark,
+             shared by the band sliders, another set for Level
   clipping   the 1 kHz staircases: peaks and harmonics per step (the settled middle)
   noise      the silences: bypassed, flat, every slider up
 
@@ -36,9 +37,11 @@ BANDS = ["100 Hz", "200 Hz", "400 Hz", "800 Hz", "1.6 kHz", "3.2 kHz", "6.4 kHz"
 NOMINAL_HZ = [100, 200, 400, 800, 1600, 3200, 6400]
 GRID_HZ = np.geomspace(30, 16000, 160)
 STAIRS_DB = [-36, -30, -24, -18, -12, -6, -3, 0, 3]
-GLOBALS = ["log_r", "half_cut", "half_boost", "log_level_r", "level_half", "log_level_gbw",
-           "log_level_z", "offset_db", "level_offset_db", "retake_offset_db"]
-PREFIXES = ["", "level/", "retake/"]  # per session, in take labels
+MARKS = ["-10", "-7.5", "-5", "+5", "+7.5", "+10"]  # the ends and the centre are 0, 1 and 0.5
+GLOBALS = (["log_r", "log_level_r", "log_level_gbw", "log_level_z", "offset_db", "level_offset_db",
+            "retake_offset_db", "marks_offset_db"]
+           + [f"band {m}" for m in MARKS] + [f"level {m}" for m in MARKS])
+PREFIXES = ["", "level/", "retake/", "marks/"]  # per session, in take labels
 LEFT_OUT = {(0, "all-p15-sweep")}
 
 
@@ -83,9 +86,12 @@ def sweeps(sessions):
     return takes
 
 
-def slider(value, half_cut, half_boost):
-    """The pot's wiper (0 = cut end, 1 = boost end) for a printed position."""
-    x = {"-15": 0.0, "-7.5": 0.5 - half_cut, "0": 0.5, "+7.5": 0.5 + half_boost, "+15": 1.0}[value]
+def slider(value, g, kind):
+    """The pot's wiper (0 = cut end, 1 = boost end) at a printed mark: the band sliders share
+    one fitted position per mark, Level has its own."""
+    x = {"-15": 0.0, "0": 0.5, "+15": 1.0}.get(value)
+    if x is None:
+        x = g[f"{kind} {value}"]
     return min(max(x, 1e-6), 1 - 1e-6)
 
 
@@ -102,26 +108,46 @@ def model(p, settings, session):
             z = np.exp(log_rs) * (1 + w0 / s)  # series RC: log_f is its corner
         else:
             z = np.exp(log_z) * (s / w0 + w0 / s) + np.exp(log_rs)
-        x = slider(settings[band], g["half_cut"], g["half_boost"])
+        x = slider(settings[band], g, "band")
         d = z + x * (1 - x)
         y_plus = y_plus + (1 - x) / d
         y_minus = y_minus + x / d
     r = np.exp(g["log_r"])
     eq = (1 + r * y_minus) / (1 + r * y_plus)
-    x = slider(settings["Level"], g["level_half"], g["level_half"])
+    x = slider(settings["Level"], g, "level")
     d = np.exp(g["log_level_z"]) + x * (1 - x)
     noise_gain = 1 + np.exp(g["log_level_r"]) * x / d
     level = (noise_gain / (1 + np.exp(g["log_level_r"]) * (1 - x) / d)
              / (1 + noise_gain * s / np.exp(g["log_level_gbw"])))
-    offset = g[["offset_db", "level_offset_db", "retake_offset_db"][session]]
+    offset = g[["offset_db", "level_offset_db", "retake_offset_db", "marks_offset_db"][session]]
     return 20 * np.log10(np.abs(eq * level)) + offset
 
 
+def mark_db(p):
+    """What each printed mark gives in the fitted circuit: 800 Hz's peak or dip, the 6.4 kHz
+    shelf at 10 kHz, Level at 1 kHz (offsets left out)."""
+    q = np.array(p, dtype=float)
+    q[GLOBALS.index("offset_db")] = 0
+    flat = {k: "0" for k in BANDS + ["Level"]}
+    out = {}
+    for mark in ["-15"] + MARKS + ["+15"]:
+        band = model(q, {**flat, "800 Hz": mark}, 0)
+        shelf = model(q, {**flat, "6.4 kHz": mark}, 0)
+        level = model(q, {**flat, "Level": mark}, 0)
+        out[mark] = {"800 Hz": round(float(band.max() if mark[0] == "+" else band.min()), 2),
+                     "6.4 kHz at 10 kHz": round(float(np.interp(np.log(1e4), np.log(GRID_HZ), shelf)), 2),
+                     "Level at 1 kHz": round(float(np.interp(np.log(1e3), np.log(GRID_HZ), level)), 2)}
+    return out
+
+
 def fit_tone(takes):
-    p0 = [np.log(0.3), 0.4, 0.4, np.log(0.1), 0.45, np.log(2 * np.pi * 1e5), np.log(0.02), 0, 0, 0]
-    lo = [np.log(0.005), 0.02, 0.02, np.log(0.005), 0.02, np.log(2 * np.pi * 1e4), np.log(1e-3),
-          -3, -3, -3]
-    hi = [np.log(20), 0.49, 0.49, np.log(20), 0.49, np.log(2 * np.pi * 1e8), np.log(10), 3, 3, 3]
+    start = {"-10": 0.1, "-7.5": 0.15, "-5": 0.3, "+5": 0.7, "+7.5": 0.85, "+10": 0.9}
+    p0 = ([np.log(0.3), np.log(0.1), np.log(2 * np.pi * 1e5), np.log(0.02), 0, 0, 0, 0]
+          + [start[m] for m in MARKS] * 2)
+    lo = ([np.log(0.005), np.log(0.005), np.log(2 * np.pi * 1e4), np.log(1e-3), -3, -3, -3, -3]
+          + [0.001 if m[0] == "-" else 0.5 for m in MARKS] * 2)
+    hi = ([np.log(20), np.log(20), np.log(2 * np.pi * 1e8), np.log(10), 3, 3, 3, 3]
+          + [0.5 if m[0] == "-" else 0.999 for m in MARKS] * 2)
     for k, f in enumerate(NOMINAL_HZ):
         top = k == len(NOMINAL_HZ) - 1
         p0 += [np.log(f * 0.6 if top else f), np.log(0.1), np.log(0.035)]
@@ -152,16 +178,17 @@ def fit_tone(takes):
     return {
         "impedances": "relative to the slider pot",
         "r": round(float(np.exp(g["log_r"])), 4),
-        "half_mark_wiper": {"-7.5": round(0.5 - float(g["half_cut"]), 3),
-                            "+7.5": round(0.5 + float(g["half_boost"]), 3)},
+        "mark_wiper": {m: round(float(g[f"band {m}"]), 3) for m in MARKS},
+        "mark_db": mark_db(p),
         "bands": bands,
         "level": {"r": round(float(np.exp(g["log_level_r"])), 4),
                   "z": round(float(np.exp(g["log_level_z"])), 4),
-                  "half_mark_wiper": round(0.5 + float(g["level_half"]), 3),
+                  "mark_wiper": {m: round(float(g[f"level {m}"]), 3) for m in MARKS},
                   "gbw_hz": round(float(np.exp(g["log_level_gbw"]) / 2 / np.pi))},
         "offset_db": round(float(g["offset_db"]), 2),
         "level_session_offset_db": round(float(g["level_offset_db"]), 2),
         "retake_session_offset_db": round(float(g["retake_offset_db"]), 2),
+        "marks_session_offset_db": round(float(g["marks_offset_db"]), 2),
         "rms_db": round(float(np.sqrt(np.mean(fit.fun ** 2))), 3),
         "rms_db_per_take": per_take,
         "parameters": rounded(p, 6),
@@ -308,9 +335,10 @@ def main():
     parser.add_argument("session")
     parser.add_argument("level_session")
     parser.add_argument("retake_session")
+    parser.add_argument("marks_session")
     args = parser.parse_args()
     sessions = [pathlib.Path(a).expanduser()
-                for a in (args.session, args.level_session, args.retake_session)]
+                for a in (args.session, args.level_session, args.retake_session, args.marks_session)]
     session, level_session = sessions[:2]
     for s in sessions:
         if not (s / "rig.json").exists():
