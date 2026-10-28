@@ -739,6 +739,13 @@ void MainWindow::update_inactive_controls() {
                  "in Auto mode your playing sweeps the wah; turn Manual on to use Position");
     set_inactive(sw_wah_reverse->parentWidget(), sw_wah_reverse, !manual,
                  "Reverse flips Position, which only works in Manual mode");
+    const bool ge7 = std::lround(knob_eq_type->value()) == EQProcessor::GE7;
+    for (KnobWidget* k : eq_parametric_knobs) {
+        set_inactive(k, k, ge7, "the GE-7 type uses its own sliders (the second detail row)");
+    }
+    for (KnobWidget* k : eq_ge7_knobs) {
+        set_inactive(k, k, !ge7, "the GE-7 type's sliders (set Type to GE-7)");
+    }
 }
 
 void MainWindow::setup_ui() {
@@ -1166,27 +1173,89 @@ void MainWindow::setup_ui() {
                       new KnobWidget("High-Mid", EQ_BAND_MIN, EQ_BAND_MAX, EQ_BAND_DEFAULT, "dB"),
                       eq_set(EQProcessor::Band::HIGH_MID, true));
         hi_mid->set_scroll_step(0.1);
-        QWidget* col =
-            make_effect_row("Equalizer", sw_eq_enable, {knob_low, knob_mid, hi_mid, knob_treble});
-        add_detail_row(
-            col,
-            {
-                make_eq_freq_knob("lowFreq", "Bass Freq", EQ_BASS_FREQ_MIN, EQ_BASS_FREQ_MAX,
-                                  EQ_BASS_FREQ_DEFAULT, EQProcessor::Band::BASS, 0),
-                make_eq_freq_knob("midFreq", "Low-Mid Freq", EQ_MID_FREQ_MIN, EQ_MID_FREQ_MAX,
-                                  EQ_MID_FREQ_DEFAULT, EQProcessor::Band::MIDDLE, 0),
-                make_eq_freq_knob("highMidFreq", "High-Mid Freq", EQ_HI_MID_FREQ_MIN,
-                                  EQ_HI_MID_FREQ_MAX, EQ_HI_MID_FREQ_DEFAULT,
-                                  EQProcessor::Band::HIGH_MID, 0),
-                make_eq_freq_knob("trebleFreq", "Treble Freq", EQ_TREBLE_FREQ_MIN,
-                                  EQ_TREBLE_FREQ_MAX, EQ_TREBLE_FREQ_DEFAULT,
-                                  EQProcessor::Band::TREBLE, 0),
-                make_eq_freq_knob("lowCut", "Low Cut", LOW_CUT_MIN, LOW_CUT_MAX, LOW_CUT_DEFAULT,
-                                  EQProcessor::Band::LOW_CUT, LOW_CUT_MIN + 0.5),
-                make_eq_freq_knob("highCut", "High Cut", HIGH_CUT_MIN, HIGH_CUT_MAX,
-                                  HIGH_CUT_DEFAULT, EQProcessor::Band::HIGH_CUT,
-                                  -(HIGH_CUT_MAX - 1.0)),
+
+        knob_eq_type = late_knob(
+            "eq", "type", new KnobWidget("Type", 0.0, EQProcessor::TYPE_COUNT - 1.0, 0.0, ""),
+            [this](double v) {
+                engine->get_eq().set_type(static_cast<int>(std::lround(v)));
             });
+        knob_eq_type->set_snap(1.0);
+        knob_eq_type->set_scroll_step(1.0);
+        knob_eq_type->set_name_visible(false); // "Type: GE-7", like the Compressor's
+        knob_eq_type->set_value_formatter([](double v) {
+            return std::lround(v) == EQProcessor::GE7 ? QString("Type: GE-7")
+                                                      : QString("Type: Parametric");
+        });
+        knob_eq_type->setToolTip(
+            "Parametric: NAM-X's four-band EQ · GE-7: a model of a Boss GE-7 Equalizer, "
+            "measured from the real pedal — seven fixed bands (100 Hz to 6.4 kHz, the top one "
+            "a shelf) and Level, on the pedal's -15 to +15 scale, in the second detail row "
+            "(▾). Its bands interact and narrow as they're pushed, like the pedal's. Low Cut "
+            "and High Cut work in both");
+        connect(knob_eq_type, &KnobWidget::value_changed, this,
+                &MainWindow::update_inactive_controls);
+        QWidget* col = make_effect_row("Equalizer", sw_eq_enable,
+                                       {knob_low, knob_mid, hi_mid, knob_treble, knob_eq_type});
+        KnobWidget* bass_freq =
+            make_eq_freq_knob("lowFreq", "Bass Freq", EQ_BASS_FREQ_MIN, EQ_BASS_FREQ_MAX,
+                              EQ_BASS_FREQ_DEFAULT, EQProcessor::Band::BASS, 0);
+        KnobWidget* mid_freq =
+            make_eq_freq_knob("midFreq", "Low-Mid Freq", EQ_MID_FREQ_MIN, EQ_MID_FREQ_MAX,
+                              EQ_MID_FREQ_DEFAULT, EQProcessor::Band::MIDDLE, 0);
+        KnobWidget* hi_mid_freq = make_eq_freq_knob(
+            "highMidFreq", "High-Mid Freq", EQ_HI_MID_FREQ_MIN, EQ_HI_MID_FREQ_MAX,
+            EQ_HI_MID_FREQ_DEFAULT, EQProcessor::Band::HIGH_MID, 0);
+        KnobWidget* treble_freq =
+            make_eq_freq_knob("trebleFreq", "Treble Freq", EQ_TREBLE_FREQ_MIN, EQ_TREBLE_FREQ_MAX,
+                              EQ_TREBLE_FREQ_DEFAULT, EQProcessor::Band::TREBLE, 0);
+        eq_parametric_knobs = {knob_low,  knob_mid, hi_mid,      knob_treble,
+                               bass_freq, mid_freq, hi_mid_freq, treble_freq};
+        add_detail_row(col, {
+                                bass_freq,
+                                mid_freq,
+                                hi_mid_freq,
+                                treble_freq,
+                                make_eq_freq_knob("lowCut", "Low Cut", LOW_CUT_MIN, LOW_CUT_MAX,
+                                                  LOW_CUT_DEFAULT, EQProcessor::Band::LOW_CUT,
+                                                  LOW_CUT_MIN + 0.5),
+                                make_eq_freq_knob("highCut", "High Cut", HIGH_CUT_MIN, HIGH_CUT_MAX,
+                                                  HIGH_CUT_DEFAULT, EQProcessor::Band::HIGH_CUT,
+                                                  -(HIGH_CUT_MAX - 1.0)),
+                            });
+        // The GE-7's sliders (keys stay: preset data).
+        static const std::array<std::pair<const char*, const char*>, ge7::SLIDER_COUNT> GE7{{
+            {"ge7Hz100", "100"},
+            {"ge7Hz200", "200"},
+            {"ge7Hz400", "400"},
+            {"ge7Hz800", "800"},
+            {"ge7Hz1600", "1.6k"},
+            {"ge7Hz3200", "3.2k"},
+            {"ge7Hz6400", "6.4k"},
+            {"ge7Level", "Level"},
+        }};
+        QList<QWidget*> ge7_row;
+        for (size_t i = 0; i < GE7.size(); ++i) {
+            KnobWidget* k =
+                late_knob("eq", GE7[i].first,
+                          new KnobWidget(GE7[i].second, ge7::SLIDER_MIN, ge7::SLIDER_MAX, 0.0, ""),
+                          [this, i](double v) {
+                              engine->get_eq().set_ge7_slider(i, v);
+                          });
+            k->set_scroll_step(1.0);
+            k->setToolTip(i + 1 < GE7.size()
+                              ? QString("GE-7 type: the pedal's %1 Hz slider, on its printed "
+                                        "scale (-15 to +15; the marks give a little less or "
+                                        "more than they say, as on the real pedal)%2")
+                                    .arg(GE7[i].second)
+                                    .arg(i == 6 ? " — a shelf: everything above it" : "")
+                              : QString("GE-7 type: the pedal's Level slider, on its printed "
+                                        "scale (-15 to +15 dB; most of its range is near the "
+                                        "centre, as on the real pedal)"));
+            eq_ge7_knobs.push_back(k);
+            ge7_row.push_back(k);
+        }
+        add_detail_row(col, ge7_row.mid(0, 4)); // in the four band columns
+        add_detail_row(col, ge7_row.mid(4));
         sw_eq_enable->setChecked(true);
         Theme::tag_card(col, "eq");
         fx_cols[&engine->get_eq()] = col;
@@ -1820,15 +1889,16 @@ void MainWindow::set_tuner_show_hz(bool on) {
 }
 
 // EQ band frequency knob (log taper, "Off" past off_at).
-QWidget* MainWindow::make_eq_freq_knob(const QString& key, const QString& label, double lo,
-                                       double hi, double def, EQProcessor::Band b, double off_at) {
+KnobWidget* MainWindow::make_eq_freq_knob(const QString& key, const QString& label, double lo,
+                                          double hi, double def, EQProcessor::Band b,
+                                          double off_at) {
     KnobWidget* k =
         late_knob("eq", key, new KnobWidget(label, lo, hi, def, "Hz"), [this, b](double v) {
             engine->get_eq().set_freq(b, v);
         });
     k->set_log_taper(true);
     k->set_value_formatter(hz_label(off_at));
-    return static_cast<QWidget*>(k);
+    return k;
 }
 
 QWidget* MainWindow::make_delay_pct_knob(const QString& key, const QString& label, double lo,

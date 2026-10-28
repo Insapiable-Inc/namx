@@ -175,8 +175,8 @@ private:
     void set_tuner_reference(int hz);
     void set_tuner_show_hz(bool on);
     void set_transpose_continuous(bool on);
-    QWidget* make_eq_freq_knob(const QString& key, const QString& label, double lo, double hi,
-                               double def, EQProcessor::Band b, double off_at);
+    KnobWidget* make_eq_freq_knob(const QString& key, const QString& label, double lo, double hi,
+                                  double def, EQProcessor::Band b, double off_at);
     QWidget* make_delay_pct_knob(const QString& key, const QString& label, double lo, double hi,
                                  double def, std::function<void(double)> f, const QString& tip);
     KnobWidget* make_ir_level_knob(int slot);
@@ -325,6 +325,9 @@ private:
     KnobWidget* knob_low = nullptr;
     KnobWidget* knob_mid = nullptr;
     KnobWidget* knob_treble = nullptr;
+    KnobWidget* knob_eq_type = nullptr;
+    vector<KnobWidget*> eq_parametric_knobs; // the four bands and their frequencies
+    vector<KnobWidget*> eq_ge7_knobs; // the GE-7's seven sliders and Level
 
     ToggleSwitch* sw_tuner_enable = nullptr;
     ToggleSwitch* sw_tuner_mute = nullptr;

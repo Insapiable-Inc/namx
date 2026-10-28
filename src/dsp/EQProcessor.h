@@ -6,6 +6,7 @@
 
 #include "Common.h"
 #include "EffectBase.h"
+#include "Ge7Eq.h"
 
 namespace namx
 {
@@ -21,9 +22,21 @@ namespace namx
 // the audio thread owns every filter (coefficients and state) and recomputes the
 // coefficients at the top of the next block — no mutex, no skipped blocks, no shared
 // filter state (code review items 04, 18). Independent L/R state.
+//
+// Type picks the engine: Parametric (the above, the default) or GE-7, a model of a Boss GE-7
+// Equalizer (Ge7Eq.h): its seven sliders and Level on the pedal's printed scale (−15…+15)
+// in place of the four bands; Low Cut and High Cut stay, after it.
 class EQProcessor : public EffectBase
 {
 public:
+    // Type values (preset key eq/type): append only.
+    enum Type : int
+    {
+        PARAMETRIC = 0,
+        GE7 = 1,
+    };
+    static constexpr int TYPE_COUNT = 2;
+
     enum class Band : size_t
     {
         LOW_CUT = 0,
@@ -43,6 +56,12 @@ public:
 
     void set_gain(Band b, double db);
     void set_freq(Band b, double hz);
+    void set_type(int new_type);
+    int get_type() const {
+        return type.load();
+    }
+    // GE-7 sliders: 0–6 the bands (100 Hz … 6.4 kHz), 7 Level; the printed scale.
+    void set_ge7_slider(size_t slider, double mark);
 
     // Back-compat names (3-band era).
     void set_low_gain(double db) {
@@ -93,6 +112,8 @@ private:
     // Written by the GUI (any order), read by the audio thread after `version`.
     array<atomic<double>, BANDS> gain{}; // dB (shelf/peak bands)
     array<atomic<double>, BANDS> freq{};
+    atomic<int> type{PARAMETRIC};
+    array<atomic<double>, ge7::SLIDER_COUNT> ge7_slider{};
     atomic<unsigned> version{1}; // bumped after every write
     atomic<bool> reset_pending{false};
 
@@ -100,6 +121,9 @@ private:
     unsigned applied_version = 0;
     array<Biquad, BANDS> filters_l, filters_r;
     array<bool, BANDS> band_on{}; // band changes the signal (skip flat ones)
+    int applied_type = PARAMETRIC;
+    ge7::Coefficients ge7_coeffs;
+    ge7::State ge7_state[2];
 };
 
 } // namespace namx

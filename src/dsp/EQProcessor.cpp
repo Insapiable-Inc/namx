@@ -35,14 +35,28 @@ void EQProcessor::set_freq(Band b, double hz) {
     version.fetch_add(1, std::memory_order_release);
 }
 
+void EQProcessor::set_type(int new_type) {
+    type.store(std::clamp(new_type, 0, TYPE_COUNT - 1), std::memory_order_relaxed);
+    version.fetch_add(1, std::memory_order_release);
+}
+
+void EQProcessor::set_ge7_slider(size_t slider, double mark) {
+    if (slider >= ge7::SLIDER_COUNT) {
+        return;
+    }
+    ge7_slider[slider].store(std::clamp(mark, ge7::SLIDER_MIN, ge7::SLIDER_MAX),
+                             std::memory_order_relaxed);
+    version.fetch_add(1, std::memory_order_release);
+}
+
 bool EQProcessor::active(Band b, double gain_db, double freq_hz) const {
     switch (b) {
         case Band::LOW_CUT:
             return freq_hz > 20.5;
         case Band::HIGH_CUT:
             return freq_hz < 19999.0 && freq_hz < 0.45 * sample_rate;
-        default:
-            return std::abs(gain_db) > 0.01;
+        default: // the four bands: the GE-7 replaces them
+            return applied_type == PARAMETRIC && std::abs(gain_db) > 0.01;
     }
 }
 
@@ -50,6 +64,19 @@ void EQProcessor::apply_changes() {
     const unsigned v = version.load(std::memory_order_acquire);
     if (v != applied_version) {
         applied_version = v;
+        const int current_type = type.load(std::memory_order_relaxed);
+        if (current_type != applied_type) {
+            applied_type = current_type;
+            ge7_state[0].reset(); // the GE-7 starts from silence; the bands below do too
+            ge7_state[1].reset();
+        }
+        if (applied_type == GE7) {
+            array<double, ge7::SLIDER_COUNT> sliders{};
+            for (size_t i = 0; i < sliders.size(); ++i) {
+                sliders[i] = ge7_slider[i].load(std::memory_order_relaxed);
+            }
+            ge7_coeffs = ge7::design(sliders, sample_rate);
+        }
         for (size_t i = 0; i < BANDS; ++i) {
             const Band b = static_cast<Band>(i);
             const double g = gain[i].load(std::memory_order_relaxed);
@@ -151,6 +178,16 @@ bool EQProcessor::process(float* l, float* r, size_t n, bool input_is_stereo) {
     }
     right_fed = input_is_stereo;
 
+    if (applied_type == GE7) {
+        for (size_t i = 0; i < n; ++i) {
+            l[i] = ge7::process(ge7_coeffs, ge7_state[0], l[i]);
+        }
+        if (input_is_stereo) {
+            for (size_t i = 0; i < n; ++i) {
+                r[i] = ge7::process(ge7_coeffs, ge7_state[1], r[i]);
+            }
+        }
+    }
     for (size_t b = 0; b < BANDS; ++b) {
         if (!band_on[b]) {
             continue;
@@ -175,6 +212,7 @@ bool EQProcessor::process(float* l, float* r, size_t n, bool input_is_stereo) {
 
 void EQProcessor::sync_right_channel() {
     filters_r = filters_l; // the same coefficients; now the same history too
+    ge7_state[1] = ge7_state[0];
 }
 
 void EQProcessor::reset() { // audio thread (chain reorder), like process()
@@ -182,6 +220,8 @@ void EQProcessor::reset() { // audio thread (chain reorder), like process()
 }
 
 void EQProcessor::reset_filters() {
+    ge7_state[0].reset();
+    ge7_state[1].reset();
     for (Biquad& filter : filters_l) {
         filter.reset();
     }
