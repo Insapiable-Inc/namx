@@ -1,0 +1,287 @@
+
+=== 2026-10-27T21:22:11 · run tools/capture/plans/ns-2.json · tool c4a1f272bcada51f91b454f3c140e5cbbdc5240c
+
+[1/36] bypass-sweep: sweep 20-20000 Hz, 10 s at -12 dB
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -25.4 dBFS · loopback -24.6 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[2/36] bypass-stairs: 1000 Hz at -80/-76/-72/-68/-64/-60/-56/-52/-48/-44/-40/-36/-32/-28/-24/-20/-16/-12/-8/-4/0/-4/-8/-12/-16/-20/-24/-28/-32/-36/-40/-44/-48/-52/-56/-60/-64/-68/-72/-76/-80 dB, 1.5 s each
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.9 dBFS · loopback -13.0 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[3/36] bypass-stairs-110: 110 Hz at -80/-76/-72/-68/-64/-60/-56/-52/-48/-44/-40/-36/-32/-28/-24/-20/-16/-12/-8/-4/0/-4/-8/-12/-16/-20/-24/-28/-32/-36/-40/-44/-48/-52/-56/-60/-64/-68/-72/-76/-80 dB, 1.5 s each
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.7 dBFS · loopback -12.9 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[4/36] bypass-stairs-3000: 3000 Hz at -80/-76/-72/-68/-64/-60/-56/-52/-48/-44/-40/-36/-32/-28/-24/-20/-16/-12/-8/-4/0/-4/-8/-12/-16/-20/-24/-28/-32/-36/-40/-44/-48/-52/-56/-60/-64/-68/-72/-76/-80 dB, 1.5 s each
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.9 dBFS · loopback -13.0 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[5/36] bypass-jump: 1000 Hz at -84/-12/-84 dB, 4 s each
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -25.9 dBFS · loopback -25.0 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[6/36] bypass-plucks: 3 220 Hz plucks every 4 s (decay 0.6 s)
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.9 dBFS · loopback -13.0 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[7/36] bypass-silence: silence, 10 s
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -92.3 dBFS · loopback -92.6 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[8/36] stairs-threshold-0700: 1000 Hz at -80/-76/-72/-68/-64/-60/-56/-52/-48/-44/-40/-36/-32/-28/-24/-20/-16/-12/-8/-4/0/-4/-8/-12/-16/-20/-24/-28/-32/-36/-40/-44/-48/-52/-56/-60/-64/-68/-72/-76/-80 dB, 1.5 s each
+  pedal ON · Threshold 7:00 · Decay 12:00 · Mode Reduction (switch it on)
+  A 1 kHz staircase from -80 to 0 dB and back down, 4 dB and 1.5 s per step: the static curve (how deep the reduction is under the threshold) and any hysteresis between the way up and the way down.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.2 dBFS · loopback -13.0 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[9/36] jump-threshold-0700: 1000 Hz at -84/-12/-84 dB, 4 s each
+  pedal ON · Threshold 7:00 · Decay 12:00 · Mode Reduction
+  A 1 kHz tone at -84, -12, -84 dB, 4 s each: how fast the gate opens, and how it closes (Decay).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -24.9 dBFS · loopback -25.0 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[10/36] plucks-threshold-0700: 3 220 Hz plucks every 4 s (decay 0.6 s)
+  pedal ON · Threshold 7:00 · Decay 12:00 · Mode Reduction
+  Three picked-note bursts at 220 Hz, 4 s apart: where a decaying note gets cut and how it fades.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.1 dBFS · loopback -13.0 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[11/36] stairs-threshold-0900: 1000 Hz at -80/-76/-72/-68/-64/-60/-56/-52/-48/-44/-40/-36/-32/-28/-24/-20/-16/-12/-8/-4/0/-4/-8/-12/-16/-20/-24/-28/-32/-36/-40/-44/-48/-52/-56/-60/-64/-68/-72/-76/-80 dB, 1.5 s each
+  pedal ON · Threshold 9:00 (changed) · Decay 12:00 · Mode Reduction
+  A 1 kHz staircase from -80 to 0 dB and back down, 4 dB and 1.5 s per step: the static curve (how deep the reduction is under the threshold) and any hysteresis between the way up and the way down.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.2 dBFS · loopback -13.0 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[12/36] jump-threshold-0900: 1000 Hz at -84/-12/-84 dB, 4 s each
+  pedal ON · Threshold 9:00 · Decay 12:00 · Mode Reduction
+  A 1 kHz tone at -84, -12, -84 dB, 4 s each: how fast the gate opens, and how it closes (Decay).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -24.9 dBFS · loopback -25.0 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[13/36] plucks-threshold-0900: 3 220 Hz plucks every 4 s (decay 0.6 s)
+  pedal ON · Threshold 9:00 · Decay 12:00 · Mode Reduction
+  Three picked-note bursts at 220 Hz, 4 s apart: where a decaying note gets cut and how it fades.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.1 dBFS · loopback -13.0 dBFS · latency 454 samples (9.46 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[14/36] jump-decay-0700: 1000 Hz at -84/-12/-84 dB, 4 s each
+  pedal ON · Threshold 12:00 (changed) · Decay 7:00 (changed) · Mode Reduction
+  A 1 kHz tone at -84, -12, -84 dB, 4 s each: how fast the gate opens, and how it closes (Decay).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -24.9 dBFS · loopback -25.0 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[15/36] plucks-decay-0700: 3 220 Hz plucks every 4 s (decay 0.6 s)
+  pedal ON · Threshold 12:00 · Decay 7:00 · Mode Reduction
+  Three picked-note bursts at 220 Hz, 4 s apart: where a decaying note gets cut and how it fades.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.1 dBFS · loopback -13.0 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[16/36] jump-decay-0900: 1000 Hz at -84/-12/-84 dB, 4 s each
+  pedal ON · Threshold 12:00 · Decay 9:00 (changed) · Mode Reduction
+  A 1 kHz tone at -84, -12, -84 dB, 4 s each: how fast the gate opens, and how it closes (Decay).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -24.9 dBFS · loopback -25.0 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[17/36] plucks-decay-0900: 3 220 Hz plucks every 4 s (decay 0.6 s)
+  pedal ON · Threshold 12:00 · Decay 9:00 · Mode Reduction
+  Three picked-note bursts at 220 Hz, 4 s apart: where a decaying note gets cut and how it fades.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.1 dBFS · loopback -13.0 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[18/36] sweep: sweep 20-20000 Hz, 10 s at -12 dB
+  pedal ON · Threshold 12:00 · Decay 12:00 (changed) · Mode Reduction
+  A -12 dB sweep, well over the threshold: the open gate's frequency response.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -25.1 dBFS · loopback -24.6 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[19/36] stairs-threshold-1200: 1000 Hz at -80/-76/-72/-68/-64/-60/-56/-52/-48/-44/-40/-36/-32/-28/-24/-20/-16/-12/-8/-4/0/-4/-8/-12/-16/-20/-24/-28/-32/-36/-40/-44/-48/-52/-56/-60/-64/-68/-72/-76/-80 dB, 1.5 s each
+  pedal ON · Threshold 12:00 · Decay 12:00 · Mode Reduction
+  A 1 kHz staircase from -80 to 0 dB and back down, 4 dB and 1.5 s per step: the static curve (how deep the reduction is under the threshold) and any hysteresis between the way up and the way down.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.3 dBFS · loopback -13.0 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[20/36] stairs-110: 110 Hz at -80/-76/-72/-68/-64/-60/-56/-52/-48/-44/-40/-36/-32/-28/-24/-20/-16/-12/-8/-4/0/-4/-8/-12/-16/-20/-24/-28/-32/-36/-40/-44/-48/-52/-56/-60/-64/-68/-72/-76/-80 dB, 1.5 s each
+  pedal ON · Threshold 12:00 · Decay 12:00 · Mode Reduction
+  The staircase at 110 Hz: does the detector care about pitch (a low-E-ish fundamental)?
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -12.9 dBFS · loopback -12.9 dBFS · latency 449 samples (9.35 ms) · xruns 1
+  PROBLEM: 1 xrun(s) during the take: redo it, or raise the quantum
+  Enter = keep, r = redo: (Enter)
+
+[21/36] stairs-3000: 3000 Hz at -80/-76/-72/-68/-64/-60/-56/-52/-48/-44/-40/-36/-32/-28/-24/-20/-16/-12/-8/-4/0/-4/-8/-12/-16/-20/-24/-28/-32/-36/-40/-44/-48/-52/-56/-60/-64/-68/-72/-76/-80 dB, 1.5 s each
+  pedal ON · Threshold 12:00 · Decay 12:00 · Mode Reduction
+  The staircase at 3 kHz: does the detector care about pitch?
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -17.2 dBFS · loopback -13.0 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[22/36] jump-12: 1000 Hz at -84/-12/-84 dB, 4 s each
+  pedal ON · Threshold 12:00 · Decay 12:00 · Mode Reduction
+  A 1 kHz tone at -84, -12, -84 dB, 4 s each: how fast the gate opens, and how it closes (Decay).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -24.9 dBFS · loopback -25.0 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[23/36] plucks-12: 3 220 Hz plucks every 4 s (decay 0.6 s)
+  pedal ON · Threshold 12:00 · Decay 12:00 · Mode Reduction
+  Three picked-note bursts at 220 Hz, 4 s apart: where a decaying note gets cut and how it fades.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.2 dBFS · loopback -13.0 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[24/36] silence-threshold-1200: silence, 10 s
+  pedal ON · Threshold 12:00 · Decay 12:00 · Mode Reduction
+  Nothing played: the closed gate's noise floor.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -78.9 dBFS · loopback -92.3 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[25/36] jump-decay-0300: 1000 Hz at -84/-12/-84 dB, 4 s each
+  pedal ON · Threshold 12:00 · Decay 3:00 (changed) · Mode Reduction
+  A 1 kHz tone at -84, -12, -84 dB, 4 s each: how fast the gate opens, and how it closes (Decay).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -24.9 dBFS · loopback -25.0 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[26/36] plucks-decay-0300: 3 220 Hz plucks every 4 s (decay 0.6 s)
+  pedal ON · Threshold 12:00 · Decay 3:00 · Mode Reduction
+  Three picked-note bursts at 220 Hz, 4 s apart: where a decaying note gets cut and how it fades.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.2 dBFS · loopback -13.0 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[27/36] jump-decay-0500: 1000 Hz at -84/-12/-84 dB, 4 s each
+  pedal ON · Threshold 12:00 · Decay 5:00 (changed) · Mode Reduction
+  A 1 kHz tone at -84, -12, -84 dB, 4 s each: how fast the gate opens, and how it closes (Decay).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -24.9 dBFS · loopback -25.0 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[28/36] plucks-decay-0500: 3 220 Hz plucks every 4 s (decay 0.6 s)
+  pedal ON · Threshold 12:00 · Decay 5:00 · Mode Reduction
+  Three picked-note bursts at 220 Hz, 4 s apart: where a decaying note gets cut and how it fades.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.2 dBFS · loopback -13.0 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[29/36] stairs-threshold-0300: 1000 Hz at -80/-76/-72/-68/-64/-60/-56/-52/-48/-44/-40/-36/-32/-28/-24/-20/-16/-12/-8/-4/0/-4/-8/-12/-16/-20/-24/-28/-32/-36/-40/-44/-48/-52/-56/-60/-64/-68/-72/-76/-80 dB, 1.5 s each
+  pedal ON · Threshold 3:00 (changed) · Decay 12:00 (changed) · Mode Reduction
+  A 1 kHz staircase from -80 to 0 dB and back down, 4 dB and 1.5 s per step: the static curve (how deep the reduction is under the threshold) and any hysteresis between the way up and the way down.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.3 dBFS · loopback -13.0 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[30/36] jump-threshold-0300: 1000 Hz at -84/-12/-84 dB, 4 s each
+  pedal ON · Threshold 3:00 · Decay 12:00 · Mode Reduction
+  A 1 kHz tone at -84, -12, -84 dB, 4 s each: how fast the gate opens, and how it closes (Decay).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -24.9 dBFS · loopback -25.0 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[31/36] plucks-threshold-0300: 3 220 Hz plucks every 4 s (decay 0.6 s)
+  pedal ON · Threshold 3:00 · Decay 12:00 · Mode Reduction
+  Three picked-note bursts at 220 Hz, 4 s apart: where a decaying note gets cut and how it fades.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.2 dBFS · loopback -13.0 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[32/36] stairs-threshold-0500: 1000 Hz at -80/-76/-72/-68/-64/-60/-56/-52/-48/-44/-40/-36/-32/-28/-24/-20/-16/-12/-8/-4/0/-4/-8/-12/-16/-20/-24/-28/-32/-36/-40/-44/-48/-52/-56/-60/-64/-68/-72/-76/-80 dB, 1.5 s each
+  pedal ON · Threshold 5:00 (changed) · Decay 12:00 · Mode Reduction
+  A 1 kHz staircase from -80 to 0 dB and back down, 4 dB and 1.5 s per step: the static curve (how deep the reduction is under the threshold) and any hysteresis between the way up and the way down.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.3 dBFS · loopback -13.0 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[33/36] jump-threshold-0500: 1000 Hz at -84/-12/-84 dB, 4 s each
+  pedal ON · Threshold 5:00 · Decay 12:00 · Mode Reduction
+  A 1 kHz tone at -84, -12, -84 dB, 4 s each: how fast the gate opens, and how it closes (Decay).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -24.9 dBFS · loopback -25.0 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[34/36] plucks-threshold-0500: 3 220 Hz plucks every 4 s (decay 0.6 s)
+  pedal ON · Threshold 5:00 · Decay 12:00 · Mode Reduction
+  Three picked-note bursts at 220 Hz, 4 s apart: where a decaying note gets cut and how it fades.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.2 dBFS · loopback -13.0 dBFS · latency 448 samples (9.33 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[35/36] silence-threshold-0500: silence, 10 s
+  pedal ON · Threshold 5:00 · Decay 12:00 · Mode Reduction
+  Nothing played at the top threshold.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -81.2 dBFS · loopback -92.6 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[36/36] mute: 1000 Hz at -24/0 dB, 3 s each
+  pedal ON · Threshold 5:00 · Decay 12:00 · Mode Mute (changed)
+  Mode on Mute: should be silent whatever is played.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -84.1 dBFS · loopback -13.0 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  PROBLEM: the pedal channel is silent: is it on?
+  Enter = keep, r = redo: (Enter)
+
+All 36 takes are in captures/boss/ns-2/2026-10-27.

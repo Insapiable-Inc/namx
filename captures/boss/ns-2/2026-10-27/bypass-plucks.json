@@ -1,0 +1,43 @@
+{
+  "take": "bypass-plucks",
+  "pedal": "Boss NS-2 Noise Suppressor (mono, Input -> Output)",
+  "bypass": true,
+  "settings": {},
+  "note": "",
+  "signal": {
+    "type": "plucks",
+    "freq": 220,
+    "period": 4,
+    "count": 3,
+    "decay_seconds": 0.6,
+    "tail": 2
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -13.93,
+    "loop": -12.99
+  },
+  "latency_samples": 577,
+  "latency_quality": 0.998,
+  "xruns": 0,
+  "played_sha256": "8a69840a1a946f6bc6da688833b19b6c55aaec81515426a8fb8ac934cf97084e",
+  "recorded_at": "2026-10-27T21:26:45",
+  "tool_commit": "c4a1f272bcada51f91b454f3c140e5cbbdc5240c",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX4",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Scarlett 8i6 3rd gen; pedal feed: analogue out 3 (PCM 3, direct routing); loopback: out 4 -> line in 5; pedal into input 2, INST, AIR off, pad ON, gain min; no reamp box; calibration from the TR-2/DD-8 sessions; NS-2 on a 9 V power supply; Input -> Output, Send and Return empty"
+  }
+}
