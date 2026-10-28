@@ -2,7 +2,7 @@
 """Measures the Boss GE-7 Equalizer from its two sessions (plans/ge-7.json, ge-7-level.json).
 Findings: captures/boss/ge-7/README.md.
 
-    analyze_ge7.py SESSION LEVEL_SESSION      # writes SESSION/fit/ge-7.{json,svg}
+    analyze_ge7.py SESSION LEVEL_SESSION      # writes SESSION/fit/ge-7.{json,svg}, ge-7-fit.svg
 
 What it measures:
   tone       every sweep against its own session's bypass, per 1/12 octave (30 Hz-16 kHz),
@@ -195,6 +195,7 @@ def noise(session, level_session):
 def plot(out_dir, result, takes, p):
     import matplotlib
     matplotlib.use("Agg")
+    matplotlib.rcParams["svg.hashsalt"] = "ge-7"  # the same SVG ids on every run
     import matplotlib.pyplot as plt
 
     figure, axes = plt.subplots(2, 2, figsize=(14, 9.5))
@@ -244,6 +245,52 @@ def plot(out_dir, result, takes, p):
     plt.close(figure)
 
 
+def plot_fit(out_dir, takes, p):
+    """Every sweep against the circuit fit, one panel each, the error underneath."""
+    import matplotlib
+    matplotlib.use("Agg")
+    matplotlib.rcParams["svg.hashsalt"] = "ge-7"  # the same SVG ids on every run
+    import matplotlib.pyplot as plt
+
+    columns = 6
+    rows = -(-len(takes) // columns)
+    figure = plt.figure(figsize=(3.3 * columns, 3.4 * rows), layout="constrained")
+    cells = figure.add_gridspec(rows, columns)
+    order = sorted(takes, key=lambda t: (t["session"], t["name"]))
+    for i, t in enumerate(order):
+        row, column = divmod(i, columns)
+        pair = cells[row, column].subgridspec(2, 1, height_ratios=[3, 1], hspace=0.05)
+        top = figure.add_subplot(pair[0])
+        bottom = figure.add_subplot(pair[1], sharex=top)
+        fitted = model(p, t["settings"], t["session"])
+        top.semilogx(GRID_HZ, t["db"], color="C0", lw=1.8, label="measured")
+        top.semilogx(GRID_HZ, fitted, color="C3", lw=1.0, ls="--", label="model")
+        middle = (max(t["db"].max(), fitted.max()) + min(t["db"].min(), fitted.min())) / 2
+        low, high = top.get_ylim()
+        if high - low < 4:  # nearly flat takes: a 4 dB window, not a zoom on tenths
+            top.set_ylim(middle - 2, middle + 2)
+        error = fitted - t["db"]
+        bottom.semilogx(GRID_HZ, error, color="k", lw=0.9)
+        bottom.axhline(0, color="0.6", lw=0.5)
+        bottom.set_ylim(-2, 2)
+        name = ("level/" if t["session"] else "") + t["name"]
+        rms = float(np.sqrt(np.mean(error ** 2)))
+        top.set_title(f"{name}  ({rms:.2f} dB rms)", fontsize=8)
+        top.tick_params(labelbottom=False, labelsize=7)
+        bottom.tick_params(labelsize=7)
+        top.grid(alpha=0.3, which="both")
+        bottom.grid(alpha=0.3, which="both")
+        if column == 0:
+            top.set_ylabel("dB re bypass", fontsize=8)
+            bottom.set_ylabel("error, dB", fontsize=8)
+        if i == 0:
+            top.legend(fontsize=7)
+    figure.suptitle("Boss GE-7: every sweep against the circuit fit "
+                    "(level-* in the first session = the 6.4 kHz slider)")
+    figure.savefig(out_dir / "ge-7-fit.svg", metadata={"Date": None})
+    plt.close(figure)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("session")
@@ -265,6 +312,7 @@ def main():
         json.dump(result, file, indent=2)
         file.write("\n")
     plot(out_dir, result, takes, np.array(tone["parameters"]))
+    plot_fit(out_dir, takes, np.array(tone["parameters"]))
     summary = {k: v for k, v in tone.items() if k not in ("parameters", "rms_db_per_take")}
     summary["ceiling_db_re_reference"] = result["clipping"]["ceiling_db_re_reference"]
     summary["noise_rms_dbfs"] = {k: v["rms_dbfs"] for k, v in result["noise"].items()}

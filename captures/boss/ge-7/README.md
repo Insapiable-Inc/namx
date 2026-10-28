@@ -11,7 +11,7 @@ Same rig and playback level as the other pedals ([`tools/capture/README.md`](../
 Plans: `tools/capture/plans/ge-7.json` (33 takes) and `ge-7-level.json` (8 takes), every
 slider at 0 unless a take says otherwise. Analysis:
 `tools/capture/analyze_ge7.py captures/boss/ge-7/2026-10-28 captures/boss/ge-7/2026-10-28-level`
-→ [`2026-10-28/fit/ge-7.json`](2026-10-28/fit/ge-7.json) and the figure below.
+→ [`2026-10-28/fit/ge-7.json`](2026-10-28/fit/ge-7.json), the figure below and a per-sweep fit figure.
 
 The sliders: 100, 200, 400, 800 Hz, 1.6, 3.2, 6.4 kHz and Level, each ±15 dB on the printed
 scale. Positions are read off that scale: +15 = top, 0 = centre, −15 = bottom, ±7.5 =
@@ -65,6 +65,9 @@ takes:
   differ by 0.9 dB, the same at every frequency — Level's centre set by hand, not a band
   (an off-centre band would show at its own frequency). Each session's takes are fitted
   with their own offset (+0.08 and −0.24 dB).
+
+Every sweep against the fit, one panel each with its error:
+[`2026-10-28/fit/ge-7-fit.svg`](2026-10-28/fit/ge-7-fit.svg).
 
 What's left: ~0.5 dB flat on the all-up and all-down takes (the sliders' own setting), a
 1.7 dB miss on the all-up curve at 3.4 kHz, and up to 1–3 dB above 10 kHz on the takes that
