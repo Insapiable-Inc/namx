@@ -1,6 +1,6 @@
 {
   "pedal": "Boss PH-3 Phase Shifter, the Stage modes (mono: Input -> Output A)",
-  "comment": "6 Stage in full (Depth, Rate and Res maps, the static response at Depth minimum, the clip), then 8, 10 and 12 Stage at four settings each, to see whether they are one engine with more stages. Mono: Input -> Output A only (nothing in B). No tap tempo, no expression pedal. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise; 9:00 and 3:00 pointer horizontal. Noise takes: the notches tracked frame by frame (the sweep moves); sweeps at Depth minimum: the static response, if the notches hold still there. Takes ordered by setting, for the fewest knob turns.",
+  "comment": "4 Stage in full (Depth, Rate and Res maps, the static response at Depth minimum, the clip), then 8, 10 and 12 Stage at four settings each, to see whether they are one engine with more stages. Mono: Input -> Output A only (nothing in B). No tap tempo, no expression pedal. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise; 9:00 and 3:00 pointer horizontal. Noise takes: the notches tracked frame by frame (the sweep moves); sweeps at Depth minimum: the static response, if the notches hold still there. Takes ordered by setting, for the fewest knob turns.",
   "quiet_dbfs": -60,
   "knobs": [
     "Mode",
@@ -57,9 +57,9 @@
       }
     },
     {
-      "name": "s6-depth-0700-sweep",
+      "name": "s4-depth-0700-sweep",
       "settings": {
-        "Mode": "6 Stage",
+        "Mode": "4 Stage",
         "Rate": "12:00",
         "Depth": "7:00",
         "Res": "7:00"
@@ -72,12 +72,12 @@
         "level_db": -24,
         "tail": 2
       },
-      "note": "Pedal on, MODE 6 STAGE. Depth fully down: does the sweep stop?"
+      "note": "Pedal on, MODE 4 STAGE. Depth fully down: does the sweep stop?"
     },
     {
-      "name": "s6-depth-0700-noise",
+      "name": "s4-depth-0700-noise",
       "settings": {
-        "Mode": "6 Stage",
+        "Mode": "4 Stage",
         "Rate": "12:00",
         "Depth": "7:00",
         "Res": "7:00"
@@ -91,9 +91,9 @@
       }
     },
     {
-      "name": "s6-res-0900-sweep",
+      "name": "s4-res-0900-sweep",
       "settings": {
-        "Mode": "6 Stage",
+        "Mode": "4 Stage",
         "Rate": "12:00",
         "Depth": "7:00",
         "Res": "9:00"
@@ -108,9 +108,9 @@
       }
     },
     {
-      "name": "s6-res-1200-sweep",
+      "name": "s4-res-1200-sweep",
       "settings": {
-        "Mode": "6 Stage",
+        "Mode": "4 Stage",
         "Rate": "12:00",
         "Depth": "7:00",
         "Res": "12:00"
@@ -125,9 +125,9 @@
       }
     },
     {
-      "name": "s6-res-0300-sweep",
+      "name": "s4-res-0300-sweep",
       "settings": {
-        "Mode": "6 Stage",
+        "Mode": "4 Stage",
         "Rate": "12:00",
         "Depth": "7:00",
         "Res": "3:00"
@@ -142,9 +142,9 @@
       }
     },
     {
-      "name": "s6-res-0500-sweep",
+      "name": "s4-res-0500-sweep",
       "settings": {
-        "Mode": "6 Stage",
+        "Mode": "4 Stage",
         "Rate": "12:00",
         "Depth": "7:00",
         "Res": "5:00"
@@ -159,9 +159,9 @@
       }
     },
     {
-      "name": "s6-bursts-res-0500",
+      "name": "s4-bursts-res-0500",
       "settings": {
-        "Mode": "6 Stage",
+        "Mode": "4 Stage",
         "Rate": "12:00",
         "Depth": "7:00",
         "Res": "5:00"
@@ -188,9 +188,9 @@
       }
     },
     {
-      "name": "s6-bursts",
+      "name": "s4-bursts",
       "settings": {
-        "Mode": "6 Stage",
+        "Mode": "4 Stage",
         "Rate": "12:00",
         "Depth": "7:00",
         "Res": "7:00"
@@ -218,9 +218,9 @@
       "note": "Res back to 7:00."
     },
     {
-      "name": "s6-depth-0900",
+      "name": "s4-depth-0900",
       "settings": {
-        "Mode": "6 Stage",
+        "Mode": "4 Stage",
         "Rate": "12:00",
         "Depth": "9:00",
         "Res": "7:00"
@@ -234,9 +234,9 @@
       }
     },
     {
-      "name": "s6-depth-1200",
+      "name": "s4-depth-1200",
       "settings": {
-        "Mode": "6 Stage",
+        "Mode": "4 Stage",
         "Rate": "12:00",
         "Depth": "12:00",
         "Res": "7:00"
@@ -250,9 +250,9 @@
       }
     },
     {
-      "name": "s6-depth-0300",
+      "name": "s4-depth-0300",
       "settings": {
-        "Mode": "6 Stage",
+        "Mode": "4 Stage",
         "Rate": "12:00",
         "Depth": "3:00",
         "Res": "7:00"
@@ -266,9 +266,9 @@
       }
     },
     {
-      "name": "s6-depth-0500",
+      "name": "s4-depth-0500",
       "settings": {
-        "Mode": "6 Stage",
+        "Mode": "4 Stage",
         "Rate": "12:00",
         "Depth": "5:00",
         "Res": "7:00"
@@ -282,9 +282,9 @@
       }
     },
     {
-      "name": "s6-rate-0700",
+      "name": "s4-rate-0700",
       "settings": {
-        "Mode": "6 Stage",
+        "Mode": "4 Stage",
         "Rate": "7:00",
         "Depth": "5:00",
         "Res": "7:00"
@@ -296,12 +296,12 @@
         "seed": 1,
         "tail": 2
       },
-      "note": "Rate 12:00 is s6-depth-0500."
+      "note": "Rate 12:00 is s4-depth-0500."
     },
     {
-      "name": "s6-rate-0900",
+      "name": "s4-rate-0900",
       "settings": {
-        "Mode": "6 Stage",
+        "Mode": "4 Stage",
         "Rate": "9:00",
         "Depth": "5:00",
         "Res": "7:00"
@@ -315,9 +315,9 @@
       }
     },
     {
-      "name": "s6-rate-0300",
+      "name": "s4-rate-0300",
       "settings": {
-        "Mode": "6 Stage",
+        "Mode": "4 Stage",
         "Rate": "3:00",
         "Depth": "5:00",
         "Res": "7:00"
@@ -331,9 +331,9 @@
       }
     },
     {
-      "name": "s6-rate-0500",
+      "name": "s4-rate-0500",
       "settings": {
-        "Mode": "6 Stage",
+        "Mode": "4 Stage",
         "Rate": "5:00",
         "Depth": "5:00",
         "Res": "7:00"
@@ -347,9 +347,9 @@
       }
     },
     {
-      "name": "s6-res-1200",
+      "name": "s4-res-1200",
       "settings": {
-        "Mode": "6 Stage",
+        "Mode": "4 Stage",
         "Rate": "12:00",
         "Depth": "5:00",
         "Res": "12:00"
@@ -364,9 +364,9 @@
       "note": "Rate back to 12:00."
     },
     {
-      "name": "s6-res-0500",
+      "name": "s4-res-0500",
       "settings": {
-        "Mode": "6 Stage",
+        "Mode": "4 Stage",
         "Rate": "12:00",
         "Depth": "5:00",
         "Res": "5:00"
