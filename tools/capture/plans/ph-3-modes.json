@@ -1,6 +1,6 @@
 {
-  "pedal": "Boss PH-3 Phase Shifter, Step, Rise and Fall (mono: Input -> Output A)",
-  "comment": "Step (its step rate and how far the steps jump), Rise (the endless upward sweep: its speed, how the notches enter and leave) and Fall as a mirror check. Mono: Input -> Output A only (nothing in B). No tap tempo, no expression pedal. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise; 9:00 and 3:00 pointer horizontal. Noise takes: the notches tracked frame by frame (the sweep moves); sweeps at Depth minimum: the static response, if the notches hold still there. Takes ordered by setting, for the fewest knob turns.",
+  "pedal": "Boss PH-3 Phase Shifter, Step, Rise and Fall (mono: Input -> Output)",
+  "comment": "Step (its step rate and how far the steps jump), Rise (the endless upward sweep: its speed, how the notches enter and leave) and Fall as a mirror check. No tap tempo, no expression pedal. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise; 9:00 and 3:00 pointer horizontal. Noise takes: the notches tracked frame by frame (the sweep moves); sweeps at Depth minimum: the static response, if the notches hold still there. Takes ordered by setting, for the fewest knob turns.",
   "quiet_dbfs": -60,
   "knobs": [
     "Mode",

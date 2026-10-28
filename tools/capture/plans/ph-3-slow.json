@@ -1,6 +1,6 @@
 {
-  "pedal": "Boss PH-3 Phase Shifter, slow rates (mono: Input -> Output A)",
-  "comment": "Rate 7:00 didn't move in 40 s in any mode: 4 minutes of it in 4 Stage, then Rate 8:00 in every mode (the Stage modes at Depth 5:00, Step/Rise/Fall at Depth 12:00, as in the first sessions). Res 7:00 throughout. Mono: Input -> Output A only. Clock positions: 7:00 = fully counter-clockwise.",
+  "pedal": "Boss PH-3 Phase Shifter, slow rates (mono: Input -> Output)",
+  "comment": "Rate 7:00 didn't move in 40 s in any mode: 4 minutes of it in 4 Stage, then Rate 8:00 in every mode (the Stage modes at Depth 5:00, Step/Rise/Fall at Depth 12:00, as in the first sessions). Res 7:00 throughout. Clock positions: 7:00 = fully counter-clockwise.",
   "quiet_dbfs": -60,
   "knobs": [
     "Mode",

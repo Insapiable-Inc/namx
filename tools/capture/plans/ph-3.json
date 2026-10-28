@@ -1,6 +1,6 @@
 {
-  "pedal": "Boss PH-3 Phase Shifter, the Stage modes (mono: Input -> Output A)",
-  "comment": "4 Stage in full (Depth, Rate and Res maps, the static response at Depth minimum, the clip), then 8, 10 and 12 Stage at four settings each, to see whether they are one engine with more stages. Mono: Input -> Output A only (nothing in B). No tap tempo, no expression pedal. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise; 9:00 and 3:00 pointer horizontal. Noise takes: the notches tracked frame by frame (the sweep moves); sweeps at Depth minimum: the static response, if the notches hold still there. Takes ordered by setting, for the fewest knob turns.",
+  "pedal": "Boss PH-3 Phase Shifter, the Stage modes (mono: Input -> Output)",
+  "comment": "4 Stage in full (Depth, Rate and Res maps, the static response at Depth minimum, the clip), then 8, 10 and 12 Stage at four settings each, to see whether they are one engine with more stages. No tap tempo, no expression pedal. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise; 9:00 and 3:00 pointer horizontal. Noise takes: the notches tracked frame by frame (the sweep moves); sweeps at Depth minimum: the static response, if the notches hold still there. Takes ordered by setting, for the fewest knob turns.",
   "quiet_dbfs": -60,
   "knobs": [
     "Mode",

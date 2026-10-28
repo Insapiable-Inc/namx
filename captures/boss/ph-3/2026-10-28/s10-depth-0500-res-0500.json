@@ -1,6 +1,6 @@
 {
   "take": "s10-depth-0500-res-0500",
-  "pedal": "Boss PH-3 Phase Shifter, the Stage modes (mono: Input -> Output A)",
+  "pedal": "Boss PH-3 Phase Shifter, the Stage modes (mono: Input -> Output)",
   "bypass": false,
   "settings": {
     "Mode": "10 Stage",
@@ -42,6 +42,6 @@
       "loop_dbfs": -12.96,
       "at": "2026-10-26T18:43:48"
     },
-    "note": "Scarlett 8i6 3rd gen; pedal feed: analogue out 3 (PCM 3, direct routing); loopback: out 4 -> line in 5; pedal into input 2, INST, AIR off, pad ON, gain min; no reamp box; calibration from the TR-2/DD-8 sessions; PH-3 on a 9 V power supply; Input -> Output A, Output B empty"
+    "note": "Scarlett 8i6 3rd gen; pedal feed: analogue out 3 (PCM 3, direct routing); loopback: out 4 -> line in 5; pedal into input 2, INST, AIR off, pad ON, gain min; no reamp box; calibration from the TR-2/DD-8 sessions; PH-3 on a 9 V power supply; Input -> Output"
   }
 }
