@@ -485,6 +485,12 @@ def cmd_run(args):
     engine = Engine(rig)
     check_rate(engine)
     takes = plan["takes"]
+    for take in takes:  # a take that would clip stops the run now, not half-way through it
+        try:
+            signals.build(take["signal"], engine.rate, rig["ref_dbfs"])
+        except ValueError as error:
+            engine.close()
+            sys.exit(f"{take['name']}: {error}")
     previous = None
     try:
         for index, take in enumerate(takes, 1):
