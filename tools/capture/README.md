@@ -16,7 +16,7 @@ collection of Boss pedals. Done so far: the TR-2 tremolo, the DD-8 delay, the CE
 | `analyze_ce5.py` | The CE-5 (wet-only + mono sessions): dry and wet split by time in the deconvolved sweeps (delay, gain, tone, group delay), E.Level, the filters (corner, slope, floor), the LFO from held tones' phase (rate, absolute delay, bowed-triangle shape), bursts, note-off, noise |
 | `analyze_bf3.py` | The BF-3 (Standard, mono): dry and wet split in time at Manual 7:00 (delay, gain, tone), Manual's delay from the comb, Res from the clean echo and the comb's ripple depth, the output clip, the sweep from click trains (delay per click, LFO rate, smoothed-triangle^power shape, Depth's floor blend and swing) |
 | `analyze_cs3.py` | The CS-3: the static curve from a 1 kHz staircase per Sustain position, attack and release from a −30/0/−30 dB jump (the gain's 1 ms envelope against the bypass) per Attack position, picked notes, Tone sweeps, Level, noise |
-| `analyze_ge7.py` | The GE-7 (two sessions): every sweep against its bypass per 1/12 octave and one graphic-EQ circuit fitted to all of them (LC bands, the RC top shelf, Level's stage), the staircases' ceiling and harmonics, noise |
+| `analyze_ge7.py` | The GE-7 (three sessions): every sweep against its bypass per 1/12 octave and one graphic-EQ circuit fitted to all of them (LC bands, the RC top shelf, Level's stage), the staircases' ceiling and harmonics, noise |
 | `plans/*.json` | One plan per pedal: the takes, their knob settings and signals |
 
 Needs Python with numpy, scipy, soundfile and matplotlib, plus the JACK client for Python

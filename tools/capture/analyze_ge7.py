@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Measures the Boss GE-7 Equalizer from its two sessions (plans/ge-7.json, ge-7-level.json).
-Findings: captures/boss/ge-7/README.md.
+"""Measures the Boss GE-7 Equalizer from its three sessions (plans/ge-7.json, ge-7-level.json,
+ge-7-retake.json). Findings: captures/boss/ge-7/README.md.
 
-    analyze_ge7.py SESSION LEVEL_SESSION      # writes SESSION/fit/ge-7.{json,svg}, ge-7-fit.svg
+    analyze_ge7.py SESSION LEVEL_SESSION RETAKE_SESSION
+        # writes SESSION/fit/ge-7.{json,svg}, ge-7-fit.svg
 
 What it measures:
   tone       every sweep against its own session's bypass, per 1/12 octave (30 Hz-16 kHz),
@@ -16,6 +17,8 @@ What it measures:
 
 SESSION's level-* takes moved the 6.4 kHz slider, not Level (the sweeps show it): they are
 read as the 6.4 kHz slider at those positions. LEVEL_SESSION has the real Level takes.
+SESSION's all-p15-sweep is left out: two sliders were short of their stops (RETAKE_SESSION's
+two all-up takes agree with each other and sit 0.8-1 dB above it at 3.3 and 10-15 kHz).
 """
 
 import argparse
@@ -33,8 +36,14 @@ BANDS = ["100 Hz", "200 Hz", "400 Hz", "800 Hz", "1.6 kHz", "3.2 kHz", "6.4 kHz"
 NOMINAL_HZ = [100, 200, 400, 800, 1600, 3200, 6400]
 GRID_HZ = np.geomspace(30, 16000, 160)
 STAIRS_DB = [-36, -30, -24, -18, -12, -6, -3, 0, 3]
-GLOBALS = ["log_r", "half", "log_level_r", "level_half", "log_level_gbw", "log_level_z",
-           "offset_db", "level_offset_db"]
+GLOBALS = ["log_r", "half_cut", "half_boost", "log_level_r", "level_half", "log_level_gbw",
+           "log_level_z", "offset_db", "level_offset_db", "retake_offset_db"]
+PREFIXES = ["", "level/", "retake/"]  # per session, in take labels
+LEFT_OUT = {(0, "all-p15-sweep")}
+
+
+def label(take):
+    return PREFIXES[take["session"]] + take["name"]
 
 
 def rounded(values, digits=2):
@@ -57,14 +66,14 @@ def response_db(session, name, bypass):
     return np.array(out)
 
 
-def sweeps(session, level_session):
+def sweeps(sessions):
     takes = []
-    for index, s in enumerate((session, level_session)):
+    for index, s in enumerate(sessions):
         bypass, _ = spectrum(s, "bypass-sweep")
         for meta_path in sorted(s.glob("*sweep.json")):
             name = meta_path.stem
             meta = json.loads(meta_path.read_text(encoding="utf-8"))
-            if meta.get("bypass") or not meta.get("settings"):
+            if meta.get("bypass") or not meta.get("settings") or (index, name) in LEFT_OUT:
                 continue
             settings = dict(meta["settings"])
             if index == 0 and name.startswith("level-"):
@@ -74,9 +83,9 @@ def sweeps(session, level_session):
     return takes
 
 
-def slider(value, half):
+def slider(value, half_cut, half_boost):
     """The pot's wiper (0 = cut end, 1 = boost end) for a printed position."""
-    x = {"-15": 0.0, "-7.5": 0.5 - half, "0": 0.5, "+7.5": 0.5 + half, "+15": 1.0}[value]
+    x = {"-15": 0.0, "-7.5": 0.5 - half_cut, "0": 0.5, "+7.5": 0.5 + half_boost, "+15": 1.0}[value]
     return min(max(x, 1e-6), 1 - 1e-6)
 
 
@@ -93,25 +102,26 @@ def model(p, settings, session):
             z = np.exp(log_rs) * (1 + w0 / s)  # series RC: log_f is its corner
         else:
             z = np.exp(log_z) * (s / w0 + w0 / s) + np.exp(log_rs)
-        x = slider(settings[band], g["half"])
+        x = slider(settings[band], g["half_cut"], g["half_boost"])
         d = z + x * (1 - x)
         y_plus = y_plus + (1 - x) / d
         y_minus = y_minus + x / d
     r = np.exp(g["log_r"])
     eq = (1 + r * y_minus) / (1 + r * y_plus)
-    x = slider(settings["Level"], g["level_half"])
+    x = slider(settings["Level"], g["level_half"], g["level_half"])
     d = np.exp(g["log_level_z"]) + x * (1 - x)
     noise_gain = 1 + np.exp(g["log_level_r"]) * x / d
     level = (noise_gain / (1 + np.exp(g["log_level_r"]) * (1 - x) / d)
              / (1 + noise_gain * s / np.exp(g["log_level_gbw"])))
-    offset = g["level_offset_db"] if session else g["offset_db"]
+    offset = g[["offset_db", "level_offset_db", "retake_offset_db"][session]]
     return 20 * np.log10(np.abs(eq * level)) + offset
 
 
 def fit_tone(takes):
-    p0 = [np.log(0.3), 0.4, np.log(0.1), 0.45, np.log(2 * np.pi * 1e5), np.log(0.02), 0, 0]
-    lo = [np.log(0.005), 0.02, np.log(0.005), 0.02, np.log(2 * np.pi * 1e4), np.log(1e-3), -3, -3]
-    hi = [np.log(20), 0.49, np.log(20), 0.49, np.log(2 * np.pi * 1e8), np.log(10), 3, 3]
+    p0 = [np.log(0.3), 0.4, 0.4, np.log(0.1), 0.45, np.log(2 * np.pi * 1e5), np.log(0.02), 0, 0, 0]
+    lo = [np.log(0.005), 0.02, 0.02, np.log(0.005), 0.02, np.log(2 * np.pi * 1e4), np.log(1e-3),
+          -3, -3, -3]
+    hi = [np.log(20), 0.49, 0.49, np.log(20), 0.49, np.log(2 * np.pi * 1e8), np.log(10), 3, 3, 3]
     for k, f in enumerate(NOMINAL_HZ):
         top = k == len(NOMINAL_HZ) - 1
         p0 += [np.log(f * 0.6 if top else f), np.log(0.1), np.log(0.035)]
@@ -136,13 +146,14 @@ def fit_tone(takes):
                            "z0": round(float(np.exp(log_z)), 4),
                            "rs": round(float(np.exp(log_rs)), 4),
                            "q": round(float(np.exp(log_z - log_rs)), 2)}
-    per_take = {("level/" if t["session"] else "") + t["name"]:
+    per_take = {label(t):
                 round(float(np.sqrt(np.mean((model(p, t["settings"], t["session"]) - t["db"]) ** 2))), 2)
                 for t in takes}
     return {
         "impedances": "relative to the slider pot",
         "r": round(float(np.exp(g["log_r"])), 4),
-        "half_mark_wiper": round(0.5 + float(g["half"]), 3),
+        "half_mark_wiper": {"-7.5": round(0.5 - float(g["half_cut"]), 3),
+                            "+7.5": round(0.5 + float(g["half_boost"]), 3)},
         "bands": bands,
         "level": {"r": round(float(np.exp(g["log_level_r"])), 4),
                   "z": round(float(np.exp(g["log_level_z"])), 4),
@@ -150,6 +161,7 @@ def fit_tone(takes):
                   "gbw_hz": round(float(np.exp(g["log_level_gbw"]) / 2 / np.pi))},
         "offset_db": round(float(g["offset_db"]), 2),
         "level_session_offset_db": round(float(g["level_offset_db"]), 2),
+        "retake_session_offset_db": round(float(g["retake_offset_db"]), 2),
         "rms_db": round(float(np.sqrt(np.mean(fit.fun ** 2))), 3),
         "rms_db_per_take": per_take,
         "parameters": rounded(p, 6),
@@ -199,7 +211,7 @@ def plot(out_dir, result, takes, p):
     import matplotlib.pyplot as plt
 
     figure, axes = plt.subplots(2, 2, figsize=(14, 9.5))
-    by_name = {("level/" if t["session"] else "") + t["name"]: t for t in takes}
+    by_name = {label(t): t for t in takes}
 
     def show(axis, names):
         for name in names:
@@ -215,7 +227,7 @@ def plot(out_dir, result, takes, p):
     axes[0, 0].set_title("Each slider at +15 and -15 (measured; dashed: the circuit fit)",
                          fontsize=10)
     axes[0, 0].legend(fontsize=6, ncol=2)
-    show(axes[0, 1], ["all-p15-sweep", "all-m15-sweep", "400-800-p15-sweep",
+    show(axes[0, 1], ["retake/all-p15-sweep", "all-m15-sweep", "400-800-p15-sweep",
                       "800m15-16kp15-sweep", "800Hz-p7-sweep", "800Hz-m7-sweep",
                       "level-p7-sweep", "level-m7-sweep"])
     axes[0, 1].set_title("Bands together, and the half-way marks (level-* = the 6.4 kHz slider)",
@@ -273,7 +285,7 @@ def plot_fit(out_dir, takes, p):
         bottom.semilogx(GRID_HZ, error, color="k", lw=0.9)
         bottom.axhline(0, color="0.6", lw=0.5)
         bottom.set_ylim(-2, 2)
-        name = ("level/" if t["session"] else "") + t["name"]
+        name = label(t)
         rms = float(np.sqrt(np.mean(error ** 2)))
         top.set_title(f"{name}  ({rms:.2f} dB rms)", fontsize=8)
         top.tick_params(labelbottom=False, labelsize=7)
@@ -295,15 +307,17 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("session")
     parser.add_argument("level_session")
+    parser.add_argument("retake_session")
     args = parser.parse_args()
-    session = pathlib.Path(args.session).expanduser()
-    level_session = pathlib.Path(args.level_session).expanduser()
-    for s in (session, level_session):
+    sessions = [pathlib.Path(a).expanduser()
+                for a in (args.session, args.level_session, args.retake_session)]
+    session, level_session = sessions[:2]
+    for s in sessions:
         if not (s / "rig.json").exists():
             sys.exit(f"{s} is not a capture session")
-    takes = sweeps(session, level_session)
+    takes = sweeps(sessions)
     tone = fit_tone(takes)
-    result = {"pedal": "Boss GE-7 Equalizer", "sessions": [session.name, level_session.name],
+    result = {"pedal": "Boss GE-7 Equalizer", "sessions": [s.name for s in sessions],
               "tone": tone, "clipping": clipping(session, level_session),
               "noise": noise(session, level_session)}
     out_dir = session / "fit"
