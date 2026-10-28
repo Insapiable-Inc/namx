@@ -86,17 +86,18 @@ What it took, 2026-10-26:
   channels 3/4 directly (the kernel's Scarlett Gen 3 mixer driver, `alsa-utils`):
 
   ```
-  amixer -c 3 cset numid=26 19     # Analogue Output 03 ← PCM 3
-  amixer -c 3 cset numid=27 20     # Analogue Output 04 ← PCM 4
-  # undo: amixer -c 3 cset numid=26 11; amixer -c 3 cset numid=27 12   (Mix C / Mix D)
+  amixer -c USB cset numid=26 19     # Analogue Output 03 ← PCM 3
+  amixer -c USB cset numid=27 20     # Analogue Output 04 ← PCM 4
+  # undo: amixer -c USB cset numid=26 11; amixer -c USB cset numid=27 12   (Mix C / Mix D)
   ```
 
-  This also takes over headphone output 2, which shares those channels. The card number
-  (3) and the numids are this machine's; `amixer -c N controls` lists them.
+  This also takes over headphone output 2, which shares those channels. The card name
+  (`USB`, the Scarlett's ALSA id — its number moves between boots) and the numids are this
+  machine's; `amixer -c USB controls` lists them.
 - **Ports used:** pedal feed `playback_AUX2` (out 3), loopback `playback_AUX3` (out 4)
   → line input 5 = `capture_AUX4`, pedal into front input 2 = `capture_AUX1` (input 1 is
   taken by a microphone).
-- **Input 2:** INST on, AIR off, **pad on** (`amixer -c 3 sset "Line In 2 Pad" cap`;
+- **Input 2:** INST on, AIR off, **pad on** (`amixer -c USB sset "Line In 2 Pad" cap`;
   without it a bridge humbucker peaked at −6.1 dBFS at minimum gain, leaving too little
   headroom for a drive with its Level up), **gain fully counter-clockwise**: the one knob
   position that can always be found again.
@@ -114,8 +115,8 @@ What it took, 2026-10-26:
   ```
   pactl set-card-profile alsa_card.usb-Focusrite_Scarlett_8i6_USB_F8FXD3B190BDA0-00 \
       output:analog-surround-21+input:multichannel-input
-  amixer -c 3 cset numid=26 11; amixer -c 3 cset numid=27 12
-  amixer -c 3 sset "Line In 2 Pad" nocap
+  amixer -c USB cset numid=26 11; amixer -c USB cset numid=27 12
+  amixer -c USB sset "Line In 2 Pad" nocap
   ```
 
   then restart NAM-X (or reconnect it from the status bar) before closing it, so it

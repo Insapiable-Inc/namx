@@ -96,8 +96,11 @@ class Engine:
             try:
                 self.client.connect(source, destination)
             except Exception as error:
+                # Names first: our own ports are gone (and unprintable) once the client closes.
+                names = [p if isinstance(p, str) else p.name for p in (source, destination)]
                 self.close()
-                sys.exit(f"Can't connect {source} -> {destination}: {error}\n"
+                sys.exit(f"Can't connect {names[0]} -> {names[1]}: {error}\n"
+                         "Is the card on its Pro Audio profile (tools/capture/README.md, Rig)? "
                          "Check the port names with: capture.py ports")
 
     def close(self):
