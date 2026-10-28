@@ -1,0 +1,62 @@
+{
+  "take": "flat-stairs",
+  "pedal": "Boss GE-7 Equalizer (mono)",
+  "bypass": false,
+  "settings": {
+    "100 Hz": "0",
+    "200 Hz": "0",
+    "400 Hz": "0",
+    "800 Hz": "0",
+    "1.6 kHz": "0",
+    "3.2 kHz": "0",
+    "6.4 kHz": "0",
+    "Level": "0"
+  },
+  "note": "",
+  "signal": {
+    "type": "steps",
+    "freq": 1000,
+    "levels_db": [
+      -36,
+      -30,
+      -24,
+      -18,
+      -12,
+      -6,
+      -3,
+      0,
+      3
+    ],
+    "step_seconds": 1.5,
+    "gap_seconds": 0,
+    "tail": 2
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -11.68,
+    "loop": -9.96
+  },
+  "latency_samples": 582,
+  "latency_quality": 0.998,
+  "xruns": 0,
+  "played_sha256": "a5bc8a2c63d046e107026f389c1a9c18ce2a89983c3f828673cb21180f13d736",
+  "recorded_at": "2026-10-28T12:37:17",
+  "tool_commit": "e8da451f97ee0d410a6d2456e43d28948c4d6f7e",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX4",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Scarlett 8i6 3rd gen; pedal feed: analogue out 3 (PCM 3, direct routing); loopback: out 4 -> line in 5; pedal into input 2, INST, AIR off, pad ON, gain min; no reamp box; calibration from the TR-2/DD-8 sessions; NS-2 on a 9 V power supply; Input -> Output, Send and Return empty"
+  }
+}

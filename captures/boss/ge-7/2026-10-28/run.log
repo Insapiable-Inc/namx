@@ -1,0 +1,263 @@
+
+=== 2026-10-28T12:32:06 · run tools/capture/plans/ge-7.json · tool 98a5e92ad199db86965d5c00309fc4abb877dd1e
+
+=== 2026-10-28T12:32:36 · run tools/capture/plans/ge-7.json · tool 98a5e92ad199db86965d5c00309fc4abb877dd1e-dirty
+
+=== 2026-10-28T12:33:29 · run tools/capture/plans/ge-7.json · tool 6caea17151b99fc4b3833228486ef6f417fae329
+
+[1/33] bypass-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -37.1 dBFS · loopback -36.6 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[2/33] bypass-stairs: 1000 Hz at -24/-18/-12/-6/-3/0/3/6/9/12 dB, 1.5 s each
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+
+=== 2026-10-28T12:34:45 · run tools/capture/plans/ge-7.json · tool 6caea17151b99fc4b3833228486ef6f417fae329
+
+[2/33] bypass-stairs: 1000 Hz at -24/-18/-12/-6/-3/0/3/6/9/12 dB, 1.5 s each
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+
+=== 2026-10-28T12:36:08 · run tools/capture/plans/ge-7.json · tool e8da451f97ee0d410a6d2456e43d28948c4d6f7e
+
+[2/33] bypass-stairs: 1000 Hz at -36/-30/-24/-18/-12/-6/-3/0/3 dB, 1.5 s each
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -10.7 dBFS · loopback -10.0 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[3/33] bypass-silence: silence, 5 s
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -89.6 dBFS · loopback -92.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[4/33] flat-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · 100 Hz 0 · 200 Hz 0 · 400 Hz 0 · 800 Hz 0 · 1.6 kHz 0 · 3.2 kHz 0 · 6.4 kHz 0 · Level 0 (switch it on)
+  Every slider at 0 (centre).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -36.9 dBFS · loopback -36.6 dBFS · latency 582 samples (12.12 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[5/33] flat-stairs: 1000 Hz at -36/-30/-24/-18/-12/-6/-3/0/3 dB, 1.5 s each
+  pedal ON · 100 Hz 0 · 200 Hz 0 · 400 Hz 0 · 800 Hz 0 · 1.6 kHz 0 · 3.2 kHz 0 · 6.4 kHz 0 · Level 0
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -11.7 dBFS · loopback -10.0 dBFS · latency 582 samples (12.12 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[6/33] flat-silence: silence, 5 s
+  pedal ON · 100 Hz 0 · 200 Hz 0 · 400 Hz 0 · 800 Hz 0 · 1.6 kHz 0 · 3.2 kHz 0 · 6.4 kHz 0 · Level 0
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -85.8 dBFS · loopback -93.1 dBFS · latency 582 samples (12.12 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[7/33] level-p15-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · 100 Hz 0 · 200 Hz 0 · 400 Hz 0 · 800 Hz 0 · 1.6 kHz 0 · 3.2 kHz 0 · 6.4 kHz 0 · Level +15 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -26.6 dBFS · loopback -36.6 dBFS · latency 454 samples (9.46 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[8/33] level-p7-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · 100 Hz 0 · 200 Hz 0 · 400 Hz 0 · 800 Hz 0 · 1.6 kHz 0 · 3.2 kHz 0 · 6.4 kHz 0 · Level +7.5 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -27.8 dBFS · loopback -36.6 dBFS · latency 454 samples (9.46 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[9/33] level-m7-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · 100 Hz 0 · 200 Hz 0 · 400 Hz 0 · 800 Hz 0 · 1.6 kHz 0 · 3.2 kHz 0 · 6.4 kHz 0 · Level -7.5 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -36.9 dBFS · loopback -36.6 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[10/33] level-m15-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · 100 Hz 0 · 200 Hz 0 · 400 Hz 0 · 800 Hz 0 · 1.6 kHz 0 · 3.2 kHz 0 · 6.4 kHz 0 · Level -15 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -36.9 dBFS · loopback -36.6 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[11/33] 100Hz-p15-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · 100 Hz +15 (changed) · 200 Hz 0 · 400 Hz 0 · 800 Hz 0 · 1.6 kHz 0 · 3.2 kHz 0 · 6.4 kHz 0 · Level 0 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -21.9 dBFS · loopback -36.6 dBFS · latency 578 samples (12.04 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[12/33] 100Hz-m15-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · 100 Hz -15 (changed) · 200 Hz 0 · 400 Hz 0 · 800 Hz 0 · 1.6 kHz 0 · 3.2 kHz 0 · 6.4 kHz 0 · Level 0
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -37.6 dBFS · loopback -36.6 dBFS · latency 578 samples (12.04 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[13/33] 200Hz-m15-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · 100 Hz 0 (changed) · 200 Hz -15 (changed) · 400 Hz 0 · 800 Hz 0 · 1.6 kHz 0 · 3.2 kHz 0 · 6.4 kHz 0 · Level 0
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -37.7 dBFS · loopback -36.6 dBFS · latency 578 samples (12.04 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[14/33] 200Hz-p15-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · 100 Hz 0 · 200 Hz +15 (changed) · 400 Hz 0 · 800 Hz 0 · 1.6 kHz 0 · 3.2 kHz 0 · 6.4 kHz 0 · Level 0
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -23.4 dBFS · loopback -36.6 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[15/33] 400Hz-p15-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · 100 Hz 0 · 200 Hz 0 (changed) · 400 Hz +15 (changed) · 800 Hz 0 · 1.6 kHz 0 · 3.2 kHz 0 · 6.4 kHz 0 · Level 0
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -23.8 dBFS · loopback -36.6 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[16/33] 400Hz-m15-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · 100 Hz 0 · 200 Hz 0 · 400 Hz -15 (changed) · 800 Hz 0 · 1.6 kHz 0 · 3.2 kHz 0 · 6.4 kHz 0 · Level 0
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -37.4 dBFS · loopback -36.6 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[17/33] 800Hz-m15-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · 100 Hz 0 · 200 Hz 0 · 400 Hz 0 (changed) · 800 Hz -15 (changed) · 1.6 kHz 0 · 3.2 kHz 0 · 6.4 kHz 0 · Level 0
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -37.2 dBFS · loopback -36.6 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[18/33] 800Hz-m7-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · 100 Hz 0 · 200 Hz 0 · 400 Hz 0 · 800 Hz -7.5 (changed) · 1.6 kHz 0 · 3.2 kHz 0 · 6.4 kHz 0 · Level 0
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -24.1 dBFS · loopback -36.6 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: r
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -37.2 dBFS · loopback -36.6 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[19/33] 800Hz-p7-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · 100 Hz 0 · 200 Hz 0 · 400 Hz 0 · 800 Hz +7.5 (changed) · 1.6 kHz 0 · 3.2 kHz 0 · 6.4 kHz 0 · Level 0
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -29.8 dBFS · loopback -36.6 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[20/33] 800Hz-p15-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · 100 Hz 0 · 200 Hz 0 · 400 Hz 0 · 800 Hz +15 (changed) · 1.6 kHz 0 · 3.2 kHz 0 · 6.4 kHz 0 · Level 0
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -24.1 dBFS · loopback -36.6 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[21/33] 16kHz-p15-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · 100 Hz 0 · 200 Hz 0 · 400 Hz 0 · 800 Hz 0 (changed) · 1.6 kHz +15 (changed) · 3.2 kHz 0 · 6.4 kHz 0 · Level 0
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -23.9 dBFS · loopback -36.6 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[22/33] 16kHz-m15-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · 100 Hz 0 · 200 Hz 0 · 400 Hz 0 · 800 Hz 0 · 1.6 kHz -15 (changed) · 3.2 kHz 0 · 6.4 kHz 0 · Level 0
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -37.1 dBFS · loopback -36.6 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[23/33] 32kHz-m15-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · 100 Hz 0 · 200 Hz 0 · 400 Hz 0 · 800 Hz 0 · 1.6 kHz 0 (changed) · 3.2 kHz -15 (changed) · 6.4 kHz 0 · Level 0
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -37.0 dBFS · loopback -36.6 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[24/33] 32kHz-p15-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · 100 Hz 0 · 200 Hz 0 · 400 Hz 0 · 800 Hz 0 · 1.6 kHz 0 · 3.2 kHz +15 (changed) · 6.4 kHz 0 · Level 0
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -23.1 dBFS · loopback -36.6 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[25/33] 64kHz-p15-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · 100 Hz 0 · 200 Hz 0 · 400 Hz 0 · 800 Hz 0 · 1.6 kHz 0 · 3.2 kHz 0 (changed) · 6.4 kHz +15 (changed) · Level 0
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -26.7 dBFS · loopback -36.6 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[26/33] 64kHz-m15-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · 100 Hz 0 · 200 Hz 0 · 400 Hz 0 · 800 Hz 0 · 1.6 kHz 0 · 3.2 kHz 0 · 6.4 kHz -15 (changed) · Level 0
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -37.0 dBFS · loopback -36.6 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[27/33] 400-800-p15-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · 100 Hz 0 · 200 Hz 0 · 400 Hz +15 (changed) · 800 Hz +15 (changed) · 1.6 kHz 0 · 3.2 kHz 0 · 6.4 kHz 0 (changed) · Level 0
+  Two neighbours boosted together: how the bands add.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -22.1 dBFS · loopback -36.6 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[28/33] 800m15-16kp15-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · 100 Hz 0 · 200 Hz 0 · 400 Hz 0 (changed) · 800 Hz -15 (changed) · 1.6 kHz +15 (changed) · 3.2 kHz 0 · 6.4 kHz 0 · Level 0
+  Neighbours opposite.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -25.5 dBFS · loopback -36.6 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[29/33] all-p15-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · 100 Hz +15 (changed) · 200 Hz +15 (changed) · 400 Hz +15 (changed) · 800 Hz +15 (changed) · 1.6 kHz +15 · 3.2 kHz +15 (changed) · 6.4 kHz +15 (changed) · Level 0
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -16.6 dBFS · loopback -36.6 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[30/33] all-p15-stairs: 1000 Hz at -36/-30/-24/-18/-12/-6/-3/0/3 dB, 1.5 s each
+  pedal ON · 100 Hz +15 · 200 Hz +15 · 400 Hz +15 · 800 Hz +15 · 1.6 kHz +15 · 3.2 kHz +15 · 6.4 kHz +15 · Level 0
+  Headroom: where the boosted EQ clips.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -11.8 dBFS · loopback -10.0 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[31/33] all-p15-level-p15-stairs: 1000 Hz at -36/-30/-24/-18/-12/-6/-3/0/3 dB, 1.5 s each
+  pedal ON · 100 Hz +15 · 200 Hz +15 · 400 Hz +15 · 800 Hz +15 · 1.6 kHz +15 · 3.2 kHz +15 · 6.4 kHz +15 · Level +15 (changed)
+  The most gain the pedal has: its clipping.
+  Enter = record, s = skip, q = quit: (Enter)
+  waiting for the pedal to fall silent:  -35.9 dBFS
+  Still sounding after 30 s: turn Feedback down, or switch the pedal off and on; then set the knobs and press Enter.
+  Enter = record, s = skip, q = quit: s
+
+[32/33] all-p15-level-p15-silence: silence, 5 s
+  pedal ON · 100 Hz +15 · 200 Hz +15 · 400 Hz +15 · 800 Hz +15 · 1.6 kHz +15 · 3.2 kHz +15 · 6.4 kHz +15 · Level +15 (changed)
+  Noise at full boost.
+  Enter = record, s = skip, q = quit: (Enter)
+  waiting for the pedal to fall silent:  -37.6 dBFS
+  Still sounding after 30 s: turn Feedback down, or switch the pedal off and on; then set the knobs and press Enter.
+  Enter = record, s = skip, q = quit: s
+
+[33/33] all-m15-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · 100 Hz -15 (changed) · 200 Hz -15 (changed) · 400 Hz -15 (changed) · 800 Hz -15 (changed) · 1.6 kHz -15 (changed) · 3.2 kHz -15 (changed) · 6.4 kHz -15 (changed) · Level 0
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -42.1 dBFS · loopback -36.6 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+All 33 takes are in captures/boss/ge-7/2026-10-28.
