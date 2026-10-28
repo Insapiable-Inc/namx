@@ -7,19 +7,21 @@ Measured 2026-10-28 on a 9 V supply, mono (Input → Output):
 | [`2026-10-28/`](2026-10-28/) | every band at +15 and −15, 800 Hz and 6.4 kHz also at their half-way marks, neighbours together, every band up and down; flat and bypass references, the clipping with every band up, noise |
 | [`2026-10-28-level/`](2026-10-28-level/) | the Level slider at four positions, the clipping and noise with every slider up |
 | [`2026-10-28-retake/`](2026-10-28-retake/) | 800 Hz at its half-way marks again, 3.2 kHz up, every band up twice (sliders pushed hard against their stops) |
+| [`2026-10-28-marks/`](2026-10-28-marks/) | 100 Hz, 800 Hz, 6.4 kHz and Level on every printed mark (−15, −10, −5, +5, +10, +15): the sliders' law |
 
 Same rig and playback level as the other pedals ([`tools/capture/README.md`](../../../tools/capture/README.md)).
-Plans: `tools/capture/plans/ge-7.json` (33 takes), `ge-7-level.json` (8) and
-`ge-7-retake.json` (7), every slider at 0 unless a take says otherwise. Analysis:
+Plans: `tools/capture/plans/ge-7.json` (33 takes), `ge-7-level.json` (8), `ge-7-retake.json`
+(7) and `ge-7-marks.json` (26), every slider at 0 unless a take says otherwise. Analysis:
 
-    tools/capture/analyze_ge7.py captures/boss/ge-7/2026-10-28 \
-        captures/boss/ge-7/2026-10-28-level captures/boss/ge-7/2026-10-28-retake
+    tools/capture/analyze_ge7.py captures/boss/ge-7/2026-10-28 captures/boss/ge-7/2026-10-28-level \
+        captures/boss/ge-7/2026-10-28-retake captures/boss/ge-7/2026-10-28-marks
 
 → [`2026-10-28/fit/ge-7.json`](2026-10-28/fit/ge-7.json), the figure below and a per-sweep fit figure.
 
 The sliders: 100, 200, 400, 800 Hz, 1.6, 3.2, 6.4 kHz and Level, each ±15 dB on the printed
-scale. Positions are read off that scale: +15 = top, 0 = centre, −15 = bottom, ±7.5 =
-half-way between the centre and the end.
+scale, marked at −15, −10, −5, 0, +5, +10, +15. The first three sessions also used ±7.5,
+half-way between the centre and the end — hard to set exactly; the marks session uses the
+printed marks (still not perfect on 5 and 10, by hand).
 
 **Read the first session's `level-*` takes as the 6.4 kHz slider.** Its sidecars say Level,
 but the 6.4 kHz slider was the one moved: their curves match the 6.4 kHz takes to 0.2 dB and
@@ -34,7 +36,7 @@ dropped.)
 ## One circuit fits every sweep
 
 Each sweep against its own session's bypass, per 1/12 octave from 30 Hz to 16 kHz, and one
-circuit fitted to all 35 at once — **0.22 dB rms** overall, ≤ 0.2 dB for 23 of them:
+circuit fitted to all 60 at once — **0.23 dB rms** overall, ≤ 0.2 dB for 38 of them:
 
 - **The EQ stage** is the classic graphic equaliser: one op-amp, the seven slider pots
   between its two inputs (the input side fed through R, the feedback side from the output
@@ -57,28 +59,39 @@ circuit fitted to all 35 at once — **0.22 dB rms** overall, ≤ 0.2 dB for 23 
   resonator (corner 3.8 kHz, resistance 0.085). At +15 it rises steadily from 1 kHz to
   +10.7 dB at 13 kHz (+8.2 dB at 6.4 kHz) and never comes back down. A low-Q resonator up at
   12 kHz fits as well; the RC is the simpler part.
-- **The half-way marks are not half-way along the pot, nor symmetric.** On the bands they
-  give about half the end's dB, more up than down: 800 Hz +7.8 / −6.8 dB at its resonance
-  (both repeated in the retake within 0.2 dB — the slider was set right, the asymmetry is
-  the pedal's), 6.4 kHz +7.0 of its +8.2 at 6.4 kHz; on Level ±11.5 dB. In this circuit a
-  linear pot at mid-travel would give only ~4 dB; the fit puts the bands' marks at wiper
-  0.06 (−7.5) and 0.965 (+7.5), Level's at 0.01 / 0.99 — the sliders' law is not linear in
-  travel, or the scale isn't printed by travel. Two marks per slider don't settle it, and
-  NAM-X doesn't need it: a slider set in dB solves the wiper from the circuit. (The +7.5
-  wiper is shared by 800 Hz and 6.4 kHz; the 800 Hz takes peak 0.7 dB under it, the
-  6.4 kHz take ~0.6 dB over it at 10 kHz — two sliders' marks set by hand.)
+- **The sliders' law: the printed marks are not the dB they say, and boosts move faster
+  than cuts.** Each mark gets one fitted wiper position, shared by all the band sliders
+  (another set for Level); 100 Hz, 800 Hz and the 6.4 kHz shelf all fit it — as fractions
+  of their ±15, 100 and 800 Hz agree within 0.05 at every mark. What the marks give (the
+  fitted circuit):
+
+  | Mark | −15 | −10 | −7.5 | −5 | +5 | +7.5 | +10 | +15 |
+  |---|---|---|---|---|---|---|---|---|
+  | 800 Hz peak/dip, dB | −13.4 | −8.5 | −6.8 | −4.0 | +5.9 | +8.6 | +10.7 | +13.4 |
+  | 6.4 kHz at 10 kHz, dB | −10.1 | −7.8 | −6.6 | −4.4 | +5.9 | +7.8 | +8.9 | +10.1 |
+  | Level at 1 kHz, dB | −14.7 | −13.4 | −11.5 | −10.8 | +8.6 | +11.7 | +12.8 | +14.7 |
+  | band wiper | 0 | 0.035 | 0.06 | 0.131 | 0.924 | 0.966 | 0.985 | 1 |
+
+  The 800 Hz −7.5 take repeated within 0.2 dB in the retake — the asymmetry is the pedal's,
+  not the setting. In this circuit a linear pot at mid-travel would give only ~4 dB, and the
+  fitted wipers crowd toward the ends: the sliders' law is not linear in travel, or the pots
+  sit in a circuit with more parts than this one. NAM-X doesn't need to know which: a slider
+  on these marks maps to the fitted wipers. Level's wipers come out within 0.01 of its ends
+  (it is all one ratio there) — only its dB per mark mean anything.
 - **Level** is a flat ±15 dB (measured −14.9 / +14.7): the same circuit with a resistor
   for the resonator. Its top end rolls off with its gain (an op-amp's bandwidth, about
-  87 kHz over the stage's noise gain): −3 dB at 13 kHz at +15, nothing at 0.
+  0.1 MHz over the stage's noise gain): −3 dB at 13 kHz at +15, nothing at 0.
 - **Flat** (every slider at 0) is within 0.3 dB of bypass, 30 Hz–16 kHz. The sessions
   differ by up to 0.9 dB, the same at every frequency — Level's centre set by hand, not a
   band (an off-centre band would show at its own frequency). Each session's takes are
-  fitted with their own offset (+0.09, −0.25 and −0.14 dB).
+  fitted with their own offset (+0.08, −0.31, −0.14 and −0.40 dB).
 
 Every sweep against the fit, one panel each with its error:
 [`2026-10-28/fit/ge-7-fit.svg`](2026-10-28/fit/ge-7-fit.svg).
 
-What's left: ~0.5 dB flat on the all-down take (the sliders' own setting), the model's
+What's left: the −5 takes on 100 Hz and 6.4 kHz (0.4 dB rms, the marks set by hand; the
+shared wiper sits between the sliders), ~0.5 dB flat on the all-down take (the sliders' own
+setting), a click in the marks session's 6.4 kHz +15 take near 400 Hz, the model's
 3.3 kHz peak 0.9 dB over the retaken all-up takes, and up to 1–1.5 dB above 10 kHz on the
 takes that boost the top (the 6.4 kHz shelf, Level +15). Level's boosts wobble by ±0.2 dB
 across the band where the model is a straight line — left as is.
@@ -108,11 +121,13 @@ the pedal's own hiss, and loud enough that `capture.py` needed a take-level quie
 
 ## Takes and lessons
 
-- 33 + 8 + 7 takes; 800 Hz −7.5 redone once; the first session's Level takes moved the
+- 33 + 8 + 7 + 26 takes; 800 Hz −7.5 redone once, two marks takes redone; the first session's Level takes moved the
   6.4 kHz slider, and its all-up take had two sliders short of their stops (above).
 - **Retake what misses the fit before blaming the model:** the all-up miss was the take
   (the retakes moved 0.8 dB toward the fit); the 800 Hz −7.5 miss was the model (the retake
   matched the first take), fixed by fitting each half-way mark on its own.
+- **Use the printed marks** (the user, 2026-10-28): ±7.5 between two marks couldn't be set
+  exactly; −10/−5/+5/+10 can (nearly), and four shared marks per slider average the hand out.
 - **Stairs must fit the interface:** the reference plays at −4.67 dBFS, so no step can go
   over about +4.5 dB. The first plan went to +12 and stopped mid-run; `run` now builds every
   take before the first one.
@@ -124,8 +139,8 @@ the pedal's own hiss, and loud enough that `capture.py` needed a take-level quie
 
 NAM-X's EQ is a 4-band semi-parametric. A GE-7 type would be: seven fixed bands (six
 resonators at the fitted frequencies and Q, the 6.4 kHz shelf) through the one-op-amp
-formula above, so they interact like the pedal's, each slider in dB at its band (the wiper
-solved from it), Level ±15 dB, and a soft clip at +1.8 dB re the guitar's peak (an assumed
+formula above, so they interact like the pedal's, each slider on the pedal's printed scale
+(−15…+15, mapped to the fitted wipers between the marks), Level the same with its own, and a soft clip at +1.8 dB re the guitar's peak (an assumed
 −6 dBFS post-amp peak, as for the other pedals). The response is a 13th-order rational
 function of the eight positions — factored into biquads (and one first-order section)
 when a slider moves. As a new type to A/B, not a change to the current EQ.
