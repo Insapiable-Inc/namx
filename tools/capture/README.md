@@ -239,7 +239,8 @@ From the CE-5:
 
 - **A pedal's own hiss can be louder than the silence threshold.** `run` waits for a
   peak under −75 dBFS before each take; the CE-5 hisses at −65 to −73 even when idle. A
-  plan can set its own `quiet_dbfs`.
+  plan can set its own `quiet_dbfs`, and so can a take whose setting raises the hiss (the
+  GE-7 with every slider up hisses at about −36 dBFS).
 - **Look for a wet-only output.** With a plug in Output B (other end loose), the CE-5's
   Output A carries only the effect sound: no dry to separate.
 - **Split dry and wet in time, not by subtraction:** windowing the impulse response
