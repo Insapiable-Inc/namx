@@ -1,0 +1,160 @@
+{
+  "pedal": "Boss PH-3 Phase Shifter, slow rates (mono: Input -> Output A)",
+  "comment": "Rate 7:00 didn't move in 40 s in any mode: 4 minutes of it in 4 Stage, then Rate 8:00 in every mode (the Stage modes at Depth 5:00, Step/Rise/Fall at Depth 12:00, as in the first sessions). Res 7:00 throughout. Mono: Input -> Output A only. Clock positions: 7:00 = fully counter-clockwise.",
+  "quiet_dbfs": -60,
+  "knobs": [
+    "Mode",
+    "Rate",
+    "Depth",
+    "Res"
+  ],
+  "takes": [
+    {
+      "name": "bypass-noise",
+      "bypass": true,
+      "signal": {
+        "type": "noise",
+        "seconds": 10,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 2
+      }
+    },
+    {
+      "name": "s4-rate-0700-long",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "7:00",
+        "Depth": "5:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 240,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 2
+      },
+      "note": "Pedal on, MODE 4 STAGE. Rate fully down: does the sweep move at all over 4 minutes?"
+    },
+    {
+      "name": "s4-rate-0800",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "8:00",
+        "Depth": "5:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 60,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 2
+      },
+      "note": "Rate to 8:00 (pointer between 7:00 and 9:00)."
+    },
+    {
+      "name": "s8-rate-0800",
+      "settings": {
+        "Mode": "8 Stage",
+        "Rate": "8:00",
+        "Depth": "5:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 60,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 2
+      },
+      "note": "MODE 8 STAGE."
+    },
+    {
+      "name": "s10-rate-0800",
+      "settings": {
+        "Mode": "10 Stage",
+        "Rate": "8:00",
+        "Depth": "5:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 60,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 2
+      },
+      "note": "MODE 10 STAGE."
+    },
+    {
+      "name": "s12-rate-0800",
+      "settings": {
+        "Mode": "12 Stage",
+        "Rate": "8:00",
+        "Depth": "5:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 60,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 2
+      },
+      "note": "MODE 12 STAGE."
+    },
+    {
+      "name": "step-rate-0800",
+      "settings": {
+        "Mode": "Step",
+        "Rate": "8:00",
+        "Depth": "12:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 60,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 2
+      },
+      "note": "MODE STEP, Depth to 12:00."
+    },
+    {
+      "name": "rise-rate-0800",
+      "settings": {
+        "Mode": "Rise",
+        "Rate": "8:00",
+        "Depth": "12:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 60,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 2
+      },
+      "note": "MODE RISE."
+    },
+    {
+      "name": "fall-rate-0800",
+      "settings": {
+        "Mode": "Fall",
+        "Rate": "8:00",
+        "Depth": "12:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 60,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 2
+      },
+      "note": "MODE FALL."
+    }
+  ]
+}
