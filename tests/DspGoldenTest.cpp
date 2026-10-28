@@ -282,6 +282,19 @@ static unique_ptr<EQProcessor> make_eq() {
     return fx;
 }
 
+// The GE-7 type: a mixed setting (boosts, cuts, the top shelf up, Level up) and a low cut,
+// which stays on in GE-7.
+static unique_ptr<EQProcessor> make_eq_ge7() {
+    auto fx = make_unique<EQProcessor>();
+    fx->set_type(EQProcessor::GE7);
+    const std::array<double, 8> sliders{-5.0, 10.0, 0.0, -10.0, 5.0, 15.0, -15.0, 5.0};
+    for (size_t i = 0; i < sliders.size(); ++i) {
+        fx->set_ge7_slider(i, sliders[i]);
+    }
+    fx->set_freq(EQProcessor::Band::LOW_CUT, 80.0);
+    return fx;
+}
+
 static unique_ptr<TremoloProcessor> make_tremolo_stereo() {
     auto fx = make_unique<TremoloProcessor>();
     fx->set_stereo_mode(true);
@@ -475,6 +488,7 @@ void DspGoldenTest::initTestCase() {
     both("phaser-feedback", &make_phaser_feedback);
     both("drive", &make_drive);
     both("eq", &make_eq);
+    both("eq-ge7", &make_eq_ge7);
     for (int mode = std::to_underlying(ChorusProcessor::Mode::NORMAL);
          mode <= std::to_underlying(ChorusProcessor::Mode::SPATIAL); ++mode) {
         both("chorus-" + std::to_string(mode), [mode] {
@@ -581,6 +595,7 @@ void DspGoldenTest::mono_to_stereo_edge() {
         {"flanger", make_flanger},
         {"phaser", make_phaser_feedback},
         {"eq", make_eq},
+        {"eq-ge7", make_eq_ge7},
         {"chorus",
          [] {
              return make_chorus(0);

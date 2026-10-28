@@ -137,10 +137,14 @@ the pedal's own hiss, and loud enough that `capture.py` needed a take-level quie
 
 ## For NAM-X
 
-NAM-X's EQ is a 4-band semi-parametric. A GE-7 type would be: seven fixed bands (six
-resonators at the fitted frequencies and Q, the 6.4 kHz shelf) through the one-op-amp
-formula above, so they interact like the pedal's, each slider on the pedal's printed scale
-(−15…+15, mapped to the fitted wipers between the marks), Level the same with its own, and a soft clip at +1.8 dB re the guitar's peak (an assumed
-−6 dBFS post-amp peak, as for the other pedals). The response is a 13th-order rational
-function of the eight positions — factored into biquads (and one first-order section)
-when a slider moves. As a new type to A/B, not a change to the current EQ.
+The EQ's GE-7 type (`src/dsp/Ge7Eq.h`, branch `dsp/eq-ge7`): Type Parametric | GE-7 on the
+Equalizer card, the seven sliders and Level in its detail rows (▾) on the pedal's printed
+scale, −15…+15, each mapped to the fitted wiper between the marks (Level to its measured dB).
+The circuit above is solved per sample: each branch is a zero-delay-feedback filter (a
+state-variable band-pass, the shelf a one-pole), so the shared loop through the op-amp
+closes in closed form and the bands interact as in the pedal. Against the fitted circuit:
+within 0.01 dB flat or one band up, 0.25 dB with every band up or down, 0.4 dB below 5 kHz
+with mixed settings, up to ~1.4 dB at 8–12 kHz (the digital filters' skirts near Nyquist;
+2× oversampling would cut it about fourfold). Then Level and a rounded clip at +1.8 dB over
+the guitar's peak (re an assumed −6 dBFS post-amp peak) after each stage. Low Cut and High
+Cut stay active. A new type to A/B; the parametric EQ is unchanged.
