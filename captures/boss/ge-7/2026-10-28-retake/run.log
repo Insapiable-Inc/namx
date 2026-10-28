@@ -1,0 +1,59 @@
+
+=== 2026-10-28T13:53:52 · run tools/capture/plans/ge-7-retake.json · tool e556d372652f18abd3661f50df2bb39e9e04e6cd
+
+[1/7] bypass-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -37.1 dBFS · loopback -36.6 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[2/7] flat-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · 100 Hz 0 · 200 Hz 0 · 400 Hz 0 · 800 Hz 0 · 1.6 kHz 0 · 3.2 kHz 0 · 6.4 kHz 0 · Level 0 (switch it on)
+  Every slider at 0 (centre), Level too.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -37.1 dBFS · loopback -36.6 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[3/7] 800Hz-m7-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · 100 Hz 0 · 200 Hz 0 · 400 Hz 0 · 800 Hz -7.5 (changed) · 1.6 kHz 0 · 3.2 kHz 0 · 6.4 kHz 0 · Level 0
+  The 800 Hz slider on its -7.5 mark, half-way between the centre and the bottom.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -37.3 dBFS · loopback -36.6 dBFS · latency 578 samples (12.04 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[4/7] 800Hz-p7-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · 100 Hz 0 · 200 Hz 0 · 400 Hz 0 · 800 Hz +7.5 (changed) · 1.6 kHz 0 · 3.2 kHz 0 · 6.4 kHz 0 · Level 0
+  The 800 Hz slider on its +7.5 mark.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -29.8 dBFS · loopback -36.6 dBFS · latency 578 samples (12.04 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[5/7] 32kHz-p15-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · 100 Hz 0 · 200 Hz 0 · 400 Hz 0 · 800 Hz 0 (changed) · 1.6 kHz 0 · 3.2 kHz +15 (changed) · 6.4 kHz 0 · Level 0
+  The 3.2 kHz slider pushed hard against its top stop.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -23.2 dBFS · loopback -36.6 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[6/7] all-p15-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · 100 Hz +15 (changed) · 200 Hz +15 (changed) · 400 Hz +15 (changed) · 800 Hz +15 (changed) · 1.6 kHz +15 (changed) · 3.2 kHz +15 · 6.4 kHz +15 (changed) · Level 0
+  All seven band sliders pushed hard against their top stops; Level stays at 0.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -16.5 dBFS · loopback -36.6 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[7/7] all-p15-again-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · 100 Hz +15 · 200 Hz +15 · 400 Hz +15 · 800 Hz +15 · 1.6 kHz +15 · 3.2 kHz +15 · 6.4 kHz +15 · Level 0
+  Same setting: push every band slider up against its stop once more, then record.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -16.5 dBFS · loopback -36.6 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+All 7 takes are in captures/boss/ge-7/2026-10-28-retake.
