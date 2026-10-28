@@ -110,6 +110,41 @@ The study's earlier readings, kept as lessons: a single detector (attack and rel
 level) can't give the snap and the creep together; the first session's plucks decayed
 15 dB/s and never reached the threshold.
 
+## Open: the slow creep near the threshold
+
+Not captured by the model (seen by the user in the figure's bottom plot, 2026-10-27). Within
+a step near the threshold the pedal's gain keeps moving at a constant input — the model's
+steps are flat:
+
+| Slow staircase, Threshold 12:00 | Decay 7:00 | Decay 12:00 | Decay 5:00 |
+|---|---|---|---|
+| input −68 dB (the 20 s step): snaps to, then rises with τ | −11 dB, 1.00 s | −12 dB, 1.11 s | −11 dB, 1.23 s |
+| input −72 dB (16 s): rises at | 1.07 dB/s | 1.05 dB/s | 0.94 dB/s |
+
+and on the way down each step drops a little, then keeps sliding. A fixed ~1 s time constant,
+**independent of Decay**, acting only within a few dB of the threshold: at −64 dB the pedal
+snaps fully open at once, and a picked note opens it within 1 ms. (The 16 s step looks noisy
+only because its output sits near the rig's floor, ~−98 dBFS; its scatter is 0.25 dB.) It
+matters when a signal lingers near the threshold — a long compressed sustain fading through
+it, hum sitting at it; not for notes decaying like a string, which the model follows.
+
+Tried in scratch, not adopted:
+- the slow level charging in the linear domain with a fixed rise: fitted to 0.11 s, not 1 s,
+  and light picking got worse (1.5 → 3.5 dB);
+- a switch that opens slowly when the input is just over the threshold (a soft target, its rise
+  τ = rise · exp(−(E − open)/k)): the staircases improved (5:00 4.6 → 3.3 dB, the slow ones
+  2.3 → 1.7; median 1.52 → 1.41) but it still draws flat steps — it fits by softening the switch,
+  not by creeping.
+
+**Next: model the control circuit** (an RC through a resistor, the comparator's hysteresis)
+from the schematic, as for the CS-3 — no new captures needed, the staircases and notes here
+check it. No free copy found: the freestompboxes.org thread (topic 11953) has the schematic
+but refuses automated access (the user can fetch it in a browser); Ronsound sells the
+October 1987 schematic; Reverb lists the 1987 service notes on paper; synfo.nl (where the
+CS-3 and BF-3 notes came from) and eserviceinfo.com don't have it. Fallback without a
+schematic: ~6 takes of fine steps (1 dB, 5 s) around the threshold at two Threshold
+positions, fitted empirically.
+
 ## Takes and lessons
 
 - 61 takes, none redone. `stairs-110` had one xrun (in its bypassed low end).
