@@ -16,6 +16,7 @@ collection of Boss pedals. Done so far: the TR-2 tremolo, the DD-8 delay, the CE
 | `analyze_ce5.py` | The CE-5 (wet-only + mono sessions): dry and wet split by time in the deconvolved sweeps (delay, gain, tone, group delay), E.Level, the filters (corner, slope, floor), the LFO from held tones' phase (rate, absolute delay, bowed-triangle shape), bursts, note-off, noise |
 | `analyze_bf3.py` | The BF-3 (Standard, mono): dry and wet split in time at Manual 7:00 (delay, gain, tone), Manual's delay from the comb, Res from the clean echo and the comb's ripple depth, the output clip, the sweep from click trains (delay per click, LFO rate, smoothed-triangle^power shape, Depth's floor blend and swing) |
 | `analyze_cs3.py` | The CS-3: the static curve from a 1 kHz staircase per Sustain position, attack and release from a −30/0/−30 dB jump (the gain's 1 ms envelope against the bypass) per Attack position, picked notes, Tone sweeps, Level, noise |
+| `analyze_ge7.py` | The GE-7 (two sessions): every sweep against its bypass per 1/12 octave and one graphic-EQ circuit fitted to all of them (LC bands, the RC top shelf, Level's stage), the staircases' ceiling and harmonics, noise |
 | `plans/*.json` | One plan per pedal: the takes, their knob settings and signals |
 
 Needs Python with numpy, scipy, soundfile and matplotlib, plus the JACK client for Python
@@ -86,17 +87,18 @@ What it took, 2026-10-26:
   channels 3/4 directly (the kernel's Scarlett Gen 3 mixer driver, `alsa-utils`):
 
   ```
-  amixer -c 3 cset numid=26 19     # Analogue Output 03 ← PCM 3
-  amixer -c 3 cset numid=27 20     # Analogue Output 04 ← PCM 4
-  # undo: amixer -c 3 cset numid=26 11; amixer -c 3 cset numid=27 12   (Mix C / Mix D)
+  amixer -c USB cset numid=26 19     # Analogue Output 03 ← PCM 3
+  amixer -c USB cset numid=27 20     # Analogue Output 04 ← PCM 4
+  # undo: amixer -c USB cset numid=26 11; amixer -c USB cset numid=27 12   (Mix C / Mix D)
   ```
 
-  This also takes over headphone output 2, which shares those channels. The card number
-  (3) and the numids are this machine's; `amixer -c N controls` lists them.
+  This also takes over headphone output 2, which shares those channels. The card name
+  (`USB`, the Scarlett's ALSA id — its number moves between boots) and the numids are this
+  machine's; `amixer -c USB controls` lists them.
 - **Ports used:** pedal feed `playback_AUX2` (out 3), loopback `playback_AUX3` (out 4)
   → line input 5 = `capture_AUX4`, pedal into front input 2 = `capture_AUX1` (input 1 is
   taken by a microphone).
-- **Input 2:** INST on, AIR off, **pad on** (`amixer -c 3 sset "Line In 2 Pad" cap`;
+- **Input 2:** INST on, AIR off, **pad on** (`amixer -c USB sset "Line In 2 Pad" cap`;
   without it a bridge humbucker peaked at −6.1 dBFS at minimum gain, leaving too little
   headroom for a drive with its Level up), **gain fully counter-clockwise**: the one knob
   position that can always be found again.
@@ -114,8 +116,8 @@ What it took, 2026-10-26:
   ```
   pactl set-card-profile alsa_card.usb-Focusrite_Scarlett_8i6_USB_F8FXD3B190BDA0-00 \
       output:analog-surround-21+input:multichannel-input
-  amixer -c 3 cset numid=26 11; amixer -c 3 cset numid=27 12
-  amixer -c 3 sset "Line In 2 Pad" nocap
+  amixer -c USB cset numid=26 11; amixer -c USB cset numid=27 12
+  amixer -c USB sset "Line In 2 Pad" nocap
   ```
 
   then restart NAM-X (or reconnect it from the status bar) before closing it, so it
@@ -238,7 +240,8 @@ From the CE-5:
 
 - **A pedal's own hiss can be louder than the silence threshold.** `run` waits for a
   peak under −75 dBFS before each take; the CE-5 hisses at −65 to −73 even when idle. A
-  plan can set its own `quiet_dbfs`.
+  plan can set its own `quiet_dbfs`, and so can a take whose setting raises the hiss (the
+  GE-7 with every slider up hisses at about −36 dBFS).
 - **Look for a wet-only output.** With a plug in Output B (other end loose), the CE-5's
   Output A carries only the effect sound: no dry to separate.
 - **Split dry and wet in time, not by subtraction:** windowing the impulse response

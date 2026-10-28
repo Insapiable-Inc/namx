@@ -47,7 +47,8 @@ SILENT_DBFS = -60.0
 DEFAULT_REF_DBFS = -20.0
 CALIBRATION_SECONDS = 2.0
 QUIET_DBFS = -75.0  # the pedal input's peak, per 0.1 s, counted as silent (noise peaks ~-85);
-# a plan's "quiet_dbfs" overrides it for a pedal whose own hiss is louder (the CE-5's BBD)
+# a plan's "quiet_dbfs" overrides it for a pedal whose own hiss is louder (the CE-5's BBD),
+# a take's for a setting that raises the hiss (the GE-7 with every slider up)
 QUIET_HOLD_S = 0.5
 QUIET_WAIT_S = 30.0
 
@@ -96,8 +97,11 @@ class Engine:
             try:
                 self.client.connect(source, destination)
             except Exception as error:
+                # Names first: our own ports are gone (and unprintable) once the client closes.
+                names = [p if isinstance(p, str) else p.name for p in (source, destination)]
                 self.close()
-                sys.exit(f"Can't connect {source} -> {destination}: {error}\n"
+                sys.exit(f"Can't connect {names[0]} -> {names[1]}: {error}\n"
+                         "Is the card on its Pro Audio profile (tools/capture/README.md, Rig)? "
                          "Check the port names with: capture.py ports")
 
     def close(self):
@@ -482,6 +486,12 @@ def cmd_run(args):
     engine = Engine(rig)
     check_rate(engine)
     takes = plan["takes"]
+    for take in takes:  # a take that would clip stops the run now, not half-way through it
+        try:
+            signals.build(take["signal"], engine.rate, rig["ref_dbfs"])
+        except ValueError as error:
+            engine.close()
+            sys.exit(f"{take['name']}: {error}")
     previous = None
     try:
         for index, take in enumerate(takes, 1):
@@ -501,7 +511,8 @@ def cmd_run(args):
                 # Checked right before recording, so nothing done after the check can leak
                 # in; and a recording only starts if the pedal was already quiet at Enter,
                 # never when it falls silent while knobs are still being set.
-                quiet, waited = wait_for_silence(engine, plan.get("quiet_dbfs", QUIET_DBFS))
+                quiet, waited = wait_for_silence(
+                    engine, take.get("quiet_dbfs", plan.get("quiet_dbfs", QUIET_DBFS)))
                 if not quiet:
                     print("  Still sounding after 30 s: turn Feedback down, or switch the "
                           "pedal off and on; then set the knobs and press Enter.")
