@@ -32,16 +32,15 @@
         "type": "steps",
         "freq": 1000,
         "levels_db": [
+          -36,
+          -30,
           -24,
           -18,
           -12,
           -6,
           -3,
           0,
-          3,
-          6,
-          9,
-          12
+          3
         ],
         "step_seconds": 1.5,
         "gap_seconds": 0,
@@ -95,16 +94,15 @@
         "type": "steps",
         "freq": 1000,
         "levels_db": [
+          -36,
+          -30,
           -24,
           -18,
           -12,
           -6,
           -3,
           0,
-          3,
-          6,
-          9,
-          12
+          3
         ],
         "step_seconds": 1.5,
         "gap_seconds": 0,
@@ -630,16 +628,15 @@
         "type": "steps",
         "freq": 1000,
         "levels_db": [
+          -36,
+          -30,
           -24,
           -18,
           -12,
           -6,
           -3,
           0,
-          3,
-          6,
-          9,
-          12
+          3
         ],
         "step_seconds": 1.5,
         "gap_seconds": 0,
@@ -663,16 +660,15 @@
         "type": "steps",
         "freq": 1000,
         "levels_db": [
+          -36,
+          -30,
           -24,
           -18,
           -12,
           -6,
           -3,
           0,
-          3,
-          6,
-          9,
-          12
+          3
         ],
         "step_seconds": 1.5,
         "gap_seconds": 0,
