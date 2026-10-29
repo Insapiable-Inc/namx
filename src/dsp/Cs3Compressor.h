@@ -52,16 +52,17 @@ constexpr std::array<float, 5> RECOVERY_MS{458.0f, 354.0f, 124.0f, 62.0f, 44.0f}
 constexpr std::array<float, 5> ATTACK_TAU_MS{1.97f, 1.82f, 1.87f, 1.68f, 1.58f};
 constexpr std::array<float, 5> RELEASE_TAU_MS{189.1f, 145.9f, 49.6f, 24.3f, 16.4f};
 
-// Tone (after the VCA, by the schematic): a 38 Hz low cut and an 18 kHz roll-off, fixed, and two low shelves (650 Hz,
-// 7.2 kHz) whose gains follow the knob — a tilt around 1 kHz (within 0.1–0.25 dB rms).
+// Tone (after the VCA, by the schematic): a 38 Hz low cut and an 18 kHz roll-off, fixed, and two low shelves (656 Hz,
+// 5.5 kHz) whose gains follow the knob — a tilt around 1 kHz (within 0.2–0.3 dB rms; refitted
+// 2026-10-29 with tools/capture/fit_voicings.py to the corrected sweeps).
 constexpr size_t TONE_SECTIONS = 4;
-constexpr float SHELF_LOW_HZ = 649.6f, SHELF_LOW_Q = 0.482f;
-constexpr float SHELF_HIGH_HZ = 7195.8f, SHELF_HIGH_Q = 0.596f;
-constexpr std::array<float, 5> SHELF_LOW_DB{9.35f, 6.10f, 0.08f, -5.74f, -9.60f};
-constexpr std::array<float, 5> SHELF_HIGH_DB{4.25f, 2.69f, 4.15f, 4.43f, 2.84f};
+constexpr float SHELF_LOW_HZ = 655.8f, SHELF_LOW_Q = 0.480f;
+constexpr float SHELF_HIGH_HZ = 5456.4f, SHELF_HIGH_Q = 0.661f;
+constexpr std::array<float, 5> SHELF_LOW_DB{9.85f, 6.63f, 0.57f, -5.41f, -9.21f};
+constexpr std::array<float, 5> SHELF_HIGH_DB{2.67f, 1.29f, 1.95f, 2.81f, 1.43f};
 // The chain is unity at 1 kHz; the knob also moves the level there (re 12:00): the tilt
 // pivots near 100–200 Hz, Tone mostly adds or takes away treble.
-constexpr std::array<float, 5> TONE_GAIN_DB{-6.5f, -4.6f, 0.0f, 4.2f, 6.4f};
+constexpr std::array<float, 5> TONE_GAIN_DB{-6.1f, -4.3f, 0.0f, 4.4f, 6.7f};
 
 inline float knob_map(const std::array<float, 5>& map, float fraction) {
     const float x = std::clamp(fraction, 0.0f, 1.0f);
