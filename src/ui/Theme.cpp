@@ -1587,6 +1587,31 @@ static QWidget* focus_control(QObject* object) {
     return nullptr;
 }
 
+// A see-through popup window (a menu's rounded corners and the room for its shadow, a
+// combo box's drop-down), set up before its window exists or by making a new one. On
+// Windows, Qt makes a window see-through only when it is frameless too — a popup isn't by
+// default, and the transparent parts came out black: the menus' room for their shadow, a
+// large black band. Windows 11's own style sets the same flags on menus, which they kept
+// when switching to Fusion: only starting under Fusion showed it (2026-10-29). No Windows
+// drop shadow either: it frames the whole window, the shadow's room included.
+static void make_see_through(QWidget* popup) {
+    Qt::WindowFlags flags = popup->windowFlags();
+#ifdef Q_OS_WIN
+    flags |= Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint;
+#endif
+    if (popup->testAttribute(Qt::WA_TranslucentBackground) && flags == popup->windowFlags()) {
+        return;
+    }
+    popup->setAttribute(Qt::WA_TranslucentBackground);
+    // A window's transparency is fixed when it is created: a popup that has been shown
+    // already gets a new window (it is hidden now; setParent recreates it).
+    if (popup->testAttribute(Qt::WA_WState_Created)) {
+        popup->setParent(popup->parentWidget(), flags);
+    } else {
+        popup->setWindowFlags(flags);
+    }
+}
+
 // What the stylesheet can't do, done to each widget as it is polished:
 // - every menu, context menus included, gets a translucent window (before its window
 //   exists), so the rounded corners show what is behind them — as Breeze does — room
@@ -1600,19 +1625,6 @@ static QWidget* focus_control(QObject* object) {
 //   corners can be rounded like a menu's.
 // And Union's keyboard focus (FocusRing): shown when Tab brings the focus to a control,
 // gone when the focus leaves it — a click gives focus without the outline.
-// Windows gives every popup a drop shadow of its own (CS_DROPSHADOW), around the whole
-// window: under Fusion that is the menu plus the transparent room for the painted shadow,
-// so a large rectangle reaching past the menu, offset from it. The painted shadow takes its
-// place there; under a native style the menu gets Windows' shadow back. Changing a window
-// flag recreates a window that exists already (the menu is hidden while it's polished).
-static void set_native_menu_shadow([[maybe_unused]] QMenu* menu, [[maybe_unused]] bool shown) {
-#ifdef Q_OS_WIN
-    if (menu->windowFlags().testFlag(Qt::NoDropShadowWindowHint) == shown) {
-        menu->setWindowFlag(Qt::NoDropShadowWindowHint, !shown);
-    }
-#endif
-}
-
 // Whether a menu has icons (the stylesheet's QMenu[icons]); re-polished when it changes.
 static void update_menu_icons(QMenu* menu) {
     const QList<QAction*> actions = menu->actions();
@@ -1633,7 +1645,6 @@ static void update_menu_icons(QMenu* menu) {
 static void adjust_for_style(QWidget* widget) {
     if (!fusion_active()) {
         if (auto* menu = qobject_cast<QMenu*>(widget)) {
-            set_native_menu_shadow(menu, true);
             menu->setContentsMargins(0, 0, 0, 0);
             QEvent restyled(QEvent::StyleChange); // measured again, under this style
             QCoreApplication::sendEvent(menu, &restyled);
@@ -1645,15 +1656,7 @@ static void adjust_for_style(QWidget* widget) {
         return;
     }
     if (auto* menu = qobject_cast<QMenu*>(widget)) {
-        if (!menu->testAttribute(Qt::WA_TranslucentBackground)) {
-            menu->setAttribute(Qt::WA_TranslucentBackground);
-            // A window's transparency is fixed when it is created: a menu that has been
-            // shown already gets a new window (it is hidden now; setParent recreates it).
-            if (menu->testAttribute(Qt::WA_WState_Created)) {
-                menu->setParent(menu->parentWidget(), menu->windowFlags());
-            }
-        }
-        set_native_menu_shadow(menu, false);
+        make_see_through(menu);
         menu->setContentsMargins(0, 0, MENU_SHADOW, MENU_SHADOW);
         // It measures its items once and keeps them: measured again, under this style.
         QEvent restyled(QEvent::StyleChange);
@@ -1683,7 +1686,7 @@ static void adjust_for_style(QWidget* widget) {
     } else if (widget->inherits("QComboBoxPrivateContainer")) {
         auto* container = static_cast<QFrame*>(widget);
         container->setFrameShape(QFrame::NoFrame);
-        container->setAttribute(Qt::WA_TranslucentBackground);
+        make_see_through(container);
     }
 }
 
