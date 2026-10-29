@@ -1,0 +1,118 @@
+
+=== 2026-10-28T21:29:29 · run tools/capture/plans/ph-3-followup.json · tool 954172d0e67efaae1bf17d3d5ca1151f8b455c25
+
+[1/14] bypass-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -34.6 dBFS · loopback -36.6 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[2/14] bypass-noise: white noise, 10 s at -12 dB
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -23.7 dBFS · loopback -25.4 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[3/14] s4-rate-0500: white noise, 20 s at -12 dB
+  pedal ON · Mode 4 Stage · Rate 5:00 · Depth 5:00 · Res 7:00 (switch it on)
+  Pedal on, MODE 4 STAGE, Rate fully up: does the small swing at 21.5 Hz repeat?
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.6 dBFS · loopback -25.4 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[4/14] s4-rate-0400: white noise, 20 s at -12 dB
+  pedal ON · Mode 4 Stage · Rate 4:00 (changed) · Depth 5:00 · Res 7:00
+  Rate back to about 4:00 (between 3:00 and 5:00; it needn't be exact, the take measures the speed).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -20.9 dBFS · loopback -25.4 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[5/14] s8-frozen-1: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode 8 Stage (changed) · Rate 7:00 (changed) · Depth 5:00 · Res 7:00
+  MODE 8 STAGE. Turn Rate up for a second or two, then back to 7:00 so the sweep stops somewhere new (by ear: a different brightness from the last take).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -30.5 dBFS · loopback -36.6 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: r
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -30.5 dBFS · loopback -36.6 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[6/14] s8-frozen-2: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode 8 Stage · Rate 7:00 · Depth 5:00 · Res 7:00
+  Turn Rate up for a second or two, then back to 7:00 so the sweep stops somewhere new (by ear: a different brightness from the last take).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -30.5 dBFS · loopback -36.6 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[7/14] s8-frozen-3: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode 8 Stage · Rate 7:00 · Depth 5:00 · Res 7:00
+  Turn Rate up for a second or two, then back to 7:00 so the sweep stops somewhere new (by ear: a different brightness from the last take).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -30.5 dBFS · loopback -36.6 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[8/14] s8-frozen-4: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode 8 Stage · Rate 7:00 · Depth 5:00 · Res 7:00
+  Turn Rate up for a second or two, then back to 7:00 so the sweep stops somewhere new (by ear: a different brightness from the last take).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -30.5 dBFS · loopback -36.6 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[9/14] s10-frozen-1: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode 10 Stage (changed) · Rate 7:00 · Depth 5:00 · Res 7:00
+  MODE 10 STAGE. Turn Rate up for a second or two, then back to 7:00 so the sweep stops somewhere new (by ear: a different brightness from the last take).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -31.5 dBFS · loopback -36.6 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[10/14] s10-frozen-2: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode 10 Stage · Rate 7:00 · Depth 5:00 · Res 7:00
+  Turn Rate up for a second or two, then back to 7:00 so the sweep stops somewhere new (by ear: a different brightness from the last take).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -31.5 dBFS · loopback -36.6 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[11/14] s10-frozen-3: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode 10 Stage · Rate 7:00 · Depth 5:00 · Res 7:00
+  Turn Rate up for a second or two, then back to 7:00 so the sweep stops somewhere new (by ear: a different brightness from the last take).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -31.5 dBFS · loopback -36.6 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[12/14] rise-rate-0900: white noise, 30 s at -12 dB
+  pedal ON · Mode Rise (changed) · Rate 9:00 (changed) · Depth 12:00 (changed) · Res 7:00
+  MODE RISE, Depth to 12:00, Rate to 9:00.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -20.9 dBFS · loopback -25.4 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[13/14] rise-rate-0300: white noise, 15 s at -12 dB
+  pedal ON · Mode Rise · Rate 3:00 (changed) · Depth 12:00 · Res 7:00
+  Rate to 3:00.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -21.2 dBFS · loopback -25.4 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[14/14] rise-depth-0700: white noise, 15 s at -12 dB
+  pedal ON · Mode Rise · Rate 12:00 (changed) · Depth 7:00 (changed) · Res 7:00
+  Rate to 12:00, Depth fully down: does Depth do anything in Rise?
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -21.0 dBFS · loopback -25.4 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+All 14 takes are in captures/boss/ph-3/2026-10-28-followup.
