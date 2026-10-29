@@ -21,3 +21,6 @@ Other parts of this repository keep their own licenses:
   included in this GPL-licensed program under those terms, and that notice is
   preserved.
 - The other submodules under external/ keep their own licenses.
+- Steinberg's ASIO SDK (external/asiosdk, Windows builds only) is used under the GPLv3
+  option of its dual license; Windows builds of NAM-X are therefore distributed under
+  GPL version 3. See packaging/THIRD-PARTY-NOTICES.md.

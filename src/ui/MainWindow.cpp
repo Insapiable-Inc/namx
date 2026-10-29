@@ -2169,6 +2169,7 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* ev) {
 
 void MainWindow::setup_audio() {
     QSettings s;
+    engine->set_driver(s.value("audio/driver").toString().toStdString());
     engine->set_exclusive_mode(s.value("audio/exclusive", false).toBool());
     engine->get_nam().set_normalize(s.value("audio/normalizeModels", true).toBool());
     const QString saved_in = s.value("audio/inputDeviceId").toString();
@@ -2194,9 +2195,11 @@ void MainWindow::setup_audio() {
     update_exclusive_notice();
 }
 
-// Exclusive mode asked for but the devices refused it: say so (the stream is shared).
+// Exclusive mode asked for but the devices refused it: say so (the stream is shared). Not
+// under a driver without it (ASIO), where the setting just waits for WASAPI.
 void MainWindow::update_exclusive_notice() {
-    const bool fell_back = audio_ok && engine->is_exclusive_wanted() && !engine->exclusive_active();
+    const bool fell_back = audio_ok && engine->supports_exclusive_mode() &&
+                           engine->is_exclusive_wanted() && !engine->exclusive_active();
     set_notice("exclusive",
                fell_back ? QString("Exclusive mode isn't available for these devices: using "
                                    "shared mode")
@@ -3119,6 +3122,9 @@ void MainWindow::register_parameters() {
 }
 
 void MainWindow::update_meters() {
+    if (engine->take_restart_request()) { // the driver's buffer or rate changed (ASIO)
+        restart_audio_with_current_devices();
+    }
     meter_in->set_peak(engine->take_input_peak());
     meter_out->set_peaks(engine->take_output_peak(0), engine->take_output_peak(1));
     gr_gate->set_reduction(engine->get_gate().take_gain_reduction_db());

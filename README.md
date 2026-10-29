@@ -84,7 +84,7 @@ Free as in free beer and as in freedom. No payment, license key or subscription 
 **What platforms are supported?**
 
 - **Linux:** I imagine any Linux distribution that has Qt 6 and either JACK2 or PipeWire. I've only tested it on Arch Linux (Plasma desktop), but it compiles on Ubuntu 24.04 and 26.04 too.
-- **Windows:** WASAPI, shared or exclusive mode. No ASIO yet.
+- **Windows:** WASAPI (shared or exclusive mode) or ASIO.
 
 There is no audio backend for macOS, merely because I don't have a device to test on, but I'm not ruling it out for the future.
 

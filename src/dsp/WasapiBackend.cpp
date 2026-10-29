@@ -6,6 +6,7 @@
 #include <cstring>
 #include <sstream>
 
+#include "AsioBackend.h"
 #include "Log.h"
 
 #ifdef _WIN32
@@ -280,7 +281,14 @@ static vector<IAudioBackend::DeviceInfo> enumerate_wasapi_devices(EDataFlow dire
 namespace namx
 {
 
-unique_ptr<IAudioBackend> IAudioBackend::create() {
+vector<string> IAudioBackend::drivers() {
+    return {"WASAPI", "ASIO"};
+}
+
+unique_ptr<IAudioBackend> IAudioBackend::create(const string& driver) {
+    if (driver == "ASIO") {
+        return make_unique<AsioBackend>();
+    }
     return make_unique<WasapiBackend>();
 }
 

@@ -6,9 +6,11 @@
 #include <QComboBox>
 #include <QDialog>
 #include <QFileSystemWatcher>
+#include <QFormLayout>
 #include <QLabel>
 #include <QListWidget>
 #include <QMainWindow>
+#include <QPushButton>
 #include <QSpinBox>
 #include <QStackedWidget>
 #include <QTableWidget>
@@ -89,6 +91,7 @@ private:
     void import_theme();
 
     void choose_device(bool input, int index);
+    void choose_driver(const QString& name);
     void add_folder(size_t section);
     void remove_folder(size_t section);
     void apply_folders();
@@ -98,6 +101,9 @@ private:
     QStackedWidget* pages = nullptr;
     QTimer* audio_timer = nullptr; // live rate/latency/xruns while the Audio page shows
 
+    QFormLayout* audio_form = nullptr;
+    QComboBox* driver_combo = nullptr; // where there is more than one (Windows)
+    QPushButton* control_panel_button = nullptr; // the driver's own settings (ASIO)
     QComboBox* input_combo = nullptr;
     QComboBox* output_combo = nullptr;
     QLabel* server_label = nullptr;
@@ -116,7 +122,7 @@ private:
     QFileSystemWatcher* themes_watcher = nullptr;
     QSpinBox* reference_box = nullptr;
     QCheckBox* show_hz_box = nullptr;
-    QCheckBox* exclusive_box = nullptr; // only where the backend supports it (WASAPI)
+    QCheckBox* exclusive_box = nullptr; // shown while the driver supports it (WASAPI)
     QCheckBox* normalize_box = nullptr;
 
     QTableWidget* shortcuts = nullptr;

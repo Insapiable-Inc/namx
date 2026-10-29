@@ -104,10 +104,14 @@ AudioStatusBar::AudioStatusBar(AudioEngine& new_engine, QWidget* parent)
     });
 }
 
-void AudioStatusBar::refresh() {
+void AudioStatusBar::load_device_ids() {
     QSettings s;
     input_id = s.value("audio/inputDeviceId").toString();
     output_id = s.value("audio/outputDeviceId").toString();
+}
+
+void AudioStatusBar::refresh() {
+    load_device_ids();
 
     connected = engine.is_running();
     error_text.clear();
@@ -143,9 +147,7 @@ void AudioStatusBar::set_error(const QString& text) {
 
     // Keep the device pickers usable even when audio never started — picking
     // a device is often exactly how the user fixes the connection.
-    QSettings s;
-    input_id = s.value("audio/inputDeviceId").toString();
-    output_id = s.value("audio/outputDeviceId").toString();
+    load_device_ids();
     set_device_labels();
     update_metrics();
 }

@@ -7,7 +7,7 @@ effects chain plus a 4-band EQ with low and high cuts.
 | Platform | Audio backend | Status |
 |----------|---------------|--------|
 | Linux    | JACK (jackd2 or PipeWire-JACK) | Stable |
-| Windows  | WASAPI shared or exclusive mode (native, MSVC) | Shared: float32 mix format only; exclusive: opt-in |
+| Windows  | WASAPI shared or exclusive mode (native, MSVC), or ASIO | Shared: float32 mix format only; exclusive: opt-in; ASIO: new, not yet tried on hardware |
 
 ---
 
@@ -90,7 +90,17 @@ Three things to install:
      ```
 
 WASAPI links against the system DLLs (`ole32`, `mmdevapi`, `avrt`), so there's
-no separate audio dependency — the Windows SDK already ships them.
+no separate audio dependency — the Windows SDK already ships them. ASIO needs no
+download either: the host side of Steinberg's ASIO SDK is in the source tree
+(`external/asiosdk`, under the GPLv3 option of its dual license).
+
+> **ASIO** (*Settings → Audio → Driver → ASIO*): NAM-X opens your interface's own ASIO
+> driver. *Input* lists the driver's input channels (pick the one your guitar is on),
+> *Output* its output pairs, plus the other ASIO drivers installed. Input and output
+> always use one driver. The buffer size, and on most interfaces the sample rate, are
+> set in the driver's own window (*Driver settings…*); NAM-X restarts its audio when
+> they change. Each driver remembers its own devices, so switching back to WASAPI
+> brings back the WASAPI ones.
 
 > **Exclusive mode** (*Settings → Audio → Exclusive mode*): NAM-X takes the
 > input and output devices over — the lowest latency WASAPI offers (the devices'
