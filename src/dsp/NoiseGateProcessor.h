@@ -97,6 +97,9 @@ private:
     atomic<int> type{GATE};
     int last_type = GATE; // audio thread
     Ns2State ns2_state[2];
+    BiquadChain<ns2::TONE_SECTIONS> ns2_tone;
+    double ns2_tone_rate = 0.0; // what ns2_tone is designed for (audio thread)
+    BiquadChainState<ns2::TONE_SECTIONS> ns2_tone_state[2];
     void ns2_channel(float* buf, size_t nframes, int ch);
     void type_edge(int current_type);
 };

@@ -14,12 +14,15 @@ void NoiseGateProcessor::sync_right_channel() {
     envelope[1] = envelope[0];
     gain_per_channel[1] = gain_per_channel[0];
     ns2_state[1] = ns2_state[0];
+    ns2_tone_state[1] = ns2_tone_state[0];
 }
 
 void NoiseGateProcessor::reset() {
     envelope[0] = envelope[1] = 0.0f;
     gain_per_channel[0] = gain_per_channel[1] = 0.0f;
     ns2_state[0] = ns2_state[1] = Ns2State{};
+    ns2_tone_state[0].reset();
+    ns2_tone_state[1].reset();
 }
 
 // A type change starts the new engine from rest, like a reorder.
@@ -32,6 +35,10 @@ void NoiseGateProcessor::type_edge(int current_type) {
 
 void NoiseGateProcessor::ns2_channel(float* buf, size_t nframes, int ch) {
     const float fs = static_cast<float>(sample_rate);
+    if (sample_rate != ns2_tone_rate) { // allocation-free, once per rate
+        ns2_tone_rate = sample_rate;
+        ns2_tone.design(ns2::TONE, sample_rate);
+    }
     const float threshold = ns2::threshold_for(threshold_db.load());
     const float decay_ms = ns2::decay_for(release_ms.load());
     const auto falling = [fs](float ms) {
@@ -61,8 +68,9 @@ void NoiseGateProcessor::ns2_channel(float* buf, size_t nframes, int ch) {
         s.switch_db = s.is_open ? 0.0f : s.switch_db + (-ns2::JUMP_DB - s.switch_db) * a_close;
         const float reduction_db = s.switch_db - ns2::SLOPE * std::max(0.0f, threshold - s.slow_db);
         deepest_db = std::min(deepest_db, reduction_db);
-        buf[i] *= std::exp2((ns2::OPEN_GAIN_DB + std::max(reduction_db, ns2::FLOOR_DB)) *
-                            (1.0f / DB_PER_OCTAVE));
+        const float gain = std::exp2((ns2::OPEN_GAIN_DB + std::max(reduction_db, ns2::FLOOR_DB)) *
+                                     (1.0f / DB_PER_OCTAVE));
+        buf[i] = ns2_tone_state[ch].process(buf[i] * gain, ns2_tone);
     }
     const float gr_db = std::min(-deepest_db, MAX_GR_DB);
     if (gr_db > gr_peak_db.load(std::memory_order_relaxed)) {
