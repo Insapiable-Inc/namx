@@ -21,7 +21,7 @@ The collection: 17 Boss pedals, on a Focusrite Scarlett 8i6 (3rd gen).
 | **GE-7** Equalizer | linear | **Measured** 2026-10-28 (four sessions: the first's Level takes are the 6.4 kHz slider; a retake for two takes that missed the fit; every printed mark on four sliders): one circuit fits all 60 sweeps to 0.23 dB rms — the classic one-op-amp graphic EQ, six LC bands (91, 196, 370, 728, 1528, 3275 Hz, Q ~3) and a 6.4 kHz shelf (an RC, corner 3.8 kHz), interacting through the shared op-amp; the printed marks aren't the dB they say (800 Hz: +5 → +5.9, −5 → −4.0, ±10 → +10.7/−8.5), one law for every band slider; Level flat ±15 dB (−3 dB at 13 kHz at +15); flat = bypass within 0.3 dB, no added noise; one ceiling at +1.8 dB re the guitar's peak whatever the sliders and Level (a rounded clip) | [`boss/ge-7/README.md`](boss/ge-7/README.md) |
 | SD-1, DS-1, JB-2, HM-2W | drives | **Skipped** (user, 2026-10-27): NAM-X's Tube Screamer covers them | |
 | AW-3 Dynamic Wah | dynamics | bursts, steps | |
-| PH-3 Phase Shifter | modulation | low priority: NAM-X's Phaser (Phase 90) is approved by ear | |
+| **PH-3** Phase Shifter | modulation | **Measured** 2026-10-28 (five sessions, mono): digital (0.54 ms, 44.1 kHz); every mode = dry + wet through second-order all-pass sections (4/8/10 Stage: 2/4/5 sections, one scale swept by a triangle² law; **12 Stage = a 6 Stage phaser run twice**, its notches double zeros, the second pass on a delayed LFO; Rise/Fall a barber pole, one notch spacing per LFO period, notches 1.88 octaves apart; Step the 8 Stage sweep sampled and held, 350 → 71 ms from Rate 8:00 to 1:30); Rate 0.047–21.5 Hz, Depth = the swing, the mix fixed; **Res = a feedback loop around the whole engine** (dry inside, one sample and a DC blocker in the loop, k 0.25–0.70 from 9:00 to 5:00; 8 Stage's loop passes a parked fifth section at 8.3 kHz). Open: 4 Stage's Res (its top notch fills and a sag follows it — no simple structure found; use the 8/10 Stage loop), Step's hold above Rate 3:00, the 12 Stage pass lag. Low priority for NAM-X: its Phaser (Phase 90) is approved by ear | [`boss/ph-3/README.md`](boss/ph-3/README.md) |
 | RV-6 Reverb | reverb | a project of its own | |
 | OC-5 Octave | pitch | reference recordings only | |
 | AC-3 Acoustic Simulator | filters | per-mode responses; no NAM-X counterpart | |
@@ -32,7 +32,7 @@ of its cycle ~0.5 dB high at full Depth, and a drained battery won't boot the DD
 
 ## Next
 
-The CS-3, NS-2 and GE-7 are measured. Next by the list: AW-3 Dynamic Wah (level-driven, the
+The CS-3, NS-2, GE-7 and PH-3 are measured. Next by the list: AW-3 Dynamic Wah (level-driven, the
 CS-3's staircase and jump signals; for anything dynamic, notes that decay like a real string
 — the NS-2's first plucks never reached its threshold). Order every plan by setting, not by signal,
 so the knobs are turned as few times as possible.
