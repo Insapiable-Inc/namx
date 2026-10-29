@@ -340,11 +340,11 @@
     "level_range_db": 2.39,
     "wow (0.3-6 Hz)": {
       "strongest_hz": 0.53,
-      "rms_cents": 2.02
+      "rms_cents": 1.65
     },
     "flutter (6-60 Hz)": {
       "strongest_hz": 6.7,
-      "rms_cents": 0.59
+      "rms_cents": 0.48
     }
   },
   "time_glide": {

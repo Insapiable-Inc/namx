@@ -227,17 +227,20 @@ def wow_flutter(session, name="hold-sine"):
     f, level = pitch_and_level(wet, cutoff=100.0)
     steady = slice(int(1.0 * RATE), len(f) - int(0.5 * RATE))
     cents = 1200 * np.log2(np.maximum(f[steady], 1) / freq)
-    spectrum = np.abs(np.fft.rfft((cents - cents.mean()) * np.hanning(len(cents))))
+    window = np.hanning(len(cents))
+    spectrum = np.abs(np.fft.rfft((cents - cents.mean()) * window))
     fr = np.fft.rfftfreq(len(cents), 1 / RATE)
     bands = {"wow (0.3-6 Hz)": (0.3, 6), "flutter (6-60 Hz)": (6, 60)}
     out = {"mean_cents": round(float(cents.mean()), 2), "rms_cents": round(float(cents.std()), 2),
            "peak_to_peak_cents": round(float(cents.max() - cents.min()), 2),
            "level_range_db": round(db(level[steady].max()) - db(level[steady].min()), 2)}
+    # Band rms by Parseval: normalized by the window's energy, not its sum (that one is right
+    # for a single bin; summed over a tone's main lobe it read 22 % high, 2026-10-29).
     for label, (lo, hi) in bands.items():
         m = (fr > lo) & (fr < hi)
         out[label] = {"strongest_hz": round(float(fr[m][np.argmax(spectrum[m])]), 2),
-                      "rms_cents": round(float(np.sqrt(2 * np.sum(spectrum[m] ** 2))
-                                               / np.sum(np.hanning(len(cents)))), 2)}
+                      "rms_cents": round(float(np.sqrt(2 * np.sum(spectrum[m] ** 2)
+                                                       / (len(cents) * np.sum(window ** 2)))), 2)}
     # The delay itself: pitch is the delay's rate of change (f_out / f = 1 - d(delay)/dt).
     delay_ms = np.cumsum(1 - f[steady] / freq) / RATE * 1000
     delay_ms = scipy.signal.detrend(delay_ms)
