@@ -32,6 +32,23 @@ of its cycle ~0.5 dB high at full Depth, and a drained battery won't boot the DD
 
 ## Next
 
+**The missing items (plans written 2026-10-29), one capture day with the AW-3:**
+
+1. **A guitar DI**, recorded once: `capture.py di` (what to play: `tools/capture/README.md`,
+   *Reamp takes*) → `captures/di/phrases.wav`.
+2. **CS-3 follow-up** (`plans/cs-3-followup.json`, 4.8 min): pairs of re-picked notes 50 /
+   100 / 200 / 500 ms apart at Sustain 9:00 / 12:00 / 3:00 × Attack 7:00 / 5:00 — the
+   second note's attack and the gain it has recovered, which the staircase and the
+   isolated plucks can't show; then the reamp.
+3. **BF-3 follow-up** (`plans/bf-3-followup.json`): Rate 5:00 with clicks every 21.3 ms
+   (the study's 25 ms clicks saw its ~10 Hz sweep at four phases only), and the reamp.
+4. **Reamps** for every pedal with a NAM-X type: `tr-2-reamp`, `ge-7-reamp`,
+   `dd-8-reamp` (one take per voicing), `ce-5-reamp`, `ns-2-reamp` — ~25 min of audio
+   in all. One session per pedal (`<date>-reamp`, `init --from` an earlier session).
+
+Then: each NAM-X type run over the same played files at the same settings, against the
+pedal (by ear, and over the existing takes' played signals for the numbers).
+
 The CS-3, NS-2, GE-7 and PH-3 are measured. Next by the list: AW-3 Dynamic Wah (level-driven, the
 CS-3's staircase and jump signals; for anything dynamic, notes that decay like a real string
 — the NS-2's first plucks never reached its threshold). Order every plan by setting, not by signal,

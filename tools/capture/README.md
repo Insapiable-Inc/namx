@@ -7,8 +7,8 @@ collection of Boss pedals. Done so far: the TR-2 tremolo, the DD-8 delay, the CE
 
 | File | What it does |
 |---|---|
-| `capture.py` | Guided recording through JACK: ports, metering, level calibration, plan-driven takes |
-| `signals.py` | Deterministic test signals (sine, exponential sweep, noise, clicks, silence, steps, plucks, pluck-train), the take layout, and each signal's silent stretches |
+| `capture.py` | Guided recording through JACK: ports, metering, level calibration, plan-driven takes, the guitar DI for reamp takes (`di`) |
+| `signals.py` | Deterministic test signals (sine, exponential sweep, noise, clicks, silence, steps, plucks, pluck-train — optionally re-picked, each note ending the last —, a recorded file), the take layout, and each signal's silent stretches |
 | `analysis.py` | Reading sessions back: aligned takes, envelopes, LFO frequency and cycle folding, band levels, harmonics |
 | `fit_tr2.py` | The TR-2 model fit: parameters, fit errors, tone, and the figures |
 | `analyze_dd8.py` | The DD-8's Standard mode: deconvolved sweeps (dry path, delay times, Level/Feedback maps, tone), bursts (the clip), and figures |
@@ -155,6 +155,21 @@ clockwise. Positions between those are set by eye; the fits treat them as approx
 
 Power the pedal from its adapter where possible: a draining battery changes a pedal's
 headroom (and an analog LFO's speed) between takes. The TR-2 session ran on a battery.
+
+### Reamp takes (guitar DI)
+
+For a by-ear A/B between a pedal and NAM-X's type of it, every pedal gets the same real
+guitar: `capture.py di SESSION captures/di/phrases.wav --seconds 45 --note "..."` records
+the guitar through the bypassed pedal (as it reaches a pedal's input), scaled so 1.0 is
+the rig's reference, and a `"file"` signal plays it back into each pedal exactly as hard as
+it was played. The plans `*-reamp.json` (and the reamp half of `cs-3-followup.json`,
+`bf-3-followup.json`) use `captures/di/phrases.wav`. The WAV is git-ignored like every
+capture (back it up: the A/B needs this very file); its `.json` is committed.
+
+What to play, ~40 s, the bridge humbucker as in the calibration: a palm-muted riff (~8 s),
+chords strummed and let ring out (~8 s), a single-note line (~8 s), short staccato chops,
+one note held until it dies, then ~4 s of the guitar untouched (its hum and hiss, for the
+NS-2). Start after a second of silence.
 
 ## Sessions and file formats
 

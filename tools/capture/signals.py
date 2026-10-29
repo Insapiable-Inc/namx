@@ -23,12 +23,21 @@ Specs (JSON objects in a plan):
     {"type": "plucks", "freq": 1000, "period": 3, "count": 4, "decay_seconds": 0.3}
                                                                # picked-note-like bursts
     {"type": "pluck-train", "freq": 1000, "onsets": [0, 2.9, 6.6], "decay_seconds": 0.3,
-     "seconds": 10}                                            # plucks at given times
+     "seconds": 10, "repick": true}                            # plucks at given times; with
+                                                               # repick, each ends the last
+    {"type": "file", "path": "captures/di/phrases.wav"}       # a recording (capture.py di)
 
 plus optional "level_db" (default 0) and "tail" (seconds after the signal, default 1).
+A file's path is relative to the repository; it holds the guitar as it reached the pedal,
+scaled so 1.0 is the guitar's peak, at the rig's rate, and plays at the level it was played.
 """
 
+import pathlib
+
 import numpy as np
+import soundfile
+
+REPOSITORY = pathlib.Path(__file__).resolve().parents[2]
 
 LEAD_SECONDS = 0.3
 MARKER_SECONDS = 0.05
@@ -46,8 +55,10 @@ TYPES = {
     "steps": {"freq", "levels_db", "step_seconds"},
     "plucks": {"freq", "period", "count", "decay_seconds"},
     "pluck-train": {"freq", "onsets", "decay_seconds", "seconds"},
+    "file": {"path"},
 }
-OPTIONAL = {"level_db", "tail", "seed", "gap_seconds"}
+OPTIONAL = {"level_db", "tail", "seed", "gap_seconds", "repick"}
+REPICK_SECONDS = 0.002  # a re-picked string: the ringing note dies in the pick's 2 ms
 
 
 def validate(spec):
@@ -62,6 +73,13 @@ def validate(spec):
         raise ValueError(f"{kind} signal: unknown keys {', '.join(sorted(unknown))}")
 
 
+def recording(spec):
+    path = REPOSITORY / spec["path"]
+    if not path.exists():
+        raise ValueError(f"{spec['path']} is missing: record it with 'capture.py di'")
+    return path
+
+
 def body_seconds(spec):
     if spec["type"] == "clicks":
         return spec["period"] * spec["count"]
@@ -69,6 +87,8 @@ def body_seconds(spec):
         return len(spec["levels_db"]) * (spec["step_seconds"] + spec.get("gap_seconds", 0))
     if spec["type"] == "plucks":
         return spec["period"] * spec["count"]
+    if spec["type"] == "file":
+        return soundfile.info(recording(spec)).duration
     return spec["seconds"]
 
 
@@ -124,7 +144,11 @@ def describe(spec):
                 f"(decay {spec['decay_seconds']:g} s){level_text}")
     if kind == "pluck-train":
         onsets = ", ".join(f"{t:g}" for t in spec["onsets"])
-        return f"{spec['freq']:g} Hz plucks at {onsets} s (decay {spec['decay_seconds']:g} s)"
+        repick = ", re-picked" if spec.get("repick") else ""
+        return (f"{spec['freq']:g} Hz plucks at {onsets} s (decay {spec['decay_seconds']:g} s"
+                f"{repick}){level_text}")
+    if kind == "file":
+        return f"{spec['path']}, {body_seconds(spec):.1f} s{level_text}"
     if kind == "steps":
         gap = spec.get("gap_seconds", 0)
         gap_text = f" + {gap:g} s gaps" if gap else ""
@@ -171,7 +195,8 @@ def steps(rate, freq, levels_db, step_seconds, gap_seconds):
 
 
 def body(spec, rate):
-    """The signal itself, peak 1 (silence: zeros; steps: peak per its levels)."""
+    """The signal itself, peak 1 (silence: zeros; steps: peak per its levels; a file: 1 is
+    the guitar's peak)."""
     kind = spec["type"]
     if kind == "sine":
         t = np.arange(int(spec["seconds"] * rate)) / rate
@@ -187,13 +212,24 @@ def body(spec, rate):
                      spec.get("gap_seconds", 0))
     if kind == "pluck-train":
         x = np.zeros(int(spec["seconds"] * rate))
-        for onset in spec["onsets"]:
+        ends = [int(t * rate) for t in spec["onsets"][1:]] + [len(x)]
+        for onset, end in zip(spec["onsets"], ends):
             start = int(onset * rate)
-            t = np.arange(len(x) - start) / rate
-            attack = np.minimum(t / 0.002, 1.0)
-            x[start:] += (attack * np.exp(-t / spec["decay_seconds"])
-                          * np.sin(2 * np.pi * spec["freq"] * t))
+            stop = end if spec.get("repick") else len(x)
+            t = np.arange(stop - start) / rate
+            note = (np.minimum(t / 0.002, 1.0) * np.exp(-t / spec["decay_seconds"])
+                    * np.sin(2 * np.pi * spec["freq"] * t))
+            if stop < len(x):  # damped by the next pick, which starts as this one ends
+                n = int(REPICK_SECONDS * rate)
+                note[-n:] *= np.linspace(1, 0, n)
+            x[start:stop] += note
         return x / np.max(np.abs(x))
+    if kind == "file":
+        x, file_rate = soundfile.read(recording(spec), dtype="float64")
+        if file_rate != rate or x.ndim != 1:
+            raise ValueError(f"{spec['path']}: needs mono at {rate} Hz (it is {file_rate} Hz"
+                             f"{'' if x.ndim == 1 else ', not mono'})")
+        return x
     if kind == "plucks":
         period = int(spec["period"] * rate)
         t = np.arange(period) / rate

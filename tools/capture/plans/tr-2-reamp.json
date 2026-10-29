@@ -1,0 +1,59 @@
+{
+  "pedal": "Boss TR-2 Tremolo (9 V supply)",
+  "comment": "Reamp: the same recorded guitar (captures/di/phrases.wav, `capture.py di`, played as hard as it was played) through the pedal at a few settings, for a by-ear A/B against NAM-X's type with the same DI and settings. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise; 9:00 and 3:00 pointer horizontal.",
+  "knobs": [
+    "Rate",
+    "Wave",
+    "Depth"
+  ],
+  "takes": [
+    {
+      "name": "bypass-di",
+      "bypass": true,
+      "signal": {
+        "type": "file",
+        "path": "captures/di/phrases.wav",
+        "tail": 2
+      }
+    },
+    {
+      "name": "di-1200",
+      "settings": {
+        "Rate": "12:00",
+        "Wave": "12:00",
+        "Depth": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/phrases.wav",
+        "tail": 2
+      }
+    },
+    {
+      "name": "di-rate-0300-wave-0700-depth-0500",
+      "settings": {
+        "Rate": "3:00",
+        "Wave": "7:00",
+        "Depth": "5:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/phrases.wav",
+        "tail": 2
+      }
+    },
+    {
+      "name": "di-rate-0900-wave-0500-depth-0300",
+      "settings": {
+        "Rate": "9:00",
+        "Wave": "5:00",
+        "Depth": "3:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/phrases.wav",
+        "tail": 2
+      }
+    }
+  ]
+}

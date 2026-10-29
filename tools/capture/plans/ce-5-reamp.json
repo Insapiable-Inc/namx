@@ -1,0 +1,68 @@
+{
+  "pedal": "Boss CE-5 Chorus Ensemble (mono: Output A alone)",
+  "comment": "Reamp: the same recorded guitar (captures/di/phrases.wav, `capture.py di`, played as hard as it was played) through the pedal at a few settings, for a by-ear A/B against NAM-X's type with the same DI and settings. Output A alone (nothing in B): dry + chorus. Filters fully open (5:00) as in the study's defaults, except the last take. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise; 9:00 and 3:00 pointer horizontal.",
+  "quiet_dbfs": -60,
+  "knobs": [
+    "E.Level",
+    "Rate",
+    "Depth",
+    "Low",
+    "High"
+  ],
+  "takes": [
+    {
+      "name": "bypass-di",
+      "bypass": true,
+      "signal": {
+        "type": "file",
+        "path": "captures/di/phrases.wav",
+        "tail": 2
+      }
+    },
+    {
+      "name": "di-1200",
+      "settings": {
+        "E.Level": "12:00",
+        "Rate": "12:00",
+        "Depth": "12:00",
+        "Low": "5:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/phrases.wav",
+        "tail": 2
+      }
+    },
+    {
+      "name": "di-elevel-0500-rate-0900-depth-0300",
+      "settings": {
+        "E.Level": "5:00",
+        "Rate": "9:00",
+        "Depth": "3:00",
+        "Low": "5:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/phrases.wav",
+        "tail": 2
+      }
+    },
+    {
+      "name": "di-elevel-0300-rate-0300-filters-1200",
+      "settings": {
+        "E.Level": "3:00",
+        "Rate": "3:00",
+        "Depth": "12:00",
+        "Low": "12:00",
+        "High": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/phrases.wav",
+        "tail": 2
+      }
+    }
+  ]
+}

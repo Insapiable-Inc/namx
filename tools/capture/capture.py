@@ -11,6 +11,7 @@ latency and shows the level that actually left the interface.
     capture.py init SESSION --from OTHER_SESSION      # same rig as an earlier session
     capture.py meter SESSION [--seconds 15]           # peak on the pedal input (guitar, hum)
     capture.py calibrate SESSION --target-dbfs G      # pedal bypassed: reference level
+    capture.py di SESSION OUT.wav [--seconds 60]      # record the guitar (pedal bypassed)
     capture.py plan PLAN                              # the plan's takes and total time
     capture.py run SESSION PLAN                       # walk through the plan (resumable)
 
@@ -338,6 +339,42 @@ def cmd_meter(args):
     engine.close()
 
 
+def cmd_di(args):
+    """Records the guitar as it reaches the pedal (guitar → bypassed pedal → the pedal input),
+    for "file" signals: scaled so 1.0 is the rig's reference (the guitar's peak), so a plan
+    plays it back into a pedal exactly as hard as it was played."""
+    session = pathlib.Path(args.session).expanduser()
+    rig = load_rig(session)
+    if not rig["calibration"]:
+        sys.exit("this rig isn't calibrated: 'meter' and 'calibrate' first")
+    out = pathlib.Path(args.out)
+    if out.exists():
+        sys.exit(f"{out} already exists")
+    engine = Engine(rig)
+    check_rate(engine)
+    input("Guitar into the bypassed pedal; Enter starts the recording, then play: ")
+    engine.start(np.zeros(int(args.seconds * engine.rate), np.float32))
+    shown = 0
+    while not engine.done.wait(0.25):
+        now = engine.pos
+        print(f"\r  {now / engine.rate:5.1f} / {args.seconds:g} s   "
+              f"peak {dbfs(engine.recorded[shown:now, 0]):7.1f} dBFS ", end="", flush=True)
+        shown = now
+    engine.close()
+    target = rig["calibration"]["target_dbfs"]
+    guitar = engine.recorded[:, 0] / 10 ** (target / 20)
+    print(f"\r  peak {dbfs(guitar):+.1f} dB re the guitar's reference ({target:g} dBFS)"
+          + " " * 20)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    soundfile.write(out, guitar, engine.rate, subtype="FLOAT")
+    save_json(out.with_suffix(".json"), {
+        "seconds": args.seconds, "rate": engine.rate, "peak_db_re_reference": round(dbfs(guitar), 2),
+        "reference_dbfs": target, "note": args.note or "",
+        "recorded_at": datetime.datetime.now().isoformat(timespec="seconds"),
+        "tool_commit": tool_commit(), "rig": rig})
+    print(f"Wrote {out} (and its .json); play it with {{\"type\": \"file\", \"path\": ...}}")
+
+
 def steady_peak(x, rate):
     """The peak of a steady sine, ignoring fades: the median of 50 ms peaks."""
     block = int(0.05 * rate)
@@ -426,7 +463,10 @@ def cmd_plan(args):
     seconds = 0.0
     previous = None
     for index, take in enumerate(plan["takes"], 1):
-        seconds += signals.total_seconds(take["signal"])
+        try:
+            seconds += signals.total_seconds(take["signal"])
+        except ValueError as error:
+            sys.exit(f"{take['name']}: {error}")
         print(f"{index:3}. {take['name']:<20} {signals.describe(take['signal']):<36} "
               f"{settings_text(take, previous, plan['knobs'])}")
         previous = take
@@ -566,6 +606,13 @@ def main():
     calibrate.add_argument("--target-dbfs", type=float, required=True,
                            help="the guitar's peak on the pedal input, from 'meter'")
     calibrate.set_defaults(func=cmd_calibrate)
+
+    di = commands.add_parser("di", help="record the guitar (pedal bypassed) for file signals")
+    di.add_argument("session", help="a calibrated session (its rig and reference)")
+    di.add_argument("out", help="the WAV to write (git-ignored under captures/)")
+    di.add_argument("--seconds", type=float, default=60.0)
+    di.add_argument("--note", help="free text: guitar, pickup, what was played")
+    di.set_defaults(func=cmd_di)
 
     plan = commands.add_parser("plan", help="list a plan's takes")
     plan.add_argument("plan")

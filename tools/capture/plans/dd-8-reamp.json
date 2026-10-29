@@ -1,0 +1,105 @@
+{
+  "pedal": "Boss DD-8 Digital Delay (mono: Input A -> Output A)",
+  "comment": "Reamp: the same recorded guitar (captures/di/phrases.wav, `capture.py di`, played as hard as it was played) through the pedal at a few settings, for a by-ear A/B against NAM-X's type with the same DI and settings. One setting per voicing in NAM-X (Standard, Analog, Tape, Warm, Mod), then Standard with long repeats. 4 s tails for the repeats. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise; 9:00 and 3:00 pointer horizontal.",
+  "knobs": [
+    "Mode",
+    "Level",
+    "Feedback",
+    "Time"
+  ],
+  "takes": [
+    {
+      "name": "bypass-di",
+      "bypass": true,
+      "signal": {
+        "type": "file",
+        "path": "captures/di/phrases.wav",
+        "tail": 4
+      }
+    },
+    {
+      "name": "di-standard",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/phrases.wav",
+        "tail": 4
+      }
+    },
+    {
+      "name": "di-analog",
+      "settings": {
+        "Mode": "Analog",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/phrases.wav",
+        "tail": 4
+      }
+    },
+    {
+      "name": "di-tape",
+      "settings": {
+        "Mode": "Tape",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/phrases.wav",
+        "tail": 4
+      }
+    },
+    {
+      "name": "di-warm",
+      "settings": {
+        "Mode": "Warm",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/phrases.wav",
+        "tail": 4
+      }
+    },
+    {
+      "name": "di-mod",
+      "settings": {
+        "Mode": "Mod",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/phrases.wav",
+        "tail": 4
+      }
+    },
+    {
+      "name": "di-standard-feedback-0300-time-0900",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "12:00",
+        "Feedback": "3:00",
+        "Time": "9:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/phrases.wav",
+        "tail": 4
+      }
+    }
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "pedal": "Boss NS-2 Noise Suppressor (Input -> Output)",
+  "comment": "Reamp: the same recorded guitar (captures/di/phrases.wav, `capture.py di`, played as hard as it was played) through the pedal at a few settings, for a by-ear A/B against NAM-X's type with the same DI and settings. Reduction mode; Send and Return empty, as in plans/ns-2.json. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise; 9:00 and 3:00 pointer horizontal.",
+  "knobs": [
+    "Threshold",
+    "Decay",
+    "Mode"
+  ],
+  "takes": [
+    {
+      "name": "bypass-di",
+      "bypass": true,
+      "signal": {
+        "type": "file",
+        "path": "captures/di/phrases.wav",
+        "tail": 2
+      }
+    },
+    {
+      "name": "di-threshold-0900",
+      "settings": {
+        "Threshold": "9:00",
+        "Decay": "12:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/phrases.wav",
+        "tail": 2
+      }
+    },
+    {
+      "name": "di-threshold-1200",
+      "settings": {
+        "Threshold": "12:00",
+        "Decay": "12:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/phrases.wav",
+        "tail": 2
+      }
+    },
+    {
+      "name": "di-threshold-0300",
+      "settings": {
+        "Threshold": "3:00",
+        "Decay": "12:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/phrases.wav",
+        "tail": 2
+      }
+    },
+    {
+      "name": "di-threshold-1200-decay-0300",
+      "settings": {
+        "Threshold": "12:00",
+        "Decay": "3:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/phrases.wav",
+        "tail": 2
+      }
+    }
+  ]
+}
