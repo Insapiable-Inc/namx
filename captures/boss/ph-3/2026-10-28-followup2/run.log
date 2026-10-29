@@ -1,0 +1,247 @@
+
+=== 2026-10-28T23:04:54 · run tools/capture/plans/ph-3-followup2.json · tool 518d80c0790df1ca68d1df326ab046b2a4392d60
+
+[1/29] bypass-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -36.9 dBFS · loopback -36.6 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[2/29] bypass-noise: white noise, 10 s at -12 dB
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -26.1 dBFS · loopback -25.4 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[3/29] step-rate-0900: white noise, 20 s at -12 dB
+  pedal ON · Mode Step · Rate 9:00 · Depth 5:00 · Res 7:00 (switch it on)
+  Pedal on, MODE STEP, Depth fully up (big jumps are easier to see).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -23.3 dBFS · loopback -25.4 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[4/29] step-rate-1030: white noise, 15 s at -12 dB
+  pedal ON · Mode Step · Rate 10:30 (changed) · Depth 5:00 · Res 7:00
+  Rate to about 10:30 (half-way between 9:00 and 12:00; needn't be exact).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -23.9 dBFS · loopback -25.4 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[5/29] step-depth-0700: white noise, 12 s at -12 dB
+  pedal ON · Mode Step · Rate 12:00 (changed) · Depth 7:00 (changed) · Res 7:00
+  Rate 12:00, Depth fully down: does Step still step, or sit still?
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -24.4 dBFS · loopback -25.4 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[6/29] step-rate-1200: white noise, 12 s at -12 dB
+  pedal ON · Mode Step · Rate 12:00 · Depth 5:00 (changed) · Res 7:00
+  Depth back up: the 85 ms reference again, same session as the other Rates.
+  Enter = record, s = skip, q = quit:
+Stopped; the takes recorded so far are kept.
+
+=== 2026-10-28T23:12:43 · run tools/capture/plans/ph-3-followup2.json · tool 518d80c0790df1ca68d1df326ab046b2a4392d60
+
+[5/29] step-depth-0700: white noise, 12 s at -12 dB
+  pedal ON · Mode Step · Rate 12:00 (changed) · Depth 7:00 (changed) · Res 7:00
+  Rate 12:00, Depth fully down: does Step still step, or sit still?
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -24.5 dBFS · loopback -25.4 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[6/29] step-rate-1200: white noise, 12 s at -12 dB
+  pedal ON · Mode Step · Rate 12:00 · Depth 5:00 (changed) · Res 7:00
+  Depth back up: the 85 ms reference again, same session as the other Rates.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -24.1 dBFS · loopback -25.4 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[7/29] step-rate-0130: white noise, 12 s at -12 dB
+  pedal ON · Mode Step · Rate 1:30 (changed) · Depth 5:00 · Res 7:00
+  Rate to about 1:30 (between 12:00 and 3:00).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -23.5 dBFS · loopback -25.4 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[8/29] step-rate-0300: white noise, 12 s at -12 dB
+  pedal ON · Mode Step · Rate 3:00 (changed) · Depth 5:00 · Res 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -24.5 dBFS · loopback -25.4 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[9/29] step-rate-0400: white noise, 12 s at -12 dB
+  pedal ON · Mode Step · Rate 4:00 (changed) · Depth 5:00 · Res 7:00
+  Rate to about 4:00 (between 3:00 and 5:00).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -24.3 dBFS · loopback -25.4 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[10/29] s12-frozen-1: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode 12 Stage (changed) · Rate 7:00 (changed) · Depth 5:00 · Res 7:00
+  MODE 12 STAGE, Rate fully down. Turn Rate up for a second or two, then back to 7:00 so the sweep stops somewhere new (by ear: a different brightness from the last point).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -33.5 dBFS · loopback -36.6 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[11/29] s12-frozen-2: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode 12 Stage · Rate 7:00 · Depth 5:00 · Res 7:00
+  Turn Rate up for a second or two, then back to 7:00 so the sweep stops somewhere new (by ear: a different brightness from the last point).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -33.6 dBFS · loopback -36.6 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[12/29] s12-frozen-3: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode 12 Stage · Rate 7:00 · Depth 5:00 · Res 7:00
+  Turn Rate up for a second or two, then back to 7:00 so the sweep stops somewhere new (by ear: a different brightness from the last point).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -33.5 dBFS · loopback -36.6 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[13/29] s12-frozen-4: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode 12 Stage · Rate 7:00 · Depth 5:00 · Res 7:00
+  Turn Rate up for a second or two, then back to 7:00 so the sweep stops somewhere new (by ear: a different brightness from the last point).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -33.5 dBFS · loopback -36.6 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[14/29] s12-frozen-4-res-0500: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode 12 Stage · Rate 7:00 · Depth 5:00 · Res 5:00 (changed)
+  Same frozen point as the take before — don't touch Rate; only Res moves.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -22.7 dBFS · loopback -36.6 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[15/29] s8-res-0300-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode 8 Stage (changed) · Rate 12:00 (changed) · Depth 7:00 (changed) · Res 3:00 (changed)
+  MODE 8 STAGE, Rate 12:00, Depth fully down (the sweep stops), Res 3:00.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -26.2 dBFS · loopback -36.6 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[16/29] s8-res-1200-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode 8 Stage · Rate 12:00 · Depth 7:00 · Res 12:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -29.5 dBFS · loopback -36.6 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[17/29] s8-res-0900-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode 8 Stage · Rate 12:00 · Depth 7:00 · Res 9:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -31.6 dBFS · loopback -36.6 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[18/29] s8-frozen-1-res-0700: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode 8 Stage · Rate 7:00 (changed) · Depth 5:00 (changed) · Res 7:00 (changed)
+  Res fully down, Depth fully up, Rate fully down. Turn Rate up for a second or two, then back to 7:00 so the sweep stops somewhere new (by ear: a different brightness from the last point).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -32.9 dBFS · loopback -36.6 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[19/29] s8-frozen-1-res-0500: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode 8 Stage · Rate 7:00 · Depth 5:00 · Res 5:00 (changed)
+  Same frozen point as the take before — don't touch Rate; only Res moves.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -23.9 dBFS · loopback -36.6 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[20/29] s8-frozen-2-res-0700: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode 8 Stage · Rate 7:00 · Depth 5:00 · Res 7:00 (changed)
+  Turn Rate up for a second or two, then back to 7:00 so the sweep stops somewhere new (by ear: a different brightness from the last point).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -32.9 dBFS · loopback -36.6 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[21/29] s8-frozen-2-res-0500: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode 8 Stage · Rate 7:00 · Depth 5:00 · Res 5:00 (changed)
+  Same frozen point as the take before — don't touch Rate; only Res moves.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -23.9 dBFS · loopback -36.6 dBFS · latency 448 samples (9.33 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[22/29] s8-frozen-3-res-0700: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode 8 Stage · Rate 7:00 · Depth 5:00 · Res 7:00 (changed)
+  Turn Rate up for a second or two, then back to 7:00 so the sweep stops somewhere new (by ear: a different brightness from the last point).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -32.9 dBFS · loopback -36.6 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[23/29] s8-frozen-3-res-0500: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode 8 Stage · Rate 7:00 · Depth 5:00 · Res 5:00 (changed)
+  Same frozen point as the take before — don't touch Rate; only Res moves.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -23.9 dBFS · loopback -36.6 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[24/29] s4-frozen-1-res-0700: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode 4 Stage (changed) · Rate 7:00 · Depth 5:00 · Res 7:00 (changed)
+  MODE 4 STAGE, Res fully down. Turn Rate up for a second or two, then back to 7:00 so the sweep stops somewhere new (by ear: a different brightness from the last point).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -33.5 dBFS · loopback -36.6 dBFS · latency 578 samples (12.04 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[25/29] s4-frozen-1-res-0500: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode 4 Stage · Rate 7:00 · Depth 5:00 · Res 5:00 (changed)
+  Same frozen point as the take before — don't touch Rate; only Res moves.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -23.9 dBFS · loopback -36.6 dBFS · latency 448 samples (9.33 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[26/29] s4-frozen-2-res-0700: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode 4 Stage · Rate 7:00 · Depth 5:00 · Res 7:00 (changed)
+  Turn Rate up for a second or two, then back to 7:00 so the sweep stops somewhere new (by ear: a different brightness from the last point).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -33.6 dBFS · loopback -36.6 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[27/29] s4-frozen-2-res-0500: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode 4 Stage · Rate 7:00 · Depth 5:00 · Res 5:00 (changed)
+  Same frozen point as the take before — don't touch Rate; only Res moves.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -22.0 dBFS · loopback -36.6 dBFS · latency 576 samples (12.00 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[28/29] s4-frozen-3-res-0700: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode 4 Stage · Rate 7:00 · Depth 5:00 · Res 7:00 (changed)
+  Turn Rate up for a second or two, then back to 7:00 so the sweep stops somewhere new (by ear: a different brightness from the last point).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -33.5 dBFS · loopback -36.6 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[29/29] s4-frozen-3-res-0500: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode 4 Stage · Rate 7:00 · Depth 5:00 · Res 5:00 (changed)
+  Same frozen point as the take before — don't touch Rate; only Res moves.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -21.3 dBFS · loopback -36.6 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+All 29 takes are in captures/boss/ph-3/2026-10-28-followup2.
