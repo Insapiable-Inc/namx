@@ -16,7 +16,7 @@ namespace namx
 // measures them). A digital chorus:
 //
 //   x'   = clip(x)                                  the input converter, dry and wet
-//   dry  = DRY_GAIN · x'                            +2.3 dB over bypass
+//   dry  = DRY_GAIN · x'                            +0.35 dB over bypass
 //   wet  = High · Low · TONE( clip_wet( E(E.Level) · x'(t − d(t)) ) )
 //   d(t) = centre − swing/2 + swing · u^power       u: a 0–1 triangle, 1 at the top
 //   mono out = dry + wet;  stereo out = wet | dry   (the pedal's Output A | Output B)
@@ -35,20 +35,21 @@ namespace ce5
 // (Dd8Delay.h): an assumption, the pedal sat before the amp.
 constexpr float REFERENCE_DBFS = -6.0f;
 
-constexpr float DRY_GAIN_DB = 2.32f;
+constexpr float DRY_GAIN_DB = 0.35f;
 constexpr float DRY_LATENCY_MS = 0.98f;
 // TONE's own group delay at 1–5 kHz (the pedal's wall is linear-phase, its delay part of
 // the measured ones): taken off the wet's delays so the dry-to-wet spacing stays the pedal's.
 constexpr float TONE_DELAY_MS = 0.07f;
 constexpr float INPUT_CEILING_DB = 1.18f; // re REFERENCE_DBFS
 // After E.Level: 1.02 dB under the wet's level at E.Level 5:00 with the reference in.
-constexpr float WET_CEILING_DB = 4.69f - 1.02f;
+constexpr float WET_CEILING_DB = 2.70f - 1.02f;
 
 // Knob maps at 7:00, 9:00, 12:00, 3:00, 5:00 (fraction of the rotation), linear in between.
 constexpr std::array<float, 5> KNOB_AT{0.0f, 0.2f, 0.5f, 0.8f, 1.0f};
 
-// E.Level: the wet at 1 kHz re the input (mono output); 7:00 doesn't mute it.
-constexpr std::array<float, 5> ELEVEL_DB{-18.86f, -14.81f, -8.48f, -0.68f, 4.69f};
+// E.Level: the wet at 1 kHz re the input (mono output); 7:00 doesn't mute it. (Re-measured
+// 2026-10-29: the dry and these were ~2 dB high, the bypass reference read low.)
+constexpr std::array<float, 5> ELEVEL_DB{-20.85f, -16.80f, -10.47f, -2.67f, 2.70f};
 
 // Depth, at Rate 12:00 (0.86 Hz): the delay's minimum and swing (ms, re the input) and
 // the triangle's bend.
