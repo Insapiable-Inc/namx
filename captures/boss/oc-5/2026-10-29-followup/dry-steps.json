@@ -1,0 +1,60 @@
+{
+  "take": "dry-steps",
+  "pedal": "Boss OC-5 Octave (mono: Input -> Output)",
+  "bypass": false,
+  "settings": {
+    "Mode": "Vintage",
+    "Direct Level": "12:00",
+    "+1 OCT Level": "7:00",
+    "-1 OCT Level": "7:00",
+    "-2 OCT/Range": "7:00"
+  },
+  "note": "Every octave knob fully down: the dry path alone.",
+  "signal": {
+    "type": "steps",
+    "freq": 220,
+    "levels_db": [
+      -30,
+      -24,
+      -18,
+      -15,
+      -12,
+      -9,
+      -6,
+      -3,
+      0,
+      3
+    ],
+    "step_seconds": 1.0,
+    "gap_seconds": 0,
+    "tail": 1
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -21.4,
+    "loop": -9.93
+  },
+  "latency_samples": 578,
+  "latency_quality": 0.998,
+  "xruns": 0,
+  "played_sha256": "df1ca24d09b0b5d0e2c4733622a9e818cfe750ddec3a438f1e6435e3e7ebd4a7",
+  "recorded_at": "2026-10-29T10:27:26",
+  "tool_commit": "aa07c5aae0c70410c1488ca61c9465630fa08b85",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX4",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Scarlett 8i6 3rd gen; pedal feed: analogue out 3 (PCM 3, direct routing); loopback: out 4 -> line in 5; pedal into input 2, INST, AIR off, pad ON, gain min; no reamp box; calibration from the TR-2/DD-8 sessions; OC-5 on a 9 V power supply, GUITAR/BASS switch on GUITAR; Input -> Output"
+  }
+}

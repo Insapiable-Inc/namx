@@ -2,13 +2,15 @@
 """Measures the Boss OC-5 Octave from its session (plans/oc-5.json, mono: Input -> Output).
 Findings: captures/boss/oc-5/README.md.
 
-    analyze_oc5.py SESSION          # writes SESSION/fit/oc-5.{json,svg}
+    analyze_oc5.py SESSION FOLLOWUP     # writes SESSION/fit/oc-5.{json,svg}
 
 What it measures (every level in dB re the guitar's peak at the pedal input, the rig's
 reference; Direct and the other octaves fully down unless said):
   dry path     dry-sweep (Direct 12:00) against the bypass sweep: delay, gain, response
   dry clip     a held 220 Hz sine at the guitar's peak, Direct 12:00 and 5:00: the
-               waveform's ceiling, the clip point it implies, the 3rd harmonic
+               waveform's ceiling and 3rd harmonic; the follow-up's 220 Hz staircase
+               (-30 to +3 dB) and plucks at Direct 12:00 against their bypass: gain,
+               ceiling and 3rd harmonic per step, the clip point
   knob laws    the 220 Hz sine per position: Direct (the dry) and -1 OCT (Vintage)
   waveforms    each octave's output folded over its own period (the 220 Hz sine), and
                its harmonics
@@ -17,6 +19,10 @@ reference; Direct and the other octaves fully down unless said):
   chords       a low note under a higher one, picked together: the level of each note's
                shifted copy
   fade         two notes dying over 10 s: the shifted copy's level against the input's
+The sweeps' impulse responses are rolled by PRE_ROLL before they're cut to 0.5 s: the
+bypass's peak sits a fraction of a sample before the alignment (the pedal input's analog
+path is a little faster than the loopback's), so ~20 % of its energy wraps to the end of
+the circular deconvolution, and cutting it off read the bypass ~2 dB low (2026-10-29).
 """
 
 import argparse
@@ -33,6 +39,8 @@ import analysis
 import analyze_dd8
 
 RATE = 48000
+PRE_ROLL = RATE // 20  # 50 ms: what wraps to negative time stays in the window
+STEP_LEVELS_DB = [-30, -24, -18, -15, -12, -9, -6, -3, 0, 3]
 NOTES = [73.42, 82.41, 110.0, 146.83, 196.0, 246.94, 329.63, 493.88, 659.26, 880.0, 1318.51]
 NOTE_SECONDS = 3.0
 PAIRS = [(82.41, 196.0), (110.0, 329.63), (146.83, 493.88), (196.0, 659.26)]
@@ -88,11 +96,12 @@ def dry_path(session):
     bypass, _ = analyze_dd8.impulse_response(session, "bypass-sweep")
     dry, _ = analyze_dd8.impulse_response(session, "dry-sweep")
     n = RATE // 2
-    ratio = np.fft.rfft(dry[:n]) / np.fft.rfft(bypass[:n])
+    ratio = (np.fft.rfft(np.roll(dry, PRE_ROLL)[:n])
+             / np.fft.rfft(np.roll(bypass, PRE_ROLL)[:n]))
     freqs = np.fft.rfftfreq(n, 1 / RATE)
     band = (freqs > 300) & (freqs < 10000)
     slope = np.polyfit(freqs[band], np.unwrap(np.angle(ratio[band])), 1)[0]
-    bands = [31.5, 63, 125, 250, 500, 1000, 2000, 4000, 8000, 12000, 16000, 18000, 20000]
+    bands = [31.5, 63, 125, 250, 500, 1000, 2000, 4000, 8000, 12000, 16000, 18000]  # deconvolved to 19 kHz
     response = {f"{f:g}": round(float(db(np.mean(np.abs(ratio[(freqs > f / 1.06)
                                                               & (freqs < f * 1.06)])))), 2)
                 for f in bands}
@@ -113,7 +122,7 @@ def fold(x, f, bins=48):
     return np.array([x[phase == k].mean() for k in range(bins)])
 
 
-def dry_clip(session, gain_db):
+def dry_clip(session, followup):
     out = {}
     for position in ("12:00", "5:00"):
         x = held(session, f"direct-{position.replace(':', '').zfill(4)}")
@@ -122,8 +131,28 @@ def dry_clip(session, gain_db):
                          "fundamental_db": round(float(db(amplitude_at(x, 220))), 2),
                          "h3_db_re_fundamental": round(float(db(amplitude_at(x, 660))
                                                              - db(amplitude_at(x, 220))), 1)}
-    # Direct 12:00's ceiling over its small-signal gain: where the input clips
-    out["clip_point_db_re_reference"] = round(out["12:00"]["ceiling_db"] - gain_db, 1)
+    bypass, dry = take(followup, "bypass-dry-steps"), take(followup, "dry-steps")
+    steps = []
+    for i, level in enumerate(STEP_LEVELS_DB):
+        part = slice(int((i + 0.2) * RATE), int((i + 0.9) * RATE))
+        reference, x = amplitude_at(bypass[part], 220), amplitude_at(dry[part], 220)
+        steps.append({"input_db": level, "gain_db": round(float(db(x / reference)), 2),
+                      "peak_db": round(float(db(np.abs(dry[part]).max())), 2),
+                      "h3_db_re_fundamental": round(float(db(amplitude_at(dry[part], 660) / x)), 1)})
+    clean = [s["gain_db"] for s in steps if s["h3_db_re_fundamental"] < -60]
+    ceiling = max(s["peak_db"] for s in steps)
+    out["steps_direct_1200"] = steps
+    out["small_signal_gain_db"] = round(float(np.median(clean)), 2)
+    out["ceiling_db_direct_1200"] = round(ceiling, 2)
+    out["clip_point_db_re_reference"] = round(ceiling - float(np.median(clean)), 1)
+    bypass, dry = take(followup, "bypass-dry-plucks"), take(followup, "dry-plucks")
+    out["plucks_110hz"] = [
+        {"bypass_peak_db": round(float(db(np.abs(bypass[k * 3 * RATE:k * 3 * RATE + RATE // 2]).max())), 1),
+         "dry_peak_db": round(float(db(np.abs(dry[k * 3 * RATE:k * 3 * RATE + RATE // 2]).max())), 1),
+         "dry_re_bypass_at_1s_db": round(float(db(
+             np.abs(dry[k * 3 * RATE + RATE:k * 3 * RATE + RATE + 2400]).max()
+             / np.abs(bypass[k * 3 * RATE + RATE:k * 3 * RATE + RATE + 2400]).max())), 1)}
+        for k in range(3)]
     return out
 
 
@@ -263,14 +292,17 @@ def plot(out_dir, result, cycles):
 def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("session")
+    parser.add_argument("followup")
     args = parser.parse_args()
     session = pathlib.Path(args.session).expanduser()
-    if not (session / "rig.json").exists():
-        sys.exit(f"{session} is not a capture session")
+    followup = pathlib.Path(args.followup).expanduser()
+    for s in (session, followup):
+        if not (s / "rig.json").exists():
+            sys.exit(f"{s} is not a capture session")
     dry = dry_path(session)
     shapes, cycles = waveforms(session)
-    result = {"pedal": "Boss OC-5 Octave", "session": session.name, "dry_path": dry,
-              "dry_clip": dry_clip(session, dry["gain_db_re_bypass_1khz_direct_1200"]),
+    result = {"pedal": "Boss OC-5 Octave", "sessions": [session.name, followup.name],
+              "dry_path": dry, "dry_clip": dry_clip(session, followup),
               "knob_laws": knob_laws(session), "waveforms": shapes,
               "tracking": tracking(session), "chords": chords(session), "fades": fades(session)}
     out_dir = session / "fit"

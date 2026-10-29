@@ -10,7 +10,7 @@ the VINTAGE/POLY switch and the GUITAR/BASS switch.
 | Session | Plan | What |
 |---|---|---|
 | [`2026-10-29/`](2026-10-29/) | [`oc-5.json`](../../../tools/capture/plans/oc-5.json) | 34 takes: the dry path, the knob laws, each octave alone with a held sine, re-picked notes from 73 Hz to 1.3 kHz, two dying notes, low-under-high note pairs, Range at three positions |
-| `2026-10-29-followup/` | [`oc-5-followup.json`](../../../tools/capture/plans/oc-5-followup.json) | 4 takes: the dry path's clip against the level (to record) |
+| [`2026-10-29-followup/`](2026-10-29-followup/) | [`oc-5-followup.json`](../../../tools/capture/plans/oc-5-followup.json) | 4 takes: the dry path's clip against the level (a 220 Hz staircase, 110 Hz plucks) |
 | — | [`oc-5-reamp.json`](../../../tools/capture/plans/oc-5-reamp.json) | the guitar DI at six blends, for the by-ear A/B (to record, after the DI) |
 
 Purpose (user, 2026-10-29): a NAM-X octave only if the pedal sounds good — so this pass
@@ -18,13 +18,13 @@ measures what a model would need, and the reamp takes decide.
 
 ## At a glance
 
-- **Digital.** The dry path is a converter delay: **1.00 ms** late (48 samples), +2.3 dB at
-  Direct 12:00, flat ±0.6 dB 63 Hz–12 kHz, −20 dB at 20 kHz.
-- **The dry path hard-clips at about −10 dB re the guitar's peak** (to be confirmed: the
-  follow-up). A held 220 Hz sine at the guitar's peak comes out a square wave: flat tops,
-  the 3rd harmonic 11.5 dB under the fundamental, the same shape at Direct 12:00 and 5:00
-  (ceilings −7.8 and −1.8 dB), so the clip is before the Direct knob. The octaves don't see
-  it (they follow a dying note 1:1 from −3 dB): the dry has its own stage.
+- **Digital.** The dry path is a converter delay: **1.00 ms** late (48 samples), **+0.3 dB**
+  at Direct 12:00, flat within ±0.2 dB from 63 Hz to 18 kHz.
+- **The dry path hard-clips at −8.1 dB re the guitar's peak.** Clean (3rd harmonic under
+  −77 dB) up to −9 dB, then a flat ceiling; a pluck at the guitar's peak loses 7.8 dB of
+  its attack. The clip is before the Direct knob (the same square at 12:00 and 5:00,
+  ceilings −8.0 and −1.8 dB). The octaves don't see it (they follow a dying note 1:1 from
+  −3 dB): the dry has its own stage.
 - **Two engines.** Vintage is an analog-style divider: square-wave subs (−1 locks on in
   3–10 ms, −2 in 9–52), monophonic — two notes make it follow the lower one, or wobble.
   Poly is a polyphonic shifter (both notes of a pair shifted, 7–84 ms to lock on, longer
@@ -43,19 +43,25 @@ measures what a model would need, and the reamp takes decide.
 
 ## The dry path
 
-`dry-sweep` (Direct 12:00, every octave down, −12 dB) against `bypass-sweep`: 1.002 ms late,
+`dry-sweep` (Direct 12:00, every octave down, −12 dB) against `bypass-sweep`: 1.006 ms late,
 the same at every frequency (a converter's latency, like the CE-5 and BF-3), response re
-bypass −1.0 dB at 31.5 Hz, +1.4 at 63, +1.9 at 125, +2.1–2.8 dB from 250 Hz to 12 kHz, +1.0
-at 16 kHz, −0.2 at 18 kHz, −20 dB at 20 kHz (the converter's anti-alias filter).
+bypass −1.3 dB at 31.5 Hz, 0.0 at 63, then +0.2 to +0.4 dB from 125 Hz to 18 kHz.
 
-**The clip.** The held sine at the guitar's peak (`direct-*`): every position gives the same
-squared-off wave (fundamental and 3rd harmonic at −11.5 dB, scaled by the knob). Direct
-12:00's ceiling (−7.8 dB) over its small-signal gain (+2.3 dB) puts the clip at −10.0 dB
-re the guitar's peak. The sweep at −12 dB is unclipped (its peak stays at −11.6 dB). A
-real guitar's peak is its pick attack, so this would crunch the first milliseconds of hard
-notes by up to 10 dB — audible, if real. Only a full-level sine and one level shows it, so
-it stays a finding to confirm: the follow-up's staircase (−30 to +3 dB) and plucks give the
-curve and its knee.
+**The clip** (follow-up, Direct 12:00, octaves down, a 220 Hz staircase against its bypass):
+
+| Input (dB re the guitar's peak) | −30 … −9 | −6 | −3 | 0 | +3 |
+|---|---|---|---|---|---|
+| Gain at 220 Hz (dB) | +0.07 | −1.14 | −3.59 | −6.35 | −9.22 |
+| Output peak (dB) | input + 0.1 | −8.0 | −8.0 | −8.0 | −8.1 |
+| 3rd harmonic re fundamental (dB) | −77 to −90 | −20.2 | −13.7 | −11.5 | −10.5 |
+
+A hard clip: clean to −9 dB, then a flat ceiling at −8.0 dB — the clip point is **−8.1 dB re
+the guitar's peak**. The held sines of the first session (`direct-*`) show the same square at
+every Direct position, scaled by the knob (ceilings −8.0 at 12:00, −1.8 at 5:00), so the
+clip comes before Direct. Plucks at the guitar's peak (110 Hz, 0.6 s decay): the first
+~100 ms come out 7.8 dB under the bypass's peak, then the note passes unchanged (0.0 dB at
+1 s). So the OC-5 squares off the attack of every hard-picked note by up to 8 dB; at a
+lower input (a quieter guitar or a pad) it wouldn't.
 
 ## The knobs
 
@@ -134,7 +140,6 @@ compressed. Where the divider finally loses a note is below −33 dB — not rea
 
 ## Open
 
-- **The dry clip** (follow-up plan written: staircase and plucks at Direct 12:00).
 - **By ear:** the reamp takes (`oc-5-reamp.json`, after the guitar DI) — the decision on a
   NAM-X octave rests on them.
 - Not measured: the +1 / −2 knob laws (assumed the −1's), Range's ceiling between 7:00 and
@@ -143,8 +148,8 @@ compressed. Where the divider finally loses a note is below −33 dB — not rea
 
 ## For NAM-X (if it sounds good)
 
-What a model would need, from the above: a dry path with its clip (if confirmed) and the
-audio taper; **Vintage** as a divider: a lowest-note pitch tracker fast enough to lock in
+What a model would need, from the above: a dry path with its hard clip at −8.1 dB re
+the guitar's peak (before the Direct knob) and the audio taper; **Vintage** as a divider: a lowest-note pitch tracker fast enough to lock in
 a few ms (or a zero-crossing flip-flop on a filtered input, as the OC-2), driving a
 square (−1) and a half-rate square (−2) through a ~15 Hz high-pass and a low-pass, scaled
 by the input's envelope — the chord glitches come for free with a flip-flop; **+1** as a
@@ -155,6 +160,12 @@ at the lowest note's half). The tracking table is the acceptance test: pitch, le
 note, lock-on time.
 
 ## Lessons
+
+- **Roll a deconvolved impulse response before cutting it.** The bypass's peak lands a
+  fraction of a sample before the loopback alignment, so a fifth of its energy wraps to
+  the end of the circular deconvolution; cutting the first 0.5 s read the bypass ~2 dB low
+  (1 dB in the DD-8 sessions) and a digital pedal's gain re bypass ~2 dB high. Caught here
+  because the staircase's gain (+0.07 dB) disagreed with the sweep's (+2.3 dB).
 
 - **A long window around a decaying note shows sidebands.** The −2 octave's low D read
   20.1 Hz on a 1 s window: the note's 0.8 s decay put sidebands ±1.6 Hz around the true
