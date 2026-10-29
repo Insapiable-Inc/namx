@@ -74,12 +74,13 @@ constexpr Chain ANALOG_LOOP{{
     {},
 }};
 
-// The first repeat's tone, re 1 kHz: flat to 4 kHz, −2.1 dB at 8 kHz, −29.5 dB at 16 kHz,
-// +1.5 dB at 63 Hz (fitted within 0.2 dB per third octave).
+// The first repeat's tone, re 1 kHz: flat to 4 kHz, −2.2 dB at 8 kHz, −28.9 dB at 16 kHz,
+// +1.9 dB at 63 Hz (within 0.07 dB per third octave). The voicings' chains were refitted
+// 2026-10-29 (tools/capture/fit_voicings.py) when the study's dry reference was corrected.
 constexpr Chain STANDARD_OUT{{
-    {FilterKind::LOW_PASS, 6248.9f, 0.721f, 0.0f},
-    {FilterKind::LOW_PASS, 11118.6f, 2.5f, 0.0f},
-    {FilterKind::PEAK, 60.3f, 0.917f, 1.61f},
+    {FilterKind::LOW_PASS, 13461.9f, 0.300f, 0.0f},
+    {FilterKind::LOW_PASS, 8461.5f, 1.311f, 0.0f},
+    {FilterKind::PEAK, 59.7f, 0.796f, 1.89f},
     {},
 }};
 
@@ -103,37 +104,38 @@ constexpr Voicing ANALOG{
     .loop = ANALOG_LOOP,
 };
 
-// A ~150 Hz – 5 kHz band (−15 / −9.6 dB at 31.5 / 63 Hz, +1.2 dB at 250 Hz, −13.9 dB at
-// 8 kHz, −37 dB at 16 kHz; within 1 dB), wow (0.53 Hz, 2.0 cents rms) and flutter
-// (6.7 Hz, 0.6 cents rms) — as delay swings, 2.0 cents rms at 0.53 Hz is ±0.49 ms. The
-// measured 2.4 dB level wobble is left out (its phase against the wow is unknown).
+// A ~150 Hz – 5 kHz band (−15 / −9.2 dB at 31.5 / 63 Hz, +1.4 dB at 250 Hz, −14.0 dB at
+// 8 kHz, −36.5 dB at 16 kHz; within 0.2 dB), wow (0.53 Hz, 1.65 cents rms) and flutter
+// (6.7 Hz, 0.48 cents rms) — as delay swings, 1.65 cents rms at 0.53 Hz is ±0.40 ms
+// (corrected 2026-10-29: the study's band rms read 22 % high). The measured 2.4 dB level
+// wobble is left out (its phase against the wow is unknown).
 constexpr Voicing TAPE{
     .repeat_db = 7.9f,
     .ceiling_db = -7.75f,
     .feedback_db = {-10.8f, -6.65f, -0.04f, 0.003f},
     .out = {{
-        {FilterKind::HIGH_PASS, 62.5f, 0.4f, 0.0f},
-        {FilterKind::LOW_PASS, 12809.8f, 1.437f, 0.0f},
-        {FilterKind::LOW_PASS, 3510.1f, 1.023f, 0.0f},
-        {FilterKind::PEAK, 320.5f, 0.867f, 3.57f},
+        {FilterKind::HIGH_PASS, 49.0f, 0.300f, 0.0f},
+        {FilterKind::LOW_PASS, 13737.2f, 0.976f, 0.0f},
+        {FilterKind::LOW_PASS, 3746.2f, 0.900f, 0.0f},
+        {FilterKind::PEAK, 287.3f, 0.625f, 3.78f},
     }},
     .loop_low_pass_hz = LOOP_LOW_PASS_HZ,
     .lfo_hz = 0.53f,
-    .lfo_ms = 0.49f,
+    .lfo_ms = 0.405f,
     .flutter_hz = 6.7f,
-    .flutter_ms = 0.0116f,
+    .flutter_ms = 0.0093f,
 };
 
-// Standard with a warm tilt: +2–3 dB below 250 Hz, −1.6 dB at 4 kHz, −4.7 dB at 8 kHz,
-// −18 dB at 16 kHz (within 0.6 dB), 1.6 dB quieter, the clip 1.6 dB later.
+// Standard with a warm tilt: +2.4–3.5 dB below 250 Hz, −2.1 dB at 4 kHz, −4.8 dB at 8 kHz,
+// −17.6 dB at 16 kHz (within 0.3 dB), 1.6 dB quieter, the clip 1.6 dB later.
 constexpr Voicing WARM{
     .repeat_db = 2.85f,
     .ceiling_db = -2.46f,
     .feedback_db = {-11.6f, -7.46f, -0.82f, 0.06f},
     .out = {{
-        {FilterKind::LOW_SHELF, 504.3f, 0.429f, 3.45f},
-        {FilterKind::LOW_PASS, 7168.2f, 0.598f, 0.0f},
-        {FilterKind::LOW_PASS, 13778.6f, 2.5f, 0.0f},
+        {FilterKind::LOW_SHELF, 649.4f, 0.389f, 4.62f},
+        {FilterKind::LOW_PASS, 10615.1f, 0.536f, 0.0f},
+        {FilterKind::LOW_PASS, 20503.9f, 0.396f, 0.0f},
         {},
     }},
     .loop_low_pass_hz = LOOP_LOW_PASS_HZ,
