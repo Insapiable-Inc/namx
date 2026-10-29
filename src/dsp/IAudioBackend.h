@@ -12,7 +12,8 @@ namespace namx
 // Platform-agnostic audio backend interface.
 //
 // Linux  → JackBackend (full JACK client with graph routing).
-// Windows → WasapiBackend (direct WASAPI client, no graph).
+// Windows → WasapiBackend (direct WASAPI client, no graph; the default) or AsioBackend
+//           (an ASIO driver, Steinberg's SDK under GPLv3), as the user picks.
 //
 // AudioEngine owns one of these (chosen at runtime by IAudioBackend::create())
 // and implements Callback to receive RT audio. MainWindow checks
@@ -137,9 +138,27 @@ public:
         return false;
     }
 
-    // Factory: returns the right backend for this build's target platform.
-    // Defined in JackBackend.cpp (Linux) or WasapiBackend.cpp (Windows).
-    static unique_ptr<IAudioBackend> create();
+    // The driver's own settings window (ASIO: where its buffer size is set). Only while
+    // running; called on the GUI thread.
+    virtual bool has_control_panel() const {
+        return false;
+    }
+    virtual void open_control_panel() {
+    }
+
+    // The driver asked to be restarted (ASIO: its buffer size or sample rate changed in
+    // its own settings). Reads and clears the request; the GUI polls it and restarts.
+    virtual bool take_restart_request() {
+        return false;
+    }
+
+    // The drivers this platform offers, the default first: {"JACK"} on Linux,
+    // {"WASAPI", "ASIO"} on Windows. The names are stored in settings (audio/driver).
+    static vector<string> drivers();
+
+    // Factory: the backend for `driver` (one of drivers(); empty or unknown = the
+    // default). Defined in JackBackend.cpp (Linux) or WasapiBackend.cpp (Windows).
+    static unique_ptr<IAudioBackend> create(const string& driver = {});
 };
 
 } // namespace namx

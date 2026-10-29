@@ -223,6 +223,21 @@ QWidget* SettingsDialog::build_audio_page() {
     xruns->addStretch();
 
     QFormLayout* form = make_form();
+    audio_form = form;
+    const vector<string> drivers = IAudioBackend::drivers();
+    if (drivers.size() > 1) {
+        driver_combo = new QComboBox;
+        for (const string& name : drivers) {
+            driver_combo->addItem(QString::fromStdString(name));
+        }
+        driver_combo->setToolTip(
+            "WASAPI: Windows' own audio, shared with other apps (or exclusive). ASIO: the "
+            "interface's own driver, usually the lowest latency.");
+        connect(driver_combo, &QComboBox::activated, this, [this](int index) {
+            choose_driver(driver_combo->itemText(index));
+        });
+        form->addRow("Driver", driver_combo);
+    }
     form->addRow("Input", input_combo);
     form->addRow("Output", output_combo);
     form->addRow("Server", server_label);
@@ -230,7 +245,15 @@ QWidget* SettingsDialog::build_audio_page() {
     form->addRow("Buffer", buffer_label);
     form->addRow("Round-trip latency", latency_label);
     form->addRow("Xruns", xruns);
-    if (targets.engine.supports_exclusive_mode()) {
+    control_panel_button = new QPushButton("Driver settings…");
+    control_panel_button->setToolTip(
+        "The driver's own settings window: its buffer size, and on most interfaces the "
+        "sample rate. NAM-X restarts its audio when they change.");
+    connect(control_panel_button, &QPushButton::clicked, this, [this] {
+        targets.engine.open_control_panel();
+    });
+    form->addRow("", control_panel_button);
+    if (targets.engine.supports_exclusive_mode() || driver_combo) {
         exclusive_box = new QCheckBox("Exclusive mode");
         exclusive_box->setToolTip(
             "Take the devices over: the lowest latency WASAPI offers, but no other app can "
@@ -253,10 +276,18 @@ QWidget* SettingsDialog::build_audio_page() {
         "Models without a loudness value play as they are.");
     connect(normalize_box, &QCheckBox::toggled, this, targets.set_normalize_models);
     form->addRow("", normalize_box);
-    return make_page("The same choice as the In: / Out: items in the status bar. Sample rate "
-                     "and buffer size are set by the audio server (PipeWire or JACK) and "
-                     "shared by every application using it.",
-                     form);
+#ifdef Q_OS_WIN
+    const char* about =
+        "The same choice as the In: / Out: items in the status bar. WASAPI takes Windows' "
+        "sample rate and buffer; an ASIO driver sets its buffer size (and often the sample "
+        "rate) in its own window: Driver settings.";
+#else
+    const char* about =
+        "The same choice as the In: / Out: items in the status bar. Sample rate and buffer "
+        "size are set by the audio server (PipeWire or JACK) and shared by every application "
+        "using it.";
+#endif
+    return make_page(about, form);
 }
 
 void SettingsDialog::refresh_audio_devices() {
@@ -278,7 +309,39 @@ void SettingsDialog::refresh_audio_devices() {
     }
 }
 
+void SettingsDialog::choose_driver(const QString& name) {
+    const vector<string> drivers = IAudioBackend::drivers();
+    const QString previous = QString::fromStdString(
+        targets.engine.driver().empty() ? drivers.front() : targets.engine.driver());
+    if (name == previous) {
+        return;
+    }
+    // Each driver keeps its own device choice: their IDs mean nothing to each other.
+    QSettings s;
+    for (const char* key : {"inputDeviceId", "outputDeviceId"}) {
+        s.setValue(QString("audio/%1/%2").arg(previous, key), s.value(QString("audio/") + key));
+        s.setValue(QString("audio/") + key, s.value(QString("audio/%1/%2").arg(name, key)));
+    }
+    s.setValue("audio/driver", name);
+    targets.engine.set_driver(name.toStdString());
+    targets.status_bar.load_device_ids();
+    if (targets.restart_audio) {
+        targets.restart_audio();
+    }
+    refresh_audio_devices();
+    refresh_audio_info();
+}
+
 void SettingsDialog::refresh_audio_info() {
+    if (driver_combo) {
+        const QSignalBlocker block(driver_combo);
+        const int index = driver_combo->findText(QString::fromStdString(targets.engine.driver()));
+        driver_combo->setCurrentIndex(index >= 0 ? index : 0);
+    }
+    audio_form->setRowVisible(control_panel_button, targets.engine.has_control_panel());
+    if (exclusive_box) {
+        audio_form->setRowVisible(exclusive_box, targets.engine.supports_exclusive_mode());
+    }
     // The backend's one-line status reads "JACK  ●  48000 Hz  ●  stereo out".
     const QString status = QString::fromStdString(targets.engine.backend_status());
     const bool running = targets.engine.is_running();

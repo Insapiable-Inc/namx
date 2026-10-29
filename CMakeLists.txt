@@ -151,12 +151,15 @@ set(GUI_SOURCES
     src/dsp/Metronome.h
 )
 
-# Per-platform backend. Each .cpp defines IAudioBackend::create(), exactly one
-# of which is compiled per build, so the factory is unambiguous.
+# Per-platform backends. JackBackend.cpp (Linux) or WasapiBackend.cpp (Windows) defines
+# IAudioBackend::create(driver), exactly one per build; on Windows it also makes the
+# AsioBackend (Steinberg's ASIO SDK, external/asiosdk, under GPLv3).
 if(WIN32)
     list(APPEND GUI_SOURCES
         src/dsp/WasapiBackend.cpp
         src/dsp/WasapiBackend.h
+        src/dsp/AsioBackend.cpp
+        src/dsp/AsioBackend.h
         packaging/namx.rc   # exe icon + version block
         src/midi/WinMidiInput.cpp
     )
@@ -253,7 +256,7 @@ set_target_properties(nam_core PROPERTIES AUTOMOC OFF AUTOUIC OFF AUTORCC OFF)
 # the platform backends, which only the app has.
 set(DSP_SOURCES ${GUI_SOURCES})
 list(FILTER DSP_SOURCES INCLUDE REGEX "^src/dsp/.*\\.cpp$")
-list(FILTER DSP_SOURCES EXCLUDE REGEX "(AudioEngine|JackBackend|WasapiBackend)\\.cpp$")
+list(FILTER DSP_SOURCES EXCLUDE REGEX "(AudioEngine|JackBackend|WasapiBackend|AsioBackend)\\.cpp$")
 add_library(namx_dsp OBJECT ${DSP_SOURCES})
 target_include_directories(namx_dsp PUBLIC src/dsp)
 target_include_directories(namx_dsp SYSTEM PUBLIC
@@ -264,6 +267,25 @@ target_include_directories(namx_dsp SYSTEM PUBLIC
 target_compile_options(namx_dsp PRIVATE ${NAM_WARNING_FLAGS})
 target_link_libraries(namx_dsp PUBLIC nam_core Qt6::Core) # Log.cpp: QLoggingCategory
 set_target_properties(namx_dsp PROPERTIES AUTOMOC OFF AUTOUIC OFF AUTORCC OFF)
+
+# Steinberg's ASIO SDK, host side (Windows; third-party: warnings off). Vendored, not a
+# submodule: Steinberg publishes it only as a zip (external/asiosdk/VENDORED.md).
+if(WIN32)
+    set(ASIO_SDK_DIR "${EXTERNAL_DIR}/asiosdk")
+    add_library(asio_sdk OBJECT
+        ${ASIO_SDK_DIR}/common/asio.cpp
+        ${ASIO_SDK_DIR}/host/asiodrivers.cpp
+        ${ASIO_SDK_DIR}/host/pc/asiolist.cpp
+    )
+    target_include_directories(asio_sdk SYSTEM PUBLIC
+        ${ASIO_SDK_DIR}/common
+        ${ASIO_SDK_DIR}/host
+        ${ASIO_SDK_DIR}/host/pc
+    )
+    # Not namx_build_options: its WIN32_LEAN_AND_MEAN drops the COM headers the SDK needs.
+    target_compile_options(asio_sdk PRIVATE ${NAM_THIRD_PARTY_FLAGS})
+    set_target_properties(asio_sdk PROPERTIES AUTOMOC OFF AUTOUIC OFF AUTORCC OFF)
+endif()
 
 # ---------------------------------------------------------------------------
 # Target
@@ -302,8 +324,9 @@ target_link_libraries(namx PRIVATE
 )
 
 if(WIN32)
-    # WASAPI lives in these system DLLs.
-    target_link_libraries(namx PRIVATE ole32 mmdevapi avrt winmm)
+    # WASAPI lives in these system DLLs; ASIO drivers are COM objects found in the
+    # registry (ole32, advapi32), given the desktop window (user32).
+    target_link_libraries(namx PRIVATE asio_sdk ole32 mmdevapi avrt winmm advapi32 user32)
 else()
     target_link_libraries(namx PRIVATE ${JACK_LIBRARIES} ${ALSA_LIBRARIES})
 endif()
@@ -359,6 +382,12 @@ foreach(notice
     install(FILES "${notice_src}" DESTINATION ${NAM_NOTICES_DIR}
             RENAME "${notice_name}" COMPONENT notices)
 endforeach()
+if(WIN32)
+    install(FILES "${EXTERNAL_DIR}/asiosdk/LICENSE.txt" DESTINATION ${NAM_NOTICES_DIR}
+            RENAME ASIO-SDK-LICENSE.txt COMPONENT notices)
+    install(FILES packaging/licenses/ASIO-SDK-host-BSD.txt
+            DESTINATION ${NAM_NOTICES_DIR} COMPONENT notices)
+endif()
 
 # ---------------------------------------------------------------------------
 # Tests (opt-in): -DNAM_BUILD_TESTS=ON → `ctest` or run the binaries directly.

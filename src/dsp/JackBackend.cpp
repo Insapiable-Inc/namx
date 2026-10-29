@@ -9,7 +9,11 @@
 namespace namx
 {
 
-unique_ptr<IAudioBackend> IAudioBackend::create() {
+vector<string> IAudioBackend::drivers() {
+    return {"JACK"};
+}
+
+unique_ptr<IAudioBackend> IAudioBackend::create(const string& /*driver*/) {
     return make_unique<JackBackend>();
 }
 

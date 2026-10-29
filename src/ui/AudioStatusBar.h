@@ -41,6 +41,8 @@ public:
 
     // Selects and persists a device (the status bar menus and the settings dialog).
     void set_device(bool input, const QString& id);
+    // Reads the chosen device IDs again (the Settings' driver switch swaps them).
+    void load_device_ids();
     void reset_counters();
 
 protected:

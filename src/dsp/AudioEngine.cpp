@@ -189,7 +189,8 @@ bool AudioEngine::start(const string& client_name) {
         return true;
     }
 
-    backend = IAudioBackend::create();
+    backend = IAudioBackend::create(driver_wanted);
+    backend_driver = driver_wanted;
     if (!backend) {
         qCWarning(lc_audio, "[AudioEngine] No audio backend available for this platform");
         return false;
@@ -211,7 +212,8 @@ bool AudioEngine::start_with_devices(const string& input_device_id, const string
                                      const string& client_name) {
     stop();
 
-    backend = IAudioBackend::create();
+    backend = IAudioBackend::create(driver_wanted);
+    backend_driver = driver_wanted;
     if (!backend) {
         qCWarning(lc_audio, "[AudioEngine] No audio backend available for this platform");
         return false;
@@ -236,20 +238,26 @@ void AudioEngine::stop() {
 }
 
 bool AudioEngine::supports_exclusive_mode() const {
-    if (backend) {
+    if (backend && backend_driver == driver_wanted) {
         return backend->supports_exclusive_mode();
     }
-    const unique_ptr<IAudioBackend> temp = IAudioBackend::create();
+    const unique_ptr<IAudioBackend> temp = IAudioBackend::create(driver_wanted);
     return temp && temp->supports_exclusive_mode();
 }
 
 vector<IAudioBackend::DeviceInfo> AudioEngine::enumerate_input_devices() const {
-    unique_ptr<IAudioBackend> temp = IAudioBackend::create();
+    if (backend && backend_driver == driver_wanted) {
+        return backend->enumerate_input_devices();
+    }
+    unique_ptr<IAudioBackend> temp = IAudioBackend::create(driver_wanted);
     return temp ? temp->enumerate_input_devices() : vector<IAudioBackend::DeviceInfo>{};
 }
 
 vector<IAudioBackend::DeviceInfo> AudioEngine::enumerate_output_devices() const {
-    unique_ptr<IAudioBackend> temp = IAudioBackend::create();
+    if (backend && backend_driver == driver_wanted) {
+        return backend->enumerate_output_devices();
+    }
+    unique_ptr<IAudioBackend> temp = IAudioBackend::create(driver_wanted);
     return temp ? temp->enumerate_output_devices() : vector<IAudioBackend::DeviceInfo>{};
 }
 

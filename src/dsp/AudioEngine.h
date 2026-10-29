@@ -34,8 +34,8 @@ namespace namx
 {
 
 // Platform-agnostic audio engine. Owns the signal chain and all DSP
-// processors. Delegates I/O to an IAudioBackend (JACK on Linux, WASAPI on
-// Windows) created via IAudioBackend::create().
+// processors. Delegates I/O to an IAudioBackend (JACK on Linux, WASAPI or ASIO on
+// Windows) created via IAudioBackend::create(driver).
 class AudioEngine : public IAudioBackend::Callback
 {
 public:
@@ -47,6 +47,28 @@ public:
 
     bool start_with_devices(const string& input_device_id, const string& output_device_id,
                             const string& client_name = "NAM-X");
+
+    // The driver to use (one of IAudioBackend::drivers(); empty = the default); applies
+    // on the next start.
+    void set_driver(const string& name) {
+        driver_wanted = name;
+    }
+    const string& driver() const {
+        return driver_wanted;
+    }
+
+    // The driver's own settings window (ASIO), and its requests to be restarted.
+    bool has_control_panel() const {
+        return backend && backend->has_control_panel();
+    }
+    void open_control_panel() {
+        if (backend) {
+            backend->open_control_panel();
+        }
+    }
+    bool take_restart_request() {
+        return backend && backend->take_restart_request();
+    }
 
     // Exclusive device access (see IAudioBackend); applies on the next start.
     bool supports_exclusive_mode() const;
@@ -78,7 +100,8 @@ public:
         return backend && backend->supports_port_routing();
     }
 
-    // Device enumeration (creates temp backend, so works before start())
+    // Device enumeration for the wanted driver: the running backend's if it is that
+    // driver (ASIO knows the channels of its loaded driver only), else a temporary one.
     vector<IAudioBackend::DeviceInfo> enumerate_input_devices() const;
     vector<IAudioBackend::DeviceInfo> enumerate_output_devices() const;
 
@@ -280,6 +303,8 @@ public:
 private:
     unique_ptr<IAudioBackend> backend;
     bool exclusive_wanted = false; // GUI thread; handed to each new backend
+    string driver_wanted; // GUI thread; the driver each new backend is
+    string backend_driver; // the driver `backend` was created for
 
     // Signal chain — published through an RtSlot. The audio thread binds
     // one vector per callback; setChainOrder() publishes a new one and the

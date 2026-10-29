@@ -34,7 +34,8 @@ namx/
     ├── NeuralAmpModelerCore/  # NAM core — our fork (Insapiable-Inc), branch `namx` = upstream 0.6.0 (0b3d3c9, merged 2026-10-18) + our weight-check fix; brings Eigen, nlohmann/json, AudioDSPTools in its Dependencies/
     ├── signalsmith-linear/    # MIT FFT for the cab convolution
     ├── signalsmith-stretch/   # MIT pitch shifter for the Shimmers
-    └── chowdsp_wdf/           # BSD-3 wave digital filters for the Drive
+    ├── chowdsp_wdf/           # BSD-3 wave digital filters for the Drive
+    └── asiosdk/               # Steinberg ASIO SDK 2.3.4, host files only, GPLv3 option — vendored, not a submodule (Steinberg ships a zip; VENDORED.md has the hash); Windows only
 ```
 
 The core fork lives locally in `~/Git/namx-core` (remotes: `origin` = the Insapiable-Inc
@@ -101,7 +102,7 @@ JACK ports: `NAM-X:input`, `NAM-X:output_L`, `NAM-X:output_R`. Connect with `jac
 
 ## GUI architecture
 
-Qt6 application with a platform audio backend behind the `IAudioBackend` interface (`src/dsp/IAudioBackend.h`): `JackBackend` on Linux, `WasapiBackend` on Windows. Exactly one backend .cpp is compiled per platform (each defines `IAudioBackend::create()`); everything else is platform-agnostic. The key design constraint is **thread safety between the GUI thread and the real-time audio thread**.
+Qt6 application with a platform audio backend behind the `IAudioBackend` interface (`src/dsp/IAudioBackend.h`): `JackBackend` on Linux, `WasapiBackend` or `AsioBackend` on Windows, picked at runtime (`IAudioBackend::drivers()`, `create(driver)`; Settings → Audio → Driver, `audio/driver`, each driver keeping its own device IDs under `audio/<driver>/…`). Exactly one factory .cpp is compiled per platform (`JackBackend.cpp` or `WasapiBackend.cpp` defines `create()`); everything else is platform-agnostic. The key design constraint is **thread safety between the GUI thread and the real-time audio thread**.
 
 ### Signal chain
 
@@ -145,6 +146,7 @@ All effects inherit `EffectBase` (`src/dsp/EffectBase.h` — the header comment 
 | `AudioEngine` | `src/dsp/AudioEngine.h/cpp` | Owns backend + processors, runs the chain, VU peaks |
 | `IAudioBackend` | `src/dsp/IAudioBackend.h` | Backend interface: start/stop, device enumeration, port routing |
 | `JackBackend` | `src/dsp/JackBackend.h/cpp` | Linux JACK/PipeWire-JACK backend |
+| `AsioBackend` | `src/dsp/AsioBackend.h/cpp` | Windows ASIO backend (Steinberg's SDK under GPLv3, `external/asiosdk`): device IDs `asio:<driver>#<channel>` (an input channel, an output pair's first), the stream on the output's driver; lists the loaded driver's channels plus one entry per other installed driver; float32/64, int16/24/32 and right-justified 32-bit formats; the driver's own panel (`open_control_panel`, Settings' *Driver settings…*) and its reset requests (`take_restart_request`, polled from `MainWindow::update_meters`). One instance at a time (the SDK's globals). Not yet tried on Windows hardware; compile- and link-checked with MinGW, smoke-run under Wine |
 | `WasapiBackend` | `src/dsp/WasapiBackend.h/cpp` | Windows WASAPI backend: shared mode (float32 mix format only) or opt-in exclusive mode (native format search + conversion, minimum period, falls back to shared; `audio/exclusive`). Tested on Windows by the user (2026-10-18); no Windows machine here, so changes are compile-checked with MinGW |
 | `NamProcessor` | `src/dsp/NamProcessor.h/cpp` | NAM model hosting; independent L/R instances for stereo; a model runs at its training rate (48 kHz when unstated) — at another engine rate it sits behind AudioDSPTools' Lanczos `ResamplingContainer` (via `ModelResampler.h`), like the official plugin; Input (`nam/input`) before the model; output = loudness normalization × the user's Output trim (`nam/output`); both 0 dB by default |
 | `WavReader` | `src/dsp/WavReader.h/cpp` | Strict mono WAV reader for IRs (PCM 16/24/32, float 32/64, extensible); every length checked before reading — damaged files are errors (`tests/WavReaderTest`) |
@@ -241,6 +243,6 @@ model->process(NAM_SAMPLE** inputs, NAM_SAMPLE** outputs, int numFrames);
 
 - `CMAKE_AUTOMOC ON` — MOC runs automatically; add new Qt classes to `GUI_SOURCES` in `CMakeLists.txt`.
 - Shared code is compiled once (2026-10-04): `nam_core` (the NAM core, warnings off) and `namx_dsp` (every `src/dsp/*.cpp` in `GUI_SOURCES` except AudioEngine and the backends) are OBJECT libraries; the app, `NamProcessorTest`, `DspGoldenTest`, `namx-bench` and `namx-quality` link **both** (object files only reach direct linkers). Optimization/SIMD/NAM defines live on the `namx_build_options` interface target, so tests and benches run the code exactly as the app compiles it. A new `src/dsp` .cpp goes into `GUI_SOURCES` and lands in `namx_dsp` automatically.
-- Backend selection is in `CMakeLists.txt`: `WasapiBackend.cpp` on WIN32, `JackBackend.cpp` otherwise. On Windows the target is `WIN32_EXECUTABLE` (no console — `std::cerr` output is invisible there).
+- Backend selection is in `CMakeLists.txt`: `WasapiBackend.cpp` + `AsioBackend.cpp` (and the `asio_sdk` object library, warnings off, without `namx_build_options` — its `WIN32_LEAN_AND_MEAN` drops the COM headers the SDK needs) on WIN32, `JackBackend.cpp` otherwise. On Windows the target is `WIN32_EXECUTABLE` (no console — `std::cerr` output is invisible there).
 - The clang language server shows false-positive errors for Qt types because it doesn't see the CMake include paths. Ignore these; the actual compiler succeeds.
 - `stdc++fs` is linked explicitly on Linux for `std::filesystem`.
