@@ -1,0 +1,43 @@
+{
+  "take": "bypass-sweep",
+  "pedal": "Boss OC-5 Octave (mono: Input -> Output)",
+  "bypass": true,
+  "settings": {},
+  "note": "Input -> Output; GUITAR/BASS switch on GUITAR; Mode on VINTAGE until the Poly takes.",
+  "signal": {
+    "type": "sweep",
+    "f0": 20,
+    "f1": 20000,
+    "seconds": 10,
+    "level_db": -12,
+    "tail": 2
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -24.93,
+    "loop": -24.6
+  },
+  "latency_samples": 450,
+  "latency_quality": 0.998,
+  "xruns": 0,
+  "played_sha256": "c5125f26044d0567a9298b888c8217a345545dc09ba5b57ed0db093f28954c06",
+  "recorded_at": "2026-10-29T09:52:22",
+  "tool_commit": "5b39bd50c07405434c51ad5130152e1f0dadbadd",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX4",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Scarlett 8i6 3rd gen; pedal feed: analogue out 3 (PCM 3, direct routing); loopback: out 4 -> line in 5; pedal into input 2, INST, AIR off, pad ON, gain min; no reamp box; calibration from the TR-2/DD-8 sessions; OC-5 on a 9 V power supply, GUITAR/BASS switch on GUITAR; Input -> Output"
+  }
+}
