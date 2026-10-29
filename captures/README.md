@@ -23,7 +23,7 @@ The collection: 17 Boss pedals, on a Focusrite Scarlett 8i6 (3rd gen).
 | AW-3 Dynamic Wah | dynamics | bursts, steps | |
 | **PH-3** Phase Shifter | modulation | **Measured** 2026-10-28 (five sessions, mono): digital (0.54 ms, 44.1 kHz); every mode = dry + wet through second-order all-pass sections (4/8/10 Stage: 2/4/5 sections, one scale swept by a triangle² law; **12 Stage = a 6 Stage phaser run twice**, its notches double zeros, the second pass on a delayed LFO; Rise/Fall a barber pole, one notch spacing per LFO period, notches 1.88 octaves apart; Step the 8 Stage sweep sampled and held, 350 → 71 ms from Rate 8:00 to 1:30); Rate 0.047–21.5 Hz, Depth = the swing, the mix fixed; **Res = a feedback loop around the whole engine** (dry inside, one sample and a DC blocker in the loop, k 0.25–0.70 from 9:00 to 5:00; 8 Stage's loop passes a parked fifth section at 8.3 kHz). Open: 4 Stage's Res (its top notch fills and a sag follows it — no simple structure found; use the 8/10 Stage loop), Step's hold above Rate 3:00, the 12 Stage pass lag. Low priority for NAM-X: its Phaser (Phase 90) is approved by ear | [`boss/ph-3/README.md`](boss/ph-3/README.md) |
 | RV-6 Reverb | reverb | a project of its own | |
-| OC-5 Octave | pitch | reference recordings only | |
+| OC-5 Octave | pitch | **Plan written** 2026-10-29 (`plans/oc-5.json`, 41 takes, 14.7 min): each octave alone in Vintage and Poly — level law, waveform, tracking 73 Hz–1.3 kHz, a dying note, chords and Range — and six DI blends; a NAM-X type only if it sounds good (user) | |
 | AC-3 Acoustic Simulator | filters | per-mode responses; no NAM-X counterpart | |
 | TU-3 Tuner | | nothing to capture | |
 
@@ -32,7 +32,7 @@ of its cycle ~0.5 dB high at full Depth, and a drained battery won't boot the DD
 
 ## Next
 
-**The missing items (plans written 2026-10-29), one capture day with the AW-3:**
+**The missing items (plans written 2026-10-29), one capture day with the OC-5 (`plans/oc-5.json`) and the AW-3:**
 
 1. **A guitar DI**, recorded once: `capture.py di` (what to play: `tools/capture/README.md`,
    *Reamp takes*) → `captures/di/phrases.wav`.

@@ -24,7 +24,9 @@ Specs (JSON objects in a plan):
                                                                # picked-note-like bursts
     {"type": "pluck-train", "freq": 1000, "onsets": [0, 2.9, 6.6], "decay_seconds": 0.3,
      "seconds": 10, "repick": true}                            # plucks at given times; with
-                                                               # repick, each ends the last
+                                                               # repick, each ends the last;
+                                                               # freq may be a list, one per
+                                                               # onset (equal onsets: a chord)
     {"type": "file", "path": "captures/di/phrases.wav"}       # a recording (capture.py di)
 
 plus optional "level_db" (default 0) and "tail" (seconds after the signal, default 1).
@@ -78,6 +80,15 @@ def recording(spec):
     if not path.exists():
         raise ValueError(f"{spec['path']} is missing: record it with 'capture.py di'")
     return path
+
+
+def pluck_freqs(spec):
+    """A pluck-train's frequency per onset: one for all, or a list, one each."""
+    if not isinstance(spec["freq"], list):
+        return [spec["freq"]] * len(spec["onsets"])
+    if len(spec["freq"]) != len(spec["onsets"]):
+        raise ValueError("pluck-train: freq needs one value per onset")
+    return spec["freq"]
 
 
 def body_seconds(spec):
@@ -143,8 +154,11 @@ def describe(spec):
         return (f"{spec['count']} {spec['freq']:g} Hz plucks every {spec['period']:g} s "
                 f"(decay {spec['decay_seconds']:g} s){level_text}")
     if kind == "pluck-train":
-        onsets = ", ".join(f"{t:g}" for t in spec["onsets"])
         repick = ", re-picked" if spec.get("repick") else ""
+        if isinstance(spec["freq"], list):
+            return (f"{len(spec['onsets'])} plucks, {min(spec['freq']):g}-{max(spec['freq']):g} Hz, "
+                    f"{spec['seconds']:g} s (decay {spec['decay_seconds']:g} s{repick}){level_text}")
+        onsets = ", ".join(f"{t:g}" for t in spec["onsets"])
         return (f"{spec['freq']:g} Hz plucks at {onsets} s (decay {spec['decay_seconds']:g} s"
                 f"{repick}){level_text}")
     if kind == "file":
@@ -213,12 +227,13 @@ def body(spec, rate):
     if kind == "pluck-train":
         x = np.zeros(int(spec["seconds"] * rate))
         ends = [int(t * rate) for t in spec["onsets"][1:]] + [len(x)]
-        for onset, end in zip(spec["onsets"], ends):
+        freqs = pluck_freqs(spec)
+        for onset, end, freq in zip(spec["onsets"], ends, freqs):
             start = int(onset * rate)
             stop = end if spec.get("repick") else len(x)
             t = np.arange(stop - start) / rate
             note = (np.minimum(t / 0.002, 1.0) * np.exp(-t / spec["decay_seconds"])
-                    * np.sin(2 * np.pi * spec["freq"] * t))
+                    * np.sin(2 * np.pi * freq * t))
             if stop < len(x):  # damped by the next pick, which starts as this one ends
                 n = int(REPICK_SECONDS * rate)
                 note[-n:] *= np.linspace(1, 0, n)

@@ -8,7 +8,7 @@ collection of Boss pedals. Done so far: the TR-2 tremolo, the DD-8 delay, the CE
 | File | What it does |
 |---|---|
 | `capture.py` | Guided recording through JACK: ports, metering, level calibration, plan-driven takes, the guitar DI for reamp takes (`di`) |
-| `signals.py` | Deterministic test signals (sine, exponential sweep, noise, clicks, silence, steps, plucks, pluck-train — optionally re-picked, each note ending the last —, a recorded file), the take layout, and each signal's silent stretches |
+| `signals.py` | Deterministic test signals (sine, exponential sweep, noise, clicks, silence, steps, plucks, pluck-train — a frequency per note or one for all, optionally re-picked, each note ending the last —, a recorded file), the take layout, and each signal's silent stretches |
 | `analysis.py` | Reading sessions back: aligned takes, envelopes, LFO frequency and cycle folding, band levels, harmonics |
 | `fit_tr2.py` | The TR-2 model fit: parameters, fit errors, tone, and the figures |
 | `analyze_dd8.py` | The DD-8's Standard mode: deconvolved sweeps (dry path, delay times, Level/Feedback maps, tone), bursts (the clip), and figures |
