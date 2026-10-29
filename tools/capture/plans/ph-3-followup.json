@@ -1,0 +1,247 @@
+{
+  "pedal": "Boss PH-3 Phase Shifter, follow-up (mono: Input -> Output)",
+  "comment": "Rate 5:00 again and about 4:00 in 4 Stage (the swing shrinks at the top rate); 8 and 10 Stage frozen (Rate 7:00 stops the LFO where it is) at several points of the sweep, with sine sweeps; Rise at Rate 9:00 and 3:00 and at Depth 7:00. Res 7:00 throughout. Clock positions: 7:00 = fully counter-clockwise.",
+  "quiet_dbfs": -60,
+  "knobs": [
+    "Mode",
+    "Rate",
+    "Depth",
+    "Res"
+  ],
+  "takes": [
+    {
+      "name": "bypass-sweep",
+      "bypass": true,
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      }
+    },
+    {
+      "name": "bypass-noise",
+      "bypass": true,
+      "signal": {
+        "type": "noise",
+        "seconds": 10,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 2
+      }
+    },
+    {
+      "name": "s4-rate-0500",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "5:00",
+        "Depth": "5:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 20,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 2
+      },
+      "note": "Pedal on, MODE 4 STAGE, Rate fully up: does the small swing at 21.5 Hz repeat?"
+    },
+    {
+      "name": "s4-rate-0400",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "4:00",
+        "Depth": "5:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 20,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 2
+      },
+      "note": "Rate back to about 4:00 (between 3:00 and 5:00; it needn't be exact, the take measures the speed)."
+    },
+    {
+      "name": "s8-frozen-1",
+      "settings": {
+        "Mode": "8 Stage",
+        "Rate": "7:00",
+        "Depth": "5:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      },
+      "note": "MODE 8 STAGE. Turn Rate up for a second or two, then back to 7:00 so the sweep stops somewhere new (by ear: a different brightness from the last take)."
+    },
+    {
+      "name": "s8-frozen-2",
+      "settings": {
+        "Mode": "8 Stage",
+        "Rate": "7:00",
+        "Depth": "5:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      },
+      "note": "Turn Rate up for a second or two, then back to 7:00 so the sweep stops somewhere new (by ear: a different brightness from the last take)."
+    },
+    {
+      "name": "s8-frozen-3",
+      "settings": {
+        "Mode": "8 Stage",
+        "Rate": "7:00",
+        "Depth": "5:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      },
+      "note": "Turn Rate up for a second or two, then back to 7:00 so the sweep stops somewhere new (by ear: a different brightness from the last take)."
+    },
+    {
+      "name": "s8-frozen-4",
+      "settings": {
+        "Mode": "8 Stage",
+        "Rate": "7:00",
+        "Depth": "5:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      },
+      "note": "Turn Rate up for a second or two, then back to 7:00 so the sweep stops somewhere new (by ear: a different brightness from the last take)."
+    },
+    {
+      "name": "s10-frozen-1",
+      "settings": {
+        "Mode": "10 Stage",
+        "Rate": "7:00",
+        "Depth": "5:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      },
+      "note": "MODE 10 STAGE. Turn Rate up for a second or two, then back to 7:00 so the sweep stops somewhere new (by ear: a different brightness from the last take)."
+    },
+    {
+      "name": "s10-frozen-2",
+      "settings": {
+        "Mode": "10 Stage",
+        "Rate": "7:00",
+        "Depth": "5:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      },
+      "note": "Turn Rate up for a second or two, then back to 7:00 so the sweep stops somewhere new (by ear: a different brightness from the last take)."
+    },
+    {
+      "name": "s10-frozen-3",
+      "settings": {
+        "Mode": "10 Stage",
+        "Rate": "7:00",
+        "Depth": "5:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      },
+      "note": "Turn Rate up for a second or two, then back to 7:00 so the sweep stops somewhere new (by ear: a different brightness from the last take)."
+    },
+    {
+      "name": "rise-rate-0900",
+      "settings": {
+        "Mode": "Rise",
+        "Rate": "9:00",
+        "Depth": "12:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 30,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 2
+      },
+      "note": "MODE RISE, Depth to 12:00, Rate to 9:00."
+    },
+    {
+      "name": "rise-rate-0300",
+      "settings": {
+        "Mode": "Rise",
+        "Rate": "3:00",
+        "Depth": "12:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 15,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 2
+      },
+      "note": "Rate to 3:00."
+    },
+    {
+      "name": "rise-depth-0700",
+      "settings": {
+        "Mode": "Rise",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 15,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 2
+      },
+      "note": "Rate to 12:00, Depth fully down: does Depth do anything in Rise?"
+    }
+  ]
+}
