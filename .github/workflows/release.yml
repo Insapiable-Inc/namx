@@ -50,6 +50,9 @@ jobs:
         with:
           name: source
           path: out/*
+          # Only a handoff to the release job (whose assets don't expire); kept a week so a
+          # manual run's builds can be downloaded and tried.
+          retention-days: 7
 
   linux:
     name: Linux (Ubuntu 24.04)
@@ -182,6 +185,9 @@ jobs:
         with:
           name: appimage
           path: dist/*
+          # Only a handoff to the release job (whose assets don't expire); kept a week so a
+          # manual run's builds can be downloaded and tried.
+          retention-days: 7
 
   arch:
     name: Arch Linux (build + tests)
@@ -291,6 +297,9 @@ jobs:
             dist/*.zip
             dist/*.exe
             dist/*.sha256
+          # Only a handoff to the release job (whose assets don't expire); kept a week so a
+          # manual run's builds can be downloaded and tried.
+          retention-days: 7
 
   release:
     name: GitHub release
