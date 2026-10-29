@@ -11,7 +11,7 @@ A Linux-first, standalone, native Qt 6 app for Neural Amp Modeler, with a built-
 * No bullshit
 * ...and no warranty :)
 
-![NAM-X main window](docs/screenshots/main.png)
+![NAM-X main window: the effects rack in the Dark theme on KDE Plasma](docs/screenshots/main.png)
 
 ## Why it exists
 
@@ -29,6 +29,28 @@ left. I wanted the thing I actually use when I pick up the guitar:
   [NeuralAmpModelerCore](https://github.com/sdatkinson/NeuralAmpModelerCore), the same
   inference the official plugin uses. The models come from the community.
 - Batteries included: tuner, metronome, tempo sync, MIDI mapping and learn, and a library panel for models, IRs and presets.
+
+## Screenshots
+
+**Light theme on KDE Plasma**, with the Appearance settings: follow the system, Dark, Light, or your own theme file.
+
+![NAM-X in the Light theme on KDE Plasma, the Appearance settings open](docs/screenshots/linux-kde-light.png)
+
+**GNOME**, in the Dark theme: where the desktop has no Qt style of its own, NAM-X draws its controls the way KDE does (as the AppImage does everywhere).
+
+![NAM-X in the Dark theme on GNOME, the Appearance settings open](docs/screenshots/linux-gnome-dark.png)
+
+**Windows with ASIO**: the interface's own ASIO driver chosen in the Audio settings, its control panel beside them.
+
+![NAM-X on Windows, the Audio settings on ASIO beside the interface's ASIO control panel](docs/screenshots/windows-light-asio.png)
+
+**Library folders**: models, IRs and presets come from folders you pick, scanned and followed for changes.
+
+![NAM-X's Library settings with a folder being added](docs/screenshots/linux-dark-preset-loader.png)
+
+**MIDI**: input devices, and mappings from notes, CCs and program changes to knobs, switches and preset slots.
+
+![NAM-X's MIDI settings and the MIDI Mappings window](docs/screenshots/linux-dark-midi-mappings.png)
 
 ## Installation
 
