@@ -40,20 +40,22 @@ constexpr float CEILING_DB = 0.55f; // re REFERENCE_DBFS, on the summed output
 // off the delays so the dry-to-wet spacing stays the pedal's.
 constexpr float TONE_DELAY_MS = 0.068f;
 
-// The wet's tone, re 1 kHz (within 0.33 dB rms, 90 Hz–18 kHz); also each pass round the loop.
+// The wet's tone, re 1 kHz (within 0.12 dB rms, 100 Hz–16 kHz; refitted 2026-10-29 with
+// tools/capture/fit_voicings.py); also each pass round the loop.
 constexpr size_t TONE_SECTIONS = 4;
 constexpr FilterChain<TONE_SECTIONS> TONE{{
-    {FilterKind::HIGH_PASS, 191.8f, 0.519f, 0.0f},
-    {FilterKind::HIGH_PASS, 94.0f, 1.556f, 0.0f},
-    {FilterKind::LOW_PASS, 6293.0f, 0.542f, 0.0f},
-    {FilterKind::LOW_PASS, 17471.7f, 0.923f, 0.0f},
+    {FilterKind::HIGH_PASS, 205.4f, 0.573f, 0.0f},
+    {FilterKind::HIGH_PASS, 97.3f, 1.784f, 0.0f},
+    {FilterKind::LOW_PASS, 6824.1f, 0.481f, 0.0f},
+    {FilterKind::LOW_PASS, 18401.4f, 0.817f, 0.0f},
 }};
 
-// Levels at 1 kHz re bypass.
-constexpr float STANDARD_DRY_DB = 1.79f;
-constexpr float STANDARD_WET_DB = 3.41f;
-constexpr float ULTRA_DRY_DB = 1.03f;
-constexpr std::array<float, 3> ULTRA_TAP_DB{0.76f, 0.64f, 0.41f}; // at d/2, d, 3d/2
+// Levels at 1 kHz re bypass (re-measured 2026-10-29: each was ~2 dB high, the bypass
+// reference read low).
+constexpr float STANDARD_DRY_DB = -0.13f;
+constexpr float STANDARD_WET_DB = 1.45f;
+constexpr float ULTRA_DRY_DB = -1.00f;
+constexpr std::array<float, 3> ULTRA_TAP_DB{-1.22f, -1.35f, -1.58f}; // at d/2, d, 3d/2
 
 // Knob maps at 7:00, 9:00, 12:00, 3:00, 5:00 (fraction of the rotation), linear in between.
 constexpr std::array<float, 5> KNOB_AT{0.0f, 0.2f, 0.5f, 0.8f, 1.0f};
