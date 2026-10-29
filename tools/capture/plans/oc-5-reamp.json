@@ -1,0 +1,113 @@
+{
+  "pedal": "Boss OC-5 Octave (mono: Input -> Output)",
+  "comment": "Reamp: the same recorded guitar (captures/di/phrases.wav, `capture.py di`, played as hard as it was played) through the OC-5 at six blends, for a by-ear A/B against a NAM-X octave. GUITAR/BASS on GUITAR. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise; 9:00 and 3:00 pointer horizontal.",
+  "knobs": [
+    "Mode",
+    "Direct Level",
+    "+1 OCT Level",
+    "-1 OCT Level",
+    "-2 OCT/Range"
+  ],
+  "takes": [
+    {
+      "name": "bypass-di",
+      "bypass": true,
+      "signal": {
+        "type": "file",
+        "path": "captures/di/phrases.wav",
+        "tail": 2
+      },
+      "note": "Input -> Output; GUITAR/BASS switch on GUITAR."
+    },
+    {
+      "name": "di-poly-range-0700",
+      "settings": {
+        "Mode": "Poly",
+        "Direct Level": "12:00",
+        "+1 OCT Level": "7:00",
+        "-1 OCT Level": "12:00",
+        "-2 OCT/Range": "7:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/phrases.wav",
+        "tail": 2
+      }
+    },
+    {
+      "name": "di-poly-range-0500",
+      "settings": {
+        "Mode": "Poly",
+        "Direct Level": "12:00",
+        "+1 OCT Level": "7:00",
+        "-1 OCT Level": "12:00",
+        "-2 OCT/Range": "5:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/phrases.wav",
+        "tail": 2
+      }
+    },
+    {
+      "name": "di-poly-organ",
+      "settings": {
+        "Mode": "Poly",
+        "Direct Level": "12:00",
+        "+1 OCT Level": "12:00",
+        "-1 OCT Level": "12:00",
+        "-2 OCT/Range": "5:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/phrases.wav",
+        "tail": 2
+      }
+    },
+    {
+      "name": "di-vintage-organ",
+      "settings": {
+        "Mode": "Vintage",
+        "Direct Level": "12:00",
+        "+1 OCT Level": "12:00",
+        "-1 OCT Level": "12:00",
+        "-2 OCT/Range": "7:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/phrases.wav",
+        "tail": 2
+      }
+    },
+    {
+      "name": "di-vintage-down1",
+      "settings": {
+        "Mode": "Vintage",
+        "Direct Level": "12:00",
+        "+1 OCT Level": "7:00",
+        "-1 OCT Level": "12:00",
+        "-2 OCT/Range": "7:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/phrases.wav",
+        "tail": 2
+      }
+    },
+    {
+      "name": "di-vintage-down1-down2",
+      "settings": {
+        "Mode": "Vintage",
+        "Direct Level": "12:00",
+        "+1 OCT Level": "7:00",
+        "-1 OCT Level": "12:00",
+        "-2 OCT/Range": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/phrases.wav",
+        "tail": 2
+      }
+    }
+  ]
+}

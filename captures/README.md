@@ -23,7 +23,7 @@ The collection: 17 Boss pedals, on a Focusrite Scarlett 8i6 (3rd gen).
 | AW-3 Dynamic Wah | dynamics | bursts, steps | |
 | **PH-3** Phase Shifter | modulation | **Measured** 2026-10-28 (five sessions, mono): digital (0.54 ms, 44.1 kHz); every mode = dry + wet through second-order all-pass sections (4/8/10 Stage: 2/4/5 sections, one scale swept by a triangle² law; **12 Stage = a 6 Stage phaser run twice**, its notches double zeros, the second pass on a delayed LFO; Rise/Fall a barber pole, one notch spacing per LFO period, notches 1.88 octaves apart; Step the 8 Stage sweep sampled and held, 350 → 71 ms from Rate 8:00 to 1:30); Rate 0.047–21.5 Hz, Depth = the swing, the mix fixed; **Res = a feedback loop around the whole engine** (dry inside, one sample and a DC blocker in the loop, k 0.25–0.70 from 9:00 to 5:00; 8 Stage's loop passes a parked fifth section at 8.3 kHz). Open: 4 Stage's Res (its top notch fills and a sag follows it — no simple structure found; use the 8/10 Stage loop), Step's hold above Rate 3:00, the 12 Stage pass lag. Low priority for NAM-X: its Phaser (Phase 90) is approved by ear | [`boss/ph-3/README.md`](boss/ph-3/README.md) |
 | RV-6 Reverb | reverb | a project of its own | |
-| OC-5 Octave | pitch | **Plan written** 2026-10-29 (`plans/oc-5.json`, 41 takes, 14.7 min): each octave alone in Vintage and Poly — level law, waveform, tracking 73 Hz–1.3 kHz, a dying note, chords and Range — and six DI blends; a NAM-X type only if it sounds good (user) | |
+| OC-5 Octave | pitch | **Plan written** 2026-10-29 (`plans/oc-5.json`, 34 takes, 9.7 min; the DI blends in `plans/oc-5-reamp.json`): each octave alone in Vintage and Poly — level law, waveform, tracking 73 Hz–1.3 kHz, a dying note, chords and Range; a NAM-X type only if it sounds good (user) | |
 | AC-3 Acoustic Simulator | filters | per-mode responses; no NAM-X counterpart | |
 | TU-3 Tuner | | nothing to capture | |
 
@@ -43,7 +43,7 @@ of its cycle ~0.5 dB high at full Depth, and a drained battery won't boot the DD
 3. **BF-3 follow-up** (`plans/bf-3-followup.json`): Rate 5:00 with clicks every 21.3 ms
    (the study's 25 ms clicks saw its ~10 Hz sweep at four phases only), and the reamp.
 4. **Reamps** for every pedal with a NAM-X type: `tr-2-reamp`, `ge-7-reamp`,
-   `dd-8-reamp` (one take per voicing), `ce-5-reamp`, `ns-2-reamp` — ~25 min of audio
+   `dd-8-reamp` (one take per voicing), `ce-5-reamp`, `ns-2-reamp`, `oc-5-reamp` — ~25 min of audio
    in all. One session per pedal (`<date>-reamp`, `init --from` an earlier session).
 
 Then: each NAM-X type run over the same played files at the same settings, against the

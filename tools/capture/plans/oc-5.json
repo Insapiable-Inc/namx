@@ -1,6 +1,6 @@
 {
   "pedal": "Boss OC-5 Octave (mono: Input -> Output)",
-  "comment": "Digital octaver; the GUITAR/BASS switch (top) on GUITAR throughout. Vintage = the OC-2's monophonic divider (-1 and -2 octaves) plus +1; Poly = polyphonic, -2 OCT/Range becomes Range (at its minimum only a chord's lowest note is shifted). Each octave is measured alone (Direct and the others fully down): its level law (-1 OCT, Direct), tone and waveform (a held 220 Hz sine), tracking (re-picked notes from 73 Hz to 1.3 kHz, 3 s apart: lowest and highest note, how fast it locks on), the fade (where the divider loses a dying note), chords (a low note under a higher one) and Range; then the guitar DI (captures/di/phrases.wav) at six blends for a by-ear A/B. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise; 9:00 and 3:00 pointer horizontal.",
+  "comment": "Digital octaver; the GUITAR/BASS switch (top) on GUITAR throughout. Vintage = the OC-2's monophonic divider (-1 and -2 octaves) plus +1; Poly = polyphonic, -2 OCT/Range becomes Range (at its minimum only a chord's lowest note is shifted). Each octave is measured alone (Direct and the others fully down): its level law (-1 OCT, Direct), tone and waveform (a held 220 Hz sine), tracking (re-picked notes from 73 Hz to 1.3 kHz, 3 s apart: lowest and highest note, how fast it locks on), the fade (where the divider loses a dying note), chords (a low note under a higher one) and Range. The guitar DI at six blends is plans/oc-5-reamp.json. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise; 9:00 and 3:00 pointer horizontal.",
   "knobs": [
     "Mode",
     "Direct Level",
@@ -112,15 +112,6 @@
         "type": "sine",
         "freq": 220,
         "seconds": 4
-      }
-    },
-    {
-      "name": "bypass-di",
-      "bypass": true,
-      "signal": {
-        "type": "file",
-        "path": "captures/di/phrases.wav",
-        "tail": 2
       }
     },
     {
@@ -877,96 +868,6 @@
         "type": "sine",
         "freq": 220,
         "seconds": 4
-      }
-    },
-    {
-      "name": "di-poly-range-0700",
-      "settings": {
-        "Mode": "Poly",
-        "Direct Level": "12:00",
-        "+1 OCT Level": "7:00",
-        "-1 OCT Level": "12:00",
-        "-2 OCT/Range": "7:00"
-      },
-      "signal": {
-        "type": "file",
-        "path": "captures/di/phrases.wav",
-        "tail": 2
-      }
-    },
-    {
-      "name": "di-poly-range-0500",
-      "settings": {
-        "Mode": "Poly",
-        "Direct Level": "12:00",
-        "+1 OCT Level": "7:00",
-        "-1 OCT Level": "12:00",
-        "-2 OCT/Range": "5:00"
-      },
-      "signal": {
-        "type": "file",
-        "path": "captures/di/phrases.wav",
-        "tail": 2
-      }
-    },
-    {
-      "name": "di-poly-organ",
-      "settings": {
-        "Mode": "Poly",
-        "Direct Level": "12:00",
-        "+1 OCT Level": "12:00",
-        "-1 OCT Level": "12:00",
-        "-2 OCT/Range": "5:00"
-      },
-      "signal": {
-        "type": "file",
-        "path": "captures/di/phrases.wav",
-        "tail": 2
-      }
-    },
-    {
-      "name": "di-vintage-organ",
-      "settings": {
-        "Mode": "Vintage",
-        "Direct Level": "12:00",
-        "+1 OCT Level": "12:00",
-        "-1 OCT Level": "12:00",
-        "-2 OCT/Range": "7:00"
-      },
-      "signal": {
-        "type": "file",
-        "path": "captures/di/phrases.wav",
-        "tail": 2
-      }
-    },
-    {
-      "name": "di-vintage-down1",
-      "settings": {
-        "Mode": "Vintage",
-        "Direct Level": "12:00",
-        "+1 OCT Level": "7:00",
-        "-1 OCT Level": "12:00",
-        "-2 OCT/Range": "7:00"
-      },
-      "signal": {
-        "type": "file",
-        "path": "captures/di/phrases.wav",
-        "tail": 2
-      }
-    },
-    {
-      "name": "di-vintage-down1-down2",
-      "settings": {
-        "Mode": "Vintage",
-        "Direct Level": "12:00",
-        "+1 OCT Level": "7:00",
-        "-1 OCT Level": "12:00",
-        "-2 OCT/Range": "12:00"
-      },
-      "signal": {
-        "type": "file",
-        "path": "captures/di/phrases.wav",
-        "tail": 2
       }
     }
   ]
