@@ -1,6 +1,7 @@
 {
   "pedal": "Boss OC-5 Octave (mono: Input -> Output)",
   "comment": "Reamp: the same recorded guitar (captures/di/phrases.wav, `capture.py di`, played as hard as it was played) through the OC-5 at six blends, for a by-ear A/B against a NAM-X octave. GUITAR/BASS on GUITAR. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise; 9:00 and 3:00 pointer horizontal.",
+  "quiet_dbfs": -60,
   "knobs": [
     "Mode",
     "Direct Level",
@@ -17,7 +18,7 @@
         "path": "captures/di/phrases.wav",
         "tail": 2
       },
-      "note": "Input -> Output; GUITAR/BASS switch on GUITAR."
+      "note": "Input -> Output; GUITAR/BASS on GUITAR."
     },
     {
       "name": "di-poly-range-0700",

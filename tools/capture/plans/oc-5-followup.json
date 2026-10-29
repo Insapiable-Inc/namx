@@ -1,0 +1,96 @@
+{
+  "pedal": "Boss OC-5 Octave (mono: Input -> Output)",
+  "comment": "Follow-up: the dry path's clip against the level. A held 220 Hz sine at the guitar's peak came out square (Direct 12:00 and 5:00 alike, ~-10 dB re the peak), while the octaves followed a dying note 1:1 from -3 dB: a 220 Hz staircase (-30 to +3 dB) and three 110 Hz plucks, Direct 12:00, every octave knob fully down. GUITAR/BASS on GUITAR. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise.",
+  "quiet_dbfs": -60,
+  "knobs": [
+    "Mode",
+    "Direct Level",
+    "+1 OCT Level",
+    "-1 OCT Level",
+    "-2 OCT/Range"
+  ],
+  "takes": [
+    {
+      "name": "bypass-dry-steps",
+      "bypass": true,
+      "signal": {
+        "type": "steps",
+        "freq": 220,
+        "levels_db": [
+          -30,
+          -24,
+          -18,
+          -15,
+          -12,
+          -9,
+          -6,
+          -3,
+          0,
+          3
+        ],
+        "step_seconds": 1.0,
+        "gap_seconds": 0,
+        "tail": 1
+      },
+      "note": "Input -> Output; GUITAR/BASS on GUITAR. These check the dry path's clip (a held sine at the guitar's peak came out square, ~-10 dB re the peak) against the level."
+    },
+    {
+      "name": "bypass-dry-plucks",
+      "bypass": true,
+      "signal": {
+        "type": "plucks",
+        "freq": 110,
+        "period": 3,
+        "count": 3,
+        "decay_seconds": 0.6
+      }
+    },
+    {
+      "name": "dry-steps",
+      "settings": {
+        "Mode": "Vintage",
+        "Direct Level": "12:00",
+        "+1 OCT Level": "7:00",
+        "-1 OCT Level": "7:00",
+        "-2 OCT/Range": "7:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 220,
+        "levels_db": [
+          -30,
+          -24,
+          -18,
+          -15,
+          -12,
+          -9,
+          -6,
+          -3,
+          0,
+          3
+        ],
+        "step_seconds": 1.0,
+        "gap_seconds": 0,
+        "tail": 1
+      },
+      "note": "Every octave knob fully down: the dry path alone."
+    },
+    {
+      "name": "dry-plucks",
+      "settings": {
+        "Mode": "Vintage",
+        "Direct Level": "12:00",
+        "+1 OCT Level": "7:00",
+        "-1 OCT Level": "7:00",
+        "-2 OCT/Range": "7:00"
+      },
+      "signal": {
+        "type": "plucks",
+        "freq": 110,
+        "period": 3,
+        "count": 3,
+        "decay_seconds": 0.6
+      }
+    }
+  ]
+}

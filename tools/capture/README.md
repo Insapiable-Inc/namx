@@ -2,7 +2,7 @@
 
 Tools for measuring real pedals through an audio interface and fitting models of them,
 so NAM-X's own effects can be voiced after the real thing. Started 2026-10-26 with a
-collection of Boss pedals. Done so far: the TR-2 tremolo, the DD-8 delay, the CE-5 chorus, the BF-3 flanger and the CS-3 compressor — see
+collection of Boss pedals. Done so far: the TR-2 tremolo, the DD-8 delay, the CE-5 chorus, the BF-3 flanger and the CS-3 compressor, the NS-2, GE-7, PH-3 and OC-5 — see
 [`captures/README.md`](../../captures/README.md) for every pedal's status and what's next.
 
 | File | What it does |
@@ -18,6 +18,7 @@ collection of Boss pedals. Done so far: the TR-2 tremolo, the DD-8 delay, the CE
 | `analyze_cs3.py` | The CS-3: the static curve from a 1 kHz staircase per Sustain position, attack and release from a −30/0/−30 dB jump (the gain's 1 ms envelope against the bypass) per Attack position, picked notes, Tone sweeps, Level, noise |
 | `analyze_ge7.py` | The GE-7 (four sessions): every sweep against its bypass per 1/12 octave and one graphic-EQ circuit fitted to all of them (LC bands, the RC top shelf, Level's stage, one wiper per printed mark), the staircases' ceiling and harmonics, noise |
 | `analyze_ph3.py` | The PH-3 (five sessions): every static sweep against its bypass, the notches and their order (simple or double zeros), the Res factor against the all-pass chain's phase, Step's hold time per Rate, the LFO rate per Rate, the level per Depth — and the fitted models (all-pass sections per mode, the 12 Stage twin passes, the Res loop, the sweep laws) drawn over them. The fits themselves were done with exploratory scripts (not kept); their results are the script's `FINDINGS` table and the study explains how they were obtained |
+| `analyze_oc5.py` | The OC-5: the dry path (delay, gain, its clip from a held sine), the Direct and −1 OCT laws, each octave's waveform and harmonics, tracking per note (pitch, level, lock-on time), two-note chords, dying notes |
 | `plans/*.json` | One plan per pedal: the takes, their knob settings and signals |
 
 Needs Python with numpy, scipy, soundfile and matplotlib, plus the JACK client for Python
