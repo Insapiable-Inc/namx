@@ -100,8 +100,8 @@ y = x_dry + Level · LP10k( delay_T( clip(x) + F · repeats ) )
   (300°). How far a by-eye setting can be off: "Time 12:00" set twice gave 385.62 and
   392.96 ms, about 5° apart; 3:00 (pointer horizontal) repeated to the sample.
 - **Wet tone:** the first repeat against the dry (−12 dB take, re 1 kHz): flat to 4 kHz
-  (±0.6 dB, +1.5 dB at 63 Hz), −2.1 dB at 8 kHz, −29.5 dB at 16 kHz: a low-pass around
-  10 kHz. Each pass through the loop adds the
+  (±0.9 dB, +1.9 dB at 63 Hz), −2.2 dB at 8 kHz, −28.9 dB at 16 kHz: a low-pass around
+  10 kHz (corrected 2026-10-29: the dry window lost the impulse's negative times; see tools/capture/README.md, Lessons). Each pass through the loop adds the
   small high-frequency loss above.
 - **No modulation:** a held 1 kHz tone through Feedback 12:00 comes out as one spectral
   line; the only sidebands (±3.25 Hz) are 103 dB down.
@@ -156,7 +156,7 @@ script yet.
 | Delay range (Time 7:00 → 5:00) | 19.65 – 799.60 ms | the same: 19.85 – 799.81 ms (9:00 169.83 ms) |
 | Repeat level, Level 5:00 | +4.46 dB over the dry | **+6.03 dB**, constant from −30 to −12 dB (bursts); level steps −30 → −12 → −30 dB: +6.05 dB throughout, no attack or release |
 | Level 12:00 | −14.9 dB re 5:00 | −14.3 dB re 5:00 |
-| First repeat's tone, re 1 kHz (−12 dB) | flat to 4 kHz; −2.1 dB at 8 kHz | **flat to 2 kHz (+0.4); −19.0 dB at 4 kHz, −50 dB at 8 kHz** |
+| First repeat's tone, re 1 kHz (−12 dB) | flat to 4 kHz; −2.2 dB at 8 kHz | **flat to 2 kHz (+0.4); −19.5 dB at 4 kHz, −50 dB at 8 kHz** |
 | Each further repeat (Feedback 12:00, re the 1 kHz loss) | about the same at all frequencies | **another ~10 dB lower at 3.15 kHz and ~18 dB at 4 kHz: the filter is inside the loop**, every repeat darker |
 | Fade per repeat, Feedback 9:00 / 12:00 / 3:00 | −12.2 / −7.07 / −0.6 dB | −12.0 / −7.9 / **−1.40** dB (3:00 from a burst: exactly −1.40 dB for 15 repeats, −17 → −36 dBFS, so nothing level-dependent in the loop) |
 | Feedback 5:00 | unity: the repeats hold (+0.02 dB per repeat) | **a slow runaway:** a −12 dB click's repeats dip to −14.5 dB, then grow +0.4 dB per repeat (to −8 dB after 16), held by the clip at the ceiling — the classic analog-delay oscillation |
@@ -192,7 +192,7 @@ and the figure below (the same script reproduces the Analog numbers).
 |---|---|---|---|
 | Delay range (Time 7:00 → 5:00) | 19.65 – 799.6 ms | 19.85 – 799.81 ms | **19.96 – 800.44 ms** (9:00 172.75) |
 | Repeat level, Level 5:00 | +4.46 dB | +6.03 dB | **+7.9 dB**, constant (level steps: no attack or release) |
-| First repeat's tone, re 1 kHz (−12 dB) | flat to 4 kHz, −2 dB at 8 kHz | flat to 2 kHz, −19 dB at 4 kHz | **band-limited: −15.2 / −9.6 / −3.2 dB at 31.5 / 63 / 125 Hz, +1.2 dB at 250 Hz, flat to 2 kHz, −1.7 dB at 4 kHz, −13.9 dB at 8 kHz, −37 dB at 16 kHz** (roughly 150 Hz – 5 kHz) |
+| First repeat's tone, re 1 kHz (−12 dB) | flat to 4 kHz, −2 dB at 8 kHz | flat to 2 kHz, −19 dB at 4 kHz | **band-limited: −15.1 / −9.2 / −3.0 dB at 31.5 / 63 / 125 Hz, +1.4 dB at 250 Hz, flat to 2 kHz, −2.3 dB at 4 kHz, −14.0 dB at 8 kHz, −36.5 dB at 16 kHz** (roughly 150 Hz – 5 kHz) |
 | Distortion, output vs linear / H3 | linear to −4 dB, hard knee | soft knee from −8 dB | **some low-level H3 (−66…−74 dB), linear to −8 dB (−0.07), then a knee: −0.45 / −31.5 dB at −6, −2.0 / −19 dB at −4, −5.8 / −14 dB at 0**; the same ceiling (~−11.8 dBFS peak) |
 | Fade per repeat, Feedback 9:00 / 12:00 / 3:00 (bursts, −12 dB) | −12.2 / −7.07 / −0.6 dB | −12.0 / −7.9 / −1.40 dB | **−10.8 / −6.65 / −0.04 dB** (3:00 measured twice, identical) |
 | Feedback 5:00 | holds (unity) | slow runaway (+0.4 dB/repeat) | **holds** (+0.003 dB per repeat) |
@@ -225,7 +225,7 @@ Warm is Standard with a **warm tilt** on the repeats:
 
 | | Standard | **Warm** |
 |---|---|---|
-| First repeat's tone, re 1 kHz | flat to 4 kHz, −2.1 dB at 8 kHz | **+2.1 / +3.1 / +2.1 / +1.6 / +1.0 dB at 31.5 / 63 / 125 / 250 / 500 Hz, −0.7 / −1.6 / −4.7 / −18 dB at 2 / 4 / 8 / 16 kHz** |
+| First repeat's tone, re 1 kHz | flat to 4 kHz, −2.1 dB at 8 kHz | **+2.5 / +3.5 / +2.4 / +1.9 / +1.2 dB at 31.5 / 63 / 125 / 250 / 500 Hz, −1.1 / −2.1 / −4.8 / −17.6 dB at 2 / 4 / 8 / 16 kHz** |
 | Repeat level, Level 5:00 | +4.46 dB | **+2.85 dB**, constant (level steps: no attack or release) |
 | Distortion | linear to −4 dB, hard knee | **linear to −2 dB** (H3 −68…−80 dB), then a hard knee: −1.13 dB and H3 −22.7 dB at 0 dB, −4.6 / −16 dB at +4; the same ceiling (~−11.8 dBFS) |
 | Fade per repeat, 9:00 / 12:00 / 3:00 (bursts) | −12.2 / −7.07 / −0.6 dB | −11.6 / −7.46 / −0.82 dB |

@@ -25,10 +25,10 @@ Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise.
 ## The model
 
 ```
-out   = clip( 1.23 · x(t − 0.55 ms)  +  wet )            (clip: hard, +0.55 dB re the guitar's peak)
+out   = clip( 0.985 · x(t − 0.55 ms)  +  wet )            (clip: hard, +0.55 dB re the guitar's peak)
 line  = x + r(Res) · wet                                  (the feedback: Res adds, nothing else changes)
-wet   = 1.48 · Tone( line(t − d(t)) )                     (+3.4 dB re bypass at 1 kHz; Tone = 1 there)
-Tone  = HP 192 Hz Q 0.52 · HP 94 Hz Q 1.56 · LP 6.3 kHz Q 0.54 · LP 17.5 kHz Q 0.92
+wet   = 1.18 · Tone( line(t − d(t)) )                     (+1.45 dB re bypass at 1 kHz; Tone = 1 there)
+Tone  = (the refitted chain: Bf3Flanger.h, TONE)
 d(t)  = floor + swing(Depth) · s(t)^2.5                   (after the dry; floor ≥ ~0.33 ms)
 floor = (1 − b(Depth)) · m(Manual) + b(Depth) · 0.33 ms
 s(t)  = one-pole low-pass at 1.53 Hz of a 0..1 triangle at f(Rate)
@@ -41,8 +41,8 @@ each pass round the loop goes through the same tone filter can (see *Res*).
 
 The service notes: a Boss DSP (TC220) and an AK4552 converter, an 11.2896 MHz crystal,
 so ~44.1 kHz inside — the dry path's wall at ~20 kHz (figure, top left). The dry comes out
-0.55 ms late with flat group delay (0.54–0.59 ms from 1 to 12.5 kHz), 1.8 dB over the
-bypass (+1.5 to +2.5 dB from 125 Hz to 12.5 kHz, within ±0.5 dB of flat).
+0.55 ms late with flat group delay (0.54–0.59 ms from 1 to 12.5 kHz), 0.1 dB under the
+bypass (+0.3 to −0.5 dB from 125 Hz to 16 kHz). *(Corrected 2026-10-29: levels re bypass were ~2 dB high — the bypass impulse response lost the part that wraps to negative time; see `tools/capture/README.md`, Lessons.)*
 
 Because the pedal has its own clock, its output lands up to a sample apart from take to
 take against the interface's (the loopback can't see that): the click takes' dry template
@@ -53,11 +53,12 @@ is re-fitted per take (shift and gain), and Res is measured inside one take each
 From Manual 7:00, where the wet comes 14.67 ms after the dry and the two separate in the
 impulse response (split at 7.3 ms):
 
-- **Level:** +3.4 dB re bypass at 1 kHz, **+1.6 dB louder than the dry**: at the comb's
+- **Level:** +1.45 dB re bypass at 1 kHz, **+1.6 dB louder than the dry**: at the comb's
   notches the two don't cancel completely (~−12 dB re bypass, ~21 dB under the peaks).
 - **Tone, re 1 kHz:** a low cut (−2 dB at 250 Hz, −6 at 125, −20 at 63) and a gentle
-  high roll-off (−1.6 dB at 4 kHz, −5.3 at 6.3, −10.8 at 10, −23.8 at 16). The biquad
-  chain above fits it within 0.33 dB rms (90 Hz–18 kHz). Below ~80 Hz the dry path's
+  high roll-off (−2.3 dB at 4 kHz, −5.2 at 6.3, −10.8 at 10, −22.5 at 16; corrected
+  2026-10-29, was −1.6 / −5.3 / −10.8 / −23.8). The biquad chain (`Bf3Flanger.h`) is refitted
+  to it. Below ~80 Hz the dry path's
   ringing reaches the wet window, so the low end's last few dB are approximate.
 - **Group delay** after the dry: 14.79 ms at 250 Hz, 14.70 at 1 kHz, 14.64 at 10 kHz (the
   low cut's extra delay at the bottom).
@@ -144,7 +145,7 @@ At slow rates the cycle has the same shape at every Depth and Manual position: a
 peak, long flat bottom — **floor + swing · triangle^2.5**. Faster, the peak rounds off and
 the swing shrinks (Rate 3:00: 1.13–3.05 ms against 0.91–5.22 at 12:00). One one-pole
 low-pass on the triangle, **1.53 Hz**, before the power explains every rate with one floor
-and one swing (Depth and Manual 12:00): 30–66 µs rms per take, 49 overall; Rate 5:00's
+and one swing (Depth and Manual 12:00): 30–66 µs rms per take, 49 overall (30–69 and 58 since the 2026-10-29 correction: the click template uses the wet's tone); Rate 5:00's
 swing predicted 0.52 ms (measured 0.56). Res doesn't touch the sweep (`sweep-res-1200` =
 `rate-1200` within 6 µs).
 
@@ -203,12 +204,12 @@ not feedback. The middle tap sweeps exactly like STANDARD's single one (Rate 12:
 other two follow it at ×0.50 and ×1.50 throughout (1.98 ± 0.01 and 2.97 ± 0.01 times the
 first tap). Three combs on top of each other: the "stronger flanger effect".
 
-- Levels at 1 kHz re bypass: the taps +0.8, +0.6, +0.4 dB; the dry +1.0 dB (STANDARD's
-  +1.8). Each tap has STANDARD's wet tone (the second against the first: within 0.3 dB
+- Levels at 1 kHz re bypass: the taps −1.23, −1.35, −1.58 dB; the dry −1.0 dB (STANDARD's
+  −0.1; corrected 2026-10-29, each was ~2 dB high: +0.8, +0.6, +0.4 and +1.0). Each tap has STANDARD's wet tone (the second against the first: within 0.3 dB
   to 4 kHz, −1 to −2 dB above 8 kHz).
 - The clip: the same, +0.53 dB re the guitar's peak (0.13 dB rms).
 - **The dry is the fourth copy:** dry, d/2, d, 3d/2 — evenly spaced and nearly equal
-  (+1.0, +0.8, +0.6, +0.4 dB re bypass at 1 kHz). Four equal copies make the comb seen
+  (−1.0, −1.2, −1.4, −1.6 dB re bypass at 1 kHz). Four equal copies make the comb seen
   in the sweeps: a big peak every 2/d (every other STANDARD peak), two small ones between,
   and much deeper notches than STANDARD's (whose dry and wet differ by 1.6 dB).
 - **Res: best reading so far, not proven.** From the −24 dB sweeps (the −12 dB ones

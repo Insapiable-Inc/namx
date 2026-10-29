@@ -38,7 +38,7 @@ A plain-reading result worth stating first, because a CE-5 is easy to assume ana
 
 - **The dry path, with the pedal on, is 0.98 ms late** (47 samples at 48 kHz), with the
   same group delay from 300 Hz to 14 kHz (0.97–0.99 ms) and a flat response (±0.9 dB,
-  50 Hz–16 kHz), at **+2.3 dB** over bypass. A constant delay at every frequency is a
+  50 Hz–16 kHz), at **+0.35 dB** over bypass. A constant delay at every frequency is a
   converter's latency, not an analog circuit. Bypass is 0.00 ms (true or buffered bypass).
 - **The wet path's top end is a linear-phase brick wall:** −0.1 dB at 8 kHz, −3.5 at
   10 kHz, −10.5 at 12, −25 at 14, −44 at 16, −64 at 18 kHz — and its group delay stays at
@@ -55,7 +55,7 @@ The LFO's shape (below) is the one bucket-brigade choruses have, so it may be im
 | | |
 |---|---|
 | Dry delay (pedal on) | 0.98 ms re bypass |
-| Dry gain | +2.3 dB re bypass (at 1 kHz), flat ±0.9 dB 50 Hz–16 kHz |
+| Dry gain | +0.35 dB re bypass (at 1 kHz), flat within 0.7 dB 50 Hz–16 kHz *(Corrected 2026-10-29: levels re bypass were ~2 dB high — the bypass impulse response lost the part that wraps to negative time; see `tools/capture/README.md`, Lessons.)* |
 | Filters | don't touch the dry: both at 7:00 vs both at 5:00, E.Level down: 0.0 dB at 1 kHz |
 | Mono mix at E.Level 5:00 | the chorus 2.4 dB above the dry (at 1 kHz; within one take) |
 | E.Level fully down | the chorus is still there at −29.7 dB (1 kHz), 23.5 dB under E.Level 5:00 — not muted |
@@ -71,14 +71,14 @@ At minimum Depth (the delay moves 0.03 ms), filters open, E.Level 5:00:
 
 - **Delay:** 6.41 ms after the input, **5.43 ms after the dry**.
 - **Gain:** −6.2 dB at 1 kHz in wet-only mode (E.Level 5:00), re what was played — the
-  interface loop's bypass is −10.8 dB on that scale, so the wet is +4.6 dB re bypass.
+  interface loop's bypass is −8.8 dB on that scale, so the wet is +2.7 dB re bypass.
 - **Tone**, re 1 kHz (third octaves): 31.5 Hz −23.6, 63 Hz −5.6, 125 Hz +1.2, 250 Hz +0.6,
   500 Hz +0.2, 2 kHz −0.2, 4 kHz −0.4, 8 kHz −0.7 dB, then the brick wall above. So a
   low cut at about 60 Hz with a small bump above it, flat, and the 10 kHz cliff.
 
 ### E.Level
 
-Wet gain at 1 kHz (dB re what was played, not re bypass — bypass is −10.8 dB on this scale,
+Wet gain at 1 kHz (dB re what was played, not re bypass — bypass is −8.8 dB on this scale,
 the dry −8.5; wet only and the mono mix's wet part agree within 0.6 dB):
 
 | E.Level | 7:00 | 9:00 | 12:00 | 3:00 | 5:00 |
@@ -220,7 +220,7 @@ Depth-dependent fraction, see *The LFO*).
 ## For NAM-X
 
 NAM-X's Chorus has a Vintage mode (triangle LFO, a darker BBD-style wet). A CE-5 voicing
-would be: dry +2.3 dB (or unity with the wet 2.3 dB lower), a 5.7–8.1 ms delay with the
+would be: dry +0.35 dB, a 5.7–8.1 ms delay with the
 bowed triangle above and Depth raising mainly the top, a 60 Hz high-pass and a 10 kHz
 brick wall on the wet, the two tone knobs as a resonant high-pass shelf and a first-order
 low-pass, a hard clip ~2 dB over the guitar's peak on the input and one on the wet that

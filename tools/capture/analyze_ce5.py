@@ -65,10 +65,9 @@ def rounded(values, digits=2):
 def parts(session, name):
     """A sweep take's dry and wet frequency responses (what came out over what was played)."""
     h, _ = analyze_dd8.impulse_response(session, name)
-    h = h[:N_IR]
-    split = int(SPLIT_S * RATE)
-    return np.fft.rfft(np.where(np.arange(N_IR) < split, h, 0)), \
-        np.fft.rfft(np.where(np.arange(N_IR) >= split, h, 0))
+    h = analyze_dd8.head(h, N_IR)
+    dry = analyze_dd8.head_times(N_IR, RATE) < SPLIT_S  # the negative times too
+    return np.fft.rfft(np.where(dry, h, 0)), np.fft.rfft(np.where(dry, 0, h))
 
 
 def dry_of(session, name):

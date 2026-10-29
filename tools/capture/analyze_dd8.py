@@ -54,6 +54,34 @@ def impulse_response(session, name):
     return np.fft.irfft(h, n), rate
 
 
+PRE_ROLL = 2400  # 50 ms of negative time kept by head()
+
+
+def head(h, n):
+    """The response's first n samples for a DFT, its negative times kept: [0, n - PRE_ROLL)
+    as they are, then the response's last PRE_ROLL samples, which the DFT reads as the
+    times just before 0. A pedal input's analog path is a fraction of a sample faster
+    than the loopback, so a bypass (or analog) impulse peaks just before 0 and ~20 % of
+    its energy wraps to the end of the circular deconvolution: h[:n] dropped it and read
+    the bypass ~2 dB low (2026-10-29, found with the OC-5)."""
+    return np.concatenate([h[:n - PRE_ROLL], h[-PRE_ROLL:]])
+
+
+def head_times(n, rate):
+    """Seconds for each of head()'s samples: the wrapped ones are negative."""
+    index = np.arange(n)
+    return np.where(index < n - PRE_ROLL, index, index - n) / rate
+
+
+def dry_bands_db(h, rate, length=1024):
+    """Third-octave levels of a dry impulse at ~0: its first `length` samples under a
+    falling half-Hann, plus the negative times."""
+    x = np.zeros(rate)
+    x[:length] = h[:length] * np.hanning(2 * length)[length:]
+    x[-PRE_ROLL:] = h[-PRE_ROLL:]
+    return analysis.third_octave_db(x, rate)
+
+
 def first_repeat(h, rate, after=200):
     """Sample index of the dry impulse and of the strongest later arrival (the repeat)."""
     dry = int(np.argmax(np.abs(h[:2000])))
@@ -112,8 +140,7 @@ def measure_sweeps(session):
     # The wet path's tone: the first repeat against the dry impulse, from a -12 dB take
     # (the full-level ones clip in the wet path); the first repeat doesn't depend on Feedback.
     h = responses["feedback-1200-m12"]
-    dry_window = h[:1024] * np.hanning(2048)[1024:]
-    dry_db = analysis.third_octave_db(np.pad(dry_window, (0, rate - 1024)), rate)
+    dry_db = dry_bands_db(h, rate)
     segment = h[noon - 256:noon - 256 + 1024] * np.hanning(1024)
     rep_db = analysis.third_octave_db(np.pad(segment, (0, rate - 1024)), rate)
     shape = rep_db - dry_db

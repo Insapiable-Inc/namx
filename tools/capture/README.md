@@ -218,6 +218,16 @@ were recorded before e63d826, so they include the marker and all read about −1
 
 ## Lessons
 
+- **Keep a deconvolved impulse response's negative times** (`analyze_dd8.head`, 2026-10-29).
+  The pedal input's analog path is a fraction of a sample faster than the loopback, so a
+  bypass (or analog) impulse peaks just before 0 and ~20 % of its energy wraps to the end of
+  the circular deconvolution. Cutting `h[:n]` dropped it: every bypass read 1–2 dB low, every
+  digital pedal's level re bypass that much high (CE-5 dry +2.3 → +0.35 dB, BF-3 −0.1 not
+  +1.8), dry windows lost the same share (the DD-8's repeat tones, the CS-3's Tone curves,
+  the NS-2's top end bent by up to 1.5 dB) and the PH-3's notches filled in. Found with the
+  OC-5: a level staircase (no impulse response) disagreed with the sweep by 2.2 dB. The rolled
+  bypass reads −8.8 dB in every session: the rig's loop gain, as the calibration says.
+
 - **Look at the data before choosing a model.** The first guess (a triangle morphing
   into a square) was wrong; the clamp showed up in the first plot of averaged cycles.
 - **Fit the knob structure, not each take.** Separate per-take fits always look good;

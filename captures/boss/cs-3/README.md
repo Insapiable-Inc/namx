@@ -68,9 +68,12 @@ fast playing, as the manual says.
 ## Tone
 
 Quiet sweeps (−24 dB) at Sustain 7:00, where the compressor isn't working: a **tilt around
-1 kHz** — at 7:00 +5 dB at 200 Hz and −11 dB at 16 kHz (re 1 kHz), at 5:00 −11 dB at
-50 Hz and +2.7 dB at 3 kHz. At 12:00 flat from 200 Hz to 3 kHz with a fixed roll-off
-above (−8 dB at 16 kHz) and a low cut (−4.5 dB at 50 Hz).
+1 kHz** — at 7:00 +5.2 dB at 200 Hz and −9.3 dB at 16 kHz (re 1 kHz), at 5:00 −10.3 dB
+at 50 Hz and +2.5 dB at 3 kHz. At 12:00 flat from 200 Hz to 3 kHz with a fixed roll-off
+above (−5.7 dB at 16 kHz) and a low cut (−3.8 dB at 50 Hz). (Corrected 2026-10-29: the
+bypass impulse response lost its negative times, which bent these curves by up to 1.5 dB at
+the top and read every level re bypass ~2.3 dB high — the gains elsewhere come from the
+staircases and are unaffected; see `tools/capture/README.md`, Lessons.)
 
 ## Level and noise
 

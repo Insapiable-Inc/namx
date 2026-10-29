@@ -126,16 +126,16 @@
       16000
     ],
     "db_re_1khz": [
-      1.79,
-      3.31,
-      2.68,
-      -0.56,
-      5.0,
+      2.32,
+      3.62,
+      2.9,
+      -0.36,
+      5.16,
       0.0,
-      5.27,
-      -1.64,
-      4.49,
-      -22.46
+      4.85,
+      -2.25,
+      3.55,
+      -25.14
     ]
   },
   "feedback_db_per_repeat": {},
@@ -227,11 +227,11 @@
     "level_range_db": 2.53,
     "wow (0.3-6 Hz)": {
       "strongest_hz": 1.51,
-      "rms_cents": 9.01
+      "rms_cents": 7.36
     },
     "flutter (6-60 Hz)": {
       "strongest_hz": 9.09,
-      "rms_cents": 0.89
+      "rms_cents": 0.73
     },
     "lfo_hz": 1.509,
     "delay_swing_ms_peak_to_peak": 1.227,
@@ -314,11 +314,11 @@
       "level_range_db": 2.37,
       "wow (0.3-6 Hz)": {
         "strongest_hz": 1.51,
-        "rms_cents": 9.04
+        "rms_cents": 7.38
       },
       "flutter (6-60 Hz)": {
         "strongest_hz": 9.08,
-        "rms_cents": 1.01
+        "rms_cents": 0.82
       },
       "lfo_hz": 1.514,
       "delay_swing_ms_peak_to_peak": 1.273,
@@ -400,11 +400,11 @@
       "level_range_db": 2.6,
       "wow (0.3-6 Hz)": {
         "strongest_hz": 1.51,
-        "rms_cents": 9.02
+        "rms_cents": 7.37
       },
       "flutter (6-60 Hz)": {
         "strongest_hz": 9.08,
-        "rms_cents": 0.92
+        "rms_cents": 0.75
       },
       "lfo_hz": 1.514,
       "delay_swing_ms_peak_to_peak": 1.252,
@@ -486,11 +486,11 @@
       "level_range_db": 8.18,
       "wow (0.3-6 Hz)": {
         "strongest_hz": 1.51,
-        "rms_cents": 9.26
+        "rms_cents": 7.56
       },
       "flutter (6-60 Hz)": {
         "strongest_hz": 9.08,
-        "rms_cents": 1.72
+        "rms_cents": 1.4
       },
       "lfo_hz": 1.514,
       "delay_swing_ms_peak_to_peak": 1.338,

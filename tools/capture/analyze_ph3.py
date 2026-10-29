@@ -157,8 +157,10 @@ def res_loop(f, mix, sections, tone_params, s, k, hp_hz, delay, parked, dry_insi
 
 def response(session, name):
     """A sweep take's response against its session's bypass, on the analysis grid."""
-    h = np.fft.rfft(analyze_dd8.impulse_response(session, name)[0][:RESPONSE_SAMPLES])
-    b = np.fft.rfft(analyze_dd8.impulse_response(session, "bypass-sweep")[0][:RESPONSE_SAMPLES])
+    h = np.fft.rfft(analyze_dd8.head(analyze_dd8.impulse_response(session, name)[0],
+                                     RESPONSE_SAMPLES))
+    b = np.fft.rfft(analyze_dd8.head(analyze_dd8.impulse_response(session, "bypass-sweep")[0],
+                                     RESPONSE_SAMPLES))
     f = np.fft.rfftfreq(RESPONSE_SAMPLES, 1 / RATE)
     return f, h / b
 

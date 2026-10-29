@@ -139,7 +139,7 @@ def tone(session):
 
     def response(name):
         h, _ = analyze_dd8.impulse_response(session, name)
-        return np.fft.rfft(h[:n])
+        return np.fft.rfft(analyze_dd8.head(h, n))
 
     def band(x, centre):
         keep = (f > centre / 1.06) & (f < centre * 1.06)

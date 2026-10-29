@@ -19,10 +19,8 @@ reference; Direct and the other octaves fully down unless said):
   chords       a low note under a higher one, picked together: the level of each note's
                shifted copy
   fade         two notes dying over 10 s: the shifted copy's level against the input's
-The sweeps' impulse responses are rolled by PRE_ROLL before they're cut to 0.5 s: the
-bypass's peak sits a fraction of a sample before the alignment (the pedal input's analog
-path is a little faster than the loopback's), so ~20 % of its energy wraps to the end of
-the circular deconvolution, and cutting it off read the bypass ~2 dB low (2026-10-29).
+The sweeps' impulse responses keep their negative times (analyze_dd8.head): the bypass
+peaks a fraction of a sample before 0, and cutting it to h[:n] read it ~2 dB low.
 """
 
 import argparse
@@ -39,7 +37,6 @@ import analysis
 import analyze_dd8
 
 RATE = 48000
-PRE_ROLL = RATE // 20  # 50 ms: what wraps to negative time stays in the window
 STEP_LEVELS_DB = [-30, -24, -18, -15, -12, -9, -6, -3, 0, 3]
 NOTES = [73.42, 82.41, 110.0, 146.83, 196.0, 246.94, 329.63, 493.88, 659.26, 880.0, 1318.51]
 NOTE_SECONDS = 3.0
@@ -96,8 +93,7 @@ def dry_path(session):
     bypass, _ = analyze_dd8.impulse_response(session, "bypass-sweep")
     dry, _ = analyze_dd8.impulse_response(session, "dry-sweep")
     n = RATE // 2
-    ratio = (np.fft.rfft(np.roll(dry, PRE_ROLL)[:n])
-             / np.fft.rfft(np.roll(bypass, PRE_ROLL)[:n]))
+    ratio = np.fft.rfft(analyze_dd8.head(dry, n)) / np.fft.rfft(analyze_dd8.head(bypass, n))
     freqs = np.fft.rfftfreq(n, 1 / RATE)
     band = (freqs > 300) & (freqs < 10000)
     slope = np.polyfit(freqs[band], np.unwrap(np.angle(ratio[band])), 1)[0]

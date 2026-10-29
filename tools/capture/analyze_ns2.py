@@ -251,7 +251,7 @@ def open_path(session):
 
     def response(name):
         h, _ = analyze_dd8.impulse_response(session, name)
-        return np.fft.rfft(h[:n])
+        return np.fft.rfft(analyze_dd8.head(h, n))
 
     a, b = response("sweep"), response("bypass-sweep")
     hz = [30, 50, 100, 200, 500, 1000, 2000, 3000, 5000, 8000, 12000, 16000, 20000]

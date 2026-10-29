@@ -17,6 +17,14 @@ what is cheap (responses, notches, the Res factor, the sweep's scale per LFO pha
 hold, LFO rates, levels) and draws the fitted models over the measurements; the fits
 themselves were done with exploratory scripts that weren't kept — how, is in each section.
 
+**Correction 2026-10-29:** the responses were cut from impulse responses that lost their
+negative times, which read the bypass ~2 dB low and filled the notches in (−41 to −52 dB
+then, −45 to −88 dB now). `analyze_ph3.py` now measures correctly, but the fitted models
+below were fitted to the old responses: against the corrected ones the static fits are
+1.08 / 1.12 / 1.24 dB rms for 4 / 8 / 10 Stage (were 0.31 / 0.16 / 0.19) and 0.83 dB for
+12 Stage (was 1.10). The structures stand; the tone and mix (`gd`, `gw`, the high shelf)
+need a refit. Numbers in the sections below are the old ones unless marked.
+
 The knobs: Rate, Depth, Res, and the Stage switch: 4, 8, 10, 12 Stage, Rise, Fall, Step. Clock
 positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise. The user wanted every mode;
 nothing was left out.

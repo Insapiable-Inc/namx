@@ -122,8 +122,7 @@ def tone(session):
         return None
     h, _ = analyze_dd8.impulse_response(session, "time-1200-m12")
     dry, rep = analyze_dd8.first_repeat(h, RATE)
-    dry_db = analysis.third_octave_db(np.pad(h[:1024] * np.hanning(2048)[1024:], (0, RATE - 1024)),
-                                      RATE)
+    dry_db = analyze_dd8.dry_bands_db(h, RATE)
     segment = h[rep - 256:rep - 256 + 1024] * np.hanning(1024)
     rep_db = analysis.third_octave_db(np.pad(segment, (0, RATE - 1024)), RATE)
     shape = rep_db - dry_db

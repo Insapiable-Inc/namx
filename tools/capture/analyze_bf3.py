@@ -62,11 +62,11 @@ def rounded(values, digits=2):
 
 
 def impulse(session, name):
-    return analyze_dd8.impulse_response(session, name)[0][:N_IR]
+    return analyze_dd8.head(analyze_dd8.impulse_response(session, name)[0], N_IR)
 
 
 def window(h, start_ms, stop_ms):
-    t = np.arange(N_IR) / RATE * 1000
+    t = analyze_dd8.head_times(N_IR, RATE) * 1000
     return np.fft.rfft(np.where((t >= start_ms) & (t < stop_ms), h, 0.0))
 
 

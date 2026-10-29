@@ -30,8 +30,10 @@ measured. The model below is that plain gate.
 
 ## The open path
 
-+0.6 dB, flat from 50 Hz to 5 kHz within 0.2 dB, −0.2 dB at 8 kHz, −1.25 dB at 12 kHz,
-−2.7 dB at 20 kHz. **It distorts at the guitar's full peak:** a 0 dB step's second and third
++0.6 dB, flat from 30 Hz to 3 kHz within 0.2 dB, +0.1 dB at 5 kHz, −1.3 dB at 8 kHz,
+−2.4 dB at 12 kHz, −3.1 dB at 20 kHz (corrected 2026-10-29: was −0.2 / −1.25 / −2.7 dB at
+8 / 12 / 20 kHz — the bypass impulse response lost its negative times; see
+`tools/capture/README.md`, Lessons). **It distorts at the guitar's full peak:** a 0 dB step's second and third
 harmonics at −25 / −27 dB at 1 kHz and −16 / −19 dB at 3 kHz (the fundamental at 3 kHz 7 dB
 down) — the bypassed rig gives −57 / −62. Gone 4 dB lower. In use the NS-2 usually sits after
 the drives; not modelled.
