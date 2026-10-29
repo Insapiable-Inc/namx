@@ -4,6 +4,7 @@
 #include <array>
 #include <cmath>
 
+#include "BiquadChain.h"
 #include "Common.h"
 
 namespace namx
@@ -37,6 +38,14 @@ constexpr float CLOSE = 4.42f;
 constexpr float SLOPE = 0.889f;
 constexpr float RATIO = 7.94f;
 constexpr float OPEN_GAIN_DB = 0.6f;
+
+// The open path's top end, re its 1 kHz gain: flat to 3 kHz, −1.3 dB at 8 kHz, −2.4 at
+// 12 kHz, −3.1 at 20 kHz (within 0.09 dB; tools/capture/fit_voicings.py, 2026-10-29). A low
+// shelf that BiquadChain scales to unity at 1 kHz: in effect a −3.7 dB high shelf.
+constexpr size_t TONE_SECTIONS = 1;
+constexpr FilterChain<TONE_SECTIONS> TONE{{
+    {FilterKind::LOW_SHELF, 8168.4f, 0.623f, 3.69f},
+}};
 
 // Threshold and Decay at 7:00, 9:00, 12:00, 3:00, 5:00: T (dB re REFERENCE_DBFS) and the
 // fast level's fall (ms). Threshold does little below 12:00.
