@@ -1,0 +1,94 @@
+{
+  "source_results_sha256": "9012fc6daa7bbe355e9479573bf3745a9c666999510b2b408609eaa5bdcb724d",
+  "source_results": "tools/research/cs3_detector_results.json",
+  "source_model_commit": "0a346743de472e253869e43887a02727c6a73322",
+  "frozen_model_control_mapping": {
+    "level_noon_makeup_db": -14.93088411209647,
+    "uncompressed_noon_gain_db": 3.4933199683669685,
+    "sustain_gain_db": 18.42420408046344,
+    "threshold_db_re_reference": -32.67420408046344,
+    "source_takes": [
+      "level-1200",
+      "level-0500",
+      "bypass-stairs",
+      "stairs-sustain-1200"
+    ],
+    "source_session": "captures/boss/cs-3/2026-10-27"
+  },
+  "prediction_rule": "Evaluate release shapes normalized by their own settled endpoint gains, plus t63/t90, against the three frozen numerical hypotheses. Also report absolute gains and bypass/loopback calibration. No dynamic parameter fitting in primary scores.",
+  "hypothesis_limits": "These are extrapolations of single-drop effective time constants, not deployable detector models. Starting-level and destination-level hypotheses give opposite orderings; neither winning would prove a particular physical circuit. If neither predicts both crossed drops, consider jump size, state dependence, gain law and history.",
+  "predictions": {
+    "frozen_baseline": [
+      {
+        "drop_at_s": 8,
+        "effective_release_tau_ms": 189.1,
+        "prediction": {
+          "start_gain_db": -22.576029611821127,
+          "final_gain_db": 3.4933199683710425,
+          "excursion_db": 26.06934958019217,
+          "t63_ms": 388,
+          "t90_ms": 586
+        }
+      },
+      {
+        "drop_at_s": 20,
+        "effective_release_tau_ms": 189.1,
+        "prediction": {
+          "start_gain_db": -16.646229611821305,
+          "final_gain_db": -4.7866296118213345,
+          "excursion_db": 11.85959999999997,
+          "t63_ms": 226,
+          "t90_ms": 362
+        }
+      }
+    ],
+    "destination_level_effect": [
+      {
+        "drop_at_s": 8,
+        "effective_release_tau_ms": 243.1095830451484,
+        "prediction": {
+          "start_gain_db": -22.627833666718544,
+          "final_gain_db": 3.4933199683705665,
+          "excursion_db": 26.12115363508911,
+          "t63_ms": 500,
+          "t90_ms": 755
+        }
+      },
+      {
+        "drop_at_s": 20,
+        "effective_release_tau_ms": 173.10365356046358,
+        "prediction": {
+          "start_gain_db": -16.631338747252716,
+          "final_gain_db": -4.771738747252433,
+          "excursion_db": 11.859600000000283,
+          "t63_ms": 207,
+          "t90_ms": 332
+        }
+      }
+    ],
+    "starting_level_effect": [
+      {
+        "drop_at_s": 8,
+        "effective_release_tau_ms": 173.10365356046358,
+        "prediction": {
+          "start_gain_db": -22.5611387472525,
+          "final_gain_db": 3.493319968371153,
+          "excursion_db": 26.054458715623653,
+          "t63_ms": 355,
+          "t90_ms": 536
+        }
+      },
+      {
+        "drop_at_s": 20,
+        "effective_release_tau_ms": 243.1095830451484,
+        "prediction": {
+          "start_gain_db": -16.69803366671891,
+          "final_gain_db": -4.838433666718622,
+          "excursion_db": 11.859600000000288,
+          "t63_ms": 290,
+          "t90_ms": 464
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,174 @@
+
+=== 2026-11-10T00:09:35 · run tools/capture/plans/dd-8-stereo.json · tool a84c34dc64a37bc6eb7f6f7fe3dbc85e08ae56dc
+
+[1/24] bypass-noise: white noise at -12/-12 dB, 0.1 s each + 3 s gaps
+  pedal OFF (bypassed)
+  The pedal off (its LED off): what each output carries in bypass. OUTPUT A on input 2, OUTPUT B on input 1.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -26.2 dBFS · B -26.2 dBFS · loopback -25.8 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[2/24] bypass-stabs: captures/di/stabs.wav from 2 s, 12.5 s
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[3/24] standard-clicks: 3 clicks every 3 s
+  pedal ON · Mode Standard · Level 12:00 · Feedback 12:00 · Time 12:00 (switch it on)
+  The pedal on (its LED lit).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -14.1 dBFS · B -14.1 dBFS · loopback -14.0 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[4/24] standard-noise: white noise at -12/-12 dB, 0.1 s each + 3 s gaps
+  pedal ON · Mode Standard · Level 12:00 · Feedback 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -26.2 dBFS · B -24.0 dBFS · loopback -25.8 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[5/24] standard-sine: 1000 Hz sine, 8 s at -12 dB
+  pedal ON · Mode Standard · Level 12:00 · Feedback 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -23.4 dBFS · B -18.7 dBFS · loopback -24.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[6/24] standard-stabs: captures/di/stabs.wav from 2 s, 12.5 s
+  pedal ON · Mode Standard · Level 12:00 · Feedback 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[7/24] standard-time-0900-clicks: 3 clicks every 3 s
+  pedal ON · Mode Standard · Level 12:00 · Feedback 12:00 · Time 9:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.5 dBFS · B -14.1 dBFS · loopback -14.0 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[8/24] standard-time-0300-clicks: 3 clicks every 3 s
+  pedal ON · Mode Standard · Level 12:00 · Feedback 12:00 · Time 3:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -14.1 dBFS · B -14.1 dBFS · loopback -14.0 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[9/24] standard-feedback-0300-clicks: 1 clicks every 3 s
+  pedal ON · Mode Standard · Level 12:00 · Feedback 3:00 (changed) · Time 12:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -14.1 dBFS · B -14.1 dBFS · loopback -14.0 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[10/24] standard-feedback-0300-stabs: captures/di/stabs.wav from 2 s, 12.5 s
+  pedal ON · Mode Standard · Level 12:00 · Feedback 3:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[11/24] analog-clicks: 3 clicks every 3 s
+  pedal ON · Mode Analog (changed) · Level 12:00 · Feedback 12:00 (changed) · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -14.1 dBFS · B -14.1 dBFS · loopback -14.0 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[12/24] analog-noise: white noise at -12/-12 dB, 0.1 s each + 3 s gaps
+  pedal ON · Mode Analog · Level 12:00 · Feedback 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -26.2 dBFS · B -23.5 dBFS · loopback -25.8 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[13/24] analog-stabs: captures/di/stabs.wav from 2 s, 12.5 s
+  pedal ON · Mode Analog · Level 12:00 · Feedback 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.3 dBFS · loopback -18.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[14/24] tape-clicks: 3 clicks every 3 s
+  pedal ON · Mode Tape (changed) · Level 12:00 · Feedback 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -14.1 dBFS · B -14.1 dBFS · loopback -14.0 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[15/24] tape-noise: white noise at -12/-12 dB, 0.1 s each + 3 s gaps
+  pedal ON · Mode Tape · Level 12:00 · Feedback 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -26.2 dBFS · B -23.6 dBFS · loopback -25.8 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[16/24] tape-stabs: captures/di/stabs.wav from 2 s, 12.5 s
+  pedal ON · Mode Tape · Level 12:00 · Feedback 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.5 dBFS · loopback -18.9 dBFS · latency 448 samples (9.33 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[17/24] warm-clicks: 3 clicks every 3 s
+  pedal ON · Mode Warm (changed) · Level 12:00 · Feedback 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -14.1 dBFS · B -14.1 dBFS · loopback -14.0 dBFS · latency 576 samples (12.00 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[18/24] warm-noise: white noise at -12/-12 dB, 0.1 s each + 3 s gaps
+  pedal ON · Mode Warm · Level 12:00 · Feedback 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -26.2 dBFS · B -26.0 dBFS · loopback -25.8 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[19/24] warm-stabs: captures/di/stabs.wav from 2 s, 12.5 s
+  pedal ON · Mode Warm · Level 12:00 · Feedback 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[20/24] mod-clicks: 3 clicks every 3 s
+  pedal ON · Mode Mod (changed) · Level 12:00 · Feedback 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -14.1 dBFS · B -14.1 dBFS · loopback -14.0 dBFS · latency 454 samples (9.46 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[21/24] mod-noise: white noise at -12/-12 dB, 0.1 s each + 3 s gaps
+  pedal ON · Mode Mod · Level 12:00 · Feedback 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -26.2 dBFS · B -24.1 dBFS · loopback -25.8 dBFS · latency 454 samples (9.46 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[22/24] mod-sine: 1000 Hz sine, 8 s at -12 dB
+  pedal ON · Mode Mod · Level 12:00 · Feedback 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -20.8 dBFS · B -18.7 dBFS · loopback -24.9 dBFS · latency 454 samples (9.46 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[23/24] mod-stabs: captures/di/stabs.wav from 2 s, 12.5 s
+  pedal ON · Mode Mod · Level 12:00 · Feedback 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 454 samples (9.46 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[24/24] mod-chords: captures/di/chords.wav, 25.0 s
+  pedal ON · Mode Mod · Level 12:00 · Feedback 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -23.1 dBFS · B -23.0 dBFS · loopback -22.6 dBFS · latency 576 samples (12.00 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+All 24 takes are in captures/boss/dd-8/2026-11-10-stereo.

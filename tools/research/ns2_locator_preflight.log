@@ -1,0 +1,173 @@
+{
+  "old_transition_rows": [
+    {
+      "step": 6,
+      "input_db": -56,
+      "direction": "ascending",
+      "gain_db_at_005_050_130_seconds": [
+        -17.593574153294412,
+        -13.48367763655405,
+        -11.286052715270564
+      ],
+      "late_minus_early_db": 6.307521438023848
+    },
+    {
+      "step": 7,
+      "input_db": -52,
+      "direction": "ascending",
+      "gain_db_at_005_050_130_seconds": [
+        -2.9264937509080657,
+        -0.22798449878182175,
+        0.5831596025204029
+      ],
+      "late_minus_early_db": 3.509653353428469
+    },
+    {
+      "step": 33,
+      "input_db": -52,
+      "direction": "descending",
+      "gain_db_at_005_050_130_seconds": [
+        0.577669009247467,
+        0.5775376083278141,
+        0.580229558902015
+      ],
+      "late_minus_early_db": 0.0025605496545479944
+    },
+    {
+      "step": 34,
+      "input_db": -56,
+      "direction": "descending",
+      "gain_db_at_005_050_130_seconds": [
+        0.5839447013809745,
+        0.578366387218525,
+        -0.8871962646936136
+      ],
+      "late_minus_early_db": -1.471140966074588
+    }
+  ],
+  "reset_design": {
+    "max_decay_slow_tau_seconds": 3.654782,
+    "residual_fraction_after_8_seconds": 0.11203846311458589,
+    "residual_fraction_after_24_seconds": 0.001406375941067156,
+    "interpretation": "A 24 s low-input reset reduces the fitted slow-state excess to about .14%; physical reset adequacy must still be checked. The locator uses minimum Decay and does not require that long reset."
+  },
+  "predictions": [
+    {
+      "step": 0,
+      "input_db": -100,
+      "internal_gain_window_medians_db": [
+        -38.30263258944488,
+        -51.91801365384758,
+        -51.94342483203654
+      ]
+    },
+    {
+      "step": 1,
+      "input_db": -62,
+      "internal_gain_window_medians_db": [
+        -18.16142242268691,
+        -18.161424480383452,
+        -18.161424480383452
+      ]
+    },
+    {
+      "step": 2,
+      "input_db": -60,
+      "internal_gain_window_medians_db": [
+        -16.383424856082733,
+        -16.383424856082733,
+        -16.383424856082733
+      ]
+    },
+    {
+      "step": 3,
+      "input_db": -58,
+      "internal_gain_window_medians_db": [
+        -14.605424407511553,
+        -14.605424407511553,
+        -14.605424407511553
+      ]
+    },
+    {
+      "step": 4,
+      "input_db": -56,
+      "internal_gain_window_medians_db": [
+        -12.827424625592382,
+        -12.827424625592382,
+        -12.827424625592382
+      ]
+    },
+    {
+      "step": 5,
+      "input_db": -54,
+      "internal_gain_window_medians_db": [
+        -11.049424493825658,
+        -11.049424493825658,
+        -11.049424493825658
+      ]
+    },
+    {
+      "step": 6,
+      "input_db": -52,
+      "internal_gain_window_medians_db": [
+        -9.271424708345224,
+        -9.271424708345224,
+        -9.271424708345224
+      ]
+    },
+    {
+      "step": 7,
+      "input_db": -50,
+      "internal_gain_window_medians_db": [
+        -7.49342450802702,
+        -7.49342450802702,
+        -7.49342450802702
+      ]
+    },
+    {
+      "step": 8,
+      "input_db": -48,
+      "internal_gain_window_medians_db": [
+        0.6,
+        0.6,
+        0.6
+      ]
+    },
+    {
+      "step": 9,
+      "input_db": -46,
+      "internal_gain_window_medians_db": [
+        0.6,
+        0.6,
+        0.6
+      ]
+    },
+    {
+      "step": 10,
+      "input_db": -44,
+      "internal_gain_window_medians_db": [
+        0.6,
+        0.6,
+        0.6
+      ]
+    },
+    {
+      "step": 11,
+      "input_db": -12,
+      "internal_gain_window_medians_db": [
+        0.6,
+        0.6,
+        0.6
+      ]
+    },
+    {
+      "step": 12,
+      "input_db": -100,
+      "internal_gain_window_medians_db": [
+        0.6,
+        -51.3615599060432,
+        -51.943424831980266
+      ]
+    }
+  ]
+}

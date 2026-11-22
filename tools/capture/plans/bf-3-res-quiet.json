@@ -1,0 +1,147 @@
+{
+  "pedal": "Boss BF-3 Flanger, ULTRA then STANDARD (mono: Guitar In -> Output A)",
+  "comment": "The Res sweeps again at -24 dB: at -12 dB the resonant peaks reached the output clip (~-11 dBFS here) from Res 12:00 up in ULTRA and at Res 5:00 in STANDARD. ULTRA at Manual 7:00 (taps 7.3 ms apart) for every Res position with its own reference; then STANDARD Res 5:00 at Manual 12:00 with its reference. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise.",
+  "quiet_dbfs": -60,
+  "knobs": [
+    "Manual",
+    "Res",
+    "Depth",
+    "Rate"
+  ],
+  "takes": [
+    {
+      "name": "bypass-sweep-24",
+      "bypass": true,
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      }
+    },
+    {
+      "name": "manual-0700-24",
+      "settings": {
+        "Manual": "7:00",
+        "Res": "7:00",
+        "Depth": "7:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      },
+      "note": "MODE on ULTRA. Res minimum: this session's reference."
+    },
+    {
+      "name": "res-0900-manual-0700-24",
+      "settings": {
+        "Manual": "7:00",
+        "Res": "9:00",
+        "Depth": "7:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      }
+    },
+    {
+      "name": "res-1200-manual-0700-24",
+      "settings": {
+        "Manual": "7:00",
+        "Res": "12:00",
+        "Depth": "7:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      }
+    },
+    {
+      "name": "res-0300-manual-0700-24",
+      "settings": {
+        "Manual": "7:00",
+        "Res": "3:00",
+        "Depth": "7:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      }
+    },
+    {
+      "name": "res-0500-manual-0700-24",
+      "settings": {
+        "Manual": "7:00",
+        "Res": "5:00",
+        "Depth": "7:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      }
+    },
+    {
+      "name": "std-manual-1200-24",
+      "settings": {
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "7:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      },
+      "note": "MODE back to STANDARD for the last two."
+    },
+    {
+      "name": "std-res-0500-24",
+      "settings": {
+        "Manual": "12:00",
+        "Res": "5:00",
+        "Depth": "7:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      },
+      "note": "STANDARD Res 5:00 again, clear of the clip."
+    }
+  ]
+}

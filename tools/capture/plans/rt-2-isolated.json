@@ -1,0 +1,280 @@
+{
+  "pedal": "Boss RT-2 Rotary Ensemble (mono in: INPUT A; stereo out: OUTPUT A and B), each rotor alone, clean",
+  "comment": "The follow-up's isolated-rotor takes again: there the ring moved with the Drive Knob toggle on DRIVE at the second take, so Mode II's 'horn alone' was both rotors and every later take ran at Drive 5:00. Same signals and speed (white noise at -12 dB, Slow 9:00, LED green). Each take is checked as it lands: the both-rotor ones against session 1's (Drive 7:00, Balance 12:00, within 1.5 dB per octave), a rotor alone by the other rotor's octave (30 dB down; the drum alone the same on both outputs). Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise.",
+  "quiet_dbfs": -60,
+  "knobs": [
+    "Mode",
+    "Rise/Fall",
+    "LED",
+    "Level",
+    "Drive/Balance",
+    "Fast",
+    "Slow"
+  ],
+  "takes": [
+    {
+      "name": "bypass-noise",
+      "bypass": true,
+      "signal": {
+        "type": "noise",
+        "seconds": 10,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 1
+      },
+      "note": "Effect off. Same cables: OUTPUT A -> input 2, OUTPUT B -> input 1."
+    },
+    {
+      "name": "m1-both-noise",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "BALANCE 12:00",
+        "Fast": "12:00",
+        "Slow": "9:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 60,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 1
+      },
+      "expect": {
+        "like": [
+          "captures/boss/rt-2/2026-11-07/m1-slow-noise",
+          1.5
+        ],
+        "hint": "Drive and Balance aren't where the plan says (Drive 7:00, Balance 12:00). Set the ring again: toggle to DRIVE, ring to 7:00; toggle to BALANCE, ring to 12:00; then r."
+      },
+      "note": "Effect on, LED green (hold the RT-2's own pedal if it's red), Slow (outer ring of knob 2) to 9:00. Set the outer ring of knob 1 twice: Drive Knob toggle to DRIVE, ring to 7:00 (no Drive); then toggle to BALANCE, ring to 12:00. Leave the toggle on BALANCE for the whole run: from here on the ring sets Balance only. Give the rotors ~10 s."
+    },
+    {
+      "name": "m1-horn-noise",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "BALANCE 5:00",
+        "Fast": "12:00",
+        "Slow": "9:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 60,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 1
+      },
+      "expect": {
+        "below": [
+          125,
+          2000,
+          30
+        ],
+        "hint": "the drum is still in it, so Balance isn't at 5:00 (with the toggle on DRIVE the ring sets Drive). Set the ring again: toggle to DRIVE, ring to 7:00; toggle to BALANCE, ring to 5:00; then r."
+      },
+      "note": "Ring to 5:00 (the toggle stays on BALANCE): the horn alone."
+    },
+    {
+      "name": "m1-drum-noise",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "BALANCE 7:00",
+        "Fast": "12:00",
+        "Slow": "9:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 60,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 1
+      },
+      "expect": {
+        "below": [
+          4000,
+          250,
+          30
+        ],
+        "same": true,
+        "hint": "the horn is still in it, so Balance isn't at 7:00 (with the toggle on DRIVE the ring sets Drive). Set the ring again: toggle to DRIVE, ring to 7:00; toggle to BALANCE, ring to 7:00; then r."
+      },
+      "note": "Ring to 7:00 (the toggle stays on BALANCE): the drum alone."
+    },
+    {
+      "name": "m2-both-noise",
+      "settings": {
+        "Mode": "II",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "BALANCE 12:00",
+        "Fast": "12:00",
+        "Slow": "9:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 45,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 1
+      },
+      "expect": {
+        "like": [
+          "captures/boss/rt-2/2026-11-07/m2-slow-noise",
+          1.5
+        ],
+        "hint": "Drive and Balance aren't where the plan says (Drive 7:00, Balance 12:00). Set the ring again: toggle to DRIVE, ring to 7:00; toggle to BALANCE, ring to 12:00; then r."
+      },
+      "note": "Mode toggle to II; ring back to 12:00 (the toggle stays on BALANCE)."
+    },
+    {
+      "name": "m2-horn-noise",
+      "settings": {
+        "Mode": "II",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "BALANCE 5:00",
+        "Fast": "12:00",
+        "Slow": "9:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 45,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 1
+      },
+      "expect": {
+        "below": [
+          125,
+          2000,
+          30
+        ],
+        "hint": "the drum is still in it, so Balance isn't at 5:00 (with the toggle on DRIVE the ring sets Drive). Set the ring again: toggle to DRIVE, ring to 7:00; toggle to BALANCE, ring to 5:00; then r."
+      },
+      "note": "Ring to 5:00 (the toggle stays on BALANCE): the horn alone."
+    },
+    {
+      "name": "m2-drum-noise",
+      "settings": {
+        "Mode": "II",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "BALANCE 7:00",
+        "Fast": "12:00",
+        "Slow": "9:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 45,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 1
+      },
+      "expect": {
+        "below": [
+          4000,
+          250,
+          30
+        ],
+        "same": true,
+        "hint": "the horn is still in it, so Balance isn't at 7:00 (with the toggle on DRIVE the ring sets Drive). Set the ring again: toggle to DRIVE, ring to 7:00; toggle to BALANCE, ring to 7:00; then r."
+      },
+      "note": "Ring to 7:00 (the toggle stays on BALANCE): the drum alone."
+    },
+    {
+      "name": "m3-both-noise",
+      "settings": {
+        "Mode": "III",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "BALANCE 12:00",
+        "Fast": "12:00",
+        "Slow": "9:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 45,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 1
+      },
+      "expect": {
+        "like": [
+          "captures/boss/rt-2/2026-11-07/m3-slow-noise",
+          1.5
+        ],
+        "hint": "Drive and Balance aren't where the plan says (Drive 7:00, Balance 12:00). Set the ring again: toggle to DRIVE, ring to 7:00; toggle to BALANCE, ring to 12:00; then r."
+      },
+      "note": "Mode toggle to III; ring back to 12:00 (the toggle stays on BALANCE)."
+    },
+    {
+      "name": "m3-horn-noise",
+      "settings": {
+        "Mode": "III",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "BALANCE 5:00",
+        "Fast": "12:00",
+        "Slow": "9:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 45,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 1
+      },
+      "expect": {
+        "below": [
+          125,
+          2000,
+          30
+        ],
+        "hint": "the drum is still in it, so Balance isn't at 5:00 (with the toggle on DRIVE the ring sets Drive). Set the ring again: toggle to DRIVE, ring to 7:00; toggle to BALANCE, ring to 5:00; then r."
+      },
+      "note": "Ring to 5:00 (the toggle stays on BALANCE): the horn alone."
+    },
+    {
+      "name": "m3-drum-noise",
+      "settings": {
+        "Mode": "III",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "BALANCE 7:00",
+        "Fast": "12:00",
+        "Slow": "9:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 45,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 1
+      },
+      "expect": {
+        "below": [
+          4000,
+          250,
+          30
+        ],
+        "same": true,
+        "hint": "the horn is still in it, so Balance isn't at 7:00 (with the toggle on DRIVE the ring sets Drive). Set the ring again: toggle to DRIVE, ring to 7:00; toggle to BALANCE, ring to 7:00; then r."
+      },
+      "note": "Ring to 7:00 (the toggle stays on BALANCE): the drum alone."
+    }
+  ]
+}

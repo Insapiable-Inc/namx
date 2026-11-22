@@ -1,0 +1,54 @@
+{
+  "take": "bypass-stairs",
+  "pedal": "Boss AW-3 Dynamic Wah \u2014 blind test: the knobs set by the user, unknown to the analysis (mono: Guitar input -> Output)",
+  "bypass": true,
+  "settings": {},
+  "note": "The pedal off (its LED off): the bypass reference. Guitar input, Output; nothing in EXP/CTL.",
+  "signal": {
+    "type": "noise-steps",
+    "levels_db": [
+      -54,
+      -48,
+      -42,
+      -36,
+      -30,
+      -24,
+      -18,
+      -12,
+      -6,
+      0,
+      3
+    ],
+    "step_seconds": 1.5,
+    "seed": 1,
+    "tail": 3
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -11.89,
+    "loop": -11.1
+  },
+  "latency_samples": 449,
+  "latency_quality": 0.998,
+  "xruns": 0,
+  "played_sha256": "5ebdc80dae4d447bb668fe5dd992c4b3a5a09739b1933732b254195b57cd537c",
+  "recorded_at": "2026-11-11T21:58:48",
+  "tool_commit": "df8d144f61e53aed7332805fd6dd86cd7aaae2ff",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX4",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Boss AW-3 on its 9 V adapter: the guitar DI dataset. Input from interface out 3; OUTPUT -> input 2; INST, AIR off, pad on, gain fully counter-clockwise."
+  }
+}

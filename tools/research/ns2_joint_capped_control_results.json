@@ -1,0 +1,1041 @@
+{
+  "scope": "Joint fitting of original stairs/jumps and new history, with a monotone Threshold map. Decay map fixed. All older plucks/phrases/soft/slow stairs remain outside fitting. Whole probe input levels are withheld. Family selection has seen the dataset: retrospective validation, not blind.",
+  "fitting_dt_seconds": 0.005,
+  "evaluation_dt_seconds": 0.001,
+  "folds": {
+    "-54": {
+      "parameters": [
+        -0.27533453949804587,
+        0.5808028947871489,
+        11.29700981261839,
+        1.0110391352441905,
+        1.1576457394119235,
+        4.054004105832554,
+        1.81727264052347,
+        -0.06863920683233352,
+        4.138996325894324,
+        2.565653067213909,
+        0.9223553588589705,
+        -3.911987077330726,
+        2.9472930226678278
+      ],
+      "effective_threshold_map_db": {
+        "0700": -65.21969433962548,
+        "0900": -65.19969362105061,
+        "1200": -62.68448598588226,
+        "0300": -49.675334539498046,
+        "0500": -30.62103025644019
+      },
+      "start_costs": [
+        36.664738245559576,
+        36.6647050917787
+      ],
+      "start_parameters": [
+        [
+          -0.27326987829364474,
+          0.5811446399601511,
+          11.291412528828763,
+          1.0079009908463412,
+          1.158282097179351,
+          4.057496448453677,
+          1.8151791530596564,
+          -0.07050467350916614,
+          4.134989415925114,
+          2.566035005098531,
+          0.9224719736620032,
+          -3.8983251170488917,
+          2.947173669877888
+        ],
+        [
+          -0.27533453949804587,
+          0.5808028947871489,
+          11.29700981261839,
+          1.0110391352441905,
+          1.1576457394119235,
+          4.054004105832554,
+          1.81727264052347,
+          -0.06863920683233352,
+          4.138996325894324,
+          2.565653067213909,
+          0.9223553588589705,
+          -3.911987077330726,
+          2.9472930226678278
+        ]
+      ],
+      "nfev": [
+        16,
+        37
+      ],
+      "new_history": [
+        {
+          "decay": "0700",
+          "input_db": -56,
+          "history": "quiet",
+          "training": true,
+          "rms_db": 1.3949459559540618,
+          "late_bias_db": 0.054908549306568855,
+          "predicted_gain_early_late_db": [
+            -21.18610212182194,
+            -6.102767876353307
+          ]
+        },
+        {
+          "decay": "0700",
+          "input_db": -56,
+          "history": "loud",
+          "training": true,
+          "rms_db": 0.6648697923219452,
+          "late_bias_db": 0.8357357190252026,
+          "predicted_gain_early_late_db": [
+            0.660050616414343,
+            -4.524096318838144
+          ]
+        },
+        {
+          "decay": "0700",
+          "input_db": -54,
+          "history": "quiet",
+          "training": false,
+          "rms_db": 0.6508199137545809,
+          "late_bias_db": -0.10871915480988381,
+          "predicted_gain_early_late_db": [
+            -10.255765702517404,
+            -1.878792706399023
+          ]
+        },
+        {
+          "decay": "0700",
+          "input_db": -54,
+          "history": "loud",
+          "training": false,
+          "rms_db": 0.443522053881013,
+          "late_bias_db": -0.14661021811683472,
+          "predicted_gain_early_late_db": [
+            0.660050616414343,
+            -1.8756925359829344
+          ]
+        },
+        {
+          "decay": "0700",
+          "input_db": -44,
+          "history": "quiet",
+          "training": true,
+          "rms_db": 0.014527290278509315,
+          "late_bias_db": 0.014528554829098872,
+          "predicted_gain_early_late_db": [
+            0.660050616414343,
+            0.660050616414343
+          ]
+        },
+        {
+          "decay": "0700",
+          "input_db": -44,
+          "history": "loud",
+          "training": true,
+          "rms_db": 0.01447159966319183,
+          "late_bias_db": 0.014495781964084187,
+          "predicted_gain_early_late_db": [
+            0.660050616414343,
+            0.660050616414343
+          ]
+        },
+        {
+          "decay": "0500",
+          "input_db": -56,
+          "history": "quiet",
+          "training": true,
+          "rms_db": 1.4961885323457254,
+          "late_bias_db": 1.2456596252659646,
+          "predicted_gain_early_late_db": [
+            -19.69745175470468,
+            -4.615966852122133
+          ]
+        },
+        {
+          "decay": "0500",
+          "input_db": -56,
+          "history": "loud",
+          "training": true,
+          "rms_db": 0.11168366202978945,
+          "late_bias_db": 0.007485444465132551,
+          "predicted_gain_early_late_db": [
+            0.660050616414343,
+            0.660050616414343
+          ]
+        },
+        {
+          "decay": "0500",
+          "input_db": -54,
+          "history": "quiet",
+          "training": false,
+          "rms_db": 1.2883626878153798,
+          "late_bias_db": -1.8726358149203013,
+          "predicted_gain_early_late_db": [
+            -10.255748935444842,
+            -1.8787927039825176
+          ]
+        },
+        {
+          "decay": "0500",
+          "input_db": -54,
+          "history": "loud",
+          "training": false,
+          "rms_db": 0.01589974343024714,
+          "late_bias_db": 0.013964264021310568,
+          "predicted_gain_early_late_db": [
+            0.660050616414343,
+            0.660050616414343
+          ]
+        },
+        {
+          "decay": "0500",
+          "input_db": -44,
+          "history": "quiet",
+          "training": true,
+          "rms_db": 0.014946208605095542,
+          "late_bias_db": 0.014514090936054713,
+          "predicted_gain_early_late_db": [
+            0.660050616414343,
+            0.660050616414343
+          ]
+        },
+        {
+          "decay": "0500",
+          "input_db": -44,
+          "history": "loud",
+          "training": true,
+          "rms_db": 0.015070292140224687,
+          "late_bias_db": 0.015395763658678674,
+          "predicted_gain_early_late_db": [
+            0.660050616414343,
+            0.660050616414343
+          ]
+        }
+      ],
+      "old_regression": [
+        {
+          "name": "2026-10-27/jump-12",
+          "training": true,
+          "rms_db": 1.679921360800143,
+          "bias_db": 0.00982486780168712
+        },
+        {
+          "name": "2026-10-27/jump-decay-0300",
+          "training": true,
+          "rms_db": 3.3262429575053267,
+          "bias_db": 0.012520919474014569
+        },
+        {
+          "name": "2026-10-27/jump-decay-0500",
+          "training": true,
+          "rms_db": 1.3687291901025873,
+          "bias_db": 0.014488621539811342
+        },
+        {
+          "name": "2026-10-27/jump-decay-0700",
+          "training": true,
+          "rms_db": 1.6864682648090918,
+          "bias_db": -0.006422666410420774
+        },
+        {
+          "name": "2026-10-27/jump-decay-0900",
+          "training": true,
+          "rms_db": 2.708431457850634,
+          "bias_db": -0.003692868289119855
+        },
+        {
+          "name": "2026-10-27/jump-threshold-0300",
+          "training": true,
+          "rms_db": 1.9870788198164402,
+          "bias_db": 0.01810918649110793
+        },
+        {
+          "name": "2026-10-27/jump-threshold-0500",
+          "training": true,
+          "rms_db": 1.1053917465985363,
+          "bias_db": 0.022341963656413222
+        },
+        {
+          "name": "2026-10-27/jump-threshold-0700",
+          "training": true,
+          "rms_db": 2.3688213867413497,
+          "bias_db": -0.020598926488548552
+        },
+        {
+          "name": "2026-10-27/jump-threshold-0900",
+          "training": true,
+          "rms_db": 2.043857415877298,
+          "bias_db": -0.010182038902083523
+        },
+        {
+          "name": "2026-10-27/plucks-12",
+          "training": false,
+          "rms_db": 0.12598928514676375,
+          "bias_db": -0.1260073692049466
+        },
+        {
+          "name": "2026-10-27/plucks-decay-0300",
+          "training": false,
+          "rms_db": 0.12364194097251688,
+          "bias_db": -0.12358459308833991
+        },
+        {
+          "name": "2026-10-27/plucks-decay-0500",
+          "training": false,
+          "rms_db": 0.12204998108760098,
+          "bias_db": -0.12199064130980242
+        },
+        {
+          "name": "2026-10-27/plucks-decay-0700",
+          "training": false,
+          "rms_db": 0.1421387100118289,
+          "bias_db": -0.14205328250882132
+        },
+        {
+          "name": "2026-10-27/plucks-decay-0900",
+          "training": false,
+          "rms_db": 0.13928746703888675,
+          "bias_db": -0.1393877301368055
+        },
+        {
+          "name": "2026-10-27/plucks-threshold-0300",
+          "training": false,
+          "rms_db": 0.11777076233726498,
+          "bias_db": -0.11782394685575603
+        },
+        {
+          "name": "2026-10-27/plucks-threshold-0500",
+          "training": false,
+          "rms_db": 1.3783309476139594,
+          "bias_db": -0.11444499506979755
+        },
+        {
+          "name": "2026-10-27/plucks-threshold-0700",
+          "training": false,
+          "rms_db": 0.15535132089684436,
+          "bias_db": -0.15500271545653121
+        },
+        {
+          "name": "2026-10-27/plucks-threshold-0900",
+          "training": false,
+          "rms_db": 0.14569376712094245,
+          "bias_db": -0.1454247552637179
+        },
+        {
+          "name": "2026-10-27/stairs-threshold-0300",
+          "training": true,
+          "rms_db": 1.7933003469276656,
+          "bias_db": 0.01637553952698534
+        },
+        {
+          "name": "2026-10-27/stairs-threshold-0500",
+          "training": true,
+          "rms_db": 2.144649029644258,
+          "bias_db": 0.02047970015240247
+        },
+        {
+          "name": "2026-10-27/stairs-threshold-0700",
+          "training": true,
+          "rms_db": 2.0577452627217543,
+          "bias_db": -0.026745887109283273
+        },
+        {
+          "name": "2026-10-27/stairs-threshold-0900",
+          "training": true,
+          "rms_db": 2.074232436507728,
+          "bias_db": -0.015661281694275053
+        },
+        {
+          "name": "2026-10-27/stairs-threshold-1200",
+          "training": true,
+          "rms_db": 1.9819208964051156,
+          "bias_db": 0.0006027340517098523
+        },
+        {
+          "name": "2026-10-27-dynamics/bypass-jump",
+          "training": true,
+          "rms_db": 1.1945358894736875,
+          "bias_db": 0.02742300542328835
+        },
+        {
+          "name": "2026-10-27-dynamics/bypass-phrase",
+          "training": false,
+          "rms_db": 2.2256265193993348,
+          "bias_db": -0.11017504266306921
+        },
+        {
+          "name": "2026-10-27-dynamics/bypass-plucks",
+          "training": false,
+          "rms_db": 2.5203569361687026,
+          "bias_db": -0.10818520403697596
+        },
+        {
+          "name": "2026-10-27-dynamics/bypass-soft",
+          "training": false,
+          "rms_db": 2.240300689030815,
+          "bias_db": -0.10699477243612932
+        },
+        {
+          "name": "2026-10-27-dynamics/bypass-stairs-slow",
+          "training": false,
+          "rms_db": 4.131305501774382,
+          "bias_db": -2.2531081174951098
+        },
+        {
+          "name": "2026-10-27-dynamics/jump-t0500-d0500",
+          "training": true,
+          "rms_db": 2.257755455329092,
+          "bias_db": 0.02478230324327213
+        },
+        {
+          "name": "2026-10-27-dynamics/jump-t0500-d0700",
+          "training": true,
+          "rms_db": 1.2869130697401672,
+          "bias_db": 0.02809141718133812
+        },
+        {
+          "name": "2026-10-27-dynamics/phrase-t0500-d1200",
+          "training": false,
+          "rms_db": 2.3112482023066083,
+          "bias_db": -0.10969539585033677
+        },
+        {
+          "name": "2026-10-27-dynamics/phrase-t1200-d1200",
+          "training": false,
+          "rms_db": 2.257300332082072,
+          "bias_db": -0.11024678292814805
+        },
+        {
+          "name": "2026-10-27-dynamics/plucks-t0300-d1200",
+          "training": false,
+          "rms_db": 1.8728172743456624,
+          "bias_db": -0.11018483590431377
+        },
+        {
+          "name": "2026-10-27-dynamics/plucks-t0500-d0500",
+          "training": false,
+          "rms_db": 2.2203083306392126,
+          "bias_db": -0.11531761296692111
+        },
+        {
+          "name": "2026-10-27-dynamics/plucks-t0500-d0700",
+          "training": false,
+          "rms_db": 2.901173551557203,
+          "bias_db": 1.2644897709740146
+        },
+        {
+          "name": "2026-10-27-dynamics/plucks-t0500-d1200",
+          "training": false,
+          "rms_db": 2.464237621772146,
+          "bias_db": -0.11029619112907507
+        },
+        {
+          "name": "2026-10-27-dynamics/plucks-t0700-d1200",
+          "training": false,
+          "rms_db": 4.52933756503186,
+          "bias_db": -0.11145706906513109
+        },
+        {
+          "name": "2026-10-27-dynamics/plucks-t0900-d1200",
+          "training": false,
+          "rms_db": 4.441195842673913,
+          "bias_db": -0.11171946269572236
+        },
+        {
+          "name": "2026-10-27-dynamics/plucks-t1200-d0300",
+          "training": false,
+          "rms_db": 3.7511869280815504,
+          "bias_db": -0.11260158335587267
+        },
+        {
+          "name": "2026-10-27-dynamics/plucks-t1200-d0500",
+          "training": false,
+          "rms_db": 0.3583970775863362,
+          "bias_db": -0.11360059666142319
+        },
+        {
+          "name": "2026-10-27-dynamics/plucks-t1200-d0700",
+          "training": false,
+          "rms_db": 1.0851572190403487,
+          "bias_db": -0.11217188810458828
+        },
+        {
+          "name": "2026-10-27-dynamics/plucks-t1200-d0900",
+          "training": false,
+          "rms_db": 0.5580510414498905,
+          "bias_db": -0.11210813270869469
+        },
+        {
+          "name": "2026-10-27-dynamics/plucks-t1200-d1200",
+          "training": false,
+          "rms_db": 2.4807136385342,
+          "bias_db": -0.11137037113735304
+        },
+        {
+          "name": "2026-10-27-dynamics/soft-t0300-d1200",
+          "training": false,
+          "rms_db": 2.0837697919574163,
+          "bias_db": -0.11239071549249485
+        },
+        {
+          "name": "2026-10-27-dynamics/soft-t1200-d1200",
+          "training": false,
+          "rms_db": 2.8117376819298743,
+          "bias_db": -0.11310222936184
+        },
+        {
+          "name": "2026-10-27-dynamics/stairs-slow-t1200-d0500",
+          "training": false,
+          "rms_db": 2.2221812654845468,
+          "bias_db": 0.020284852271873433
+        },
+        {
+          "name": "2026-10-27-dynamics/stairs-slow-t1200-d0700",
+          "training": false,
+          "rms_db": 1.8919478166874677,
+          "bias_db": 0.018260363775627397
+        },
+        {
+          "name": "2026-10-27-dynamics/stairs-slow-t1200-d1200",
+          "training": false,
+          "rms_db": 1.3812903432641719,
+          "bias_db": 0.02117898731877421
+        }
+      ],
+      "fit_step_vs_1ms_max_group_rms_db": 0.013228844059408123,
+      "jacobian_singular_values": [
+        38.41181040829012,
+        24.819917162202323,
+        18.966827842352387,
+        17.824368550754894,
+        4.986664705853379,
+        2.5067091332202613,
+        1.814076247966645,
+        1.80841496671608,
+        0.902643111828056,
+        0.7309281358323223,
+        0.6873313798566234,
+        0.3480726158071233,
+        0.009150614505321546
+      ],
+      "jacobian_condition_number": 4197.73015090426
+    },
+    "-56": {
+      "parameters": [
+        -2.9883228928731125,
+        0.6798641830234942,
+        11.453103796631316,
+        4.605170150815749,
+        0.829282798410055,
+        2.0612102012359985,
+        2.4449954409963177,
+        -0.0779438958026544,
+        3.3982936512748436,
+        2.577070856637871,
+        0.4434331336273667,
+        -3.912023005418144,
+        2.9476981554451824
+      ],
+      "effective_threshold_map_db": {
+        "0700": -67.12490833336771,
+        "0900": -67.10490833336752,
+        "1200": -65.5468613025911,
+        "0300": -52.38832289287311,
+        "0500": -33.326297522673364
+      },
+      "start_costs": [
+        33.227144112262444,
+        33.22714408260017
+      ],
+      "start_parameters": [
+        [
+          -2.988288229454126,
+          0.6798645175699922,
+          11.453086885773171,
+          4.605169759059378,
+          0.8292718201621494,
+          2.0612272868805985,
+          2.444992125498274,
+          -0.07794792501072843,
+          3.398289900690548,
+          2.577071554253862,
+          0.443432007028118,
+          -3.9120230036173034,
+          2.947697792619523
+        ],
+        [
+          -2.9883228928731125,
+          0.6798641830234942,
+          11.453103796631316,
+          4.605170150815749,
+          0.829282798410055,
+          2.0612102012359985,
+          2.4449954409963177,
+          -0.0779438958026544,
+          3.3982936512748436,
+          2.577070856637871,
+          0.4434331336273667,
+          -3.912023005418144,
+          2.9476981554451824
+        ]
+      ],
+      "nfev": [
+        22,
+        33
+      ],
+      "new_history": [
+        {
+          "decay": "0700",
+          "input_db": -56,
+          "history": "quiet",
+          "training": false,
+          "rms_db": 8.433532277634386,
+          "late_bias_db": -6.452483069666291,
+          "predicted_gain_early_late_db": [
+            -31.63572128048643,
+            -12.606821356385517
+          ]
+        },
+        {
+          "decay": "0700",
+          "input_db": -56,
+          "history": "loud",
+          "training": false,
+          "rms_db": 3.6810873465711205,
+          "late_bias_db": -3.377008764272099,
+          "predicted_gain_early_late_db": [
+            0.660050616414343,
+            -8.736840802135445
+          ]
+        },
+        {
+          "decay": "0700",
+          "input_db": -54,
+          "history": "quiet",
+          "training": true,
+          "rms_db": 0.8221414765493797,
+          "late_bias_db": 0.13835522417520751,
+          "predicted_gain_early_late_db": [
+            -10.91790051918494,
+            -1.6317050347402395
+          ]
+        },
+        {
+          "decay": "0700",
+          "input_db": -54,
+          "history": "loud",
+          "training": true,
+          "rms_db": 0.37060395973002047,
+          "late_bias_db": 0.09905182369565901,
+          "predicted_gain_early_late_db": [
+            0.660050616414343,
+            -1.6300304941704407
+          ]
+        },
+        {
+          "decay": "0700",
+          "input_db": -44,
+          "history": "quiet",
+          "training": true,
+          "rms_db": 0.014527290278509315,
+          "late_bias_db": 0.014528554829098872,
+          "predicted_gain_early_late_db": [
+            0.660050616414343,
+            0.660050616414343
+          ]
+        },
+        {
+          "decay": "0700",
+          "input_db": -44,
+          "history": "loud",
+          "training": true,
+          "rms_db": 0.01447159966319183,
+          "late_bias_db": 0.014495781964084187,
+          "predicted_gain_early_late_db": [
+            0.660050616414343,
+            0.660050616414343
+          ]
+        },
+        {
+          "decay": "0500",
+          "input_db": -56,
+          "history": "quiet",
+          "training": false,
+          "rms_db": 2.52792936240934,
+          "late_bias_db": 0.16413497232662033,
+          "predicted_gain_early_late_db": [
+            -24.721228401951393,
+            -5.693424027820718
+          ]
+        },
+        {
+          "decay": "0500",
+          "input_db": -56,
+          "history": "loud",
+          "training": false,
+          "rms_db": 0.016091012502595335,
+          "late_bias_db": 0.013073673372721806,
+          "predicted_gain_early_late_db": [
+            0.660050616414343,
+            0.660050616414343
+          ]
+        },
+        {
+          "decay": "0500",
+          "input_db": -54,
+          "history": "quiet",
+          "training": true,
+          "rms_db": 1.0625424272369337,
+          "late_bias_db": -0.45920346319248007,
+          "predicted_gain_early_late_db": [
+            -9.749967045294209,
+            -0.46539783695914216
+          ]
+        },
+        {
+          "decay": "0500",
+          "input_db": -54,
+          "history": "loud",
+          "training": true,
+          "rms_db": 0.01589974343024714,
+          "late_bias_db": 0.013964264021310568,
+          "predicted_gain_early_late_db": [
+            0.660050616414343,
+            0.660050616414343
+          ]
+        },
+        {
+          "decay": "0500",
+          "input_db": -44,
+          "history": "quiet",
+          "training": true,
+          "rms_db": 0.014946208605095542,
+          "late_bias_db": 0.014514090936054713,
+          "predicted_gain_early_late_db": [
+            0.660050616414343,
+            0.660050616414343
+          ]
+        },
+        {
+          "decay": "0500",
+          "input_db": -44,
+          "history": "loud",
+          "training": true,
+          "rms_db": 0.015070292140224687,
+          "late_bias_db": 0.015395763658678674,
+          "predicted_gain_early_late_db": [
+            0.660050616414343,
+            0.660050616414343
+          ]
+        }
+      ],
+      "old_regression": [
+        {
+          "name": "2026-10-27/jump-12",
+          "training": true,
+          "rms_db": 1.6391379669125088,
+          "bias_db": 0.00982486780168712
+        },
+        {
+          "name": "2026-10-27/jump-decay-0300",
+          "training": true,
+          "rms_db": 3.303391315667625,
+          "bias_db": 0.012561317860574406
+        },
+        {
+          "name": "2026-10-27/jump-decay-0500",
+          "training": true,
+          "rms_db": 1.4064528660976376,
+          "bias_db": 0.014495962279064245
+        },
+        {
+          "name": "2026-10-27/jump-decay-0700",
+          "training": true,
+          "rms_db": 1.6864682648090918,
+          "bias_db": -0.006422666410420774
+        },
+        {
+          "name": "2026-10-27/jump-decay-0900",
+          "training": true,
+          "rms_db": 2.708431457850634,
+          "bias_db": -0.003692868289119855
+        },
+        {
+          "name": "2026-10-27/jump-threshold-0300",
+          "training": true,
+          "rms_db": 1.9433258883666664,
+          "bias_db": 0.01810918649110793
+        },
+        {
+          "name": "2026-10-27/jump-threshold-0500",
+          "training": true,
+          "rms_db": 1.0460902711886715,
+          "bias_db": 0.022341963656413222
+        },
+        {
+          "name": "2026-10-27/jump-threshold-0700",
+          "training": true,
+          "rms_db": 2.2868397434710723,
+          "bias_db": -0.02059932112555113
+        },
+        {
+          "name": "2026-10-27/jump-threshold-0900",
+          "training": true,
+          "rms_db": 1.9204856434629376,
+          "bias_db": -0.010182190275656422
+        },
+        {
+          "name": "2026-10-27/plucks-12",
+          "training": false,
+          "rms_db": 0.12598928514676375,
+          "bias_db": -0.1260073692049466
+        },
+        {
+          "name": "2026-10-27/plucks-decay-0300",
+          "training": false,
+          "rms_db": 0.12364194097251688,
+          "bias_db": -0.12358459308833991
+        },
+        {
+          "name": "2026-10-27/plucks-decay-0500",
+          "training": false,
+          "rms_db": 0.12204998108760098,
+          "bias_db": -0.12199064130980242
+        },
+        {
+          "name": "2026-10-27/plucks-decay-0700",
+          "training": false,
+          "rms_db": 0.1421387100118289,
+          "bias_db": -0.14205328250882132
+        },
+        {
+          "name": "2026-10-27/plucks-decay-0900",
+          "training": false,
+          "rms_db": 0.13928746703888675,
+          "bias_db": -0.1393877301368055
+        },
+        {
+          "name": "2026-10-27/plucks-threshold-0300",
+          "training": false,
+          "rms_db": 0.11777076233726498,
+          "bias_db": -0.11782394685575603
+        },
+        {
+          "name": "2026-10-27/plucks-threshold-0500",
+          "training": false,
+          "rms_db": 1.1147358578621993,
+          "bias_db": -0.11448756035028496
+        },
+        {
+          "name": "2026-10-27/plucks-threshold-0700",
+          "training": false,
+          "rms_db": 0.15535132089684436,
+          "bias_db": -0.15500271545653121
+        },
+        {
+          "name": "2026-10-27/plucks-threshold-0900",
+          "training": false,
+          "rms_db": 0.14569376712094245,
+          "bias_db": -0.1454247552637179
+        },
+        {
+          "name": "2026-10-27/stairs-threshold-0300",
+          "training": true,
+          "rms_db": 1.5803391184311968,
+          "bias_db": 0.016508722262801423
+        },
+        {
+          "name": "2026-10-27/stairs-threshold-0500",
+          "training": true,
+          "rms_db": 1.8691404592249095,
+          "bias_db": 0.02047488442581341
+        },
+        {
+          "name": "2026-10-27/stairs-threshold-0700",
+          "training": true,
+          "rms_db": 2.0411310499270168,
+          "bias_db": -0.026688635800062754
+        },
+        {
+          "name": "2026-10-27/stairs-threshold-0900",
+          "training": true,
+          "rms_db": 2.0463932608069877,
+          "bias_db": -0.015620591916746696
+        },
+        {
+          "name": "2026-10-27/stairs-threshold-1200",
+          "training": true,
+          "rms_db": 1.8902694152012165,
+          "bias_db": 0.0007097417536244821
+        },
+        {
+          "name": "2026-10-27-dynamics/bypass-jump",
+          "training": true,
+          "rms_db": 1.187159850898603,
+          "bias_db": 0.02742300542328835
+        },
+        {
+          "name": "2026-10-27-dynamics/bypass-phrase",
+          "training": false,
+          "rms_db": 2.5040956423292204,
+          "bias_db": -0.1101039985356701
+        },
+        {
+          "name": "2026-10-27-dynamics/bypass-plucks",
+          "training": false,
+          "rms_db": 2.8267109421817573,
+          "bias_db": -0.10816318260586455
+        },
+        {
+          "name": "2026-10-27-dynamics/bypass-soft",
+          "training": false,
+          "rms_db": 2.1444008635561564,
+          "bias_db": -0.10725980814289565
+        },
+        {
+          "name": "2026-10-27-dynamics/bypass-stairs-slow",
+          "training": false,
+          "rms_db": 3.149787710047688,
+          "bias_db": -1.6075976545899735
+        },
+        {
+          "name": "2026-10-27-dynamics/jump-t0500-d0500",
+          "training": true,
+          "rms_db": 2.1470243121349686,
+          "bias_db": 0.024781826103516424
+        },
+        {
+          "name": "2026-10-27-dynamics/jump-t0500-d0700",
+          "training": true,
+          "rms_db": 1.2869130697401672,
+          "bias_db": 0.02809141718133812
+        },
+        {
+          "name": "2026-10-27-dynamics/phrase-t0500-d1200",
+          "training": false,
+          "rms_db": 2.578068052675692,
+          "bias_db": -0.10965153255599358
+        },
+        {
+          "name": "2026-10-27-dynamics/phrase-t1200-d1200",
+          "training": false,
+          "rms_db": 2.3556904564725314,
+          "bias_db": -0.110250159294276
+        },
+        {
+          "name": "2026-10-27-dynamics/plucks-t0300-d1200",
+          "training": false,
+          "rms_db": 2.166891582329896,
+          "bias_db": -0.11015794835013609
+        },
+        {
+          "name": "2026-10-27-dynamics/plucks-t0500-d0500",
+          "training": false,
+          "rms_db": 2.2010825282028885,
+          "bias_db": -0.11534108103513985
+        },
+        {
+          "name": "2026-10-27-dynamics/plucks-t0500-d0700",
+          "training": false,
+          "rms_db": 2.4411268001613764,
+          "bias_db": 1.676257593232819
+        },
+        {
+          "name": "2026-10-27-dynamics/plucks-t0500-d1200",
+          "training": false,
+          "rms_db": 2.7989931345753725,
+          "bias_db": -0.11028951984706681
+        },
+        {
+          "name": "2026-10-27-dynamics/plucks-t0700-d1200",
+          "training": false,
+          "rms_db": 4.647331885012948,
+          "bias_db": -0.11152242220097963
+        },
+        {
+          "name": "2026-10-27-dynamics/plucks-t0900-d1200",
+          "training": false,
+          "rms_db": 4.567892716656024,
+          "bias_db": -0.11176471976599156
+        },
+        {
+          "name": "2026-10-27-dynamics/plucks-t1200-d0300",
+          "training": false,
+          "rms_db": 3.8072281693541417,
+          "bias_db": -0.11260423659139585
+        },
+        {
+          "name": "2026-10-27-dynamics/plucks-t1200-d0500",
+          "training": false,
+          "rms_db": 0.33031472133118933,
+          "bias_db": -0.11359439422399864
+        },
+        {
+          "name": "2026-10-27-dynamics/plucks-t1200-d0700",
+          "training": false,
+          "rms_db": 0.9571157567401585,
+          "bias_db": -0.11224487651892306
+        },
+        {
+          "name": "2026-10-27-dynamics/plucks-t1200-d0900",
+          "training": false,
+          "rms_db": 0.9083551819814607,
+          "bias_db": -0.11206258501871047
+        },
+        {
+          "name": "2026-10-27-dynamics/plucks-t1200-d1200",
+          "training": false,
+          "rms_db": 2.560706880444304,
+          "bias_db": -0.1113875408691446
+        },
+        {
+          "name": "2026-10-27-dynamics/soft-t0300-d1200",
+          "training": false,
+          "rms_db": 2.301198605126327,
+          "bias_db": -0.11168131333048448
+        },
+        {
+          "name": "2026-10-27-dynamics/soft-t1200-d1200",
+          "training": false,
+          "rms_db": 2.876183706627207,
+          "bias_db": -0.11327753525530981
+        },
+        {
+          "name": "2026-10-27-dynamics/stairs-slow-t1200-d0500",
+          "training": false,
+          "rms_db": 2.2501965212209534,
+          "bias_db": 0.02199488227123919
+        },
+        {
+          "name": "2026-10-27-dynamics/stairs-slow-t1200-d0700",
+          "training": false,
+          "rms_db": 1.9300840125958414,
+          "bias_db": 0.018153931705488513
+        },
+        {
+          "name": "2026-10-27-dynamics/stairs-slow-t1200-d1200",
+          "training": false,
+          "rms_db": 1.2001913519051663,
+          "bias_db": 0.02362993932464741
+        }
+      ],
+      "fit_step_vs_1ms_max_group_rms_db": 0.04991537844345128,
+      "jacobian_singular_values": [
+        30.107513778792686,
+        25.671159614596334,
+        22.464536236304387,
+        16.181596699799695,
+        13.287201764184621,
+        3.14285847370654,
+        1.2603015859103563,
+        1.2222387681299887,
+        1.035540630688758,
+        0.8014960926965039,
+        0.6294353627628749,
+        0.1880616552585128,
+        0.016538589861603014
+      ],
+      "jacobian_condition_number": 1820.4401965787968
+    }
+  }
+}

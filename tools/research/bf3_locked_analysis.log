@@ -1,0 +1,20 @@
+current delay 1.9860113590648532
+  std-res-0700-before-24 fixed 1.1834 free 1.1834 delay shift samples 0.0
+  std-res-0300-24 fixed 1.2127 free 1.2001 delay shift samples -0.1029
+  std-res-0500-24 fixed 1.5157 free 1.4182 delay shift samples -0.2167
+  std-res-0700-after-24 fixed 1.1834 free 1.1834 delay shift samples -0.0001
+candidate_cached_feedback delay 1.9598099243062097
+  std-res-0700-before-24 fixed 0.3998 free 0.3998 delay shift samples 0.0
+  std-res-0300-24 fixed 0.9534 free 0.9255 delay shift samples -0.0877
+  std-res-0500-24 fixed 1.2824 free 1.1603 delay shift samples -0.2013
+  std-res-0700-after-24 fixed 0.4003 free 0.4003 delay shift samples 0.0
+candidate_current_feedback delay 1.9598099243062097
+  std-res-0700-before-24 fixed 0.3998 free 0.3998 delay shift samples 0.0
+  std-res-0300-24 fixed 0.4001 free 0.3955 delay shift samples -0.0235
+  std-res-0500-24 fixed 0.4686 free 0.4672 delay shift samples -0.0135
+  std-res-0700-after-24 fixed 0.4003 free 0.4003 delay shift samples 0.0
+hp1_current_feedback delay 1.9595602795197564
+  std-res-0700-before-24 fixed 0.3968 free 0.3968 delay shift samples 0.0
+  std-res-0300-24 fixed 0.3959 free 0.3942 delay shift samples -0.0141
+  std-res-0500-24 fixed 0.4291 free 0.4285 delay shift samples -0.0086
+  std-res-0700-after-24 fixed 0.3968 free 0.3968 delay shift samples -0.0

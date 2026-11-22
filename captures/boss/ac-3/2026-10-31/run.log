@@ -1,0 +1,222 @@
+
+=== 2026-10-31T15:33:45 · run tools/capture/plans/ac-3.json · tool 979167bf6ba528173a9069fc329ffde098383af4-dirty
+
+[1/24] bypass-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal OFF (bypassed)
+  Switch the pedal OFF. Keep this bypass at the same rig gain as every effect take.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -90.0 dBFS · loopback -36.6 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  PROBLEM: the pedal channel is silent
+  Enter = keep, r = redo: (Enter)
+
+[2/24] bypass-stairs: white noise at -48/-42/-36/-30/-24/-18/-12/-6/0/3 dB, 1.5 s each
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -80.4 dBFS · loopback -10.6 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  PROBLEM: the pedal channel is silent
+  Enter = keep, r = redo: (Enter)
+
+[3/24] bypass-plucks: 4 plucks, 82.41-329.63 Hz, 12 s (decay 0.8 s, re-picked)
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -74.9 dBFS · loopback -12.9 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  PROBLEM: the pedal channel is silent
+  Enter = keep, r = redo: (Enter)
+
+[4/24] standard-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode Standard · Level 12:00 · Reverb 7:00 · Body 12:00 · Top 12:00 (switch it on)
+  Pedal ON, MODE STANDARD. Level 12:00, Reverb fully down (inner knob 7:00), Body 12:00, Top 12:00.
+  Enter = record, s = skip, q = quit:
+Stopped; the takes recorded so far are kept.
+
+=== 2026-10-31T15:37:43 · discarded bypass-sweep, bypass-stairs, bypass-plucks: the pedal had no power (its bypass is silent unpowered; user)
+
+=== 2026-10-31T15:37:57 · run tools/capture/plans/ac-3.json · tool 979167bf6ba528173a9069fc329ffde098383af4-dirty
+
+[1/24] bypass-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal OFF (bypassed)
+  Switch the pedal OFF. Keep this bypass at the same rig gain as every effect take.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -38.0 dBFS · loopback -36.6 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[2/24] bypass-stairs: white noise at -48/-42/-36/-30/-24/-18/-12/-6/0/3 dB, 1.5 s each
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.2 dBFS · loopback -10.6 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[3/24] bypass-plucks: 4 plucks, 82.41-329.63 Hz, 12 s (decay 0.8 s, re-picked)
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.9 dBFS · loopback -12.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[4/24] standard-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode Standard · Level 12:00 · Reverb 7:00 · Body 12:00 · Top 12:00 (switch it on)
+  Pedal ON, MODE STANDARD. Level 12:00, Reverb fully down (inner knob 7:00), Body 12:00, Top 12:00.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -14.5 dBFS · loopback -36.6 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[5/24] standard-stairs: white noise at -48/-42/-36/-30/-24/-18/-12/-6/0/3 dB, 1.5 s each
+  pedal ON · Mode Standard · Level 12:00 · Reverb 7:00 · Body 12:00 · Top 12:00
+  Same settings: does the level change the sound (compression, clipping)?
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.2 dBFS · loopback -10.6 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[6/24] standard-plucks: 4 plucks, 82.41-329.63 Hz, 12 s (decay 0.8 s, re-picked)
+  pedal ON · Mode Standard · Level 12:00 · Reverb 7:00 · Body 12:00 · Top 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -10.5 dBFS · loopback -12.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[7/24] standard-body-0700: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode Standard · Level 12:00 · Reverb 7:00 · Body 7:00 (changed) · Top 12:00
+  Body fully down.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -14.8 dBFS · loopback -36.6 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[8/24] standard-body-0500: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode Standard · Level 12:00 · Reverb 7:00 · Body 5:00 (changed) · Top 12:00
+  Body fully up.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -14.9 dBFS · loopback -36.6 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[9/24] standard-top-0700: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode Standard · Level 12:00 · Reverb 7:00 · Body 12:00 (changed) · Top 7:00 (changed)
+  Body back to 12:00. Top fully down.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -20.1 dBFS · loopback -36.6 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[10/24] standard-top-0500: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode Standard · Level 12:00 · Reverb 7:00 · Body 12:00 · Top 5:00 (changed)
+  Top fully up.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -14.1 dBFS · loopback -36.6 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[11/24] standard-level-0700: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode Standard · Level 7:00 (changed) · Reverb 7:00 · Body 12:00 · Top 12:00 (changed)
+  Top back to 12:00. Level (OUTER knob) fully down.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -67.9 dBFS · loopback -36.6 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  PROBLEM: the pedal channel is silent: is it on?
+  Enter = keep, r = redo: (Enter)
+
+[12/24] standard-level-0500: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode Standard · Level 5:00 (changed) · Reverb 7:00 · Body 12:00 · Top 12:00
+  Level fully up.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -14.4 dBFS · loopback -36.6 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[13/24] standard-reverb-1200: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode Standard · Level 12:00 (changed) · Reverb 12:00 (changed) · Body 12:00 · Top 12:00
+  Level back to 12:00. Reverb (INNER knob) at 12:00. Long tail: the reverb's decay.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -14.8 dBFS · loopback -36.6 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[14/24] standard-reverb-0500: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode Standard · Level 12:00 · Reverb 5:00 (changed) · Body 12:00 · Top 12:00
+  Reverb fully up.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -14.9 dBFS · loopback -36.6 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[15/24] standard-reverb-0500-plucks: 4 plucks, 82.41-329.63 Hz, 12 s (decay 0.8 s, re-picked)
+  pedal ON · Mode Standard · Level 12:00 · Reverb 5:00 · Body 12:00 · Top 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -10.5 dBFS · loopback -12.9 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[16/24] jumbo-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode Jumbo (changed) · Level 12:00 · Reverb 7:00 (changed) · Body 12:00 · Top 12:00
+  Reverb back fully down. MODE JUMBO; Level, Body, Top at 12:00.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -14.4 dBFS · loopback -36.6 dBFS · latency 578 samples (12.04 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[17/24] jumbo-stairs: white noise at -48/-42/-36/-30/-24/-18/-12/-6/0/3 dB, 1.5 s each
+  pedal ON · Mode Jumbo · Level 12:00 · Reverb 7:00 · Body 12:00 · Top 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.1 dBFS · loopback -10.6 dBFS · latency 578 samples (12.04 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[18/24] jumbo-plucks: 4 plucks, 82.41-329.63 Hz, 12 s (decay 0.8 s, re-picked)
+  pedal ON · Mode Jumbo · Level 12:00 · Reverb 7:00 · Body 12:00 · Top 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -10.8 dBFS · loopback -12.9 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[19/24] enhance-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode Enhance (changed) · Level 12:00 · Reverb 7:00 · Body 12:00 · Top 12:00
+  Reverb back fully down. MODE ENHANCE; Level, Body, Top at 12:00.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -14.4 dBFS · loopback -36.6 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[20/24] enhance-stairs: white noise at -48/-42/-36/-30/-24/-18/-12/-6/0/3 dB, 1.5 s each
+  pedal ON · Mode Enhance · Level 12:00 · Reverb 7:00 · Body 12:00 · Top 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.8 dBFS · loopback -10.6 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[21/24] enhance-plucks: 4 plucks, 82.41-329.63 Hz, 12 s (decay 0.8 s, re-picked)
+  pedal ON · Mode Enhance · Level 12:00 · Reverb 7:00 · Body 12:00 · Top 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -10.7 dBFS · loopback -12.9 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[22/24] piezo-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode Piezo (changed) · Level 12:00 · Reverb 7:00 · Body 12:00 · Top 12:00
+  Reverb back fully down. MODE PIEZO; Level, Body, Top at 12:00.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -16.0 dBFS · loopback -36.6 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[23/24] piezo-stairs: white noise at -48/-42/-36/-30/-24/-18/-12/-6/0/3 dB, 1.5 s each
+  pedal ON · Mode Piezo · Level 12:00 · Reverb 7:00 · Body 12:00 · Top 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.5 dBFS · loopback -10.6 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[24/24] piezo-plucks: 4 plucks, 82.41-329.63 Hz, 12 s (decay 0.8 s, re-picked)
+  pedal ON · Mode Piezo · Level 12:00 · Reverb 7:00 · Body 12:00 · Top 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -11.3 dBFS · loopback -12.9 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+All 24 takes are in captures/boss/ac-3/2026-10-31.

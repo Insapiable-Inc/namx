@@ -1,0 +1,127 @@
+{
+  "pedal": "Boss BF-3 Flanger, STANDARD only (mono: Guitar In -> Output A)",
+  "comment": "Locked-control prospective validation. Six identical quiet sweeps bracketed by bypass and minimum-Res repeats. Manual/Depth/Rate stay physically untouched throughout. Fit timing from the first engaged take only; no per-take delay or gain adjustment for later engaged takes. Preserve stereo loopback for drift checks. All levels relative to the established rig reference; no new calibration performed by this plan.",
+  "quiet_dbfs": -60,
+  "knobs": [
+    "Manual",
+    "Res",
+    "Depth",
+    "Rate"
+  ],
+  "takes": [
+    {
+      "name": "bypass-before-24",
+      "bypass": true,
+      "settings": {
+        "Manual": "12:00",
+        "Depth": "7:00",
+        "Rate": "7:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      },
+      "note": "STANDARD mode throughout. Set Manual 12:00, Depth and Rate fully counter-clockwise, Res minimum BEFORE this take. Guitar In -> Output A, nothing in B. Leave Manual, Depth, Rate and all interface gains untouched through the entire plan. Start bypassed."
+    },
+    {
+      "name": "std-res-0700-before-24",
+      "bypass": false,
+      "settings": {
+        "Manual": "12:00",
+        "Depth": "7:00",
+        "Rate": "7:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      },
+      "note": "Switch on only. Keep the three fixed knobs untouched. This is the timing/gain reference; later Res responses will be predicted without re-fitting delay."
+    },
+    {
+      "name": "std-res-0300-24",
+      "bypass": false,
+      "settings": {
+        "Manual": "12:00",
+        "Depth": "7:00",
+        "Rate": "7:00",
+        "Res": "3:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      },
+      "note": "Turn ONLY Res to the requested position. Do not touch Manual, Depth, Rate or interface gains. Wait until settled, then press Enter."
+    },
+    {
+      "name": "std-res-0500-24",
+      "bypass": false,
+      "settings": {
+        "Manual": "12:00",
+        "Depth": "7:00",
+        "Rate": "7:00",
+        "Res": "5:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      },
+      "note": "Turn ONLY Res to the requested position. Do not touch Manual, Depth, Rate or interface gains. Wait until settled, then press Enter."
+    },
+    {
+      "name": "std-res-0700-after-24",
+      "bypass": false,
+      "settings": {
+        "Manual": "12:00",
+        "Depth": "7:00",
+        "Rate": "7:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      },
+      "note": "Return ONLY Res to minimum. Do not reset or touch Manual, Depth or Rate. This repeat measures drift and repeatability."
+    },
+    {
+      "name": "bypass-after-24",
+      "bypass": true,
+      "settings": {
+        "Manual": "12:00",
+        "Depth": "7:00",
+        "Rate": "7:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      },
+      "note": "Switch to bypass only. Leave every knob and interface gain untouched; final calibration reference."
+    }
+  ]
+}

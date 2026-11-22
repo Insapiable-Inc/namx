@@ -1,0 +1,56 @@
+{
+  "take": "up-decay-0700-stabs",
+  "pedal": "Boss AW-3 Dynamic Wah \u2014 focused reamp: guitar excerpts over a quiet comb of tones (mono: Guitar input -> Output)",
+  "bypass": false,
+  "settings": {
+    "Mode": "Up",
+    "Manual": "12:00",
+    "Sens": "12:00",
+    "Decay": "7:00"
+  },
+  "note": "Decay fully counter-clockwise.",
+  "signal": {
+    "type": "file",
+    "path": "captures/di/stabs.wav",
+    "seconds": 12,
+    "probe": {
+      "freq": [
+        331,
+        577,
+        997,
+        1723,
+        2971
+      ],
+      "level_db": -50
+    },
+    "tail": 1.0
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -14.33,
+    "loop": -18.84
+  },
+  "latency_samples": 583,
+  "latency_quality": 0.998,
+  "xruns": 0,
+  "played_sha256": "51003674d93290127e5d271f4a354d9aeacc2c21d35a4fb7d7a23a535e172564",
+  "recorded_at": "2026-11-11T21:30:00",
+  "tool_commit": "b0ce590103cec5ba5d946272111d72acf5e7fe69",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX4",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Boss AW-3 on its 9 V adapter: the guitar DI dataset. Input from interface out 3; OUTPUT -> input 2; INST, AIR off, pad on, gain fully counter-clockwise."
+  }
+}

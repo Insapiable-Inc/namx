@@ -1,0 +1,48 @@
+{
+  "take": "standard-stabs-m12",
+  "pedal": "Boss DD-8 Digital Delay \u2014 focused reamp: guitar excerpts chosen for the repeats (mono: Output A)",
+  "bypass": false,
+  "settings": {
+    "Mode": "Standard",
+    "Level": "12:00",
+    "Feedback": "12:00",
+    "Time": "12:00"
+  },
+  "note": "",
+  "signal": {
+    "type": "file",
+    "path": "captures/di/stabs.wav",
+    "start": 2,
+    "seconds": 12.5,
+    "tail": 4.0,
+    "level_db": -12
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -31.05,
+    "loop": -30.89
+  },
+  "latency_samples": 583,
+  "latency_quality": 0.998,
+  "xruns": 0,
+  "played_sha256": "dc29102e6fb3bb6f7f7110a1cefcaba668ac28e19ada15be9bf6f86dadbbe968",
+  "recorded_at": "2026-11-09T23:54:21",
+  "tool_commit": "cfc5c8c58c908001dc9f25ffe870fb11f6d64b85",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX4",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Boss DD-8 on its 9 V adapter: the guitar DI dataset. Input from interface out 3; OUTPUT -> input 2; INST, AIR off, pad on, gain fully counter-clockwise."
+  }
+}

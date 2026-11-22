@@ -1,0 +1,2121 @@
+{
+  "scope": "Exploratory CS-3 one-state log-release candidate, selected after crossed data.\n\npython tools/research/fit_cs3_release_candidate.py [REPOSITORY]\nAll candidate parameters are estimated from the earlier detector-check 1 kHz\ntakes. Crossed data informed the choice of model family, so the later scores are\nretrospective generalization checks, NOT a new preregistered blind validation.\nStatic calibration is given equally to the existing amplitude-release baseline.\nNo production code is changed.\n",
+  "source_model_commit": "0a346743de472e253869e43887a02727c6a73322",
+  "kernel_fits": {
+    "0700": {
+      "asymptotic_gain_db": 30.089080408754064,
+      "release_ms": 1202.6328909089846,
+      "fit_rms_db": 0.022355806671917722,
+      "fit_sample_count": 1110,
+      "linear_db_ramp_fit_rms_db": 1.081063067462785,
+      "single_drop_fits": [
+        {
+          "asymptotic_gain_db": 29.047350137284393,
+          "release_ms": 1169.5834088624972,
+          "rms_db": 0.012593120368591695
+        },
+        {
+          "asymptotic_gain_db": 28.2796635649543,
+          "release_ms": 1157.835427298474,
+          "rms_db": 0.010041234128904902
+        }
+      ],
+      "fit_scope": "Both earlier 1 kHz drops, 5 ms onward, excluding the last 1 dB below settled gain; correlated 1 ms samples. Two shared dynamic parameters."
+    },
+    "0500": {
+      "asymptotic_gain_db": 28.756093012409718,
+      "release_ms": 99.81563898157034,
+      "fit_rms_db": 0.07753255461088439,
+      "fit_sample_count": 88,
+      "linear_db_ramp_fit_rms_db": 1.108589178195544,
+      "single_drop_fits": [
+        {
+          "asymptotic_gain_db": 26.349880532036025,
+          "release_ms": 92.85708141265499,
+          "rms_db": 0.04293073836479057
+        },
+        {
+          "asymptotic_gain_db": 22.098134696170238,
+          "release_ms": 84.7119399892663,
+          "rms_db": 0.03884162051020277
+        }
+      ],
+      "fit_scope": "Both earlier 1 kHz drops, 5 ms onward, excluding the last 1 dB below settled gain; correlated 1 ms samples. Two shared dynamic parameters."
+    }
+  },
+  "same_start_different_destination": [
+    {
+      "previous_drop_s": 8,
+      "crossed_drop_s": 20,
+      "window_start_ms": 5,
+      "window_last_ms": 310,
+      "gain_change_rms_difference_db": 0.011037330102530395
+    },
+    {
+      "previous_drop_s": 20,
+      "crossed_drop_s": 8,
+      "window_start_ms": 5,
+      "window_last_ms": 452,
+      "gain_change_rms_difference_db": 0.012022131178574822
+    }
+  ],
+  "kernel_crossed_using_prior_static_endpoints": [
+    {
+      "measured": {
+        "start_gain_db": -23.68722247734386,
+        "final_gain_db": 3.5293581620451393,
+        "excursion_db": 27.216580639388997,
+        "t63_ms": 466,
+        "t90_ms": 734
+      },
+      "predicted": {
+        "start_gain_db": -23.66601666887966,
+        "final_gain_db": 3.5589020713414365,
+        "excursion_db": 27.224918740221096,
+        "t63_ms": 464,
+        "t90_ms": 732
+      },
+      "absolute_gain_rms_db": 0.08138030851309848,
+      "endpoint_normalized_shape_rms_fraction": 0.0023549542115567424,
+      "endpoint_normalized_shape_rms_db_equivalent": 0.06409380120090281,
+      "t63_error_ms": -2,
+      "t90_error_ms": -2,
+      "drop_at_s": 8
+    },
+    {
+      "measured": {
+        "start_gain_db": -17.74215232625251,
+        "final_gain_db": -5.890037707402863,
+        "excursion_db": 11.852114618849646,
+        "t63_ms": 205,
+        "t90_ms": 304
+      },
+      "predicted": {
+        "start_gain_db": -17.720985246032626,
+        "final_gain_db": -5.8686490950378065,
+        "excursion_db": 11.85233615099482,
+        "t63_ms": 205,
+        "t90_ms": 304
+      },
+      "absolute_gain_rms_db": 0.04439678662334539,
+      "endpoint_normalized_shape_rms_fraction": 0.003123287505590494,
+      "endpoint_normalized_shape_rms_db_equivalent": 0.03701756150387954,
+      "t63_error_ms": 0,
+      "t90_error_ms": 0,
+      "drop_at_s": 20
+    }
+  ],
+  "full_sample_renderer_parameters": {
+    "0700": {
+      "candidate": {
+        "attack_ms": 1.97,
+        "release_ms": 1202.6328909089846,
+        "asymptotic_gain_db": 30.089080408754064,
+        "sustain_db": 19.70781974091725,
+        "makeup_db": -16.148456324754246,
+        "static_fit_rms_db": 0.0391333684098688,
+        "detector_floor_db_re_reference": -60.8016090686427
+      },
+      "baseline": {
+        "attack_ms": 1.97,
+        "release_ms": 206.62130451106907,
+        "asymptotic_gain_db": 0,
+        "sustain_db": 19.566293549434093,
+        "makeup_db": -16.006930133188067,
+        "static_fit_rms_db": 0.004407218489832099,
+        "training_release_rms_db": 0.8932500219995674
+      }
+    },
+    "0500": {
+      "candidate": {
+        "attack_ms": 1.58,
+        "release_ms": 99.81563898157034,
+        "asymptotic_gain_db": 28.756093012409718,
+        "sustain_db": 19.63588338704118,
+        "makeup_db": -14.976448627589123,
+        "static_fit_rms_db": 0.011273114089783303,
+        "detector_floor_db_re_reference": -58.267810183517625
+      },
+      "baseline": {
+        "attack_ms": 1.58,
+        "release_ms": 18.180745761445785,
+        "asymptotic_gain_db": 0,
+        "sustain_db": 19.197468550110074,
+        "makeup_db": -14.538033790862496,
+        "static_fit_rms_db": 0.15379595972291843,
+        "training_release_rms_db": 0.3060259190623593
+      }
+    }
+  },
+  "full_sample_renderer_evaluation": {
+    "attack-0700-steps-1000": {
+      "candidate": {
+        "role": "training",
+        "settled_gain_errors_db": [
+          0.0004613448217138938,
+          0.01917504698319661,
+          -0.0004613448409709342,
+          -0.044693139347415034,
+          0.06975381952990034,
+          -0.04424186919608086
+        ],
+        "releases": [
+          {
+            "drop_at_s": 8,
+            "measured": {
+              "start_gain_db": -17.720985246032626,
+              "final_gain_db": 3.5598247610028526,
+              "excursion_db": 21.280810007035477,
+              "t63_ms": 397,
+              "t90_ms": 616
+            },
+            "predicted": {
+              "start_gain_db": -17.70181019904943,
+              "final_gain_db": 3.5593634161618817,
+              "excursion_db": 21.261173615211312,
+              "t63_ms": 397,
+              "t90_ms": 615
+            },
+            "evaluation_from_ms": 5,
+            "absolute_rms_db": 0.05554053266954467,
+            "endpoint_normalized_shape_rms_db_equivalent": 0.05486075769653911,
+            "first_200ms_shape_rms_db_equivalent": 0.009913055069294855
+          },
+          {
+            "drop_at_s": 20,
+            "measured": {
+              "start_gain_db": -23.66601666887966,
+              "final_gain_db": -5.869100365189372,
+              "excursion_db": 17.79691630369029,
+              "t63_ms": 283,
+              "t90_ms": 427
+            },
+            "predicted": {
+              "start_gain_db": -23.59626284934976,
+              "final_gain_db": -5.9133422343854525,
+              "excursion_db": 17.682920614964306,
+              "t63_ms": 281,
+              "t90_ms": 423
+            },
+            "evaluation_from_ms": 5,
+            "absolute_rms_db": 0.07108667050524013,
+            "endpoint_normalized_shape_rms_db_equivalent": 0.06911014535719402,
+            "first_200ms_shape_rms_db_equivalent": 0.037855726815724716
+          }
+        ],
+        "attacks": [
+          {
+            "rise_at_s": 4,
+            "measured": {
+              "one_cycle_rms_overshoot_db": 16.933494192921657,
+              "within_1db_for_at_least_20ms_at_ms": 14,
+              "measurement_window_ms": 1.0
+            },
+            "predicted": {
+              "one_cycle_rms_overshoot_db": 17.38599974192738,
+              "within_1db_for_at_least_20ms_at_ms": 11,
+              "measurement_window_ms": 1.0
+            }
+          },
+          {
+            "rise_at_s": 16,
+            "measured": {
+              "one_cycle_rms_overshoot_db": 14.678158964686371,
+              "within_1db_for_at_least_20ms_at_ms": 13,
+              "measurement_window_ms": 1.0
+            },
+            "predicted": {
+              "one_cycle_rms_overshoot_db": 14.281585040744698,
+              "within_1db_for_at_least_20ms_at_ms": 10,
+              "measurement_window_ms": 1.0
+            }
+          }
+        ],
+        "harmonics": [
+          {
+            "input_db": -12,
+            "measured": {
+              "h2_h5_dbc": [
+                -64.60891007558912,
+                -70.91405266568317,
+                -87.57079682631442,
+                -76.8919766721052
+              ],
+              "thd2_5_percent": 0.06702621370825176,
+              "harmonic_snr_db_vs_nearby_bins": [
+                110.71837990730133,
+                50.298979182905924,
+                40.469094549331516,
+                22.307240203213844,
+                32.66003538257135
+              ]
+            },
+            "predicted": {
+              "h2_h5_dbc": [
+                -300.0,
+                -66.4610709471164,
+                -300.0,
+                -74.00352248902804
+              ],
+              "thd2_5_percent": 0.05154282760516968,
+              "harmonic_snr_db_vs_nearby_bins": [
+                270.29818867388167,
+                -34.38689252283033,
+                203.8371177267653,
+                -30.007082237402027,
+                196.29466618485364
+              ]
+            }
+          },
+          {
+            "input_db": -24,
+            "measured": {
+              "h2_h5_dbc": [
+                -70.74466405900719,
+                -73.41815455297198,
+                -88.85823570614275,
+                -79.32928124537118
+              ],
+              "thd2_5_percent": 0.03777986560982429,
+              "harmonic_snr_db_vs_nearby_bins": [
+                106.92809787957813,
+                37.10314452198407,
+                33.571360695582115,
+                18.5301805435292,
+                26.05646007798625
+              ]
+            },
+            "predicted": {
+              "h2_h5_dbc": [
+                -282.95876074151624,
+                -68.81154780455043,
+                -283.14579604208706,
+                -76.10422207262107
+              ],
+              "thd2_5_percent": 0.0394966902978273,
+              "harmonic_snr_db_vs_nearby_bins": [
+                270.0866568742279,
+                -12.87210386728832,
+                201.2751090696775,
+                -13.059139167859147,
+                193.98243480160687
+              ]
+            }
+          },
+          {
+            "input_db": -6,
+            "measured": {
+              "h2_h5_dbc": [
+                -60.7882274660472,
+                -69.06831517304173,
+                -86.63869874949755,
+                -75.51603649469762
+              ],
+              "thd2_5_percent": 0.0994081256809031,
+              "harmonic_snr_db_vs_nearby_bins": [
+                112.91285874367576,
+                49.52732990721424,
+                43.230655572201975,
+                20.39635543560071,
+                37.631629607338006
+              ]
+            },
+            "predicted": {
+              "h2_h5_dbc": [
+                -283.71099304797207,
+                -65.48797803400782,
+                -283.8652944591805,
+                -73.11723851751768
+              ],
+              "thd2_5_percent": 0.05756764768771092,
+              "harmonic_snr_db_vs_nearby_bins": [
+                270.40373571881014,
+                -13.307257329161908,
+                204.91575768480234,
+                -13.461558740370341,
+                197.2864972012925
+              ]
+            }
+          }
+        ]
+      },
+      "baseline": {
+        "role": "training",
+        "settled_gain_errors_db": [
+          0.0004613449048349594,
+          -0.007552744363426456,
+          -0.0004613447576451435,
+          -0.00028860056411783575,
+          0.00767867642869291,
+          0.00016266958732469305
+        ],
+        "releases": [
+          {
+            "drop_at_s": 8,
+            "measured": {
+              "start_gain_db": -17.720985246032626,
+              "final_gain_db": 3.5598247610028526,
+              "excursion_db": 21.280810007035477,
+              "t63_ms": 397,
+              "t90_ms": 616
+            },
+            "predicted": {
+              "start_gain_db": -17.728537990396052,
+              "final_gain_db": 3.5593634162452075,
+              "excursion_db": 21.28790140664126,
+              "t63_ms": 361,
+              "t90_ms": 553
+            },
+            "evaluation_from_ms": 5,
+            "absolute_rms_db": 0.7710523986592089,
+            "endpoint_normalized_shape_rms_db_equivalent": 0.7724093660379129,
+            "first_200ms_shape_rms_db_equivalent": 0.18431226171379606
+          },
+          {
+            "drop_at_s": 20,
+            "measured": {
+              "start_gain_db": -23.66601666887966,
+              "final_gain_db": -5.869100365189372,
+              "excursion_db": 17.79691630369029,
+              "t63_ms": 283,
+              "t90_ms": 427
+            },
+            "predicted": {
+              "start_gain_db": -23.658337992450967,
+              "final_gain_db": -5.868937695602047,
+              "excursion_db": 17.78940029684892,
+              "t63_ms": 329,
+              "t90_ms": 525
+            },
+            "evaluation_from_ms": 5,
+            "absolute_rms_db": 1.0006344997681897,
+            "endpoint_normalized_shape_rms_db_equivalent": 1.0022995889811048,
+            "first_200ms_shape_rms_db_equivalent": 0.6227063800480538
+          }
+        ],
+        "attacks": [
+          {
+            "rise_at_s": 4,
+            "measured": {
+              "one_cycle_rms_overshoot_db": 16.933494192921657,
+              "within_1db_for_at_least_20ms_at_ms": 14,
+              "measurement_window_ms": 1.0
+            },
+            "predicted": {
+              "one_cycle_rms_overshoot_db": 17.51883879377171,
+              "within_1db_for_at_least_20ms_at_ms": 12,
+              "measurement_window_ms": 1.0
+            }
+          },
+          {
+            "rise_at_s": 16,
+            "measured": {
+              "one_cycle_rms_overshoot_db": 14.678158964686371,
+              "within_1db_for_at_least_20ms_at_ms": 13,
+              "measurement_window_ms": 1.0
+            },
+            "predicted": {
+              "one_cycle_rms_overshoot_db": 14.429600624576631,
+              "within_1db_for_at_least_20ms_at_ms": 11,
+              "measurement_window_ms": 1.0
+            }
+          }
+        ],
+        "harmonics": [
+          {
+            "input_db": -12,
+            "measured": {
+              "h2_h5_dbc": [
+                -64.60891007558912,
+                -70.91405266568317,
+                -87.57079682631442,
+                -76.8919766721052
+              ],
+              "thd2_5_percent": 0.06702621370825176,
+              "harmonic_snr_db_vs_nearby_bins": [
+                110.71837990730133,
+                50.298979182905924,
+                40.469094549331516,
+                22.307240203213844,
+                32.66003538257135
+              ]
+            },
+            "predicted": {
+              "h2_h5_dbc": [
+                -300.0,
+                -71.94267078750002,
+                -300.0,
+                -81.90220502831956
+              ],
+              "thd2_5_percent": 0.026530627345614843,
+              "harmonic_snr_db_vs_nearby_bins": [
+                270.27146175934973,
+                -33.98928798304085,
+                198.3287909718497,
+                -30.006653027177173,
+                188.3692567310302
+              ]
+            }
+          },
+          {
+            "input_db": -24,
+            "measured": {
+              "h2_h5_dbc": [
+                -70.74466405900719,
+                -73.41815455297198,
+                -88.85823570614275,
+                -79.32928124537118
+              ],
+              "thd2_5_percent": 0.03777986560982429,
+              "harmonic_snr_db_vs_nearby_bins": [
+                106.92809787957813,
+                37.10314452198407,
+                33.571360695582115,
+                18.5301805435292,
+                26.05646007798625
+              ]
+            },
+            "predicted": {
+              "h2_h5_dbc": [
+                -282.9712318256949,
+                -71.94263115406187,
+                -283.15060736060923,
+                -81.9021295203296
+              ],
+              "thd2_5_percent": 0.026530758450639208,
+              "harmonic_snr_db_vs_nearby_bins": [
+                270.1310618012021,
+                -12.840170024492789,
+                198.18843064714025,
+                -13.019545559407161,
+                188.2289322808725
+              ]
+            }
+          },
+          {
+            "input_db": -6,
+            "measured": {
+              "h2_h5_dbc": [
+                -60.7882274660472,
+                -69.06831517304173,
+                -86.63869874949755,
+                -75.51603649469762
+              ],
+              "thd2_5_percent": 0.0994081256809031,
+              "harmonic_snr_db_vs_nearby_bins": [
+                112.91285874367576,
+                49.52732990721424,
+                43.230655572201975,
+                20.39635543560071,
+                37.631629607338006
+              ]
+            },
+            "predicted": {
+              "h2_h5_dbc": [
+                -283.6991324136311,
+                -71.94269602301974,
+                -283.84131086953255,
+                -81.90213126867573
+              ],
+              "thd2_5_percent": 0.026530577987732958,
+              "harmonic_snr_db_vs_nearby_bins": [
+                270.34166174516474,
+                -13.357470668466389,
+                198.398965722145,
+                -13.499649124367856,
+                188.43953047648904
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "attack-0700-steps-110": {
+      "candidate": {
+        "role": "retrospective generalization",
+        "settled_gain_errors_db": [
+          0.017557265848402892,
+          -0.2380615951132974,
+          0.015481316766548403,
+          -0.2747384488400533,
+          -0.2040717716089162,
+          -0.27396280794698047
+        ],
+        "releases": [
+          {
+            "drop_at_s": 8,
+            "measured": {
+              "start_gain_db": -18.27909678917891,
+              "final_gain_db": 2.7187993361823457,
+              "excursion_db": 20.997896125361258,
+              "t63_ms": 394,
+              "t90_ms": 611
+            },
+            "predicted": {
+              "start_gain_db": -18.51715838429221,
+              "final_gain_db": 2.734280652948894,
+              "excursion_db": 21.251439037241102,
+              "t63_ms": 398,
+              "t90_ms": 616
+            },
+            "evaluation_from_ms": 19,
+            "absolute_rms_db": 0.1663338013276198,
+            "endpoint_normalized_shape_rms_db_equivalent": 0.1500628786938829,
+            "first_200ms_shape_rms_db_equivalent": 0.33340574943262324
+          },
+          {
+            "drop_at_s": 20,
+            "measured": {
+              "start_gain_db": -24.20963534845329,
+              "final_gain_db": -6.4553219684692875,
+              "excursion_db": 17.754313379984,
+              "t63_ms": 284,
+              "t90_ms": 429
+            },
+            "predicted": {
+              "start_gain_db": -24.413707120062206,
+              "final_gain_db": -6.729284776416268,
+              "excursion_db": 17.684422343645938,
+              "t63_ms": 283,
+              "t90_ms": 424
+            },
+            "evaluation_from_ms": 19,
+            "absolute_rms_db": 0.22616155304134553,
+            "endpoint_normalized_shape_rms_db_equivalent": 0.08402220000719224,
+            "first_200ms_shape_rms_db_equivalent": 0.0851262261917537
+          }
+        ],
+        "attacks": [
+          {
+            "rise_at_s": 4,
+            "measured": {
+              "one_cycle_rms_overshoot_db": 12.27020100465797,
+              "within_1db_for_at_least_20ms_at_ms": 21,
+              "measurement_window_ms": 9.083333333333334
+            },
+            "predicted": {
+              "one_cycle_rms_overshoot_db": 8.688792668403964,
+              "within_1db_for_at_least_20ms_at_ms": 12,
+              "measurement_window_ms": 9.083333333333334
+            }
+          },
+          {
+            "rise_at_s": 16,
+            "measured": {
+              "one_cycle_rms_overshoot_db": 10.898572028485365,
+              "within_1db_for_at_least_20ms_at_ms": 21,
+              "measurement_window_ms": 9.083333333333334
+            },
+            "predicted": {
+              "one_cycle_rms_overshoot_db": 7.549420686840662,
+              "within_1db_for_at_least_20ms_at_ms": 12,
+              "measurement_window_ms": 9.083333333333334
+            }
+          }
+        ],
+        "harmonics": [
+          {
+            "input_db": -12,
+            "measured": {
+              "h2_h5_dbc": [
+                -57.37264716836038,
+                -47.579635678063354,
+                -67.2663803356671,
+                -57.34572521502392
+              ],
+              "thd2_5_percent": 0.46174803303356193,
+              "harmonic_snr_db_vs_nearby_bins": [
+                109.34679234672119,
+                53.097670808206665,
+                66.77160692174868,
+                42.77424292350456,
+                53.70994672394058
+              ]
+            },
+            "predicted": {
+              "h2_h5_dbc": [
+                -300.0,
+                -45.919136104450686,
+                -300.0,
+                -52.73267176233258
+              ],
+              "thd2_5_percent": 0.5560667028816909,
+              "harmonic_snr_db_vs_nearby_bins": [
+                269.4828919976263,
+                -31.860623663479505,
+                223.56375589317562,
+                -46.39040653394805,
+                216.75022023529374
+              ]
+            }
+          },
+          {
+            "input_db": -24,
+            "measured": {
+              "h2_h5_dbc": [
+                -58.367175681661735,
+                -49.8874496278861,
+                -68.62157379421879,
+                -59.53278287533525
+              ],
+              "thd2_5_percent": 0.36013726806773483,
+              "harmonic_snr_db_vs_nearby_bins": [
+                106.50698720963905,
+                55.1519974157339,
+                57.022785517492025,
+                39.88874410049503,
+                47.20945096490325
+              ]
+            },
+            "predicted": {
+              "h2_h5_dbc": [
+                -298.11278385792076,
+                -48.245950790751095,
+                -300.0,
+                -54.77072185314444
+              ],
+              "thd2_5_percent": 0.42790213154951595,
+              "harmonic_snr_db_vs_nearby_bins": [
+                269.2707582092518,
+                -28.84202564866893,
+                221.02480741850073,
+                -39.84334574280476,
+                214.5000363561074
+              ]
+            }
+          },
+          {
+            "input_db": -6,
+            "measured": {
+              "h2_h5_dbc": [
+                -56.85972938271235,
+                -46.66838284810162,
+                -66.46389007288454,
+                -56.56305123750069
+              ],
+              "thd2_5_percent": 0.5101841686949402,
+              "harmonic_snr_db_vs_nearby_bins": [
+                115.29322926876767,
+                51.857042541897926,
+                59.1382980147139,
+                49.01036973601614,
+                53.79257743921564
+              ]
+            },
+            "predicted": {
+              "h2_h5_dbc": [
+                -300.0,
+                -44.97068356746362,
+                -300.0,
+                -51.9201608436805
+              ],
+              "thd2_5_percent": 0.6185758072158959,
+              "harmonic_snr_db_vs_nearby_bins": [
+                269.5860991668905,
+                -31.911324400779076,
+                224.6154155994269,
+                -37.90226768266485,
+                217.66593832321004
+              ]
+            }
+          }
+        ]
+      },
+      "baseline": {
+        "role": "retrospective generalization",
+        "settled_gain_errors_db": [
+          0.017557265931460897,
+          -0.2811311655920683,
+          0.015481316849404791,
+          -0.2460816069355678,
+          -0.2803925642888139,
+          -0.24530596585929576
+        ],
+        "releases": [
+          {
+            "drop_at_s": 8,
+            "measured": {
+              "start_gain_db": -18.27909678917891,
+              "final_gain_db": 2.7187993361823457,
+              "excursion_db": 20.997896125361258,
+              "t63_ms": 394,
+              "t90_ms": 611
+            },
+            "predicted": {
+              "start_gain_db": -18.56022795477098,
+              "final_gain_db": 2.7342806530317505,
+              "excursion_db": 21.29450860780273,
+              "t63_ms": 362,
+              "t90_ms": 556
+            },
+            "evaluation_from_ms": 19,
+            "absolute_rms_db": 0.6633898380518555,
+            "endpoint_normalized_shape_rms_db_equivalent": 0.6989318820355898,
+            "first_200ms_shape_rms_db_equivalent": 0.36947522323958953
+          },
+          {
+            "drop_at_s": 20,
+            "measured": {
+              "start_gain_db": -24.20963534845329,
+              "final_gain_db": -6.4553219684692875,
+              "excursion_db": 17.754313379984,
+              "t63_ms": 284,
+              "t90_ms": 429
+            },
+            "predicted": {
+              "start_gain_db": -24.490027912742104,
+              "final_gain_db": -6.700627934328583,
+              "excursion_db": 17.78939997841352,
+              "t63_ms": 329,
+              "t90_ms": 526
+            },
+            "evaluation_from_ms": 19,
+            "absolute_rms_db": 1.169322178666358,
+            "endpoint_normalized_shape_rms_db_equivalent": 0.9908267761421887,
+            "first_200ms_shape_rms_db_equivalent": 0.6274027388156983
+          }
+        ],
+        "attacks": [
+          {
+            "rise_at_s": 4,
+            "measured": {
+              "one_cycle_rms_overshoot_db": 12.27020100465797,
+              "within_1db_for_at_least_20ms_at_ms": 21,
+              "measurement_window_ms": 9.083333333333334
+            },
+            "predicted": {
+              "one_cycle_rms_overshoot_db": 8.834078978152672,
+              "within_1db_for_at_least_20ms_at_ms": 12,
+              "measurement_window_ms": 9.083333333333334
+            }
+          },
+          {
+            "rise_at_s": 16,
+            "measured": {
+              "one_cycle_rms_overshoot_db": 10.898572028485365,
+              "within_1db_for_at_least_20ms_at_ms": 21,
+              "measurement_window_ms": 9.083333333333334
+            },
+            "predicted": {
+              "one_cycle_rms_overshoot_db": 7.708747918057465,
+              "within_1db_for_at_least_20ms_at_ms": 12,
+              "measurement_window_ms": 9.083333333333334
+            }
+          }
+        ],
+        "harmonics": [
+          {
+            "input_db": -12,
+            "measured": {
+              "h2_h5_dbc": [
+                -57.37264716836038,
+                -47.579635678063354,
+                -67.2663803356671,
+                -57.34572521502392
+              ],
+              "thd2_5_percent": 0.46174803303356193,
+              "harmonic_snr_db_vs_nearby_bins": [
+                109.34679234672119,
+                53.097670808206665,
+                66.77160692174868,
+                42.77424292350456,
+                53.70994672394058
+              ]
+            },
+            "predicted": {
+              "h2_h5_dbc": [
+                -300.0,
+                -51.50230307925191,
+                -300.0,
+                -60.996761187163855
+              ],
+              "thd2_5_percent": 0.28054634936864925,
+              "harmonic_snr_db_vs_nearby_bins": [
+                269.439760458115,
+                -41.65420515478096,
+                217.93745737886314,
+                -46.95792770297375,
+                208.4429992709512
+              ]
+            }
+          },
+          {
+            "input_db": -24,
+            "measured": {
+              "h2_h5_dbc": [
+                -58.367175681661735,
+                -49.8874496278861,
+                -68.62157379421879,
+                -59.53278287533525
+              ],
+              "thd2_5_percent": 0.36013726806773483,
+              "harmonic_snr_db_vs_nearby_bins": [
+                106.50698720963905,
+                55.1519974157339,
+                57.022785517492025,
+                39.88874410049503,
+                47.20945096490325
+              ]
+            },
+            "predicted": {
+              "h2_h5_dbc": [
+                -300.0,
+                -51.502303008947344,
+                -300.0,
+                -60.99675806390708
+              ],
+              "thd2_5_percent": 0.28054636159863783,
+              "harmonic_snr_db_vs_nearby_bins": [
+                269.2993604866514,
+                -34.02985420156141,
+                217.79705747770407,
+                -41.78070673051778,
+                208.30260242274431
+              ]
+            }
+          },
+          {
+            "input_db": -6,
+            "measured": {
+              "h2_h5_dbc": [
+                -56.85972938271235,
+                -46.66838284810162,
+                -66.46389007288454,
+                -56.56305123750069
+              ],
+              "thd2_5_percent": 0.5101841686949402,
+              "harmonic_snr_db_vs_nearby_bins": [
+                115.29322926876767,
+                51.857042541897926,
+                59.1382980147139,
+                49.01036973601614,
+                53.79257743921564
+              ]
+            },
+            "predicted": {
+              "h2_h5_dbc": [
+                -300.0,
+                -51.50230283592353,
+                -300.0,
+                -60.99675760706213
+              ],
+              "thd2_5_percent": 0.2805463681130205,
+              "harmonic_snr_db_vs_nearby_bins": [
+                269.5099604983502,
+                -50.540770105082416,
+                218.00765766242665,
+                -42.79099086952882,
+                208.51320289128805
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "attack-0500-steps-1000": {
+      "candidate": {
+        "role": "training",
+        "settled_gain_errors_db": [
+          0.00027742952358789097,
+          -0.017732743281193564,
+          -0.00027742920434725704,
+          0.01306496904671306,
+          -0.009191594840284978,
+          0.013882206503557093
+        ],
+        "releases": [
+          {
+            "drop_at_s": 8,
+            "measured": {
+              "start_gain_db": -15.367684492033128,
+              "final_gain_db": 4.659712188654856,
+              "excursion_db": 20.027396680687986,
+              "t63_ms": 34,
+              "t90_ms": 53
+            },
+            "predicted": {
+              "start_gain_db": -15.385417235314321,
+              "final_gain_db": 4.659434759450509,
+              "excursion_db": 20.04485199476483,
+              "t63_ms": 34,
+              "t90_ms": 52
+            },
+            "evaluation_from_ms": 5,
+            "absolute_rms_db": 0.031056099416568325,
+            "endpoint_normalized_shape_rms_db_equivalent": 0.0322755568505001,
+            "first_200ms_shape_rms_db_equivalent": 0.07967839463327686
+          },
+          {
+            "drop_at_s": 20,
+            "measured": {
+              "start_gain_db": -21.17279136423918,
+              "final_gain_db": -3.812403699831257,
+              "excursion_db": 17.360387664407924,
+              "t63_ms": 25,
+              "t90_ms": 38
+            },
+            "predicted": {
+              "start_gain_db": -21.181982959079466,
+              "final_gain_db": -3.7985214933277,
+              "excursion_db": 17.383461465751765,
+              "t63_ms": 25,
+              "t90_ms": 37
+            },
+            "evaluation_from_ms": 5,
+            "absolute_rms_db": 0.04559801447566376,
+            "endpoint_normalized_shape_rms_db_equivalent": 0.04183821316664968,
+            "first_200ms_shape_rms_db_equivalent": 0.10354981530205665
+          }
+        ],
+        "attacks": [
+          {
+            "rise_at_s": 4,
+            "measured": {
+              "one_cycle_rms_overshoot_db": 15.16162562871571,
+              "within_1db_for_at_least_20ms_at_ms": 7,
+              "measurement_window_ms": 1.0
+            },
+            "predicted": {
+              "one_cycle_rms_overshoot_db": 15.73114616411589,
+              "within_1db_for_at_least_20ms_at_ms": 6,
+              "measurement_window_ms": 1.0
+            }
+          },
+          {
+            "rise_at_s": 16,
+            "measured": {
+              "one_cycle_rms_overshoot_db": 13.405617720017577,
+              "within_1db_for_at_least_20ms_at_ms": 6,
+              "measurement_window_ms": 1.0
+            },
+            "predicted": {
+              "one_cycle_rms_overshoot_db": 13.053443432988878,
+              "within_1db_for_at_least_20ms_at_ms": 6,
+              "measurement_window_ms": 1.0
+            }
+          }
+        ],
+        "harmonics": [
+          {
+            "input_db": -12,
+            "measured": {
+              "h2_h5_dbc": [
+                -60.35988149626653,
+                -48.984423077079725,
+                -79.1770783170705,
+                -63.56090275539776
+              ],
+              "thd2_5_percent": 0.3742661293871949,
+              "harmonic_snr_db_vs_nearby_bins": [
+                110.95860246285605,
+                51.97689604937801,
+                67.93665352802044,
+                31.01443325140321,
+                49.63567850224968
+              ]
+            },
+            "predicted": {
+              "h2_h5_dbc": [
+                -300.0,
+                -47.69579692162638,
+                -300.0,
+                -60.8885173667882
+              ],
+              "thd2_5_percent": 0.42206471603879886,
+              "harmonic_snr_db_vs_nearby_bins": [
+                272.61450538875005,
+                -31.80879349985763,
+                224.91870846712362,
+                -27.66954825078237,
+                211.7259880219618
+              ]
+            }
+          },
+          {
+            "input_db": -24,
+            "measured": {
+              "h2_h5_dbc": [
+                -63.20026880408886,
+                -51.11874930892648,
+                -79.2877957255645,
+                -64.59820616410727
+              ],
+              "thd2_5_percent": 0.29268231855799404,
+              "harmonic_snr_db_vs_nearby_bins": [
+                110.920472635382,
+                47.0010684099229,
+                64.02458934123234,
+                34.26502065220289,
+                43.4873024489746
+              ]
+            },
+            "predicted": {
+              "h2_h5_dbc": [
+                -282.93552211039616,
+                -50.030506571953694,
+                -283.13107062131485,
+                -62.161927462483966
+              ],
+              "thd2_5_percent": 0.3246208144635359,
+              "harmonic_snr_db_vs_nearby_bins": [
+                272.20143250725715,
+                -10.734089603138987,
+                222.17092593530344,
+                -10.92963811405766,
+                210.03950504477316
+              ]
+            }
+          },
+          {
+            "input_db": -6,
+            "measured": {
+              "h2_h5_dbc": [
+                -58.19871891488977,
+                -48.11492081289341,
+                -78.73260257196773,
+                -63.20956839037146
+              ],
+              "thd2_5_percent": 0.4176124869563878,
+              "harmonic_snr_db_vs_nearby_bins": [
+                108.84723889985858,
+                53.03530531293545,
+                60.020151130716435,
+                35.74521755797475,
+                50.527810899317046
+              ]
+            },
+            "predicted": {
+              "h2_h5_dbc": [
+                -283.7343745809793,
+                -46.7275494396397,
+                -283.8652832932239,
+                -60.31518276490524
+              ],
+              "thd2_5_percent": 0.47089729291095095,
+              "harmonic_snr_db_vs_nearby_bins": [
+                272.8179206705605,
+                -10.916453910418777,
+                226.09037123092082,
+                -11.047362622663385,
+                212.5027379056553
+              ]
+            }
+          }
+        ]
+      },
+      "baseline": {
+        "role": "training",
+        "settled_gain_errors_db": [
+          0.0002774293192882027,
+          -0.1207821360970911,
+          -0.0002774294084417761,
+          0.18272009547175605,
+          -0.2454752923628405,
+          0.18353733292834873
+        ],
+        "releases": [
+          {
+            "drop_at_s": 8,
+            "measured": {
+              "start_gain_db": -15.367684492033128,
+              "final_gain_db": 4.659712188654856,
+              "excursion_db": 20.027396680687986,
+              "t63_ms": 34,
+              "t90_ms": 53
+            },
+            "predicted": {
+              "start_gain_db": -15.488466628130219,
+              "final_gain_db": 4.659434759246414,
+              "excursion_db": 20.147901387376635,
+              "t63_ms": 31,
+              "t90_ms": 46
+            },
+            "evaluation_from_ms": 5,
+            "absolute_rms_db": 0.25045549579043275,
+            "endpoint_normalized_shape_rms_db_equivalent": 0.25534288542482364,
+            "first_200ms_shape_rms_db_equivalent": 0.6320788971122446
+          },
+          {
+            "drop_at_s": 20,
+            "measured": {
+              "start_gain_db": -21.17279136423918,
+              "final_gain_db": -3.812403699831257,
+              "excursion_db": 17.360387664407924,
+              "t63_ms": 25,
+              "t90_ms": 38
+            },
+            "predicted": {
+              "start_gain_db": -21.41826665660202,
+              "final_gain_db": -3.6288663669029084,
+              "excursion_db": 17.789400289699113,
+              "t63_ms": 30,
+              "t90_ms": 48
+            },
+            "evaluation_from_ms": 5,
+            "absolute_rms_db": 0.3529529301539965,
+            "endpoint_normalized_shape_rms_db_equivalent": 0.3117642123378192,
+            "first_200ms_shape_rms_db_equivalent": 0.7717760177431435
+          }
+        ],
+        "attacks": [
+          {
+            "rise_at_s": 4,
+            "measured": {
+              "one_cycle_rms_overshoot_db": 15.16162562871571,
+              "within_1db_for_at_least_20ms_at_ms": 7,
+              "measurement_window_ms": 1.0
+            },
+            "predicted": {
+              "one_cycle_rms_overshoot_db": 16.173533740021764,
+              "within_1db_for_at_least_20ms_at_ms": 7,
+              "measurement_window_ms": 1.0
+            }
+          },
+          {
+            "rise_at_s": 16,
+            "measured": {
+              "one_cycle_rms_overshoot_db": 13.405617720017577,
+              "within_1db_for_at_least_20ms_at_ms": 6,
+              "measurement_window_ms": 1.0
+            },
+            "predicted": {
+              "one_cycle_rms_overshoot_db": 13.58343399459135,
+              "within_1db_for_at_least_20ms_at_ms": 7,
+              "measurement_window_ms": 1.0
+            }
+          }
+        ],
+        "harmonics": [
+          {
+            "input_db": -12,
+            "measured": {
+              "h2_h5_dbc": [
+                -60.35988149626653,
+                -48.984423077079725,
+                -79.1770783170705,
+                -63.56090275539776
+              ],
+              "thd2_5_percent": 0.3742661293871949,
+              "harmonic_snr_db_vs_nearby_bins": [
+                110.95860246285605,
+                51.97689604937801,
+                67.93665352802044,
+                31.01443325140321,
+                49.63567850224968
+              ]
+            },
+            "predicted": {
+              "h2_h5_dbc": [
+                -300.0,
+                -52.582678027858904,
+                -300.0,
+                -67.31976977598202
+              ],
+              "thd2_5_percent": 0.2388039804403818,
+              "harmonic_snr_db_vs_nearby_bins": [
+                272.5115085547239,
+                -31.92070617870813,
+                219.92883052686497,
+                -27.738235762992574,
+                205.19173877874184
+              ]
+            }
+          },
+          {
+            "input_db": -24,
+            "measured": {
+              "h2_h5_dbc": [
+                -63.20026880408886,
+                -51.11874930892648,
+                -79.2877957255645,
+                -64.59820616410727
+              ],
+              "thd2_5_percent": 0.29268231855799404,
+              "harmonic_snr_db_vs_nearby_bins": [
+                110.920472635382,
+                47.0010684099229,
+                64.02458934123234,
+                34.26502065220289,
+                43.4873024489746
+              ]
+            },
+            "predicted": {
+              "h2_h5_dbc": [
+                -282.97240074184026,
+                -52.582673851499784,
+                -283.12550014577255,
+                -67.3197551700615
+              ],
+              "thd2_5_percent": 0.23880410458279128,
+              "harmonic_snr_db_vs_nearby_bins": [
+                272.3711085629877,
+                -10.601292178852567,
+                219.7884347114879,
+                -10.754391582784866,
+                205.0513533929262
+              ]
+            }
+          },
+          {
+            "input_db": -6,
+            "measured": {
+              "h2_h5_dbc": [
+                -58.19871891488977,
+                -48.11492081289341,
+                -78.73260257196773,
+                -63.20956839037146
+              ],
+              "thd2_5_percent": 0.4176124869563878,
+              "harmonic_snr_db_vs_nearby_bins": [
+                108.84723889985858,
+                53.03530531293545,
+                60.020151130716435,
+                35.74521755797475,
+                50.527810899317046
+              ]
+            },
+            "predicted": {
+              "h2_h5_dbc": [
+                -283.71578680331965,
+                -52.582680886784054,
+                -283.8731735982933,
+                -67.3197545386749
+              ],
+              "thd2_5_percent": 0.23880391801075293,
+              "harmonic_snr_db_vs_nearby_bins": [
+                272.58170851413206,
+                -11.134078289187585,
+                219.99902762734803,
+                -11.291465084161231,
+                205.26195397545717
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "attack-0500-steps-110": {
+      "candidate": {
+        "role": "retrospective generalization",
+        "settled_gain_errors_db": [
+          0.039415154955326326,
+          -1.21612519800291,
+          0.03798593937232919,
+          -0.8914013237723379,
+          -1.362067486778745,
+          -0.8912261082804687
+        ],
+        "releases": [
+          {
+            "drop_at_s": 8,
+            "measured": {
+              "start_gain_db": -14.962458812299037,
+              "final_gain_db": 3.7963660568652298,
+              "excursion_db": 18.758824869164265,
+              "t63_ms": 34,
+              "t90_ms": 52
+            },
+            "predicted": {
+              "start_gain_db": -16.178584010301947,
+              "final_gain_db": 3.834351996237559,
+              "excursion_db": 20.012936006539505,
+              "t63_ms": 34,
+              "t90_ms": 53
+            },
+            "evaluation_from_ms": 19,
+            "absolute_rms_db": 0.09140384596139092,
+            "endpoint_normalized_shape_rms_db_equivalent": 0.06534532129330475,
+            "first_200ms_shape_rms_db_equivalent": 0.16661394823434647
+          },
+          {
+            "drop_at_s": 20,
+            "measured": {
+              "start_gain_db": -20.63392198695394,
+              "final_gain_db": -3.67915886071132,
+              "excursion_db": 16.954763126242618,
+              "t63_ms": 25,
+              "t90_ms": 39
+            },
+            "predicted": {
+              "start_gain_db": -21.995989473732685,
+              "final_gain_db": -4.570384968991789,
+              "excursion_db": 17.425604504740896,
+              "t63_ms": 25,
+              "t90_ms": 38
+            },
+            "evaluation_from_ms": 19,
+            "absolute_rms_db": 0.8874173637179136,
+            "endpoint_normalized_shape_rms_db_equivalent": 0.04168965720108439,
+            "first_200ms_shape_rms_db_equivalent": 0.10637529469410786
+          }
+        ],
+        "attacks": [
+          {
+            "rise_at_s": 4,
+            "measured": {
+              "one_cycle_rms_overshoot_db": 9.638065315894245,
+              "within_1db_for_at_least_20ms_at_ms": 12,
+              "measurement_window_ms": 9.083333333333334
+            },
+            "predicted": {
+              "one_cycle_rms_overshoot_db": 6.897811070789071,
+              "within_1db_for_at_least_20ms_at_ms": 11,
+              "measurement_window_ms": 9.083333333333334
+            }
+          },
+          {
+            "rise_at_s": 16,
+            "measured": {
+              "one_cycle_rms_overshoot_db": 9.00499629267824,
+              "within_1db_for_at_least_20ms_at_ms": 12,
+              "measurement_window_ms": 9.083333333333334
+            },
+            "predicted": {
+              "one_cycle_rms_overshoot_db": 6.261903779947332,
+              "within_1db_for_at_least_20ms_at_ms": 10,
+              "measurement_window_ms": 9.083333333333334
+            }
+          }
+        ],
+        "harmonics": [
+          {
+            "input_db": -12,
+            "measured": {
+              "h2_h5_dbc": [
+                -48.22769833266843,
+                -29.985460063704785,
+                -59.235239820421945,
+                -45.47561726402062
+              ],
+              "thd2_5_percent": 3.2371716032868205,
+              "harmonic_snr_db_vs_nearby_bins": [
+                106.98233000796625,
+                66.21151095770618,
+                82.77964564702513,
+                54.47298794208828,
+                64.67159437779812
+              ]
+            },
+            "predicted": {
+              "h2_h5_dbc": [
+                -295.950172577997,
+                -27.236749158922215,
+                -300.0,
+                -39.765549544670556
+              ],
+              "thd2_5_percent": 4.466488438802737,
+              "harmonic_snr_db_vs_nearby_bins": [
+                271.8129919077938,
+                -24.137180670203247,
+                244.57624274887155,
+                -42.77450302777754,
+                232.04744236312322
+              ]
+            }
+          },
+          {
+            "input_db": -24,
+            "measured": {
+              "h2_h5_dbc": [
+                -48.515171406285816,
+                -31.865587443724817,
+                -59.90706447847466,
+                -46.07675994421566
+              ],
+              "thd2_5_percent": 2.627864382074259,
+              "harmonic_snr_db_vs_nearby_bins": [
+                111.18621523601652,
+                60.3747352928925,
+                82.61125101585044,
+                49.50559075400638,
+                63.7810167629715
+              ]
+            },
+            "predicted": {
+              "h2_h5_dbc": [
+                -300.0,
+                -29.406975428903152,
+                -300.0,
+                -40.518733206508806
+              ],
+              "thd2_5_percent": 3.514331337563904,
+              "harmonic_snr_db_vs_nearby_bins": [
+                271.4244323160997,
+                -28.764789541541926,
+                242.01745688719652,
+                -37.49082884368743,
+                230.90569910959087
+              ]
+            }
+          },
+          {
+            "input_db": -6,
+            "measured": {
+              "h2_h5_dbc": [
+                -48.540595276885085,
+                -29.250343266646087,
+                -59.05893307306131,
+                -45.298457819862165
+              ],
+              "thd2_5_percent": 3.5116474454115574,
+              "harmonic_snr_db_vs_nearby_bins": [
+                111.92923615701262,
+                63.58015892746241,
+                86.15161974016232,
+                53.165332958089486,
+                66.97146085626513
+              ]
+            },
+            "predicted": {
+              "h2_h5_dbc": [
+                -300.0,
+                -26.378782935644484,
+                -300.0,
+                -39.59132295265567
+              ],
+              "thd2_5_percent": 4.911164804322836,
+              "harmonic_snr_db_vs_nearby_bins": [
+                271.9938199665894,
+                -31.83859252132484,
+                245.61503703094496,
+                -36.85377246788729,
+                232.40249701393378
+              ]
+            }
+          }
+        ]
+      },
+      "baseline": {
+        "role": "retrospective generalization",
+        "settled_gain_errors_db": [
+          0.039415154750622516,
+          -1.3424006182056978,
+          0.03798593916792914,
+          -0.766275794866405,
+          -1.600737446638579,
+          -0.7661005792291071
+        ],
+        "releases": [
+          {
+            "drop_at_s": 8,
+            "measured": {
+              "start_gain_db": -14.962458812299037,
+              "final_gain_db": 3.7963660568652298,
+              "excursion_db": 18.758824869164265,
+              "t63_ms": 34,
+              "t90_ms": 52
+            },
+            "predicted": {
+              "start_gain_db": -16.304859430504735,
+              "final_gain_db": 3.834351996033159,
+              "excursion_db": 20.139211426537894,
+              "t63_ms": 31,
+              "t90_ms": 47
+            },
+            "evaluation_from_ms": 19,
+            "absolute_rms_db": 0.16172449236826741,
+            "endpoint_normalized_shape_rms_db_equivalent": 0.20629575869495495,
+            "first_200ms_shape_rms_db_equivalent": 0.5268621162768201
+          },
+          {
+            "drop_at_s": 20,
+            "measured": {
+              "start_gain_db": -20.63392198695394,
+              "final_gain_db": -3.67915886071132,
+              "excursion_db": 16.954763126242618,
+              "t63_ms": 25,
+              "t90_ms": 39
+            },
+            "predicted": {
+              "start_gain_db": -22.23465943359252,
+              "final_gain_db": -4.445259439940427,
+              "excursion_db": 17.78939999365209,
+              "t63_ms": 30,
+              "t90_ms": 49
+            },
+            "evaluation_from_ms": 19,
+            "absolute_rms_db": 0.8893479425188395,
+            "endpoint_normalized_shape_rms_db_equivalent": 0.29861667559502836,
+            "first_200ms_shape_rms_db_equivalent": 0.7627675506825117
+          }
+        ],
+        "attacks": [
+          {
+            "rise_at_s": 4,
+            "measured": {
+              "one_cycle_rms_overshoot_db": 9.638065315894245,
+              "within_1db_for_at_least_20ms_at_ms": 12,
+              "measurement_window_ms": 9.083333333333334
+            },
+            "predicted": {
+              "one_cycle_rms_overshoot_db": 7.322595795612285,
+              "within_1db_for_at_least_20ms_at_ms": 11,
+              "measurement_window_ms": 9.083333333333334
+            }
+          },
+          {
+            "rise_at_s": 16,
+            "measured": {
+              "one_cycle_rms_overshoot_db": 9.00499629267824,
+              "within_1db_for_at_least_20ms_at_ms": 12,
+              "measurement_window_ms": 9.083333333333334
+            },
+            "predicted": {
+              "one_cycle_rms_overshoot_db": 6.737976710201606,
+              "within_1db_for_at_least_20ms_at_ms": 11,
+              "measurement_window_ms": 9.083333333333334
+            }
+          }
+        ],
+        "harmonics": [
+          {
+            "input_db": -12,
+            "measured": {
+              "h2_h5_dbc": [
+                -48.22769833266843,
+                -29.985460063704785,
+                -59.235239820421945,
+                -45.47561726402062
+              ],
+              "thd2_5_percent": 3.2371716032868205,
+              "harmonic_snr_db_vs_nearby_bins": [
+                106.98233000796625,
+                66.21151095770618,
+                82.77964564702513,
+                54.47298794208828,
+                64.67159437779812
+              ]
+            },
+            "predicted": {
+              "h2_h5_dbc": [
+                -291.49951626624187,
+                -32.15908325845201,
+                -300.0,
+                -45.95851163171616
+              ],
+              "thd2_5_percent": 2.517187637961607,
+              "harmonic_snr_db_vs_nearby_bins": [
+                271.69245165147106,
+                -19.80706461477077,
+                239.5333683930191,
+                -41.84232965831764,
+                225.7339400197549
+              ]
+            }
+          },
+          {
+            "input_db": -24,
+            "measured": {
+              "h2_h5_dbc": [
+                -48.515171406285816,
+                -31.865587443724817,
+                -59.90706447847466,
+                -46.07675994421566
+              ],
+              "thd2_5_percent": 2.627864382074259,
+              "harmonic_snr_db_vs_nearby_bins": [
+                111.18621523601652,
+                60.3747352928925,
+                82.61125101585044,
+                49.50559075400638,
+                63.7810167629715
+              ]
+            },
+            "predicted": {
+              "h2_h5_dbc": [
+                -297.91937045747295,
+                -32.159083284624906,
+                -300.0,
+                -45.95850958149156
+              ],
+              "thd2_5_percent": 2.5171876544607024,
+              "harmonic_snr_db_vs_nearby_bins": [
+                271.55205165723964,
+                -26.367318800233228,
+                239.39296837261477,
+                -37.39150641569503,
+                225.59354207574813
+              ]
+            }
+          },
+          {
+            "input_db": -6,
+            "measured": {
+              "h2_h5_dbc": [
+                -48.540595276885085,
+                -29.250343266646087,
+                -59.05893307306131,
+                -45.298457819862165
+              ],
+              "thd2_5_percent": 3.5116474454115574,
+              "harmonic_snr_db_vs_nearby_bins": [
+                111.92923615701262,
+                63.58015892746241,
+                86.15161974016232,
+                53.165332958089486,
+                66.97146085626513
+              ]
+            },
+            "predicted": {
+              "h2_h5_dbc": [
+                -300.0,
+                -32.15908324408793,
+                -300.0,
+                -45.9585093784909
+              ],
+              "thd2_5_percent": 2.517187668092806,
+              "harmonic_snr_db_vs_nearby_bins": [
+                271.762651660658,
+                -28.50062194339681,
+                239.60356841657003,
+                -41.268363008860184,
+                225.80414228216708
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "attack-0700-crossed-1000": {
+      "candidate": {
+        "role": "retrospective generalization",
+        "settled_gain_errors_db": [
+          0.031870684113945114,
+          0.09095962799416313,
+          0.030005254117886793,
+          -0.023070859394006327,
+          0.040342127203125244,
+          -0.023304526982522944
+        ],
+        "releases": [
+          {
+            "drop_at_s": 8,
+            "measured": {
+              "start_gain_db": -23.68722247734386,
+              "final_gain_db": 3.5293581620451393,
+              "excursion_db": 27.216580639388997,
+              "t63_ms": 466,
+              "t90_ms": 734
+            },
+            "predicted": {
+              "start_gain_db": -23.596262849349696,
+              "final_gain_db": 3.559363416163026,
+              "excursion_db": 27.155626265512723,
+              "t63_ms": 463,
+              "t90_ms": 730
+            },
+            "evaluation_from_ms": 5,
+            "absolute_rms_db": 0.12279819604672727,
+            "endpoint_normalized_shape_rms_db_equivalent": 0.08524105538076397,
+            "first_200ms_shape_rms_db_equivalent": 0.02222563936606848
+          },
+          {
+            "drop_at_s": 20,
+            "measured": {
+              "start_gain_db": -17.74215232625251,
+              "final_gain_db": -5.890037707402863,
+              "excursion_db": 11.852114618849646,
+              "t63_ms": 205,
+              "t90_ms": 304
+            },
+            "predicted": {
+              "start_gain_db": -17.701810199049383,
+              "final_gain_db": -5.913342234385386,
+              "excursion_db": 11.788467964663997,
+              "t63_ms": 204,
+              "t90_ms": 302
+            },
+            "evaluation_from_ms": 5,
+            "absolute_rms_db": 0.04053164275024495,
+            "endpoint_normalized_shape_rms_db_equivalent": 0.04019866308839709,
+            "first_200ms_shape_rms_db_equivalent": 0.01956913212980452
+          }
+        ],
+        "attacks": [
+          {
+            "rise_at_s": 4,
+            "measured": {
+              "one_cycle_rms_overshoot_db": 19.789194184269604,
+              "within_1db_for_at_least_20ms_at_ms": 14,
+              "measurement_window_ms": 1.0
+            },
+            "predicted": {
+              "one_cycle_rms_overshoot_db": 20.047408396320208,
+              "within_1db_for_at_least_20ms_at_ms": 11,
+              "measurement_window_ms": 1.0
+            }
+          },
+          {
+            "rise_at_s": 16,
+            "measured": {
+              "one_cycle_rms_overshoot_db": 10.532800181056693,
+              "within_1db_for_at_least_20ms_at_ms": 13,
+              "measurement_window_ms": 1.0
+            },
+            "predicted": {
+              "one_cycle_rms_overshoot_db": 10.236627194596396,
+              "within_1db_for_at_least_20ms_at_ms": 10,
+              "measurement_window_ms": 1.0
+            }
+          }
+        ],
+        "harmonics": [
+          {
+            "input_db": -6,
+            "measured": {
+              "h2_h5_dbc": [
+                -60.816122975317185,
+                -71.29229298256159,
+                -87.39559355708009,
+                -74.74579279377367
+              ],
+              "thd2_5_percent": 0.09686562156908815,
+              "harmonic_snr_db_vs_nearby_bins": [
+                110.87060649726061,
+                49.607798483144194,
+                40.92849943069632,
+                22.486469601302417,
+                37.623158182716125
+              ]
+            },
+            "predicted": {
+              "h2_h5_dbc": [
+                -300.0,
+                -65.48797804393999,
+                -300.0,
+                -73.11723849638253
+              ],
+              "thd2_5_percent": 0.05756764765219337,
+              "harmonic_snr_db_vs_nearby_bins": [
+                270.40373571881014,
+                -33.955323576901826,
+                204.91575767487018,
+                -29.90239541159747,
+                197.28649722242764
+              ]
+            }
+          },
+          {
+            "input_db": -24,
+            "measured": {
+              "h2_h5_dbc": [
+                -70.77928913412384,
+                -75.87746151001787,
+                -88.65055556917007,
+                -78.49334344477305
+              ],
+              "thd2_5_percent": 0.035344466496491256,
+              "harmonic_snr_db_vs_nearby_bins": [
+                109.81513856102418,
+                37.80642822789768,
+                35.988280834894574,
+                22.232777628408087,
+                28.881170094553173
+              ]
+            },
+            "predicted": {
+              "h2_h5_dbc": [
+                -282.95876074151624,
+                -68.81154780455043,
+                -283.14579604208706,
+                -76.10422207262107
+              ],
+              "thd2_5_percent": 0.0394966902978273,
+              "harmonic_snr_db_vs_nearby_bins": [
+                270.0866568742279,
+                -12.87210386728832,
+                201.2751090696775,
+                -13.059139167859147,
+                193.98243480160687
+              ]
+            }
+          },
+          {
+            "input_db": -12,
+            "measured": {
+              "h2_h5_dbc": [
+                -64.61397521097959,
+                -72.2668510969129,
+                -87.43695336064066,
+                -76.26151115569793
+              ],
+              "thd2_5_percent": 0.06560591918396905,
+              "harmonic_snr_db_vs_nearby_bins": [
+                110.38190151331948,
+                43.47857508410105,
+                33.513434459136974,
+                22.15995055118844,
+                37.72859316379086
+              ]
+            },
+            "predicted": {
+              "h2_h5_dbc": [
+                -283.70890227541133,
+                -66.46107093600732,
+                -283.87892733353164,
+                -74.00352251243072
+              ],
+              "thd2_5_percent": 0.05154282764042766,
+              "harmonic_snr_db_vs_nearby_bins": [
+                270.29818867388167,
+                -13.410713601529656,
+                203.83711773787437,
+                -13.580738659649922,
+                196.29466616145095
+              ]
+            }
+          }
+        ]
+      },
+      "baseline": {
+        "role": "retrospective generalization",
+        "settled_gain_errors_db": [
+          0.03187068419706618,
+          0.028884484892888196,
+          0.03000525420079736,
+          0.021333679389060833,
+          0.013614335856338755,
+          0.021100011800726293
+        ],
+        "releases": [
+          {
+            "drop_at_s": 8,
+            "measured": {
+              "start_gain_db": -23.68722247734386,
+              "final_gain_db": 3.5293581620451393,
+              "excursion_db": 27.216580639388997,
+              "t63_ms": 466,
+              "t90_ms": 734
+            },
+            "predicted": {
+              "start_gain_db": -23.65833799245097,
+              "final_gain_db": 3.5593634162459367,
+              "excursion_db": 27.217701408696907,
+              "t63_ms": 444,
+              "t90_ms": 678
+            },
+            "evaluation_from_ms": 5,
+            "absolute_rms_db": 0.7220151207343783,
+            "endpoint_normalized_shape_rms_db_equivalent": 0.7048259342461013,
+            "first_200ms_shape_rms_db_equivalent": 0.22028041683083907
+          },
+          {
+            "drop_at_s": 20,
+            "measured": {
+              "start_gain_db": -17.74215232625251,
+              "final_gain_db": -5.890037707402863,
+              "excursion_db": 11.852114618849646,
+              "t63_ms": 205,
+              "t90_ms": 304
+            },
+            "predicted": {
+              "start_gain_db": -17.72853799039617,
+              "final_gain_db": -5.868937695602137,
+              "excursion_db": 11.859600294794033,
+              "t63_ms": 247,
+              "t90_ms": 395
+            },
+            "evaluation_from_ms": 5,
+            "absolute_rms_db": 0.6960802557629618,
+            "endpoint_normalized_shape_rms_db_equivalent": 0.7058472785392899,
+            "first_200ms_shape_rms_db_equivalent": 0.614629918306807
+          }
+        ],
+        "attacks": [
+          {
+            "rise_at_s": 4,
+            "measured": {
+              "one_cycle_rms_overshoot_db": 19.789194184269604,
+              "within_1db_for_at_least_20ms_at_ms": 14,
+              "measurement_window_ms": 1.0
+            },
+            "predicted": {
+              "one_cycle_rms_overshoot_db": 20.230407102347044,
+              "within_1db_for_at_least_20ms_at_ms": 12,
+              "measurement_window_ms": 1.0
+            }
+          },
+          {
+            "rise_at_s": 16,
+            "measured": {
+              "one_cycle_rms_overshoot_db": 10.532800181056693,
+              "within_1db_for_at_least_20ms_at_ms": 13,
+              "measurement_window_ms": 1.0
+            },
+            "predicted": {
+              "one_cycle_rms_overshoot_db": 10.333845064813758,
+              "within_1db_for_at_least_20ms_at_ms": 11,
+              "measurement_window_ms": 1.0
+            }
+          }
+        ],
+        "harmonics": [
+          {
+            "input_db": -6,
+            "measured": {
+              "h2_h5_dbc": [
+                -60.816122975317185,
+                -71.29229298256159,
+                -87.39559355708009,
+                -74.74579279377367
+              ],
+              "thd2_5_percent": 0.09686562156908815,
+              "harmonic_snr_db_vs_nearby_bins": [
+                110.87060649726061,
+                49.607798483144194,
+                40.92849943069632,
+                22.486469601302417,
+                37.623158182716125
+              ]
+            },
+            "predicted": {
+              "h2_h5_dbc": [
+                -300.0,
+                -71.9426960439617,
+                -300.0,
+                -81.90213121065244
+              ],
+              "thd2_5_percent": 0.026530577945880568,
+              "harmonic_snr_db_vs_nearby_bins": [
+                270.3416617451649,
+                -34.09735539306127,
+                198.3989657012032,
+                -29.973788261841825,
+                188.43953053451244
+              ]
+            }
+          },
+          {
+            "input_db": -24,
+            "measured": {
+              "h2_h5_dbc": [
+                -70.77928913412384,
+                -75.87746151001787,
+                -88.65055556917007,
+                -78.49334344477305
+              ],
+              "thd2_5_percent": 0.035344466496491256,
+              "harmonic_snr_db_vs_nearby_bins": [
+                109.81513856102418,
+                37.80642822789768,
+                35.988280834894574,
+                22.232777628408087,
+                28.881170094553173
+              ]
+            },
+            "predicted": {
+              "h2_h5_dbc": [
+                -282.9712318256949,
+                -71.94263115406187,
+                -283.15060736060923,
+                -81.9021295203296
+              ],
+              "thd2_5_percent": 0.026530758450639208,
+              "harmonic_snr_db_vs_nearby_bins": [
+                270.1310618012021,
+                -12.840170024492789,
+                198.18843064714025,
+                -13.019545559407161,
+                188.2289322808725
+              ]
+            }
+          },
+          {
+            "input_db": -12,
+            "measured": {
+              "h2_h5_dbc": [
+                -64.61397521097959,
+                -72.2668510969129,
+                -87.43695336064066,
+                -76.26151115569793
+              ],
+              "thd2_5_percent": 0.06560591918396905,
+              "harmonic_snr_db_vs_nearby_bins": [
+                110.38190151331948,
+                43.47857508410105,
+                33.513434459136974,
+                22.15995055118844,
+                37.72859316379086
+              ]
+            },
+            "predicted": {
+              "h2_h5_dbc": [
+                -283.7261290492089,
+                -71.94267076656008,
+                -283.87616234773014,
+                -81.90220508635518
+              ],
+              "thd2_5_percent": 0.02653062738745865,
+              "harmonic_snr_db_vs_nearby_bins": [
+                270.2714617593495,
+                -13.454667289859382,
+                198.32879099278944,
+                -13.604700588380584,
+                188.36925667299437
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "original_jump_conditional_kernel_check": {
+    "0700": {
+      "conditional_rms_db": 0.10975784021799419,
+      "predicted_t63_ms": 451,
+      "predicted_t90_ms": 709,
+      "measured": {
+        "start_gain_db": -29.827742273226633,
+        "final_gain_db": -0.18064669610564915,
+        "excursion_db": 29.647095577120982,
+        "t63_ms": 455,
+        "t90_ms": 715
+      }
+    },
+    "0500": {
+      "conditional_rms_db": 0.09197468280908888,
+      "predicted_t63_ms": 40,
+      "predicted_t90_ms": 63,
+      "measured": {
+        "start_gain_db": -27.189930605768375,
+        "final_gain_db": 1.7187252695733248,
+        "excursion_db": 28.9086558753417,
+        "t63_ms": 41,
+        "t90_ms": 65
+      }
+    }
+  },
+  "original_jump_exploratory_knob_map": {
+    "0700": {
+      "asymptotic_gain_db": 29.47792842326486,
+      "release_ms": 1196.4719869988992,
+      "fit_rms_db": 0.012382626225190834,
+      "scope": "Fit to original jump only; intermediate settings have no new-level validation."
+    },
+    "0900": {
+      "asymptotic_gain_db": 29.393343059571595,
+      "release_ms": 920.2784530733331,
+      "fit_rms_db": 0.014436585901434146,
+      "scope": "Fit to original jump only; intermediate settings have no new-level validation."
+    },
+    "1200": {
+      "asymptotic_gain_db": 28.60085673570388,
+      "release_ms": 306.83512922603114,
+      "fit_rms_db": 0.028256070115670426,
+      "scope": "Fit to original jump only; intermediate settings have no new-level validation."
+    },
+    "0300": {
+      "asymptotic_gain_db": 27.611429130545492,
+      "release_ms": 144.15229641588132,
+      "fit_rms_db": 0.04319539205289841,
+      "scope": "Fit to original jump only; intermediate settings have no new-level validation."
+    },
+    "0500": {
+      "asymptotic_gain_db": 26.950191609574702,
+      "release_ms": 97.95367167586686,
+      "fit_rms_db": 0.05051863833841389,
+      "scope": "Fit to original jump only; intermediate settings have no new-level validation."
+    }
+  },
+  "limitations": "Model family chosen after seeing crossed data. Numerical parameters use earlier 1 kHz takes only; static maps also fitted there. No new-data offset, per-drop tau, or timing fit in full-renderer scores. Intermediate Attack fits are original-data fits only. No listening validation, production C++, sample-rate generalization, or broad Sustain/Tone/Level validation."
+}

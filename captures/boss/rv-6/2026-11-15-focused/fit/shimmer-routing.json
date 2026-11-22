@@ -1,0 +1,867 @@
+{
+  "focused": {
+    "tone-0700-shimmer": {
+      "pedal": {
+        "burst": {
+          "outside_pct": 0.007830749980796291,
+          "A_to_B_error_dB": -26.17559974936393,
+          "shifted_reference_pct": 55.36422655014112
+        },
+        "stabs": {
+          "outside_pct": 0.0006159601716318013,
+          "A_to_B_error_dB": -30.348889602405805,
+          "shifted_reference_pct": 58.8210081809353
+        },
+        "cycle_error_pct": {
+          "1": [
+            1.9123068428158678,
+            0.20714788344368068
+          ]
+        },
+        "stereo_at_note": {
+          "1": {
+            "destination_pct": 0.018653468731562758,
+            "source_pct": 69.01286863701601,
+            "on_every_fifth_line_pct": 66.47695408598612
+          }
+        }
+      },
+      "current": {
+        "burst": {
+          "outside_pct": 48.98031035818587,
+          "A_to_B_error_dB": 7.417722745110812,
+          "shifted_reference_pct": 48.42772103444547
+        },
+        "stabs": {
+          "outside_pct": 48.26561495307186,
+          "A_to_B_error_dB": 7.143102188374584,
+          "shifted_reference_pct": 50.08139343624178
+        },
+        "cycle_error_pct": {
+          "1": [
+            167.4959170240314,
+            247.3410229645044
+          ]
+        }
+      },
+      "locked": {
+        "burst": {
+          "outside_pct": 42.254615303950786,
+          "A_to_B_error_dB": 7.271106341890796,
+          "shifted_reference_pct": 49.48140148137758
+        },
+        "stabs": {
+          "outside_pct": 40.765262736310895,
+          "A_to_B_error_dB": 6.771526697433331,
+          "shifted_reference_pct": 49.157941443815076
+        },
+        "cycle_error_pct": {
+          "1": [
+            0.7916315283797446,
+            0.4634075435504529
+          ]
+        }
+      }
+    },
+    "noon-shimmer": {
+      "pedal": {
+        "burst": {
+          "outside_pct": 4.909098874885994,
+          "A_to_B_error_dB": -2.7498860115512147,
+          "shifted_reference_pct": 51.0609776508874
+        },
+        "clock_estimate_Hz": [
+          1.3458160730497206,
+          1.3458161858651194
+        ],
+        "cycle_error_pct": {
+          "1": [
+            0.00030168128418047547,
+            0.00018280850166308907
+          ],
+          "2": [
+            0.045381685310575584,
+            0.023683739462908363
+          ],
+          "4": [
+            0.026734767886408748,
+            0.02047692419111099
+          ]
+        },
+        "stereo_at_note": {
+          "1": {
+            "destination_pct": 11.797509475822906,
+            "source_pct": 71.83827616649056,
+            "on_every_fifth_line_pct": 71.86127135220957
+          },
+          "2": {
+            "destination_pct": 3.908500051825859,
+            "source_pct": 57.12194956439985,
+            "on_every_fifth_line_pct": 56.211436006911136
+          },
+          "4": {
+            "destination_pct": 2.7009165940046738,
+            "source_pct": 41.35760555893607,
+            "on_every_fifth_line_pct": 68.66044726297118
+          }
+        }
+      },
+      "current": {
+        "burst": {
+          "outside_pct": 49.322402218610875,
+          "A_to_B_error_dB": 7.650484040011756,
+          "shifted_reference_pct": 49.031582078408654
+        },
+        "cycle_error_pct": {
+          "1": [
+            100.40054365229918,
+            93.82190257500042
+          ],
+          "2": [
+            264.7075571118802,
+            212.40085742502185
+          ],
+          "4": [
+            238.0990946942765,
+            190.80877816875002
+          ]
+        }
+      },
+      "locked": {
+        "burst": {
+          "outside_pct": 41.69883185220624,
+          "A_to_B_error_dB": 6.415513878914648,
+          "shifted_reference_pct": 48.654825259266474
+        },
+        "cycle_error_pct": {
+          "1": [
+            0.011419006625588108,
+            0.015570130157280756
+          ],
+          "2": [
+            0.06133435844869761,
+            0.03033223980327268
+          ],
+          "4": [
+            0.08070680474185246,
+            0.07001739310397799
+          ]
+        }
+      }
+    },
+    "tone-0500-shimmer": {
+      "pedal": {
+        "burst": {
+          "outside_pct": 1.5015328084251112,
+          "A_to_B_error_dB": -6.812776036322186,
+          "shifted_reference_pct": 52.75707177092017
+        },
+        "stabs": {
+          "outside_pct": 0.9892252938028536,
+          "A_to_B_error_dB": -9.251123930873309,
+          "shifted_reference_pct": 51.62785419211065
+        },
+        "cycle_error_pct": {
+          "1": [
+            0.0003581549360751793,
+            0.00010459121215368691
+          ],
+          "2": [
+            0.002975046863339352,
+            0.00210645509885531
+          ],
+          "4": [
+            0.011320313422330752,
+            0.03444241573485633
+          ]
+        },
+        "stereo_at_note": {
+          "1": {
+            "destination_pct": 13.72554399376085,
+            "source_pct": 72.00528424912585,
+            "on_every_fifth_line_pct": 99.39448983362318
+          },
+          "2": {
+            "destination_pct": 1.162585309027379,
+            "source_pct": 61.37720234447323,
+            "on_every_fifth_line_pct": 99.64327565446737
+          },
+          "4": {
+            "destination_pct": 0.2442103468813744,
+            "source_pct": 45.472230486727916,
+            "on_every_fifth_line_pct": 97.3309367481606
+          }
+        },
+        "guitar_tail_ripple_pct": [
+          36.961587654706186,
+          33.155184790098524
+        ]
+      },
+      "current": {
+        "burst": {
+          "outside_pct": 49.50942553030171,
+          "A_to_B_error_dB": 7.617753743096958,
+          "shifted_reference_pct": 49.025887186315984
+        },
+        "stabs": {
+          "outside_pct": 48.4926295011531,
+          "A_to_B_error_dB": 6.6190466435242445,
+          "shifted_reference_pct": 49.955020980047166
+        },
+        "cycle_error_pct": {
+          "1": [
+            71.02952491404933,
+            150.41193539048467
+          ],
+          "2": [
+            296.46703934493354,
+            273.6205896656841
+          ],
+          "4": [
+            199.8472628162416,
+            187.0372269041435
+          ]
+        },
+        "guitar_tail_ripple_pct": [
+          11.762134774886082,
+          15.819258262984292
+        ]
+      },
+      "locked": {
+        "burst": {
+          "outside_pct": 42.15597184017609,
+          "A_to_B_error_dB": 6.896413220848604,
+          "shifted_reference_pct": 49.318170493022365
+        },
+        "stabs": {
+          "outside_pct": 40.46692974568566,
+          "A_to_B_error_dB": 6.624964782780044,
+          "shifted_reference_pct": 48.346846380018036
+        },
+        "cycle_error_pct": {
+          "1": [
+            0.016463705308893423,
+            0.018302301193612876
+          ],
+          "2": [
+            0.03582382927900906,
+            0.023271039859290184
+          ],
+          "4": [
+            0.08815727009487763,
+            0.07305770328123382
+          ]
+        },
+        "guitar_tail_ripple_pct": [
+          13.539848886354195,
+          24.014048506040943
+        ]
+      }
+    },
+    "tone-0700-time-0700-shimmer": {
+      "pedal": {
+        "burst": {
+          "outside_pct": 0.0053712976364774945,
+          "A_to_B_error_dB": -30.065001037097403,
+          "shifted_reference_pct": 57.09727138623139
+        },
+        "stabs": {
+          "outside_pct": 0.0004946873974531504,
+          "A_to_B_error_dB": -33.60621224179421,
+          "shifted_reference_pct": 60.895663304660246
+        },
+        "cycle_error_pct": {
+          "1": [
+            0.0001859251487605108,
+            0.0001348659564233259
+          ]
+        },
+        "stereo_at_note": {
+          "1": {
+            "destination_pct": 0.00013102411534149228,
+            "source_pct": 10.556619543476243,
+            "on_every_fifth_line_pct": 49.96620912907696
+          }
+        }
+      }
+    },
+    "time-0700-shimmer": {
+      "pedal": {
+        "burst": {
+          "outside_pct": 5.867231983426724,
+          "A_to_B_error_dB": -1.7454278852675293,
+          "shifted_reference_pct": 54.16832951391619
+        },
+        "stabs": {
+          "outside_pct": 5.745409889718249,
+          "A_to_B_error_dB": -3.1314335672048745,
+          "shifted_reference_pct": 56.181121341399205
+        },
+        "cycle_error_pct": {
+          "1": [
+            4.7953303977415884e-05,
+            3.750485474518318e-05
+          ],
+          "2": [
+            0.0017463621650084982,
+            0.0016957977528223136
+          ],
+          "4": [
+            0.04435182748445433,
+            0.05410777791516119
+          ]
+        },
+        "stereo_at_note": {
+          "1": {
+            "destination_pct": 7.751435349376926,
+            "source_pct": 25.650697316204376,
+            "on_every_fifth_line_pct": 67.48102073843047
+          },
+          "2": {
+            "destination_pct": 1.1136573421382183,
+            "source_pct": 65.30355747774028,
+            "on_every_fifth_line_pct": 32.41878602136498
+          },
+          "4": {
+            "destination_pct": 2.519044270723883,
+            "source_pct": 53.331105791135364,
+            "on_every_fifth_line_pct": 63.53413636299184
+          }
+        },
+        "release": {
+          "window_error_pct": [
+            5.485288803661927,
+            4.695192678125282,
+            11.989839036712656
+          ],
+          "original_ripple_pct": [
+            34.36509990836648,
+            36.843090119567414
+          ],
+          "projected_ripple_pct": [
+            32.878724329986795,
+            39.92885403145266
+          ]
+        }
+      },
+      "current": {
+        "burst": {
+          "outside_pct": 48.717132043981884,
+          "A_to_B_error_dB": 7.916161184159643,
+          "shifted_reference_pct": 48.48762326438269
+        },
+        "stabs": {
+          "outside_pct": 48.164375619500255,
+          "A_to_B_error_dB": 7.453191260007838,
+          "shifted_reference_pct": 47.5512914705207
+        },
+        "cycle_error_pct": {
+          "1": [
+            65.57112090235837,
+            71.68159271294633
+          ],
+          "2": [
+            237.50470292773133,
+            244.7825784356264
+          ],
+          "4": [
+            214.73080334439928,
+            209.44948791343523
+          ]
+        },
+        "release": {
+          "window_error_pct": [
+            43.96143580120465,
+            49.88676702973364,
+            37.749708979903055
+          ],
+          "original_ripple_pct": [
+            17.134036456483276,
+            23.6523816861957
+          ],
+          "projected_ripple_pct": [
+            20.62460663159661,
+            26.35490460273083
+          ]
+        }
+      },
+      "locked": {
+        "burst": {
+          "outside_pct": 40.21121098142263,
+          "A_to_B_error_dB": 7.196617645792647,
+          "shifted_reference_pct": 49.20654994482252
+        },
+        "stabs": {
+          "outside_pct": 46.4005452426627,
+          "A_to_B_error_dB": 6.356685062157367,
+          "shifted_reference_pct": 50.949902258605
+        },
+        "cycle_error_pct": {
+          "1": [
+            2.6024087683704864e-05,
+            3.3844750654722575e-05
+          ],
+          "2": [
+            0.0005600763342420658,
+            0.0003247294549140327
+          ],
+          "4": [
+            0.019455046184912818,
+            0.01898433491936095
+          ]
+        },
+        "release": {
+          "window_error_pct": [
+            45.65519281489251,
+            45.296388558930154,
+            39.34987389915988
+          ],
+          "original_ripple_pct": [
+            24.849086168797236,
+            22.912517661695087
+          ],
+          "projected_ripple_pct": [
+            16.14310306423593,
+            21.502834636914436
+          ]
+        }
+      }
+    },
+    "tone-0500-time-0700-shimmer": {
+      "pedal": {
+        "burst": {
+          "outside_pct": 0.9292598096090777,
+          "A_to_B_error_dB": -10.231860803515247,
+          "shifted_reference_pct": 54.42308312234252
+        },
+        "stabs": {
+          "outside_pct": 0.7117078857480207,
+          "A_to_B_error_dB": -11.831252654025244,
+          "shifted_reference_pct": 61.40414245470215
+        },
+        "cycle_error_pct": {
+          "1": [
+            0.009662170978933515,
+            0.013019139787418317
+          ],
+          "2": [
+            0.1091759764436104,
+            0.10010520740973892
+          ],
+          "4": [
+            0.6344204214319418,
+            0.7298274426903952
+          ]
+        },
+        "stereo_at_note": {
+          "1": {
+            "destination_pct": 6.32821837598156,
+            "source_pct": 23.20332901448599,
+            "on_every_fifth_line_pct": 99.11521715122365
+          },
+          "2": {
+            "destination_pct": 0.05840687275228761,
+            "source_pct": 60.798771457544866,
+            "on_every_fifth_line_pct": 98.57515631548729
+          },
+          "4": {
+            "destination_pct": 0.85252388087458,
+            "source_pct": 37.818456580243556,
+            "on_every_fifth_line_pct": 97.52441058906449
+          }
+        }
+      }
+    },
+    "tone-0700-time-0500-shimmer": {
+      "pedal": {
+        "burst": {
+          "outside_pct": 0.06645717495567259,
+          "A_to_B_error_dB": -18.59406047213136,
+          "shifted_reference_pct": 52.07933702686063
+        },
+        "stabs": {
+          "outside_pct": 0.005045066111071347,
+          "A_to_B_error_dB": -23.48818835669693,
+          "shifted_reference_pct": 51.62829121178459
+        },
+        "cycle_error_pct": {
+          "1": [
+            20.283946500012647,
+            1.877427552321629
+          ]
+        },
+        "stereo_at_note": {
+          "1": {
+            "destination_pct": 0.12473761033291902,
+            "source_pct": 85.49183180057895,
+            "on_every_fifth_line_pct": 65.32345909493489
+          }
+        }
+      }
+    },
+    "time-0500-shimmer": {
+      "pedal": {
+        "burst": {
+          "outside_pct": 3.307098925199977,
+          "A_to_B_error_dB": -3.533938298405084,
+          "shifted_reference_pct": 49.72028331129543
+        },
+        "stabs": {
+          "outside_pct": 2.7397808204390244,
+          "A_to_B_error_dB": -4.893549212887896,
+          "shifted_reference_pct": 52.141456782958166
+        },
+        "cycle_error_pct": {
+          "1": [
+            0.0689549412329183,
+            0.04040757777741238
+          ],
+          "2": [
+            0.4519919343923011,
+            0.48680302128404945
+          ],
+          "4": [
+            0.1592922577667837,
+            0.1437882936902192
+          ]
+        },
+        "stereo_at_note": {
+          "1": {
+            "destination_pct": 15.352717061389386,
+            "source_pct": 60.51581779165412,
+            "on_every_fifth_line_pct": 72.61672288774086
+          },
+          "2": {
+            "destination_pct": 1.9514260036565632,
+            "source_pct": 64.21827485492705,
+            "on_every_fifth_line_pct": 75.85742914379442
+          },
+          "4": {
+            "destination_pct": 2.2259321648039583,
+            "source_pct": 48.28247130405197,
+            "on_every_fifth_line_pct": 59.34040929391676
+          }
+        }
+      }
+    },
+    "tone-0500-time-0500-shimmer": {
+      "pedal": {
+        "burst": {
+          "outside_pct": 2.0559980919934144,
+          "A_to_B_error_dB": -4.90241274656111,
+          "shifted_reference_pct": 51.051728211949765
+        },
+        "stabs": {
+          "outside_pct": 0.8430872669433428,
+          "A_to_B_error_dB": -9.783330130048066,
+          "shifted_reference_pct": 50.07626610692633
+        },
+        "cycle_error_pct": {
+          "1": [
+            0.010152995214264791,
+            0.024268012080915988
+          ],
+          "2": [
+            0.16403654268357162,
+            0.05632456440886557
+          ],
+          "4": [
+            0.1482640579895488,
+            0.3167738420439183
+          ]
+        },
+        "stereo_at_note": {
+          "1": {
+            "destination_pct": 16.50852449107499,
+            "source_pct": 64.75261811452562,
+            "on_every_fifth_line_pct": 99.76108320339657
+          },
+          "2": {
+            "destination_pct": 2.4098493054792334,
+            "source_pct": 75.40814981067093,
+            "on_every_fifth_line_pct": 99.78440211051542
+          },
+          "4": {
+            "destination_pct": 0.748479405655116,
+            "source_pct": 57.54661475869863,
+            "on_every_fifth_line_pct": 95.45991024722834
+          }
+        }
+      }
+    },
+    "time-0300-shimmer": {
+      "pedal": {
+        "burst": {
+          "outside_pct": 4.144279742360565,
+          "A_to_B_error_dB": -2.728550131164966,
+          "shifted_reference_pct": 50.53378404884577
+        },
+        "stabs": {
+          "outside_pct": 3.7170416366337053,
+          "A_to_B_error_dB": -3.2794116959709236,
+          "shifted_reference_pct": 50.009001224788115
+        },
+        "cycle_error_pct": {
+          "1": [
+            0.011059286579975578,
+            0.007555036249685183
+          ],
+          "2": [
+            0.28582052135415703,
+            0.4144136707285132
+          ],
+          "4": [
+            0.07940874186111055,
+            0.05065059928406224
+          ]
+        },
+        "guitar_tail_ripple_pct": [
+          35.63672321498562,
+          24.746740830145136
+        ]
+      },
+      "current": {
+        "burst": {
+          "outside_pct": 49.45655239601332,
+          "A_to_B_error_dB": 7.63724476047827,
+          "shifted_reference_pct": 49.28206153627414
+        },
+        "stabs": {
+          "outside_pct": 47.09501472898597,
+          "A_to_B_error_dB": 6.955857571700605,
+          "shifted_reference_pct": 49.10171050261083
+        },
+        "cycle_error_pct": {
+          "1": [
+            80.5734026076855,
+            102.96227508695654
+          ],
+          "2": [
+            198.26421494872278,
+            215.82122325327617
+          ],
+          "4": [
+            160.75791012682646,
+            182.23399103323155
+          ]
+        },
+        "guitar_tail_ripple_pct": [
+          12.196747759192585,
+          14.164650249348341
+        ]
+      },
+      "locked": {
+        "burst": {
+          "outside_pct": 46.211789798731076,
+          "A_to_B_error_dB": 7.366448479415859,
+          "shifted_reference_pct": 49.7378178186469
+        },
+        "stabs": {
+          "outside_pct": 44.69582996593191,
+          "A_to_B_error_dB": 7.491912983860207,
+          "shifted_reference_pct": 49.69730370178207
+        },
+        "cycle_error_pct": {
+          "1": [
+            0.25122121220284327,
+            0.39105570737813966
+          ],
+          "2": [
+            0.5897983333924587,
+            0.30921787196853917
+          ],
+          "4": [
+            0.33974116409787164,
+            0.3170505478122784
+          ]
+        },
+        "guitar_tail_ripple_pct": [
+          19.907865905683263,
+          22.785855619856797
+        ]
+      }
+    },
+    "noon-guitar-shimmer": {
+      "pedal": {
+        "stabs": {
+          "outside_pct": 4.420078492571853,
+          "A_to_B_error_dB": -3.0508023019352066,
+          "shifted_reference_pct": 51.152742958538504
+        },
+        "guitar_tail_ripple_pct": [
+          42.71867952045888,
+          45.12315625690611
+        ],
+        "release": {
+          "window_error_pct": [
+            5.162565359142487,
+            4.322511614924093,
+            5.21865668685076
+          ],
+          "original_ripple_pct": [
+            44.18679391836004,
+            45.6991050675048
+          ],
+          "projected_ripple_pct": [
+            46.37015983092156,
+            43.91413349931668
+          ]
+        }
+      },
+      "current": {
+        "stabs": {
+          "outside_pct": 47.18636846113234,
+          "A_to_B_error_dB": 7.295797060131735,
+          "shifted_reference_pct": 48.65248454218679
+        },
+        "guitar_tail_ripple_pct": [
+          17.407951005448343,
+          9.943589421680674
+        ],
+        "release": {
+          "window_error_pct": [
+            40.3133943402159,
+            39.416000967642475,
+            36.6470157912448
+          ],
+          "original_ripple_pct": [
+            19.301569721155857,
+            13.268098803843058
+          ],
+          "projected_ripple_pct": [
+            24.404158112321454,
+            12.823669556613332
+          ]
+        }
+      },
+      "locked": {
+        "stabs": {
+          "outside_pct": 40.53166875383261,
+          "A_to_B_error_dB": 6.436178484271573,
+          "shifted_reference_pct": 48.00888781304513
+        },
+        "guitar_tail_ripple_pct": [
+          19.671596482964457,
+          18.191695154766183
+        ],
+        "release": {
+          "window_error_pct": [
+            41.32293940145181,
+            40.51920923607111,
+            37.913343179584544
+          ],
+          "original_ripple_pct": [
+            20.771879570413965,
+            16.128415749689392
+          ],
+          "projected_ripple_pct": [
+            22.508011626894426,
+            15.513780525734266
+          ]
+        }
+      }
+    },
+    "noon-hall": {
+      "pedal": {
+        "burst": {
+          "outside_pct": 0.05685998196226242,
+          "A_to_B_error_dB": -19.477648702676692,
+          "shifted_reference_pct": 50.486802341583314
+        }
+      }
+    }
+  },
+  "older": {
+    "shimmer-tone-0082": {
+      "pitch_Hz": 82.41,
+      "first_octave_cycle_error_pct": [
+        0.07642437964978369,
+        0.5446351698264035
+      ],
+      "first_octave_stereo": {
+        "destination_pct": 5.829096974040248,
+        "source_pct": 43.053998877611384,
+        "on_every_fifth_line_pct": 87.35872841378225
+      }
+    },
+    "shimmer-tone-0165": {
+      "pitch_Hz": 164.81,
+      "first_octave_cycle_error_pct": [
+        0.23583397593282598,
+        0.24258118522743052
+      ],
+      "first_octave_stereo": {
+        "destination_pct": 2.6493241667086997,
+        "source_pct": 60.28279472055335,
+        "on_every_fifth_line_pct": 16.801595738618353
+      }
+    },
+    "shimmer-tone-0330": {
+      "pitch_Hz": 329.63,
+      "first_octave_cycle_error_pct": [
+        0.21566058136465077,
+        0.1634733474491854
+      ],
+      "first_octave_stereo": {
+        "destination_pct": 3.5274913675402804,
+        "source_pct": 54.3305286597609,
+        "on_every_fifth_line_pct": 53.1277625185941
+      }
+    },
+    "shimmer-tone-0659": {
+      "pitch_Hz": 659.26,
+      "first_octave_cycle_error_pct": [
+        0.22797435493832663,
+        0.49097748375048006
+      ],
+      "first_octave_stereo": {
+        "destination_pct": 2.422610749969292,
+        "source_pct": 38.36717000476593,
+        "on_every_fifth_line_pct": 59.60794485554768
+      }
+    },
+    "shimmer-tone-1319": {
+      "pitch_Hz": 1318.51,
+      "first_octave_cycle_error_pct": [
+        0.472851101144597,
+        0.25068840783964497
+      ],
+      "first_octave_stereo": {
+        "destination_pct": 20.60562360791804,
+        "source_pct": 43.50302418996342,
+        "on_every_fifth_line_pct": 4.818994122607875
+      }
+    },
+    "shimmer-tone-2637": {
+      "pitch_Hz": 2637.02,
+      "first_octave_cycle_error_pct": [
+        0.9772906835083918,
+        0.9972463242595899
+      ],
+      "first_octave_stereo": {
+        "destination_pct": 14.874040245330377,
+        "source_pct": 51.73305452009486,
+        "on_every_fifth_line_pct": 5.460317178159913
+      }
+    },
+    "shimmer-sine-1000": {
+      "pitch_Hz": 1000,
+      "first_octave_cycle_error_pct": [
+        0.07691635358453779,
+        0.10841411926138468
+      ],
+      "first_octave_stereo": {
+        "destination_pct": 3.506596282168906,
+        "source_pct": 48.779540637344205,
+        "on_every_fifth_line_pct": 12.982605517168526
+      }
+    }
+  },
+  "ensemble": {
+    "minimum_training_pct": 1.3141235868635615,
+    "noon-guitar-shimmer/stabs": 1.6560503409515306,
+    "again-shimmer/stabs": 2.127736365908264,
+    "level-0500-shimmer/stabs": 1.6752846649335131,
+    "level-0900-shimmer/burst": 2.5213950635702562
+  }
+}

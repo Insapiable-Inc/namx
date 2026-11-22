@@ -1,0 +1,246 @@
+
+=== 2026-10-28T16:53:12 · run tools/capture/plans/ph-3.json · tool a4be208c13b62a31b50947eda278fc2d4566921b
+
+[1/33] bypass-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -36.9 dBFS · loopback -36.6 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[2/33] bypass-noise: white noise, 10 s at -12 dB
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -26.1 dBFS · loopback -25.4 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[3/33] bypass-bursts: 1000 Hz at -30/-24/-18/-12/-8/-6/-4/-2/0/2/4 dB, 0.3 s each + 0.9 s gaps
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -9.6 dBFS · loopback -9.0 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[4/33] s4-depth-0700-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode 4 Stage · Rate 12:00 · Depth 7:00 · Res 7:00 (switch it on)
+  Pedal on, MODE 4 STAGE. Depth fully down: does the sweep stop?
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -33.6 dBFS · loopback -36.6 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[5/33] s4-depth-0700-noise: white noise, 12 s at -12 dB
+  pedal ON · Mode 4 Stage · Rate 12:00 · Depth 7:00 · Res 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -22.7 dBFS · loopback -25.4 dBFS · latency 576 samples (12.00 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[6/33] s4-res-0900-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode 4 Stage · Rate 12:00 · Depth 7:00 · Res 9:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -31.7 dBFS · loopback -36.6 dBFS · latency 576 samples (12.00 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[7/33] s4-res-1200-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode 4 Stage · Rate 12:00 · Depth 7:00 · Res 12:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -29.3 dBFS · loopback -36.6 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[8/33] s4-res-0300-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode 4 Stage · Rate 12:00 · Depth 7:00 · Res 3:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -24.3 dBFS · loopback -36.6 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: r
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -24.3 dBFS · loopback -36.6 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[9/33] s4-res-0500-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode 4 Stage · Rate 12:00 · Depth 7:00 · Res 5:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -21.6 dBFS · loopback -36.6 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[10/33] s4-bursts-res-0500: 1000 Hz at -30/-24/-18/-12/-8/-6/-4/-2/0/2/4 dB, 0.3 s each + 0.9 s gaps
+  pedal ON · Mode 4 Stage · Rate 12:00 · Depth 7:00 · Res 5:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -21.9 dBFS · loopback -9.0 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[11/33] s4-bursts: 1000 Hz at -30/-24/-18/-12/-8/-6/-4/-2/0/2/4 dB, 0.3 s each + 0.9 s gaps
+  pedal ON · Mode 4 Stage · Rate 12:00 · Depth 7:00 · Res 7:00 (changed)
+  Res back to 7:00.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -18.2 dBFS · loopback -9.0 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[12/33] s4-depth-0900: white noise, 12 s at -12 dB
+  pedal ON · Mode 4 Stage · Rate 12:00 · Depth 9:00 (changed) · Res 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -22.7 dBFS · loopback -25.4 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[13/33] s4-depth-1200: white noise, 12 s at -12 dB
+  pedal ON · Mode 4 Stage · Rate 12:00 · Depth 12:00 (changed) · Res 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -23.0 dBFS · loopback -25.4 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[14/33] s4-depth-0300: white noise, 12 s at -12 dB
+  pedal ON · Mode 4 Stage · Rate 12:00 · Depth 3:00 (changed) · Res 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -23.2 dBFS · loopback -25.4 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[15/33] s4-depth-0500: white noise, 12 s at -12 dB
+  pedal ON · Mode 4 Stage · Rate 12:00 · Depth 5:00 (changed) · Res 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -22.8 dBFS · loopback -25.4 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[16/33] s4-rate-0700: white noise, 40 s at -12 dB
+  pedal ON · Mode 4 Stage · Rate 7:00 (changed) · Depth 5:00 · Res 7:00
+  Rate 12:00 is s4-depth-0500.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -21.9 dBFS · loopback -25.4 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[17/33] s4-rate-0900: white noise, 20 s at -12 dB
+  pedal ON · Mode 4 Stage · Rate 9:00 (changed) · Depth 5:00 · Res 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -23.1 dBFS · loopback -25.4 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[18/33] s4-rate-0300: white noise, 10 s at -12 dB
+  pedal ON · Mode 4 Stage · Rate 3:00 (changed) · Depth 5:00 · Res 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -23.0 dBFS · loopback -25.4 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[19/33] s4-rate-0500: white noise, 10 s at -12 dB
+  pedal ON · Mode 4 Stage · Rate 5:00 (changed) · Depth 5:00 · Res 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -23.7 dBFS · loopback -25.4 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[20/33] s4-res-1200: white noise, 12 s at -12 dB
+  pedal ON · Mode 4 Stage · Rate 12:00 (changed) · Depth 5:00 · Res 12:00 (changed)
+  Rate back to 12:00.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.3 dBFS · loopback -25.4 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[21/33] s4-res-0500: white noise, 12 s at -12 dB
+  pedal ON · Mode 4 Stage · Rate 12:00 · Depth 5:00 · Res 5:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.0 dBFS · loopback -25.4 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[22/33] s8-depth-0500-res-0500: white noise, 12 s at -12 dB
+  pedal ON · Mode 8 Stage (changed) · Rate 12:00 · Depth 5:00 · Res 5:00
+  MODE 8 STAGE.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -25.9 dBFS · loopback -25.4 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[23/33] s8-depth-0500: white noise, 12 s at -12 dB
+  pedal ON · Mode 8 Stage · Rate 12:00 · Depth 5:00 · Res 7:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -23.8 dBFS · loopback -25.4 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[24/33] s8-depth-0700-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode 8 Stage · Rate 12:00 · Depth 7:00 (changed) · Res 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -32.9 dBFS · loopback -36.6 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[25/33] s8-depth-0700-res-0500-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode 8 Stage · Rate 12:00 · Depth 7:00 · Res 5:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -23.9 dBFS · loopback -36.6 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[26/33] s10-depth-0700-res-0500-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode 10 Stage (changed) · Rate 12:00 · Depth 7:00 · Res 5:00
+  MODE 10 STAGE.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -25.1 dBFS · loopback -36.6 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[27/33] s10-depth-0700-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode 10 Stage · Rate 12:00 · Depth 7:00 · Res 7:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -33.9 dBFS · loopback -36.6 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[28/33] s10-depth-0500: white noise, 12 s at -12 dB
+  pedal ON · Mode 10 Stage · Rate 12:00 · Depth 5:00 (changed) · Res 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -26.2 dBFS · loopback -25.4 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[29/33] s10-depth-0500-res-0500: white noise, 12 s at -12 dB
+  pedal ON · Mode 10 Stage · Rate 12:00 · Depth 5:00 · Res 5:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -24.5 dBFS · loopback -25.4 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[30/33] s12-depth-0500-res-0500: white noise, 12 s at -12 dB
+  pedal ON · Mode 12 Stage (changed) · Rate 12:00 · Depth 5:00 · Res 5:00
+  MODE 12 STAGE.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -25.1 dBFS · loopback -25.4 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[31/33] s12-depth-0500: white noise, 12 s at -12 dB
+  pedal ON · Mode 12 Stage · Rate 12:00 · Depth 5:00 · Res 7:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -24.5 dBFS · loopback -25.4 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[32/33] s12-depth-0700-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode 12 Stage · Rate 12:00 · Depth 7:00 (changed) · Res 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -33.5 dBFS · loopback -36.6 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[33/33] s12-depth-0700-res-0500-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode 12 Stage · Rate 12:00 · Depth 7:00 · Res 5:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -22.6 dBFS · loopback -36.6 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+All 33 takes are in captures/boss/ph-3/2026-10-28.

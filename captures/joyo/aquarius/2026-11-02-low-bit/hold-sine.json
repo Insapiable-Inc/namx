@@ -1,0 +1,47 @@
+{
+  "take": "hold-sine",
+  "pedal": "JOYO R-07 Aquarius (Low Bit mode, mono: Input -> Output)",
+  "bypass": false,
+  "settings": {
+    "Level": "5:00",
+    "Feedback": "7:00",
+    "Time": "12:00"
+  },
+  "note": "A held tone: the reduced sample rate from its mirror images, and any wobble.",
+  "marker_to_pedal": false,
+  "signal": {
+    "type": "sine",
+    "freq": 1031,
+    "seconds": 6,
+    "level_db": -12,
+    "tail": 4
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -20.05,
+    "loop": -24.94
+  },
+  "latency_samples": 455,
+  "latency_quality": 0.998,
+  "xruns": 0,
+  "played_sha256": "b650daf28e7df88a700cf53dd1447b5bf21dafe954a9666392f76d067d0a8d19",
+  "recorded_at": "2026-11-02T11:15:13",
+  "tool_commit": "979167bf6ba528173a9069fc329ffde098383af4-dirty",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX4",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Scarlett 8i6 3rd gen; Pro Audio; analogue outputs 3/4 from PCM 3/4; out 3 -> Aquarius Input, Output -> input 2; out 4 -> input 5 loopback; Input 2 INST, AIR off, pad ON, gain fully counter-clockwise. Adapter power (9 V, centre negative). Reference/calibration carried forward from the 2026-10-26 rig. MODE on Low Bit, looper off, no tap tempo."
+  }
+}

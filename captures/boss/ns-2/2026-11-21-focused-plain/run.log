@@ -1,0 +1,110 @@
+
+=== 2026-11-21T16:14:09 · run tools/capture/plans/ns-2-focused.json · tool 7a49ecb6d9caa19c1327cfe1db8c236f0a96bd7f
+This plan plays a probe on the loopback output: that cable goes to the pedal, not back to the interface.
+
+[1/13] bypass-probe: 2 signals, 6 s: silence, 2 s + 0 s; 1000 Hz sine, 3 s + 1 s
+  pedal OFF (bypassed)
+  The pedal off (its CHECK light off): the probe's reference. Cabling for the whole session: interface out 3 to INPUT; unplug the loopback cable from interface input 5 and plug that end into the pedal's RETURN (the other end stays in interface out 4); nothing in SEND; OUTPUT to interface input 2; the 9 V adapter. You will hear a steady three-note tone: that is the probe. With the pedal on it pumps as the gate works.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.9 dBFS · loopback -13.9 dBFS · latency 453 samples (9.44 ms) · xruns 0
+  PROBLEM: the marker wasn't found clearly in the loopback (0.19)
+  Enter = keep, r = redo: (Enter)
+
+[2/13] threshold-1200-decay-0700-tones: 17 signals, 72 s: silence, 2 s + 0 s; 82 Hz at -74.7/-72.7/-70.7/-68.7/-66.7/-64.7/-62.7/-60.7/-58.7/-56.7/-54.7 dB, 0.3 s each + 1 s; 220 Hz at -74.7/-72.7/-70.7/-68.7/-66.7/-64.7/-62.7/-60.7/-58.7/-56.7/-54.7 dB, 0.3 s each + 1 s; 660 …
+  pedal ON · Threshold 12:00 · Decay 7:00 · Mode REDUCTION (switch it on)
+  The pedal on (its CHECK light lit). Mode REDUCTION. Threshold 12:00, Decay fully down.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.0 dBFS · loopback -13.0 dBFS · latency 448 samples (9.33 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[3/13] threshold-1200-decay-0700-guitar: 4 signals, 68 s: captures/di/stabs.wav, 13.0 s + 1.5 s; captures/di/funk.wav, 12.0 s + 1.5 s; captures/di/notes.wav from 48 s, 22.0 s + 1.5 s; captures/di/dynamics.wav, 15.0 s + 1.5 s
+  pedal ON · Threshold 12:00 · Decay 7:00 · Mode REDUCTION
+  Leave every control in place: the guitar at the same setting.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.3 dBFS · loopback -19.3 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[4/13] threshold-1200-decay-1200-tones: 17 signals, 90 s: silence, 2 s + 0 s; 82 Hz at -74.7/-72.7/-70.7/-68.7/-66.7/-64.7/-62.7/-60.7/-58.7/-56.7/-54.7 dB, 0.3 s each + 1.5 s; 220 Hz at -74.7/-72.7/-70.7/-68.7/-66.7/-64.7/-62.7/-60.7/-58.7/-56.7/-54.7 dB, 0.3 s each + 1.5 s; …
+  pedal ON · Threshold 12:00 · Decay 12:00 (changed) · Mode REDUCTION
+  Decay to 12:00.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.0 dBFS · loopback -13.0 dBFS · latency 576 samples (12.00 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[5/13] threshold-1200-decay-1200-guitar: 4 signals, 68 s: captures/di/stabs.wav, 13.0 s + 1.5 s; captures/di/funk.wav, 12.0 s + 1.5 s; captures/di/notes.wav from 48 s, 22.0 s + 1.5 s; captures/di/dynamics.wav, 15.0 s + 1.5 s
+  pedal ON · Threshold 12:00 · Decay 12:00 · Mode REDUCTION
+  Leave every control in place: the guitar at the same setting.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.3 dBFS · loopback -19.3 dBFS · latency 447 samples (9.31 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[6/13] threshold-0500-decay-1200-tones: 17 signals, 79 s: silence, 2 s + 0 s; 82 Hz at -35.3/-33.3/-31.3/-29.3/-27.3/-25.3/-23.3/-21.3/-19.3/-17.3/-15.3 dB, 0.3 s each + 1.5 s; 220 Hz at -35.3/-33.3/-31.3/-29.3/-27.3/-25.3/-23.3/-21.3/-19.3/-17.3/-15.3 dB, 0.3 s each + 1.5 s; …
+  pedal ON · Threshold 5:00 (changed) · Decay 12:00 · Mode REDUCTION
+  Threshold fully up.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.1 dBFS · loopback -13.1 dBFS · latency 582 samples (12.12 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[7/13] threshold-0500-decay-1200-guitar: 4 signals, 68 s: captures/di/stabs.wav, 13.0 s + 1.5 s; captures/di/funk.wav, 12.0 s + 1.5 s; captures/di/notes.wav from 48 s, 22.0 s + 1.5 s; captures/di/dynamics.wav, 15.0 s + 1.5 s
+  pedal ON · Threshold 5:00 · Decay 12:00 · Mode REDUCTION
+  Leave every control in place: the guitar at the same setting.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.3 dBFS · loopback -19.3 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[8/13] threshold-0300-decay-1200-tones: 17 signals, 85 s: silence, 2 s + 0 s; 82 Hz at -57.4/-55.4/-53.4/-51.4/-49.4/-47.4/-45.4/-43.4/-41.4/-39.4/-37.4 dB, 0.3 s each + 1.5 s; 220 Hz at -57.4/-55.4/-53.4/-51.4/-49.4/-47.4/-45.4/-43.4/-41.4/-39.4/-37.4 dB, 0.3 s each + 1.5 s; …
+  pedal ON · Threshold 3:00 (changed) · Decay 12:00 · Mode REDUCTION
+  Threshold back to 3:00 (pointer horizontal).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.1 dBFS · loopback -13.1 dBFS · latency 576 samples (12.00 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[9/13] threshold-0300-decay-1200-guitar: 4 signals, 68 s: captures/di/stabs.wav, 13.0 s + 1.5 s; captures/di/funk.wav, 12.0 s + 1.5 s; captures/di/notes.wav from 48 s, 22.0 s + 1.5 s; captures/di/dynamics.wav, 15.0 s + 1.5 s
+  pedal ON · Threshold 3:00 · Decay 12:00 · Mode REDUCTION
+  Leave every control in place: the guitar at the same setting.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.3 dBFS · loopback -19.3 dBFS · latency 576 samples (12.00 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[10/13] threshold-0300-decay-0700-tones: 17 signals, 67 s: silence, 2 s + 0 s; 82 Hz at -57.4/-55.4/-53.4/-51.4/-49.4/-47.4/-45.4/-43.4/-41.4/-39.4/-37.4 dB, 0.3 s each + 1 s; 220 Hz at -57.4/-55.4/-53.4/-51.4/-49.4/-47.4/-45.4/-43.4/-41.4/-39.4/-37.4 dB, 0.3 s each + 1 s; 660 …
+  pedal ON · Threshold 3:00 · Decay 7:00 (changed) · Mode REDUCTION
+  Decay fully down.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.0 dBFS · loopback -13.0 dBFS · latency 448 samples (9.33 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[11/13] threshold-0300-decay-0700-guitar: 4 signals, 68 s: captures/di/stabs.wav, 13.0 s + 1.5 s; captures/di/funk.wav, 12.0 s + 1.5 s; captures/di/notes.wav from 48 s, 22.0 s + 1.5 s; captures/di/dynamics.wav, 15.0 s + 1.5 s
+  pedal ON · Threshold 3:00 · Decay 7:00 · Mode REDUCTION
+  Leave every control in place: the guitar at the same setting.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.3 dBFS · loopback -19.3 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[12/13] threshold-0300-decay-0500-tones: 17 signals, 111 s: silence, 2 s + 0 s; 82 Hz at -57.4/-55.4/-53.4/-51.4/-49.4/-47.4/-45.4/-43.4/-41.4/-39.4/-37.4 dB, 0.3 s each + 3 s; 220 Hz at -57.4/-55.4/-53.4/-51.4/-49.4/-47.4/-45.4/-43.4/-41.4/-39.4/-37.4 dB, 0.3 s each + 3 s; 660…
+  pedal ON · Threshold 3:00 · Decay 5:00 (changed) · Mode REDUCTION
+  Decay fully up.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.0 dBFS · loopback -13.0 dBFS · latency 454 samples (9.46 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[13/13] threshold-0300-decay-0500-guitar: 4 signals, 68 s: captures/di/stabs.wav, 13.0 s + 1.5 s; captures/di/funk.wav, 12.0 s + 1.5 s; captures/di/notes.wav from 48 s, 22.0 s + 1.5 s; captures/di/dynamics.wav, 15.0 s + 1.5 s
+  pedal ON · Threshold 3:00 · Decay 5:00 · Mode REDUCTION
+  Leave every control in place: the guitar at the same setting.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.3 dBFS · loopback -19.3 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+All 13 takes are in captures/boss/ns-2/2026-11-21-focused.

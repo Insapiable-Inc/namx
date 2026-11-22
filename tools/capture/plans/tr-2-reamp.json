@@ -1,0 +1,192 @@
+{
+  "pedal": "Boss TR-2 Tremolo — reamps of the guitar DI dataset (mono: Output A)",
+  "comment": "The guitar DI dataset (captures/di/: noise, notes, dynamics, chords, chugs, funk, stabs, lead, neck; see tools/capture/README.md, Reamp takes) through the pedal: the main setting with every segment, the extra settings with the segments that show them. For the by-ear A/B and the numbers against NAM-X's model. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise; 9:00 and 3:00 pointer horizontal. Takes ordered for the fewest knob turns.",
+  "quiet_dbfs": -60,
+  "knobs": [
+    "Rate",
+    "Wave",
+    "Depth"
+  ],
+  "takes": [
+    {
+      "name": "bypass-dynamics",
+      "bypass": true,
+      "signal": {
+        "type": "file",
+        "path": "captures/di/dynamics.wav",
+        "tail": 1.0
+      },
+      "note": "Effect off: the bypass reference. Output A on input 2."
+    },
+    {
+      "name": "1200-notes",
+      "settings": {
+        "Rate": "12:00",
+        "Wave": "12:00",
+        "Depth": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/notes.wav",
+        "tail": 1.0
+      },
+      "note": "Effect on."
+    },
+    {
+      "name": "1200-dynamics",
+      "settings": {
+        "Rate": "12:00",
+        "Wave": "12:00",
+        "Depth": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/dynamics.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "1200-chords",
+      "settings": {
+        "Rate": "12:00",
+        "Wave": "12:00",
+        "Depth": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "1200-chugs",
+      "settings": {
+        "Rate": "12:00",
+        "Wave": "12:00",
+        "Depth": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chugs.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "1200-funk",
+      "settings": {
+        "Rate": "12:00",
+        "Wave": "12:00",
+        "Depth": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "1200-stabs",
+      "settings": {
+        "Rate": "12:00",
+        "Wave": "12:00",
+        "Depth": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "1200-lead",
+      "settings": {
+        "Rate": "12:00",
+        "Wave": "12:00",
+        "Depth": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/lead.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "1200-neck",
+      "settings": {
+        "Rate": "12:00",
+        "Wave": "12:00",
+        "Depth": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/neck.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "1200-noise",
+      "settings": {
+        "Rate": "12:00",
+        "Wave": "12:00",
+        "Depth": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/noise.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "rate-0300-wave-0700-depth-0500-chords",
+      "settings": {
+        "Rate": "3:00",
+        "Wave": "7:00",
+        "Depth": "5:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "rate-0300-wave-0700-depth-0500-lead",
+      "settings": {
+        "Rate": "3:00",
+        "Wave": "7:00",
+        "Depth": "5:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/lead.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "rate-0900-wave-0500-depth-0300-chords",
+      "settings": {
+        "Rate": "9:00",
+        "Wave": "5:00",
+        "Depth": "3:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "rate-0900-wave-0500-depth-0300-neck",
+      "settings": {
+        "Rate": "9:00",
+        "Wave": "5:00",
+        "Depth": "3:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/neck.wav",
+        "tail": 1.0
+      }
+    }
+  ]
+}

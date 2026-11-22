@@ -1,0 +1,262 @@
+{
+  "pedal": "Boss GE-7 Equalizer — reamps of the guitar DI dataset (mono: Output A)",
+  "comment": "The guitar DI dataset (captures/di/: noise, notes, dynamics, chords, chugs, funk, stabs, lead, neck; see tools/capture/README.md, Reamp takes) through the pedal: the main setting with every segment, the extra settings with the segments that show them. For the by-ear A/B and the numbers against NAM-X's model. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise; 9:00 and 3:00 pointer horizontal. Takes ordered for the fewest knob turns.",
+  "quiet_dbfs": -60,
+  "knobs": [
+    "100 Hz",
+    "200 Hz",
+    "400 Hz",
+    "800 Hz",
+    "1.6 kHz",
+    "3.2 kHz",
+    "6.4 kHz",
+    "Level"
+  ],
+  "takes": [
+    {
+      "name": "bypass-dynamics",
+      "bypass": true,
+      "signal": {
+        "type": "file",
+        "path": "captures/di/dynamics.wav",
+        "tail": 1.0
+      },
+      "note": "Effect off: the bypass reference. Output A on input 2."
+    },
+    {
+      "name": "mid-boost-notes",
+      "settings": {
+        "100 Hz": "-5",
+        "200 Hz": "0",
+        "400 Hz": "+5",
+        "800 Hz": "+10",
+        "1.6 kHz": "+5",
+        "3.2 kHz": "0",
+        "6.4 kHz": "-5",
+        "Level": "0"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/notes.wav",
+        "tail": 1.0
+      },
+      "note": "Effect on. Sliders on their printed marks."
+    },
+    {
+      "name": "mid-boost-dynamics",
+      "settings": {
+        "100 Hz": "-5",
+        "200 Hz": "0",
+        "400 Hz": "+5",
+        "800 Hz": "+10",
+        "1.6 kHz": "+5",
+        "3.2 kHz": "0",
+        "6.4 kHz": "-5",
+        "Level": "0"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/dynamics.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "mid-boost-chords",
+      "settings": {
+        "100 Hz": "-5",
+        "200 Hz": "0",
+        "400 Hz": "+5",
+        "800 Hz": "+10",
+        "1.6 kHz": "+5",
+        "3.2 kHz": "0",
+        "6.4 kHz": "-5",
+        "Level": "0"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "mid-boost-chugs",
+      "settings": {
+        "100 Hz": "-5",
+        "200 Hz": "0",
+        "400 Hz": "+5",
+        "800 Hz": "+10",
+        "1.6 kHz": "+5",
+        "3.2 kHz": "0",
+        "6.4 kHz": "-5",
+        "Level": "0"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chugs.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "mid-boost-funk",
+      "settings": {
+        "100 Hz": "-5",
+        "200 Hz": "0",
+        "400 Hz": "+5",
+        "800 Hz": "+10",
+        "1.6 kHz": "+5",
+        "3.2 kHz": "0",
+        "6.4 kHz": "-5",
+        "Level": "0"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "mid-boost-stabs",
+      "settings": {
+        "100 Hz": "-5",
+        "200 Hz": "0",
+        "400 Hz": "+5",
+        "800 Hz": "+10",
+        "1.6 kHz": "+5",
+        "3.2 kHz": "0",
+        "6.4 kHz": "-5",
+        "Level": "0"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "mid-boost-lead",
+      "settings": {
+        "100 Hz": "-5",
+        "200 Hz": "0",
+        "400 Hz": "+5",
+        "800 Hz": "+10",
+        "1.6 kHz": "+5",
+        "3.2 kHz": "0",
+        "6.4 kHz": "-5",
+        "Level": "0"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/lead.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "mid-boost-neck",
+      "settings": {
+        "100 Hz": "-5",
+        "200 Hz": "0",
+        "400 Hz": "+5",
+        "800 Hz": "+10",
+        "1.6 kHz": "+5",
+        "3.2 kHz": "0",
+        "6.4 kHz": "-5",
+        "Level": "0"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/neck.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "mid-boost-noise",
+      "settings": {
+        "100 Hz": "-5",
+        "200 Hz": "0",
+        "400 Hz": "+5",
+        "800 Hz": "+10",
+        "1.6 kHz": "+5",
+        "3.2 kHz": "0",
+        "6.4 kHz": "-5",
+        "Level": "0"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/noise.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "lead-level-lead",
+      "settings": {
+        "100 Hz": "0",
+        "200 Hz": "0",
+        "400 Hz": "+5",
+        "800 Hz": "+5",
+        "1.6 kHz": "+5",
+        "3.2 kHz": "0",
+        "6.4 kHz": "0",
+        "Level": "+10"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/lead.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "lead-level-chugs",
+      "settings": {
+        "100 Hz": "0",
+        "200 Hz": "0",
+        "400 Hz": "+5",
+        "800 Hz": "+5",
+        "1.6 kHz": "+5",
+        "3.2 kHz": "0",
+        "6.4 kHz": "0",
+        "Level": "+10"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chugs.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "scoop-chords",
+      "settings": {
+        "100 Hz": "+5",
+        "200 Hz": "+5",
+        "400 Hz": "-5",
+        "800 Hz": "-10",
+        "1.6 kHz": "-5",
+        "3.2 kHz": "+5",
+        "6.4 kHz": "+5",
+        "Level": "0"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "scoop-chugs",
+      "settings": {
+        "100 Hz": "+5",
+        "200 Hz": "+5",
+        "400 Hz": "-5",
+        "800 Hz": "-10",
+        "1.6 kHz": "-5",
+        "3.2 kHz": "+5",
+        "6.4 kHz": "+5",
+        "Level": "0"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chugs.wav",
+        "tail": 1.0
+      }
+    }
+  ]
+}

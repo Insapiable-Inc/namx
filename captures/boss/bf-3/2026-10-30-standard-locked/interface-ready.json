@@ -1,0 +1,158 @@
+{
+  "verified_at": "2026-10-30T13:23:28.536032",
+  "profile": "pro-audio",
+  "rate": 48000,
+  "blocksize": 128,
+  "alsa_control_values": {
+    "5": "0",
+    "12": "127",
+    "13": "off",
+    "14": "127",
+    "15": "off",
+    "17": "1",
+    "19": "on",
+    "21": "off",
+    "26": "19",
+    "27": "20",
+    "39": "2",
+    "42": "5"
+  },
+  "pipewire_nodes": [
+    {
+      "kind": "sinks",
+      "name": "alsa_output.usb-Focusrite_Scarlett_8i6_USB_SERIAL-00.pro-output-0",
+      "mute": false,
+      "volume": {
+        "aux0": {
+          "value": 65536,
+          "value_percent": "100%",
+          "db": "0.00 dB"
+        },
+        "aux1": {
+          "value": 65536,
+          "value_percent": "100%",
+          "db": "0.00 dB"
+        },
+        "aux2": {
+          "value": 65536,
+          "value_percent": "100%",
+          "db": "0.00 dB"
+        },
+        "aux3": {
+          "value": 65536,
+          "value_percent": "100%",
+          "db": "0.00 dB"
+        },
+        "aux4": {
+          "value": 65536,
+          "value_percent": "100%",
+          "db": "0.00 dB"
+        },
+        "aux5": {
+          "value": 65536,
+          "value_percent": "100%",
+          "db": "0.00 dB"
+        }
+      },
+      "sample_specification": "s32le 6ch 48000Hz"
+    },
+    {
+      "kind": "sources",
+      "name": "alsa_output.usb-Focusrite_Scarlett_8i6_USB_SERIAL-00.pro-output-0.monitor",
+      "mute": false,
+      "volume": {
+        "aux0": {
+          "value": 65536,
+          "value_percent": "100%",
+          "db": "0.00 dB"
+        },
+        "aux1": {
+          "value": 65536,
+          "value_percent": "100%",
+          "db": "0.00 dB"
+        },
+        "aux2": {
+          "value": 65536,
+          "value_percent": "100%",
+          "db": "0.00 dB"
+        },
+        "aux3": {
+          "value": 65536,
+          "value_percent": "100%",
+          "db": "0.00 dB"
+        },
+        "aux4": {
+          "value": 65536,
+          "value_percent": "100%",
+          "db": "0.00 dB"
+        },
+        "aux5": {
+          "value": 65536,
+          "value_percent": "100%",
+          "db": "0.00 dB"
+        }
+      },
+      "sample_specification": "s32le 6ch 48000Hz"
+    },
+    {
+      "kind": "sources",
+      "name": "alsa_input.usb-Focusrite_Scarlett_8i6_USB_SERIAL-00.pro-input-0",
+      "mute": false,
+      "volume": {
+        "aux0": {
+          "value": 65536,
+          "value_percent": "100%",
+          "db": "0.00 dB"
+        },
+        "aux1": {
+          "value": 65536,
+          "value_percent": "100%",
+          "db": "0.00 dB"
+        },
+        "aux2": {
+          "value": 65536,
+          "value_percent": "100%",
+          "db": "0.00 dB"
+        },
+        "aux3": {
+          "value": 65536,
+          "value_percent": "100%",
+          "db": "0.00 dB"
+        },
+        "aux4": {
+          "value": 65536,
+          "value_percent": "100%",
+          "db": "0.00 dB"
+        },
+        "aux5": {
+          "value": 65536,
+          "value_percent": "100%",
+          "db": "0.00 dB"
+        },
+        "aux6": {
+          "value": 65536,
+          "value_percent": "100%",
+          "db": "0.00 dB"
+        },
+        "aux7": {
+          "value": 65536,
+          "value_percent": "100%",
+          "db": "0.00 dB"
+        },
+        "aux8": {
+          "value": 65536,
+          "value_percent": "100%",
+          "db": "0.00 dB"
+        },
+        "aux9": {
+          "value": 65536,
+          "value_percent": "100%",
+          "db": "0.00 dB"
+        }
+      },
+      "sample_specification": "s32le 10ch 48000Hz"
+    }
+  ],
+  "physical_input_gain": "Not software-readable; user must set input 2 gain fully counter-clockwise.",
+  "calibration": "Existing reference retained; no new audio calibration performed."
+}

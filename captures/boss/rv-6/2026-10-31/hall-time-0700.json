@@ -1,0 +1,51 @@
+{
+  "take": "hall-time-0700",
+  "pedal": "Boss RV-6 Reverb (stereo: Input A -> Outputs A and B; Input B and EXP empty)",
+  "bypass": false,
+  "settings": {
+    "Mode": "Hall",
+    "Level": "12:00",
+    "Tone": "12:00",
+    "Time": "7:00"
+  },
+  "note": "Time fully down.",
+  "signal": {
+    "type": "noise-steps",
+    "levels_db": [
+      -12
+    ],
+    "step_seconds": 0.05,
+    "seed": 3,
+    "tail": 4
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -24.3,
+    "loop": -24.24,
+    "pedal_b": -24.32
+  },
+  "latency_samples": 577,
+  "latency_quality": 0.998,
+  "xruns": 0,
+  "played_sha256": "d213f64104c56d636598a4fe646a1f623d1371ebd99fa6d6af5b866b2d791766",
+  "recorded_at": "2026-10-31T16:23:40",
+  "tool_commit": "979167bf6ba528173a9069fc329ffde098383af4-dirty",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX4",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Scarlett 8i6 3rd gen; Pro Audio; analogue outputs 3/4 from PCM 3/4; out 3 -> RV-6 Input A, Output A -> input 2, Output B -> input 1; out 4 -> input 5 loopback; Input B and EXP empty; inputs 1 and 2 INST, AIR off, pad ON, gain fully counter-clockwise. Adapter power. Reference/calibration carried forward from the 2026-10-26 rig (input 2); input 1 uncalibrated (compare on the bypass takes).",
+    "pedal_in_b": "Scarlett 8i6 USB Pro:capture_AUX0"
+  }
+}

@@ -1,0 +1,241 @@
+
+=== 2026-10-31T17:15:05 · run tools/capture/plans/rv-6-followup.json · tool 979167bf6ba528173a9069fc329ffde098383af4-dirty
+
+[1/31] bypass-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal OFF (bypassed)
+  Pedal OFF. Output A -> input 2, Output B -> input 1 (as on 2026-10-31). The new session's dry reference.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -36.8 dBFS · B -36.8 dBFS · loopback -36.6 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  PROBLEM: the recording slipped +48 samples between 0.0 and 8.5 s into the take (no xrun reported): redo it
+  Enter = keep, r = redo: (Enter)
+
+[2/31] modulate-sine-1000: 1000 Hz sine, 10 s at -24 dB
+  pedal ON · Mode Modulate · Level 5:00 · Tone 12:00 · Time 12:00 (switch it on)
+  Pedal ON, MODE MODULATE. Level fully UP (the wet 12 dB louder against the dry), Tone and Time at 12:00. A held 1 kHz tone: the modulation's rate and depth.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -18.9 dBFS · B -19.6 dBFS · loopback -36.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[3/31] modulate-sine-250: 250 Hz sine, 10 s at -24 dB
+  pedal ON · Mode Modulate · Level 5:00 · Tone 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -20.4 dBFS · B -20.2 dBFS · loopback -36.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[4/31] modulate-time-0900: white noise at -12 dB, 0.05 s each
+  pedal ON · Mode Modulate · Level 12:00 (changed) · Tone 12:00 · Time 9:00 (changed)
+  Level back to 12:00.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -24.3 dBFS · B -24.1 dBFS · loopback -24.2 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[5/31] modulate-time-0300: white noise at -12 dB, 0.05 s each
+  pedal ON · Mode Modulate · Level 12:00 · Tone 12:00 · Time 3:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -24.3 dBFS · B -23.7 dBFS · loopback -24.2 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[6/31] spring-sweep-time-0300: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode Spring (changed) · Level 12:00 · Tone 12:00 · Time 3:00
+  MODE SPRING. Level and Tone at 12:00. Sweeps at four Time positions: the whole decay per band and Time's law.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -33.9 dBFS · B -34.5 dBFS · loopback -36.6 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[7/31] spring-sweep-time-0500: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode Spring · Level 12:00 · Tone 12:00 · Time 5:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -34.0 dBFS · B -34.6 dBFS · loopback -36.6 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[8/31] spring-sweep-time-0900: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode Spring · Level 12:00 · Tone 12:00 · Time 9:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -33.9 dBFS · B -33.7 dBFS · loopback -36.6 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[9/31] spring-sweep-time-0700: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode Spring · Level 12:00 · Tone 12:00 · Time 7:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -33.9 dBFS · B -33.7 dBFS · loopback -36.6 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[10/31] plate-sweep-time-0700: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode Plate (changed) · Level 12:00 · Tone 12:00 · Time 7:00
+  MODE PLATE. Level and Tone at 12:00. Sweeps at four Time positions: the whole decay per band and Time's law.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -33.5 dBFS · B -33.0 dBFS · loopback -36.6 dBFS · latency 582 samples (12.12 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[11/31] plate-sweep-time-0900: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode Plate · Level 12:00 · Tone 12:00 · Time 9:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -33.4 dBFS · B -32.9 dBFS · loopback -36.6 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[12/31] plate-sweep-time-0300: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode Plate · Level 12:00 · Tone 12:00 · Time 3:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -31.7 dBFS · B -31.1 dBFS · loopback -36.6 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[13/31] plate-sweep-time-0500: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode Plate · Level 12:00 · Tone 12:00 · Time 5:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -31.8 dBFS · B -31.0 dBFS · loopback -36.6 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[14/31] hall-sweep-time-0500: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode Hall (changed) · Level 12:00 · Tone 12:00 · Time 5:00
+  MODE HALL. Level and Tone at 12:00. Sweeps at four Time positions: the whole decay per band and Time's law.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -32.6 dBFS · B -32.6 dBFS · loopback -36.6 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[15/31] hall-sweep-time-0300: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode Hall · Level 12:00 · Tone 12:00 · Time 3:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -32.6 dBFS · B -32.5 dBFS · loopback -36.6 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  PROBLEM: the recording slipped +48 samples between 0.0 and 8.5 s into the take (no xrun reported): redo it
+  Enter = keep, r = redo: (Enter)
+
+[16/31] hall-sweep-time-0900: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode Hall · Level 12:00 · Tone 12:00 · Time 9:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -33.9 dBFS · B -33.1 dBFS · loopback -36.6 dBFS · latency 576 samples (12.00 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[17/31] hall-sweep-time-0700: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode Hall · Level 12:00 · Tone 12:00 · Time 7:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -33.9 dBFS · B -33.1 dBFS · loopback -36.6 dBFS · latency 454 samples (9.46 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[18/31] hall-sweep-tone-0900: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode Hall · Level 12:00 · Tone 9:00 (changed) · Time 12:00 (changed)
+  Time back to 12:00. Tone at four positions: its filter over the whole band and its law.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -32.0 dBFS · B -32.3 dBFS · loopback -36.6 dBFS · latency 454 samples (9.46 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[19/31] hall-sweep-tone-0700: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode Hall · Level 12:00 · Tone 7:00 (changed) · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -31.6 dBFS · B -31.9 dBFS · loopback -36.6 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  PROBLEM: the recording slipped +47 samples between 0.0 and 8.5 s into the take (no xrun reported): redo it
+  Enter = keep, r = redo: (Enter)
+
+[20/31] hall-sweep-tone-0300: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode Hall · Level 12:00 · Tone 3:00 (changed) · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -32.7 dBFS · B -32.5 dBFS · loopback -36.6 dBFS · latency 502 samples (10.46 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[21/31] hall-sweep-tone-0500: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode Hall · Level 12:00 · Tone 5:00 (changed) · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -31.6 dBFS · B -31.6 dBFS · loopback -36.6 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[22/31] hall-sweep-level-0900: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode Hall · Level 9:00 (changed) · Tone 12:00 (changed) · Time 12:00
+  Tone back to 12:00. Level at 9:00 and 3:00: its law.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -33.2 dBFS · B -33.1 dBFS · loopback -36.6 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: r
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -36.2 dBFS · B -35.9 dBFS · loopback -36.6 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[23/31] hall-sweep-level-0300: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode Hall · Level 3:00 (changed) · Tone 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -28.8 dBFS · B -29.4 dBFS · loopback -36.6 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[24/31] hall-sine-1000: 1000 Hz sine, 10 s at -24 dB
+  pedal ON · Mode Hall · Level 5:00 (changed) · Tone 12:00 · Time 12:00
+  Level fully UP. A held 1 kHz tone in a static mode: the reference for Modulate's and Shimmer's.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -25.9 dBFS · B -26.2 dBFS · loopback -36.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[25/31] room-sweep-time-0900: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode Room (changed) · Level 12:00 (changed) · Tone 12:00 · Time 9:00 (changed)
+  MODE ROOM. Level and Tone at 12:00. Sweeps at four Time positions: the whole decay per band and Time's law.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -33.0 dBFS · B -31.7 dBFS · loopback -36.6 dBFS · latency 631 samples (13.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[26/31] room-sweep-time-0700: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode Room · Level 12:00 · Tone 12:00 · Time 7:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -33.0 dBFS · B -31.7 dBFS · loopback -36.4 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  PROBLEM: the recording slipped +47 samples between 8.5 and 9.0 s into the take (no xrun reported): redo it
+  Enter = keep, r = redo: (Enter)
+
+[27/31] room-sweep-time-0300: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode Room · Level 12:00 · Tone 12:00 · Time 3:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -31.8 dBFS · B -31.7 dBFS · loopback -36.6 dBFS · latency 497 samples (10.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[28/31] room-sweep-time-0500: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · Mode Room · Level 12:00 · Tone 12:00 · Time 5:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -31.1 dBFS · B -30.7 dBFS · loopback -36.6 dBFS · latency 497 samples (10.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[29/31] shimmer-time-0300: white noise at -12 dB, 0.05 s each
+  pedal ON · Mode Shimmer (changed) · Level 12:00 · Tone 12:00 · Time 3:00 (changed)
+  MODE SHIMMER. Level and Tone at 12:00 (Level back down from 5:00).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -25.3 dBFS · B -23.1 dBFS · loopback -24.2 dBFS · latency 497 samples (10.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[30/31] shimmer-time-0900: white noise at -12 dB, 0.05 s each
+  pedal ON · Mode Shimmer · Level 12:00 · Tone 12:00 · Time 9:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -24.6 dBFS · B -24.2 dBFS · loopback -24.2 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[31/31] shimmer-sine-1000: 1000 Hz sine, 10 s at -24 dB
+  pedal ON · Mode Shimmer · Level 5:00 (changed) · Tone 12:00 · Time 12:00 (changed)
+  Time back to 12:00, Level fully UP. A held 1 kHz tone: the octaves' build-up and steady levels.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -21.9 dBFS · B -21.5 dBFS · loopback -36.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+All 31 takes are in captures/boss/rv-6/2026-10-31-followup.

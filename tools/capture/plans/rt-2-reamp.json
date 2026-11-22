@@ -1,0 +1,336 @@
+{
+  "pedal": "Boss RT-2 Rotary Ensemble — reamps of the guitar DI dataset (stereo: Output A and B)",
+  "comment": "The guitar DI dataset (captures/di/: noise, notes, dynamics, chords, chugs, funk, stabs, lead, neck; see tools/capture/README.md, Reamp takes) through the pedal: the main setting with every segment, the extra settings with the segments that show them. For the by-ear A/B and the numbers against NAM-X's model. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise; 9:00 and 3:00 pointer horizontal. Takes ordered for the fewest knob turns.",
+  "quiet_dbfs": -60,
+  "outputs_differ": "the horn is off (Balance at 7:00): the Drive Knob toggle was on BALANCE when the ring went to 7:00. Set the ring again (toggle to BALANCE, ring to 12:00; toggle to DRIVE, ring to 7:00), then r.",
+  "knobs": [
+    "Mode",
+    "Rise/Fall",
+    "LED",
+    "Level",
+    "Drive/Balance",
+    "Fast",
+    "Slow"
+  ],
+  "takes": [
+    {
+      "name": "bypass-dynamics",
+      "bypass": true,
+      "signal": {
+        "type": "file",
+        "path": "captures/di/dynamics.wav",
+        "tail": 1.0
+      },
+      "note": "Effect off: the bypass reference. Both outputs (A on input 2, B on input 1)."
+    },
+    {
+      "name": "m1-slow-notes",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/notes.wav",
+        "tail": 1.0
+      },
+      "note": "Effect on. Set the outer ring of knob 1 twice: Drive Knob toggle to BALANCE, ring to 12:00 (Balance centre); then toggle to DRIVE, ring to 7:00 (no Drive). Leave the toggle on DRIVE for the whole run. LED green = rotors slow, red = fast: hold the RT-2's own pedal to change it, then give the rotors ~10 s."
+    },
+    {
+      "name": "m1-slow-dynamics",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/dynamics.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "m1-slow-chords",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "m1-slow-chugs",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chugs.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "m1-slow-funk",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "m1-slow-stabs",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "m1-slow-lead",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/lead.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "m1-slow-neck",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/neck.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "m1-slow-noise",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/noise.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "m1-slow-drive-0300-chugs",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 3:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chugs.wav",
+        "tail": 1.0
+      },
+      "note": "The toggle stays on DRIVE: just turn the ring to 3:00."
+    },
+    {
+      "name": "m1-slow-drive-0300-chords",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 3:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "m1-fast-chords",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "red",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "tail": 1.0
+      },
+      "note": "Ring back to 7:00 (toggle still on DRIVE). Then hold the pedal until the LED turns red; ~10 s for the rotors."
+    },
+    {
+      "name": "m1-fast-lead",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "red",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/lead.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "m1-fast-neck",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "red",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/neck.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "m3-fast-chords",
+      "settings": {
+        "Mode": "III",
+        "Rise/Fall": "FAST",
+        "LED": "red",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "m3-fast-chugs",
+      "settings": {
+        "Mode": "III",
+        "Rise/Fall": "FAST",
+        "LED": "red",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chugs.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "m2-slow-chords",
+      "settings": {
+        "Mode": "II",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "m2-slow-lead",
+      "settings": {
+        "Mode": "II",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/lead.wav",
+        "tail": 1.0
+      }
+    }
+  ]
+}

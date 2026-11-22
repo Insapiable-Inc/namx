@@ -1,0 +1,1904 @@
+{
+  "pedal": "Boss RT-2 Rotary Ensemble, Modes I and II Drive, mono input A and stereo outputs A and B",
+  "comment": "Mode III's Drive was measured with the rotors parked on 2026-11-21 (rt-2-focused.json); this is the same session for Mode I, then Mode II, one block of takes each. A block's first take checks the stored Balance and minimum Drive against the earlier two-rotor recording with the rotors turning; park the rotors after it and leave them parked to the block's end. At each setting the quiet sweep measures the response at that rotor angle. The 110 Hz and 441 Hz ladders measure the fundamental and its harmonics up to guitar level. The noise steps measure broadband compression and revisit the quiet level after the loudest step. The same ten seconds of funk follow each ladder. Compare horn, drum and both at minimum and 9 o’clock Drive. Leave the lead at noon out of the fit. The Drive/Balance entry shows which setting the outer ring controls. When resuming, set both stored values and finish with the toggle on the indicated side. A new stop can park the rotors at a different angle: a block resumed after its drive0700 takes starts again from its check. Each take's name carries the mode and the two stored values: horn = Balance 5:00, drum = Balance 7:00, both = Balance 12:00, then Drive's position.",
+  "both_outputs": true,
+  "marker_to_pedal": false,
+  "quiet_dbfs": -60,
+  "knobs": [
+    "Mode",
+    "Rise/Fall",
+    "LED",
+    "Level",
+    "Drive/Balance",
+    "Fast",
+    "Slow"
+  ],
+  "takes": [
+    {
+      "name": "bypass-reference",
+      "bypass": true,
+      "signal": {
+        "type": "sequence",
+        "tail": 0,
+        "parts": [
+          {
+            "type": "sweep",
+            "f0": 35,
+            "f1": 16000,
+            "seconds": 4,
+            "level_db": -36,
+            "tail": 0.5
+          },
+          {
+            "type": "steps",
+            "freq": 110,
+            "levels_db": [
+              -36,
+              -30,
+              -24,
+              -18,
+              -12,
+              -6,
+              0
+            ],
+            "step_seconds": 0.6,
+            "gap_seconds": 0.2,
+            "tail": 0.5
+          },
+          {
+            "type": "steps",
+            "freq": 441,
+            "levels_db": [
+              -36,
+              -30,
+              -24,
+              -18,
+              -12,
+              -6,
+              0
+            ],
+            "step_seconds": 0.6,
+            "gap_seconds": 0.2,
+            "tail": 0.5
+          },
+          {
+            "type": "noise-steps",
+            "levels_db": [
+              -36,
+              -24,
+              -18,
+              -12,
+              -6,
+              0,
+              -24
+            ],
+            "step_seconds": 1.25,
+            "seed": 1,
+            "tail": 0.5
+          },
+          {
+            "type": "file",
+            "path": "captures/di/funk.wav",
+            "seconds": 10,
+            "tail": 1
+          }
+        ]
+      },
+      "note": "Start in bypass with the CHECK light off. Use the 9 V adapter, Scarlett out 3 to INPUT A, OUTPUT A to input 2 and OUTPUT B to input 1. Keep the out 4 to input 5 loopback connected."
+    },
+    {
+      "name": "m1-both-moving-check",
+      "settings": {
+        "Mode": "I",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "9:00",
+        "Rise/Fall": "FAST",
+        "LED": "green"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 24,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 1
+      },
+      "outputs_differ": "Set the toggle to BALANCE and move the ring to noon, then set DRIVE to 7:00 and redo this check.",
+      "expect": {
+        "like": [
+          "captures/boss/rt-2/2026-11-07-isolated/m1-both-noise",
+          2.0
+        ],
+        "hint": "Check Mode I, Level noon, Slow 9:00 and the green LED. Store Balance at noon, then Drive at 7:00, and redo this check."
+      },
+      "note": "Effect on, LED green (hold the RT-2's own pedal if it's red). Mode I, Rise/Fall FAST. Knob 1: Level (the inner knob) at 12:00 — at 7:00 it mutes the pedal, which is what silenced the 2026-11-18 run; the outer ring twice: Drive Knob toggle to BALANCE, ring to 12:00; then toggle to DRIVE, ring to 7:00. Look at Level again after turning the ring. Knob 2: Fast (inner) at 12:00, Slow (outer ring) at 9:00. Give the rotors 10 s. If the take comes out silent, Level is down: set it to 12:00 and press r."
+    },
+    {
+      "name": "m1-both-drive0700",
+      "settings": {
+        "Mode": "I",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "7:00",
+        "Rise/Fall": "FAST",
+        "LED": "green"
+      },
+      "signal": {
+        "type": "sequence",
+        "tail": 0,
+        "parts": [
+          {
+            "type": "sweep",
+            "f0": 35,
+            "f1": 16000,
+            "seconds": 4,
+            "level_db": -36,
+            "tail": 0.5
+          },
+          {
+            "type": "steps",
+            "freq": 110,
+            "levels_db": [
+              -36,
+              -30,
+              -24,
+              -18,
+              -12,
+              -6,
+              0
+            ],
+            "step_seconds": 0.6,
+            "gap_seconds": 0.2,
+            "tail": 0.5
+          },
+          {
+            "type": "steps",
+            "freq": 441,
+            "levels_db": [
+              -36,
+              -30,
+              -24,
+              -18,
+              -12,
+              -6,
+              0
+            ],
+            "step_seconds": 0.6,
+            "gap_seconds": 0.2,
+            "tail": 0.5
+          },
+          {
+            "type": "noise-steps",
+            "levels_db": [
+              -36,
+              -24,
+              -18,
+              -12,
+              -6,
+              0,
+              -24
+            ],
+            "step_seconds": 1.25,
+            "seed": 1,
+            "tail": 0.5
+          },
+          {
+            "type": "file",
+            "path": "captures/di/funk.wav",
+            "seconds": 10,
+            "tail": 1
+          }
+        ]
+      },
+      "note": "Turn Slow fully down. Wait for the rotor lights to stand still. Keep the pedal engaged and the rotors parked for every remaining take."
+    },
+    {
+      "name": "m1-drum-check",
+      "settings": {
+        "Mode": "I",
+        "Level": "12:00",
+        "Drive/Balance": "BALANCE 7:00",
+        "Fast": "12:00",
+        "Slow": "7:00",
+        "Rise/Fall": "FAST",
+        "LED": "green"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 8,
+        "level_db": -18,
+        "seed": 1,
+        "tail": 1
+      },
+      "expect": {
+        "same": true,
+        "below": [
+          4000,
+          250,
+          25
+        ],
+        "hint": "Select BALANCE, move the outer ring off its stop and back fully counter-clockwise, then redo."
+      },
+      "note": "Select BALANCE. Move the ring away from the stop and back to 7:00 to store drum only. Drive stays at its minimum."
+    },
+    {
+      "name": "m1-drum-drive0700",
+      "settings": {
+        "Mode": "I",
+        "Level": "12:00",
+        "Drive/Balance": "BALANCE 7:00",
+        "Fast": "12:00",
+        "Slow": "7:00",
+        "Rise/Fall": "FAST",
+        "LED": "green"
+      },
+      "signal": {
+        "type": "sequence",
+        "tail": 0,
+        "parts": [
+          {
+            "type": "sweep",
+            "f0": 35,
+            "f1": 16000,
+            "seconds": 4,
+            "level_db": -36,
+            "tail": 0.5
+          },
+          {
+            "type": "steps",
+            "freq": 110,
+            "levels_db": [
+              -36,
+              -30,
+              -24,
+              -18,
+              -12,
+              -6,
+              0
+            ],
+            "step_seconds": 0.6,
+            "gap_seconds": 0.2,
+            "tail": 0.5
+          },
+          {
+            "type": "steps",
+            "freq": 441,
+            "levels_db": [
+              -36,
+              -30,
+              -24,
+              -18,
+              -12,
+              -6,
+              0
+            ],
+            "step_seconds": 0.6,
+            "gap_seconds": 0.2,
+            "tail": 0.5
+          },
+          {
+            "type": "noise-steps",
+            "levels_db": [
+              -36,
+              -24,
+              -18,
+              -12,
+              -6,
+              0,
+              -24
+            ],
+            "step_seconds": 1.25,
+            "seed": 1,
+            "tail": 0.5
+          },
+          {
+            "type": "file",
+            "path": "captures/di/funk.wav",
+            "seconds": 10,
+            "tail": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "m1-horn-check",
+      "settings": {
+        "Mode": "I",
+        "Level": "12:00",
+        "Drive/Balance": "BALANCE 5:00",
+        "Fast": "12:00",
+        "Slow": "7:00",
+        "Rise/Fall": "FAST",
+        "LED": "green"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 8,
+        "level_db": -18,
+        "seed": 1,
+        "tail": 1
+      },
+      "expect": {
+        "below": [
+          125,
+          2000,
+          25
+        ],
+        "hint": "Select BALANCE and turn the outer ring fully clockwise, then redo."
+      },
+      "note": "Leave the toggle on BALANCE and turn the ring fully up to store horn only."
+    },
+    {
+      "name": "m1-horn-drive0700",
+      "settings": {
+        "Mode": "I",
+        "Level": "12:00",
+        "Drive/Balance": "BALANCE 5:00",
+        "Fast": "12:00",
+        "Slow": "7:00",
+        "Rise/Fall": "FAST",
+        "LED": "green"
+      },
+      "signal": {
+        "type": "sequence",
+        "tail": 0,
+        "parts": [
+          {
+            "type": "sweep",
+            "f0": 35,
+            "f1": 16000,
+            "seconds": 4,
+            "level_db": -36,
+            "tail": 0.5
+          },
+          {
+            "type": "steps",
+            "freq": 110,
+            "levels_db": [
+              -36,
+              -30,
+              -24,
+              -18,
+              -12,
+              -6,
+              0
+            ],
+            "step_seconds": 0.6,
+            "gap_seconds": 0.2,
+            "tail": 0.5
+          },
+          {
+            "type": "steps",
+            "freq": 441,
+            "levels_db": [
+              -36,
+              -30,
+              -24,
+              -18,
+              -12,
+              -6,
+              0
+            ],
+            "step_seconds": 0.6,
+            "gap_seconds": 0.2,
+            "tail": 0.5
+          },
+          {
+            "type": "noise-steps",
+            "levels_db": [
+              -36,
+              -24,
+              -18,
+              -12,
+              -6,
+              0,
+              -24
+            ],
+            "step_seconds": 1.25,
+            "seed": 1,
+            "tail": 0.5
+          },
+          {
+            "type": "file",
+            "path": "captures/di/funk.wav",
+            "seconds": 10,
+            "tail": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "m1-horn-drive0900",
+      "settings": {
+        "Mode": "I",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 9:00",
+        "Fast": "12:00",
+        "Slow": "7:00",
+        "Rise/Fall": "FAST",
+        "LED": "green"
+      },
+      "signal": {
+        "type": "sequence",
+        "tail": 0,
+        "parts": [
+          {
+            "type": "sweep",
+            "f0": 35,
+            "f1": 16000,
+            "seconds": 4,
+            "level_db": -36,
+            "tail": 0.5
+          },
+          {
+            "type": "steps",
+            "freq": 110,
+            "levels_db": [
+              -36,
+              -30,
+              -24,
+              -18,
+              -12,
+              -6,
+              0
+            ],
+            "step_seconds": 0.6,
+            "gap_seconds": 0.2,
+            "tail": 0.5
+          },
+          {
+            "type": "steps",
+            "freq": 441,
+            "levels_db": [
+              -36,
+              -30,
+              -24,
+              -18,
+              -12,
+              -6,
+              0
+            ],
+            "step_seconds": 0.6,
+            "gap_seconds": 0.2,
+            "tail": 0.5
+          },
+          {
+            "type": "noise-steps",
+            "levels_db": [
+              -36,
+              -24,
+              -18,
+              -12,
+              -6,
+              0,
+              -24
+            ],
+            "step_seconds": 1.25,
+            "seed": 1,
+            "tail": 0.5
+          },
+          {
+            "type": "file",
+            "path": "captures/di/funk.wav",
+            "seconds": 10,
+            "tail": 1
+          }
+        ]
+      },
+      "note": "Select DRIVE, then turn the ring to 9:00. Leave this Drive setting stored through the drum and both-rotor takes."
+    },
+    {
+      "name": "m1-drum-drive0900",
+      "settings": {
+        "Mode": "I",
+        "Level": "12:00",
+        "Drive/Balance": "BALANCE 7:00",
+        "Fast": "12:00",
+        "Slow": "7:00",
+        "Rise/Fall": "FAST",
+        "LED": "green"
+      },
+      "signal": {
+        "type": "sequence",
+        "tail": 0,
+        "parts": [
+          {
+            "type": "sweep",
+            "f0": 35,
+            "f1": 16000,
+            "seconds": 4,
+            "level_db": -36,
+            "tail": 0.5
+          },
+          {
+            "type": "steps",
+            "freq": 110,
+            "levels_db": [
+              -36,
+              -30,
+              -24,
+              -18,
+              -12,
+              -6,
+              0
+            ],
+            "step_seconds": 0.6,
+            "gap_seconds": 0.2,
+            "tail": 0.5
+          },
+          {
+            "type": "steps",
+            "freq": 441,
+            "levels_db": [
+              -36,
+              -30,
+              -24,
+              -18,
+              -12,
+              -6,
+              0
+            ],
+            "step_seconds": 0.6,
+            "gap_seconds": 0.2,
+            "tail": 0.5
+          },
+          {
+            "type": "noise-steps",
+            "levels_db": [
+              -36,
+              -24,
+              -18,
+              -12,
+              -6,
+              0,
+              -24
+            ],
+            "step_seconds": 1.25,
+            "seed": 1,
+            "tail": 0.5
+          },
+          {
+            "type": "file",
+            "path": "captures/di/funk.wav",
+            "seconds": 10,
+            "tail": 1
+          }
+        ]
+      },
+      "expect": {
+        "same": true,
+        "hint": "Select BALANCE and turn the ring fully down, then redo."
+      },
+      "note": "Select BALANCE, then turn the ring fully down for drum only."
+    },
+    {
+      "name": "m1-both-drive0900",
+      "settings": {
+        "Mode": "I",
+        "Level": "12:00",
+        "Drive/Balance": "BALANCE 12:00",
+        "Fast": "12:00",
+        "Slow": "7:00",
+        "Rise/Fall": "FAST",
+        "LED": "green"
+      },
+      "signal": {
+        "type": "sequence",
+        "tail": 0,
+        "parts": [
+          {
+            "type": "sweep",
+            "f0": 35,
+            "f1": 16000,
+            "seconds": 4,
+            "level_db": -36,
+            "tail": 0.5
+          },
+          {
+            "type": "steps",
+            "freq": 110,
+            "levels_db": [
+              -36,
+              -30,
+              -24,
+              -18,
+              -12,
+              -6,
+              0
+            ],
+            "step_seconds": 0.6,
+            "gap_seconds": 0.2,
+            "tail": 0.5
+          },
+          {
+            "type": "steps",
+            "freq": 441,
+            "levels_db": [
+              -36,
+              -30,
+              -24,
+              -18,
+              -12,
+              -6,
+              0
+            ],
+            "step_seconds": 0.6,
+            "gap_seconds": 0.2,
+            "tail": 0.5
+          },
+          {
+            "type": "noise-steps",
+            "levels_db": [
+              -36,
+              -24,
+              -18,
+              -12,
+              -6,
+              0,
+              -24
+            ],
+            "step_seconds": 1.25,
+            "seed": 1,
+            "tail": 0.5
+          },
+          {
+            "type": "file",
+            "path": "captures/di/funk.wav",
+            "seconds": 10,
+            "tail": 1
+          }
+        ]
+      },
+      "note": "With the toggle still on BALANCE, turn the ring to noon. Both rotors stay in the mix for the rest of the session."
+    },
+    {
+      "name": "m1-both-drive0900-repeat",
+      "settings": {
+        "Mode": "I",
+        "Level": "12:00",
+        "Drive/Balance": "BALANCE 12:00",
+        "Fast": "12:00",
+        "Slow": "7:00",
+        "Rise/Fall": "FAST",
+        "LED": "green"
+      },
+      "signal": {
+        "type": "sequence",
+        "tail": 0,
+        "parts": [
+          {
+            "type": "sweep",
+            "f0": 35,
+            "f1": 16000,
+            "seconds": 4,
+            "level_db": -36,
+            "tail": 0.5
+          },
+          {
+            "type": "steps",
+            "freq": 110,
+            "levels_db": [
+              -36,
+              -30,
+              -24,
+              -18,
+              -12,
+              -6,
+              0
+            ],
+            "step_seconds": 0.6,
+            "gap_seconds": 0.2,
+            "tail": 0.5
+          },
+          {
+            "type": "steps",
+            "freq": 441,
+            "levels_db": [
+              -36,
+              -30,
+              -24,
+              -18,
+              -12,
+              -6,
+              0
+            ],
+            "step_seconds": 0.6,
+            "gap_seconds": 0.2,
+            "tail": 0.5
+          },
+          {
+            "type": "noise-steps",
+            "levels_db": [
+              -36,
+              -24,
+              -18,
+              -12,
+              -6,
+              0,
+              -24
+            ],
+            "step_seconds": 1.25,
+            "seed": 1,
+            "tail": 0.5
+          },
+          {
+            "type": "file",
+            "path": "captures/di/funk.wav",
+            "seconds": 10,
+            "tail": 1
+          }
+        ]
+      },
+      "note": "Leave every control in place. This identical take measures the pedal’s repeatability at the parked angle."
+    },
+    {
+      "name": "m1-both-drive1200",
+      "settings": {
+        "Mode": "I",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 12:00",
+        "Fast": "12:00",
+        "Slow": "7:00",
+        "Rise/Fall": "FAST",
+        "LED": "green"
+      },
+      "signal": {
+        "type": "sequence",
+        "tail": 0,
+        "parts": [
+          {
+            "type": "sweep",
+            "f0": 35,
+            "f1": 16000,
+            "seconds": 4,
+            "level_db": -36,
+            "tail": 0.5
+          },
+          {
+            "type": "steps",
+            "freq": 110,
+            "levels_db": [
+              -36,
+              -30,
+              -24,
+              -18,
+              -12,
+              -6,
+              0
+            ],
+            "step_seconds": 0.6,
+            "gap_seconds": 0.2,
+            "tail": 0.5
+          },
+          {
+            "type": "steps",
+            "freq": 441,
+            "levels_db": [
+              -36,
+              -30,
+              -24,
+              -18,
+              -12,
+              -6,
+              0
+            ],
+            "step_seconds": 0.6,
+            "gap_seconds": 0.2,
+            "tail": 0.5
+          },
+          {
+            "type": "noise-steps",
+            "levels_db": [
+              -36,
+              -24,
+              -18,
+              -12,
+              -6,
+              0,
+              -24
+            ],
+            "step_seconds": 1.25,
+            "seed": 1,
+            "tail": 0.5
+          },
+          {
+            "type": "file",
+            "path": "captures/di/funk.wav",
+            "seconds": 10,
+            "tail": 1
+          }
+        ]
+      },
+      "note": "Select DRIVE. The ring already points to noon from setting Balance. Move it away and back to noon so Drive also registers noon."
+    },
+    {
+      "name": "m1-both-drive1200-lead",
+      "settings": {
+        "Mode": "I",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 12:00",
+        "Fast": "12:00",
+        "Slow": "7:00",
+        "Rise/Fall": "FAST",
+        "LED": "green"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/lead.wav",
+        "start": 2,
+        "seconds": 18,
+        "tail": 1
+      },
+      "note": "Leave all controls in place. This separate lead excerpt checks the result on playing held out of the fit."
+    },
+    {
+      "name": "m1-both-drive0300",
+      "settings": {
+        "Mode": "I",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 3:00",
+        "Fast": "12:00",
+        "Slow": "7:00",
+        "Rise/Fall": "FAST",
+        "LED": "green"
+      },
+      "signal": {
+        "type": "sequence",
+        "tail": 0,
+        "parts": [
+          {
+            "type": "sweep",
+            "f0": 35,
+            "f1": 16000,
+            "seconds": 4,
+            "level_db": -36,
+            "tail": 0.5
+          },
+          {
+            "type": "steps",
+            "freq": 110,
+            "levels_db": [
+              -36,
+              -30,
+              -24,
+              -18,
+              -12,
+              -6,
+              0
+            ],
+            "step_seconds": 0.6,
+            "gap_seconds": 0.2,
+            "tail": 0.5
+          },
+          {
+            "type": "steps",
+            "freq": 441,
+            "levels_db": [
+              -36,
+              -30,
+              -24,
+              -18,
+              -12,
+              -6,
+              0
+            ],
+            "step_seconds": 0.6,
+            "gap_seconds": 0.2,
+            "tail": 0.5
+          },
+          {
+            "type": "noise-steps",
+            "levels_db": [
+              -36,
+              -24,
+              -18,
+              -12,
+              -6,
+              0,
+              -24
+            ],
+            "step_seconds": 1.25,
+            "seed": 1,
+            "tail": 0.5
+          },
+          {
+            "type": "file",
+            "path": "captures/di/funk.wav",
+            "seconds": 10,
+            "tail": 1
+          }
+        ]
+      },
+      "note": "Keep the toggle on DRIVE and turn the ring to 3:00."
+    },
+    {
+      "name": "m1-both-drive0500",
+      "settings": {
+        "Mode": "I",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 5:00",
+        "Fast": "12:00",
+        "Slow": "7:00",
+        "Rise/Fall": "FAST",
+        "LED": "green"
+      },
+      "signal": {
+        "type": "sequence",
+        "tail": 0,
+        "parts": [
+          {
+            "type": "sweep",
+            "f0": 35,
+            "f1": 16000,
+            "seconds": 4,
+            "level_db": -36,
+            "tail": 0.5
+          },
+          {
+            "type": "steps",
+            "freq": 110,
+            "levels_db": [
+              -36,
+              -30,
+              -24,
+              -18,
+              -12,
+              -6,
+              0
+            ],
+            "step_seconds": 0.6,
+            "gap_seconds": 0.2,
+            "tail": 0.5
+          },
+          {
+            "type": "steps",
+            "freq": 441,
+            "levels_db": [
+              -36,
+              -30,
+              -24,
+              -18,
+              -12,
+              -6,
+              0
+            ],
+            "step_seconds": 0.6,
+            "gap_seconds": 0.2,
+            "tail": 0.5
+          },
+          {
+            "type": "noise-steps",
+            "levels_db": [
+              -36,
+              -24,
+              -18,
+              -12,
+              -6,
+              0,
+              -24
+            ],
+            "step_seconds": 1.25,
+            "seed": 1,
+            "tail": 0.5
+          },
+          {
+            "type": "file",
+            "path": "captures/di/funk.wav",
+            "seconds": 10,
+            "tail": 1
+          }
+        ]
+      },
+      "note": "Turn the DRIVE ring fully clockwise."
+    },
+    {
+      "name": "m2-both-moving-check",
+      "settings": {
+        "Mode": "II",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "9:00",
+        "Rise/Fall": "FAST",
+        "LED": "green"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 24,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 1
+      },
+      "outputs_differ": "Set the toggle to BALANCE and move the ring to noon, then set DRIVE to 7:00 and redo this check.",
+      "expect": {
+        "like": [
+          "captures/boss/rt-2/2026-11-07-isolated/m2-both-noise",
+          2.0
+        ],
+        "hint": "Check Mode II, Level noon, Slow 9:00 and the green LED. Store Balance at noon, then Drive at 7:00, and redo this check."
+      },
+      "note": "Second block: Mode toggle to II, nothing else on the left side. Balance is still stored at 12:00 from the last takes; the Drive Knob toggle is on DRIVE: turn the ring fully down to 7:00. Look at Level (the inner knob) again after turning the ring: 12:00. Knob 2: Slow (outer ring) back up to 9:00, Fast stays at 12:00. Give the rotors 10 s."
+    },
+    {
+      "name": "m2-both-drive0700",
+      "settings": {
+        "Mode": "II",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "7:00",
+        "Rise/Fall": "FAST",
+        "LED": "green"
+      },
+      "signal": {
+        "type": "sequence",
+        "tail": 0,
+        "parts": [
+          {
+            "type": "sweep",
+            "f0": 35,
+            "f1": 16000,
+            "seconds": 4,
+            "level_db": -36,
+            "tail": 0.5
+          },
+          {
+            "type": "steps",
+            "freq": 110,
+            "levels_db": [
+              -36,
+              -30,
+              -24,
+              -18,
+              -12,
+              -6,
+              0
+            ],
+            "step_seconds": 0.6,
+            "gap_seconds": 0.2,
+            "tail": 0.5
+          },
+          {
+            "type": "steps",
+            "freq": 441,
+            "levels_db": [
+              -36,
+              -30,
+              -24,
+              -18,
+              -12,
+              -6,
+              0
+            ],
+            "step_seconds": 0.6,
+            "gap_seconds": 0.2,
+            "tail": 0.5
+          },
+          {
+            "type": "noise-steps",
+            "levels_db": [
+              -36,
+              -24,
+              -18,
+              -12,
+              -6,
+              0,
+              -24
+            ],
+            "step_seconds": 1.25,
+            "seed": 1,
+            "tail": 0.5
+          },
+          {
+            "type": "file",
+            "path": "captures/di/funk.wav",
+            "seconds": 10,
+            "tail": 1
+          }
+        ]
+      },
+      "note": "Turn Slow fully down. Wait for the rotor lights to stand still. Keep the pedal engaged and the rotors parked for every remaining take."
+    },
+    {
+      "name": "m2-drum-check",
+      "settings": {
+        "Mode": "II",
+        "Level": "12:00",
+        "Drive/Balance": "BALANCE 7:00",
+        "Fast": "12:00",
+        "Slow": "7:00",
+        "Rise/Fall": "FAST",
+        "LED": "green"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 8,
+        "level_db": -18,
+        "seed": 1,
+        "tail": 1
+      },
+      "expect": {
+        "same": true,
+        "below": [
+          4000,
+          250,
+          25
+        ],
+        "hint": "Select BALANCE, move the outer ring off its stop and back fully counter-clockwise, then redo."
+      },
+      "note": "Select BALANCE. Move the ring away from the stop and back to 7:00 to store drum only. Drive stays at its minimum."
+    },
+    {
+      "name": "m2-drum-drive0700",
+      "settings": {
+        "Mode": "II",
+        "Level": "12:00",
+        "Drive/Balance": "BALANCE 7:00",
+        "Fast": "12:00",
+        "Slow": "7:00",
+        "Rise/Fall": "FAST",
+        "LED": "green"
+      },
+      "signal": {
+        "type": "sequence",
+        "tail": 0,
+        "parts": [
+          {
+            "type": "sweep",
+            "f0": 35,
+            "f1": 16000,
+            "seconds": 4,
+            "level_db": -36,
+            "tail": 0.5
+          },
+          {
+            "type": "steps",
+            "freq": 110,
+            "levels_db": [
+              -36,
+              -30,
+              -24,
+              -18,
+              -12,
+              -6,
+              0
+            ],
+            "step_seconds": 0.6,
+            "gap_seconds": 0.2,
+            "tail": 0.5
+          },
+          {
+            "type": "steps",
+            "freq": 441,
+            "levels_db": [
+              -36,
+              -30,
+              -24,
+              -18,
+              -12,
+              -6,
+              0
+            ],
+            "step_seconds": 0.6,
+            "gap_seconds": 0.2,
+            "tail": 0.5
+          },
+          {
+            "type": "noise-steps",
+            "levels_db": [
+              -36,
+              -24,
+              -18,
+              -12,
+              -6,
+              0,
+              -24
+            ],
+            "step_seconds": 1.25,
+            "seed": 1,
+            "tail": 0.5
+          },
+          {
+            "type": "file",
+            "path": "captures/di/funk.wav",
+            "seconds": 10,
+            "tail": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "m2-horn-check",
+      "settings": {
+        "Mode": "II",
+        "Level": "12:00",
+        "Drive/Balance": "BALANCE 5:00",
+        "Fast": "12:00",
+        "Slow": "7:00",
+        "Rise/Fall": "FAST",
+        "LED": "green"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 8,
+        "level_db": -18,
+        "seed": 1,
+        "tail": 1
+      },
+      "expect": {
+        "below": [
+          125,
+          2000,
+          25
+        ],
+        "hint": "Select BALANCE and turn the outer ring fully clockwise, then redo."
+      },
+      "note": "Leave the toggle on BALANCE and turn the ring fully up to store horn only."
+    },
+    {
+      "name": "m2-horn-drive0700",
+      "settings": {
+        "Mode": "II",
+        "Level": "12:00",
+        "Drive/Balance": "BALANCE 5:00",
+        "Fast": "12:00",
+        "Slow": "7:00",
+        "Rise/Fall": "FAST",
+        "LED": "green"
+      },
+      "signal": {
+        "type": "sequence",
+        "tail": 0,
+        "parts": [
+          {
+            "type": "sweep",
+            "f0": 35,
+            "f1": 16000,
+            "seconds": 4,
+            "level_db": -36,
+            "tail": 0.5
+          },
+          {
+            "type": "steps",
+            "freq": 110,
+            "levels_db": [
+              -36,
+              -30,
+              -24,
+              -18,
+              -12,
+              -6,
+              0
+            ],
+            "step_seconds": 0.6,
+            "gap_seconds": 0.2,
+            "tail": 0.5
+          },
+          {
+            "type": "steps",
+            "freq": 441,
+            "levels_db": [
+              -36,
+              -30,
+              -24,
+              -18,
+              -12,
+              -6,
+              0
+            ],
+            "step_seconds": 0.6,
+            "gap_seconds": 0.2,
+            "tail": 0.5
+          },
+          {
+            "type": "noise-steps",
+            "levels_db": [
+              -36,
+              -24,
+              -18,
+              -12,
+              -6,
+              0,
+              -24
+            ],
+            "step_seconds": 1.25,
+            "seed": 1,
+            "tail": 0.5
+          },
+          {
+            "type": "file",
+            "path": "captures/di/funk.wav",
+            "seconds": 10,
+            "tail": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "m2-horn-drive0900",
+      "settings": {
+        "Mode": "II",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 9:00",
+        "Fast": "12:00",
+        "Slow": "7:00",
+        "Rise/Fall": "FAST",
+        "LED": "green"
+      },
+      "signal": {
+        "type": "sequence",
+        "tail": 0,
+        "parts": [
+          {
+            "type": "sweep",
+            "f0": 35,
+            "f1": 16000,
+            "seconds": 4,
+            "level_db": -36,
+            "tail": 0.5
+          },
+          {
+            "type": "steps",
+            "freq": 110,
+            "levels_db": [
+              -36,
+              -30,
+              -24,
+              -18,
+              -12,
+              -6,
+              0
+            ],
+            "step_seconds": 0.6,
+            "gap_seconds": 0.2,
+            "tail": 0.5
+          },
+          {
+            "type": "steps",
+            "freq": 441,
+            "levels_db": [
+              -36,
+              -30,
+              -24,
+              -18,
+              -12,
+              -6,
+              0
+            ],
+            "step_seconds": 0.6,
+            "gap_seconds": 0.2,
+            "tail": 0.5
+          },
+          {
+            "type": "noise-steps",
+            "levels_db": [
+              -36,
+              -24,
+              -18,
+              -12,
+              -6,
+              0,
+              -24
+            ],
+            "step_seconds": 1.25,
+            "seed": 1,
+            "tail": 0.5
+          },
+          {
+            "type": "file",
+            "path": "captures/di/funk.wav",
+            "seconds": 10,
+            "tail": 1
+          }
+        ]
+      },
+      "note": "Select DRIVE, then turn the ring to 9:00. Leave this Drive setting stored through the drum and both-rotor takes."
+    },
+    {
+      "name": "m2-drum-drive0900",
+      "settings": {
+        "Mode": "II",
+        "Level": "12:00",
+        "Drive/Balance": "BALANCE 7:00",
+        "Fast": "12:00",
+        "Slow": "7:00",
+        "Rise/Fall": "FAST",
+        "LED": "green"
+      },
+      "signal": {
+        "type": "sequence",
+        "tail": 0,
+        "parts": [
+          {
+            "type": "sweep",
+            "f0": 35,
+            "f1": 16000,
+            "seconds": 4,
+            "level_db": -36,
+            "tail": 0.5
+          },
+          {
+            "type": "steps",
+            "freq": 110,
+            "levels_db": [
+              -36,
+              -30,
+              -24,
+              -18,
+              -12,
+              -6,
+              0
+            ],
+            "step_seconds": 0.6,
+            "gap_seconds": 0.2,
+            "tail": 0.5
+          },
+          {
+            "type": "steps",
+            "freq": 441,
+            "levels_db": [
+              -36,
+              -30,
+              -24,
+              -18,
+              -12,
+              -6,
+              0
+            ],
+            "step_seconds": 0.6,
+            "gap_seconds": 0.2,
+            "tail": 0.5
+          },
+          {
+            "type": "noise-steps",
+            "levels_db": [
+              -36,
+              -24,
+              -18,
+              -12,
+              -6,
+              0,
+              -24
+            ],
+            "step_seconds": 1.25,
+            "seed": 1,
+            "tail": 0.5
+          },
+          {
+            "type": "file",
+            "path": "captures/di/funk.wav",
+            "seconds": 10,
+            "tail": 1
+          }
+        ]
+      },
+      "expect": {
+        "same": true,
+        "hint": "Select BALANCE and turn the ring fully down, then redo."
+      },
+      "note": "Select BALANCE, then turn the ring fully down for drum only."
+    },
+    {
+      "name": "m2-both-drive0900",
+      "settings": {
+        "Mode": "II",
+        "Level": "12:00",
+        "Drive/Balance": "BALANCE 12:00",
+        "Fast": "12:00",
+        "Slow": "7:00",
+        "Rise/Fall": "FAST",
+        "LED": "green"
+      },
+      "signal": {
+        "type": "sequence",
+        "tail": 0,
+        "parts": [
+          {
+            "type": "sweep",
+            "f0": 35,
+            "f1": 16000,
+            "seconds": 4,
+            "level_db": -36,
+            "tail": 0.5
+          },
+          {
+            "type": "steps",
+            "freq": 110,
+            "levels_db": [
+              -36,
+              -30,
+              -24,
+              -18,
+              -12,
+              -6,
+              0
+            ],
+            "step_seconds": 0.6,
+            "gap_seconds": 0.2,
+            "tail": 0.5
+          },
+          {
+            "type": "steps",
+            "freq": 441,
+            "levels_db": [
+              -36,
+              -30,
+              -24,
+              -18,
+              -12,
+              -6,
+              0
+            ],
+            "step_seconds": 0.6,
+            "gap_seconds": 0.2,
+            "tail": 0.5
+          },
+          {
+            "type": "noise-steps",
+            "levels_db": [
+              -36,
+              -24,
+              -18,
+              -12,
+              -6,
+              0,
+              -24
+            ],
+            "step_seconds": 1.25,
+            "seed": 1,
+            "tail": 0.5
+          },
+          {
+            "type": "file",
+            "path": "captures/di/funk.wav",
+            "seconds": 10,
+            "tail": 1
+          }
+        ]
+      },
+      "note": "With the toggle still on BALANCE, turn the ring to noon. Both rotors stay in the mix for the rest of the session."
+    },
+    {
+      "name": "m2-both-drive0900-repeat",
+      "settings": {
+        "Mode": "II",
+        "Level": "12:00",
+        "Drive/Balance": "BALANCE 12:00",
+        "Fast": "12:00",
+        "Slow": "7:00",
+        "Rise/Fall": "FAST",
+        "LED": "green"
+      },
+      "signal": {
+        "type": "sequence",
+        "tail": 0,
+        "parts": [
+          {
+            "type": "sweep",
+            "f0": 35,
+            "f1": 16000,
+            "seconds": 4,
+            "level_db": -36,
+            "tail": 0.5
+          },
+          {
+            "type": "steps",
+            "freq": 110,
+            "levels_db": [
+              -36,
+              -30,
+              -24,
+              -18,
+              -12,
+              -6,
+              0
+            ],
+            "step_seconds": 0.6,
+            "gap_seconds": 0.2,
+            "tail": 0.5
+          },
+          {
+            "type": "steps",
+            "freq": 441,
+            "levels_db": [
+              -36,
+              -30,
+              -24,
+              -18,
+              -12,
+              -6,
+              0
+            ],
+            "step_seconds": 0.6,
+            "gap_seconds": 0.2,
+            "tail": 0.5
+          },
+          {
+            "type": "noise-steps",
+            "levels_db": [
+              -36,
+              -24,
+              -18,
+              -12,
+              -6,
+              0,
+              -24
+            ],
+            "step_seconds": 1.25,
+            "seed": 1,
+            "tail": 0.5
+          },
+          {
+            "type": "file",
+            "path": "captures/di/funk.wav",
+            "seconds": 10,
+            "tail": 1
+          }
+        ]
+      },
+      "note": "Leave every control in place. This identical take measures the pedal’s repeatability at the parked angle."
+    },
+    {
+      "name": "m2-both-drive1200",
+      "settings": {
+        "Mode": "II",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 12:00",
+        "Fast": "12:00",
+        "Slow": "7:00",
+        "Rise/Fall": "FAST",
+        "LED": "green"
+      },
+      "signal": {
+        "type": "sequence",
+        "tail": 0,
+        "parts": [
+          {
+            "type": "sweep",
+            "f0": 35,
+            "f1": 16000,
+            "seconds": 4,
+            "level_db": -36,
+            "tail": 0.5
+          },
+          {
+            "type": "steps",
+            "freq": 110,
+            "levels_db": [
+              -36,
+              -30,
+              -24,
+              -18,
+              -12,
+              -6,
+              0
+            ],
+            "step_seconds": 0.6,
+            "gap_seconds": 0.2,
+            "tail": 0.5
+          },
+          {
+            "type": "steps",
+            "freq": 441,
+            "levels_db": [
+              -36,
+              -30,
+              -24,
+              -18,
+              -12,
+              -6,
+              0
+            ],
+            "step_seconds": 0.6,
+            "gap_seconds": 0.2,
+            "tail": 0.5
+          },
+          {
+            "type": "noise-steps",
+            "levels_db": [
+              -36,
+              -24,
+              -18,
+              -12,
+              -6,
+              0,
+              -24
+            ],
+            "step_seconds": 1.25,
+            "seed": 1,
+            "tail": 0.5
+          },
+          {
+            "type": "file",
+            "path": "captures/di/funk.wav",
+            "seconds": 10,
+            "tail": 1
+          }
+        ]
+      },
+      "note": "Select DRIVE. The ring already points to noon from setting Balance. Move it away and back to noon so Drive also registers noon."
+    },
+    {
+      "name": "m2-both-drive1200-lead",
+      "settings": {
+        "Mode": "II",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 12:00",
+        "Fast": "12:00",
+        "Slow": "7:00",
+        "Rise/Fall": "FAST",
+        "LED": "green"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/lead.wav",
+        "start": 2,
+        "seconds": 18,
+        "tail": 1
+      },
+      "note": "Leave all controls in place. This separate lead excerpt checks the result on playing held out of the fit."
+    },
+    {
+      "name": "m2-both-drive0300",
+      "settings": {
+        "Mode": "II",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 3:00",
+        "Fast": "12:00",
+        "Slow": "7:00",
+        "Rise/Fall": "FAST",
+        "LED": "green"
+      },
+      "signal": {
+        "type": "sequence",
+        "tail": 0,
+        "parts": [
+          {
+            "type": "sweep",
+            "f0": 35,
+            "f1": 16000,
+            "seconds": 4,
+            "level_db": -36,
+            "tail": 0.5
+          },
+          {
+            "type": "steps",
+            "freq": 110,
+            "levels_db": [
+              -36,
+              -30,
+              -24,
+              -18,
+              -12,
+              -6,
+              0
+            ],
+            "step_seconds": 0.6,
+            "gap_seconds": 0.2,
+            "tail": 0.5
+          },
+          {
+            "type": "steps",
+            "freq": 441,
+            "levels_db": [
+              -36,
+              -30,
+              -24,
+              -18,
+              -12,
+              -6,
+              0
+            ],
+            "step_seconds": 0.6,
+            "gap_seconds": 0.2,
+            "tail": 0.5
+          },
+          {
+            "type": "noise-steps",
+            "levels_db": [
+              -36,
+              -24,
+              -18,
+              -12,
+              -6,
+              0,
+              -24
+            ],
+            "step_seconds": 1.25,
+            "seed": 1,
+            "tail": 0.5
+          },
+          {
+            "type": "file",
+            "path": "captures/di/funk.wav",
+            "seconds": 10,
+            "tail": 1
+          }
+        ]
+      },
+      "note": "Keep the toggle on DRIVE and turn the ring to 3:00."
+    },
+    {
+      "name": "m2-both-drive0500",
+      "settings": {
+        "Mode": "II",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 5:00",
+        "Fast": "12:00",
+        "Slow": "7:00",
+        "Rise/Fall": "FAST",
+        "LED": "green"
+      },
+      "signal": {
+        "type": "sequence",
+        "tail": 0,
+        "parts": [
+          {
+            "type": "sweep",
+            "f0": 35,
+            "f1": 16000,
+            "seconds": 4,
+            "level_db": -36,
+            "tail": 0.5
+          },
+          {
+            "type": "steps",
+            "freq": 110,
+            "levels_db": [
+              -36,
+              -30,
+              -24,
+              -18,
+              -12,
+              -6,
+              0
+            ],
+            "step_seconds": 0.6,
+            "gap_seconds": 0.2,
+            "tail": 0.5
+          },
+          {
+            "type": "steps",
+            "freq": 441,
+            "levels_db": [
+              -36,
+              -30,
+              -24,
+              -18,
+              -12,
+              -6,
+              0
+            ],
+            "step_seconds": 0.6,
+            "gap_seconds": 0.2,
+            "tail": 0.5
+          },
+          {
+            "type": "noise-steps",
+            "levels_db": [
+              -36,
+              -24,
+              -18,
+              -12,
+              -6,
+              0,
+              -24
+            ],
+            "step_seconds": 1.25,
+            "seed": 1,
+            "tail": 0.5
+          },
+          {
+            "type": "file",
+            "path": "captures/di/funk.wav",
+            "seconds": 10,
+            "tail": 1
+          }
+        ]
+      },
+      "note": "Turn the DRIVE ring fully clockwise."
+    }
+  ]
+}

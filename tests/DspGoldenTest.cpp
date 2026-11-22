@@ -49,6 +49,7 @@
 #include "OutputLimiter.h"
 #include "PhaserProcessor.h"
 #include "ReverbProcessor.h"
+#include "RotaryProcessor.h"
 #include "TransposeProcessor.h"
 #include "TremoloProcessor.h"
 #include "TunerProcessor.h"
@@ -223,44 +224,78 @@ static bool write_ir(const QString& path, double decay_samples, double frequency
 }
 
 // Effect configurations rendered by the cases below.
-static unique_ptr<NoiseGateProcessor> make_gate() {
+// The NS-2: opening near the top of its range so the test signal's quiet parts close it,
+// Decay about 3:00.
+static unique_ptr<NoiseGateProcessor> make_gate_ns2() {
     auto fx = make_unique<NoiseGateProcessor>();
     fx->set_threshold(-40.0f);
+    fx->set_release(220.0f);
     return fx;
 }
 
-static unique_ptr<CompressorProcessor> make_compressor() {
+// The CS-3 type: Sustain about 12:00, a fast Attack (short recovery), Tone brighter, some
+// Level; the test signal's swells cross the ceiling.
+static unique_ptr<CompressorProcessor> make_compressor_cs3() {
     auto fx = make_unique<CompressorProcessor>();
-    fx->set_threshold(-24.0f);
-    fx->set_ratio(4.0f);
-    fx->set_makeup(6.0f);
+    fx->set_threshold(-38.0f);
+    fx->set_release(cs3::release_from_recovery(62.0f)); // the pedal's Attack at 3:00
+    fx->set_tone_pct(70.0f);
+    fx->set_makeup(10.0f);
     return fx;
 }
 
-static unique_ptr<DynamicWahProcessor> make_wah_pedal() {
+// The AW-3 types: Sens 3:00, Manual 12:00, Decay a little short of noon.
+static unique_ptr<DynamicWahProcessor> make_wah_aw3(int type) {
     auto fx = make_unique<DynamicWahProcessor>();
-    fx->set_pedal_mode(true);
-    fx->set_position_pct(70.0f);
+    fx->set_type(type);
+    fx->set_sensitivity_pct(80.0f);
+    fx->set_position_pct(50.0f);
+    fx->set_decay_pct(40.0f);
     return fx;
 }
 
-static unique_ptr<FlangerProcessor> make_flanger() {
+// The BF-3 types: Standard at the pedal's 12:00 Depth with Res up; Ultra with Manual long, Depth
+// and Res high and a fast Rate (the smoothing at work); the test signal reaches the clip. The
+// knobs at pedal positions, through the conversions.
+static unique_ptr<FlangerProcessor> make_flanger_bf3(int type, bool fast) {
     auto fx = make_unique<FlangerProcessor>();
-    fx->set_feedback_pct(60.0f);
+    fx->set_type(type);
+    fx->set_depth_pct(100.0f * bf3::depth_from_pedal(0.5f));
+    fx->set_feedback_pct(100.0f * bf3::feedback_from_pedal(80.0f / 99.0f));
+    if (fast) {
+        fx->set_rate_hz(2.0f);
+        fx->set_depth_pct(100.0f * bf3::depth_from_pedal(0.9f));
+        fx->set_manual_ms(bf3::manual_ms_from_pedal(0.2f));
+        fx->set_feedback_pct(100.0f * bf3::feedback_from_pedal(95.0f / 99.0f));
+    }
     return fx;
 }
 
-static unique_ptr<FlangerProcessor> make_flanger_stereo() {
-    auto fx = make_unique<FlangerProcessor>();
-    fx->set_stereo_mode(true);
-    return fx;
-}
-
-static unique_ptr<PhaserProcessor> make_phaser_feedback() {
+// The PH-3 types, one per code path: 8 Stage with Res (the loop through the parked
+// section), 12 Stage (the twin passes), Rise in stereo (the ladder, half a spacing apart),
+// Step at a fast Rate (several holds in the signal).
+static unique_ptr<PhaserProcessor> make_phaser_ph3(int type, bool stereo) {
     auto fx = make_unique<PhaserProcessor>();
-    fx->set_rate_hz(1.0f);
-    fx->set_depth_pct(80.0f);
-    fx->set_feedback_pct(70.0f);
+    fx->set_type(type);
+    fx->set_stereo_mode(stereo);
+    fx->set_rate_hz(type == PhaserProcessor::PH3_STEP ? 4.0f : 1.0f);
+    fx->set_depth_pct(100.0f * ph3::depth_from_pedal(0.8f)); // the pedal's Depth at 3:00
+    const bool res = type == PhaserProcessor::PH3_4_STAGE || type == PhaserProcessor::PH3_8_STAGE;
+    const ph3::Voicing& v = ph3::voicing(type - PhaserProcessor::FIRST_TYPE);
+    fx->set_feedback_pct(res ? 100.0f * ph3::feedback_from_pedal(v, 70.0f / 90.0f) : 0.0f);
+    return fx;
+}
+
+// The rotary speaker (the RT-2): Mode I slow in stereo (both microphones) and fast in mono
+// (the Doppler at its widest), and Modes II and III with Drive at 12:00 in stereo (the Drive
+// with its low-pass after the curve, and round it).
+static unique_ptr<RotaryProcessor>
+make_rotary(bool fast, bool stereo, int type = RotaryProcessor::MODE_I, float drive = 0.0f) {
+    auto fx = make_unique<RotaryProcessor>();
+    fx->set_fast(fast);
+    fx->set_stereo_mode(stereo);
+    fx->set_type(type);
+    fx->set_drive_pct(drive);
     return fx;
 }
 
@@ -274,71 +309,68 @@ static unique_ptr<DriveProcessor> make_drive() {
     return fx;
 }
 
-static unique_ptr<EQProcessor> make_eq() {
+// The GE-7: a mixed setting (boosts, cuts, the top shelf down, Level up, two bands moved) and
+// the Low Cut.
+static unique_ptr<EQProcessor> make_eq_ge7() {
     auto fx = make_unique<EQProcessor>();
-    fx->set_low_gain(4.0);
-    fx->set_mid_gain(-3.0);
-    fx->set_treble_gain(2.0);
+    const std::array<double, 8> sliders{-5.0, 10.0, 0.0, -10.0, 5.0, 15.0, -15.0, 5.0};
+    for (size_t i = 0; i < sliders.size(); ++i) {
+        fx->set_slider(i, sliders[i]);
+    }
+    fx->set_frequency(1, 250.0);
+    fx->set_frequency(4, 1100.0);
+    fx->set_cut(EQProcessor::Cut::LOW, 80.0);
     return fx;
 }
 
-static unique_ptr<TremoloProcessor> make_tremolo_stereo() {
+// The CE-5 type: mono mode with the filters open, and stereo mode (the right side's sweep half
+// a cycle behind) with both filters part-way down, deeper and faster; the test signal reaches
+// both clips. Depth and Level at the pedal's 12:00 / 3:00 and 5:00.
+static unique_ptr<ChorusProcessor> make_chorus_ce5(bool stereo) {
+    auto fx = make_unique<ChorusProcessor>();
+    fx->set_stereo_mode(stereo);
+    fx->set_level_db(ce5::level_db_from_pedal(1.0f));
+    fx->set_depth_pct(100.0f * ce5::depth_from_pedal(0.5f));
+    if (stereo) {
+        fx->set_rate_hz(2.0f);
+        fx->set_depth_pct(100.0f * ce5::depth_from_pedal(0.8f));
+        fx->set_low_cut_hz(ce5::low_hz_from_pedal(0.5f));
+        fx->set_high_cut_hz(ce5::high_hz_from_pedal(0.4f));
+    }
+    return fx;
+}
+
+static unique_ptr<TremoloProcessor> make_tremolo_tr2(bool stereo) {
     auto fx = make_unique<TremoloProcessor>();
-    fx->set_stereo_mode(true);
+    // Wave up with Depth short of full: the dip's floor and the squareness at this rate.
+    fx->set_rate_hz(7.0f);
+    fx->set_depth_pct(60.0f);
+    fx->set_wave_pct(85.0f);
+    fx->set_stereo_mode(stereo);
     return fx;
 }
 
-static unique_ptr<DelayProcessor> make_delay() {
+// A DD-8 type, high Feedback and Level so the voicing's loop, clip and LFO all show; the
+// test signal's peaks (~-7 dBFS) reach the clip.
+static unique_ptr<DelayProcessor> make_delay_dd8(int type, bool stereo) {
     auto fx = make_unique<DelayProcessor>();
+    fx->set_type(type);
+    fx->set_stereo_mode(stereo);
     fx->set_time(180.0f);
-    fx->set_right_time(180.0f);
-    fx->set_feedback_pct(55.0f);
-    fx->set_mix_pct(40.0f);
+    fx->set_right_time(270.0f);
+    fx->set_feedback_pct(65.0f);
+    fx->set_level_db(0.0f);
     return fx;
 }
 
-static unique_ptr<DelayProcessor> make_delay_stereo_mod_sat() {
-    auto fx = make_unique<DelayProcessor>();
-    fx->set_stereo_mode(true);
-    fx->set_time(240.0f);
-    fx->set_right_time(240.0f);
-    fx->set_modulation(50.0f);
-    fx->set_saturation(50.0f);
-    fx->set_cross_feed(30.0f);
-    return fx;
-}
-
-static unique_ptr<DelayProcessor> make_delay_shimmer() {
-    auto fx = make_unique<DelayProcessor>();
-    fx->set_stereo_mode(true);
-    fx->set_shimmer_pct(60.0f);
-    return fx;
-}
-
-static unique_ptr<ReverbProcessor> make_reverb() {
+// An RV-6 type, Stereo on (A and B), Level, Tone and Time off noon so their laws count.
+static unique_ptr<ReverbProcessor> make_reverb_rv6(ReverbProcessor::Type type) {
     auto fx = make_unique<ReverbProcessor>();
-    fx->set_pre_delay(30.0f);
-    return fx;
-}
-
-static unique_ptr<ReverbProcessor> make_reverb_hall() {
-    auto fx = make_unique<ReverbProcessor>();
-    fx->set_type(static_cast<int>(ReverbProcessor::Type::HALL));
+    fx->set_type(static_cast<int>(type));
     fx->set_stereo_mode(true);
-    return fx;
-}
-
-static unique_ptr<ReverbProcessor> make_reverb_room() {
-    auto fx = make_unique<ReverbProcessor>();
-    fx->set_type(static_cast<int>(ReverbProcessor::Type::ROOM));
-    fx->set_pre_delay(120.0f);
-    return fx;
-}
-
-static unique_ptr<ReverbProcessor> make_reverb_stereo_shimmer() {
-    auto fx = make_unique<ReverbProcessor>();
-    fx->set_stereo_mode(true);
-    fx->set_shimmer_pct(60.0f);
+    fx->set_mix_pct(70.0f);
+    fx->set_damping_pct(35.0f);
+    fx->set_room_size_pct(60.0f);
     return fx;
 }
 
@@ -358,13 +390,6 @@ static unique_ptr<TransposeProcessor> make_transpose_up() {
 static unique_ptr<VolumeProcessor> make_volume() {
     auto fx = make_unique<VolumeProcessor>();
     fx->set_position_pct(40.0f);
-    return fx;
-}
-
-static unique_ptr<ChorusProcessor> make_chorus(int mode) {
-    auto fx = make_unique<ChorusProcessor>();
-    fx->set_mode(mode);
-    fx->set_stereo_mode(true);
     return fx;
 }
 
@@ -426,6 +451,7 @@ private slots:
     void effects_data();
     void effects();
     void mono_to_stereo_edge();
+    void shimmer_streaming();
     void tuner_detects_pitch();
 
 private:
@@ -461,40 +487,82 @@ void DspGoldenTest::initTestCase() {
         }
     };
 
-    both("gate", &make_gate);
-    both("compressor", &make_compressor);
-    both("wah", [] {
-        return make_unique<DynamicWahProcessor>();
+    both("gate-ns2", &make_gate_ns2);
+    both("compressor-cs3", &make_compressor_cs3);
+    both("wah-aw3-up", [] {
+        return make_wah_aw3(DynamicWahProcessor::AW3_UP);
     });
-    both("wah-pedal", &make_wah_pedal);
-    both("flanger", &make_flanger);
-    both("flanger-stereo", &make_flanger_stereo);
-    both("phaser", [] {
-        return make_unique<PhaserProcessor>();
+    both("wah-aw3-down", [] {
+        return make_wah_aw3(DynamicWahProcessor::AW3_DOWN);
     });
-    both("phaser-feedback", &make_phaser_feedback);
+    both("wah-aw3-sharp", [] {
+        return make_wah_aw3(DynamicWahProcessor::AW3_SHARP);
+    });
+    both("flanger-bf3-standard", [] {
+        return make_flanger_bf3(FlangerProcessor::BF3_STANDARD, false);
+    });
+    both("flanger-bf3-ultra-fast", [] {
+        return make_flanger_bf3(FlangerProcessor::BF3_ULTRA, true);
+    });
+    both("flanger-bf3-stereo", [] {
+        auto fx = make_flanger_bf3(FlangerProcessor::BF3_STANDARD, true);
+        fx->set_stereo_mode(true);
+        return fx;
+    });
+    both("phaser-ph3-4-res", [] {
+        return make_phaser_ph3(PhaserProcessor::PH3_4_STAGE, false);
+    });
+    both("phaser-ph3-8-res", [] {
+        return make_phaser_ph3(PhaserProcessor::PH3_8_STAGE, false);
+    });
+    both("phaser-ph3-12", [] {
+        return make_phaser_ph3(PhaserProcessor::PH3_12_STAGE, false);
+    });
+    both("phaser-ph3-rise-stereo", [] {
+        return make_phaser_ph3(PhaserProcessor::PH3_RISE, true);
+    });
+    both("phaser-ph3-step", [] {
+        return make_phaser_ph3(PhaserProcessor::PH3_STEP, false);
+    });
+    both("rotary-slow-stereo", [] {
+        return make_rotary(false, true);
+    });
+    both("rotary-fast", [] {
+        return make_rotary(true, false);
+    });
+    both("rotary-m2-drive", [] {
+        return make_rotary(false, true, RotaryProcessor::MODE_II, 50.0f);
+    });
+    both("rotary-m3-drive", [] {
+        return make_rotary(false, true, RotaryProcessor::MODE_III, 50.0f);
+    });
     both("drive", &make_drive);
-    both("eq", &make_eq);
-    for (int mode = std::to_underlying(ChorusProcessor::Mode::NORMAL);
-         mode <= std::to_underlying(ChorusProcessor::Mode::SPATIAL); ++mode) {
-        both("chorus-" + std::to_string(mode), [mode] {
-            return make_chorus(mode);
+    both("eq-ge7", &make_eq_ge7);
+    both("chorus-ce5", [] {
+        return make_chorus_ce5(false);
+    });
+    both("chorus-ce5-stereo-filters", [] {
+        return make_chorus_ce5(true);
+    });
+    both("tremolo-tr2", [] {
+        return make_tremolo_tr2(false);
+    });
+    both("tremolo-tr2-stereo", [] {
+        return make_tremolo_tr2(true);
+    });
+    for (int type = DelayProcessor::FIRST_TYPE; type <= DelayProcessor::LAST_TYPE; ++type) {
+        both("delay-dd8-" + std::to_string(type), [type] {
+            return make_delay_dd8(type, false);
         });
     }
-    both("chorus-mono-mode", [] {
-        return make_unique<ChorusProcessor>();
+    both("delay-dd8-tape-stereo", [] {
+        return make_delay_dd8(DelayProcessor::DD8_TAPE, true);
     });
-    both("tremolo", [] {
-        return make_unique<TremoloProcessor>();
-    });
-    both("tremolo-stereo", &make_tremolo_stereo);
-    both("delay", &make_delay);
-    both("delay-stereo-mod-sat", &make_delay_stereo_mod_sat);
-    both("delay-shimmer", &make_delay_shimmer);
-    both("reverb", &make_reverb);
-    both("reverb-hall", &make_reverb_hall);
-    both("reverb-room", &make_reverb_room);
-    both("reverb-stereo-shimmer", &make_reverb_stereo_shimmer);
+    for (int type = ReverbProcessor::FIRST_TYPE; type <= ReverbProcessor::LAST_TYPE; ++type) {
+        both("reverb-rv6-" + std::to_string(type), [type] {
+            return make_reverb_rv6(static_cast<ReverbProcessor::Type>(type));
+        });
+    }
     both("transpose-down", &make_transpose_down);
     both("transpose-up", &make_transpose_up);
     both("volume", &make_volume);
@@ -546,6 +614,65 @@ void DspGoldenTest::effects() {
     }
 }
 
+// The measured model runs its filters on a 48 kHz clock, including when a host block
+// ends inside a partition. Changing knob cells during a release must be repeatable
+// after reset at the same sample, regardless of the host's callback sizes.
+void DspGoldenTest::shimmer_streaming() {
+    auto fx = make_reverb_rv6(ReverbProcessor::Type::RV6_SHIMMER);
+    fx->set_enabled(true);
+    for (const int rate : {44100, 48000, 96000}) {
+        fx->set_sample_rate(rate);
+        const size_t frames = static_cast<size_t>(rate / 2) + 37;
+        const size_t change = frames / 3;
+        auto render = [&](bool irregular) {
+            std::array<vector<float>, 2> audio{vector<float>(frames), vector<float>(frames)};
+            for (size_t i = 0; i < 2000; ++i) {
+                audio[0][i] = input_left(i);
+            }
+            fx->set_mix_pct(65);
+            fx->set_room_size_pct(35);
+            fx->set_damping_pct(64);
+            fx->process(audio[0].data(), audio[1].data(), 0, false);
+            fx->reset();
+            for (size_t i = 0, block = 0; i < frames; ++block) {
+                if (i == change) {
+                    fx->set_room_size_pct(81);
+                    fx->set_damping_pct(17);
+                }
+                const size_t n =
+                    std::min(irregular ? BLOCK_SIZES[block % std::size(BLOCK_SIZES)] : size_t{256},
+                             (i < change ? change : frames) - i);
+                fx->process(audio[0].data() + i, audio[1].data() + i, n, false);
+                i += n;
+            }
+            return audio;
+        };
+        const auto uniform = render(false);
+        QVERIFY(uniform == render(true));
+        QVERIFY(uniform[0] != uniform[1]);
+        for (const auto& side : uniform) {
+            QVERIFY(
+                std::any_of(side.begin() + static_cast<ptrdiff_t>(change), side.end(), [](float x) {
+                    return std::abs(x) > 0.00001f;
+                }));
+        }
+        fx->set_mix_pct(0);
+        float left = .25f, right = -.125f;
+        fx->process(&left, &right, 0, true);
+        fx->reset();
+        fx->process(&left, &right, 1, true);
+        QCOMPARE(left, .25f);
+        QCOMPARE(right, -.125f);
+        fx->set_type(static_cast<int>(ReverbProcessor::Type::RV6_PLATE));
+        fx->process(&left, &right, 1, true);
+        fx->set_type(static_cast<int>(ReverbProcessor::Type::RV6_SHIMMER));
+        fx->set_mix_pct(100);
+        std::array<float, 4096> l{}, r{}, silence{};
+        fx->process(l.data(), r.data(), l.size(), false);
+        QVERIFY(l == silence && r == silence);
+    }
+}
+
 // The tuner's output is a passthrough; what matters is its pitch readout. Its
 // detector runs on a worker thread, so wait (bounded) for a steady A2.
 void DspGoldenTest::tuner_detects_pitch() {
@@ -575,15 +702,24 @@ void DspGoldenTest::tuner_detects_pitch() {
 // output, not a cold or stale right channel.
 void DspGoldenTest::mono_to_stereo_edge() {
     const std::map<string, std::function<unique_ptr<EffectBase>()>> makers = {
-        {"gate", make_gate},
-        {"compressor", make_compressor},
-        {"wah", make_wah_pedal},
-        {"flanger", make_flanger},
-        {"phaser", make_phaser_feedback},
-        {"eq", make_eq},
+        {"gate-ns2", make_gate_ns2},
+        {"compressor", make_compressor_cs3},
+        {"wah",
+         [] {
+             return make_wah_aw3(DynamicWahProcessor::AW3_UP);
+         }},
+        {"flanger",
+         [] {
+             return make_flanger_bf3(FlangerProcessor::BF3_STANDARD, false);
+         }},
+        {"phaser",
+         [] {
+             return make_phaser_ph3(PhaserProcessor::PH3_8_STAGE, false);
+         }},
+        {"eq-ge7", make_eq_ge7},
         {"chorus",
          [] {
-             return make_chorus(0);
+             return make_chorus_ce5(false);
          }},
     };
     constexpr size_t FRAMES = 128;

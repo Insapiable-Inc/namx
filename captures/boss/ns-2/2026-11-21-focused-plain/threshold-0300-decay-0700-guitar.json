@@ -1,0 +1,79 @@
+{
+  "take": "threshold-0300-decay-0700-guitar",
+  "pedal": "Boss NS-2 Noise Suppressor \u2014 the gain read directly: the signal into INPUT, a probe into RETURN (mono: OUTPUT)",
+  "bypass": false,
+  "settings": {
+    "Threshold": "3:00",
+    "Decay": "7:00",
+    "Mode": "REDUCTION"
+  },
+  "note": "Leave every control in place: the guitar at the same setting.",
+  "marker_to_pedal": false,
+  "loop_probe": {
+    "freq": [
+      1877,
+      2341,
+      3163
+    ],
+    "level_db": -12
+  },
+  "signal": {
+    "type": "sequence",
+    "tail": 0,
+    "parts": [
+      {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "seconds": 13,
+        "tail": 1.5
+      },
+      {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "seconds": 12,
+        "tail": 1.5
+      },
+      {
+        "type": "file",
+        "path": "captures/di/notes.wav",
+        "start": 48,
+        "seconds": 22,
+        "tail": 1.5
+      },
+      {
+        "type": "file",
+        "path": "captures/di/dynamics.wav",
+        "seconds": 15,
+        "tail": 1.5
+      }
+    ]
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -19.34,
+    "loop": -19.34
+  },
+  "latency_samples": 577,
+  "latency_quality": 0.839,
+  "xruns": 0,
+  "played_sha256": "ec4fac4f162f9ca19c3ba26997cffbeb67ca152aacf2b2b990c74c0a35fc7eb2",
+  "recorded_at": "2026-11-21T16:36:44",
+  "tool_commit": "7a49ecb6d9caa19c1327cfe1db8c236f0a96bd7f",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Boss NS-2 on its 9 V adapter: the guitar DI dataset. Input from interface out 3; OUTPUT -> input 2; INST, AIR off, pad on, gain fully counter-clockwise."
+  }
+}

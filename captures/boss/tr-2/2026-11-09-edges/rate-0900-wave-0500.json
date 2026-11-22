@@ -1,0 +1,46 @@
+{
+  "take": "rate-0900-wave-0500",
+  "pedal": "Boss TR-2 Tremolo \u2014 the square settings' edges: a steady tone (mono)",
+  "bypass": false,
+  "settings": {
+    "Rate": "9:00",
+    "Wave": "5:00",
+    "Depth": "5:00"
+  },
+  "note": "",
+  "signal": {
+    "type": "sine",
+    "freq": 9000,
+    "seconds": 20,
+    "level_db": -6,
+    "tail": 1.0
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -19.62,
+    "loop": -19.02
+  },
+  "latency_samples": 583,
+  "latency_quality": 0.998,
+  "xruns": 0,
+  "played_sha256": "24eb5002b7612349c46800bd1dbeeabd3f6ffdb1d9c3d828934dfba3ea2ced1c",
+  "recorded_at": "2026-11-09T22:45:11",
+  "tool_commit": "e4510e8d5c316787ece1af6b7155773623148ff4",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX4",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Boss TR-2 on its 9 V adapter: the guitar DI dataset. Input from interface out 3; OUTPUT -> input 2; INST, AIR off, pad on, gain fully counter-clockwise."
+  }
+}

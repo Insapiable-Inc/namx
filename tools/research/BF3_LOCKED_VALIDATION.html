@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8">
+<title>NAM-X — BF-3 validation with untouched fixed controls</title>
+<style>
+body{font:17px/1.55 system-ui,sans-serif;color:#202a34;background:#fafaf8;max-width:1100px;margin:40px auto;padding:0 25px}h1,h2{line-height:1.2;color:#12394a}h2{margin-top:2em}table{border-collapse:collapse;width:100%;font-size:15px;margin:20px 0}td,th{border-bottom:1px solid #ccd5d7;padding:9px;text-align:left;vertical-align:top}th{background:#e8eff0}pre{white-space:pre-wrap;background:#edf1f2;padding:18px;font-size:14px}img{max-width:100%}a{color:#006e87}.note{border-left:4px solid #16839a;padding:12px 20px;background:#edf5f5}code{font-size:.9em}@media print{body{font-size:11pt;margin:0;max-width:none}h2{break-after:avoid}}
+</style>
+<h1>BF-3: the new captures support the phase candidate</h1>
+<p>30 October 2026 · Standard mode, 48 kHz · New physical captures after model selection</p>
+<p class="note"><strong>Assessment:</strong> the candidate's improvement survives the intended test: estimate delay once from the first minimum-Res take, then freeze it while changing Res. At Res 3:00 and maximum, spectral RMS falls from 1.213/1.516 dB to 0.400/0.469 dB. The comparison favors the three-biquad filter with current-wet feedback over the same filter with the existing cached-feedback schedule. This supports a 48 kHz implementation/listening prototype. More BF-3 captures are not the immediate priority.</p>
+<p>This extends the <a href="BF3_PHASE_FOLLOWUP.html">phase-model follow-up and mathematical specification</a> and the <a href="BOSS_PEDAL_RESEARCH_AUDIT.html">nine-pedal audit</a>. No production DSP was modified, and no candidate filter, gain, Res value or compensation constant was fitted to these new captures.</p>
+
+<h2>1. Capture validity and the corrected take</h2>
+<p>The <a href="../capture/plans/bf-3-standard-locked.json">six-take plan</a> uses identical 10-second logarithmic sweeps from 20 Hz to 20 kHz, −24 dB relative to the rig reference, with two-second tails. Standard mode; Manual noon; Depth and Rate minimum. The protocol leaves these three controls and interface gains untouched and changes only Res and bypass. The Scarlett was verified in Pro Audio at 48 kHz/128 frames, direct PCM 3/4 routing, Input 2 INST/pad on and Air off. The inherited playback reference is −4.67 dBFS; this was not a new absolute level calibration.</p>
+<p><strong>Observed:</strong> all six active recordings have matching played-float32 SHA-256 hashes and zero reported xruns. No sample reaches |x|≥.999. The loudest sweep body, maximum Res, peaks at −18.50 dBFS on the pedal channel. The old measured pedal ceiling was around −11 dBFS in this rig, so this sweep has useful headroom against that previous observation; neither the digital peak test nor that comparison proves absence of subtle nonlinearity. Final half-second pedal noise is approximately −83.6 dBFS RMS at minimum Res and −80.8 dBFS at maximum.</p>
+<table><tr><th>Repeat check</th><th>Observed difference</th><th>Interpretation</th></tr>
+<tr><td>Bypass after / before, 100 Hz–10 kHz</td><td>0.00085 dB RMS unsmoothed; 0.00026 dB with evaluation smoothing</td><td>No material gain/shape drift in the two bracketing references</td></tr>
+<tr><td>Minimum-Res after / before, 100 Hz–10 kHz</td><td>0.00280 dB RMS unsmoothed; 0.00229 dB smoothed</td><td>The repeated engaged setting is far more consistent than either model's error</td></tr>
+<tr><td>Loopback relative to first bypass, 100 Hz–16 kHz</td><td>Median gain changes under 0.00023 dB; spectral shape RMS about 0.00091 dB</td><td>The interface transfer agrees closely across the recordings</td></tr>
+<tr><td>Separated dry arrival, 300 Hz–5 kHz</td><td>Relative phase-slope timing within about 0.0021 samples of the first engaged take</td><td>No material common pedal-transport shift in this diagnostic</td></tr></table>
+<p>The stored integer round-trip latencies vary from 449 to 583 samples; each is removed using its own loopback marker. After alignment, the loopback phase-slope differences are below 0.000005 sample. Those tiny numbers characterize these deterministic recordings and this estimator; they are not general timing accuracy or population confidence bounds. A full mid-take dropout/clock-drift certification was not performed.</p>
+<p>The first attempt at take 3 had Res at 9:00 rather than 3:00, as reported by the user. Its original WAV, played WAV and sidecar were archived unchanged under <code>discarded/std-res-0300-24-actual-res-0900</code>, alongside an explicit correction record. The replacement at 3:00 is the primary test. It was recorded after the final bypass, so it is not temporally bracketed by the two bypass checks. Its loopback and separated dry arrival nevertheless agree with the earlier recordings. The archived 9:00 take is used only as a separately labeled supplementary check, with r=.146 from the existing map.</p>
+
+<h2>2. The prospective comparison</h2>
+<p>The primary metric is the previous study's RMS dB-magnitude residual over 100 Hz–10 kHz: power-smoothed from f/1.01 to 1.01f and averaged over uniform FFT bins. The impulse extraction preserves 50 ms of negative times in a 0.5-second response. Each model estimates its own effective delay from the <em>first minimum-Res take only</em>, within the previously declared ±4% range around 2.005 ms. This parameter is then frozen. All gains, tone filters, compensation and feedback coefficients remain exactly those selected before the new recordings.</p>
+<table><tr><th>Setting / role</th><th>Current model</th><th>Candidate filter + cached feedback</th><th>Candidate filter + current-wet feedback</th></tr>
+<tr><td>First minimum Res: timing calibration</td><td>1.183 dB</td><td>0.400 dB</td><td>0.400 dB</td></tr>
+<tr><td>Res 3:00: held out</td><td>1.213 dB</td><td>0.953 dB</td><td><strong>0.400 dB</strong></td></tr>
+<tr><td>Res maximum: held out</td><td>1.516 dB</td><td>1.282 dB</td><td><strong>0.469 dB</strong></td></tr>
+<tr><td>Minimum Res repeat: held out</td><td>1.183 dB</td><td>0.400 dB</td><td>0.400 dB</td></tr>
+<tr><td>Actual Res 9:00: supplementary archived take</td><td>1.362 dB</td><td>0.499 dB</td><td>0.385 dB</td></tr></table>
+<p>The current model's calibration delay is 1.986011 ms; the HP2 candidate's is 1.959810 ms. These are effective parameters under different filter-phase conventions. Their difference is not a measured change in the physical pedal's delay. Neither value should replace the nominal Manual table based on this one control setting.</p>
+<p><strong>Post-hoc check, excluded from the primary scores:</strong> allowing the preferred candidate to re-estimate delay on Res 3:00 improves RMS only from .4001 to .3955 dB; maximum Res improves from .4686 to .4672 dB. The corresponding changes are −0.0235 and −0.0135 sample. Thus per-take retiming is no longer responsible for the observed advantage. This does not establish predictive accuracy at every Manual position: the new experiment holds Manual at one position and calibrates that position once.</p>
+<img src="bf3_locked_validation.png" alt="New BF-3 held-out Res responses and signed residuals, with model delay frozen from the first minimum-Res take. The candidate with current-wet feedback improves the bass shape and resonance alignment.">
+
+<h2>3. Mathematical conclusion and remaining error</h2>
+<pre>D(z) = z^(−N) [(1−μ) + μz^(−1)], d = N+μ
+Z(z) = W(z)D(z)
+
+Cached wet feedback:   H(z) = gd + gw Z(z) / [1 − r z^(−1)Z(z)]
+Current wet feedback:  H(z) = gd + gw Z(z) / [1 − r Z(z)]</pre>
+<p>The new captures favor the second equation with the previously selected HP2 wet filter. Both candidate variants have identical filter and gains, and identical delay calibration at r=0; their higher-Res difference therefore tests the loop timing within this model family. This supports that behavioral architecture, not recovery of the pedal's original circuitry or uniquely identified physical loop latency.</p>
+<table><tr><th>Residual / held-out setting</th><th>Current</th><th>Preferred candidate</th></tr>
+<tr><td>80–200 Hz RMS, Res 3:00</td><td>4.225 dB</td><td>0.379 dB</td></tr>
+<tr><td>80–200 Hz RMS, maximum Res</td><td>4.932 dB</td><td>0.465 dB</td></tr>
+<tr><td>10–16 kHz RMS, Res 3:00</td><td>0.291 dB</td><td>0.668 dB</td></tr>
+<tr><td>10–16 kHz RMS, maximum Res</td><td>0.306 dB</td><td>0.675 dB</td></tr></table>
+<p>The treble tradeoff persists. At maximum Res, the candidate's 100 Hz–10 kHz residual has 95th-percentile absolute error .993 dB and maximum absolute error 2.053 dB after smoothing; the small RMS does not mean every resonance is exact. The model remains substantially above the measured repeat difference. Audibility is not determined by any of these scalar scores.</p>
+<p>The simpler HP1 candidate scores .396/.429 dB at the two primary held-out Res settings, slightly better in aggregate than HP2. However, its 80–200 Hz errors are 1.482/1.704 dB versus HP2's .379/.465 dB. Retain HP2 as the preferred listening prototype because its bass advantage is substantial across old and new captures; do not choose filter order from the single aggregate score alone. No further filter or Res fitting was performed on the new test set.</p>
+
+<h2>4. Waveform check</h2>
+<p>A secondary check convolves each actual played sweep with the predicted response, including the measured before-bypass transfer and a fixed .553514 ms common transport estimated from the first engaged take's separated dry impulse (window −1 to +1.5 ms; phase slope 300 Hz–5 kHz). The predicted and recorded outputs receive the same ideal 100 Hz–10 kHz band limit. Parseval's identity gives normalized waveform RMS error, including tails. There is no output-gain fit or timing adjustment on the evaluated takes.</p>
+<table><tr><th>Setting</th><th>Current waveform NRMSE</th><th>Preferred candidate NRMSE</th></tr>
+<tr><td>Res 3:00</td><td>38.48%</td><td>9.65%</td></tr>
+<tr><td>Maximum Res</td><td>54.42%</td><td>16.73%</td></tr>
+<tr><td>Minimum Res repeat</td><td>25.83%</td><td>7.58%</td></tr></table>
+<p>These percentages include phase and amplitude mismatch, have a different weighting from the dB-frequency score, and are not percentages of perceived similarity. The waveform calculation uses a double-precision frequency-domain realization with a finite impulse window, not a compiled C++ render. Its remaining error can reflect filter phase, resonance height, the approximate common transport and other unmodeled behavior. These quiet static sweeps do not independently validate moving-comb behavior or nonlinear distortion at guitar level.</p>
+
+<h2>5. Handoff and next action</h2>
+<p><strong>Recommendation:</strong> proceed to a 48 kHz Standard prototype using the exact three-biquad coefficients, −0.24726 dB wet-filter correction inside every loop pass, .0529851 ms delay compensation, existing Res map and current-wet feedback schedule specified in the <a href="BF3_PHASE_FOLLOWUP.html">previous report</a>. No new parameter values are needed from this experiment. In the current DelayLine API, reading before pushing requires <code>interpolate(d−1)</code> to realize d samples relative to the current input; the minimum delay exceeds one sample, so there is no algebraic loop.</p>
+<p>The implementation agent should first match the numerical reference at fixed delays, then compare the existing modulation clicks/bursts and guitar material, concentrating on bass improvement, treble balance, fast sweeps and maximum Res. Keep the candidate selectable for a controlled comparison. The prior sample-rate warning remains: stable coefficients redesigned at other rates are not necessarily equivalent in the treble. This evidence supports the 48 kHz prototype, not an unvalidated multi-rate production replacement.</p>
+<p><strong>No additional BF-3 hardware session is needed before that comparison.</strong> If listening exposes a clear problem, target that behavior. The next separate research captures would be CS-3 jump-size/carrier generalization and NS-2 near-threshold history, as described in the collection audit; those are not prerequisites for assessing this BF-3 candidate.</p>
+
+<h2>6. Reproduction and provenance</h2>
+<pre>OPENBLAS_NUM_THREADS=1 MPLCONFIGDIR=/tmp/namx-mpl \
+  python tools/research/analyze_bf3_locked.py \
+  captures/boss/bf-3/2026-10-30-standard-locked</pre>
+<p><a href="analyze_bf3_locked.py">Analysis script</a> · <a href="bf3_locked_results.json">complete results, hashes and diagnostics</a> · <a href="bf3_locked_validation.png">figure</a> · <a href="bf3_complex_results.json">unchanged pre-capture candidate coefficients</a>. WAVs are stored in the repository's capture directory and remain outside Git. The metadata, run log and correction record document the retake. Capture sidecars report the active main checkout's commit; <code>rig.capture_tools_source_commit</code> records the actual unchanged capture-tool source copied from <code>pedals/all</code>.</p>
+</html>

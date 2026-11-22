@@ -1,0 +1,62 @@
+{
+  "take": "bypass-probe",
+  "pedal": "Boss NS-2 Noise Suppressor \u2014 the gain read directly: the signal into INPUT, a probe into RETURN (mono: OUTPUT)",
+  "bypass": true,
+  "settings": {},
+  "note": "The pedal off (its CHECK light off): the probe's reference. Cabling for the whole session: interface out 3 to INPUT; unplug the loopback cable from interface input 5 and plug that end into the pedal's RETURN (the other end stays in interface out 4); nothing in SEND; OUTPUT to interface input 2; the 9 V adapter. You will hear a steady three-note tone: that is the probe. With the pedal on it pumps as the gate works.",
+  "marker_to_pedal": false,
+  "loop_probe": {
+    "freq": [
+      1877,
+      2341,
+      3163
+    ],
+    "level_db": -12
+  },
+  "signal": {
+    "type": "sequence",
+    "tail": 0,
+    "parts": [
+      {
+        "type": "silence",
+        "seconds": 2,
+        "tail": 0
+      },
+      {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 3,
+        "tail": 1
+      }
+    ]
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -25.76,
+    "loop": -25.76,
+    "probe_reach_db": -9.1
+  },
+  "latency_samples": 456,
+  "latency_quality": 0.998,
+  "xruns": 0,
+  "played_sha256": "d813157ea9fa88ac62bd2d42c7b06337599387d78f5199594776b4230eb77022",
+  "recorded_at": "2026-11-21T17:28:11",
+  "tool_commit": "db5f29daa7e5c152314d07bb255d4cdd81290ca6",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Boss NS-2 on its 9 V adapter: the guitar DI dataset. Input from interface out 3; OUTPUT -> input 2; INST, AIR off, pad on, gain fully counter-clockwise."
+  }
+}

@@ -1,0 +1,431 @@
+{
+  "prepared_from_commit": "23992ceb69ba8fad89e5dc39f3f9f95e227b8efc",
+  "source_model_commit": "8efe8368502646173d9d58b96ebbaa7d39f404b2",
+  "model_source_sha256": {
+    "src/dsp/Ns2Gate.h": "79d26800a5c7b45c891d8f89f6feef893593a6fa13984a2010489c4c3861c1fe",
+    "src/dsp/NoiseGateProcessor.cpp": "93da11fdf6dccd3dfbecf0f1db3857b746baec48bff5ee2360adfa6286731cde",
+    "tools/capture/analyze_ns2.py": "3d6b75836ae117c0d80002f1c822b1cee2ce3438bfde67a5aa82d226d70b5877"
+  },
+  "locator_results_sha256": "d09b01e4788316e15ffff25281ff2cc446b85df9ebf455b7dd4fa74aae462fc0",
+  "stimulus": {
+    "path": "captures/stimuli/ns-2-history-1000.wav",
+    "rate": 48000,
+    "frames": 6144000,
+    "float32_samples_sha256": "e5cc80e124dd6d17503be6309210fcbc0dd42686903612c2a41fbb2d2343db54",
+    "identity_note": "Float32 sample hash defines the generated stimulus; WAV container metadata may contain a creation timestamp.",
+    "expected_played_sha256": "0195a89c5b39aed866f52abcdc54755e363ee558ffc43d8312eb14bb89f8c6e3",
+    "expected_bypass_played_sha256": "fc0e5c4cccd130780eccb93140b54ff709b3a200ca2b5e43074720fb756e23a7",
+    "transitions": "1 ms cosine amplitude ramps, continuous-phase 1 kHz sine; reset amplitude zero."
+  },
+  "segments": [
+    {
+      "start_s": 0,
+      "duration_s": 24,
+      "role": "quiet_reset",
+      "input_db": null,
+      "probe_level_db": -56
+    },
+    {
+      "start_s": 24,
+      "duration_s": 8,
+      "role": "probe_after_quiet",
+      "input_db": -56,
+      "probe_level_db": -56
+    },
+    {
+      "start_s": 32,
+      "duration_s": 2,
+      "role": "loud_conditioning",
+      "input_db": -12,
+      "probe_level_db": -56
+    },
+    {
+      "start_s": 34,
+      "duration_s": 8,
+      "role": "probe_after_loud",
+      "input_db": -56,
+      "probe_level_db": -56
+    },
+    {
+      "start_s": 42,
+      "duration_s": 24,
+      "role": "quiet_reset",
+      "input_db": null,
+      "probe_level_db": -54
+    },
+    {
+      "start_s": 66,
+      "duration_s": 8,
+      "role": "probe_after_quiet",
+      "input_db": -54,
+      "probe_level_db": -54
+    },
+    {
+      "start_s": 74,
+      "duration_s": 2,
+      "role": "loud_conditioning",
+      "input_db": -12,
+      "probe_level_db": -54
+    },
+    {
+      "start_s": 76,
+      "duration_s": 8,
+      "role": "probe_after_loud",
+      "input_db": -54,
+      "probe_level_db": -54
+    },
+    {
+      "start_s": 84,
+      "duration_s": 24,
+      "role": "quiet_reset",
+      "input_db": null,
+      "probe_level_db": -44
+    },
+    {
+      "start_s": 108,
+      "duration_s": 8,
+      "role": "probe_after_quiet",
+      "input_db": -44,
+      "probe_level_db": -44
+    },
+    {
+      "start_s": 116,
+      "duration_s": 2,
+      "role": "loud_conditioning",
+      "input_db": -12,
+      "probe_level_db": -44
+    },
+    {
+      "start_s": 118,
+      "duration_s": 8,
+      "role": "probe_after_loud",
+      "input_db": -44,
+      "probe_level_db": -44
+    },
+    {
+      "start_s": 126,
+      "duration_s": 2,
+      "role": "open_reference",
+      "input_db": -12
+    }
+  ],
+  "gain_windows_seconds": [
+    [
+      0.1,
+      0.3
+    ],
+    [
+      1,
+      1.5
+    ],
+    [
+      3,
+      3.8
+    ],
+    [
+      6.5,
+      7.5
+    ]
+  ],
+  "levels_db": [
+    -56,
+    -54,
+    -44
+  ],
+  "model_threshold_variants_db": {
+    "original_map": -49.4,
+    "shifted_map_example": -54.29
+  },
+  "decay_ms": {
+    "0700": 24.6,
+    "0500": 460.3
+  },
+  "open_gain_offset_from_locator_db": 0.06005061641434306,
+  "frozen_predictions": {
+    "original_map": {
+      "0700": [
+        {
+          "input_db": -56,
+          "history": "probe_after_quiet",
+          "body_start_s": 24,
+          "gain_window_medians_db": [
+            -12.767384996570751,
+            -12.76738499657136,
+            -12.767384996572693,
+            -12.767384996575206
+          ]
+        },
+        {
+          "input_db": -56,
+          "history": "probe_after_loud",
+          "body_start_s": 34,
+          "gain_window_medians_db": [
+            0.6600506164922453,
+            -5.110736044448977,
+            -5.207384996413401,
+            -5.207384996422137
+          ]
+        },
+        {
+          "input_db": -54,
+          "history": "probe_after_quiet",
+          "body_start_s": 66,
+          "gain_window_medians_db": [
+            -10.989385635871376,
+            -10.989385635870194,
+            -10.989385635867762,
+            -10.989385635863766
+          ]
+        },
+        {
+          "input_db": -54,
+          "history": "probe_after_loud",
+          "body_start_s": 76,
+          "gain_window_medians_db": [
+            0.6600506168276311,
+            -3.3432330956894885,
+            -3.4293856354603407,
+            -3.429385635458264
+          ]
+        },
+        {
+          "input_db": -44,
+          "history": "probe_after_quiet",
+          "body_start_s": 108,
+          "gain_window_medians_db": [
+            0.6600506165455028,
+            0.6600506165470811,
+            0.6600506165503129,
+            0.660050616554199
+          ]
+        },
+        {
+          "input_db": -44,
+          "history": "probe_after_loud",
+          "body_start_s": 118,
+          "gain_window_medians_db": [
+            0.6600506165759424,
+            0.6600506165767648,
+            0.6600506165785003,
+            0.6600506165814015
+          ]
+        }
+      ],
+      "0500": [
+        {
+          "input_db": -56,
+          "history": "probe_after_quiet",
+          "body_start_s": 24,
+          "gain_window_medians_db": [
+            -12.767295049955814,
+            -12.767317694963882,
+            -12.767339567351122,
+            -12.767349234112771
+          ]
+        },
+        {
+          "input_db": -56,
+          "history": "probe_after_loud",
+          "body_start_s": 34,
+          "gain_window_medians_db": [
+            0.6600506164928476,
+            0.6600506164966192,
+            0.6600506165042788,
+            0.6600506165154151
+          ]
+        },
+        {
+          "input_db": -54,
+          "history": "probe_after_quiet",
+          "body_start_s": 66,
+          "gain_window_medians_db": [
+            -10.989297063977945,
+            -10.989319154726918,
+            -10.98934049176587,
+            -10.989349921925697
+          ]
+        },
+        {
+          "input_db": -54,
+          "history": "probe_after_loud",
+          "body_start_s": 76,
+          "gain_window_medians_db": [
+            0.6600506168491047,
+            0.6600506168497304,
+            0.6600506168509246,
+            0.6600506168525279
+          ]
+        },
+        {
+          "input_db": -44,
+          "history": "probe_after_quiet",
+          "body_start_s": 108,
+          "gain_window_medians_db": [
+            0.6600506165535769,
+            0.6600506165551554,
+            0.6600506165583879,
+            0.6600506165622733
+          ]
+        },
+        {
+          "input_db": -44,
+          "history": "probe_after_loud",
+          "body_start_s": 118,
+          "gain_window_medians_db": [
+            0.6600506165839344,
+            0.6600506165847568,
+            0.6600506165864926,
+            0.6600506165893937
+          ]
+        }
+      ]
+    },
+    "shifted_map_example": {
+      "0700": [
+        {
+          "input_db": -56,
+          "history": "probe_after_quiet",
+          "body_start_s": 24,
+          "gain_window_medians_db": [
+            -8.420174996571472,
+            -8.420174996571191,
+            -8.42017499657064,
+            -8.420174996567887
+          ]
+        },
+        {
+          "input_db": -56,
+          "history": "probe_after_loud",
+          "body_start_s": 34,
+          "gain_window_medians_db": [
+            0.6600506164940425,
+            -0.7635260445148877,
+            -0.8601749964807315,
+            -0.860174996490809
+          ]
+        },
+        {
+          "input_db": -54,
+          "history": "probe_after_quiet",
+          "body_start_s": 66,
+          "gain_window_medians_db": [
+            -6.8999493834440955,
+            -6.899949383442225,
+            -6.899949383438375,
+            -6.8999493834319985
+          ]
+        },
+        {
+          "input_db": -54,
+          "history": "probe_after_loud",
+          "body_start_s": 76,
+          "gain_window_medians_db": [
+            0.6600506168276027,
+            0.6600506168282265,
+            0.6600506168294223,
+            0.6600506168310258
+          ]
+        },
+        {
+          "input_db": -44,
+          "history": "probe_after_quiet",
+          "body_start_s": 108,
+          "gain_window_medians_db": [
+            0.6600506165467807,
+            0.6600506165483593,
+            0.6600506165515928,
+            0.6600506165554788
+          ]
+        },
+        {
+          "input_db": -44,
+          "history": "probe_after_loud",
+          "body_start_s": 118,
+          "gain_window_medians_db": [
+            0.6600506165771347,
+            0.6600506165779569,
+            0.6600506165796927,
+            0.6600506165825938
+          ]
+        }
+      ],
+      "0500": [
+        {
+          "input_db": -56,
+          "history": "probe_after_quiet",
+          "body_start_s": 24,
+          "gain_window_medians_db": [
+            -8.420084054817625,
+            -8.42010710101471,
+            -8.420129360900454,
+            -8.420139198918266
+          ]
+        },
+        {
+          "input_db": -56,
+          "history": "probe_after_loud",
+          "body_start_s": 34,
+          "gain_window_medians_db": [
+            0.6600506164958506,
+            0.6600506164996232,
+            0.6600506165072828,
+            0.660050616520068
+          ]
+        },
+        {
+          "input_db": -54,
+          "history": "probe_after_quiet",
+          "body_start_s": 66,
+          "gain_window_medians_db": [
+            -6.899892045208999,
+            -6.89991516113013,
+            -6.899937488361967,
+            -6.899947356145843
+          ]
+        },
+        {
+          "input_db": -54,
+          "history": "probe_after_loud",
+          "body_start_s": 76,
+          "gain_window_medians_db": [
+            0.660050616856741,
+            0.6600506168573667,
+            0.6600506168585627,
+            0.6600506168601643
+          ]
+        },
+        {
+          "input_db": -44,
+          "history": "probe_after_quiet",
+          "body_start_s": 108,
+          "gain_window_medians_db": [
+            0.6600506165559937,
+            0.660050616557572,
+            0.6600506165608057,
+            0.6600506165646918
+          ]
+        },
+        {
+          "input_db": -44,
+          "history": "probe_after_loud",
+          "body_start_s": 118,
+          "gain_window_medians_db": [
+            0.6600506165863493,
+            0.6600506165871717,
+            0.6600506165889074,
+            0.6600506165918085
+          ]
+        }
+      ]
+    }
+  },
+  "rules": [
+    "Primary scores do not fit new dynamic constants, threshold or gain offsets.",
+    "The original-map and shifted-map predictions share the unchanged model state equations. The shifted example uses a provisional opening point of -53 dB, midpoint between partial -54 and fully open -52 on the ascending locator; this is not a proven comparator threshold.",
+    "Use true locator-bypass coherent transfer at each probe level to normalize the new played signal. Check the closing bypass, -12 dB open references and loopback for changes; report any >0.1 dB bypass discrepancy before pooling. Do not use the nominal bypass takes from the old dynamics session.",
+    "Compare matched quiet/loud trajectories, within-probe early/late evolution and Decay dependence; exclude digital-zero resets from gain-ratio scores.",
+    "The 24 s reset is justified by the existing slow-state model but is not proof that the physical pedal is completely reset. Check recorded silence and probe repeatability; persistent history may require a longer-reset control.",
+    "The -44 dB probe and -12 dB conditioning onsets constrain prompt opening. A better near-threshold fit must not globally slow these controls.",
+    "Before proposing a new state, test whether threshold remapping or a change to an existing upward state law can explain all conditions. No original circuit identification is claimed."
+  ]
+}

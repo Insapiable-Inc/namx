@@ -1,0 +1,69 @@
+{
+  "take": "noon-hall",
+  "pedal": "Boss RV-6 Reverb \u2014 focused session, six modes (stereo: Input A -> Outputs A and B; Input B and EXP empty)",
+  "bypass": false,
+  "settings": {
+    "Mode": "Hall",
+    "E.Level": "12:00",
+    "Tone": "12:00",
+    "Time": "12:00"
+  },
+  "note": "",
+  "marker_to_pedal": false,
+  "signal": {
+    "type": "sequence",
+    "tail": 0,
+    "parts": [
+      {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 6
+      },
+      {
+        "type": "noise-steps",
+        "levels_db": [
+          -24,
+          -12,
+          0
+        ],
+        "step_seconds": 0.05,
+        "gap_seconds": 6,
+        "seed": 3,
+        "tail": 0
+      }
+    ]
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -16.37,
+    "loop": -16.26,
+    "pedal_b": -16.37
+  },
+  "latency_samples": 578,
+  "latency_quality": 0.998,
+  "xruns": 0,
+  "played_sha256": "47669ba7ffc8b7e003ebb63e91e3b054e034c9af3848b68413a762c49bd71e5d",
+  "recorded_at": "2026-11-15T12:47:30",
+  "tool_commit": "dcbb1d8bb8e9538d770bbdfe9ec8a0331433ae7a",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX4",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Boss RV-6 on its 9 V adapter: the guitar DI dataset. Input from interface out 3; OUTPUT A -> input 2, OUTPUT B -> input 1; INST, AIR off, pad on, gain fully counter-clockwise.",
+    "pedal_in_b": "Scarlett 8i6 USB Pro:capture_AUX0"
+  }
+}

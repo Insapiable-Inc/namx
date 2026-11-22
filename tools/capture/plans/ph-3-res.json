@@ -1,0 +1,2924 @@
+{
+  "pedal": "Boss PH-3 Phase Shifter — Res, above all in Rise and Fall (mono)",
+  "comment": "Why: with Res up, NAM-X's Rise and Fall are far from the pedal (a blind test, 2026-11-11: the pedal's peaks 16-25 dB over a baseline 8 dB under the dry, the model's about 13 over a baseline near it), and Res was never measured in those modes. Takes are grouped by knob setting: within a group only the Mode switch moves, so every mode sees exactly the same Rate, Depth and Res, and the 8 Stage take of a group says what loop gain that Res position really gave (in-between angles needn't be exact). The mode order runs forward in one group and backward in the next, so the switch never jumps back. Signals: nine quiet sines together (each tone's level on the output is the filter at its frequency at every moment; in Rise and Fall the pattern slides past each tone, which draws its whole shape); a sweep where the phaser stands still (Rate 7:00); the funk excerpt in one validation group. Part A: the Res ladder at seven positions, finer in the upper half where the model is worst, every mode, then the loudest setting again 12 dB up. Part D: the sweep stopped, Res at three positions (a still picture of the resonance; whether Rise stops at all is itself a question). Parts B and C: Depth at 12:00 and fully down. Part E: a fast Rate. Part V: two settings of the user's choice, in no fit. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise. The Mode switch's order on the pedal is 4, 8, 10, 12 Stage, Fall, Rise, Step: the groups follow it.",
+  "quiet_dbfs": -60,
+  "knobs": [
+    "Mode",
+    "Rate",
+    "Depth",
+    "Res"
+  ],
+  "takes": [
+    {
+      "name": "bypass-tones",
+      "bypass": true,
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      },
+      "note": "The pedal off (its LED off): three reference takes."
+    },
+    {
+      "name": "bypass-sweep",
+      "bypass": true,
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "bypass-funk",
+      "bypass": true,
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "seconds": 12,
+        "level_db": -12,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "a-res700-4stage",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      },
+      "note": "The pedal on. Rate 12:00, Depth fully clockwise for the whole of part A; only Res moves between groups, only Mode inside a group (seven takes). Res fully counter-clockwise."
+    },
+    {
+      "name": "a-res700-8stage",
+      "settings": {
+        "Mode": "8 Stage",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "a-res700-10stage",
+      "settings": {
+        "Mode": "10 Stage",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "a-res700-12stage",
+      "settings": {
+        "Mode": "12 Stage",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "a-res700-fall",
+      "settings": {
+        "Mode": "Fall",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "a-res700-rise",
+      "settings": {
+        "Mode": "Rise",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "a-res700-step",
+      "settings": {
+        "Mode": "Step",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "a-res900-step",
+      "settings": {
+        "Mode": "Step",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "9:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      },
+      "note": "Res to 9:00."
+    },
+    {
+      "name": "a-res900-rise",
+      "settings": {
+        "Mode": "Rise",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "9:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "a-res900-fall",
+      "settings": {
+        "Mode": "Fall",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "9:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "a-res900-12stage",
+      "settings": {
+        "Mode": "12 Stage",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "9:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "a-res900-10stage",
+      "settings": {
+        "Mode": "10 Stage",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "9:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "a-res900-8stage",
+      "settings": {
+        "Mode": "8 Stage",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "9:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "a-res900-4stage",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "9:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "a-res1200-4stage",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      },
+      "note": "Res to 12:00."
+    },
+    {
+      "name": "a-res1200-8stage",
+      "settings": {
+        "Mode": "8 Stage",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "a-res1200-10stage",
+      "settings": {
+        "Mode": "10 Stage",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "a-res1200-12stage",
+      "settings": {
+        "Mode": "12 Stage",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "a-res1200-fall",
+      "settings": {
+        "Mode": "Fall",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "a-res1200-rise",
+      "settings": {
+        "Mode": "Rise",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "a-res1200-step",
+      "settings": {
+        "Mode": "Step",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "a-res130-step",
+      "settings": {
+        "Mode": "Step",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "1:30"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      },
+      "note": "Res to about 1:30 (by eye: the 8 Stage take reads what it gave)."
+    },
+    {
+      "name": "a-res130-rise",
+      "settings": {
+        "Mode": "Rise",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "1:30"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "a-res130-fall",
+      "settings": {
+        "Mode": "Fall",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "1:30"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "a-res130-12stage",
+      "settings": {
+        "Mode": "12 Stage",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "1:30"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "a-res130-10stage",
+      "settings": {
+        "Mode": "10 Stage",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "1:30"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "a-res130-8stage",
+      "settings": {
+        "Mode": "8 Stage",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "1:30"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "a-res130-4stage",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "1:30"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "a-res300-4stage",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "3:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      },
+      "note": "Res to 3:00."
+    },
+    {
+      "name": "a-res300-8stage",
+      "settings": {
+        "Mode": "8 Stage",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "3:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "a-res300-10stage",
+      "settings": {
+        "Mode": "10 Stage",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "3:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "a-res300-12stage",
+      "settings": {
+        "Mode": "12 Stage",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "3:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "a-res300-fall",
+      "settings": {
+        "Mode": "Fall",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "3:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "a-res300-rise",
+      "settings": {
+        "Mode": "Rise",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "3:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "a-res300-step",
+      "settings": {
+        "Mode": "Step",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "3:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "a-res400-step",
+      "settings": {
+        "Mode": "Step",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "4:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      },
+      "note": "Res to about 4:00 (by eye)."
+    },
+    {
+      "name": "a-res400-rise",
+      "settings": {
+        "Mode": "Rise",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "4:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "a-res400-fall",
+      "settings": {
+        "Mode": "Fall",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "4:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "a-res400-12stage",
+      "settings": {
+        "Mode": "12 Stage",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "4:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "a-res400-10stage",
+      "settings": {
+        "Mode": "10 Stage",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "4:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "a-res400-8stage",
+      "settings": {
+        "Mode": "8 Stage",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "4:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "a-res400-4stage",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "4:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "a-res500-4stage",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      },
+      "note": "Res fully clockwise."
+    },
+    {
+      "name": "a-res500-8stage",
+      "settings": {
+        "Mode": "8 Stage",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "a-res500-10stage",
+      "settings": {
+        "Mode": "10 Stage",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "a-res500-12stage",
+      "settings": {
+        "Mode": "12 Stage",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "a-res500-fall",
+      "settings": {
+        "Mode": "Fall",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "a-res500-rise",
+      "settings": {
+        "Mode": "Rise",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "a-res500-step",
+      "settings": {
+        "Mode": "Step",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "a-res0500-rise-loud",
+      "settings": {
+        "Mode": "Rise",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -18,
+        "tail": 1.0
+      },
+      "note": "Nothing turned but Mode: the same setting, the tones 12 dB louder (does Res distort?)."
+    },
+    {
+      "name": "a-res0500-fall-loud",
+      "settings": {
+        "Mode": "Fall",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -18,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "a-res0500-8stage-loud",
+      "settings": {
+        "Mode": "8 Stage",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -18,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "d-stop-res500-rise-sweep",
+      "settings": {
+        "Mode": "Rise",
+        "Rate": "7:00",
+        "Depth": "5:00",
+        "Res": "5:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 1.0
+      },
+      "note": "Rate fully counter-clockwise (the sweep stops); Res still fully clockwise."
+    },
+    {
+      "name": "d-stop-res500-fall-sweep",
+      "settings": {
+        "Mode": "Fall",
+        "Rate": "7:00",
+        "Depth": "5:00",
+        "Res": "5:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "d-stop-res500-8stage-sweep",
+      "settings": {
+        "Mode": "8 Stage",
+        "Rate": "7:00",
+        "Depth": "5:00",
+        "Res": "5:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "d-stop-res500-4stage-sweep",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "7:00",
+        "Depth": "5:00",
+        "Res": "5:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "d-stop-res500-rise-tones",
+      "settings": {
+        "Mode": "Rise",
+        "Rate": "7:00",
+        "Depth": "5:00",
+        "Res": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      },
+      "note": "Mode back to Rise: the tones (is Rise really standing still?)."
+    },
+    {
+      "name": "d-stop-res300-4stage-sweep",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "7:00",
+        "Depth": "5:00",
+        "Res": "3:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 1.0
+      },
+      "note": "Res to 3:00."
+    },
+    {
+      "name": "d-stop-res300-8stage-sweep",
+      "settings": {
+        "Mode": "8 Stage",
+        "Rate": "7:00",
+        "Depth": "5:00",
+        "Res": "3:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "d-stop-res300-fall-sweep",
+      "settings": {
+        "Mode": "Fall",
+        "Rate": "7:00",
+        "Depth": "5:00",
+        "Res": "3:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "d-stop-res300-rise-sweep",
+      "settings": {
+        "Mode": "Rise",
+        "Rate": "7:00",
+        "Depth": "5:00",
+        "Res": "3:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "d-stop-res300-rise-tones",
+      "settings": {
+        "Mode": "Rise",
+        "Rate": "7:00",
+        "Depth": "5:00",
+        "Res": "3:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      },
+      "note": "Mode back to Rise: the tones (is Rise really standing still?)."
+    },
+    {
+      "name": "d-stop-res1200-4stage-sweep",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "7:00",
+        "Depth": "5:00",
+        "Res": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 1.0
+      },
+      "note": "Res to 12:00."
+    },
+    {
+      "name": "d-stop-res1200-8stage-sweep",
+      "settings": {
+        "Mode": "8 Stage",
+        "Rate": "7:00",
+        "Depth": "5:00",
+        "Res": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "d-stop-res1200-fall-sweep",
+      "settings": {
+        "Mode": "Fall",
+        "Rate": "7:00",
+        "Depth": "5:00",
+        "Res": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "d-stop-res1200-rise-sweep",
+      "settings": {
+        "Mode": "Rise",
+        "Rate": "7:00",
+        "Depth": "5:00",
+        "Res": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "d-stop-res1200-rise-tones",
+      "settings": {
+        "Mode": "Rise",
+        "Rate": "7:00",
+        "Depth": "5:00",
+        "Res": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      },
+      "note": "Mode back to Rise: the tones (is Rise really standing still?)."
+    },
+    {
+      "name": "b-d1200-res1200-4stage",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "12:00",
+        "Depth": "12:00",
+        "Res": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      },
+      "note": "Rate back to 12:00, Depth to 12:00; Res stays at 12:00."
+    },
+    {
+      "name": "b-d1200-res1200-8stage",
+      "settings": {
+        "Mode": "8 Stage",
+        "Rate": "12:00",
+        "Depth": "12:00",
+        "Res": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "b-d1200-res1200-fall",
+      "settings": {
+        "Mode": "Fall",
+        "Rate": "12:00",
+        "Depth": "12:00",
+        "Res": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "b-d1200-res1200-rise",
+      "settings": {
+        "Mode": "Rise",
+        "Rate": "12:00",
+        "Depth": "12:00",
+        "Res": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "b-d1200-res300-rise",
+      "settings": {
+        "Mode": "Rise",
+        "Rate": "12:00",
+        "Depth": "12:00",
+        "Res": "3:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      },
+      "note": "Res to 3:00."
+    },
+    {
+      "name": "b-d1200-res300-fall",
+      "settings": {
+        "Mode": "Fall",
+        "Rate": "12:00",
+        "Depth": "12:00",
+        "Res": "3:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "b-d1200-res300-8stage",
+      "settings": {
+        "Mode": "8 Stage",
+        "Rate": "12:00",
+        "Depth": "12:00",
+        "Res": "3:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "b-d1200-res300-4stage",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "12:00",
+        "Depth": "12:00",
+        "Res": "3:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "b-d1200-res500-4stage",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "12:00",
+        "Depth": "12:00",
+        "Res": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      },
+      "note": "Res fully clockwise."
+    },
+    {
+      "name": "b-d1200-res500-8stage",
+      "settings": {
+        "Mode": "8 Stage",
+        "Rate": "12:00",
+        "Depth": "12:00",
+        "Res": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "b-d1200-res500-fall",
+      "settings": {
+        "Mode": "Fall",
+        "Rate": "12:00",
+        "Depth": "12:00",
+        "Res": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "b-d1200-res500-rise",
+      "settings": {
+        "Mode": "Rise",
+        "Rate": "12:00",
+        "Depth": "12:00",
+        "Res": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "c-d0700-res500-rise",
+      "settings": {
+        "Mode": "Rise",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Res": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      },
+      "note": "Depth fully counter-clockwise; Res stays fully clockwise."
+    },
+    {
+      "name": "c-d0700-res500-fall",
+      "settings": {
+        "Mode": "Fall",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Res": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "c-d0700-res500-8stage",
+      "settings": {
+        "Mode": "8 Stage",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Res": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "c-d0700-res500-4stage",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Res": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "c-d0700-res300-4stage",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Res": "3:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      },
+      "note": "Res to 3:00."
+    },
+    {
+      "name": "c-d0700-res300-8stage",
+      "settings": {
+        "Mode": "8 Stage",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Res": "3:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "c-d0700-res300-fall",
+      "settings": {
+        "Mode": "Fall",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Res": "3:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "c-d0700-res300-rise",
+      "settings": {
+        "Mode": "Rise",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Res": "3:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "c-d0700-res1200-rise",
+      "settings": {
+        "Mode": "Rise",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Res": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      },
+      "note": "Res to 12:00."
+    },
+    {
+      "name": "c-d0700-res1200-fall",
+      "settings": {
+        "Mode": "Fall",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Res": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "c-d0700-res1200-8stage",
+      "settings": {
+        "Mode": "8 Stage",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Res": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "c-d0700-res1200-4stage",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Res": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "e-fast-res1200-8stage",
+      "settings": {
+        "Mode": "8 Stage",
+        "Rate": "3:00",
+        "Depth": "5:00",
+        "Res": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 6,
+        "level_db": -30,
+        "tail": 1.0
+      },
+      "note": "Rate to 3:00, Depth fully clockwise; Res stays at 12:00."
+    },
+    {
+      "name": "e-fast-res1200-fall",
+      "settings": {
+        "Mode": "Fall",
+        "Rate": "3:00",
+        "Depth": "5:00",
+        "Res": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 6,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "e-fast-res1200-rise",
+      "settings": {
+        "Mode": "Rise",
+        "Rate": "3:00",
+        "Depth": "5:00",
+        "Res": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 6,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "e-fast-res500-rise",
+      "settings": {
+        "Mode": "Rise",
+        "Rate": "3:00",
+        "Depth": "5:00",
+        "Res": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 6,
+        "level_db": -30,
+        "tail": 1.0
+      },
+      "note": "Res fully clockwise."
+    },
+    {
+      "name": "e-fast-res500-fall",
+      "settings": {
+        "Mode": "Fall",
+        "Rate": "3:00",
+        "Depth": "5:00",
+        "Res": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 6,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "e-fast-res500-8stage",
+      "settings": {
+        "Mode": "8 Stage",
+        "Rate": "3:00",
+        "Depth": "5:00",
+        "Res": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 6,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "v1-4stage",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "?",
+        "Depth": "?",
+        "Res": "?"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      },
+      "note": "Validation 1: Rate, Depth and Res wherever you like (not at an end stop or at 12:00), written down, not told; the same for this group's takes. Only Mode moves."
+    },
+    {
+      "name": "v1-8stage",
+      "settings": {
+        "Mode": "8 Stage",
+        "Rate": "?",
+        "Depth": "?",
+        "Res": "?"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "v1-10stage",
+      "settings": {
+        "Mode": "10 Stage",
+        "Rate": "?",
+        "Depth": "?",
+        "Res": "?"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "v1-12stage",
+      "settings": {
+        "Mode": "12 Stage",
+        "Rate": "?",
+        "Depth": "?",
+        "Res": "?"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "v1-fall",
+      "settings": {
+        "Mode": "Fall",
+        "Rate": "?",
+        "Depth": "?",
+        "Res": "?"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "v1-rise",
+      "settings": {
+        "Mode": "Rise",
+        "Rate": "?",
+        "Depth": "?",
+        "Res": "?"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "v1-step",
+      "settings": {
+        "Mode": "Step",
+        "Rate": "?",
+        "Depth": "?",
+        "Res": "?"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "v1-8stage-funk",
+      "settings": {
+        "Mode": "8 Stage",
+        "Rate": "?",
+        "Depth": "?",
+        "Res": "?"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "seconds": 12,
+        "level_db": -12,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "v1-fall-funk",
+      "settings": {
+        "Mode": "Fall",
+        "Rate": "?",
+        "Depth": "?",
+        "Res": "?"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "seconds": 12,
+        "level_db": -12,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "v1-rise-funk",
+      "settings": {
+        "Mode": "Rise",
+        "Rate": "?",
+        "Depth": "?",
+        "Res": "?"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "seconds": 12,
+        "level_db": -12,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "v2-step",
+      "settings": {
+        "Mode": "Step",
+        "Rate": "?",
+        "Depth": "?",
+        "Res": "?"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      },
+      "note": "Validation 2: Rate, Depth and Res wherever you like (not at an end stop or at 12:00), written down, not told; the same for this group's takes. Only Mode moves."
+    },
+    {
+      "name": "v2-rise",
+      "settings": {
+        "Mode": "Rise",
+        "Rate": "?",
+        "Depth": "?",
+        "Res": "?"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "v2-fall",
+      "settings": {
+        "Mode": "Fall",
+        "Rate": "?",
+        "Depth": "?",
+        "Res": "?"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "v2-12stage",
+      "settings": {
+        "Mode": "12 Stage",
+        "Rate": "?",
+        "Depth": "?",
+        "Res": "?"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "v2-10stage",
+      "settings": {
+        "Mode": "10 Stage",
+        "Rate": "?",
+        "Depth": "?",
+        "Res": "?"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "v2-8stage",
+      "settings": {
+        "Mode": "8 Stage",
+        "Rate": "?",
+        "Depth": "?",
+        "Res": "?"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "v2-4stage",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "?",
+        "Depth": "?",
+        "Res": "?"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 8,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    }
+  ]
+}

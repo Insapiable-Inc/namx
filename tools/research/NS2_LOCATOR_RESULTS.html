@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><title>NAM-X — NS-2 locator results and history packet</title>
+<style>body{font:17px/1.55 system-ui,sans-serif;color:#202a34;background:#fafaf8;max-width:1100px;margin:40px auto;padding:0 25px}h1,h2{line-height:1.2;color:#12394a}h2{margin-top:2em}table{border-collapse:collapse;width:100%;font-size:15px;margin:20px 0}td,th{border-bottom:1px solid #ccd5d7;padding:9px;text-align:left;vertical-align:top}th{background:#e8eff0}pre{white-space:pre-wrap;background:#edf1f2;padding:18px;font-size:14px}img{max-width:100%}a{color:#006e87}.note{border-left:4px solid #16839a;padding:12px 20px;background:#edf5f5}</style>
+<h1>NS-2: the opening rise is real, and four seconds is not always settled</h1>
+<p>30 October 2026 · Threshold 3:00, Decay minimum, Mode Reduction · Input → Output, Send/Return unused</p>
+<p class="note"><strong>History experiment completed:</strong> <a href="NS2_HISTORY_RESULTS.html">results and model constraints</a> are now available. No additional NS-2 capture is requested. The plan and predictions below are preserved as the pre-recording record.</p>
+<p class="note"><strong>Assessment:</strong> both locator captures are usable. The transition is bracketed, and large constant-input gain rises remain well above the coherent noise estimate. The current model cannot reproduce these rises merely by shifting its threshold. The next packet separates quiet and loud history at fixed input levels and both Decay extremes. No production DSP changes or additional state are recommended yet.</p>
+<p>This completes the two recordings in the <a href="NS2_THRESHOLD_HISTORY_PLAN.html">locator plan</a>. This was adaptive experiment design, not independent validation of a new model. The mathematical baseline and source hashes were frozen before capture.</p>
+
+<h2>1. Measurement checks</h2>
+<p>Both takes report zero xruns and marker quality .998; their exact played float32 hashes agree with the prerecording prediction. No recorded sample reaches |x|≥.999. Recorded tail RMS is −101.30 dBFS in bypass and −99.68 dBFS engaged on the pedal channel. A zero-xrun report alone does not exclude every possible recording artifact.</p>
+<p>Stored capture latencies are 455 and 577 samples. Each is compensated separately. The aligned loopback carrier differs by at most .0024 dB and .00064 phase-equivalent sample across usable plateau windows. Envelope-edge comparisons agree within .23 ms, preventing a whole-cycle ambiguity from being hidden by the carrier phase check. These discrepancies cannot explain gain movement lasting seconds.</p>
+<p>The new true bypass has a 1 kHz transfer of approximately −9.208 dB from played samples to the pedal ADC channel, with only .0031 dB spread across −62 to −12 dB input. It differs from the original NS-2 bypass by −.020 dB at −12 dB input. The engaged open path is +.660 dB relative to this same-session bypass. This is consistent with the reported bypass state; the gate's large reductions on the quiet steps provide a separate engaged-state check.</p>
+<p>Primary estimates retain the specified 10 ms coherent-magnitude estimator and three window medians. As robustness checks, each window was also measured with a Hann-windowed complex carrier projection and a fixed-phase projection referenced to the open path. At the selected partial levels, these agree within about .03 dB. The carrier-to-neighbor-bin ratios are at least 59 dB at −56 dB input and 67 dB at −54 dB input. Those ratios include possible leakage and are not statistical confidence intervals. Even the lowest eligible −62 dB windows have at least 30 dB coherent margin. The −100 dB conditioning portions fail this test and are <strong>excluded from all gain claims</strong>; ratios of two noise-limited magnitudes there are misleading.</p>
+
+<h2>2. Observed transition and residuals</h2>
+<table><tr><th>Input, dB relative to reference</th><th>Gain, 0.1–0.3 s</th><th>Gain, 1.0–1.5 s</th><th>Gain, 3.0–3.8 s</th><th>Late slope</th></tr>
+<tr><td>−62</td><td>−38.15 dB</td><td>−36.37 dB</td><td>−32.82 dB</td><td>+1.68 dB/s</td></tr>
+<tr><td>−58</td><td>−24.02 dB</td><td>−20.76 dB</td><td>−17.24 dB</td><td>+1.27 dB/s</td></tr>
+<tr><td><strong>−56</strong></td><td>−14.21 dB</td><td>−10.76 dB</td><td>−8.18 dB</td><td>+.86 dB/s</td></tr>
+<tr><td><strong>−54</strong></td><td>−6.05 dB</td><td>−3.40 dB</td><td>−2.00 dB</td><td>+.24 dB/s</td></tr>
+<tr><td>−52</td><td>−.59 dB</td><td>+.66 dB</td><td>+.66 dB</td><td>Approximately zero</td></tr>
+<tr><td>−50 through −44, and −12</td><td>+.66 dB</td><td>+.66 dB</td><td>+.66 dB</td><td>Approximately zero</td></tr></table>
+<p>At −56 and −54 dB, early-to-late gain increases are <strong>6.03 and 4.05 dB</strong>. The unchanged model predicts essentially flat gain during those constant-input ascending steps. Across the eleven non-reset plateaus, 0.1–3.8 seconds per plateau, its gain-envelope RMS error is 8.05 dB. That aggregate is dominated by very quiet operating conditions and is not an audibility score; the explicit trajectories are more informative.</p>
+<img src="ns2_locator_validation.png" alt="NS-2 coherent gain versus input level and time within each plateau. The real pedal continues opening at constant input while the frozen model gives flat steps and a higher opening transition.">
+<p><strong>Supported:</strong> the observed upward dynamics are absent from the current equations, and four-second endpoints are not always equilibrium. <strong>Not yet identified:</strong> a physical time constant, a unique comparator threshold, the number of internal states, or the circuit topology. The inputs were presented in increasing order, so level and prior state remain confounded. Changing the Decay control and deliberately changing the preceding signal are the necessary next discriminators.</p>
+
+<h2>3. Mathematical interpretation and model recommendation</h2>
+<p>The frozen implementation follows an input peak, then two dB-domain states E and V. Both rise immediately with input level; they fall with Decay and 7.94×Decay. A hysteretic switch opens at T+1.29 dB and closes 10.47 dB lower. Its attenuation G jumps to zero when open and relaxes toward −7.56 dB when closed. Overall gain is</p>
+<pre>gdB = .6 + G − .889 max(0, T − V)
+T = −49.40 dB at Threshold 3:00
+Decay minimum = 24.6 ms; maximum = 460.3 ms</pre>
+<p>The exact renderer also includes the production attenuation floor and the existing Tone shelf. A threshold shift can move an abrupt opening point, but, with both E and V rising immediately, it cannot generate a multi-second positive slope during a constant-input step. Existing falling-state memory can explain some differences after loud conditioning; those differences must be compared with predictions before attributing them to an additional state.</p>
+<p><strong>Recommendation now:</strong> keep the production architecture as the comparator. After the history test, first consider a bounded, level-dependent rise law on an existing control state if the data require it. Add a new state only if simpler changes fail across both histories, both Decay extremes and the prompt-opening control. The older 220 Hz picked notes and loud jumps remain regression data. A slow opening applied globally would be inconsistent with their prompt response.</p>
+
+<h2>4. Prepared history capture: three takes, 4 minutes 33 seconds</h2>
+<p>Keep Threshold physically untouched at the locator's 3:00 position, Mode Reduction, and the same cable path and interface gains. The probe levels are <strong>−56, −54 and −44 dB</strong>. The first two distinguish a strong partial rise from the approach to fully open; −44 dB is above both the measured transition and the nominal model threshold, serving as a prompt-opening control.</p>
+<p>Each long take automatically performs this sequence at each probe level:</p>
+<pre>24 s digital silence → 8 s probe → 2 s at −12 dB → 8 s same probe
+Repeat for −56, −54, −44 dB; finish with a 2 s open-path reference.</pre>
+<p>The carrier is continuous-phase 1 kHz with 1 ms cosine envelope transitions. Silence is actual zero in the generated file, although the physical rig still contributes noise. The two engaged takes use the identical 128-second body, first at minimum Decay and then maximum Decay. A third, short, true-bypass take checks all probe levels and −12 dB. Including markers and tails, total recorded audio is 272.55 seconds.</p>
+<p><strong>The 24-second pauses are intentional: do not interrupt them.</strong> The baseline slow state at maximum Decay has τ=3.655 s. For a fixed low target, after 24 seconds approximately .14% of its initial excess remains, compared with 11.2% after eight seconds; the sample-level predictions also include the preceding peak follower. This supports the reset duration against the existing model but does not prove that every physical state has reset. Likewise, an eight-second probe is an observation window, not an assumption of equilibrium.</p>
+<table><tr><th>Take</th><th>Required state</th></tr>
+<tr><td>1 · history-threshold-0300-decay-0700</td><td>Pedal ON; Threshold unchanged; Decay fully counter-clockwise; Mode Reduction</td></tr>
+<tr><td>2 · history-threshold-0300-decay-0500</td><td>Pedal ON; change only Decay to fully clockwise</td></tr>
+<tr><td>3 · bypass-history-check-1000</td><td>Switch pedal OFF; leave all other controls and cables unchanged</td></tr></table>
+<pre>cd <repo>
+python tools/capture/capture.py run \
+  captures/boss/ns-2/2026-10-30-history \
+  tools/capture/plans/ns-2-history.json</pre>
+<p>The Scarlett has been rechecked and the results saved in <a href="../../captures/boss/ns-2/2026-10-30-history/interface-ready.json">the new session snapshot</a>: Pro Audio, 48 kHz, 128 frames, required ports and routing, INST/pad on/AIR off, unity software gains. Physical Input 2 gain remains a user-set minimum. No new absolute calibration or interface adjustment was performed.</p>
+
+<h2>5. Predictions and decision rules saved before recording</h2>
+<p>The <a href="../../captures/boss/ns-2/2026-10-30-history/analysis-protocol.json">new frozen protocol</a> contains the segment map, stimulus hashes, source-result hashes and predicted gain-window medians for both Decay extremes. It includes the unchanged threshold map and one explicitly provisional shifted-map example: opening at −53 dB, between the locator's partial −54 and fully open −52 dB steps. This midpoint is not an identified physical threshold. Both variants retain the same state equations. A single +.06005 dB open-path correction is taken from the locator and fixed for all predictions.</p>
+<p>For example, after quiet reset the original map predicts −12.77 dB gain at the −56 dB probe and −10.99 dB at −54 dB, flat through the analysis windows at either Decay setting. The shifted example predicts −8.42 and −6.90 dB, also flat. After loud conditioning, both models initially remain open; minimum Decay produces faster subsequent attenuation, while maximum Decay can remain open for most or all of the eight-second probe. Thus a history difference alone is not evidence for a new state—the baseline already predicts it.</p>
+<p>The primary comparison will use the complete measured gain trajectories, early/late changes, matched-history differences and Decay dependence without fitting new parameters. The true locator bypass calibrates the played probe signal, with the closing bypass and loopback checking for change; any bypass discrepancy exceeding .1 dB must be reported before pooling references. Digital-zero reset periods will not be scored as gain ratios.</p>
+<table><tr><th>Result</th><th>Consequence</th></tr>
+<tr><td>Positive near-threshold rise after quiet reset at both Decay extremes, with similar timing; −44 and −12 dB controls open promptly</td><td>Supports a separate upward time scale restricted to the transition region; first test a modified existing-state rise law.</td></tr>
+<tr><td>Quiet/loud differences match the existing falling states and switch after threshold calibration</td><td>Existing memory may suffice for that part of the behavior; no extra state follows from correlation alone.</td></tr>
+<tr><td>History differences persist beyond the model prediction or depend on reset duration</td><td>Investigate longer memory and verify physical reset before changing state count.</td></tr>
+<tr><td>Only noise-limited bins move, or reference transfer moves too</td><td>Resolve apparatus/estimator behavior rather than fitting it into the pedal.</td></tr></table>
+<p>Any eventual improvement must preserve fast picking and decaying-note tails and be compared by ear on guitar. No perceptual verdict follows from these quiet sine measurements alone.</p>
+
+<h2>6. Reproduction and implementation handoff</h2>
+<pre>OPENBLAS_NUM_THREADS=1 MPLCONFIGDIR=tools/research/.mpl-cache \
+  python tools/research/analyze_ns2_locator.py
+OPENBLAS_NUM_THREADS=1 python tools/research/prepare_ns2_history.py
+python tools/capture/capture.py plan tools/capture/plans/ns-2-history.json</pre>
+<p><a href="analyze_ns2_locator.py">Analysis</a> · <a href="ns2_locator_results.json">complete measurements</a> · <a href="ns2_locator_analysis.log">log</a> · <a href="prepare_ns2_history.py">stimulus and prediction generator</a> · <a href="ns2_history_preparation.log">prediction summary</a> · <a href="../capture/plans/ns-2-history.json">capture plan</a>. The generated stimulus is stored in <code>captures/stimuli/ns-2-history-1000.wav</code> in the primary repository, alongside the local raw audio tree. Audio is not committed; the generator, sample hash and protocol reproduce it. Existing changed frozen files are refused rather than overwritten.</p>
+<p><strong>Implementation instruction:</strong> no new production parameters or state equations are justified yet. Keep the current DSP unchanged while this experiment resolves the ambiguity. The exact baseline equations, source version and required acceptance comparisons are provided for the coding agent; production implementation of a replacement is deferred until the model is supported.</p>
+</html>

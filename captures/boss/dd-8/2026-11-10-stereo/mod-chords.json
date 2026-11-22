@@ -1,0 +1,48 @@
+{
+  "take": "mod-chords",
+  "pedal": "Boss DD-8 Digital Delay \u2014 stereo: what each output carries, mode by mode (OUTPUT A and OUTPUT B)",
+  "bypass": false,
+  "settings": {
+    "Mode": "Mod",
+    "Level": "12:00",
+    "Feedback": "12:00",
+    "Time": "12:00"
+  },
+  "note": "",
+  "signal": {
+    "type": "file",
+    "path": "captures/di/chords.wav",
+    "seconds": 25,
+    "tail": 4.0
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -23.08,
+    "loop": -22.57,
+    "pedal_b": -23.03
+  },
+  "latency_samples": 576,
+  "latency_quality": 0.998,
+  "xruns": 0,
+  "played_sha256": "2118e364b7b88fe735fd77a53b3db82f56789249426302924b065fabc3647e49",
+  "recorded_at": "2026-11-10T00:21:21",
+  "tool_commit": "a84c34dc64a37bc6eb7f6f7fe3dbc85e08ae56dc",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX4",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Boss DD-8 on its 9 V adapter: the guitar DI dataset. Input from interface out 3; OUTPUT A -> input 2, OUTPUT B -> input 1; INST, AIR off, pad on, gain fully counter-clockwise.",
+    "pedal_in_b": "Scarlett 8i6 USB Pro:capture_AUX0"
+  }
+}

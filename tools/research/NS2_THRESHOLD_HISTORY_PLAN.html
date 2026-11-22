@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8">
+<title>NAM-X — NS-2 threshold and history experiment</title>
+<style>body{font:17px/1.55 system-ui,sans-serif;color:#202a34;background:#fafaf8;max-width:1050px;margin:40px auto;padding:0 25px}h1,h2{color:#12394a;line-height:1.2}h2{margin-top:2em}table{border-collapse:collapse;width:100%;font-size:15px;margin:20px 0}td,th{border-bottom:1px solid #ccd5d7;padding:9px;text-align:left}th{background:#e8eff0}pre{white-space:pre-wrap;background:#edf1f2;padding:18px;font-size:14px}a{color:#006e87}.note{border-left:4px solid #16839a;padding:12px 20px;background:#edf5f5}</style>
+<h1>NS-2: locate the transition, then separate opening from history</h1>
+<p>30 October 2026 · Capture preparation and existing-data recheck · No new NS-2 recordings analyzed yet</p>
+<p class="note"><strong>Both capture stages completed:</strong> see the <a href="NS2_HISTORY_RESULTS.html">matched-history findings</a> and preceding <a href="NS2_LOCATOR_RESULTS.html">locator</a>. No additional NS-2 capture is requested now. This document preserves the pre-recording plan; its date/status line above describes preparation, not the latest analysis status.</p>
+<p class="note"><strong>Current assessment:</strong> keep the existing gate as the baseline. Its two falling envelope states and hysteretic attenuation explain much of the note-tail behavior, but do not explain slow gain increases at constant input near threshold. A new state is not yet justified. The immediate experiment is two short recordings to locate today's transition at Threshold 3:00, where measurement signal-to-noise is better than in the older noon-Threshold slow steps.</p>
+
+<h2>What the existing measurements establish</h2>
+<p>The <a href="BOSS_PEDAL_RESEARCH_AUDIT.html">collection audit</a> reproduced a 1.52 dB median gain-envelope error over 39 reused fitting takes, with larger errors on staircases and light picking. These are training residuals, not independent validation. The original NS-2 data include 61 takes across two sessions. The dynamics session's recordings named “bypass” were actually engaged and must not be used as calibration references. The first-session <code>stairs-110</code> reports one xrun and is not the basis for this experiment.</p>
+<p>Reanalysis of the first session's true 1 kHz bypass and Threshold-3:00 staircase gives the following gain relative to bypass. Decay was noon and each step lasted only 1.5 seconds:</p>
+<table><tr><th>Input / direction</th><th>Gain at 0.05–0.15 s</th><th>Gain at 0.50–0.60 s</th><th>Gain at 1.30–1.40 s</th></tr>
+<tr><td>−56 dB, rising staircase</td><td>−17.59 dB</td><td>−13.48 dB</td><td>−11.29 dB</td></tr>
+<tr><td>−52 dB, rising staircase</td><td>−2.93 dB</td><td>−.23 dB</td><td>+.58 dB</td></tr>
+<tr><td>−52 dB, falling staircase</td><td>+.58 dB</td><td>+.58 dB</td><td>+.58 dB</td></tr>
+<tr><td>−56 dB, falling staircase</td><td>+.58 dB</td><td>+.58 dB</td><td>−.89 dB</td></tr></table>
+<p>The opposite histories differ substantially. At −56 dB on the way up, gain rises by 6.31 dB within the observed step; the existing fitted opening threshold at this knob position is about −48.11 dB. A threshold remapping may correct where the transition occurs, but cannot alone produce a slow rise during a perfectly constant input. The staircase confounds input level and prior state, and its last window is not proof of equilibrium.</p>
+<p>The earlier noon-Threshold slow steps suggested roughly one-second rises at all three tested Decay positions. Their very low output levels and reused input history limit that inference. A fixed near-threshold time scale, charge left by prior signal, existing hysteresis with a miscalibrated threshold, and estimator bias near the noise floor remain distinguishable explanations. No circuit or component values are identified.</p>
+
+<h2>The frozen baseline</h2>
+<pre>peak[n] = max(|x[n]|, peak[n−1] exp(−1/(fs · 50 ms)))
+L = 20 log10(peak), relative to the fixed guitar-peak reference
+E rises to L immediately; otherwise relaxes toward L with τ = Decay
+V rises to L immediately; otherwise relaxes toward L with τ = 7.94 · Decay
+switch opens if E &gt; T + 1.29; closes if E &lt; T + 1.29 − 10.47
+G = 0 when open; otherwise relaxes toward −7.56 with τ = 4.42 · Decay
+gain_dB = .6 + max(−140, G − .889 max(0, T − V))
+
+Threshold 3:00: T = −49.40 dB relative to reference
+Decay minimum: 24.6 ms; maximum: 460.3 ms</pre>
+<p>The production path also applies the existing open-path Tone shelf, normalized at 1 kHz. Source hashes and model commit <code>8efe836</code> are frozen in the new session's <a href="../../captures/boss/ns-2/2026-10-30-threshold-locator/analysis-protocol.json">protocol</a>. <a href="ns2_locator_preflight.json">Pre-recording internal-gain predictions</a> use the whole actual planned signal, including its marker preamble. They are not a fitted replacement model or a complete audio-transfer rendering.</p>
+
+<h2>Immediate capture: two takes, 109.7 seconds of audio</h2>
+<p>Use NS-2 Input → Output, Send and Return empty, on its 9 V supply. Mode Reduction, Threshold 3:00, Decay fully counter-clockwise. Set these controls before the bypass take and leave Threshold untouched afterward.</p>
+<table><tr><th>Take</th><th>Pedal state</th><th>Signal and purpose</th></tr>
+<tr><td>1 · bypass-locator-1000</td><td><strong>Pedal switched OFF</strong></td><td>True reference at each tested level; checks apparatus level linearity and coherent noise.</td></tr>
+<tr><td>2 · threshold-0300-decay-0700-locator-1000</td><td>ON, Reduction, Threshold 3:00, Decay minimum</td><td>Same signal; locates partial opening, checks within-step gain movement, includes a clearly open reference and closing step.</td></tr></table>
+<p>Both use a 1 kHz sine with four-second plateaus at [−100, −62, −60, −58, −56, −54, −52, −50, −48, −46, −44, −12, −100] dB relative to the existing guitar-peak reference, plus a two-second tail. The −100 dB portions are quiet conditioning tones below the rig's practical floor, not literal digital silence. Minimum Decay allows the initial low segment to reset the fitted states quickly. The 2 dB spacing brackets both the old observed transition and the higher fitted-model transition.</p>
+<p>This is adaptive localization, not a held-out model test. Analysis will compare 0.1–0.3, 1.0–1.5 and 3.0–3.8 second coherent-gain windows, with neighboring spectral bins and the tail used to identify noise-limited estimates. If reduced and fully open gain are not bracketed, re-center before recording the longer history test. The recorder explicitly prompts for true bypass because that failed in the original dynamics session.</p>
+<pre>cd <repo>
+python tools/capture/capture.py run \
+  captures/boss/ns-2/2026-10-30-threshold-locator \
+  tools/capture/plans/ns-2-threshold-locator.json</pre>
+<p>The Scarlett verification is saved in <a href="../../captures/boss/ns-2/2026-10-30-threshold-locator/interface-ready.json">interface-ready.json</a>: Pro Audio, 48 kHz, 128 frames; analogue outputs 3/4 routed directly from PCM 3/4; Input 2 INST, pad on, AIR off; required JACK ports present and PipeWire gains at unity. No settings were changed. Software cannot verify the physical Input 2 gain knob: keep it fully counter-clockwise. Existing absolute calibration is retained, not newly measured.</p>
+
+<h2>The subsequent history test, selected from the locator</h2>
+<p>Choose one level with the strongest measurable partial opening and a second level that opens promptly. Retain a third partial level only if the locator shows that two levels cannot separate the explanations. At each level, compare approximately eight seconds of constant input after a quiet reset with eight seconds at that identical level immediately following a two-second −12 dB conditioning tone. Repeat the identical packet at Decay minimum and maximum, with Threshold still untouched. The specific amplitudes and predictions must be saved before this second capture stage.</p>
+<p><strong>Reset duration is part of the experiment.</strong> At maximum Decay, the baseline's slow time constant is 460.3 ms × 7.94 = 3.655 seconds. After an eight-second reset, 11.2% of its prior level-state excess remains. Twenty-four seconds reduces this to about .14%. Therefore use an approximately 24-second low-input reset before each “quiet-history” probe, and check its adequacy rather than calling a short gap a fresh state. Use the same packet at both Decay settings to avoid confounding signal duration with control position. True zero samples can be used in the later generated packet; the physical interface noise remains part of the input.</p>
+<table><tr><th>Outcome</th><th>Interpretation</th></tr>
+<tr><td>Comparable near-threshold rise time at both Decay extremes after adequate reset, while the loud control opens promptly</td><td>Supports a separate upward time scale confined near threshold. First test a simple change to the existing state law before adding another state.</td></tr>
+<tr><td>The two histories differ, and their difference scales with Decay as the frozen model predicts</td><td>Supports existing detector memory/hysteresis with a better control map; it does not require a new state.</td></tr>
+<tr><td>History differences or rises persist beyond the predicted state behavior</td><td>Falsifies that baseline in this operating region; test a bounded nonlinear state law or an additional slow state against both histories.</td></tr>
+<tr><td>Apparent creep disappears in higher-SNR coherent estimates or follows the reference/neighbor-bin variation</td><td>Do not add DSP dynamics to reproduce a measurement artifact.</td></tr></table>
+<p>Evaluate trajectories, early/late gain, opening time, closing slope, history difference and noise margin separately. Do not score reset silence using a gain ratio with a near-zero denominator. The existing 220 Hz decaying notes and loud jumps remain regression checks: globally slowing opening to improve a staircase would harm pick response. Input→Output evidence does not identify Send/Return sidechain behavior.</p>
+
+<h2>Reproduction</h2>
+<pre>OPENBLAS_NUM_THREADS=1 python tools/research/prepare_ns2_locator.py
+python tools/research/verify_capture_interface.py \
+  captures/boss/ns-2/2026-10-30-threshold-locator
+python tools/capture/capture.py plan tools/capture/plans/ns-2-threshold-locator.json</pre>
+<p>The interface utility is read-only and requires access to the live audio services; it neither plays sound nor adjusts controls. The preparation script uses old WAVs, verifies played hashes and frozen source hashes, and saves its calculations in <a href="ns2_locator_preflight.json">JSON</a> with a <a href="ns2_locator_preflight.log">log</a>. <a href="../capture/plans/ns-2-threshold-locator.json">Capture plan</a> · <a href="prepare_ns2_locator.py">analysis/prediction source</a> · <a href="verify_capture_interface.py">apparatus check</a>. Production DSP is unchanged.</p>
+</html>

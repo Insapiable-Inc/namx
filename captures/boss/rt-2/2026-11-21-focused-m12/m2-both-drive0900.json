@@ -1,0 +1,113 @@
+{
+  "take": "m2-both-drive0900",
+  "pedal": "Boss RT-2 Rotary Ensemble, Modes I and II Drive, mono input A and stereo outputs A and B",
+  "bypass": false,
+  "settings": {
+    "Mode": "II",
+    "Level": "12:00",
+    "Drive/Balance": "BALANCE 12:00",
+    "Fast": "12:00",
+    "Slow": "7:00",
+    "Rise/Fall": "FAST",
+    "LED": "green"
+  },
+  "note": "With the toggle still on BALANCE, turn the ring to noon. Both rotors stay in the mix for the rest of the session.",
+  "marker_to_pedal": false,
+  "signal": {
+    "type": "sequence",
+    "tail": 0,
+    "parts": [
+      {
+        "type": "sweep",
+        "f0": 35,
+        "f1": 16000,
+        "seconds": 4,
+        "level_db": -36,
+        "tail": 0.5
+      },
+      {
+        "type": "steps",
+        "freq": 110,
+        "levels_db": [
+          -36,
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          0
+        ],
+        "step_seconds": 0.6,
+        "gap_seconds": 0.2,
+        "tail": 0.5
+      },
+      {
+        "type": "steps",
+        "freq": 441,
+        "levels_db": [
+          -36,
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          0
+        ],
+        "step_seconds": 0.6,
+        "gap_seconds": 0.2,
+        "tail": 0.5
+      },
+      {
+        "type": "noise-steps",
+        "levels_db": [
+          -36,
+          -24,
+          -18,
+          -12,
+          -6,
+          0,
+          -24
+        ],
+        "step_seconds": 1.25,
+        "seed": 1,
+        "tail": 0.5
+      },
+      {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "seconds": 10,
+        "tail": 1
+      }
+    ]
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -21.77,
+    "loop": -12.86,
+    "pedal_b": -21.89
+  },
+  "latency_samples": 583,
+  "latency_quality": 0.998,
+  "xruns": 0,
+  "played_sha256": "983a07af8afd5bd0662c74ca30e5fc67d6bf2a977badf4fcc0619b4ca1ae880e",
+  "recorded_at": "2026-11-21T14:55:25",
+  "tool_commit": "7fae975cd3fbe22da658ce6398b7cddbc63093bc-dirty",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX4",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Boss RT-2 on its 9 V adapter: the guitar DI dataset. Input from interface out 3; OUTPUT A -> input 2, OUTPUT B -> input 1; INST, AIR off, pad on, gain fully counter-clockwise.",
+    "pedal_in_b": "Scarlett 8i6 USB Pro:capture_AUX0"
+  }
+}

@@ -1,0 +1,138 @@
+
+=== 2026-11-09T22:43:00 · run tools/capture/plans/tr-2-edges.json · tool e4510e8d5c316787ece1af6b7155773623148ff4
+
+[1/17] bypass: 9000 Hz sine, 8 s at -6 dB
+  pedal OFF (bypassed)
+  The pedal off (its LED off): the bypass reference.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.6 dBFS · loopback -19.0 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[2/17] rate-0700-wave-0500: 9000 Hz sine, 30 s at -6 dB
+  pedal ON · Rate 7:00 · Wave 5:00 · Depth 5:00 (switch it on)
+  The pedal on (its LED lit).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.6 dBFS · loopback -19.0 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[3/17] rate-0900-wave-0500: 9000 Hz sine, 20 s at -6 dB
+  pedal ON · Rate 9:00 (changed) · Wave 5:00 · Depth 5:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.6 dBFS · loopback -19.0 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: r
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.6 dBFS · loopback -19.0 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[4/17] rate-0900-wave-0430: 9000 Hz sine, 20 s at -6 dB
+  pedal ON · Rate 9:00 · Wave about 4:30 (changed) · Depth 5:00
+  Between the marks, by eye: the exact angle doesn't matter (a photo from straight above the pedal, if you like, lets it be read).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.6 dBFS · loopback -18.8 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[5/17] rate-0900-wave-0400: 9000 Hz sine, 20 s at -6 dB
+  pedal ON · Rate 9:00 · Wave about 4:00 (changed) · Depth 5:00
+  Between the marks, by eye: the exact angle doesn't matter (a photo from straight above the pedal, if you like, lets it be read).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.6 dBFS · loopback -19.0 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[6/17] rate-0900-wave-0330: 9000 Hz sine, 20 s at -6 dB
+  pedal ON · Rate 9:00 · Wave about 3:30 (changed) · Depth 5:00
+  Between the marks, by eye: the exact angle doesn't matter (a photo from straight above the pedal, if you like, lets it be read).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.6 dBFS · loopback -19.0 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[7/17] rate-0900-wave-0300: 9000 Hz sine, 20 s at -6 dB
+  pedal ON · Rate 9:00 · Wave 3:00 (changed) · Depth 5:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.6 dBFS · loopback -19.0 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[8/17] rate-0900-wave-1200: 9000 Hz sine, 20 s at -6 dB
+  pedal ON · Rate 9:00 · Wave 12:00 (changed) · Depth 5:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.6 dBFS · loopback -19.0 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[9/17] rate-0900-wave-0700: 9000 Hz sine, 20 s at -6 dB
+  pedal ON · Rate 9:00 · Wave 7:00 (changed) · Depth 5:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.7 dBFS · loopback -19.0 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[10/17] rate-0300-wave-0700: 9000 Hz sine, 12 s at -6 dB
+  pedal ON · Rate 3:00 (changed) · Wave 7:00 · Depth 5:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -20.1 dBFS · loopback -19.0 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[11/17] held-out-rate-0300-wave-0300-depth-0300: 9000 Hz sine, 12 s at -6 dB
+  pedal ON · Rate 3:00 · Wave 3:00 (changed) · Depth 3:00 (changed)
+  Not used in the fit: the check.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · loopback -19.0 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[12/17] held-out-rate-1200-wave-0300-depth-1200: 9000 Hz sine, 12 s at -6 dB
+  pedal ON · Rate 12:00 (changed) · Wave 3:00 · Depth 12:00 (changed)
+  Not used in the fit: the check.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.0 dBFS · loopback -19.0 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  Enter = next, r = redo: r
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.0 dBFS · loopback -19.0 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[13/17] rate-1200-wave-0500-depth-1200: 9000 Hz sine, 12 s at -6 dB
+  pedal ON · Rate 12:00 · Wave 5:00 (changed) · Depth 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.0 dBFS · loopback -19.0 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[14/17] rate-1200-wave-0500-depth-0300: 9000 Hz sine, 12 s at -6 dB
+  pedal ON · Rate 12:00 · Wave 5:00 · Depth 3:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.3 dBFS · loopback -19.0 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[15/17] rate-1200-wave-0500: 9000 Hz sine, 12 s at -6 dB
+  pedal ON · Rate 12:00 · Wave 5:00 · Depth 5:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.6 dBFS · loopback -19.0 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[16/17] rate-0300-wave-0500: 9000 Hz sine, 12 s at -6 dB
+  pedal ON · Rate 3:00 (changed) · Wave 5:00 · Depth 5:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.7 dBFS · loopback -19.0 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[17/17] rate-0500-wave-0500: 9000 Hz sine, 12 s at -6 dB
+  pedal ON · Rate 5:00 (changed) · Wave 5:00 · Depth 5:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.7 dBFS · loopback -19.0 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+All 17 takes are in captures/boss/tr-2/2026-11-09-edges.

@@ -1,0 +1,59 @@
+{
+  "take": "down-stairs-manual-0700",
+  "pedal": "Boss AW-3 Dynamic Wah, Down and Sharp modes (mono: Guitar input -> Output)",
+  "bypass": false,
+  "settings": {
+    "Mode": "Down",
+    "Manual": "7:00",
+    "Sens": "12:00",
+    "Decay": "12:00"
+  },
+  "note": "Manual at its other endpoint. Up moved the start without moving the final ceiling: test that separately in this mode.",
+  "signal": {
+    "type": "noise-steps",
+    "levels_db": [
+      -54,
+      -48,
+      -42,
+      -36,
+      -30,
+      -24,
+      -18,
+      -12,
+      -6,
+      0,
+      3
+    ],
+    "step_seconds": 1.5,
+    "seed": 1,
+    "tail": 3
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -23.8,
+    "loop": -11.11
+  },
+  "latency_samples": 583,
+  "latency_quality": 0.998,
+  "xruns": 0,
+  "played_sha256": "5ebdc80dae4d447bb668fe5dd992c4b3a5a09739b1933732b254195b57cd537c",
+  "recorded_at": "2026-10-31T12:38:50",
+  "tool_commit": "979167bf6ba528173a9069fc329ffde098383af4-dirty",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX4",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Scarlett 8i6 3rd gen; Pro Audio; analogue outputs 3/4 from PCM 3/4; out 3 -> AW-3 Guitar input, Output -> input 2; out 4 -> input 5 loopback; EXP empty; Input 2 INST, AIR off, pad ON, gain fully counter-clockwise. Adapter power. Reference/calibration carried forward from the 2026-10-26 rig. Down and Sharp modes."
+  }
+}

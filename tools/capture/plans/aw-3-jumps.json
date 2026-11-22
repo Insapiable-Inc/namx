@@ -1,0 +1,230 @@
+{
+  "pedal": "Boss AW-3 Dynamic Wah — the return after loud noise, by Sens (mono: Guitar input -> Output)",
+  "comment": "One signal for every take: quiet white noise with three loud stretches (0, -12 and -24 dB, 3.5 s each, quiet noise between: the quiet noise shows where the filter is on its way back). What differs between takes is the pedal's setting only. Why: the model's return was fitted on jumps at Sens 12:00 only and failed at Sens 2:00 (the pedal left the top after 120 ms, the model after 300). Sens at four positions says how the hold at the top depends on Sens; the three loud levels in each take say whether it depends on how loud the noise was; Decay and Manual at their ends, with Sens fully up, say whether they act the same there. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise; 9:00 and 3:00 by eye (each take's own reading says what the knob really gave). Takes ordered so each step turns one knob, once two.",
+  "quiet_dbfs": -60,
+  "knobs": [
+    "Mode",
+    "Manual",
+    "Sens",
+    "Decay"
+  ],
+  "takes": [
+    {
+      "name": "bypass-jumps",
+      "bypass": true,
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -48,
+          0,
+          -48,
+          -12,
+          -48,
+          -24,
+          -48
+        ],
+        "step_seconds": 3.5,
+        "seed": 2,
+        "tail": 2
+      },
+      "note": "The pedal off (its LED off): the bypass reference. Guitar input, Output; nothing in EXP/CTL."
+    },
+    {
+      "name": "sens-0900",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "12:00",
+        "Sens": "9:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -48,
+          0,
+          -48,
+          -12,
+          -48,
+          -24,
+          -48
+        ],
+        "step_seconds": 3.5,
+        "seed": 2,
+        "tail": 2
+      },
+      "note": "The pedal on, Mode Up, Manual and Decay at 12:00 for the next four takes: only Sens moves."
+    },
+    {
+      "name": "sens-1200",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "12:00",
+        "Sens": "12:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -48,
+          0,
+          -48,
+          -12,
+          -48,
+          -24,
+          -48
+        ],
+        "step_seconds": 3.5,
+        "seed": 2,
+        "tail": 2
+      }
+    },
+    {
+      "name": "sens-0300",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "12:00",
+        "Sens": "3:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -48,
+          0,
+          -48,
+          -12,
+          -48,
+          -24,
+          -48
+        ],
+        "step_seconds": 3.5,
+        "seed": 2,
+        "tail": 2
+      }
+    },
+    {
+      "name": "sens-0500",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "12:00",
+        "Sens": "5:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -48,
+          0,
+          -48,
+          -12,
+          -48,
+          -24,
+          -48
+        ],
+        "step_seconds": 3.5,
+        "seed": 2,
+        "tail": 2
+      }
+    },
+    {
+      "name": "sens-0500-decay-0500",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "12:00",
+        "Sens": "5:00",
+        "Decay": "5:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -48,
+          0,
+          -48,
+          -12,
+          -48,
+          -24,
+          -48
+        ],
+        "step_seconds": 3.5,
+        "seed": 2,
+        "tail": 2
+      },
+      "note": "Sens stays fully clockwise from here on. Decay fully clockwise."
+    },
+    {
+      "name": "sens-0500-decay-0700",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "12:00",
+        "Sens": "5:00",
+        "Decay": "7:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -48,
+          0,
+          -48,
+          -12,
+          -48,
+          -24,
+          -48
+        ],
+        "step_seconds": 3.5,
+        "seed": 2,
+        "tail": 2
+      },
+      "note": "Decay fully counter-clockwise."
+    },
+    {
+      "name": "sens-0500-manual-0500",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "5:00",
+        "Sens": "5:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -48,
+          0,
+          -48,
+          -12,
+          -48,
+          -24,
+          -48
+        ],
+        "step_seconds": 3.5,
+        "seed": 2,
+        "tail": 2
+      },
+      "note": "Two knobs: Decay back to 12:00, Manual fully clockwise."
+    },
+    {
+      "name": "sens-0500-manual-0700",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "7:00",
+        "Sens": "5:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -48,
+          0,
+          -48,
+          -12,
+          -48,
+          -24,
+          -48
+        ],
+        "step_seconds": 3.5,
+        "seed": 2,
+        "tail": 2
+      },
+      "note": "Manual fully counter-clockwise."
+    }
+  ]
+}

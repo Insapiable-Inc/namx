@@ -1,0 +1,308 @@
+{
+  "take": "threshold-0500-decay-1200-tones",
+  "pedal": "Boss NS-2 Noise Suppressor \u2014 the gain read directly: the signal into INPUT, a probe into RETURN (mono: OUTPUT)",
+  "bypass": false,
+  "settings": {
+    "Threshold": "5:00",
+    "Decay": "12:00",
+    "Mode": "REDUCTION"
+  },
+  "note": "Threshold fully up.",
+  "marker_to_pedal": false,
+  "loop_probe": {
+    "freq": [
+      1877,
+      2341,
+      3163
+    ],
+    "level_db": -12
+  },
+  "signal": {
+    "type": "sequence",
+    "tail": 0,
+    "parts": [
+      {
+        "type": "silence",
+        "seconds": 2,
+        "tail": 0
+      },
+      {
+        "type": "steps",
+        "freq": 82,
+        "levels_db": [
+          -35.3,
+          -33.3,
+          -31.3,
+          -29.3,
+          -27.3,
+          -25.3,
+          -23.3,
+          -21.3,
+          -19.3,
+          -17.3,
+          -15.3
+        ],
+        "step_seconds": 0.3,
+        "tail": 1.5
+      },
+      {
+        "type": "steps",
+        "freq": 220,
+        "levels_db": [
+          -35.3,
+          -33.3,
+          -31.3,
+          -29.3,
+          -27.3,
+          -25.3,
+          -23.3,
+          -21.3,
+          -19.3,
+          -17.3,
+          -15.3
+        ],
+        "step_seconds": 0.3,
+        "tail": 1.5
+      },
+      {
+        "type": "steps",
+        "freq": 660,
+        "levels_db": [
+          -35.3,
+          -33.3,
+          -31.3,
+          -29.3,
+          -27.3,
+          -25.3,
+          -23.3,
+          -21.3,
+          -19.3,
+          -17.3,
+          -15.3
+        ],
+        "step_seconds": 0.3,
+        "tail": 1.5
+      },
+      {
+        "type": "steps",
+        "freq": 2000,
+        "levels_db": [
+          -35.3,
+          -33.3,
+          -31.3,
+          -29.3,
+          -27.3,
+          -25.3,
+          -23.3,
+          -21.3,
+          -19.3,
+          -17.3,
+          -15.3
+        ],
+        "step_seconds": 0.3,
+        "tail": 1.5
+      },
+      {
+        "type": "steps",
+        "freq": 6000,
+        "levels_db": [
+          -35.3,
+          -33.3,
+          -31.3,
+          -29.3,
+          -27.3,
+          -25.3,
+          -23.3,
+          -21.3,
+          -19.3,
+          -17.3,
+          -15.3
+        ],
+        "step_seconds": 0.3,
+        "tail": 1.5
+      },
+      {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -7.3,
+          -29.3,
+          -29.3,
+          -29.3,
+          -29.3,
+          -29.3,
+          -7.3,
+          -32.3,
+          -32.3,
+          -32.3,
+          -32.3,
+          -32.3,
+          -7.3,
+          -35.3,
+          -35.3,
+          -35.3,
+          -35.3,
+          -35.3,
+          -7.3,
+          -39.3,
+          -39.3,
+          -39.3,
+          -39.3,
+          -39.3,
+          -7.3,
+          -43.3,
+          -43.3,
+          -43.3,
+          -43.3,
+          -43.3,
+          -7.3,
+          -49.3,
+          -49.3,
+          -49.3,
+          -49.3,
+          -49.3,
+          -7.3,
+          -57.3,
+          -57.3,
+          -57.3,
+          -57.3,
+          -57.3,
+          -7.3,
+          -120,
+          -120,
+          -120,
+          -120,
+          -120,
+          0,
+          -35.3,
+          -35.3,
+          -35.3,
+          -35.3,
+          -35.3
+        ],
+        "step_seconds": 0.5,
+        "tail": 1
+      },
+      {
+        "type": "pluck-train",
+        "freq": [
+          110,
+          220,
+          440,
+          880
+        ],
+        "onsets": [
+          0.0,
+          1.9,
+          3.8,
+          5.7
+        ],
+        "decay_seconds": 0.248,
+        "seconds": 7.6,
+        "repick": true,
+        "tail": 0.5
+      },
+      {
+        "type": "pluck-train",
+        "freq": [
+          110,
+          440
+        ],
+        "onsets": [
+          0,
+          3.7
+        ],
+        "decay_seconds": 0.724,
+        "seconds": 7.4,
+        "repick": true,
+        "level_db": -12,
+        "tail": 0.5
+      },
+      {
+        "type": "noise",
+        "seconds": 0.15,
+        "seed": 1,
+        "level_db": -6,
+        "tail": 0
+      },
+      {
+        "type": "noise",
+        "seconds": 1.5,
+        "seed": 2,
+        "level_db": -21.3,
+        "tail": 0.6
+      },
+      {
+        "type": "noise",
+        "seconds": 0.15,
+        "seed": 1,
+        "level_db": -6,
+        "tail": 0
+      },
+      {
+        "type": "noise",
+        "seconds": 1.5,
+        "seed": 2,
+        "level_db": -26.3,
+        "tail": 0.6
+      },
+      {
+        "type": "noise",
+        "seconds": 0.15,
+        "seed": 1,
+        "level_db": -6,
+        "tail": 0
+      },
+      {
+        "type": "noise",
+        "seconds": 1.5,
+        "seed": 2,
+        "level_db": -31.3,
+        "tail": 0.6
+      },
+      {
+        "type": "noise",
+        "seconds": 0.15,
+        "seed": 1,
+        "level_db": -6,
+        "tail": 0
+      },
+      {
+        "type": "noise",
+        "seconds": 1.5,
+        "seed": 2,
+        "level_db": -36.3,
+        "tail": 0.6
+      }
+    ]
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -25.09,
+    "loop": -25.09,
+    "probe_reach_db": -8.7
+  },
+  "latency_samples": 584,
+  "latency_quality": 0.953,
+  "xruns": 0,
+  "played_sha256": "70cb8b5b3d725dba51f2c6d528c5d16f0af7478f581b2ef165bd9934d4ba60e3",
+  "recorded_at": "2026-11-21T17:36:19",
+  "tool_commit": "db5f29daa7e5c152314d07bb255d4cdd81290ca6",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Boss NS-2 on its 9 V adapter: the guitar DI dataset. Input from interface out 3; OUTPUT -> input 2; INST, AIR off, pad on, gain fully counter-clockwise."
+  }
+}

@@ -123,6 +123,12 @@ set(GUI_SOURCES
     src/dsp/CompressorProcessor.h
     src/dsp/ChorusProcessor.cpp
     src/dsp/ChorusProcessor.h
+    src/dsp/RotaryProcessor.cpp
+    src/dsp/RotaryProcessor.h
+    src/dsp/Rt2Rotary.cpp
+    src/dsp/Rt2Drive.h
+    src/dsp/Oversampler4x.h
+    src/dsp/Rt2Rotary.h
     src/dsp/FlangerProcessor.cpp
     src/dsp/FlangerProcessor.h
     src/dsp/PhaserProcessor.cpp
@@ -133,6 +139,7 @@ set(GUI_SOURCES
     src/dsp/DelayProcessor.h
     src/dsp/ReverbProcessor.cpp
     src/dsp/ReverbProcessor.h
+    src/dsp/Rv6Shimmer.cpp
     src/dsp/DynamicWahProcessor.cpp
     src/dsp/DynamicWahProcessor.h
     src/dsp/Metronome.cpp
@@ -257,7 +264,8 @@ set_target_properties(nam_core PROPERTIES AUTOMOC OFF AUTOUIC OFF AUTORCC OFF)
 set(DSP_SOURCES ${GUI_SOURCES})
 list(FILTER DSP_SOURCES INCLUDE REGEX "^src/dsp/.*\\.cpp$")
 list(FILTER DSP_SOURCES EXCLUDE REGEX "(AudioEngine|JackBackend|WasapiBackend|AsioBackend)\\.cpp$")
-add_library(namx_dsp OBJECT ${DSP_SOURCES})
+qt_add_resources(RV6_SHIMMER_RESOURCE resources/dsp/rv6-shimmer.qrc OPTIONS --no-compress)
+add_library(namx_dsp OBJECT ${DSP_SOURCES} ${RV6_SHIMMER_RESOURCE})
 target_include_directories(namx_dsp PUBLIC src/dsp)
 target_include_directories(namx_dsp SYSTEM PUBLIC
     ${EXTERNAL_DIR}/signalsmith-linear/include
@@ -267,6 +275,10 @@ target_include_directories(namx_dsp SYSTEM PUBLIC
 target_compile_options(namx_dsp PRIVATE ${NAM_WARNING_FLAGS})
 target_link_libraries(namx_dsp PUBLIC nam_core Qt6::Core) # Log.cpp: QLoggingCategory
 set_target_properties(namx_dsp PROPERTIES AUTOMOC OFF AUTOUIC OFF AUTORCC OFF)
+
+# The capture comparison renders through the same DSP objects and embedded filters as the app.
+add_executable(render_rv6 EXCLUDE_FROM_ALL tools/capture/render_rv6.cpp)
+target_link_libraries(render_rv6 PRIVATE namx_dsp nam_core Qt6::Core)
 
 # Steinberg's ASIO SDK, host side (Windows; third-party: warnings off). Vendored, not a
 # submodule: Steinberg publishes it only as a zip (external/asiosdk/VENDORED.md).

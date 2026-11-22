@@ -1,0 +1,661 @@
+{
+  "pedal": "Boss DD-8 Digital Delay — the loop: what limits it, what it does at high Feedback, mode by mode (mono: Output A)",
+  "comment": "Follows the focused reamp of 2026-11-09 and what its listening pairs showed (the clip on each repeat as it leaves the line, a limit on the way in, soft in Analog; 17 samples more per pass). Three blocks, Level and Time at 12:00 throughout. Feedback 12:00: per mode a ladder of 50 ms bursts at 1 kHz and at 300 Hz from -18 to +3 dB, each followed by its repeats in silence (the first repeat against the level is the clip, the second against the first is the line's limit and its knee; at 300 Hz the clip's harmonics pass Analog's and Tape's filters), the stabs at -12 dB in Analog, Tape and Warm (under the clip), Warm's sweep with Feedback (where its tilt sits), Tape's and Mod's stabs with a probe tone under the guitar (its phase on the repeats is the wow and the sweep, moment by moment). Feedback 3:00, the knob set once and left: the stabs in all five modes (each mode's fade against Standard's on the same knob; many passes: the loop's saturation) and at -12 dB in Standard, Analog and Tape (the loop alone, nothing clipping). Feedback 5:00: one burst over the clip in Standard, Analog and Tape, 16 s (what holds the loop). The marker goes through the pedal on the guitar takes only (its repeats are a probe there); on ladders, sweeps and bursts it would land on the signal. OUTPUT A to input 2, nothing in OUTPUT B; the pedal on its adapter; the CARRYOVER switch as it was (on). Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise; 9:00 and 3:00 pointer horizontal.",
+  "quiet_dbfs": -60,
+  "knobs": [
+    "Mode",
+    "Level",
+    "Feedback",
+    "Time"
+  ],
+  "takes": [
+    {
+      "name": "bypass-stabs",
+      "bypass": true,
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "start": 2,
+        "seconds": 12.5,
+        "tail": 4.0
+      },
+      "note": "The pedal off (its LED off): the bypass reference. OUTPUT A on input 2, nothing in OUTPUT B, the adapter."
+    },
+    {
+      "name": "bypass-ladder-1k",
+      "bypass": true,
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -18,
+          -12,
+          -9,
+          -6,
+          -3,
+          0,
+          3
+        ],
+        "step_seconds": 0.05,
+        "gap_seconds": 2.6,
+        "tail": 3.0
+      },
+      "marker_to_pedal": false
+    },
+    {
+      "name": "bypass-ladder-300",
+      "bypass": true,
+      "signal": {
+        "type": "steps",
+        "freq": 300,
+        "levels_db": [
+          -18,
+          -12,
+          -9,
+          -6,
+          -3,
+          0,
+          3
+        ],
+        "step_seconds": 0.05,
+        "gap_seconds": 2.6,
+        "tail": 3.0
+      },
+      "marker_to_pedal": false
+    },
+    {
+      "name": "bypass-sweep",
+      "bypass": true,
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 4.0
+      },
+      "marker_to_pedal": false
+    },
+    {
+      "name": "standard-ladder-1k",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -18,
+          -12,
+          -9,
+          -6,
+          -3,
+          0,
+          3
+        ],
+        "step_seconds": 0.05,
+        "gap_seconds": 2.6,
+        "tail": 3.0
+      },
+      "marker_to_pedal": false,
+      "note": "The pedal on (its LED lit). Level, Feedback and Time at 12:00: they stay there until the Feedback 3:00 takes."
+    },
+    {
+      "name": "standard-ladder-300",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 300,
+        "levels_db": [
+          -18,
+          -12,
+          -9,
+          -6,
+          -3,
+          0,
+          3
+        ],
+        "step_seconds": 0.05,
+        "gap_seconds": 2.6,
+        "tail": 3.0
+      },
+      "marker_to_pedal": false
+    },
+    {
+      "name": "analog-ladder-1k",
+      "settings": {
+        "Mode": "Analog",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -18,
+          -12,
+          -9,
+          -6,
+          -3,
+          0,
+          3
+        ],
+        "step_seconds": 0.05,
+        "gap_seconds": 2.6,
+        "tail": 3.0
+      },
+      "marker_to_pedal": false,
+      "note": "MODE to ANALOG; nothing else moves."
+    },
+    {
+      "name": "analog-ladder-300",
+      "settings": {
+        "Mode": "Analog",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 300,
+        "levels_db": [
+          -18,
+          -12,
+          -9,
+          -6,
+          -3,
+          0,
+          3
+        ],
+        "step_seconds": 0.05,
+        "gap_seconds": 2.6,
+        "tail": 3.0
+      },
+      "marker_to_pedal": false
+    },
+    {
+      "name": "analog-stabs-m12",
+      "settings": {
+        "Mode": "Analog",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "start": 2,
+        "seconds": 12.5,
+        "tail": 4.0,
+        "level_db": -12
+      }
+    },
+    {
+      "name": "tape-ladder-1k",
+      "settings": {
+        "Mode": "Tape",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -18,
+          -12,
+          -9,
+          -6,
+          -3,
+          0,
+          3
+        ],
+        "step_seconds": 0.05,
+        "gap_seconds": 2.6,
+        "tail": 3.0
+      },
+      "marker_to_pedal": false,
+      "note": "MODE to TAPE; nothing else moves."
+    },
+    {
+      "name": "tape-ladder-300",
+      "settings": {
+        "Mode": "Tape",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 300,
+        "levels_db": [
+          -18,
+          -12,
+          -9,
+          -6,
+          -3,
+          0,
+          3
+        ],
+        "step_seconds": 0.05,
+        "gap_seconds": 2.6,
+        "tail": 3.0
+      },
+      "marker_to_pedal": false
+    },
+    {
+      "name": "tape-stabs-m12",
+      "settings": {
+        "Mode": "Tape",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "start": 2,
+        "seconds": 12.5,
+        "tail": 4.0,
+        "level_db": -12
+      }
+    },
+    {
+      "name": "tape-stabs-probe",
+      "settings": {
+        "Mode": "Tape",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "start": 2,
+        "seconds": 12.5,
+        "tail": 4.0,
+        "probe": {
+          "freq": 5000,
+          "level_db": -30
+        }
+      }
+    },
+    {
+      "name": "warm-ladder-1k",
+      "settings": {
+        "Mode": "Warm",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -18,
+          -12,
+          -9,
+          -6,
+          -3,
+          0,
+          3
+        ],
+        "step_seconds": 0.05,
+        "gap_seconds": 2.6,
+        "tail": 3.0
+      },
+      "marker_to_pedal": false,
+      "note": "MODE to WARM; nothing else moves."
+    },
+    {
+      "name": "warm-ladder-300",
+      "settings": {
+        "Mode": "Warm",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 300,
+        "levels_db": [
+          -18,
+          -12,
+          -9,
+          -6,
+          -3,
+          0,
+          3
+        ],
+        "step_seconds": 0.05,
+        "gap_seconds": 2.6,
+        "tail": 3.0
+      },
+      "marker_to_pedal": false
+    },
+    {
+      "name": "warm-sweep-m12",
+      "settings": {
+        "Mode": "Warm",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 4.0
+      },
+      "marker_to_pedal": false
+    },
+    {
+      "name": "warm-stabs-m12",
+      "settings": {
+        "Mode": "Warm",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "start": 2,
+        "seconds": 12.5,
+        "tail": 4.0,
+        "level_db": -12
+      }
+    },
+    {
+      "name": "mod-ladder-1k",
+      "settings": {
+        "Mode": "Mod",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -18,
+          -12,
+          -9,
+          -6,
+          -3,
+          0,
+          3
+        ],
+        "step_seconds": 0.05,
+        "gap_seconds": 2.6,
+        "tail": 3.0
+      },
+      "marker_to_pedal": false,
+      "note": "MODE to MOD; nothing else moves."
+    },
+    {
+      "name": "mod-ladder-300",
+      "settings": {
+        "Mode": "Mod",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 300,
+        "levels_db": [
+          -18,
+          -12,
+          -9,
+          -6,
+          -3,
+          0,
+          3
+        ],
+        "step_seconds": 0.05,
+        "gap_seconds": 2.6,
+        "tail": 3.0
+      },
+      "marker_to_pedal": false
+    },
+    {
+      "name": "mod-stabs-probe",
+      "settings": {
+        "Mode": "Mod",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "start": 2,
+        "seconds": 12.5,
+        "tail": 4.0,
+        "probe": {
+          "freq": 9000,
+          "level_db": -30
+        }
+      }
+    },
+    {
+      "name": "standard-feedback-0300-stabs",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "12:00",
+        "Feedback": "3:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "start": 2,
+        "seconds": 12.5,
+        "tail": 10.0
+      },
+      "note": "FEEDBACK to 3:00 (pointer horizontal), MODE to STANDARD. FEEDBACK is not touched again until the 5:00 takes: every 3:00 take must have the same knob. Wait until the repeats have died (the tool waits for quiet)."
+    },
+    {
+      "name": "standard-feedback-0300-stabs-m12",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "12:00",
+        "Feedback": "3:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "start": 2,
+        "seconds": 12.5,
+        "tail": 10.0,
+        "level_db": -12
+      },
+      "note": "Wait until the repeats have died (the tool waits for quiet)."
+    },
+    {
+      "name": "analog-feedback-0300-stabs",
+      "settings": {
+        "Mode": "Analog",
+        "Level": "12:00",
+        "Feedback": "3:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "start": 2,
+        "seconds": 12.5,
+        "tail": 10.0
+      },
+      "note": "MODE to ANALOG; FEEDBACK stays exactly where it is. Wait until the repeats have died (the tool waits for quiet)."
+    },
+    {
+      "name": "analog-feedback-0300-stabs-m12",
+      "settings": {
+        "Mode": "Analog",
+        "Level": "12:00",
+        "Feedback": "3:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "start": 2,
+        "seconds": 12.5,
+        "tail": 10.0,
+        "level_db": -12
+      },
+      "note": "Wait until the repeats have died (the tool waits for quiet)."
+    },
+    {
+      "name": "tape-feedback-0300-stabs",
+      "settings": {
+        "Mode": "Tape",
+        "Level": "12:00",
+        "Feedback": "3:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "start": 2,
+        "seconds": 12.5,
+        "tail": 10.0,
+        "probe": {
+          "freq": 5000,
+          "level_db": -30
+        }
+      },
+      "note": "MODE to TAPE; FEEDBACK stays exactly where it is. Wait until the repeats have died (the tool waits for quiet)."
+    },
+    {
+      "name": "tape-feedback-0300-stabs-m12",
+      "settings": {
+        "Mode": "Tape",
+        "Level": "12:00",
+        "Feedback": "3:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "start": 2,
+        "seconds": 12.5,
+        "tail": 10.0,
+        "level_db": -12
+      },
+      "note": "Wait until the repeats have died (the tool waits for quiet)."
+    },
+    {
+      "name": "warm-feedback-0300-stabs",
+      "settings": {
+        "Mode": "Warm",
+        "Level": "12:00",
+        "Feedback": "3:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "start": 2,
+        "seconds": 12.5,
+        "tail": 10.0
+      },
+      "note": "MODE to WARM; FEEDBACK stays exactly where it is. Wait until the repeats have died (the tool waits for quiet)."
+    },
+    {
+      "name": "mod-feedback-0300-stabs",
+      "settings": {
+        "Mode": "Mod",
+        "Level": "12:00",
+        "Feedback": "3:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "start": 2,
+        "seconds": 12.5,
+        "tail": 10.0,
+        "probe": {
+          "freq": 9000,
+          "level_db": -30
+        }
+      },
+      "note": "MODE to MOD; FEEDBACK stays exactly where it is. Wait until the repeats have died (the tool waits for quiet)."
+    },
+    {
+      "name": "standard-feedback-0500-burst",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "12:00",
+        "Feedback": "5:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          0
+        ],
+        "step_seconds": 0.05,
+        "tail": 16.0
+      },
+      "marker_to_pedal": false,
+      "note": "FEEDBACK fully clockwise (5:00), MODE to STANDARD. One burst, then 16 s of the pedal repeating it. Before the take the pedal must be silent: FEEDBACK to 7:00 until it is, then back to 5:00 (both are end stops)."
+    },
+    {
+      "name": "analog-feedback-0500-burst",
+      "settings": {
+        "Mode": "Analog",
+        "Level": "12:00",
+        "Feedback": "5:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          0
+        ],
+        "step_seconds": 0.05,
+        "tail": 16.0
+      },
+      "marker_to_pedal": false,
+      "note": "MODE to ANALOG. Before the take the pedal must be silent: FEEDBACK to 7:00 until it is, then back to 5:00 (both are end stops)."
+    },
+    {
+      "name": "tape-feedback-0500-burst",
+      "settings": {
+        "Mode": "Tape",
+        "Level": "12:00",
+        "Feedback": "5:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          0
+        ],
+        "step_seconds": 0.05,
+        "tail": 16.0
+      },
+      "marker_to_pedal": false,
+      "note": "MODE to TAPE. Before the take the pedal must be silent: FEEDBACK to 7:00 until it is, then back to 5:00 (both are end stops)."
+    }
+  ]
+}

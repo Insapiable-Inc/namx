@@ -1,0 +1,48 @@
+{
+  "take": "analog-feedback-0300-stabs-m12",
+  "pedal": "Boss DD-8 Digital Delay \u2014 the loop: what limits it, what it does at high Feedback, mode by mode (mono: Output A)",
+  "bypass": false,
+  "settings": {
+    "Mode": "Analog",
+    "Level": "12:00",
+    "Feedback": "3:00",
+    "Time": "12:00"
+  },
+  "note": "Wait until the repeats have died (the tool waits for quiet).",
+  "signal": {
+    "type": "file",
+    "path": "captures/di/stabs.wav",
+    "start": 2,
+    "seconds": 12.5,
+    "tail": 10.0,
+    "level_db": -12
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -25.76,
+    "loop": -30.89
+  },
+  "latency_samples": 449,
+  "latency_quality": 0.998,
+  "xruns": 0,
+  "played_sha256": "b8f3a3d993a06be3288f95cf7e53ca3d10c9a2510724a54d29947c47a35cff4c",
+  "recorded_at": "2026-11-10T11:17:00",
+  "tool_commit": "37023d89f96d1dbb63e8915a14f82f307c47f92e",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX4",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Boss DD-8 on its 9 V adapter: the guitar DI dataset. Input from interface out 3; OUTPUT -> input 2; INST, AIR off, pad on, gain fully counter-clockwise."
+  }
+}

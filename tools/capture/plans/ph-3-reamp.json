@@ -1,0 +1,220 @@
+{
+  "pedal": "Boss PH-3 Phase Shifter — reamps of the guitar DI dataset (mono: Output A)",
+  "comment": "The guitar DI dataset (captures/di/: noise, notes, dynamics, chords, chugs, funk, stabs, lead, neck; see tools/capture/README.md, Reamp takes) through the pedal: the main setting with every segment, the extra settings with the segments that show them. For the by-ear A/B and the numbers against NAM-X's model. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise; 9:00 and 3:00 pointer horizontal. Takes ordered for the fewest knob turns.",
+  "quiet_dbfs": -60,
+  "knobs": [
+    "Mode",
+    "Rate",
+    "Depth",
+    "Res"
+  ],
+  "takes": [
+    {
+      "name": "bypass-dynamics",
+      "bypass": true,
+      "signal": {
+        "type": "file",
+        "path": "captures/di/dynamics.wav",
+        "tail": 1.0
+      },
+      "note": "Effect off: the bypass reference. Output A on input 2."
+    },
+    {
+      "name": "4stage-1200-notes",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "12:00",
+        "Depth": "12:00",
+        "Res": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/notes.wav",
+        "tail": 1.0
+      },
+      "note": "Effect on."
+    },
+    {
+      "name": "4stage-1200-dynamics",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "12:00",
+        "Depth": "12:00",
+        "Res": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/dynamics.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "4stage-1200-chords",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "12:00",
+        "Depth": "12:00",
+        "Res": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "4stage-1200-chugs",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "12:00",
+        "Depth": "12:00",
+        "Res": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chugs.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "4stage-1200-funk",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "12:00",
+        "Depth": "12:00",
+        "Res": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "4stage-1200-stabs",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "12:00",
+        "Depth": "12:00",
+        "Res": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "4stage-1200-lead",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "12:00",
+        "Depth": "12:00",
+        "Res": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/lead.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "4stage-1200-neck",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "12:00",
+        "Depth": "12:00",
+        "Res": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/neck.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "4stage-1200-noise",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "12:00",
+        "Depth": "12:00",
+        "Res": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/noise.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "12stage-1200-chords",
+      "settings": {
+        "Mode": "12 Stage",
+        "Rate": "12:00",
+        "Depth": "12:00",
+        "Res": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "12stage-1200-lead",
+      "settings": {
+        "Mode": "12 Stage",
+        "Rate": "12:00",
+        "Depth": "12:00",
+        "Res": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/lead.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "rise-1200-chords",
+      "settings": {
+        "Mode": "Rise",
+        "Rate": "12:00",
+        "Depth": "12:00",
+        "Res": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "step-1200-chugs",
+      "settings": {
+        "Mode": "Step",
+        "Rate": "12:00",
+        "Depth": "12:00",
+        "Res": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chugs.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "step-1200-chords",
+      "settings": {
+        "Mode": "Step",
+        "Rate": "12:00",
+        "Depth": "12:00",
+        "Res": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "tail": 1.0
+      }
+    }
+  ]
+}

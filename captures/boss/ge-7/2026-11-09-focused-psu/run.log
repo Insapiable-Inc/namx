@@ -1,0 +1,139 @@
+
+=== 2026-11-09T21:13:44 · run tools/capture/plans/ge-7-focused.json · tool 7c6dc108b65464a13b70c25ac0a062abce725e5a
+
+[1/18] bypass-chords: captures/di/chords.wav, 25.0 s
+  pedal OFF (bypassed)
+  The pedal off (its LED off): the bypass reference.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -23.2 dBFS · loopback -22.6 dBFS · latency 582 samples (12.12 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[2/18] flat-chords: captures/di/chords.wav, 25.0 s
+  pedal ON · 100 Hz 0 · 200 Hz 0 · 400 Hz 0 · 800 Hz 0 · 1.6 kHz 0 · 3.2 kHz 0 · 6.4 kHz 0 · Level 0 (switch it on)
+  The pedal on (its LED lit), every slider at 0.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -23.7 dBFS · loopback -22.6 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[3/18] flat-funk: captures/di/funk.wav, 12.0 s
+  pedal ON · 100 Hz 0 · 200 Hz 0 · 400 Hz 0 · 800 Hz 0 · 1.6 kHz 0 · 3.2 kHz 0 · 6.4 kHz 0 · Level 0
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -20.2 dBFS · loopback -19.1 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[4/18] level-p15-funk-m24: captures/di/funk.wav, 12.0 s at -24 dB
+  pedal ON · 100 Hz 0 · 200 Hz 0 · 400 Hz 0 · 800 Hz 0 · 1.6 kHz 0 · 3.2 kHz 0 · 6.4 kHz 0 · Level +15 (changed)
+  Only Level moves: to +15.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -29.6 dBFS · loopback -43.1 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: r
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -29.6 dBFS · loopback -43.0 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[5/18] level-p15-funk-m12: captures/di/funk.wav, 12.0 s at -12 dB
+  pedal ON · 100 Hz 0 · 200 Hz 0 · 400 Hz 0 · 800 Hz 0 · 1.6 kHz 0 · 3.2 kHz 0 · 6.4 kHz 0 · Level +15
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -17.6 dBFS · loopback -31.1 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[6/18] level-p15-funk: captures/di/funk.wav, 12.0 s
+  pedal ON · 100 Hz 0 · 200 Hz 0 · 400 Hz 0 · 800 Hz 0 · 1.6 kHz 0 · 3.2 kHz 0 · 6.4 kHz 0 · Level +15
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -10.5 dBFS · loopback -19.1 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[7/18] level-m15-chords: captures/di/chords.wav, 25.0 s
+  pedal ON · 100 Hz 0 · 200 Hz 0 · 400 Hz 0 · 800 Hz 0 · 1.6 kHz 0 · 3.2 kHz 0 · 6.4 kHz 0 · Level -15 (changed)
+  Only Level moves: to -15.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -38.6 dBFS · loopback -22.6 dBFS · latency 582 samples (12.12 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[8/18] mid-boost-chords: captures/di/chords.wav, 25.0 s
+  pedal ON · 100 Hz -5 (changed) · 200 Hz 0 · 400 Hz +5 (changed) · 800 Hz +10 (changed) · 1.6 kHz +5 (changed) · 3.2 kHz 0 · 6.4 kHz -5 (changed) · Level 0 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -14.2 dBFS · loopback -22.6 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[9/18] mid-boost-funk-m12: captures/di/funk.wav, 12.0 s at -12 dB
+  pedal ON · 100 Hz -5 · 200 Hz 0 · 400 Hz +5 · 800 Hz +10 · 1.6 kHz +5 · 3.2 kHz 0 · 6.4 kHz -5 · Level 0
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -22.4 dBFS · loopback -31.1 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[10/18] mid-boost-funk: captures/di/funk.wav, 12.0 s
+  pedal ON · 100 Hz -5 · 200 Hz 0 · 400 Hz +5 · 800 Hz +10 · 1.6 kHz +5 · 3.2 kHz 0 · 6.4 kHz -5 · Level 0
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -11.1 dBFS · loopback -19.1 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[11/18] mid-boost-funk-repeat: captures/di/funk.wav, 12.0 s
+  pedal ON · 100 Hz -5 · 200 Hz 0 · 400 Hz +5 · 800 Hz +10 · 1.6 kHz +5 · 3.2 kHz 0 · 6.4 kHz -5 · Level 0
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -11.1 dBFS · loopback -19.1 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[12/18] mid-boost-lead: captures/di/lead.wav from 2 s, 20.0 s
+  pedal ON · 100 Hz -5 · 200 Hz 0 · 400 Hz +5 · 800 Hz +10 · 1.6 kHz +5 · 3.2 kHz 0 · 6.4 kHz -5 · Level 0
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -16.3 dBFS · loopback -25.2 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[13/18] scoop-chords: captures/di/chords.wav, 25.0 s
+  pedal ON · 100 Hz +5 (changed) · 200 Hz +5 (changed) · 400 Hz -5 (changed) · 800 Hz -10 (changed) · 1.6 kHz -5 (changed) · 3.2 kHz +5 (changed) · 6.4 kHz +5 (changed) · Level 0
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -25.0 dBFS · loopback -22.6 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[14/18] scoop-chugs: captures/di/chugs.wav, 10.0 s
+  pedal ON · 100 Hz +5 · 200 Hz +5 · 400 Hz -5 · 800 Hz -10 · 1.6 kHz -5 · 3.2 kHz +5 · 6.4 kHz +5 · Level 0
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -20.4 dBFS · loopback -20.9 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[15/18] scoop-lead: captures/di/lead.wav from 2 s, 20.0 s
+  pedal ON · 100 Hz +5 · 200 Hz +5 · 400 Hz -5 · 800 Hz -10 · 1.6 kHz -5 · 3.2 kHz +5 · 6.4 kHz +5 · Level 0
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -29.6 dBFS · loopback -25.2 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[16/18] all-up-chords-m24: captures/di/chords.wav, 25.0 s at -24 dB
+  pedal ON · 100 Hz +15 (changed) · 200 Hz +15 (changed) · 400 Hz +15 (changed) · 800 Hz +15 (changed) · 1.6 kHz +15 (changed) · 3.2 kHz +15 (changed) · 6.4 kHz +15 (changed) · Level 0
+  Every band slider at +15, Level at 0.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -29.8 dBFS · loopback -46.6 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[17/18] all-up-funk-m12: captures/di/funk.wav, 12.0 s at -12 dB
+  pedal ON · 100 Hz +15 · 200 Hz +15 · 400 Hz +15 · 800 Hz +15 · 1.6 kHz +15 · 3.2 kHz +15 · 6.4 kHz +15 · Level 0
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.9 dBFS · loopback -31.1 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[18/18] all-up-funk: captures/di/funk.wav, 12.0 s
+  pedal ON · 100 Hz +15 · 200 Hz +15 · 400 Hz +15 · 800 Hz +15 · 1.6 kHz +15 · 3.2 kHz +15 · 6.4 kHz +15 · Level 0
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -10.4 dBFS · loopback -19.1 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+All 18 takes are in captures/boss/ge-7/2026-11-09-focused-psu.

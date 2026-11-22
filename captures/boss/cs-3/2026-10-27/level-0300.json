@@ -1,0 +1,47 @@
+{
+  "take": "level-0300",
+  "pedal": "Boss CS-3 Compression Sustainer (mono)",
+  "bypass": false,
+  "settings": {
+    "Level": "3:00",
+    "Tone": "12:00",
+    "Attack": "12:00",
+    "Sustain": "12:00"
+  },
+  "note": "",
+  "signal": {
+    "type": "sine",
+    "freq": 1000,
+    "seconds": 3,
+    "level_db": -24,
+    "tail": 1
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -27.29,
+    "loop": -36.95
+  },
+  "latency_samples": 583,
+  "latency_quality": 0.998,
+  "xruns": 0,
+  "played_sha256": "7942819bdeae282f0ae95e5613aaff34ba705c9229c22f135d5efed42a5f424c",
+  "recorded_at": "2026-10-27T18:13:17",
+  "tool_commit": "159006f54a86d23d2f0e7c663ddd122bd2570b03",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX4",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Scarlett 8i6 3rd gen; pedal feed: analogue out 3 (PCM 3, direct routing); loopback: out 4 -> line in 5; pedal into input 2, INST, AIR off, pad ON, gain min; no reamp box; calibration from the TR-2/DD-8 sessions; CS-3 on a 9 V power supply; Input -> Output"
+  }
+}

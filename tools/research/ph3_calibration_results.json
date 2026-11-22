@@ -1,0 +1,98 @@
+{
+  "takes": [
+    {
+      "session": "2026-10-28",
+      "take": "bypass-sweep",
+      "recorded_at": "2026-10-28T16:53:30",
+      "marker_pedal_over_loop_db": -0.5779277434960913,
+      "output_rms_dbfs": -40.53510466581834,
+      "output_over_played_rms_db": -8.85401635739212
+    },
+    {
+      "session": "2026-10-28",
+      "take": "bypass-noise",
+      "recorded_at": "2026-10-28T16:53:52",
+      "marker_pedal_over_loop_db": -0.5782205449512877,
+      "output_rms_dbfs": -39.58666430568931,
+      "output_over_played_rms_db": -8.853618433659005
+    },
+    {
+      "session": "2026-10-28",
+      "take": "s4-rate-0500",
+      "recorded_at": "2026-10-28T17:03:13",
+      "marker_pedal_over_loop_db": 1.0496960223149456,
+      "output_rms_dbfs": -37.41877368771152,
+      "output_over_played_rms_db": -6.685727815681219
+    },
+    {
+      "session": "2026-10-28-followup",
+      "take": "bypass-sweep",
+      "recorded_at": "2026-10-28T21:29:46",
+      "marker_pedal_over_loop_db": 1.770540659810691,
+      "output_rms_dbfs": -38.18576285470299,
+      "output_over_played_rms_db": -6.504674546276772
+    },
+    {
+      "session": "2026-10-28-followup",
+      "take": "bypass-noise",
+      "recorded_at": "2026-10-28T21:30:03",
+      "marker_pedal_over_loop_db": 1.7705034656756682,
+      "output_rms_dbfs": -37.23992981498804,
+      "output_over_played_rms_db": -6.506883942957734
+    },
+    {
+      "session": "2026-10-28-followup",
+      "take": "s4-rate-0500",
+      "recorded_at": "2026-10-28T21:30:42",
+      "marker_pedal_over_loop_db": 0.708763356838171,
+      "output_rms_dbfs": -35.08092823997145,
+      "output_over_played_rms_db": -4.35030149185444
+    },
+    {
+      "session": "2026-10-28-followup2",
+      "take": "bypass-sweep",
+      "recorded_at": "2026-10-28T23:05:11",
+      "marker_pedal_over_loop_db": -0.5772783149008777,
+      "output_rms_dbfs": -40.53337970565209,
+      "output_over_played_rms_db": -8.852291397225862
+    },
+    {
+      "session": "2026-10-28-followup2",
+      "take": "bypass-noise",
+      "recorded_at": "2026-10-28T23:07:51",
+      "marker_pedal_over_loop_db": -0.5772783727455673,
+      "output_rms_dbfs": -39.5844872859702,
+      "output_over_played_rms_db": -8.851441413939892
+    },
+    {
+      "session": "2026-10-28-modes",
+      "take": "bypass-sweep",
+      "recorded_at": "2026-10-28T17:14:04",
+      "marker_pedal_over_loop_db": -0.5777397867319133,
+      "output_rms_dbfs": -40.535072364578,
+      "output_over_played_rms_db": -8.853984056151774
+    },
+    {
+      "session": "2026-10-28-modes",
+      "take": "bypass-noise",
+      "recorded_at": "2026-10-28T17:14:28",
+      "marker_pedal_over_loop_db": -0.5778336352519762,
+      "output_rms_dbfs": -39.58681765649657,
+      "output_over_played_rms_db": -8.853771784466266
+    },
+    {
+      "session": "2026-10-28-slow",
+      "take": "bypass-noise",
+      "recorded_at": "2026-10-28T17:30:48",
+      "marker_pedal_over_loop_db": -0.56789756840077,
+      "output_rms_dbfs": -39.58095012000391,
+      "output_over_played_rms_db": -8.847904247973608
+    }
+  ],
+  "bypass_change_db": 2.3467344907012704,
+  "engaged_repeated_setting_change_db": 2.3354263238267796,
+  "difference_after_session_bypass_normalization_db": -0.011308166874490766,
+  "bypass_welch_median_change_db": 2.3489529239967273,
+  "bypass_welch_shape_rms_after_gain_db": 0.001104464621362048,
+  "conclusion": "A shared pedal-side gain change explains the tested repeated setting. Its physical cause and persistence in every frozen take remain unidentified. Use same-session bypass; no automatic correction of raw WAVs."
+}

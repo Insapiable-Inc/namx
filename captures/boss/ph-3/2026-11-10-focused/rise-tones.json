@@ -1,0 +1,57 @@
+{
+  "take": "rise-tones",
+  "pedal": "Boss PH-3 Phase Shifter \u2014 focused reamp, every mode (mono)",
+  "bypass": false,
+  "settings": {
+    "Mode": "Rise",
+    "Rate": "12:00",
+    "Depth": "7:00",
+    "Res": "7:00"
+  },
+  "note": "The STAGE switch on RISE (Depth does nothing here: leave it).",
+  "signal": {
+    "type": "sine",
+    "freq": [
+      113,
+      197,
+      331,
+      577,
+      997,
+      1723,
+      2971,
+      5147,
+      8887
+    ],
+    "seconds": 20,
+    "level_db": -18,
+    "tail": 1.0
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -25.82,
+    "loop": -30.91
+  },
+  "latency_samples": 631,
+  "latency_quality": 0.998,
+  "xruns": 0,
+  "played_sha256": "5e42608e44fe1a6f42011b40def4c41dd6b2dacdf4cc1350bbbd66627a5efc1a",
+  "recorded_at": "2026-11-10T17:58:48",
+  "tool_commit": "0715c59a6b4168df476e6d757a19991852840c8f",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX4",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Boss PH-3 on its 9 V adapter: the guitar DI dataset. Input from interface out 3; OUTPUT -> input 2; INST, AIR off, pad on, gain fully counter-clockwise."
+  }
+}

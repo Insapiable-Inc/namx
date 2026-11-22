@@ -1,0 +1,47 @@
+{
+  "source_model_commit": "8efe8368502646173d9d58b96ebbaa7d39f404b2",
+  "source_sha256": {
+    "src/dsp/Ns2Gate.h": "79d26800a5c7b45c891d8f89f6feef893593a6fa13984a2010489c4c3861c1fe",
+    "src/dsp/NoiseGateProcessor.cpp": "93da11fdf6dccd3dfbecf0f1db3857b746baec48bff5ee2360adfa6286731cde",
+    "tools/capture/analyze_ns2.py": "3d6b75836ae117c0d80002f1c822b1cee2ce3438bfde67a5aa82d226d70b5877"
+  },
+  "role": "Adaptive localization, not a held-out validation or parameter-fit result.",
+  "input_reference": "Levels in dB relative to the existing guitar-peak reference, ref_dbfs=-4.67.",
+  "levels_db": [
+    -100,
+    -62,
+    -60,
+    -58,
+    -56,
+    -54,
+    -52,
+    -50,
+    -48,
+    -46,
+    -44,
+    -12,
+    -100
+  ],
+  "plateau_seconds": 4,
+  "baseline_threshold_db": -49.4,
+  "baseline_opens_at_db": -48.11,
+  "baseline_decay_ms": 24.6,
+  "selection_rule": "From the engaged/bypass 1 kHz coherent gain, identify partial opening and the largest increase between adjacent levels; retain within-step early/late changes. Select three levels spanning the observed transition for the subsequent silence-versus-loud-history packet. If this range does not bracket reduced and open gain, report that failure and re-center before collecting the long history comparison. Do not label a 4 s plateau a proven equilibrium.",
+  "gain_windows_seconds": [
+    [
+      0.1,
+      0.3
+    ],
+    [
+      1.0,
+      1.5
+    ],
+    [
+      3.0,
+      3.8
+    ]
+  ],
+  "noise_rule": "Compare the coherent carrier against neighboring non-harmonic bins and the recorded quiet tail; do not infer creep from magnitude-biased estimates near the measurement floor.",
+  "next_experiment": "At selected levels, compare at least 6 s at the same constant input after a quiet reset and after a -12 dB conditioning tone; Decay minimum then maximum. Verify reset adequacy against the model slow state and compare early/late recovery and history differences before adding any state.",
+  "bypass_warning": "All nominal bypass recordings from 2026-10-27-dynamics were actually engaged. They must not be treated as calibration references."
+}

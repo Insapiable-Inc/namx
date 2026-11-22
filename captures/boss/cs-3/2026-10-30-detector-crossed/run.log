@@ -1,0 +1,20 @@
+
+=== 2026-10-30T14:41:08 · run tools/capture/plans/cs-3-detector-crossed.json · tool 979167bf6ba528173a9069fc329ffde098383af4-dirty
+
+[1/2] bypass-crossed-1000: 1000 Hz at -36/-6/-36/-24/-12/-24 dB, 4 s each
+  pedal OFF (bypassed)
+  CS-3 BYPASSED. Leave Level, Tone and Sustain at noon. Set only Attack fully counter-clockwise now. Keep the previous cable path and interface gains.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.5 dBFS · loopback -18.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[2/2] attack-0700-crossed-1000: 1000 Hz at -36/-6/-36/-24/-12/-24 dB, 4 s each
+  pedal ON · Level 12:00 · Tone 12:00 · Attack 7:00 · Sustain 12:00 (switch it on)
+  Switch pedal ON. Attack fully counter-clockwise; other knobs and interface gains remain untouched. Two crossed jumps play automatically.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -27.3 dBFS · loopback -18.9 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+All 2 takes are in captures/boss/cs-3/2026-10-30-detector-crossed.

@@ -1490,11 +1490,40 @@ carries the final name.
   ports feeding L and R from the start would let two guitars (or a stereo source) run
   independently through the unlinked Gate/Compressor and the per-side amp.
 
+- **Clip LEDs per effect** (user, 2026-10-31): a small LED in each card's title row that
+  lights when that effect clips, so a by-design clip is visible. Asked after the pedal
+  models: the BF-3 flanger and CS-3 compressor clip in some settings because the real
+  pedals do (BF-3's output clip, CS-3's ceiling; also DD-8's wet clip, the AW-3's output
+  ceiling, the Drive), and with no per-effect clip visibility the user would rather not
+  have those clips at all. Design:
+  - **What counts:** effects with a modelled clip stage report when it engages (a
+    per-block flag or the amount over, in dB); every effect could also report its output
+    peak over 0 dBFS (float headroom isn't clipping until the limiter or the converter,
+    but it is where a later stage will clip).
+  - **Cost:** an `abs`/`max` per sample, or a compare in the clip stage that already
+    exists, plus one relaxed atomic per effect per block — the GR meters' pattern
+    (`take_gain_reduction_db()`), read by the 60 fps meter timer. Well under 1 % of the
+    block budget; measure with `namx-bench` before and after.
+  - **Display:** off / green under the ceiling / red with a hold (like the meters' peak
+    hold), the amount in the tooltip; colours from `Theme`, LED painting from `LedPaint.h`.
+    UI work → its own `ui/` branch.
+  - **Follow-up decision:** once clips are visible, whether the pedal types keep them as
+    measured or get a switch to drop them (don't change an approved sound without asking).
 - **Card badges** (user, 2026-10-03, nice to have): a small text tag after an effect's
   title — "Beta", "Experimental", "Deprecated", … — with a tooltip saying why (e.g.
   Transpose: the faint beat on long held chords). One optional flag on
   `make_effect_row`, colors from `Theme`. The whole app being pre-1.0 already says
   "experimental", so this is for individual features once that's no longer true.
+- **A Level knob on the cards without one** (user, 2026-11-15, nice to have): the Phaser
+  is easy to clip with and has no gain of its own — the model has no clip, so what clips
+  is whatever comes after it: the Stage modes sum dry and wet at full level (up to +6 dB
+  between the notches), Feedback at 75 % adds up to about 12 dB at its resonances,
+  Rise / Fall is up to 5.6 dB louder with Depth down. The pedal does the same and its
+  9 V rails catch it. Not the only card with the problem: every pedal model without an
+  output level (Phaser, Flanger, Wah, Tremolo, …) gets a Level in dB after the effect,
+  0 by default — the sound at 0 unchanged, so no preset version bump; like the
+  Equalizer's Level. Chosen over an automatic make-up, modelling the pedal's ceiling,
+  or capping Feedback. Range to settle per card (about −18 to +6).
 - *(Superseded 2026-10-03: Transpose runs on the filter-bank shifter — Phase 22.)* **Transpose latency** (measured 2026-10-01): pitch is accurate (median within ±0.3 cents
   over 110–330 Hz, −12…+12 st; brief ±10–15 cent wobble at crossfades when shifting up),
   but a shift costs ~30 ms of latency (50 ms window; 3 ms at 0 st) — noticeable for

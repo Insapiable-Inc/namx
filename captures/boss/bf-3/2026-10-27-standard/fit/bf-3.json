@@ -1,0 +1,852 @@
+{
+  "pedal": "Boss BF-3 Flanger, STANDARD",
+  "session": "2026-10-27-standard",
+  "dry_path": {
+    "delay_ms": 0.554,
+    "gain_db_1khz": -0.13,
+    "db_re_bypass": {
+      "63": -1.08,
+      "125": 0.28,
+      "250": 0.23,
+      "500": -0.18,
+      "1000": -0.13,
+      "2000": -0.12,
+      "4000": -0.11,
+      "6300": -0.28,
+      "8000": -0.29,
+      "10000": -0.34,
+      "12500": -0.35,
+      "16000": -0.48
+    },
+    "group_delay_ms": {
+      "1000": 0.564,
+      "4000": 0.552,
+      "12500": 0.596
+    }
+  },
+  "wet_tone": {
+    "delay_ms_after_dry": 14.673,
+    "gain_db_1khz_re_bypass": 1.45,
+    "gain_db_1khz_re_dry": 1.58,
+    "db_re_1khz": {
+      "63": -19.38,
+      "125": -5.48,
+      "250": -1.55,
+      "500": -0.33,
+      "1000": 0.0,
+      "2000": -0.45,
+      "4000": -2.28,
+      "6300": -5.21,
+      "8000": -7.74,
+      "10000": -10.83,
+      "12500": -15.08,
+      "16000": -22.49
+    },
+    "group_delay_after_dry_ms": {
+      "250": 14.786,
+      "1000": 14.701,
+      "4000": 14.656,
+      "10000": 14.637
+    }
+  },
+  "manual_delay_ms_after_dry": {
+    "7:00": 14.673,
+    "9:00": 9.064,
+    "12:00": 2.005,
+    "3:00": 0.701,
+    "5:00": 0.448
+  },
+  "res": {
+    "pass_db_res_0300_manual_0700": {
+      "63": -16.38,
+      "125": -11.01,
+      "250": -5.45,
+      "500": -3.62,
+      "1000": -3.15,
+      "2000": -3.58,
+      "4000": -5.44,
+      "6300": -9.3,
+      "8000": -10.9,
+      "10000": -12.27,
+      "12500": -20.34,
+      "16000": -19.8
+    },
+    "pass_delay_ms": 14.71,
+    "pass_db_from_ripple_manual_1200": {
+      "7:00": null,
+      "9:00": {
+        "500": -18.76,
+        "1000": -16.66,
+        "2000": -16.97,
+        "4000": -18.06
+      },
+      "12:00": {
+        "500": -9.58,
+        "1000": -8.09,
+        "2000": -8.57,
+        "4000": -10.09
+      },
+      "3:00": {
+        "500": -4.24,
+        "1000": -3.47,
+        "2000": -4.41,
+        "4000": -6.84
+      },
+      "5:00": {
+        "500": -1.68,
+        "1000": -1.42,
+        "2000": -1.71,
+        "4000": -3.07
+      }
+    },
+    "res_0300_manual_0700_from_ripple": {
+      "500": -3.51,
+      "1000": -3.09,
+      "2000": -3.17,
+      "4000": -2.02
+    },
+    "res_0300_changes_dry_db": 0.01,
+    "res_0300_changes_first_wet_db": -0.02,
+    "res_0500_note": "from the -24 dB redo (2026-10-27-res-quiet); the -12 dB take clipped"
+  },
+  "bypass_bursts": [
+    {
+      "input_db": -30,
+      "gain_db": -8.87,
+      "h2_db": -92.2,
+      "h3_db": -98.5
+    },
+    {
+      "input_db": -24,
+      "gain_db": -8.87,
+      "h2_db": -83.4,
+      "h3_db": -100.9
+    },
+    {
+      "input_db": -18,
+      "gain_db": -8.87,
+      "h2_db": -77.9,
+      "h3_db": -98.5
+    },
+    {
+      "input_db": -12,
+      "gain_db": -8.87,
+      "h2_db": -71.6,
+      "h3_db": -90.8
+    },
+    {
+      "input_db": -8,
+      "gain_db": -8.87,
+      "h2_db": -67.5,
+      "h3_db": -83.2
+    },
+    {
+      "input_db": -6,
+      "gain_db": -8.87,
+      "h2_db": -65.3,
+      "h3_db": -79.2
+    },
+    {
+      "input_db": -4,
+      "gain_db": -8.87,
+      "h2_db": -63.1,
+      "h3_db": -75.0
+    },
+    {
+      "input_db": -2,
+      "gain_db": -8.87,
+      "h2_db": -60.6,
+      "h3_db": -70.4
+    },
+    {
+      "input_db": 0,
+      "gain_db": -8.88,
+      "h2_db": -57.8,
+      "h3_db": -65.2
+    },
+    {
+      "input_db": 2,
+      "gain_db": -8.89,
+      "h2_db": -54.2,
+      "h3_db": -58.7
+    },
+    {
+      "input_db": 4,
+      "gain_db": -8.94,
+      "h2_db": -46.9,
+      "h3_db": -46.7
+    }
+  ],
+  "bursts": [
+    {
+      "input_db": -30,
+      "gain_db": -2.29,
+      "h2_db": -89.5,
+      "h3_db": -81.0
+    },
+    {
+      "input_db": -24,
+      "gain_db": -2.29,
+      "h2_db": -74.6,
+      "h3_db": -82.6
+    },
+    {
+      "input_db": -18,
+      "gain_db": -2.3,
+      "h2_db": -69.3,
+      "h3_db": -77.1
+    },
+    {
+      "input_db": -12,
+      "gain_db": -2.3,
+      "h2_db": -62.9,
+      "h3_db": -71.1
+    },
+    {
+      "input_db": -8,
+      "gain_db": -2.31,
+      "h2_db": -58.1,
+      "h3_db": -66.3
+    },
+    {
+      "input_db": -6,
+      "gain_db": -2.31,
+      "h2_db": -55.1,
+      "h3_db": -63.0
+    },
+    {
+      "input_db": -4,
+      "gain_db": -3.21,
+      "h2_db": -54.3,
+      "h3_db": -26.1
+    },
+    {
+      "input_db": -2,
+      "gain_db": -4.52,
+      "h2_db": -54.6,
+      "h3_db": -18.3
+    },
+    {
+      "input_db": 0,
+      "gain_db": -6.19,
+      "h2_db": -54.9,
+      "h3_db": -15.8
+    },
+    {
+      "input_db": 2,
+      "gain_db": -8.05,
+      "h2_db": -54.2,
+      "h3_db": -14.9
+    },
+    {
+      "input_db": 4,
+      "gain_db": -10.0,
+      "h2_db": -54.7,
+      "h3_db": -14.6
+    }
+  ],
+  "bursts_res_0500": [
+    {
+      "input_db": -30,
+      "gain_db": 3.26,
+      "h2_db": -71.9,
+      "h3_db": -70.5
+    },
+    {
+      "input_db": -24,
+      "gain_db": 3.26,
+      "h2_db": -69.8,
+      "h3_db": -64.8
+    },
+    {
+      "input_db": -18,
+      "gain_db": 3.24,
+      "h2_db": -63.6,
+      "h3_db": -59.7
+    },
+    {
+      "input_db": -12,
+      "gain_db": 3.22,
+      "h2_db": -55.9,
+      "h3_db": -54.7
+    },
+    {
+      "input_db": -8,
+      "gain_db": 1.36,
+      "h2_db": -53.6,
+      "h3_db": -19.3
+    },
+    {
+      "input_db": -6,
+      "gain_db": -0.25,
+      "h2_db": -53.8,
+      "h3_db": -16.2
+    },
+    {
+      "input_db": -4,
+      "gain_db": -2.07,
+      "h2_db": -54.0,
+      "h3_db": -15.0
+    },
+    {
+      "input_db": -2,
+      "gain_db": -4.01,
+      "h2_db": -54.2,
+      "h3_db": -14.7
+    },
+    {
+      "input_db": 0,
+      "gain_db": -6.01,
+      "h2_db": -54.4,
+      "h3_db": -14.6
+    },
+    {
+      "input_db": 2,
+      "gain_db": -8.0,
+      "h2_db": -54.8,
+      "h3_db": -14.6
+    },
+    {
+      "input_db": 4,
+      "gain_db": -9.98,
+      "h2_db": -57.4,
+      "h3_db": -14.6
+    }
+  ],
+  "clip": {
+    "ceiling_db_re_guitar_peak": 0.55,
+    "rms_error_db": 0.14
+  },
+  "ring_res_0500": {
+    "rms_dbfs_per_50ms": [
+      -59.7,
+      -93.4,
+      -86.4,
+      -83.3,
+      -82.8
+    ]
+  },
+  "noise": {
+    "rms_dbfs": -83.7,
+    "peak_dbfs": -66.3,
+    "third_octaves_dbfs": [
+      -2.9,
+      0.3,
+      7.2,
+      5.5,
+      14.9,
+      16.4,
+      14.8,
+      12.0,
+      8.9,
+      7.7
+    ]
+  },
+  "sweep": {
+    "depth-0300": {
+      "settings": {
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "3:00",
+        "Rate": "12:00"
+      },
+      "delay_ms": {
+        "min": 0.524,
+        "mean": 3.56,
+        "max": 9.966
+      },
+      "lfo_hz": 0.3227
+    },
+    "depth-0500": {
+      "settings": {
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "5:00",
+        "Rate": "12:00"
+      },
+      "delay_ms": {
+        "min": 0.355,
+        "mean": 4.091,
+        "max": 13.276
+      },
+      "lfo_hz": 0.3228
+    },
+    "depth-0500-manual-0700": {
+      "settings": {
+        "Manual": "7:00",
+        "Res": "7:00",
+        "Depth": "5:00",
+        "Rate": "12:00"
+      },
+      "delay_ms": {
+        "min": 0.451,
+        "mean": 4.337,
+        "max": 13.375
+      },
+      "lfo_hz": 0.3235
+    },
+    "depth-0900": {
+      "settings": {
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "9:00",
+        "Rate": "12:00"
+      },
+      "delay_ms": {
+        "min": 1.385,
+        "mean": 1.705,
+        "max": 2.363
+      },
+      "lfo_hz": 0.3229
+    },
+    "rate-0300": {
+      "settings": {
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "12:00",
+        "Rate": "3:00"
+      },
+      "delay_ms": {
+        "min": 1.123,
+        "mean": 1.928,
+        "max": 3.044
+      },
+      "lfo_hz": 2.5235
+    },
+    "rate-0500": {
+      "settings": {
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "12:00",
+        "Rate": "5:00"
+      },
+      "delay_ms": {
+        "min": 1.524,
+        "mean": 1.779,
+        "max": 2.059
+      },
+      "lfo_hz": 9.9998,
+      "four_phases_ms": [
+        1.525,
+        1.686,
+        2.058,
+        1.845
+      ],
+      "fundamental_ms_peak_to_peak": 0.557
+    },
+    "rate-0700": {
+      "settings": {
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "12:00",
+        "Rate": "7:00"
+      },
+      "delay_ms": {
+        "min": 0.887,
+        "mean": 2.497,
+        "max": 5.628
+      },
+      "lfo_hz": 0.0553
+    },
+    "rate-0900": {
+      "settings": {
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "12:00",
+        "Rate": "9:00"
+      },
+      "delay_ms": {
+        "min": 0.91,
+        "mean": 2.336,
+        "max": 5.55
+      },
+      "lfo_hz": 0.1228
+    },
+    "rate-1200": {
+      "settings": {
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "12:00",
+        "Rate": "12:00"
+      },
+      "delay_ms": {
+        "min": 0.901,
+        "mean": 2.185,
+        "max": 5.215
+      },
+      "lfo_hz": 0.3258
+    },
+    "still-clicks": {
+      "settings": {
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "7:00",
+        "Rate": "12:00"
+      },
+      "delay_ms": {
+        "min": 2.014,
+        "mean": 2.014,
+        "max": 2.015
+      }
+    },
+    "sweep-manual-0300": {
+      "settings": {
+        "Manual": "3:00",
+        "Res": "7:00",
+        "Depth": "12:00",
+        "Rate": "12:00"
+      },
+      "delay_ms": {
+        "min": 0.455,
+        "mean": 1.891,
+        "max": 4.774
+      },
+      "lfo_hz": 0.3222
+    },
+    "sweep-manual-0900": {
+      "settings": {
+        "Manual": "9:00",
+        "Res": "7:00",
+        "Depth": "12:00",
+        "Rate": "12:00"
+      },
+      "delay_ms": {
+        "min": 3.328,
+        "mean": 4.771,
+        "max": 7.652
+      },
+      "lfo_hz": 0.3219
+    },
+    "sweep-res-1200": {
+      "settings": {
+        "Manual": "12:00",
+        "Res": "12:00",
+        "Depth": "12:00",
+        "Rate": "12:00"
+      },
+      "delay_ms": {
+        "min": 0.902,
+        "mean": 2.179,
+        "max": 5.219
+      },
+      "lfo_hz": 0.3219
+    }
+  },
+  "shape": {
+    "smoothing_hz": 1.555,
+    "power": 2.475,
+    "min_ms": 0.917,
+    "swing_ms": 4.766,
+    "rms_us": 57.9,
+    "per_take": {
+      "rate-0700": {
+        "measured_ms": [
+          0.888,
+          5.586
+        ],
+        "model_ms": [
+          0.917,
+          5.55
+        ],
+        "rms_us": 30.1
+      },
+      "rate-0900": {
+        "measured_ms": [
+          0.912,
+          5.531
+        ],
+        "model_ms": [
+          0.917,
+          5.443
+        ],
+        "rms_us": 69.0
+      },
+      "rate-1200": {
+        "measured_ms": [
+          0.903,
+          5.213
+        ],
+        "model_ms": [
+          0.92,
+          5.136
+        ],
+        "rms_us": 56.7
+      },
+      "rate-0300": {
+        "measured_ms": [
+          1.124,
+          3.044
+        ],
+        "model_ms": [
+          1.137,
+          2.969
+        ],
+        "rms_us": 67.2
+      },
+      "rate-0500": {
+        "measured_fundamental_ms": 0.557,
+        "model_fundamental_ms": 0.53
+      }
+    }
+  },
+  "depth": {
+    "manual_12": 2.005,
+    "low_ms": 0.325,
+    "depth_1200_floor_fit": {
+      "slope": 0.344,
+      "intercept_ms": 0.213,
+      "rms_ms": 0.001
+    },
+    "depth_1200_swing_by_manual_ms": {
+      "9:00": 4.324,
+      "12:00": 4.314,
+      "3:00": 4.319
+    },
+    "positions": {
+      "7:00": {
+        "blend": 0.0,
+        "swing_ms": 0.0
+      },
+      "9:00": {
+        "floor_ms": 1.385,
+        "blend": 0.369,
+        "swing_ms": 1.1
+      },
+      "12:00": {
+        "floor_ms": 0.901,
+        "blend": 0.657,
+        "swing_ms": 4.853
+      },
+      "3:00": {
+        "floor_ms": 0.524,
+        "blend": 0.881,
+        "swing_ms": 10.622
+      },
+      "5:00": {
+        "floor_ms": 0.355,
+        "blend": 0.982,
+        "swing_ms": 14.535
+      }
+    },
+    "depth_0500_manual_1200_vs_0700_ms": [
+      [
+        0.355,
+        13.276
+      ],
+      [
+        0.451,
+        13.375
+      ]
+    ]
+  },
+  "checks": {
+    "depth-0300-manual-0900": {
+      "settings": {
+        "Manual": "9:00",
+        "Res": "7:00",
+        "Depth": "3:00",
+        "Rate": "12:00"
+      },
+      "measured_ms": [
+        1.37,
+        10.812
+      ],
+      "lfo_hz": 0.323,
+      "model_ms": [
+        1.37,
+        10.821
+      ]
+    },
+    "depth-0900-manual-0300": {
+      "settings": {
+        "Manual": "3:00",
+        "Res": "7:00",
+        "Depth": "9:00",
+        "Rate": "12:00"
+      },
+      "measured_ms": [
+        0.553,
+        1.531
+      ],
+      "lfo_hz": 0.322,
+      "model_ms": [
+        0.563,
+        1.542
+      ]
+    },
+    "rate-0300-depth-0500": {
+      "settings": {
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "5:00",
+        "Rate": "3:00"
+      },
+      "measured_ms": [
+        0.813,
+        7.003
+      ],
+      "lfo_hz": 2.247,
+      "model_ms": [
+        0.92,
+        7.041
+      ]
+    },
+    "still-clicks": {
+      "settings": {
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "7:00",
+        "Rate": "12:00"
+      },
+      "measured_ms": [
+        1.98,
+        1.981
+      ],
+      "model_ms": [
+        2.005,
+        2.005
+      ]
+    },
+    "sweep-res-0500": {
+      "settings": {
+        "Manual": "12:00",
+        "Res": "5:00",
+        "Depth": "12:00",
+        "Rate": "12:00"
+      },
+      "measured_ms": [
+        0.88,
+        5.189
+      ],
+      "lfo_hz": 0.33,
+      "model_ms": [
+        0.904,
+        5.212
+      ]
+    },
+    "output_b_plugged_db": {
+      "dry": {
+        "250": -0.0,
+        "1000": 0.0,
+        "4000": 0.0,
+        "10000": 0.0
+      },
+      "wet": {
+        "250": 0.0,
+        "1000": 0.0,
+        "4000": 0.0,
+        "10000": -0.0
+      }
+    }
+  },
+  "sessions": [
+    "2026-10-27-standard",
+    "2026-10-27-standard-checks",
+    "2026-10-27-res-quiet"
+  ],
+  "model_fit": {
+    "combs": {
+      "manual-0700": {
+        "own_ms": 14.6994,
+        "rms_db": 0.93,
+        "rms_db_at_table_ms": 1.01
+      },
+      "manual-0900": {
+        "own_ms": 9.0831,
+        "rms_db": 0.99,
+        "rms_db_at_table_ms": 1.11
+      },
+      "manual-1200": {
+        "own_ms": 2.0146,
+        "rms_db": 1.31,
+        "rms_db_at_table_ms": 1.84
+      },
+      "manual-0300": {
+        "own_ms": 0.7101,
+        "rms_db": 0.97,
+        "rms_db_at_table_ms": 2.02
+      },
+      "manual-0500": {
+        "own_ms": 0.4576,
+        "rms_db": 0.97,
+        "rms_db_at_table_ms": 2.44
+      },
+      "res-0900": {
+        "own_ms": 2.072,
+        "rms_db": 1.39,
+        "rms_db_at_table_ms": 6.52
+      },
+      "res-1200": {
+        "own_ms": 2.0708,
+        "rms_db": 1.05,
+        "rms_db_at_table_ms": 6.44
+      },
+      "res-0300": {
+        "own_ms": 2.0708,
+        "rms_db": 0.98,
+        "rms_db_at_table_ms": 6.46
+      },
+      "std-res-0500-24": {
+        "own_ms": 1.9841,
+        "rms_db": 1.11,
+        "rms_db_at_table_ms": 2.86
+      },
+      "res-0300-manual-0700": {
+        "own_ms": 14.6935,
+        "rms_db": 0.84,
+        "rms_db_at_table_ms": 1.02
+      },
+      "res-0300-manual-0500": {
+        "own_ms": 0.457,
+        "rms_db": 1.11,
+        "rms_db_at_table_ms": 1.72
+      }
+    },
+    "cycles": {
+      "rate-0700": {
+        "lfo_hz": 0.0553,
+        "rms_us": 45.9
+      },
+      "rate-0900": {
+        "lfo_hz": 0.1228,
+        "rms_us": 72.9
+      },
+      "rate-1200": {
+        "lfo_hz": 0.3258,
+        "rms_us": 59.3
+      },
+      "rate-0300": {
+        "lfo_hz": 2.5235,
+        "rms_us": 36.1
+      },
+      "depth-0900": {
+        "lfo_hz": 0.3229,
+        "rms_us": 31.9
+      },
+      "depth-0500": {
+        "lfo_hz": 0.3228,
+        "rms_us": 324.6
+      },
+      "sweep-manual-0900": {
+        "lfo_hz": 0.3219,
+        "rms_us": 62.4
+      },
+      "depth-0300-manual-0900": {
+        "lfo_hz": 0.3235,
+        "rms_us": 227.9
+      },
+      "depth-0900-manual-0300": {
+        "lfo_hz": 0.3221,
+        "rms_us": 27.6
+      },
+      "rate-0300-depth-0500": {
+        "lfo_hz": 2.247,
+        "rms_us": 193.7
+      },
+      "sweep-res-0500": {
+        "lfo_hz": 0.3296,
+        "rms_us": 71.8
+      }
+    }
+  }
+}

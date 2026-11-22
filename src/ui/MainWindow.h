@@ -166,6 +166,9 @@ private:
     // Dims the controls the current mode ignores (Delay R Time with Stereo off; the Wah's
     // Sensitivity in Manual, Position and Reverse in Auto). They stay adjustable.
     void update_inactive_controls();
+    // Names and tooltips that follow the effects' Types (a Boss type takes the pedal's
+    // knob names); run first by update_inactive_controls.
+    void describe_controls();
     void set_tempo(double new_bpm);
 
     // Second row of advanced controls under a card's main row, behind a
@@ -175,8 +178,8 @@ private:
     void set_tuner_reference(int hz);
     void set_tuner_show_hz(bool on);
     void set_transpose_continuous(bool on);
-    QWidget* make_eq_freq_knob(const QString& key, const QString& label, double lo, double hi,
-                               double def, EQProcessor::Band b, double off_at);
+    KnobWidget* make_eq_cut_knob(const QString& key, const QString& label, double lo, double hi,
+                                 double def, EQProcessor::Cut c, double off_at);
     QWidget* make_delay_pct_knob(const QString& key, const QString& label, double lo, double hi,
                                  double def, std::function<void(double)> f, const QString& tip);
     KnobWidget* make_ir_level_knob(int slot);
@@ -322,57 +325,62 @@ private:
     KnobWidget* knob_output_gain = nullptr;
 
     ToggleSwitch* sw_eq_enable = nullptr;
-    KnobWidget* knob_low = nullptr;
-    KnobWidget* knob_mid = nullptr;
-    KnobWidget* knob_treble = nullptr;
 
     ToggleSwitch* sw_tuner_enable = nullptr;
     ToggleSwitch* sw_tuner_mute = nullptr;
 
     ToggleSwitch* sw_gate_enable = nullptr;
     KnobWidget* knob_gate_thresh = nullptr;
-    KnobWidget* knob_gate_attack = nullptr;
     KnobWidget* knob_gate_release = nullptr;
 
     ToggleSwitch* sw_comp_enable = nullptr;
     KnobWidget* knob_comp_thresh = nullptr;
-    KnobWidget* knob_comp_ratio = nullptr;
-    KnobWidget* knob_comp_attack = nullptr;
     KnobWidget* knob_comp_release = nullptr;
     KnobWidget* knob_comp_makeup = nullptr;
+    KnobWidget* knob_comp_cs3_tone = nullptr;
 
     ToggleSwitch* sw_wah_enable = nullptr;
     KnobWidget* knob_wah_sens = nullptr;
-    KnobWidget* knob_wah_res = nullptr;
     KnobWidget* knob_wah_mix = nullptr;
     KnobWidget* knob_wah_pos = nullptr;
+    KnobWidget* knob_wah_type = nullptr;
+    KnobWidget* knob_wah_aw3_decay = nullptr;
 
     ToggleSwitch* sw_flanger_enable = nullptr;
     ToggleSwitch* sw_flanger_stereo = nullptr;
     KnobWidget* knob_fl_rate = nullptr;
     KnobWidget* knob_fl_depth = nullptr;
     KnobWidget* knob_fl_feedback = nullptr;
-    KnobWidget* knob_fl_mix = nullptr;
+    KnobWidget* knob_fl_range = nullptr;
+    KnobWidget* knob_fl_type = nullptr;
 
     ToggleSwitch* sw_phaser_enable = nullptr;
     ToggleSwitch* sw_phaser_stereo = nullptr;
-    ToggleSwitch* sw_wah_manual = nullptr; // Mode: Auto / Manual
     ToggleSwitch* sw_wah_reverse = nullptr;
     KnobWidget* knob_ph_rate = nullptr;
     KnobWidget* knob_ph_depth = nullptr;
     KnobWidget* knob_ph_feedback = nullptr;
-    KnobWidget* knob_ph_mix = nullptr;
+    KnobWidget* knob_ph_wet = nullptr;
+    KnobWidget* knob_fl_wet = nullptr;
+    KnobWidget* knob_ph_type = nullptr;
 
     ToggleSwitch* sw_chorus_enable = nullptr;
     ToggleSwitch* sw_chorus_stereo = nullptr;
+    ToggleSwitch* sw_rotary_enable = nullptr;
+    ToggleSwitch* sw_rotary_stereo = nullptr;
+    ToggleSwitch* sw_rotary_fast = nullptr;
+    KnobWidget* knob_rotary_type = nullptr;
     KnobWidget* knob_ch_rate = nullptr;
     KnobWidget* knob_ch_depth = nullptr;
     KnobWidget* knob_ch_mix = nullptr;
+    KnobWidget* knob_ch_ce5_low = nullptr;
+    KnobWidget* knob_ch_ce5_high = nullptr;
 
     ToggleSwitch* sw_tremolo_enable = nullptr;
     ToggleSwitch* sw_tremolo_stereo = nullptr;
     KnobWidget* knob_tr_rate = nullptr;
     KnobWidget* knob_tr_depth = nullptr;
+    KnobWidget* knob_tr_wave = nullptr;
 
     ToggleSwitch* sw_delay_enable = nullptr;
     ToggleSwitch* sw_delay_stereo = nullptr;
@@ -380,13 +388,13 @@ private:
     KnobWidget* knob_del_right_time = nullptr;
     KnobWidget* knob_del_feedback = nullptr;
     KnobWidget* knob_del_mix = nullptr;
+    KnobWidget* knob_del_type = nullptr;
 
     ToggleSwitch* sw_reverb_enable = nullptr;
     KnobWidget* knob_rev_room = nullptr;
     KnobWidget* knob_rev_damping = nullptr;
-    KnobWidget* knob_rev_width = nullptr;
     KnobWidget* knob_rev_mix = nullptr;
-    KnobWidget* knob_rev_pre = nullptr;
+    KnobWidget* knob_rev_type = nullptr;
 
     ToggleSwitch* sw_transpose_enable = nullptr;
     ToggleSwitch* sw_transpose_reverse = nullptr;
@@ -444,8 +452,8 @@ private:
         QString key, text, tip;
     };
     vector<Notice> notices;
-    int non_finite_total =
-        0; // blocks scrubbed since launch (status-bar notice) // in posting order
+    int non_finite_total = 0; // blocks scrubbed since launch (status-bar notice)
+    bool model_was_suspect = false; // the last status poll saw a non-number from the chain
     QMenu* midi_menu = nullptr;
     QTimer* midi_blink = nullptr;
 };

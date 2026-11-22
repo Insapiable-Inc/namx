@@ -1,0 +1,50 @@
+{
+  "take": "tape-feedback-0500-burst",
+  "pedal": "Boss DD-8 Digital Delay \u2014 the loop: what limits it, what it does at high Feedback, mode by mode (mono: Output A)",
+  "bypass": false,
+  "settings": {
+    "Mode": "Tape",
+    "Level": "12:00",
+    "Feedback": "5:00",
+    "Time": "12:00"
+  },
+  "note": "MODE to TAPE. Before the take the pedal must be silent: FEEDBACK to 7:00 until it is, then back to 5:00 (both are end stops).",
+  "marker_to_pedal": false,
+  "signal": {
+    "type": "steps",
+    "freq": 1000,
+    "levels_db": [
+      0
+    ],
+    "step_seconds": 0.05,
+    "tail": 16.0
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -13.47,
+    "loop": -12.96
+  },
+  "latency_samples": 455,
+  "latency_quality": 0.998,
+  "xruns": 0,
+  "played_sha256": "95e54b0ef9d2b414acdcb3149972aefd95b8db1f9dcc107db52cb2d084ef998d",
+  "recorded_at": "2026-11-10T11:21:12",
+  "tool_commit": "37023d89f96d1dbb63e8915a14f82f307c47f92e",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX4",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Boss DD-8 on its 9 V adapter: the guitar DI dataset. Input from interface out 3; OUTPUT -> input 2; INST, AIR off, pad on, gain fully counter-clockwise."
+  }
+}

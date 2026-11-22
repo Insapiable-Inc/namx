@@ -1,0 +1,290 @@
+{
+  "pedal": "Boss RV-6 Reverb — reamps of the guitar DI dataset (stereo: Output A and B)",
+  "comment": "The guitar DI dataset (captures/di/: noise, notes, dynamics, chords, chugs, funk, stabs, lead, neck; see tools/capture/README.md, Reamp takes) through the pedal: the main setting with every segment, the extra settings with the segments that show them. For the by-ear A/B and the numbers against NAM-X's model. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise; 9:00 and 3:00 pointer horizontal. Takes ordered for the fewest knob turns.",
+  "quiet_dbfs": -60,
+  "knobs": [
+    "Mode",
+    "Level",
+    "Tone",
+    "Time"
+  ],
+  "takes": [
+    {
+      "name": "bypass-dynamics",
+      "bypass": true,
+      "signal": {
+        "type": "file",
+        "path": "captures/di/dynamics.wav",
+        "tail": 6.0
+      },
+      "note": "Effect off: the bypass reference. Both outputs (A on input 2, B on input 1)."
+    },
+    {
+      "name": "hall-1200-notes",
+      "settings": {
+        "Mode": "Hall",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/notes.wav",
+        "tail": 6.0
+      },
+      "note": "Effect on."
+    },
+    {
+      "name": "hall-1200-dynamics",
+      "settings": {
+        "Mode": "Hall",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/dynamics.wav",
+        "tail": 6.0
+      }
+    },
+    {
+      "name": "hall-1200-chords",
+      "settings": {
+        "Mode": "Hall",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "tail": 6.0
+      }
+    },
+    {
+      "name": "hall-1200-chugs",
+      "settings": {
+        "Mode": "Hall",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chugs.wav",
+        "tail": 6.0
+      }
+    },
+    {
+      "name": "hall-1200-funk",
+      "settings": {
+        "Mode": "Hall",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "tail": 6.0
+      }
+    },
+    {
+      "name": "hall-1200-stabs",
+      "settings": {
+        "Mode": "Hall",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "tail": 6.0
+      }
+    },
+    {
+      "name": "hall-1200-lead",
+      "settings": {
+        "Mode": "Hall",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/lead.wav",
+        "tail": 6.0
+      }
+    },
+    {
+      "name": "hall-1200-neck",
+      "settings": {
+        "Mode": "Hall",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/neck.wav",
+        "tail": 6.0
+      }
+    },
+    {
+      "name": "hall-1200-noise",
+      "settings": {
+        "Mode": "Hall",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/noise.wav",
+        "tail": 6.0
+      }
+    },
+    {
+      "name": "room-1200-stabs",
+      "settings": {
+        "Mode": "Room",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "tail": 6.0
+      }
+    },
+    {
+      "name": "room-1200-lead",
+      "settings": {
+        "Mode": "Room",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/lead.wav",
+        "tail": 6.0
+      }
+    },
+    {
+      "name": "plate-1200-stabs",
+      "settings": {
+        "Mode": "Plate",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "tail": 6.0
+      }
+    },
+    {
+      "name": "plate-1200-chords",
+      "settings": {
+        "Mode": "Plate",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "tail": 6.0
+      }
+    },
+    {
+      "name": "spring-1200-stabs",
+      "settings": {
+        "Mode": "Spring",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "tail": 6.0
+      }
+    },
+    {
+      "name": "spring-1200-chords",
+      "settings": {
+        "Mode": "Spring",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "tail": 6.0
+      }
+    },
+    {
+      "name": "modulate-1200-chords",
+      "settings": {
+        "Mode": "Modulate",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "tail": 6.0
+      }
+    },
+    {
+      "name": "modulate-1200-lead",
+      "settings": {
+        "Mode": "Modulate",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/lead.wav",
+        "tail": 6.0
+      }
+    },
+    {
+      "name": "shimmer-1200-chords",
+      "settings": {
+        "Mode": "Shimmer",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "tail": 6.0
+      }
+    },
+    {
+      "name": "shimmer-1200-lead",
+      "settings": {
+        "Mode": "Shimmer",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/lead.wav",
+        "tail": 6.0
+      }
+    }
+  ]
+}

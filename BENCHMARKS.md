@@ -192,33 +192,38 @@ the note started.
 
 ### Reverb decay
 
-Impulse response at mix 100 %, damping 50 %, width 100 %, band-passed to 500 Hz – 2 kHz (where decay is quoted and heard); RT60 from Schroeder backward integration (T20, extrapolated to 60 dB), against the time the Decay knob shows.
+Re-measured 2026-11-03, when the Reverb became the RV-6 alone (with the measured starts and the bent tails of `dsp/rv6-early`). Impulse response of each RV-6 mode at Level 5:00 (the dry, always at unity, taken off), Tone 12:00, band-passed to 500 Hz – 2 kHz (where decay is quoted and heard); RT60 from Schroeder backward integration (T20, extrapolated to 60 dB) at the Time knob's clock positions.
 
-| Decay | Shown | Plate | Hall | Room |
-|---|---|---|---|---|
-| 0 % | 0.20 s | 0.58 s | 0.35 s | 0.21 s |
-| 25 % | 0.53 s | 0.67 s | 0.55 s | 0.50 s |
-| 50 % | 1.41 s | 1.55 s | 1.37 s | 1.38 s |
-| 75 % | 3.76 s | 3.83 s | 3.64 s | 3.55 s |
-| 100 % | 10.00 s | 9.71 s | 9.64 s | 8.97 s |
+| Time | Modulate | Spring | Plate | Hall | Room | Shimmer |
+|---|---|---|---|---|---|---|
+| 7:00 | 0.82 s | 1.13 s | 0.63 s | 0.61 s | 0.38 s | 1.03 s |
+| 9:30 | 1.36 s | 1.35 s | 0.90 s | 0.98 s | 0.48 s | 1.15 s |
+| 12:00 | 5.42 s | 2.75 s | 2.93 s | 3.48 s | 1.22 s | 2.25 s |
+| 2:30 | 8.61 s | 4.57 s | 6.12 s | 5.62 s | 2.77 s | 4.35 s |
+| 5:00 | 13.43 s | 6.40 s | 11.01 s | 9.00 s | 4.93 s | 8.10 s |
 
-Re-measured 2026-10-03 for the Phase 22 reverbs (the CPU row above too: the Plate,
-the default; Hall ~0.4 % and Room ~0.8 % of a core per channel in the scratch harness).
-Freeverb measured 0.19 / 0.25 / 0.39 / 0.83 / 9.14 s at these knob positions.
+The pedal's own law at 1 kHz, 7:00 / 12:00 / 5:00 (its study): Modulate 0.8 / 5.3 / 13.5 s,
+Spring 1.1 / 2.7 / 6.7, Plate 0.7 / 3.0 / 11.1, Hall 0.6 / 3.7 / 9.6, Room 0.4 / 1.3 / 5.1,
+Shimmer 2.7 / 8.5 / 14.9 (its tail climbs, which T20 reads short; Room and Hall's bent tails
+read a little short at 5:00 too: T20 sees the first slope). The classic Plate, Hall
+and Room (2026-10-03: within ~10 % of the Decay knob's time from 0.5 s up) are gone.
 
 ### Delay modulation
 
-A 1 kHz sine through the delay (250 ms, feedback 0, mix 100 %). The modulation's wanted sidebands sit within ±50 Hz of the note; the energy further away (zipper noise, interpolation artifacts) relative to the total:
+Re-measured 2026-11-03, when the Delay became the DD-8 alone (NAM-X's own delay and its
+Modulation knob are gone). A 1 kHz sine through the DD-8 voicings that move the delay time
+(250 ms, Feedback 0, Level 100 %; the dry stays). The modulation's wanted sidebands sit within ±50 Hz of the note; the energy further away (zipper noise, interpolation artifacts) relative to the total:
 
-| Modulation | Off-note energy |
+| Type | Off-note energy |
 |---|---|
-| 0 % | -124.4 dB |
-| 30 % | -63.9 dB |
-| 100 % | -63.9 dB |
+| Standard | -88.0 dB |
+| Tape | -19.7 dB |
+| Mod | -63.6 dB |
 
 ### EQ response
 
-All six bands engaged (Bass +6 dB @ 250 Hz, Middle −6 @ 1 k, High-Mid +3 @ 3 k, Treble −3 @ 4 k, Low Cut 80 Hz, High Cut 8 kHz), 40 sine probes 30 Hz–16 kHz against an independent Audio EQ Cookbook evaluation: **largest deviation 0.026 dB** (at 16000 Hz).
+Re-measured 2026-11-03, when the Equalizer became the GE-7 alone (the parametric bands are
+gone; the GE-7 itself is checked against its captures in its study). The Low Cut (80 Hz) and High Cut (8 kHz) after the GE-7 (its sliders flat, divided out: each probe with the cuts on over the same probe with them off, by RMS), 40 sine probes 30 Hz–16 kHz against an independent Audio EQ Cookbook evaluation: **largest deviation 0.041 dB** (at 49 Hz).
 
 ### Limiter
 
@@ -235,15 +240,15 @@ Ceiling −0.3 dBFS. Worst overshoot over four brutal inputs (sine bursts at +6 
   pitch: ~20 ms at 220 Hz for −2 st, shorter going up, longer for big drops (the bass
   bands are the slow ones). Was: strong artifacts on upward shifts and 14–62 ms latency
   depending on where the note started (WSOLA).
-- **Reverb Decay** now shows seconds and means them: within ~10 % in the mids from
-  0.5 s up for all three types at the default Damping (Plate can't go below ~0.6 s, Hall
-  ~0.3 s; at 100 % Damping short Hall/Room tails come out shorter — the Damping strength
-  was kept as approved by ear rather than eased). Was:
-  Freeverb's 0–75 % covered only 0.19–0.83 s and the last quarter jumped to 9 s.
-- **Delay modulation** is clean (off-note energy −64 dB, the linear interpolation's own
-  images); without modulation, −124 dB.
-- **EQ** matches the Audio EQ Cookbook to 0.03 dB; the **limiter** never exceeds its
-  ceiling (0.000 dB worst overshoot, sample peaks).
+- **Reverb** (2026-11-03, the RV-6): each mode's decay follows the pedal's Time law
+  within a few percent at 7:00, 12:00 and 5:00 (Shimmer aside, whose climbing tail T20
+  reads short).
+- **Delay modulation** (2026-11-03, the DD-8): Mod is clean (−64 dB, the linear
+  interpolation's own images); Tape's −20 dB is its wow and flutter, sidebands wider than
+  ±50 Hz on purpose; Standard, unmodulated, −88 dB.
+- **EQ** cuts match the Audio EQ Cookbook to 0.04 dB (2026-11-03; the parametric bands,
+  0.03 dB, are gone); the **limiter** never exceeds its ceiling (0.000 dB worst overshoot,
+  sample peaks).
 
 ## Whole app
 

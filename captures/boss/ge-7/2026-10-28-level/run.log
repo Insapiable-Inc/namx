@@ -1,0 +1,64 @@
+
+=== 2026-10-28T12:55:06 · run tools/capture/plans/ge-7-level.json · tool 657181e5ede6f2cc8edce51091d53d01ce18468a
+
+[1/8] bypass-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -37.1 dBFS · loopback -36.6 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[2/8] flat-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · 100 Hz 0 · 200 Hz 0 · 400 Hz 0 · 800 Hz 0 · 1.6 kHz 0 · 3.2 kHz 0 · 6.4 kHz 0 · Level 0 (switch it on)
+  Every slider at 0 (centre).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -37.7 dBFS · loopback -36.6 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[3/8] level-m15-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · 100 Hz 0 · 200 Hz 0 · 400 Hz 0 · 800 Hz 0 · 1.6 kHz 0 · 3.2 kHz 0 · 6.4 kHz 0 · Level -15 (changed)
+  LEVEL is the eighth slider, apart from the seven bands.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -51.3 dBFS · loopback -36.6 dBFS · latency 576 samples (12.00 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[4/8] level-m7-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · 100 Hz 0 · 200 Hz 0 · 400 Hz 0 · 800 Hz 0 · 1.6 kHz 0 · 3.2 kHz 0 · 6.4 kHz 0 · Level -7.5 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -48.7 dBFS · loopback -36.6 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[5/8] level-p7-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · 100 Hz 0 · 200 Hz 0 · 400 Hz 0 · 800 Hz 0 · 1.6 kHz 0 · 3.2 kHz 0 · 6.4 kHz 0 · Level +7.5 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -25.2 dBFS · loopback -36.6 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[6/8] level-p15-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal ON · 100 Hz 0 · 200 Hz 0 · 400 Hz 0 · 800 Hz 0 · 1.6 kHz 0 · 3.2 kHz 0 · 6.4 kHz 0 · Level +15 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -21.8 dBFS · loopback -36.6 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[7/8] all-p15-level-p15-stairs: 1000 Hz at -36/-30/-24/-18/-12/-6/-3/0/3 dB, 1.5 s each
+  pedal ON · 100 Hz +15 (changed) · 200 Hz +15 (changed) · 400 Hz +15 (changed) · 800 Hz +15 (changed) · 1.6 kHz +15 (changed) · 3.2 kHz +15 (changed) · 6.4 kHz +15 (changed) · Level +15
+  The most gain the pedal has: its clipping. Its hiss is loud here, so this take counts -30 dBFS as quiet.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -11.9 dBFS · loopback -10.0 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[8/8] all-p15-level-p15-silence: silence, 5 s
+  pedal ON · 100 Hz +15 · 200 Hz +15 · 400 Hz +15 · 800 Hz +15 · 1.6 kHz +15 · 3.2 kHz +15 · 6.4 kHz +15 · Level +15
+  Noise at full boost.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -33.6 dBFS · loopback -93.1 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+All 8 takes are in captures/boss/ge-7/2026-10-28-level.

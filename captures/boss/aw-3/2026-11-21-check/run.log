@@ -1,0 +1,140 @@
+
+=== 2026-11-21T21:47:04 · run tools/capture/plans/aw-3-check.json · tool c3286c601777fbc201ecaee2edf0e966fd9ed041
+
+[1/13] bypass-funk: captures/di/funk.wav, 12.0 s + 331/577/997/1723/2971 Hz probe
+  pedal OFF (bypassed)
+  The pedal off (its LED off): the reference. Interface out 3 to Guitar input, Output to interface input 2, nothing in EXP/CTL, the 9 V adapter. The short patch cable back between interface out 4 and input 5.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.5 dBFS · loopback -93.8 dBFS · latency 473 samples (9.85 ms) · xruns 0
+  PROBLEM: the loopback is silent: check its cable and ports
+  Enter = keep, r = redo: (Enter)
+
+[2/13] up-m0700-s0500-d0500: 3 signals, 47 s: captures/di/stabs.wav, 12.0 s + 331/577/997/1723/2971 Hz probe + 1 s; captures/di/funk.wav, 12.0 s + 331/577/997/1723/2971 Hz probe + 1 s; captures/di/dynamics.wav, 20.0 s + 331/577/997/1723/2971 Hz probe + 1 s
+  pedal ON · Mode Up · Manual 7:00 · Sens 5:00 · Decay 5:00 (switch it on)
+  The pedal on. Mode Up. Manual fully counter-clockwise, Sens and Decay fully clockwise. Every take from here plays the same 47 s: stabs, funk, then picks from soft to hard.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+
+Stopped; the takes recorded so far are kept.
+
+=== 2026-11-21T21:49:44 · run tools/capture/plans/aw-3-check.json · tool c3286c601777fbc201ecaee2edf0e966fd9ed041
+
+[1/13] bypass-funk: captures/di/funk.wav, 12.0 s + 331/577/997/1723/2971 Hz probe
+  pedal OFF (bypassed)
+  The pedal off (its LED off): the reference. Interface out 3 to Guitar input, Output to interface input 2, nothing in EXP/CTL, the 9 V adapter. The short patch cable back between interface out 4 and input 5.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.5 dBFS · loopback -94.1 dBFS · latency 451 samples (9.40 ms) · xruns 0
+  PROBLEM: the loopback is silent: check its cable and ports
+  Enter = keep, r = redo: (Enter)
+
+[2/13] up-m0700-s0500-d0500: 3 signals, 47 s: captures/di/stabs.wav, 12.0 s + 331/577/997/1723/2971 Hz probe + 1 s; captures/di/funk.wav, 12.0 s + 331/577/997/1723/2971 Hz probe + 1 s; captures/di/dynamics.wav, 20.0 s + 331/577/997/1723/2971 Hz probe + 1 s
+  pedal ON · Mode Up · Manual 7:00 · Sens 5:00 · Decay 5:00 (switch it on)
+  The pedal on. Mode Up. Manual fully counter-clockwise, Sens and Decay fully clockwise. Every take from here plays the same 47 s: stabs, funk, then picks from soft to hard.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -17.6 dBFS · loopback -93.8 dBFS · latency 572 samples (11.92 ms) · xruns 0
+  PROBLEM: the loopback is silent: check its cable and ports
+  Enter = keep, r = redo: (Enter)
+
+[3/13] down-m0700-s0500-d0500: 3 signals, 47 s: captures/di/stabs.wav, 12.0 s + 331/577/997/1723/2971 Hz probe + 1 s; captures/di/funk.wav, 12.0 s + 331/577/997/1723/2971 Hz probe + 1 s; captures/di/dynamics.wav, 20.0 s + 331/577/997/1723/2971 Hz probe + 1 s
+  pedal ON · Mode Down (changed) · Manual 7:00 · Sens 5:00 · Decay 5:00
+  Mode to Down. The knobs stay.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -16.8 dBFS · loopback -93.6 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  PROBLEM: the loopback is silent: check its cable and ports
+  Enter = keep, r = redo: (Enter)
+
+[4/13] sharp-m0700-s0500-d0500: 3 signals, 47 s: captures/di/stabs.wav, 12.0 s + 331/577/997/1723/2971 Hz probe + 1 s; captures/di/funk.wav, 12.0 s + 331/577/997/1723/2971 Hz probe + 1 s; captures/di/dynamics.wav, 20.0 s + 331/577/997/1723/2971 Hz probe + 1 s
+  pedal ON · Mode Sharp (changed) · Manual 7:00 · Sens 5:00 · Decay 5:00
+  Mode to Sharp. The knobs stay.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -21.2 dBFS · loopback -94.0 dBFS · latency 579 samples (12.06 ms) · xruns 0
+  PROBLEM: the loopback is silent: check its cable and ports
+  Enter = keep, r = redo: (Enter)
+
+[5/13] sharp-m0500-s0500-d0700: 3 signals, 47 s: captures/di/stabs.wav, 12.0 s + 331/577/997/1723/2971 Hz probe + 1 s; captures/di/funk.wav, 12.0 s + 331/577/997/1723/2971 Hz probe + 1 s; captures/di/dynamics.wav, 20.0 s + 331/577/997/1723/2971 Hz probe + 1 s
+  pedal ON · Mode Sharp · Manual 5:00 (changed) · Sens 5:00 · Decay 7:00 (changed)
+  Mode stays at Sharp. Manual fully clockwise, Decay fully counter-clockwise. Sens stays.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -21.2 dBFS · loopback -93.6 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  PROBLEM: the loopback is silent: check its cable and ports
+  Enter = keep, r = redo: (Enter)
+
+[6/13] down-m0500-s0500-d0700: 3 signals, 47 s: captures/di/stabs.wav, 12.0 s + 331/577/997/1723/2971 Hz probe + 1 s; captures/di/funk.wav, 12.0 s + 331/577/997/1723/2971 Hz probe + 1 s; captures/di/dynamics.wav, 20.0 s + 331/577/997/1723/2971 Hz probe + 1 s
+  pedal ON · Mode Down (changed) · Manual 5:00 · Sens 5:00 · Decay 7:00
+  Mode to Down. The knobs stay.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -17.4 dBFS · loopback -94.1 dBFS · latency 578 samples (12.04 ms) · xruns 0
+  PROBLEM: the loopback is silent: check its cable and ports
+  Enter = keep, r = redo: (Enter)
+
+[7/13] up-m0500-s0500-d0700: 3 signals, 47 s: captures/di/stabs.wav, 12.0 s + 331/577/997/1723/2971 Hz probe + 1 s; captures/di/funk.wav, 12.0 s + 331/577/997/1723/2971 Hz probe + 1 s; captures/di/dynamics.wav, 20.0 s + 331/577/997/1723/2971 Hz probe + 1 s
+  pedal ON · Mode Up (changed) · Manual 5:00 · Sens 5:00 · Decay 7:00
+  Mode to Up. The knobs stay.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -17.6 dBFS · loopback -93.2 dBFS · latency 453 samples (9.44 ms) · xruns 0
+  PROBLEM: the loopback is silent: check its cable and ports
+  Enter = keep, r = redo: (Enter)
+
+[8/13] up-m0300-s0900-d0900: 3 signals, 47 s: captures/di/stabs.wav, 12.0 s + 331/577/997/1723/2971 Hz probe + 1 s; captures/di/funk.wav, 12.0 s + 331/577/997/1723/2971 Hz probe + 1 s; captures/di/dynamics.wav, 20.0 s + 331/577/997/1723/2971 Hz probe + 1 s
+  pedal ON · Mode Up · Manual 3:00 (changed) · Sens 9:00 (changed) · Decay 9:00 (changed)
+  Mode stays at Up. Manual 3:00, Sens 9:00, Decay 9:00.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.2 dBFS · loopback -93.8 dBFS · latency 579 samples (12.06 ms) · xruns 0
+  PROBLEM: the loopback is silent: check its cable and ports
+  Enter = keep, r = redo: (Enter)
+
+[9/13] down-m0300-s0900-d0900: 3 signals, 47 s: captures/di/stabs.wav, 12.0 s + 331/577/997/1723/2971 Hz probe + 1 s; captures/di/funk.wav, 12.0 s + 331/577/997/1723/2971 Hz probe + 1 s; captures/di/dynamics.wav, 20.0 s + 331/577/997/1723/2971 Hz probe + 1 s
+  pedal ON · Mode Down (changed) · Manual 3:00 · Sens 9:00 · Decay 9:00
+  Mode to Down. The knobs stay.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -14.1 dBFS · loopback -93.7 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  PROBLEM: the loopback is silent: check its cable and ports
+  Enter = keep, r = redo: (Enter)
+
+[10/13] sharp-m0300-s0900-d0900: 3 signals, 47 s: captures/di/stabs.wav, 12.0 s + 331/577/997/1723/2971 Hz probe + 1 s; captures/di/funk.wav, 12.0 s + 331/577/997/1723/2971 Hz probe + 1 s; captures/di/dynamics.wav, 20.0 s + 331/577/997/1723/2971 Hz probe + 1 s
+  pedal ON · Mode Sharp (changed) · Manual 3:00 · Sens 9:00 · Decay 9:00
+  Mode to Sharp. The knobs stay.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -14.7 dBFS · loopback -93.3 dBFS · latency 579 samples (12.06 ms) · xruns 0
+  PROBLEM: the loopback is silent: check its cable and ports
+  Enter = keep, r = redo: (Enter)
+
+[11/13] sharp-m0900-s0300-d0300: 3 signals, 47 s: captures/di/stabs.wav, 12.0 s + 331/577/997/1723/2971 Hz probe + 1 s; captures/di/funk.wav, 12.0 s + 331/577/997/1723/2971 Hz probe + 1 s; captures/di/dynamics.wav, 20.0 s + 331/577/997/1723/2971 Hz probe + 1 s
+  pedal ON · Mode Sharp · Manual 9:00 (changed) · Sens 3:00 (changed) · Decay 3:00 (changed)
+  Mode stays at Sharp. Manual 9:00, Sens 3:00, Decay 3:00.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.7 dBFS · loopback -93.9 dBFS · latency 579 samples (12.06 ms) · xruns 0
+  PROBLEM: the loopback is silent: check its cable and ports
+  Enter = keep, r = redo: (Enter)
+
+[12/13] down-m0900-s0300-d0300: 3 signals, 47 s: captures/di/stabs.wav, 12.0 s + 331/577/997/1723/2971 Hz probe + 1 s; captures/di/funk.wav, 12.0 s + 331/577/997/1723/2971 Hz probe + 1 s; captures/di/dynamics.wav, 20.0 s + 331/577/997/1723/2971 Hz probe + 1 s
+  pedal ON · Mode Down (changed) · Manual 9:00 · Sens 3:00 · Decay 3:00
+  Mode to Down. The knobs stay.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -17.4 dBFS · loopback -94.0 dBFS · latency 579 samples (12.06 ms) · xruns 0
+  PROBLEM: the loopback is silent: check its cable and ports
+  Enter = keep, r = redo: (Enter)
+
+[13/13] up-m0900-s0300-d0300: 3 signals, 47 s: captures/di/stabs.wav, 12.0 s + 331/577/997/1723/2971 Hz probe + 1 s; captures/di/funk.wav, 12.0 s + 331/577/997/1723/2971 Hz probe + 1 s; captures/di/dynamics.wav, 20.0 s + 331/577/997/1723/2971 Hz probe + 1 s
+  pedal ON · Mode Up (changed) · Manual 9:00 · Sens 3:00 · Decay 3:00
+  Mode to Up. The knobs stay.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -17.0 dBFS · loopback -93.6 dBFS · latency 451 samples (9.40 ms) · xruns 0
+  PROBLEM: the loopback is silent: check its cable and ports
+  Enter = keep, r = redo: (Enter)
+
+All 13 takes are in captures/boss/aw-3/2026-11-21-check.

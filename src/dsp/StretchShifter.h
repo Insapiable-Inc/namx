@@ -1,5 +1,7 @@
 #pragma once
 
+#include <algorithm>
+
 #include <signalsmith-stretch/signalsmith-stretch.h>
 
 #include "Common.h"
@@ -18,8 +20,16 @@ namespace namx
 class StretchShifter
 {
 public:
-    void prepare(double sr, float semitones) {
-        stretch.presetDefault(1, static_cast<float>(sr), true);
+    // block_ms 0: Stretch's default 120 ms block (30 ms hop). A shorter block (the hop a
+    // quarter of it) trades the bass's pitch accuracy for latency, which matters where the
+    // shifter sits in a loop and each pass waits for it (the RV-6 Shimmer's octaves).
+    void prepare(double sr, float semitones, float block_ms = 0.0f) {
+        if (block_ms > 0.0f) {
+            const int block = std::max(64, static_cast<int>(block_ms * 0.001 * sr));
+            stretch.configure(1, block, std::max(16, block / 4), true);
+        } else {
+            stretch.presetDefault(1, static_cast<float>(sr), true);
+        }
         stretch.setTransposeSemitones(semitones);
         latency = static_cast<size_t>(stretch.inputLatency() + stretch.outputLatency());
         reset();

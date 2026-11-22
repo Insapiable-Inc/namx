@@ -85,6 +85,21 @@ public:
         return a + (b - a) * fraction;
     }
 
+    // As interpolate(), through the four neighbouring samples (third-order Lagrange): a
+    // read between samples loses far less treble (half a sample: −0.1 dB at 6 kHz of 48,
+    // where the straight line loses 0.7), which matters where the read is inside a loop.
+    // On a whole delay it returns that sample. Clamped to 1 … size() - 3.
+    float interpolate_cubic(float delay) const {
+        delay = std::clamp(delay, 1.0f, static_cast<float>(samples.size() - 3));
+        const float whole = std::floor(delay);
+        const float f = delay - whole;
+        const size_t i = static_cast<size_t>(whole);
+        const float a = at(i - 1), b = at(i), c = at(i + 1), d = at(i + 2);
+        return a * (-f * (f - 1.0f) * (f - 2.0f) / 6.0f) +
+               b * ((f + 1.0f) * (f - 1.0f) * (f - 2.0f) / 2.0f) +
+               c * (-(f + 1.0f) * f * (f - 2.0f) / 2.0f) + d * ((f + 1.0f) * f * (f - 1.0f) / 6.0f);
+    }
+
 private:
     size_t newest_index() const {
         return next == 0 ? samples.size() - 1 : next - 1;

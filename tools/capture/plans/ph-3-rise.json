@@ -1,0 +1,226 @@
+{
+  "pedal": "Boss PH-3 Phase Shifter — Depth in Rise and Fall (mono)",
+  "comment": "In Rise and Fall Depth doesn't change the speed, but it changes the notches and the level: at 7:00 and 12:00 shallow notches and 2-6 dB over bypass, at 5:00 deep notches near bypass level (the study: Rise and Fall). Here Rise's nine tones at each of Depth's five positions — the same take five times with only Depth turned a step: the law — then the guitar at Depth 5:00 (the setting NAM-X's Rise was fitted at) and Fall at 5:00 (7:00 was recorded in the focused session). Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise; 9:00 and 3:00 pointer horizontal.",
+  "quiet_dbfs": -60,
+  "knobs": [
+    "Mode",
+    "Rate",
+    "Depth",
+    "Res"
+  ],
+  "takes": [
+    {
+      "name": "bypass-sweep",
+      "bypass": true,
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 1.0
+      },
+      "note": "The pedal off (its LED off): the bypass reference. OUTPUT on input 2, the adapter."
+    },
+    {
+      "name": "bypass-tones",
+      "bypass": true,
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 20,
+        "level_db": -18,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "rise-depth-0700-tones",
+      "settings": {
+        "Mode": "Rise",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 20,
+        "level_db": -18,
+        "tail": 1.0
+      },
+      "note": "The pedal on (its LED lit), the STAGE switch on RISE, Rate 12:00, Res fully counter-clockwise, Depth fully counter-clockwise. From here only Depth moves, one step per take."
+    },
+    {
+      "name": "rise-depth-0900-tones",
+      "settings": {
+        "Mode": "Rise",
+        "Rate": "12:00",
+        "Depth": "9:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 20,
+        "level_db": -18,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "rise-depth-1200-tones",
+      "settings": {
+        "Mode": "Rise",
+        "Rate": "12:00",
+        "Depth": "12:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 20,
+        "level_db": -18,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "rise-depth-0300-tones",
+      "settings": {
+        "Mode": "Rise",
+        "Rate": "12:00",
+        "Depth": "3:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 20,
+        "level_db": -18,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "rise-depth-0500-tones",
+      "settings": {
+        "Mode": "Rise",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 20,
+        "level_db": -18,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "rise-depth-0500-chords-m12",
+      "settings": {
+        "Mode": "Rise",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0,
+        "level_db": -12
+      },
+      "note": "Nothing moves: the same setting on guitar."
+    },
+    {
+      "name": "fall-depth-0500-tones",
+      "settings": {
+        "Mode": "Fall",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 20,
+        "level_db": -18,
+        "tail": 1.0
+      },
+      "note": "The STAGE switch to FALL; nothing else moves."
+    }
+  ]
+}

@@ -1,0 +1,270 @@
+{
+  "pedal": "Boss TR-2 Tremolo — the square settings' edges: a steady tone (mono)",
+  "comment": "For the two things the focused reamp found on the square settings: the gain reaches and leaves silence faster than the model's, and at slow rates the edges are steeper than the model's Wave map makes them. The focused reamp showed the gain doesn't depend on what is played, so a steady 9 kHz sine (6 dB under the guitar's peak) is a whole measurement, and alone it reads the gain ten times finer in time than under guitar. Wave 5:00 at every Rate (the edge's speed against the rate), Rate 9:00 across Wave including three positions between 3:00 and 5:00 set by eye (slow: where the squaring shows), Wave 5:00 across Depth (the approach to silence at different depths), Wave 7:00 at a slow and a fast rate (the same without squaring), two mixed settings held out of the fit. The slow rates get longer takes. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise; 9:00 and 3:00 pointer horizontal. Each step turns one knob, two into and out of the held-out pair.",
+  "quiet_dbfs": -60,
+  "knobs": [
+    "Rate",
+    "Wave",
+    "Depth"
+  ],
+  "takes": [
+    {
+      "name": "bypass",
+      "bypass": true,
+      "signal": {
+        "type": "sine",
+        "freq": 9000,
+        "seconds": 8,
+        "level_db": -6,
+        "tail": 1.0
+      },
+      "note": "The pedal off (its LED off): the bypass reference."
+    },
+    {
+      "name": "rate-0700-wave-0500",
+      "settings": {
+        "Rate": "7:00",
+        "Wave": "5:00",
+        "Depth": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 9000,
+        "seconds": 30,
+        "level_db": -6,
+        "tail": 1.0
+      },
+      "note": "The pedal on (its LED lit)."
+    },
+    {
+      "name": "rate-0900-wave-0500",
+      "settings": {
+        "Rate": "9:00",
+        "Wave": "5:00",
+        "Depth": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 9000,
+        "seconds": 20,
+        "level_db": -6,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "rate-0900-wave-0430",
+      "settings": {
+        "Rate": "9:00",
+        "Wave": "about 4:30",
+        "Depth": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 9000,
+        "seconds": 20,
+        "level_db": -6,
+        "tail": 1.0
+      },
+      "note": "Between the marks, by eye: the exact angle doesn't matter (a photo from straight above the pedal, if you like, lets it be read)."
+    },
+    {
+      "name": "rate-0900-wave-0400",
+      "settings": {
+        "Rate": "9:00",
+        "Wave": "about 4:00",
+        "Depth": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 9000,
+        "seconds": 20,
+        "level_db": -6,
+        "tail": 1.0
+      },
+      "note": "Between the marks, by eye: the exact angle doesn't matter (a photo from straight above the pedal, if you like, lets it be read)."
+    },
+    {
+      "name": "rate-0900-wave-0330",
+      "settings": {
+        "Rate": "9:00",
+        "Wave": "about 3:30",
+        "Depth": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 9000,
+        "seconds": 20,
+        "level_db": -6,
+        "tail": 1.0
+      },
+      "note": "Between the marks, by eye: the exact angle doesn't matter (a photo from straight above the pedal, if you like, lets it be read)."
+    },
+    {
+      "name": "rate-0900-wave-0300",
+      "settings": {
+        "Rate": "9:00",
+        "Wave": "3:00",
+        "Depth": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 9000,
+        "seconds": 20,
+        "level_db": -6,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "rate-0900-wave-1200",
+      "settings": {
+        "Rate": "9:00",
+        "Wave": "12:00",
+        "Depth": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 9000,
+        "seconds": 20,
+        "level_db": -6,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "rate-0900-wave-0700",
+      "settings": {
+        "Rate": "9:00",
+        "Wave": "7:00",
+        "Depth": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 9000,
+        "seconds": 20,
+        "level_db": -6,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "rate-0300-wave-0700",
+      "settings": {
+        "Rate": "3:00",
+        "Wave": "7:00",
+        "Depth": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 9000,
+        "seconds": 12,
+        "level_db": -6,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "held-out-rate-0300-wave-0300-depth-0300",
+      "settings": {
+        "Rate": "3:00",
+        "Wave": "3:00",
+        "Depth": "3:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 9000,
+        "seconds": 12,
+        "level_db": -6,
+        "tail": 1.0
+      },
+      "note": "Not used in the fit: the check."
+    },
+    {
+      "name": "held-out-rate-1200-wave-0300-depth-1200",
+      "settings": {
+        "Rate": "12:00",
+        "Wave": "3:00",
+        "Depth": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 9000,
+        "seconds": 12,
+        "level_db": -6,
+        "tail": 1.0
+      },
+      "note": "Not used in the fit: the check."
+    },
+    {
+      "name": "rate-1200-wave-0500-depth-1200",
+      "settings": {
+        "Rate": "12:00",
+        "Wave": "5:00",
+        "Depth": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 9000,
+        "seconds": 12,
+        "level_db": -6,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "rate-1200-wave-0500-depth-0300",
+      "settings": {
+        "Rate": "12:00",
+        "Wave": "5:00",
+        "Depth": "3:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 9000,
+        "seconds": 12,
+        "level_db": -6,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "rate-1200-wave-0500",
+      "settings": {
+        "Rate": "12:00",
+        "Wave": "5:00",
+        "Depth": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 9000,
+        "seconds": 12,
+        "level_db": -6,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "rate-0300-wave-0500",
+      "settings": {
+        "Rate": "3:00",
+        "Wave": "5:00",
+        "Depth": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 9000,
+        "seconds": 12,
+        "level_db": -6,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "rate-0500-wave-0500",
+      "settings": {
+        "Rate": "5:00",
+        "Wave": "5:00",
+        "Depth": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 9000,
+        "seconds": 12,
+        "level_db": -6,
+        "tail": 1.0
+      }
+    }
+  ]
+}

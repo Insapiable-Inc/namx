@@ -1,0 +1,50 @@
+{
+  "take": "shimmer-tone-0330-loud",
+  "pedal": "Boss RV-6 Reverb (stereo: Input A -> Outputs A and B; Input B and EXP empty)",
+  "bypass": false,
+  "settings": {
+    "Mode": "Shimmer",
+    "Level": "5:00",
+    "Tone": "12:00",
+    "Time": "12:00"
+  },
+  "note": "",
+  "marker_to_pedal": false,
+  "signal": {
+    "type": "sine",
+    "freq": 329.63,
+    "seconds": 4,
+    "level_db": -12,
+    "tail": 20
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -9.05,
+    "loop": -24.94,
+    "pedal_b": -8.94
+  },
+  "latency_samples": 448,
+  "latency_quality": 0.998,
+  "xruns": 0,
+  "played_sha256": "786a107a4db335c7b7eb9580dd05da641d2628b7628ceba3ab3daec9619b1553",
+  "recorded_at": "2026-11-01T11:40:53",
+  "tool_commit": "979167bf6ba528173a9069fc329ffde098383af4-dirty",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX4",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Shimmer experiment; pads on inputs 1 and 2, gains fully CCW; Output B -> input 1",
+    "pedal_in_b": "Scarlett 8i6 USB Pro:capture_AUX0"
+  }
+}

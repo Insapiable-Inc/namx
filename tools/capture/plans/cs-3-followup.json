@@ -1,0 +1,248 @@
+{
+  "pedal": "Boss CS-3 Compression Sustainer (mono)",
+  "comment": "Follow-up: what the 1 kHz staircase and the isolated plucks can't show — a second note picked while the gain is still down (its attack overshoot and the gain it has recovered, 50 to 500 ms after the first), at Sustain 9:00 / 12:00 / 3:00 and both Attack extremes; then the reamp. Reamp: the same recorded guitar (captures/di/phrases.wav, `capture.py di`, played as hard as it was played) through the pedal at a few settings, for a by-ear A/B against NAM-X's type with the same DI and settings. Level and Tone at 12:00. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise; 9:00 and 3:00 pointer horizontal.",
+  "knobs": [
+    "Level",
+    "Tone",
+    "Attack",
+    "Sustain"
+  ],
+  "takes": [
+    {
+      "name": "bypass-pairs",
+      "bypass": true,
+      "signal": {
+        "type": "pluck-train",
+        "freq": 220,
+        "decay_seconds": 0.6,
+        "repick": true,
+        "onsets": [
+          0,
+          0.05,
+          3.5,
+          3.6,
+          7,
+          7.2,
+          10.5,
+          11.0
+        ],
+        "seconds": 14,
+        "tail": 2
+      },
+      "note": "Pairs of re-picked 220 Hz notes, 50 / 100 / 200 / 500 ms apart, 3.5 s between pairs."
+    },
+    {
+      "name": "pairs-attack-0700-sustain-0900",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "7:00",
+        "Sustain": "9:00"
+      },
+      "signal": {
+        "type": "pluck-train",
+        "freq": 220,
+        "decay_seconds": 0.6,
+        "repick": true,
+        "onsets": [
+          0,
+          0.05,
+          3.5,
+          3.6,
+          7,
+          7.2,
+          10.5,
+          11.0
+        ],
+        "seconds": 14,
+        "tail": 2
+      }
+    },
+    {
+      "name": "pairs-attack-0700-sustain-1200",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "7:00",
+        "Sustain": "12:00"
+      },
+      "signal": {
+        "type": "pluck-train",
+        "freq": 220,
+        "decay_seconds": 0.6,
+        "repick": true,
+        "onsets": [
+          0,
+          0.05,
+          3.5,
+          3.6,
+          7,
+          7.2,
+          10.5,
+          11.0
+        ],
+        "seconds": 14,
+        "tail": 2
+      }
+    },
+    {
+      "name": "pairs-attack-0700-sustain-0300",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "7:00",
+        "Sustain": "3:00"
+      },
+      "signal": {
+        "type": "pluck-train",
+        "freq": 220,
+        "decay_seconds": 0.6,
+        "repick": true,
+        "onsets": [
+          0,
+          0.05,
+          3.5,
+          3.6,
+          7,
+          7.2,
+          10.5,
+          11.0
+        ],
+        "seconds": 14,
+        "tail": 2
+      }
+    },
+    {
+      "name": "pairs-attack-0500-sustain-0300",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "5:00",
+        "Sustain": "3:00"
+      },
+      "signal": {
+        "type": "pluck-train",
+        "freq": 220,
+        "decay_seconds": 0.6,
+        "repick": true,
+        "onsets": [
+          0,
+          0.05,
+          3.5,
+          3.6,
+          7,
+          7.2,
+          10.5,
+          11.0
+        ],
+        "seconds": 14,
+        "tail": 2
+      }
+    },
+    {
+      "name": "pairs-attack-0500-sustain-1200",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "5:00",
+        "Sustain": "12:00"
+      },
+      "signal": {
+        "type": "pluck-train",
+        "freq": 220,
+        "decay_seconds": 0.6,
+        "repick": true,
+        "onsets": [
+          0,
+          0.05,
+          3.5,
+          3.6,
+          7,
+          7.2,
+          10.5,
+          11.0
+        ],
+        "seconds": 14,
+        "tail": 2
+      }
+    },
+    {
+      "name": "pairs-attack-0500-sustain-0900",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "5:00",
+        "Sustain": "9:00"
+      },
+      "signal": {
+        "type": "pluck-train",
+        "freq": 220,
+        "decay_seconds": 0.6,
+        "repick": true,
+        "onsets": [
+          0,
+          0.05,
+          3.5,
+          3.6,
+          7,
+          7.2,
+          10.5,
+          11.0
+        ],
+        "seconds": 14,
+        "tail": 2
+      }
+    },
+    {
+      "name": "bypass-di",
+      "bypass": true,
+      "signal": {
+        "type": "file",
+        "path": "captures/di/phrases.wav",
+        "tail": 2
+      }
+    },
+    {
+      "name": "di-1200",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "12:00",
+        "Sustain": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/phrases.wav",
+        "tail": 2
+      }
+    },
+    {
+      "name": "di-attack-0900-sustain-0300",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "9:00",
+        "Sustain": "3:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/phrases.wav",
+        "tail": 2
+      }
+    },
+    {
+      "name": "di-attack-0300-sustain-0900",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "3:00",
+        "Sustain": "9:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/phrases.wav",
+        "tail": 2
+      }
+    }
+  ]
+}

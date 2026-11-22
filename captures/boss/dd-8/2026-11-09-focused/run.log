@@ -1,0 +1,121 @@
+
+=== 2026-11-09T23:49:38 · run tools/capture/plans/dd-8-focused.json · tool cfc5c8c58c908001dc9f25ffe870fb11f6d64b85
+
+=== 2026-11-09T23:50:33 · run tools/capture/plans/dd-8-focused.json · tool cfc5c8c58c908001dc9f25ffe870fb11f6d64b85
+
+[1/16] bypass-stabs: captures/di/stabs.wav from 2 s, 12.5 s
+  pedal OFF (bypassed)
+  The pedal off (its LED off): the bypass reference. OUTPUT A on input 2.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · loopback -18.9 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[2/16] standard-stabs: captures/di/stabs.wav from 2 s, 12.5 s
+  pedal ON · Mode Standard · Level 12:00 · Feedback 12:00 · Time 12:00 (switch it on)
+  The pedal on (its LED lit).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · loopback -18.9 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[3/16] standard-stabs-m12: captures/di/stabs.wav from 2 s, 12.5 s at -12 dB
+  pedal ON · Mode Standard · Level 12:00 · Feedback 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -31.1 dBFS · loopback -30.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[4/16] standard-stabs-repeat: captures/di/stabs.wav from 2 s, 12.5 s
+  pedal ON · Mode Standard · Level 12:00 · Feedback 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · loopback -18.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[5/16] standard-lead: captures/di/lead.wav from 2 s, 20.0 s
+  pedal ON · Mode Standard · Level 12:00 · Feedback 12:00 · Time 12:00
+  Not used in any fit: the check.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -25.7 dBFS · loopback -25.2 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[6/16] standard-time-0900-stabs: captures/di/stabs.wav from 2 s, 12.5 s
+  pedal ON · Mode Standard · Level 12:00 · Feedback 12:00 · Time 9:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · loopback -18.9 dBFS · latency 503 samples (10.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[7/16] standard-time-0300-stabs: captures/di/stabs.wav from 2 s, 12.5 s
+  pedal ON · Mode Standard · Level 12:00 · Feedback 12:00 · Time 3:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · loopback -18.9 dBFS · latency 503 samples (10.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[8/16] standard-level-0900-stabs: captures/di/stabs.wav from 2 s, 12.5 s
+  pedal ON · Mode Standard · Level 9:00 (changed) · Feedback 12:00 · Time 12:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · loopback -18.9 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[9/16] standard-level-0500-stabs: captures/di/stabs.wav from 2 s, 12.5 s
+  pedal ON · Mode Standard · Level 5:00 (changed) · Feedback 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -15.0 dBFS · loopback -18.9 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[10/16] standard-feedback-0300-stabs: captures/di/stabs.wav from 2 s, 12.5 s
+  pedal ON · Mode Standard · Level 12:00 (changed) · Feedback 3:00 (changed) · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.5 dBFS · loopback -18.9 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[11/16] analog-feedback-0300-stabs: captures/di/stabs.wav from 2 s, 12.5 s
+  pedal ON · Mode Analog (changed) · Level 12:00 · Feedback 3:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.5 dBFS · loopback -18.9 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[12/16] analog-stabs: captures/di/stabs.wav from 2 s, 12.5 s
+  pedal ON · Mode Analog · Level 12:00 · Feedback 12:00 (changed) · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · loopback -18.9 dBFS · latency 454 samples (9.46 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[13/16] tape-stabs: captures/di/stabs.wav from 2 s, 12.5 s
+  pedal ON · Mode Tape (changed) · Level 12:00 · Feedback 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · loopback -18.9 dBFS · latency 454 samples (9.46 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[14/16] warm-stabs: captures/di/stabs.wav from 2 s, 12.5 s
+  pedal ON · Mode Warm (changed) · Level 12:00 · Feedback 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · loopback -18.9 dBFS · latency 454 samples (9.46 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[15/16] mod-stabs: captures/di/stabs.wav from 2 s, 12.5 s
+  pedal ON · Mode Mod (changed) · Level 12:00 · Feedback 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · loopback -18.9 dBFS · latency 454 samples (9.46 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[16/16] mod-chords: captures/di/chords.wav, 25.0 s
+  pedal ON · Mode Mod · Level 12:00 · Feedback 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -23.1 dBFS · loopback -22.6 dBFS · latency 454 samples (9.46 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+All 16 takes are in captures/boss/dd-8/2026-11-09-focused.

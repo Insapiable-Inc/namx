@@ -1,0 +1,859 @@
+{
+  "pedal": "Boss RT-2 Rotary Ensemble (mono in: INPUT A; stereo out: OUTPUT A and B), second session",
+  "comment": "Rotor isolation (Balance 7:00 = the drum alone, 5:00 = the horn alone: measured -40 to -59 dB on the other rotor in the first session) with long white noise at Slow 9:00, per Mode; the mono output (OUTPUT B unplugged); the speed change between the extremes (stop and Fast 5:00, Rise/Fall FAST); then with the rotors stopped (Slow 7:00): the input clip in 0.5 dB steps, the output at Level 5:00, and per Drive position and Mode bursts (441 Hz, as in the first session) and noise at eight levels, plus a soft-loud-soft jump at Drive 9:00 (the soft notes' 2nd harmonic). Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise. Knob 1: Level (inner), Drive/Balance (outer; the Drive Knob toggle on top picks which stored value the ring sets; both act all the time). Knob 2: Fast (inner), Slow (outer). Toggles on top: Mode, Rise/Fall, Drive Knob. LED green = rotors slow, red = fast; change it by holding the RT-2's own pedal. Takes ordered for the fewest knob turns.",
+  "quiet_dbfs": -60,
+  "knobs": [
+    "Mode",
+    "Rise/Fall",
+    "LED",
+    "Level",
+    "Drive/Balance",
+    "Fast",
+    "Slow"
+  ],
+  "takes": [
+    {
+      "name": "bypass-noise",
+      "bypass": true,
+      "signal": {
+        "type": "noise",
+        "seconds": 10,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 1
+      },
+      "note": "Effect off. Same cables as the first session: OUTPUT A -> input 2, OUTPUT B -> input 1."
+    },
+    {
+      "name": "bypass-steps-fine",
+      "bypass": true,
+      "signal": {
+        "type": "steps",
+        "freq": 441,
+        "levels_db": [
+          -6,
+          0,
+          0.5,
+          1,
+          1.5,
+          2,
+          2.5,
+          3,
+          3.5,
+          4
+        ],
+        "step_seconds": 1.5,
+        "gap_seconds": 0.3,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m2-both-noise",
+      "settings": {
+        "Mode": "II",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "9:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 45,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 1
+      },
+      "note": "Effect on, LED green. Slow to 9:00; give the rotors ~10 s to settle."
+    },
+    {
+      "name": "m2-horn-noise",
+      "settings": {
+        "Mode": "II",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "BALANCE 5:00",
+        "Fast": "12:00",
+        "Slow": "9:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 45,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 1
+      },
+      "note": "Flip the Drive Knob toggle to BALANCE, ring to 5:00: the horn alone."
+    },
+    {
+      "name": "m2-drum-noise",
+      "settings": {
+        "Mode": "II",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "BALANCE 7:00",
+        "Fast": "12:00",
+        "Slow": "9:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 45,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 1
+      },
+      "note": "Ring to 7:00: the drum alone."
+    },
+    {
+      "name": "m3-drum-noise",
+      "settings": {
+        "Mode": "III",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "BALANCE 7:00",
+        "Fast": "12:00",
+        "Slow": "9:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 45,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m3-horn-noise",
+      "settings": {
+        "Mode": "III",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "BALANCE 5:00",
+        "Fast": "12:00",
+        "Slow": "9:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 45,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m3-both-noise",
+      "settings": {
+        "Mode": "III",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "BALANCE 12:00",
+        "Fast": "12:00",
+        "Slow": "9:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 45,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m1-both-noise",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "BALANCE 12:00",
+        "Fast": "12:00",
+        "Slow": "9:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 60,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m1-horn-noise",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "BALANCE 5:00",
+        "Fast": "12:00",
+        "Slow": "9:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 60,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m1-drum-noise",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "BALANCE 7:00",
+        "Fast": "12:00",
+        "Slow": "9:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 60,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m1-mono-noise",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "BALANCE 12:00",
+        "Fast": "12:00",
+        "Slow": "9:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 30,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 1
+      },
+      "note": "Ring back to 12:00. Then unplug the cable from the RT-2's OUTPUT B (Output A alone: the pedal's mono output). The run will say input 1 is silent: keep the take."
+    },
+    {
+      "name": "m1-ramp-extremes-chord",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "BALANCE 12:00",
+        "Fast": "5:00",
+        "Slow": "7:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          97,
+          197,
+          307,
+          499,
+          701,
+          997,
+          1499,
+          2203,
+          3301,
+          4999,
+          7499
+        ],
+        "seconds": 35,
+        "level_db": -6,
+        "tail": 1
+      },
+      "note": "Plug OUTPUT B back in. Slow to 7:00 (the rotors stop; wait until the lights stand still), Fast to 5:00. During the take: at ~3 s hold the pedal until the LED turns red (spins up to full speed); at ~18 s hold it again until it turns green (the rotors coast to a stop)."
+    },
+    {
+      "name": "m1-stop-noise",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "BALANCE 12:00",
+        "Fast": "5:00",
+        "Slow": "7:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 15,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 1
+      },
+      "note": "Rotors stopped (LED green, Slow 7:00; wait until the lights stand still): leave them stopped until the end of this plan."
+    },
+    {
+      "name": "m1-stop-clip-steps",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "BALANCE 12:00",
+        "Fast": "5:00",
+        "Slow": "7:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 441,
+        "levels_db": [
+          -6,
+          0,
+          0.5,
+          1,
+          1.5,
+          2,
+          2.5,
+          3,
+          3.5,
+          4
+        ],
+        "step_seconds": 1.5,
+        "gap_seconds": 0.3,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m1-stop-level0500-steps",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "5:00",
+        "Drive/Balance": "BALANCE 12:00",
+        "Fast": "5:00",
+        "Slow": "7:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 441,
+        "levels_db": [
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          -3,
+          0,
+          3
+        ],
+        "step_seconds": 1.5,
+        "gap_seconds": 0.3,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m1-stop-drive0900-jump",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 9:00",
+        "Fast": "5:00",
+        "Slow": "7:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 441,
+        "levels_db": [
+          -30,
+          -30,
+          0,
+          -30,
+          -30,
+          -30,
+          -30
+        ],
+        "step_seconds": 1.0,
+        "tail": 1
+      },
+      "note": "Level back to 12:00. Flip the toggle to DRIVE, ring to 9:00."
+    },
+    {
+      "name": "m1-stop-drive0900-noisesteps",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 9:00",
+        "Fast": "5:00",
+        "Slow": "7:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -36,
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          0,
+          3
+        ],
+        "step_seconds": 2,
+        "gap_seconds": 0.3,
+        "seed": 1,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m1-stop-drive0900-steps",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 9:00",
+        "Fast": "5:00",
+        "Slow": "7:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 441,
+        "levels_db": [
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          -3,
+          0,
+          3
+        ],
+        "step_seconds": 1.5,
+        "gap_seconds": 0.3,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m1-stop-drive1200-noisesteps",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 12:00",
+        "Fast": "5:00",
+        "Slow": "7:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -36,
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          0,
+          3
+        ],
+        "step_seconds": 2,
+        "gap_seconds": 0.3,
+        "seed": 1,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m1-stop-drive1200-steps",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 12:00",
+        "Fast": "5:00",
+        "Slow": "7:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 441,
+        "levels_db": [
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          -3,
+          0,
+          3
+        ],
+        "step_seconds": 1.5,
+        "gap_seconds": 0.3,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m1-stop-drive0300-noisesteps",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 3:00",
+        "Fast": "5:00",
+        "Slow": "7:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -36,
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          0,
+          3
+        ],
+        "step_seconds": 2,
+        "gap_seconds": 0.3,
+        "seed": 1,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m1-stop-drive0300-steps",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 3:00",
+        "Fast": "5:00",
+        "Slow": "7:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 441,
+        "levels_db": [
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          -3,
+          0,
+          3
+        ],
+        "step_seconds": 1.5,
+        "gap_seconds": 0.3,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m1-stop-drive0500-noisesteps",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 5:00",
+        "Fast": "5:00",
+        "Slow": "7:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -36,
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          0,
+          3
+        ],
+        "step_seconds": 2,
+        "gap_seconds": 0.3,
+        "seed": 1,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m1-stop-drive0500-steps",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 5:00",
+        "Fast": "5:00",
+        "Slow": "7:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 441,
+        "levels_db": [
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          -3,
+          0,
+          3
+        ],
+        "step_seconds": 1.5,
+        "gap_seconds": 0.3,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m3-stop-drive0500-noisesteps",
+      "settings": {
+        "Mode": "III",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 5:00",
+        "Fast": "5:00",
+        "Slow": "7:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -36,
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          0,
+          3
+        ],
+        "step_seconds": 2,
+        "gap_seconds": 0.3,
+        "seed": 1,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m3-stop-drive0500-steps",
+      "settings": {
+        "Mode": "III",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 5:00",
+        "Fast": "5:00",
+        "Slow": "7:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 441,
+        "levels_db": [
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          -3,
+          0,
+          3
+        ],
+        "step_seconds": 1.5,
+        "gap_seconds": 0.3,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m3-stop-drive0500-level0500-steps",
+      "settings": {
+        "Mode": "III",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "5:00",
+        "Drive/Balance": "DRIVE 5:00",
+        "Fast": "5:00",
+        "Slow": "7:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 441,
+        "levels_db": [
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          -3,
+          0,
+          3
+        ],
+        "step_seconds": 1.5,
+        "gap_seconds": 0.3,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m3-stop-drive1200-noisesteps",
+      "settings": {
+        "Mode": "III",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 12:00",
+        "Fast": "5:00",
+        "Slow": "7:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -36,
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          0,
+          3
+        ],
+        "step_seconds": 2,
+        "gap_seconds": 0.3,
+        "seed": 1,
+        "tail": 1
+      },
+      "note": "Level back to 12:00."
+    },
+    {
+      "name": "m3-stop-drive1200-steps",
+      "settings": {
+        "Mode": "III",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 12:00",
+        "Fast": "5:00",
+        "Slow": "7:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 441,
+        "levels_db": [
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          -3,
+          0,
+          3
+        ],
+        "step_seconds": 1.5,
+        "gap_seconds": 0.3,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m3-stop-noise",
+      "settings": {
+        "Mode": "III",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "5:00",
+        "Slow": "7:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 15,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m2-stop-noise",
+      "settings": {
+        "Mode": "II",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "5:00",
+        "Slow": "7:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 15,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m2-stop-drive1200-noisesteps",
+      "settings": {
+        "Mode": "II",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 12:00",
+        "Fast": "5:00",
+        "Slow": "7:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -36,
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          0,
+          3
+        ],
+        "step_seconds": 2,
+        "gap_seconds": 0.3,
+        "seed": 1,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m2-stop-drive0500-noisesteps",
+      "settings": {
+        "Mode": "II",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 5:00",
+        "Fast": "5:00",
+        "Slow": "7:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -36,
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          0,
+          3
+        ],
+        "step_seconds": 2,
+        "gap_seconds": 0.3,
+        "seed": 1,
+        "tail": 1
+      }
+    }
+  ]
+}

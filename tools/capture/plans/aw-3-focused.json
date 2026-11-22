@@ -1,0 +1,602 @@
+{
+  "pedal": "Boss AW-3 Dynamic Wah — focused reamp: guitar excerpts over a quiet comb of tones (mono: Guitar input -> Output)",
+  "comment": "Short excerpts of the guitar DI dataset (captures/di/) over five steady sines (331 Hz to 2971 Hz, each 50 dB under the guitar's peak: the probe). The wah is a filter that the playing moves: while the guitar plays, the filter is read from the guitar itself (the output against the dry); between hits and in the gaps the five tones show where the filter is and how it comes back (Decay). What each kind of take is for: stabs (a chord, then silence) = the sweep up and the return after each hit; funk = fast scratches and chords at the dataset's hottest level, the wah's home ground; dynamics = soft to hard picks (how far each level opens the filter); chords = long notes dying away; lead = held out of any fit. At the main setting (Up, everything at 12:00) also: the tones alone (the filter at rest), the stabs without the tones (do the tones move the filter?), funk twice (the pedal against itself), funk 12 dB down. Then Decay, Manual and Sens at their two ends (end stops: exact), and Down and Sharp at 12:00. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise. Takes ordered so each step turns one or two controls.",
+  "quiet_dbfs": -60,
+  "knobs": [
+    "Mode",
+    "Manual",
+    "Sens",
+    "Decay"
+  ],
+  "takes": [
+    {
+      "name": "bypass-funk",
+      "bypass": true,
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": [
+            331,
+            577,
+            997,
+            1723,
+            2971
+          ],
+          "level_db": -50
+        },
+        "tail": 1.0
+      },
+      "note": "The pedal off (its LED off): the bypass reference. Guitar input, Output; nothing in EXP/CTL."
+    },
+    {
+      "name": "bypass-stabs",
+      "bypass": true,
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": [
+            331,
+            577,
+            997,
+            1723,
+            2971
+          ],
+          "level_db": -50
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "up-1200-probe",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "12:00",
+        "Sens": "12:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          331,
+          577,
+          997,
+          1723,
+          2971
+        ],
+        "seconds": 8,
+        "level_db": -50,
+        "tail": 1.0
+      },
+      "note": "The pedal on. Mode Up, every knob at 12:00. Nine takes here; they differ in what is played (see the plan's comment)."
+    },
+    {
+      "name": "up-1200-stabs",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "12:00",
+        "Sens": "12:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": [
+            331,
+            577,
+            997,
+            1723,
+            2971
+          ],
+          "level_db": -50
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "up-1200-stabs-noprobe",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "12:00",
+        "Sens": "12:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "seconds": 12,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "up-1200-funk",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "12:00",
+        "Sens": "12:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": [
+            331,
+            577,
+            997,
+            1723,
+            2971
+          ],
+          "level_db": -50
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "up-1200-funk-repeat",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "12:00",
+        "Sens": "12:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": [
+            331,
+            577,
+            997,
+            1723,
+            2971
+          ],
+          "level_db": -50
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "up-1200-funk-m12",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "12:00",
+        "Sens": "12:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": [
+            331,
+            577,
+            997,
+            1723,
+            2971
+          ],
+          "level_db": -50
+        },
+        "tail": 1.0,
+        "level_db": -12
+      }
+    },
+    {
+      "name": "up-1200-dynamics",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "12:00",
+        "Sens": "12:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/dynamics.wav",
+        "seconds": 40,
+        "probe": {
+          "freq": [
+            331,
+            577,
+            997,
+            1723,
+            2971
+          ],
+          "level_db": -50
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "up-1200-chords",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "12:00",
+        "Sens": "12:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": [
+            331,
+            577,
+            997,
+            1723,
+            2971
+          ],
+          "level_db": -50
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "up-1200-lead",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "12:00",
+        "Sens": "12:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/lead.wav",
+        "seconds": 20,
+        "start": 2,
+        "probe": {
+          "freq": [
+            331,
+            577,
+            997,
+            1723,
+            2971
+          ],
+          "level_db": -50
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "up-decay-0700-stabs",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "12:00",
+        "Sens": "12:00",
+        "Decay": "7:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": [
+            331,
+            577,
+            997,
+            1723,
+            2971
+          ],
+          "level_db": -50
+        },
+        "tail": 1.0
+      },
+      "note": "Decay fully counter-clockwise."
+    },
+    {
+      "name": "up-decay-0500-stabs",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "12:00",
+        "Sens": "12:00",
+        "Decay": "5:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": [
+            331,
+            577,
+            997,
+            1723,
+            2971
+          ],
+          "level_db": -50
+        },
+        "tail": 1.0
+      },
+      "note": "Decay fully clockwise."
+    },
+    {
+      "name": "up-manual-0700-funk",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "7:00",
+        "Sens": "12:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": [
+            331,
+            577,
+            997,
+            1723,
+            2971
+          ],
+          "level_db": -50
+        },
+        "tail": 1.0
+      },
+      "note": "Decay back to 12:00, Manual fully counter-clockwise."
+    },
+    {
+      "name": "up-manual-0500-funk",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "5:00",
+        "Sens": "12:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": [
+            331,
+            577,
+            997,
+            1723,
+            2971
+          ],
+          "level_db": -50
+        },
+        "tail": 1.0
+      },
+      "note": "Manual fully clockwise."
+    },
+    {
+      "name": "up-sens-0700-funk",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "12:00",
+        "Sens": "7:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": [
+            331,
+            577,
+            997,
+            1723,
+            2971
+          ],
+          "level_db": -50
+        },
+        "tail": 1.0
+      },
+      "note": "Manual back to 12:00, Sens fully counter-clockwise."
+    },
+    {
+      "name": "up-sens-0500-funk",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "12:00",
+        "Sens": "5:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": [
+            331,
+            577,
+            997,
+            1723,
+            2971
+          ],
+          "level_db": -50
+        },
+        "tail": 1.0
+      },
+      "note": "Sens fully clockwise."
+    },
+    {
+      "name": "up-sens-0500-dynamics",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "12:00",
+        "Sens": "5:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/dynamics.wav",
+        "seconds": 40,
+        "probe": {
+          "freq": [
+            331,
+            577,
+            997,
+            1723,
+            2971
+          ],
+          "level_db": -50
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "down-1200-stabs",
+      "settings": {
+        "Mode": "Down",
+        "Manual": "12:00",
+        "Sens": "12:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": [
+            331,
+            577,
+            997,
+            1723,
+            2971
+          ],
+          "level_db": -50
+        },
+        "tail": 1.0
+      },
+      "note": "Sens back to 12:00, Mode to Down."
+    },
+    {
+      "name": "down-1200-funk",
+      "settings": {
+        "Mode": "Down",
+        "Manual": "12:00",
+        "Sens": "12:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": [
+            331,
+            577,
+            997,
+            1723,
+            2971
+          ],
+          "level_db": -50
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "down-1200-dynamics",
+      "settings": {
+        "Mode": "Down",
+        "Manual": "12:00",
+        "Sens": "12:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/dynamics.wav",
+        "seconds": 40,
+        "probe": {
+          "freq": [
+            331,
+            577,
+            997,
+            1723,
+            2971
+          ],
+          "level_db": -50
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "sharp-1200-stabs",
+      "settings": {
+        "Mode": "Sharp",
+        "Manual": "12:00",
+        "Sens": "12:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": [
+            331,
+            577,
+            997,
+            1723,
+            2971
+          ],
+          "level_db": -50
+        },
+        "tail": 1.0
+      },
+      "note": "Mode to Sharp."
+    },
+    {
+      "name": "sharp-1200-funk",
+      "settings": {
+        "Mode": "Sharp",
+        "Manual": "12:00",
+        "Sens": "12:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": [
+            331,
+            577,
+            997,
+            1723,
+            2971
+          ],
+          "level_db": -50
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "sharp-1200-dynamics",
+      "settings": {
+        "Mode": "Sharp",
+        "Manual": "12:00",
+        "Sens": "12:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/dynamics.wav",
+        "seconds": 40,
+        "probe": {
+          "freq": [
+            331,
+            577,
+            997,
+            1723,
+            2971
+          ],
+          "level_db": -50
+        },
+        "tail": 1.0
+      }
+    }
+  ]
+}

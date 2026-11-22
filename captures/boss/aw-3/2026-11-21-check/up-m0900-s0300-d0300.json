@@ -1,0 +1,94 @@
+{
+  "take": "up-m0900-s0300-d0300",
+  "pedal": "Boss AW-3 Dynamic Wah \u2014 a check at settings in no fit: guitar excerpts over a quiet comb of tones (mono: Guitar input -> Output)",
+  "bypass": false,
+  "settings": {
+    "Mode": "Up",
+    "Manual": "9:00",
+    "Sens": "3:00",
+    "Decay": "3:00"
+  },
+  "note": "Mode to Up. The knobs stay.",
+  "signal": {
+    "type": "sequence",
+    "tail": 0,
+    "parts": [
+      {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": [
+            331,
+            577,
+            997,
+            1723,
+            2971
+          ],
+          "level_db": -50
+        },
+        "tail": 1.0
+      },
+      {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": [
+            331,
+            577,
+            997,
+            1723,
+            2971
+          ],
+          "level_db": -50
+        },
+        "tail": 1.0
+      },
+      {
+        "type": "file",
+        "path": "captures/di/dynamics.wav",
+        "seconds": 20,
+        "probe": {
+          "freq": [
+            331,
+            577,
+            997,
+            1723,
+            2971
+          ],
+          "level_db": -50
+        },
+        "tail": 1.0
+      }
+    ]
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -16.96,
+    "loop": -93.61
+  },
+  "latency_samples": 451,
+  "latency_quality": 0.24,
+  "xruns": 0,
+  "played_sha256": "98766543f60ef962d8598d5075b37efc6fe97b34092577a23971f476c3660751",
+  "recorded_at": "2026-11-21T22:12:17",
+  "tool_commit": "c3286c601777fbc201ecaee2edf0e966fd9ed041",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX4",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Boss AW-3 on its 9 V adapter: the guitar DI dataset. Input from interface out 3; OUTPUT -> input 2; INST, AIR off, pad on, gain fully counter-clockwise."
+  }
+}

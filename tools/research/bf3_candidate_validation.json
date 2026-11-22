@@ -1,0 +1,642 @@
+{
+  "discrete_delay_evaluation": [
+    {
+      "take": "manual-0900",
+      "session": "2026-10-27-standard",
+      "used_in_joint_training": false,
+      "models": {
+        "current": {
+          "rms_100_10000_db": 0.9519747901939598,
+          "rms_80_200_db": 5.203264454817341,
+          "rms_10000_16000_db": 0.25646489475455747,
+          "delay_ms": 9.087061208228631,
+          "rms_100_10000_table_delay_db": 1.0758585537377932,
+          "at_delay_bound": false
+        },
+        "candidate": {
+          "rms_100_10000_db": 0.1966148629106386,
+          "rms_80_200_db": 0.5405856392783264,
+          "rms_10000_16000_db": 0.20375259190715223,
+          "delay_ms": 9.050713888183429,
+          "rms_100_10000_table_delay_db": 0.4579723627640742,
+          "at_delay_bound": false
+        },
+        "candidate_current_wet_feedback": {
+          "rms_100_10000_db": 0.1966148629106386,
+          "rms_80_200_db": 0.5405856392783264,
+          "rms_10000_16000_db": 0.20375259190715223,
+          "delay_ms": 9.050713888183429,
+          "rms_100_10000_table_delay_db": 0.4579723627640742,
+          "at_delay_bound": false
+        },
+        "candidate_hp1_current_wet_feedback": {
+          "rms_100_10000_db": 0.2976781157187429,
+          "rms_80_200_db": 1.9985350799425012,
+          "rms_10000_16000_db": 0.1983122192103408,
+          "delay_ms": 9.049953147834849,
+          "rms_100_10000_table_delay_db": 0.5360445930373061,
+          "at_delay_bound": false
+        }
+      }
+    },
+    {
+      "take": "manual-1200",
+      "session": "2026-10-27-standard",
+      "used_in_joint_training": true,
+      "models": {
+        "current": {
+          "rms_100_10000_db": 1.1972970889727999,
+          "rms_80_200_db": 2.9825016545294827,
+          "rms_10000_16000_db": 0.2699097595057691,
+          "delay_ms": 2.0166579736024612,
+          "rms_100_10000_table_delay_db": 1.916265619362139,
+          "at_delay_bound": false
+        },
+        "candidate": {
+          "rms_100_10000_db": 0.4038841741475167,
+          "rms_80_200_db": 0.19146186838889082,
+          "rms_10000_16000_db": 0.48931299926092814,
+          "delay_ms": 1.991069967573546,
+          "rms_100_10000_table_delay_db": 1.8906218797248022,
+          "at_delay_bound": false
+        },
+        "candidate_current_wet_feedback": {
+          "rms_100_10000_db": 0.4038841741475167,
+          "rms_80_200_db": 0.19146186838889082,
+          "rms_10000_16000_db": 0.48931299926092814,
+          "delay_ms": 1.991069967573546,
+          "rms_100_10000_table_delay_db": 1.8906218797248022,
+          "at_delay_bound": false
+        },
+        "candidate_hp1_current_wet_feedback": {
+          "rms_100_10000_db": 0.41150268936062323,
+          "rms_80_200_db": 0.8531101953268068,
+          "rms_10000_16000_db": 0.4709166863783745,
+          "delay_ms": 1.9897827316109629,
+          "rms_100_10000_table_delay_db": 1.9146513388509403,
+          "at_delay_bound": false
+        }
+      }
+    },
+    {
+      "take": "manual-0300",
+      "session": "2026-10-27-standard",
+      "used_in_joint_training": false,
+      "models": {
+        "current": {
+          "rms_100_10000_db": 0.8657015679989759,
+          "rms_80_200_db": 4.386571522481014,
+          "rms_10000_16000_db": 0.5725210968662751,
+          "delay_ms": 0.712284985650648,
+          "rms_100_10000_table_delay_db": 2.209637984215463,
+          "at_delay_bound": false
+        },
+        "candidate": {
+          "rms_100_10000_db": 0.6376658471535775,
+          "rms_80_200_db": 0.2886996503121538,
+          "rms_10000_16000_db": 1.023180769375116,
+          "delay_ms": 0.6863251616708697,
+          "rms_100_10000_table_delay_db": 2.7655539094875783,
+          "at_delay_bound": false
+        },
+        "candidate_current_wet_feedback": {
+          "rms_100_10000_db": 0.6376658471535775,
+          "rms_80_200_db": 0.2886996503121538,
+          "rms_10000_16000_db": 1.023180769375116,
+          "delay_ms": 0.6863251616708697,
+          "rms_100_10000_table_delay_db": 2.7655539094875783,
+          "at_delay_bound": false
+        },
+        "candidate_hp1_current_wet_feedback": {
+          "rms_100_10000_db": 0.5492696100949918,
+          "rms_80_200_db": 0.7594530704434665,
+          "rms_10000_16000_db": 1.0023392218790947,
+          "delay_ms": 0.6860925856828161,
+          "rms_100_10000_table_delay_db": 2.842512802324262,
+          "at_delay_bound": false
+        }
+      }
+    },
+    {
+      "take": "manual-0500",
+      "session": "2026-10-27-standard",
+      "used_in_joint_training": false,
+      "models": {
+        "current": {
+          "rms_100_10000_db": 0.9699463251227421,
+          "rms_80_200_db": 4.781852170455944,
+          "rms_10000_16000_db": 0.9892957373208908,
+          "delay_ms": 0.45938499874765276,
+          "rms_100_10000_table_delay_db": 2.652351602747243,
+          "at_delay_bound": false
+        },
+        "candidate": {
+          "rms_100_10000_db": 0.6829100070139995,
+          "rms_80_200_db": 0.3179809034099173,
+          "rms_10000_16000_db": 1.371503331753519,
+          "delay_ms": 0.43372932426986527,
+          "rms_100_10000_table_delay_db": 2.92867593721044,
+          "at_delay_bound": false
+        },
+        "candidate_current_wet_feedback": {
+          "rms_100_10000_db": 0.6829100070139995,
+          "rms_80_200_db": 0.3179809034099173,
+          "rms_10000_16000_db": 1.371503331753519,
+          "delay_ms": 0.43372932426986527,
+          "rms_100_10000_table_delay_db": 2.92867593721044,
+          "at_delay_bound": false
+        },
+        "candidate_hp1_current_wet_feedback": {
+          "rms_100_10000_db": 0.580310058966337,
+          "rms_80_200_db": 0.8712272999420452,
+          "rms_10000_16000_db": 1.3540736081403157,
+          "delay_ms": 0.43337167476283983,
+          "rms_100_10000_table_delay_db": 2.9534581991876148,
+          "at_delay_bound": false
+        }
+      }
+    },
+    {
+      "take": "res-0900",
+      "session": "2026-10-27-standard",
+      "used_in_joint_training": false,
+      "models": {
+        "current": {
+          "rms_100_10000_db": 1.3298353051162872,
+          "rms_80_200_db": 3.1111593762463463,
+          "rms_10000_16000_db": 0.38932852976345417,
+          "delay_ms": 2.0742294175675484,
+          "rms_100_10000_table_delay_db": 6.3813062895846935,
+          "at_delay_bound": false
+        },
+        "candidate": {
+          "rms_100_10000_db": 0.48788989267118904,
+          "rms_80_200_db": 0.21733099912316522,
+          "rms_10000_16000_db": 0.6720744629248399,
+          "delay_ms": 2.0472492787283088,
+          "rms_100_10000_table_delay_db": 4.695784502785894,
+          "at_delay_bound": false
+        },
+        "candidate_current_wet_feedback": {
+          "rms_100_10000_db": 0.3964317479457123,
+          "rms_80_200_db": 0.22218817022794157,
+          "rms_10000_16000_db": 0.6494166562688367,
+          "delay_ms": 2.0466554947328786,
+          "rms_100_10000_table_delay_db": 4.686888107402601,
+          "at_delay_bound": false
+        },
+        "candidate_hp1_current_wet_feedback": {
+          "rms_100_10000_db": 0.44394428355425103,
+          "rms_80_200_db": 0.9983768914439075,
+          "rms_10000_16000_db": 0.6407058455217347,
+          "delay_ms": 2.0463580024011985,
+          "rms_100_10000_table_delay_db": 4.64172914159721,
+          "at_delay_bound": false
+        }
+      }
+    },
+    {
+      "take": "res-1200",
+      "session": "2026-10-27-standard",
+      "used_in_joint_training": false,
+      "models": {
+        "current": {
+          "rms_100_10000_db": 1.0641489447753465,
+          "rms_80_200_db": 3.5127527102266938,
+          "rms_10000_16000_db": 0.3848127109488115,
+          "delay_ms": 2.073849634360809,
+          "rms_100_10000_table_delay_db": 6.20988807701849,
+          "at_delay_bound": false
+        },
+        "candidate": {
+          "rms_100_10000_db": 0.667825837016607,
+          "rms_80_200_db": 0.2683001395431616,
+          "rms_10000_16000_db": 0.6653085154048661,
+          "delay_ms": 2.0468265841683366,
+          "rms_100_10000_table_delay_db": 4.46280746800354,
+          "at_delay_bound": false
+        },
+        "candidate_current_wet_feedback": {
+          "rms_100_10000_db": 0.39636114180487303,
+          "rms_80_200_db": 0.2829603111151315,
+          "rms_10000_16000_db": 0.6407512267665235,
+          "delay_ms": 2.046273499429469,
+          "rms_100_10000_table_delay_db": 4.448532975439385,
+          "at_delay_bound": false
+        },
+        "candidate_hp1_current_wet_feedback": {
+          "rms_100_10000_db": 0.4078626782576126,
+          "rms_80_200_db": 1.2135156911694254,
+          "rms_10000_16000_db": 0.6400073815533743,
+          "delay_ms": 2.0461852744000852,
+          "rms_100_10000_table_delay_db": 4.437943256882378,
+          "at_delay_bound": false
+        }
+      }
+    },
+    {
+      "take": "res-0300",
+      "session": "2026-10-27-standard",
+      "used_in_joint_training": false,
+      "models": {
+        "current": {
+          "rms_100_10000_db": 1.1335601081093722,
+          "rms_80_200_db": 4.247204022161267,
+          "rms_10000_16000_db": 0.3529638445527236,
+          "delay_ms": 2.0725635482542906,
+          "rms_100_10000_table_delay_db": 6.087251981853789,
+          "at_delay_bound": false
+        },
+        "candidate": {
+          "rms_100_10000_db": 0.8742481026028043,
+          "rms_80_200_db": 0.358798235564387,
+          "rms_10000_16000_db": 0.6147067536062544,
+          "delay_ms": 2.0450812032288543,
+          "rms_100_10000_table_delay_db": 4.278251836436443,
+          "at_delay_bound": false
+        },
+        "candidate_current_wet_feedback": {
+          "rms_100_10000_db": 0.4593289394807394,
+          "rms_80_200_db": 0.3821718804329533,
+          "rms_10000_16000_db": 0.640302337915691,
+          "delay_ms": 2.046159938258358,
+          "rms_100_10000_table_delay_db": 4.370009329422075,
+          "at_delay_bound": false
+        },
+        "candidate_hp1_current_wet_feedback": {
+          "rms_100_10000_db": 0.4783784972269495,
+          "rms_80_200_db": 1.4811068851528064,
+          "rms_10000_16000_db": 0.644140613251308,
+          "delay_ms": 2.0462057437057495,
+          "rms_100_10000_table_delay_db": 4.358051214052778,
+          "at_delay_bound": false
+        }
+      }
+    },
+    {
+      "take": "res-0300-manual-0700",
+      "session": "2026-10-27-standard",
+      "used_in_joint_training": false,
+      "models": {
+        "current": {
+          "rms_100_10000_db": 0.7905702200022015,
+          "rms_80_200_db": 4.152917542018966,
+          "rms_10000_16000_db": 0.1735194791317884,
+          "delay_ms": 14.683973662823254,
+          "rms_100_10000_table_delay_db": 0.8566047102461655,
+          "at_delay_bound": false
+        },
+        "candidate": {
+          "rms_100_10000_db": 0.3752945471975924,
+          "rms_80_200_db": 0.3923504238314073,
+          "rms_10000_16000_db": 0.15444802174951522,
+          "delay_ms": 14.649606111820075,
+          "rms_100_10000_table_delay_db": 0.7196564169715205,
+          "at_delay_bound": false
+        },
+        "candidate_current_wet_feedback": {
+          "rms_100_10000_db": 0.35252975084429156,
+          "rms_80_200_db": 0.3450707250933662,
+          "rms_10000_16000_db": 0.16513310234487746,
+          "delay_ms": 14.662849896657601,
+          "rms_100_10000_table_delay_db": 0.5123869613934636,
+          "at_delay_bound": false
+        },
+        "candidate_hp1_current_wet_feedback": {
+          "rms_100_10000_db": 0.388727392111486,
+          "rms_80_200_db": 1.4452712818898135,
+          "rms_10000_16000_db": 0.1642388618357484,
+          "delay_ms": 14.663492924761568,
+          "rms_100_10000_table_delay_db": 0.5460872919869794,
+          "at_delay_bound": false
+        }
+      }
+    },
+    {
+      "take": "res-0300-manual-0500",
+      "session": "2026-10-27-standard",
+      "used_in_joint_training": false,
+      "models": {
+        "current": {
+          "rms_100_10000_db": 1.3687124535482618,
+          "rms_80_200_db": 4.77099278842014,
+          "rms_10000_16000_db": 0.8606091950566332,
+          "delay_ms": 0.45823080647472864,
+          "rms_100_10000_table_delay_db": 2.0395163668984804,
+          "at_delay_bound": false
+        },
+        "candidate": {
+          "rms_100_10000_db": 1.1188380393697517,
+          "rms_80_200_db": 0.3552170182469386,
+          "rms_10000_16000_db": 1.198012574961124,
+          "delay_ms": 0.4332777872955525,
+          "rms_100_10000_table_delay_db": 2.2823959906650324,
+          "at_delay_bound": false
+        },
+        "candidate_current_wet_feedback": {
+          "rms_100_10000_db": 0.5467982452179355,
+          "rms_80_200_db": 0.3824582457224358,
+          "rms_10000_16000_db": 1.186217811918153,
+          "delay_ms": 0.43277707815624966,
+          "rms_100_10000_table_delay_db": 2.027704267262642,
+          "at_delay_bound": false
+        },
+        "candidate_hp1_current_wet_feedback": {
+          "rms_100_10000_db": 0.6142342408413993,
+          "rms_80_200_db": 1.4872297868392528,
+          "rms_10000_16000_db": 1.1959540281343715,
+          "delay_ms": 0.43295334345756037,
+          "rms_100_10000_table_delay_db": 2.038919680963491,
+          "at_delay_bound": false
+        }
+      }
+    },
+    {
+      "take": "std-manual-1200-24",
+      "session": "2026-10-27-res-quiet",
+      "used_in_joint_training": false,
+      "models": {
+        "current": {
+          "rms_100_10000_db": 1.1835840483563025,
+          "rms_80_200_db": 3.0002273542637217,
+          "rms_10000_16000_db": 0.2488366809825495,
+          "delay_ms": 1.9859918721270844,
+          "rms_100_10000_table_delay_db": 2.670851631604373,
+          "at_delay_bound": false
+        },
+        "candidate": {
+          "rms_100_10000_db": 0.40424334915450716,
+          "rms_80_200_db": 0.19203052015017305,
+          "rms_10000_16000_db": 0.6435605049306473,
+          "delay_ms": 1.959811606167296,
+          "rms_100_10000_table_delay_db": 4.711344189277088,
+          "at_delay_bound": false
+        },
+        "candidate_current_wet_feedback": {
+          "rms_100_10000_db": 0.40424334915450716,
+          "rms_80_200_db": 0.19203052015017305,
+          "rms_10000_16000_db": 0.6435605049306473,
+          "delay_ms": 1.959811606167296,
+          "rms_100_10000_table_delay_db": 4.711344189277088,
+          "at_delay_bound": false
+        },
+        "candidate_hp1_current_wet_feedback": {
+          "rms_100_10000_db": 0.3979518651823136,
+          "rms_80_200_db": 0.838668629899088,
+          "rms_10000_16000_db": 0.6299794077337566,
+          "delay_ms": 1.9595594073397586,
+          "rms_100_10000_table_delay_db": 4.717372191438651,
+          "at_delay_bound": false
+        }
+      }
+    },
+    {
+      "take": "std-res-0500-24",
+      "session": "2026-10-27-res-quiet",
+      "used_in_joint_training": false,
+      "models": {
+        "current": {
+          "rms_100_10000_db": 1.4175106852800037,
+          "rms_80_200_db": 4.9289629965398065,
+          "rms_10000_16000_db": 0.24768069144902996,
+          "delay_ms": 1.981506004098657,
+          "rms_100_10000_table_delay_db": 3.1408763748145923,
+          "at_delay_bound": false
+        },
+        "candidate": {
+          "rms_100_10000_db": 1.159272360465635,
+          "rms_80_200_db": 0.4407679280792995,
+          "rms_10000_16000_db": 0.5238480043699824,
+          "delay_ms": 1.9556102577285648,
+          "rms_100_10000_table_delay_db": 5.305686216501305,
+          "at_delay_bound": false
+        },
+        "candidate_current_wet_feedback": {
+          "rms_100_10000_db": 0.4675387933354552,
+          "rms_80_200_db": 0.4655165508606911,
+          "rms_10000_16000_db": 0.6627794627089358,
+          "delay_ms": 1.9595309140551238,
+          "rms_100_10000_table_delay_db": 5.016667329189673,
+          "at_delay_bound": false
+        },
+        "candidate_hp1_current_wet_feedback": {
+          "rms_100_10000_db": 0.4288479822110924,
+          "rms_80_200_db": 1.7138720945812775,
+          "rms_10000_16000_db": 0.6554867482992484,
+          "delay_ms": 1.9593795838084305,
+          "rms_100_10000_table_delay_db": 5.064567694599131,
+          "at_delay_bound": false
+        }
+      }
+    }
+  ],
+  "stress": [
+    {
+      "fs": 44100,
+      "rate_hz": 0.055,
+      "current_wet_feedback": false,
+      "max_static_loop_magnitude_grid": 0.8256603025035443,
+      "wet_peak": 0.0518911456388936,
+      "wet_last_second_rms": 0.0,
+      "all_finite": true
+    },
+    {
+      "fs": 44100,
+      "rate_hz": 1.0,
+      "current_wet_feedback": false,
+      "max_static_loop_magnitude_grid": 0.8256603025035443,
+      "wet_peak": 0.061484116528938246,
+      "wet_last_second_rms": 0.0,
+      "all_finite": true
+    },
+    {
+      "fs": 44100,
+      "rate_hz": 10.0,
+      "current_wet_feedback": false,
+      "max_static_loop_magnitude_grid": 0.8256603025035443,
+      "wet_peak": 0.05485603350894233,
+      "wet_last_second_rms": 6.117775976978515e-151,
+      "all_finite": true
+    },
+    {
+      "fs": 44100,
+      "rate_hz": 0.055,
+      "current_wet_feedback": true,
+      "max_static_loop_magnitude_grid": 0.8256603025035443,
+      "wet_peak": 0.05145056069889819,
+      "wet_last_second_rms": 0.0,
+      "all_finite": true
+    },
+    {
+      "fs": 44100,
+      "rate_hz": 1.0,
+      "current_wet_feedback": true,
+      "max_static_loop_magnitude_grid": 0.8256603025035443,
+      "wet_peak": 0.058027720545822184,
+      "wet_last_second_rms": 0.0,
+      "all_finite": true
+    },
+    {
+      "fs": 44100,
+      "rate_hz": 10.0,
+      "current_wet_feedback": true,
+      "max_static_loop_magnitude_grid": 0.8256603025035443,
+      "wet_peak": 0.05834035430257699,
+      "wet_last_second_rms": 5.859943316621955e-152,
+      "all_finite": true
+    },
+    {
+      "fs": 48000,
+      "rate_hz": 0.055,
+      "current_wet_feedback": false,
+      "max_static_loop_magnitude_grid": 0.8257566073371042,
+      "wet_peak": 0.05380165089115971,
+      "wet_last_second_rms": 0.0,
+      "all_finite": true
+    },
+    {
+      "fs": 48000,
+      "rate_hz": 1.0,
+      "current_wet_feedback": false,
+      "max_static_loop_magnitude_grid": 0.8257566073371042,
+      "wet_peak": 0.05415961465535932,
+      "wet_last_second_rms": 0.0,
+      "all_finite": true
+    },
+    {
+      "fs": 48000,
+      "rate_hz": 10.0,
+      "current_wet_feedback": false,
+      "max_static_loop_magnitude_grid": 0.8257566073371042,
+      "wet_peak": 0.05911492765540959,
+      "wet_last_second_rms": 8.038638309231426e-151,
+      "all_finite": true
+    },
+    {
+      "fs": 48000,
+      "rate_hz": 0.055,
+      "current_wet_feedback": true,
+      "max_static_loop_magnitude_grid": 0.8257566073371042,
+      "wet_peak": 0.06101918767465741,
+      "wet_last_second_rms": 0.0,
+      "all_finite": true
+    },
+    {
+      "fs": 48000,
+      "rate_hz": 1.0,
+      "current_wet_feedback": true,
+      "max_static_loop_magnitude_grid": 0.8257566073371042,
+      "wet_peak": 0.055229517630916436,
+      "wet_last_second_rms": 0.0,
+      "all_finite": true
+    },
+    {
+      "fs": 48000,
+      "rate_hz": 10.0,
+      "current_wet_feedback": true,
+      "max_static_loop_magnitude_grid": 0.8257566073371042,
+      "wet_peak": 0.059035919358457145,
+      "wet_last_second_rms": 8.132760105389262e-152,
+      "all_finite": true
+    },
+    {
+      "fs": 96000,
+      "rate_hz": 0.055,
+      "current_wet_feedback": false,
+      "max_static_loop_magnitude_grid": 0.8262223456804644,
+      "wet_peak": 0.03836073170494193,
+      "wet_last_second_rms": 0.0,
+      "all_finite": true
+    },
+    {
+      "fs": 96000,
+      "rate_hz": 1.0,
+      "current_wet_feedback": false,
+      "max_static_loop_magnitude_grid": 0.8262223456804644,
+      "wet_peak": 0.04534164850774143,
+      "wet_last_second_rms": 0.0,
+      "all_finite": true
+    },
+    {
+      "fs": 96000,
+      "rate_hz": 10.0,
+      "current_wet_feedback": false,
+      "max_static_loop_magnitude_grid": 0.8262223456804644,
+      "wet_peak": 0.043573425080160426,
+      "wet_last_second_rms": 1.1952118132868152e-149,
+      "all_finite": true
+    },
+    {
+      "fs": 96000,
+      "rate_hz": 0.055,
+      "current_wet_feedback": true,
+      "max_static_loop_magnitude_grid": 0.8262223456804644,
+      "wet_peak": 0.03688766192902182,
+      "wet_last_second_rms": 0.0,
+      "all_finite": true
+    },
+    {
+      "fs": 96000,
+      "rate_hz": 1.0,
+      "current_wet_feedback": true,
+      "max_static_loop_magnitude_grid": 0.8262223456804644,
+      "wet_peak": 0.04365884730609775,
+      "wet_last_second_rms": 0.0,
+      "all_finite": true
+    },
+    {
+      "fs": 96000,
+      "rate_hz": 10.0,
+      "current_wet_feedback": true,
+      "max_static_loop_magnitude_grid": 0.8262223456804644,
+      "wet_peak": 0.04368798747554348,
+      "wet_last_second_rms": 5.268203976415503e-150,
+      "all_finite": true
+    }
+  ],
+  "impulse_transfer_checks": [
+    {
+      "fs": 44100,
+      "current_wet_feedback": false,
+      "max_complex_error": 1.3787549128974081e-12
+    },
+    {
+      "fs": 44100,
+      "current_wet_feedback": true,
+      "max_complex_error": 1.3449922750290662e-12
+    },
+    {
+      "fs": 48000,
+      "current_wet_feedback": false,
+      "max_complex_error": 1.774901018008175e-12
+    },
+    {
+      "fs": 48000,
+      "current_wet_feedback": true,
+      "max_complex_error": 1.6503390573832177e-12
+    },
+    {
+      "fs": 96000,
+      "current_wet_feedback": false,
+      "max_complex_error": 6.202442696720385e-12
+    },
+    {
+      "fs": 96000,
+      "current_wet_feedback": true,
+      "max_complex_error": 6.509424342216621e-12
+    }
+  ],
+  "host_rate_response": [
+    {
+      "fs": 44100,
+      "max_magnitude_difference_from_48k_below_10k_db": 0.15392275206369138,
+      "max_magnitude_difference_from_48k_to_16k_db": 3.87662446234933
+    },
+    {
+      "fs": 96000,
+      "max_magnitude_difference_from_48k_below_10k_db": 0.5249036196950336,
+      "max_magnitude_difference_from_48k_to_16k_db": 9.95183288246854
+    }
+  ],
+  "scope": "Standard only; numerical research renderer, no output clipping; maximum Res .849; two seconds noise plus six seconds silence. Static small-gain bounds sampled densely, not an analytic certificate of time-varying stability."
+}

@@ -1,0 +1,34 @@
+
+=== 2026-10-29T10:26:09 · run tools/capture/plans/oc-5-followup.json · tool aa07c5aae0c70410c1488ca61c9465630fa08b85
+
+[1/4] bypass-dry-steps: 220 Hz at -30/-24/-18/-15/-12/-9/-6/-3/0/3 dB, 1 s each
+  pedal OFF (bypassed)
+  Input -> Output; GUITAR/BASS on GUITAR. These check the dry path's clip (a held sine at the guitar's peak came out square, ~-10 dB re the peak) against the level.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -10.5 dBFS · loopback -9.9 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[2/4] bypass-dry-plucks: 3 110 Hz plucks every 3 s (decay 0.6 s)
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.5 dBFS · loopback -13.0 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[3/4] dry-steps: 220 Hz at -30/-24/-18/-15/-12/-9/-6/-3/0/3 dB, 1 s each
+  pedal ON · Mode Vintage · Direct Level 12:00 · +1 OCT Level 7:00 · -1 OCT Level 7:00 · -2 OCT/Range 7:00 (switch it on)
+  Every octave knob fully down: the dry path alone.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -21.4 dBFS · loopback -9.9 dBFS · latency 578 samples (12.04 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[4/4] dry-plucks: 3 110 Hz plucks every 3 s (decay 0.6 s)
+  pedal ON · Mode Vintage · Direct Level 12:00 · +1 OCT Level 7:00 · -1 OCT Level 7:00 · -2 OCT/Range 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -21.3 dBFS · loopback -13.0 dBFS · latency 578 samples (12.04 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+All 4 takes are in captures/boss/oc-5/2026-10-29-followup.

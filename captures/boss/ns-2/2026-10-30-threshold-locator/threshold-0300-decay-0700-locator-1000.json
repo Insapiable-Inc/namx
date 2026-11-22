@@ -1,0 +1,64 @@
+{
+  "take": "threshold-0300-decay-0700-locator-1000",
+  "pedal": "Boss NS-2 Noise Suppressor (mono: Input -> Output; Send/Return empty)",
+  "bypass": false,
+  "settings": {
+    "Threshold": "3:00",
+    "Decay": "7:00",
+    "Mode": "Reduction"
+  },
+  "note": "Switch NS-2 ON. Threshold exactly 3:00; Decay fully counter-clockwise; Mode Reduction. Do not move Threshold or interface gain afterward; the next experiment will reuse this position.",
+  "signal": {
+    "type": "steps",
+    "freq": 1000,
+    "levels_db": [
+      -100,
+      -62,
+      -60,
+      -58,
+      -56,
+      -54,
+      -52,
+      -50,
+      -48,
+      -46,
+      -44,
+      -12,
+      -100
+    ],
+    "step_seconds": 4,
+    "gap_seconds": 0,
+    "level_db": 0,
+    "tail": 2
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -25.22,
+    "loop": -24.95
+  },
+  "latency_samples": 577,
+  "latency_quality": 0.998,
+  "xruns": 0,
+  "played_sha256": "61f3d99e8d580185bfd945bc68ac868dd0067f761ba2d2d56de10412ec89e9a0",
+  "recorded_at": "2026-10-30T15:55:10",
+  "tool_commit": "979167bf6ba528173a9069fc329ffde098383af4-dirty",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX4",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Same Scarlett 8i6 capture rig: pro-audio, 48 kHz; analogue out 3 -> NS-2 Input; NS-2 Output -> input 2; Send/Return empty; out 4 -> input 5 loopback. Input 2 INST, pad ON, AIR off, physical gain fully counter-clockwise. Outputs 3/4 direct PCM 3/4. NS-2 on 9 V supply, Mode Reduction. Original calibration retained, not remeasured. Threshold 3:00 and Decay minimum for locator; keep Threshold fixed for subsequent history test.",
+    "capture_tools_source_commit": "b6a6b6c9ed3bbb9b34baec4696a7087506d09181",
+    "capture_plan_sha256": "b10b05cfdf216fee7ee0c05dcf17f3fc87183232f3ca6e35a8088c38fc6ee11d"
+  }
+}

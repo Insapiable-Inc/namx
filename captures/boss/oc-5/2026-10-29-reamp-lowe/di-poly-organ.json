@@ -1,0 +1,46 @@
+{
+  "take": "di-poly-organ",
+  "pedal": "Boss OC-5 Octave (mono: Input -> Output)",
+  "bypass": false,
+  "settings": {
+    "Mode": "Poly",
+    "Direct Level": "12:00",
+    "+1 OCT Level": "12:00",
+    "-1 OCT Level": "12:00",
+    "-2 OCT/Range": "5:00"
+  },
+  "note": "",
+  "signal": {
+    "type": "file",
+    "path": "captures/di/lowe-chromatic.wav",
+    "tail": 2
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -9.81,
+    "loop": -12.96
+  },
+  "latency_samples": 583,
+  "latency_quality": 0.998,
+  "xruns": 0,
+  "played_sha256": "cab957e684c6dd8b2f9f835568d146b134133d41d9a0dd58415edd757b8da9b0",
+  "recorded_at": "2026-10-29T21:32:44",
+  "tool_commit": "e596fe6d6c98cc982d75accdd10121cf55b69ceb-dirty",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX4",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Reamp of captures/di/lowe-chromatic.wav, mono, 9 V supply, GUITAR/BASS on GUITAR"
+  }
+}

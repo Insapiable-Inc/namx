@@ -1,0 +1,47 @@
+{
+  "take": "step-rate-0900",
+  "pedal": "Boss PH-3 Phase Shifter, follow-up 2 (mono: Input -> Output)",
+  "bypass": false,
+  "settings": {
+    "Mode": "Step",
+    "Rate": "9:00",
+    "Depth": "5:00",
+    "Res": "7:00"
+  },
+  "note": "Pedal on, MODE STEP, Depth fully up (big jumps are easier to see).",
+  "signal": {
+    "type": "noise",
+    "seconds": 20,
+    "level_db": -12,
+    "seed": 1,
+    "tail": 2
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -23.3,
+    "loop": -25.39
+  },
+  "latency_samples": 584,
+  "latency_quality": 0.998,
+  "xruns": 0,
+  "played_sha256": "cae87603c37f2c4a031fabd514cb5cda2177b1ee3e445acea31c636f9f8475e6",
+  "recorded_at": "2026-10-28T23:08:40",
+  "tool_commit": "518d80c0790df1ca68d1df326ab046b2a4392d60",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX4",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Scarlett 8i6 3rd gen; pedal feed: analogue out 3 (PCM 3, direct routing); loopback: out 4 -> line in 5; pedal into input 2, INST, AIR off, pad ON, gain min; no reamp box; calibration from the TR-2/DD-8 sessions; PH-3 on a 9 V power supply; Input -> Output"
+  }
+}

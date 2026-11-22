@@ -39,6 +39,7 @@
 #include "OutputLimiter.h"
 #include "PhaserProcessor.h"
 #include "ReverbProcessor.h"
+#include "RotaryProcessor.h"
 #include "TransposeProcessor.h"
 #include "TremoloProcessor.h"
 #include "TunerProcessor.h"
@@ -189,6 +190,7 @@ int run(int argc, char** argv) {
     NamProcessor nam;
     EQProcessor eq;
     ChorusProcessor chorus;
+    RotaryProcessor rotary;
     TremoloProcessor tremolo;
     DelayProcessor delay;
     ReverbProcessor reverb;
@@ -198,16 +200,10 @@ int run(int argc, char** argv) {
     OutputLimiter limiter;
     TransposeProcessor transpose;
     transpose.set_semitones(-2.0f); // a drop tuning: the shifter's real cost
-    // Worst case the UI can reach for the effects that skip idle work: all six EQ bands
-    // engaged (flat bands are skipped), the delay's modulation and saturation on.
-    for (const EQProcessor::Band b : {EQProcessor::Band::BASS, EQProcessor::Band::MIDDLE,
-                                      EQProcessor::Band::HIGH_MID, EQProcessor::Band::TREBLE}) {
-        eq.set_gain(b, 3.0);
-    }
-    eq.set_freq(EQProcessor::Band::LOW_CUT, 80.0);
-    eq.set_freq(EQProcessor::Band::HIGH_CUT, 8000.0);
-    delay.set_modulation(30.0f);
-    delay.set_saturation(30.0f);
+    // Worst case the UI can reach for the effects that skip idle work: both EQ cuts engaged
+    // (open cuts are skipped).
+    eq.set_cut(EQProcessor::Cut::LOW, 80.0);
+    eq.set_cut(EQProcessor::Cut::HIGH, 8000.0);
 
     // Same defaults as AudioEngine's constructor.
     chorus.set_stereo_mode(true);
@@ -216,14 +212,15 @@ int run(int argc, char** argv) {
     reverb.set_stereo_mode(true);
 
     vector<Stage> chain = {
-        {"Tuner", &tuner, {}},     {"Transpose", &transpose, {}},
-        {"Gate", &gate, {}},       {"Compressor", &comp, {}},
-        {"Wah", &wah, {}},         {"Flanger", &flanger, {}},
-        {"Phaser", &phaser, {}},   {"Drive", &drive, {}},
-        {"Amp", &nam, {}},         {"Volume", &volume, {}},
-        {"EQ", &eq, {}},           {"Chorus", &chorus, {}},
-        {"Tremolo", &tremolo, {}}, {"Delay", &delay, {}},
-        {"Reverb", &reverb, {}},   {"Cab", &cab, {}},
+        {"Tuner", &tuner, {}},   {"Transpose", &transpose, {}},
+        {"Gate", &gate, {}},     {"Compressor", &comp, {}},
+        {"Wah", &wah, {}},       {"Flanger", &flanger, {}},
+        {"Phaser", &phaser, {}}, {"Drive", &drive, {}},
+        {"Amp", &nam, {}},       {"Volume", &volume, {}},
+        {"EQ", &eq, {}},         {"Chorus", &chorus, {}},
+        {"Rotary", &rotary, {}}, {"Tremolo", &tremolo, {}},
+        {"Delay", &delay, {}},   {"Reverb", &reverb, {}},
+        {"Cab", &cab, {}},
     };
 
     for (auto& s : chain) {

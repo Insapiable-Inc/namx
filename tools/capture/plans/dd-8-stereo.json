@@ -1,0 +1,404 @@
+{
+  "pedal": "Boss DD-8 Digital Delay — stereo: what each output carries, mode by mode (OUTPUT A and OUTPUT B)",
+  "comment": "The DD-8 with both outputs connected, never measured before: a first look, so test signals first and guitar after. Per mode (Standard, Analog, Tape, Warm, Mod): clicks 3 s apart (each repeat's time, level and polarity on each side, read directly), two 0.1 s noise bursts at -12 dB 3 s apart (each repeat's tone on each side; under the input clip), then the focused reamp's stabs (the same on guitar). Standard's clicks also at Time 9:00 and 3:00 (how the second side's delay follows the Time knob: a fixed offset, a ratio, the same) and one click at Feedback 3:00 with a long tail (which side each repeat of a long train lands on: straight or crossing over). A steady 1 kHz sine in Standard and Mod (the two sides' level and phase while the repeats pile up; Mod's sweep on each side), Standard's stabs also at Feedback 3:00 with a long tail (a pattern across many repeats), Mod also on the strummed chords. No sweep: with the repeats on, a sweep lands on top of its own echoes; the bursts give the tone per repeat instead. A plug in OUTPUT B may change what OUTPUT A carries: compare with the mono session of the same day (2026-11-09-focused), same settings. The pedal's stereo output type as it is set: note it in the session if known. The CARRYOVER switch as in the mono session (on). Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise. One knob per step but for Feedback going back to 12:00 with the mode.",
+  "quiet_dbfs": -60,
+  "knobs": [
+    "Mode",
+    "Level",
+    "Feedback",
+    "Time"
+  ],
+  "takes": [
+    {
+      "name": "bypass-noise",
+      "bypass": true,
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -12,
+          -12
+        ],
+        "step_seconds": 0.1,
+        "gap_seconds": 3,
+        "seed": 1,
+        "tail": 1.0
+      },
+      "note": "The pedal off (its LED off): what each output carries in bypass. OUTPUT A on input 2, OUTPUT B on input 1."
+    },
+    {
+      "name": "bypass-stabs",
+      "bypass": true,
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "start": 2,
+        "seconds": 12.5,
+        "tail": 4.0
+      }
+    },
+    {
+      "name": "standard-clicks",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 3,
+        "count": 3,
+        "tail": 1.0
+      },
+      "note": "The pedal on (its LED lit)."
+    },
+    {
+      "name": "standard-noise",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -12,
+          -12
+        ],
+        "step_seconds": 0.1,
+        "gap_seconds": 3,
+        "seed": 1,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "standard-sine",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 8,
+        "level_db": -12,
+        "tail": 4.0
+      }
+    },
+    {
+      "name": "standard-stabs",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "start": 2,
+        "seconds": 12.5,
+        "tail": 4.0
+      }
+    },
+    {
+      "name": "standard-time-0900-clicks",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "9:00"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 3,
+        "count": 3,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "standard-time-0300-clicks",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "3:00"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 3,
+        "count": 3,
+        "tail": 3.0
+      }
+    },
+    {
+      "name": "standard-feedback-0300-clicks",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "12:00",
+        "Feedback": "3:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 3,
+        "count": 1,
+        "tail": 14.0
+      }
+    },
+    {
+      "name": "standard-feedback-0300-stabs",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "12:00",
+        "Feedback": "3:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "start": 2,
+        "seconds": 12.5,
+        "tail": 16.0
+      }
+    },
+    {
+      "name": "analog-clicks",
+      "settings": {
+        "Mode": "Analog",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 3,
+        "count": 3,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "analog-noise",
+      "settings": {
+        "Mode": "Analog",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -12,
+          -12
+        ],
+        "step_seconds": 0.1,
+        "gap_seconds": 3,
+        "seed": 1,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "analog-stabs",
+      "settings": {
+        "Mode": "Analog",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "start": 2,
+        "seconds": 12.5,
+        "tail": 4.0
+      }
+    },
+    {
+      "name": "tape-clicks",
+      "settings": {
+        "Mode": "Tape",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 3,
+        "count": 3,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "tape-noise",
+      "settings": {
+        "Mode": "Tape",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -12,
+          -12
+        ],
+        "step_seconds": 0.1,
+        "gap_seconds": 3,
+        "seed": 1,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "tape-stabs",
+      "settings": {
+        "Mode": "Tape",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "start": 2,
+        "seconds": 12.5,
+        "tail": 4.0
+      }
+    },
+    {
+      "name": "warm-clicks",
+      "settings": {
+        "Mode": "Warm",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 3,
+        "count": 3,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "warm-noise",
+      "settings": {
+        "Mode": "Warm",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -12,
+          -12
+        ],
+        "step_seconds": 0.1,
+        "gap_seconds": 3,
+        "seed": 1,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "warm-stabs",
+      "settings": {
+        "Mode": "Warm",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "start": 2,
+        "seconds": 12.5,
+        "tail": 4.0
+      }
+    },
+    {
+      "name": "mod-clicks",
+      "settings": {
+        "Mode": "Mod",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 3,
+        "count": 3,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "mod-noise",
+      "settings": {
+        "Mode": "Mod",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -12,
+          -12
+        ],
+        "step_seconds": 0.1,
+        "gap_seconds": 3,
+        "seed": 1,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "mod-sine",
+      "settings": {
+        "Mode": "Mod",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 8,
+        "level_db": -12,
+        "tail": 4.0
+      }
+    },
+    {
+      "name": "mod-stabs",
+      "settings": {
+        "Mode": "Mod",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "start": 2,
+        "seconds": 12.5,
+        "tail": 4.0
+      }
+    },
+    {
+      "name": "mod-chords",
+      "settings": {
+        "Mode": "Mod",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "tail": 4.0
+      }
+    }
+  ]
+}

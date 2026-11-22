@@ -1,0 +1,861 @@
+{
+  "pedal": "Boss PH-3 Phase Shifter — focused reamp, every mode (mono)",
+  "comment": "Two kinds of take. Tones: nine quiet sines together (113 Hz to 8.9 kHz), nothing else — a phaser is a filter that moves, and each tone's level and phase on the output is that filter at its frequency at every moment, all through the sweep, at any Rate (October read it from noise folded on the cycle). Guitar: excerpts of captures/di/ at -12 dB over an 8 kHz probe (the model against the pedal on real playing: waveform, bands; the probe places the model's sweep on the pedal's). Per Stage mode: the phaser standing still (Depth 7:00; a sweep), then sweeping at full Depth with Res off and fully up. 4 Stage also at Depth 12:00 (full-level funk twice: the pedal against itself; the lead held out) and at three more Rates. Rise, Fall and Step last. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise; 9:00 and 3:00 pointer horizontal. Takes ordered so each step turns one or two knobs.",
+  "quiet_dbfs": -60,
+  "knobs": [
+    "Mode",
+    "Rate",
+    "Depth",
+    "Res"
+  ],
+  "takes": [
+    {
+      "name": "bypass-chords",
+      "bypass": true,
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0,
+        "level_db": -12
+      },
+      "note": "The pedal off (its LED off): the bypass reference. OUTPUT on input 2, the adapter."
+    },
+    {
+      "name": "bypass-tones",
+      "bypass": true,
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 20,
+        "level_db": -18,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "bypass-sweep",
+      "bypass": true,
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "4stage-static-sweep",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 1.0
+      },
+      "note": "The pedal on (its LED lit), the STAGE switch on 4. Depth fully counter-clockwise: the phaser stands still."
+    },
+    {
+      "name": "4stage-static-chords-m12",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0,
+        "level_db": -12
+      }
+    },
+    {
+      "name": "4stage-1200-tones",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "12:00",
+        "Depth": "12:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 20,
+        "level_db": -18,
+        "tail": 1.0
+      },
+      "note": "Nine quiet tones together, 20 s: what the phaser does to each at every moment."
+    },
+    {
+      "name": "4stage-1200-chords-m12",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "12:00",
+        "Depth": "12:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0,
+        "level_db": -12
+      }
+    },
+    {
+      "name": "4stage-1200-funk",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "12:00",
+        "Depth": "12:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "4stage-1200-funk-repeat",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "12:00",
+        "Depth": "12:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "4stage-1200-lead-m12",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "12:00",
+        "Depth": "12:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/lead.wav",
+        "seconds": 20,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0,
+        "start": 2,
+        "level_db": -12
+      }
+    },
+    {
+      "name": "4stage-tones",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 20,
+        "level_db": -18,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "4stage-chords-m12",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0,
+        "level_db": -12
+      }
+    },
+    {
+      "name": "4stage-res-tones",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 20,
+        "level_db": -18,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "4stage-res-chords-m12",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "5:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0,
+        "level_db": -12
+      }
+    },
+    {
+      "name": "4stage-rate-0900-tones",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "9:00",
+        "Depth": "5:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 30,
+        "level_db": -18,
+        "tail": 1.0
+      },
+      "note": "Res back fully counter-clockwise. A slow sweep: 30 s."
+    },
+    {
+      "name": "4stage-rate-0300-tones",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "3:00",
+        "Depth": "5:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 12,
+        "level_db": -18,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "4stage-rate-0500-tones",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "5:00",
+        "Depth": "5:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 12,
+        "level_db": -18,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "8stage-tones",
+      "settings": {
+        "Mode": "8 Stage",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 20,
+        "level_db": -18,
+        "tail": 1.0
+      },
+      "note": "The STAGE switch on 8. Rate back to 12:00."
+    },
+    {
+      "name": "8stage-chords-m12",
+      "settings": {
+        "Mode": "8 Stage",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0,
+        "level_db": -12
+      }
+    },
+    {
+      "name": "8stage-res-tones",
+      "settings": {
+        "Mode": "8 Stage",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 20,
+        "level_db": -18,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "8stage-res-chords-m12",
+      "settings": {
+        "Mode": "8 Stage",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "5:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0,
+        "level_db": -12
+      }
+    },
+    {
+      "name": "8stage-static-sweep",
+      "settings": {
+        "Mode": "8 Stage",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 1.0
+      },
+      "note": "Res and Depth fully counter-clockwise."
+    },
+    {
+      "name": "10stage-static-sweep",
+      "settings": {
+        "Mode": "10 Stage",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 1.0
+      },
+      "note": "The STAGE switch on 10."
+    },
+    {
+      "name": "10stage-tones",
+      "settings": {
+        "Mode": "10 Stage",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 20,
+        "level_db": -18,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "10stage-chords-m12",
+      "settings": {
+        "Mode": "10 Stage",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0,
+        "level_db": -12
+      }
+    },
+    {
+      "name": "10stage-res-tones",
+      "settings": {
+        "Mode": "10 Stage",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 20,
+        "level_db": -18,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "12stage-res-tones",
+      "settings": {
+        "Mode": "12 Stage",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 20,
+        "level_db": -18,
+        "tail": 1.0
+      },
+      "note": "The STAGE switch on 12."
+    },
+    {
+      "name": "12stage-tones",
+      "settings": {
+        "Mode": "12 Stage",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 20,
+        "level_db": -18,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "12stage-chords-m12",
+      "settings": {
+        "Mode": "12 Stage",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0,
+        "level_db": -12
+      }
+    },
+    {
+      "name": "12stage-static-sweep",
+      "settings": {
+        "Mode": "12 Stage",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "rise-tones",
+      "settings": {
+        "Mode": "Rise",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 20,
+        "level_db": -18,
+        "tail": 1.0
+      },
+      "note": "The STAGE switch on RISE (Depth does nothing here: leave it)."
+    },
+    {
+      "name": "rise-chords-m12",
+      "settings": {
+        "Mode": "Rise",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0,
+        "level_db": -12
+      }
+    },
+    {
+      "name": "rise-res-tones",
+      "settings": {
+        "Mode": "Rise",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Res": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 20,
+        "level_db": -18,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "fall-tones",
+      "settings": {
+        "Mode": "Fall",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 20,
+        "level_db": -18,
+        "tail": 1.0
+      },
+      "note": "The STAGE switch on FALL. Res back fully counter-clockwise."
+    },
+    {
+      "name": "fall-chords-m12",
+      "settings": {
+        "Mode": "Fall",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0,
+        "level_db": -12
+      }
+    },
+    {
+      "name": "step-tones",
+      "settings": {
+        "Mode": "Step",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 20,
+        "level_db": -18,
+        "tail": 1.0
+      },
+      "note": "The STAGE switch on STEP. Depth fully clockwise."
+    },
+    {
+      "name": "step-chords-m12",
+      "settings": {
+        "Mode": "Step",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0,
+        "level_db": -12
+      }
+    },
+    {
+      "name": "step-rate-0300-tones",
+      "settings": {
+        "Mode": "Step",
+        "Rate": "3:00",
+        "Depth": "5:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          113,
+          197,
+          331,
+          577,
+          997,
+          1723,
+          2971,
+          5147,
+          8887
+        ],
+        "seconds": 12,
+        "level_db": -18,
+        "tail": 1.0
+      }
+    }
+  ]
+}

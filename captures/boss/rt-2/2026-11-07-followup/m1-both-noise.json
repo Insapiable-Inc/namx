@@ -1,0 +1,52 @@
+{
+  "take": "m1-both-noise",
+  "pedal": "Boss RT-2 Rotary Ensemble (mono in: INPUT A; stereo out: OUTPUT A and B), second session",
+  "bypass": false,
+  "settings": {
+    "Mode": "I",
+    "Rise/Fall": "FAST",
+    "LED": "green",
+    "Level": "12:00",
+    "Drive/Balance": "BALANCE 12:00",
+    "Fast": "12:00",
+    "Slow": "9:00"
+  },
+  "note": "",
+  "signal": {
+    "type": "noise",
+    "seconds": 60,
+    "level_db": -12,
+    "seed": 1,
+    "tail": 1
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -29.0,
+    "loop": -24.48,
+    "pedal_b": -29.42
+  },
+  "latency_samples": 577,
+  "latency_quality": 0.998,
+  "xruns": 0,
+  "played_sha256": "aa3f75ccb06bc5cee26c38a77fbc014453eef75cd00758dacafaae22f527e2dc",
+  "recorded_at": "2026-11-07T14:20:04",
+  "tool_commit": "88f888e3b9418e48200532ce90e9764e06cccfd4",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX4",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Boss RT-2 on its 9 V adapter, second session. Mono in (INPUT A). OUTPUT A -> front input 2, OUTPUT B -> front input 1; both INST, AIR off, pad on, gain fully counter-clockwise. Factory settings assumed (stereo output mode, noise suppressor off, pedal switch Type 1); SPEED jack empty.",
+    "pedal_in_b": "Scarlett 8i6 USB Pro:capture_AUX0"
+  }
+}

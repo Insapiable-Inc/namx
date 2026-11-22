@@ -1,0 +1,57 @@
+{
+  "take": "shimmer-plucks",
+  "pedal": "Boss RV-6 Reverb (stereo: Input A -> Outputs A and B; Input B and EXP empty)",
+  "bypass": false,
+  "settings": {
+    "Mode": "Shimmer",
+    "Level": "5:00",
+    "Tone": "12:00",
+    "Time": "12:00"
+  },
+  "note": "Two plucks 15 s apart (each tail on its own): the low E and the E above middle C.",
+  "marker_to_pedal": false,
+  "signal": {
+    "type": "pluck-train",
+    "freq": [
+      82.41,
+      329.63
+    ],
+    "onsets": [
+      0,
+      15
+    ],
+    "seconds": 16,
+    "decay_seconds": 0.8,
+    "tail": 20
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -8.6,
+    "loop": -12.91,
+    "pedal_b": -8.51
+  },
+  "latency_samples": 449,
+  "latency_quality": 0.998,
+  "xruns": 0,
+  "played_sha256": "1ddca6307cdef13cf9215bddc2f64482a391e8a50c582366316673d93bcfde18",
+  "recorded_at": "2026-11-01T11:42:36",
+  "tool_commit": "979167bf6ba528173a9069fc329ffde098383af4-dirty",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX4",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Shimmer experiment; pads on inputs 1 and 2, gains fully CCW; Output B -> input 1",
+    "pedal_in_b": "Scarlett 8i6 USB Pro:capture_AUX0"
+  }
+}

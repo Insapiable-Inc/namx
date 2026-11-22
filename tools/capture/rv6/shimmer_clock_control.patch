@@ -1,0 +1,53 @@
+--- Rv6Reverb.h
++++ Rv6Reverb.h
+@@ -406,7 +406,8 @@
+     array<size_t, MAX_TAPS> tap_delay{};
+     array<size_t, MAX_EARLY> early_delay{};
+     size_t b_delay = 0;
+-    float depth = 0.0f, lfo_phase = 0.0f, lfo_step = 0.0f, norm = 1.0f, recirculation = 1.0f;
++    double lfo_phase = 0., lfo_step = 0.;
++    float depth = 0.f, norm = 1.f, recirculation = 1.f;
+ };
+
+ // --- The spring ---
+@@ -832,7 +833,7 @@
+                                150.0f,
+                                1074.5f,
+                                0.08565f,
+-                               299.0f,
++                               static_cast<float>(2000.0 / (5.0 * 1.345816)),
+                                1.46f,
+                                0.7993f,
+                                0.7829f,
+@@ -1229,8 +1230,9 @@
+     void prepare_shimmer() {
+         TankShape tank_shape = TANKS[static_cast<size_t>(Mode::SHIMMER)];
+         tank_shape.high_ratio *= shimmer.high_scale;
++        tank_shape.mod_hz = 1.345816f;
+         tank_shape.mod_ms *= shimmer.mod_scale;
+-        tank_shape.mod_spread = shimmer.mod_spread;
++        tank_shape.mod_spread = 0.0f;
+         tanks[static_cast<size_t>(Mode::SHIMMER)].prepare(rate, tank_shape);
+         // The longer tank: Shimmer's lines a little longer, so the two don't ring alike.
+         TankShape long_shape = tank_shape;
+--- GrainShifter.h
++++ GrainShifter.h
+@@ -25,7 +25,7 @@
+ public:
+     void prepare(double sr, float grain_ms) {
+         grain = std::max(8.0f, grain_ms * 0.001f * static_cast<float>(sr));
+-        step = 1.0f / grain;
++        step = 1.0 / grain;
+         line.resize(static_cast<size_t>(grain) + 4);
+         reset();
+     }
+@@ -62,7 +62,8 @@
+
+ private:
+     DelayLine line;
+-    float grain = 4800.0f, step = 1.0f / 4800.0f, phase = 0.0f;
++    float grain = 4800.0f;
++    double step = 1.0 / 4800.0, phase = 0.;
+ };
+
+ } // namespace namx

@@ -1,0 +1,51 @@
+{
+  "take": "all-up-chords-m24",
+  "pedal": "Boss GE-7 Equalizer \u2014 focused reamp: guitar excerpts for the fit and the scorecard (mono)",
+  "bypass": false,
+  "settings": {
+    "100 Hz": "+15",
+    "200 Hz": "+15",
+    "400 Hz": "+15",
+    "800 Hz": "+15",
+    "1.6 kHz": "+15",
+    "3.2 kHz": "+15",
+    "6.4 kHz": "+15",
+    "Level": "0"
+  },
+  "note": "Every band slider at +15, Level at 0.",
+  "signal": {
+    "type": "file",
+    "path": "captures/di/chords.wav",
+    "seconds": 25,
+    "tail": 1.0,
+    "level_db": -24
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -29.72,
+    "loop": -46.55
+  },
+  "latency_samples": 577,
+  "latency_quality": 0.998,
+  "xruns": 0,
+  "played_sha256": "93525fa1b12be4a951715c3290a341a6c7bb51f1e594c0b91ac0bfd560f575f1",
+  "recorded_at": "2026-11-09T20:03:08",
+  "tool_commit": "7119bf430fc5d10e85bb446c664678a955d210a5-dirty",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX4",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Boss GE-7 on its 9 V adapter: the guitar DI dataset. Input from interface out 3; OUTPUT -> input 2; INST, AIR off, pad on, gain fully counter-clockwise."
+  }
+}

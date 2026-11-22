@@ -1,0 +1,558 @@
+{
+  "pedal": "Boss AC-3 Acoustic Simulator (mono: Input -> Guitar Amp output; Line Out empty)",
+  "comment": "Quick first look (user, 2026-10-31): is the AC-3 simple enough to model? Each mode at noon (sweep, level staircase, plucks); in Standard each of Body, Top, Level alone at both ends, and Reverb at 12:00 and 5:00. Reverb fully down (7:00) except in the reverb takes. Sweeps at -24 dB re the guitar peak. Clock positions are strings: 7:00 = 0, 5:00 = 1.",
+  "quiet_dbfs": -60,
+  "knobs": [
+    "Mode",
+    "Level",
+    "Reverb",
+    "Body",
+    "Top"
+  ],
+  "takes": [
+    {
+      "name": "bypass-sweep",
+      "bypass": true,
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 4
+      },
+      "note": "Switch the pedal OFF. Keep this bypass at the same rig gain as every effect take."
+    },
+    {
+      "name": "bypass-stairs",
+      "bypass": true,
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -48,
+          -42,
+          -36,
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          0,
+          3
+        ],
+        "step_seconds": 1.5,
+        "seed": 1,
+        "tail": 3
+      }
+    },
+    {
+      "name": "bypass-plucks",
+      "bypass": true,
+      "signal": {
+        "type": "pluck-train",
+        "freq": [
+          82.41,
+          110.0,
+          196.0,
+          329.63
+        ],
+        "onsets": [
+          0,
+          3,
+          6,
+          9
+        ],
+        "seconds": 12,
+        "decay_seconds": 0.8,
+        "repick": true,
+        "tail": 2
+      }
+    },
+    {
+      "name": "standard-sweep",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "12:00",
+        "Reverb": "7:00",
+        "Body": "12:00",
+        "Top": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      },
+      "note": "Pedal ON, MODE STANDARD. Level 12:00, Reverb fully down (inner knob 7:00), Body 12:00, Top 12:00."
+    },
+    {
+      "name": "standard-stairs",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "12:00",
+        "Reverb": "7:00",
+        "Body": "12:00",
+        "Top": "12:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -48,
+          -42,
+          -36,
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          0,
+          3
+        ],
+        "step_seconds": 1.5,
+        "seed": 1,
+        "tail": 3
+      },
+      "note": "Same settings: does the level change the sound (compression, clipping)?"
+    },
+    {
+      "name": "standard-plucks",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "12:00",
+        "Reverb": "7:00",
+        "Body": "12:00",
+        "Top": "12:00"
+      },
+      "signal": {
+        "type": "pluck-train",
+        "freq": [
+          82.41,
+          110.0,
+          196.0,
+          329.63
+        ],
+        "onsets": [
+          0,
+          3,
+          6,
+          9
+        ],
+        "seconds": 12,
+        "decay_seconds": 0.8,
+        "repick": true,
+        "tail": 2
+      }
+    },
+    {
+      "name": "standard-body-0700",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "12:00",
+        "Reverb": "7:00",
+        "Body": "7:00",
+        "Top": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      },
+      "note": "Body fully down."
+    },
+    {
+      "name": "standard-body-0500",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "12:00",
+        "Reverb": "7:00",
+        "Body": "5:00",
+        "Top": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      },
+      "note": "Body fully up."
+    },
+    {
+      "name": "standard-top-0700",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "12:00",
+        "Reverb": "7:00",
+        "Body": "12:00",
+        "Top": "7:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      },
+      "note": "Body back to 12:00. Top fully down."
+    },
+    {
+      "name": "standard-top-0500",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "12:00",
+        "Reverb": "7:00",
+        "Body": "12:00",
+        "Top": "5:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      },
+      "note": "Top fully up."
+    },
+    {
+      "name": "standard-level-0700",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "7:00",
+        "Reverb": "7:00",
+        "Body": "12:00",
+        "Top": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      },
+      "note": "Top back to 12:00. Level (OUTER knob) fully down."
+    },
+    {
+      "name": "standard-level-0500",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "5:00",
+        "Reverb": "7:00",
+        "Body": "12:00",
+        "Top": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      },
+      "note": "Level fully up."
+    },
+    {
+      "name": "standard-reverb-1200",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "12:00",
+        "Reverb": "12:00",
+        "Body": "12:00",
+        "Top": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 5
+      },
+      "note": "Level back to 12:00. Reverb (INNER knob) at 12:00. Long tail: the reverb's decay."
+    },
+    {
+      "name": "standard-reverb-0500",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "12:00",
+        "Reverb": "5:00",
+        "Body": "12:00",
+        "Top": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 5
+      },
+      "note": "Reverb fully up."
+    },
+    {
+      "name": "standard-reverb-0500-plucks",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "12:00",
+        "Reverb": "5:00",
+        "Body": "12:00",
+        "Top": "12:00"
+      },
+      "signal": {
+        "type": "pluck-train",
+        "freq": [
+          82.41,
+          110.0,
+          196.0,
+          329.63
+        ],
+        "onsets": [
+          0,
+          3,
+          6,
+          9
+        ],
+        "seconds": 12,
+        "decay_seconds": 0.8,
+        "repick": true,
+        "tail": 4
+      }
+    },
+    {
+      "name": "jumbo-sweep",
+      "settings": {
+        "Mode": "Jumbo",
+        "Level": "12:00",
+        "Reverb": "7:00",
+        "Body": "12:00",
+        "Top": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      },
+      "note": "Reverb back fully down. MODE JUMBO; Level, Body, Top at 12:00."
+    },
+    {
+      "name": "jumbo-stairs",
+      "settings": {
+        "Mode": "Jumbo",
+        "Level": "12:00",
+        "Reverb": "7:00",
+        "Body": "12:00",
+        "Top": "12:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -48,
+          -42,
+          -36,
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          0,
+          3
+        ],
+        "step_seconds": 1.5,
+        "seed": 1,
+        "tail": 3
+      }
+    },
+    {
+      "name": "jumbo-plucks",
+      "settings": {
+        "Mode": "Jumbo",
+        "Level": "12:00",
+        "Reverb": "7:00",
+        "Body": "12:00",
+        "Top": "12:00"
+      },
+      "signal": {
+        "type": "pluck-train",
+        "freq": [
+          82.41,
+          110.0,
+          196.0,
+          329.63
+        ],
+        "onsets": [
+          0,
+          3,
+          6,
+          9
+        ],
+        "seconds": 12,
+        "decay_seconds": 0.8,
+        "repick": true,
+        "tail": 2
+      }
+    },
+    {
+      "name": "enhance-sweep",
+      "settings": {
+        "Mode": "Enhance",
+        "Level": "12:00",
+        "Reverb": "7:00",
+        "Body": "12:00",
+        "Top": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      },
+      "note": "Reverb back fully down. MODE ENHANCE; Level, Body, Top at 12:00."
+    },
+    {
+      "name": "enhance-stairs",
+      "settings": {
+        "Mode": "Enhance",
+        "Level": "12:00",
+        "Reverb": "7:00",
+        "Body": "12:00",
+        "Top": "12:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -48,
+          -42,
+          -36,
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          0,
+          3
+        ],
+        "step_seconds": 1.5,
+        "seed": 1,
+        "tail": 3
+      }
+    },
+    {
+      "name": "enhance-plucks",
+      "settings": {
+        "Mode": "Enhance",
+        "Level": "12:00",
+        "Reverb": "7:00",
+        "Body": "12:00",
+        "Top": "12:00"
+      },
+      "signal": {
+        "type": "pluck-train",
+        "freq": [
+          82.41,
+          110.0,
+          196.0,
+          329.63
+        ],
+        "onsets": [
+          0,
+          3,
+          6,
+          9
+        ],
+        "seconds": 12,
+        "decay_seconds": 0.8,
+        "repick": true,
+        "tail": 2
+      }
+    },
+    {
+      "name": "piezo-sweep",
+      "settings": {
+        "Mode": "Piezo",
+        "Level": "12:00",
+        "Reverb": "7:00",
+        "Body": "12:00",
+        "Top": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      },
+      "note": "Reverb back fully down. MODE PIEZO; Level, Body, Top at 12:00."
+    },
+    {
+      "name": "piezo-stairs",
+      "settings": {
+        "Mode": "Piezo",
+        "Level": "12:00",
+        "Reverb": "7:00",
+        "Body": "12:00",
+        "Top": "12:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -48,
+          -42,
+          -36,
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          0,
+          3
+        ],
+        "step_seconds": 1.5,
+        "seed": 1,
+        "tail": 3
+      }
+    },
+    {
+      "name": "piezo-plucks",
+      "settings": {
+        "Mode": "Piezo",
+        "Level": "12:00",
+        "Reverb": "7:00",
+        "Body": "12:00",
+        "Top": "12:00"
+      },
+      "signal": {
+        "type": "pluck-train",
+        "freq": [
+          82.41,
+          110.0,
+          196.0,
+          329.63
+        ],
+        "onsets": [
+          0,
+          3,
+          6,
+          9
+        ],
+        "seconds": 12,
+        "decay_seconds": 0.8,
+        "repick": true,
+        "tail": 2
+      }
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+  "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+  "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+  "loop_in": "Scarlett 8i6 USB Pro:capture_AUX4",
+  "ref_dbfs": -4.67,
+  "calibration": {
+    "target_dbfs": -13.5,
+    "pedal_dbfs": -13.51,
+    "loop_dbfs": -12.96,
+    "at": "2026-10-26T18:43:48"
+  },
+  "note": "Same Scarlett 8i6 measurement rig as the BF-3 locked-control session: Pro Audio, 48 kHz; analogue out 3/4 directly from PCM 3/4; out 3 -> CS-3 Input; CS-3 Output -> input 2; out 4 -> input 5 loopback. Input 2 INST, pad ON, AIR off, physical gain fully counter-clockwise. Keep interface gains fixed; CS-3 adapter powered. Original calibration carried forward, not remeasured. Level/Tone/Sustain noon for engaged takes; only Attack changes.",
+  "capture_tools_source_commit": "b6a6b6c9ed3bbb9b34baec4696a7087506d09181",
+  "capture_plan_sha256": "e317150a4dee78f9d5db1b12cd31269d8fce13171a8f835b11f2275c6143b57a"
+}

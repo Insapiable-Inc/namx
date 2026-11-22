@@ -1,0 +1,59 @@
+{
+  "pedal": "Boss CS-3 Compression Sustainer (mono: Input -> Output)",
+  "comment": "Complete the initial/final-level 2x2 comparison at 1 kHz and Attack minimum. Earlier jumps were -12 -> -36 and -6 -> -24 dB. This plan adds -6 -> -36 and -12 -> -24 dB. Leave Level/Tone/Sustain noon and all interface gains untouched. Return Attack to its minimum hard stop. No per-jump fitting in the hypothesis comparison. The bypass also checks the earlier session level calibration.",
+  "knobs": [
+    "Level",
+    "Tone",
+    "Attack",
+    "Sustain"
+  ],
+  "takes": [
+    {
+      "name": "bypass-crossed-1000",
+      "bypass": true,
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -36,
+          -6,
+          -36,
+          -24,
+          -12,
+          -24
+        ],
+        "step_seconds": 4,
+        "gap_seconds": 0,
+        "level_db": 0,
+        "tail": 2
+      },
+      "note": "CS-3 BYPASSED. Leave Level, Tone and Sustain at noon. Set only Attack fully counter-clockwise now. Keep the previous cable path and interface gains."
+    },
+    {
+      "name": "attack-0700-crossed-1000",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "7:00",
+        "Sustain": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -36,
+          -6,
+          -36,
+          -24,
+          -12,
+          -24
+        ],
+        "step_seconds": 4,
+        "gap_seconds": 0,
+        "level_db": 0,
+        "tail": 2
+      },
+      "note": "Switch pedal ON. Attack fully counter-clockwise; other knobs and interface gains remain untouched. Two crossed jumps play automatically."
+    }
+  ]
+}

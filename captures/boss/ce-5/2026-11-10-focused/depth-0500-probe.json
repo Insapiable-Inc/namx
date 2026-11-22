@@ -1,0 +1,50 @@
+{
+  "take": "depth-0500-probe",
+  "pedal": "Boss CE-5 Chorus Ensemble \u2014 focused reamp, both outputs: the chorus alone on Output A, the dry on Output B",
+  "bypass": false,
+  "settings": {
+    "E.Level": "12:00",
+    "Rate": "12:00",
+    "Depth": "5:00",
+    "Low": "5:00",
+    "High": "5:00"
+  },
+  "note": "",
+  "signal": {
+    "type": "sine",
+    "freq": 8000,
+    "seconds": 12,
+    "level_db": -30,
+    "tail": 1.0
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -52.08,
+    "loop": -42.09,
+    "pedal_b": -42.55
+  },
+  "latency_samples": 577,
+  "latency_quality": 0.998,
+  "xruns": 0,
+  "played_sha256": "dd468558d8bce583088d40fbf1fe752b95a509617fa42f458218f8786b8d6a95",
+  "recorded_at": "2026-11-10T13:33:12",
+  "tool_commit": "bfc52a9ab39ff66b8ef410a53939e929f32f1949",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX4",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Boss CE-5 on its 9 V adapter: the guitar DI dataset. Input from interface out 3; OUTPUT A -> input 2, OUTPUT B -> input 1; INST, AIR off, pad on, gain fully counter-clockwise.",
+    "pedal_in_b": "Scarlett 8i6 USB Pro:capture_AUX0"
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "take": "m1-slow-chugs",
+  "pedal": "Boss RT-2 Rotary Ensemble \u2014 reamps of the guitar DI dataset (stereo: Output A and B)",
+  "bypass": false,
+  "settings": {
+    "Mode": "I",
+    "Rise/Fall": "FAST",
+    "LED": "green",
+    "Level": "12:00",
+    "Drive/Balance": "DRIVE 7:00",
+    "Fast": "12:00",
+    "Slow": "12:00"
+  },
+  "note": "",
+  "signal": {
+    "type": "file",
+    "path": "captures/di/chugs.wav",
+    "tail": 1.0
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -20.68,
+    "loop": -20.85,
+    "pedal_b": -20.63
+  },
+  "latency_samples": 583,
+  "latency_quality": 0.998,
+  "xruns": 0,
+  "played_sha256": "8bfa808caf61ce12bb3f2fc27a011dd9fcaa2a6f43663ee4a6adf9587a6652aa",
+  "recorded_at": "2026-11-07T17:29:21",
+  "tool_commit": "349ac9c22dca0896d35b40d09f7abfd66720790b",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX4",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Boss RT-2 on its 9 V adapter: the guitar DI dataset. Input from interface out 3; OUTPUT A -> input 2, OUTPUT B -> input 1; INST, AIR off, pad on, gain fully counter-clockwise.",
+    "pedal_in_b": "Scarlett 8i6 USB Pro:capture_AUX0"
+  }
+}

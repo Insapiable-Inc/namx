@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><title>NAM-X research — next-session handoff, 30 October 2026</title>
+<style>body{font:17px/1.55 system-ui,sans-serif;color:#202a34;background:#fafaf8;max-width:1150px;margin:40px auto;padding:0 25px}h1,h2{line-height:1.2;color:#12394a}h2{margin-top:2em}table{border-collapse:collapse;width:100%;font-size:15px;margin:20px 0}td,th{border-bottom:1px solid #ccd5d7;padding:9px;text-align:left;vertical-align:top}th{background:#e8eff0}pre{white-space:pre-wrap;background:#edf1f2;padding:18px;font-size:14px}a{color:#006e87}.note{border-left:4px solid #16839a;padding:12px 20px;background:#edf5f5}</style>
+<h1>NAM-X pedal research: resume here</h1>
+<p>Handoff saved 30 October 2026, America/Santiago. Research checkpoint: <code>ae044de</code> on <code>pedals/all</code>; this handoff is a subsequent documentation-only commit.</p>
+<p class="note"><strong>The user ended work for today.</strong> No capture, fitting run, listening task or user answer is pending. The latest NS-2 investigation is complete for this round: five replacements were rejected, the existing DSP is retained, and no further recordings are needed now. The audio interface has been restored. Do not resume by rerunning a capture plan or promoting an NS-2 candidate.</p>
+
+<h2>1. User intent and working agreement</h2>
+<ul>
+<li>Act as a DSP researcher: analyze real measurements, identify mathematical behavior and uncertainty, design economical experiments, and give a precise handoff to a separate production C++ agent.</li>
+<li>Study all nine pedals. The user explicitly has no priority among them except that OC-5/octave is lower priority.</li>
+<li>Prefer convincing sound, useful controls and generalization over circuit replication. Do not claim circuit recovery or add complexity without evidence.</li>
+<li>Do not modify production DSP without a new explicit instruction. All work so far is analysis, documentation and capture tooling; production C++ is unchanged by this research series.</li>
+<li>The user requested research check-ins on <code>pedals/all</code> and all follow-up material in the actual repository, not only temporary folders. Preserve that arrangement. No remote push has been performed.</li>
+<li>The user prefers action without redundant confirmation. Inspect existing data before asking for captures. Give useful progress updates during long work. No delegation/subagents were requested for this session.</li>
+</ul>
+
+<h2>2. Workspace and branch layout — important</h2>
+<table><tr><th>Location</th><th>State at handoff</th></tr>
+<tr><td><code><repo></code></td><td>User's primary checkout, still <code>main</code> at <code>979167b</code>. All original/new recorded and played WAVs are here. Research deliverables are mirrored here for the user.</td></tr>
+<tr><td><code>/tmp/namx-pedals-research</code></td><td>Existing auxiliary Git worktree on <code>pedals/all</code>. Used to check research changes into the correct branch without switching the user's main checkout. It is not the sole location of any delivered research artifact.</td></tr>
+<tr><td><code>tools/research/</code> in the primary checkout</td><td>Human reports, numerical results, figures, scripts and local derived cache. Files appear untracked on <code>main</code>, but the selected deliverables are committed on <code>pedals/all</code>.</td></tr>
+<tr><td><code>captures/boss/</code> in the primary checkout</td><td>Local raw audio. WAVs are intentionally omitted from Git. Sidecars/protocols/results are on the research branch; some older sidecars are absent from the main filesystem and are loaded via <code>git show</code> by recent scripts.</td></tr></table>
+<p>Start the next session with read-only checks:</p>
+<pre>cd <repo>
+git status --short
+git branch --show-current
+git worktree list
+git log -12 --oneline pedals/all
+git -C /tmp/namx-pedals-research status --short</pre>
+<p>Recheck this layout before writing; it may have changed. Do not switch/reset/clean the primary checkout to make the research files appear tracked. Its pre-existing untracked entries include <code>BUGS.md</code>, <code>captures/</code>, <code>debug.txt</code>, <code>namx-pedal-captures.zip</code>, <code>screenshots/</code> and <code>tools/</code>. These are not disposable clutter. Read the actual pedal DSP from <code>pedals/all</code>, not an assumed matching version on main.</p>
+<p>If the temporary worktree no longer exists, the commits remain available in the main repository. Inspect <code>git worktree list</code>, recover files with <code>git show pedals/all:path</code>, and establish a safe research checkout without disturbing the primary tree. Future analysis outputs/caches should remain in the primary repository. Use explicit staging paths and verify primary copies against the research commit. Git metadata writes required filesystem escalation in this environment; scientific authorization to check in research already exists.</p>
+
+<h2>3. Current evidence and decisions across all nine pedals</h2>
+<p>The <a href="BOSS_PEDAL_RESEARCH_AUDIT.html">collection audit</a> is the initial evidence snapshot. Follow-up reports supersede its open BF-3, PH-3, CS-3 and NS-2 questions. Historical “next capture” paragraphs in older reports are not current instructions.</p>
+<table><tr><th>Pedal</th><th>Decision and strongest evidence</th><th>Remaining work</th></tr>
+<tr><td>BF-3</td><td><a href="BF3_LOCKED_VALIDATION.html">Locked-control validation</a> supports the HP2 Standard prototype at 48 kHz. With timing calibrated once, Res 3:00 / maximum magnitude RMS improves 1.213/1.516 → .400/.469 dB; waveform NRMSE 38.48/54.42% → 9.65/16.73%. No new coefficient fitting on those primary evaluations.</td><td>Moving-comb behavior, guitar-level nonlinear behavior, listening and other sample rates remain unvalidated. Treble trades off against the large bass improvement. Ultra is separate and unresolved. No more hardware captures needed before prototype comparison.</td></tr>
+<tr><td>CS-3</td><td><a href="CS3_CROSSED_VALIDATION.html">Crossed-level report</a>: one-state log release toward a latent floor improves unseen 1 kHz recoveries from .722/.696 to .123/.041 dB RMS. The earlier broad preference for amplitude-domain release is superseded.</td><td>Do not replace production yet. At fast Attack/110 Hz, steady compressed output is .89–1.36 dB low; at −6 dB input THD is 4.91% candidate versus 3.51% measured. Pick spikes remain too small. Existing 110/220 Hz data can constrain attack/recapture; no more release-step captures now.</td></tr>
+<tr><td>NS-2</td><td><a href="NS2_CONTROL_MODEL_SELECTION.html">Latest model-selection decision</a>: retain production. New data prove near-threshold upward motion, late Decay dependence and a failure of the model's permanent history gap. All five tested replacements fail generalization.</td><td>Known limitation, not a validated replacement. No further capture needed. If revisited, preserve ordinary note closure while testing localized/state-dependent upward behavior against the existing rejection suite.</td></tr>
+<tr><td>PH-3</td><td><a href="BF3_PHASE_FOLLOWUP.html">Calibration follow-up</a>: the suspect session's bypass rises 2.3467 dB and repeated engaged take 2.3354 dB; same-session bypass normalization leaves −.0113 dB. Keep the previously accepted sound.</td><td>Physical source of the session gain change remains unknown. Static versus moving section sets, low-Depth errors and some resonance/mode approximations remain; investigate only if they matter audibly. No immediate calibration recapture.</td></tr>
+<tr><td>TR-2</td><td>Retain shaped-triangle/asymmetric smoothing architecture. Two cross-setting exclusions give .0392/.0401 RMS gain error; a sine model fails the stronger square/fast behavior.</td><td>No urgent model change or capture. The battery/supply difference does not identify its electrical cause.</td></tr>
+<tr><td>GE-7</td><td>Retain interacting-band/shared-denominator model. Five combination settings were excluded from fitting: two-band RMS .196/.261 dB, all-up .394 dB, all-cut 1.120 dB.</td><td>Extreme-cut offset and digital high-frequency warping are bounded limitations. Overload model is approximate. Avoid redesign absent a meaningful failure.</td></tr>
+<tr><td>CE-5</td><td>Retain main architecture. Corrected dry +.35 dB/.985 ms; isolated wet relative delay 5.434 ms. Wet-only routing gives useful phase constraints.</td><td>Still audit mono dry/wet phase summation, combined Low/High controls and clip/filter order using existing data. Seven-biquad cutoff is not proven equivalent to measured phase. Do not add an FIR automatically.</td></tr>
+<tr><td>DD-8</td><td>Retain shared engine. Standard delay/Level/feedback measurements were recomputed. Analog supports progressive filtering in the loop.</td><td>Tape/Warm loop-versus-output coloration placement, distortion, modulation amplitude and reverse joins remain uncertain. Review existing separated repeats before requesting bursts. GLT has no measurements; several modes are explicitly excluded rather than validated.</td></tr>
+<tr><td>OC-5</td><td>Lower user priority. Dry latency 1.006 ms, gain +.33 dB and clip threshold −8.1 dB relative to reference are supported.</td><td>Wet guitar timbre and Poly Range architecture remain provisional. Target-derived flip states are oracle diagnostics, not implementable predictors. Do not start a large new capture campaign.</td></tr></table>
+
+<h2>4. Active prototype details that must not be lost</h2>
+<p><strong>BF-3:</strong> exact specification and coefficients are in <a href="BF3_PHASE_FOLLOWUP.html">the phase report</a> and <a href="bf3_complex_results.json">bf3_complex_results.json</a>, <code>hp2_joint.sos["48000"]</code>. Three biquads: HP 148.322386875 Hz/Q .544603378; LP 7899.773802485 Hz/Q .405237370; LP 9995.498898443 Hz/Q 1.013954812. Normalize at 1 kHz, then retain −.247259882681 dB correction <em>inside every feedback pass</em>. Delay compensation .0529850964983 ms; retain existing dry/wet gains and Res map.</p>
+<pre>Z = W · linear_interpolated_delay
+Preferred Standard response: H = gd + gw Z / (1 − rZ).
+Compute the current wet sample before writing feedback.
+With the existing DelayLine API, read-before-push requires interpolate(d−1),
+not interpolate(d), to realize d samples relative to the current input.</pre>
+<p>Do not promote the fitted 1.959810 ms calibration delay at the locked setting into a new global Manual table. Exact knob mapping remains uncertain. This is a 48 kHz research prototype handoff for the implementation agent, not authorization to modify production in this scientific session.</p>
+<p><strong>CS-3:</strong> preserve amplitude-domain attack and change only downward release to exponential relaxation of <em>log amplitude toward a latent floor</em>, with causal input recapture. Full equations, nuisance gains and tone normalization are in <a href="CS3_CROSSED_VALIDATION.html">the report</a> and <a href="cs3_release_candidate_results.json">full-precision results</a>. At minimum/maximum Attack: attack constants 1.97/1.58 ms; free-release T=1202.632891/99.815639 ms; floors −60.801609/−58.267810 dB relative to R. These free-release constants are not measured t63 or a validated UI Release map. Intermediate floors and the complete Sustain/Level mapping remain unvalidated.</p>
+
+<h2>5. Latest NS-2 work: findings, failures and validation caveats</h2>
+<p>Read <a href="NS2_LOCATOR_RESULTS.html">locator findings</a> → <a href="NS2_HISTORY_RESULTS.html">matched-history findings</a> → <a href="NS2_CONTROL_MODEL_SELECTION.html">candidate rejection</a>. The locator is adaptive exploration. Its subsequent packet predictions were frozen before recording. At Threshold 3:00, probes −56/−54/−44 dB are each presented after 24 s digital silence and after 2 s at −12 dB, with 8 s observation windows, at both Decay extremes.</p>
+<ul>
+<li>Zero xruns, no digital rail hits; closing bypass agrees with locator within .00157 dB. A residual one-sample loopback offset in the minimum-Decay take cannot explain second-scale gain changes. Output silence does not prove complete hidden-state reset.</li>
+<li>Quiet-start curves agree across Decay extremes within .037/.022 dB RMS over .1–1.5 s at −56/−54 dB. At −54 dB, their later trajectories differ substantially; opening is not globally Decay-independent.</li>
+<li>At −54 dB/minimum Decay, quiet/loud histories converge to a .042 dB difference late in the window, contradicting the original fixed 7.56 dB latch gap. Stronger inputs still open in the first valid 1 ms analysis bin.</li>
+<li>A threshold shift cannot create the missing positive slope. A universal one-second attack fails: the early −56 dB exponential extrapolates with 2.02 dB late RMS error and would not preserve prompt strong-input opening.</li>
+<li>Five fitted alternatives: asymmetric envelope; simultaneously leaky envelope; nonlinear bounded charge; continuous switch reusing existing states; the latter with a capped opening time.</li>
+<li>Packet-only fits can reduce near-threshold RMS 5.177 → about .446 dB, but older note tails regress. Forty-eight older captures were checked, expanding the original 39-take set with nine earlier plucks.</li>
+<li>Joint fits use original steps/jumps and recalibrate a monotone Threshold map. Complete new input levels are excluded from fitting residuals; 31 older plucks/phrases/soft/slow-stair takes are also excluded. Capped −56-excluded quiet-start error remains <strong>8.36 dB RMS at 48 kHz</strong>. Older validation median rises from 1.487 to 2.084–2.167 dB.</li>
+<li><strong>Not an independent blind holdout:</strong> family selection has seen the data, and one optimization start uses the all-history optimum. Exclusion refers to residuals. This is explicitly documented; failed fits do not prove every continuous architecture is impossible.</li>
+<li>The uncapped rise grows effectively infinite at very weak input and stops following slow steps. A cap fixes part of this defect but not overall generalization. Fitted 30–63 s caps and changed Threshold maps are rejected optimization parameters, not pedal constants.</li>
+<li>No listening verdict, recovered circuit, identified extra state, or accepted new production coefficients. Keep the existing DSP. Provisional future gates: &lt;.5 dB trajectory RMS, &lt;.25 dB late bias, history-gap error &lt;.5 dB, prompt opening preserved, no material note-tail regression. These are engineering criteria, not audibility thresholds.</li>
+</ul>
+<p>The user was shown <a href="ns2_history_opening.png">measured early/late opening</a>, <a href="ns2_control_history_selection.png">packet fit versus level-exclusion refits</a>, and <a href="ns2_control_old_regression.png">older note/staircase regressions</a>. Do not confuse model curves beyond the plotted trusted measurement bins with validated behavior.</p>
+
+<h2>6. Completed capture sessions and measurement traps</h2>
+<table><tr><th>Primary repository directory under captures/boss/</th><th>Use</th></tr>
+<tr><td><code>bf-3/2026-10-30-standard-locked/</code></td><td>Six primary takes: bypass before/after, minimum Res before/repeat, Res 3:00 and maximum. Manual/Depth/Rate held fixed. The first attempted third take actually used Res 9:00; its correction record is under <code>discarded/std-res-0300-24-actual-res-0900/</code>. The proper 3:00 retake was analyzed. The mistaken 9:00 take is supplementary only.</td></tr>
+<tr><td><code>cs-3/2026-10-30-detector-check/</code></td><td>Six takes: bypass plus Attack extremes at 1 kHz and 110 Hz. Level/Tone/Sustain noon.</td></tr>
+<tr><td><code>cs-3/2026-10-30-detector-crossed/</code></td><td>Two takes: true bypass and minimum-Attack crossed-level packet. Tests the preceding release hypotheses.</td></tr>
+<tr><td><code>ns-2/2026-10-30-threshold-locator/</code></td><td>Two takes: true bypass and Threshold 3:00 / minimum-Decay 1 kHz locator.</td></tr>
+<tr><td><code>ns-2/2026-10-30-history/</code></td><td>Three takes: matched history at minimum/maximum Decay, plus closing true bypass. Exact played hashes and frozen predictions are in analysis-protocol.json.</td></tr></table>
+<p>Preserve raw audio, sidecars and frozen protocols. Do not rerun preparation generators to change a prerecording record after seeing outcomes. Earlier plans described in reports are completed, not outstanding capture requests.</p>
+<ul>
+<li>The initial audit checked 599 original stereo recordings at 48 kHz, not the later added captures. Original NS-2 <code>stairs-110</code> has one xrun.</li>
+<li>Deconvolved bypass impulses contain real wrapped negative-time energy. Losing it biased BF-3/CE-5 references by 2.11 dB. Keep the full signed-time extraction convention.</li>
+<li>Old DD-8 Analog “bypass” and NS-2 dynamics “bypass” takes were engaged. GE-7 first-session “Level” sweeps actually move the 6.4 kHz slider. BF-3 quiet-session generic res/manual files can be Ultra according to notes even when structured metadata is ambiguous.</li>
+<li>Use same-session bypass for PH-3's +2.35 dB session shift. Its physical cause remains unresolved.</li>
+<li>Capture playback reference is −4.67 dBFS and calibrated guitar peak was around −13.5 dBFS on the recording channel. The application's R=−6 dBFS is a separate convention. Neither is a recovered volts/full-scale calibration.</li>
+<li>Simulate actual preambles: the marker charges dynamics and feedback. Fit fractional alignment from independent references where justified; do not retime each evaluation to hide model error. Near-floor ratios, coarse timing, correlated bins and knob repeatability limit precision.</li>
+</ul>
+
+<h2>7. Interface state: restored, not capture-ready</h2>
+<p>At the user's request the Scarlett 8i6 was restored and verified at <strong>2026-10-30 21:32:37 UTC</strong>. The <a href="interface_restored_2026-10-30.json">restoration record</a> compares it with <a href="../../captures/boss/bf-3/2026-10-30-standard-locked/interface-before.json">the saved pre-capture state</a>.</p>
+<pre>Card: alsa_card.usb-Focusrite_Scarlett_8i6_USB_SERIAL-00
+Restored profile: output:analog-surround-21+input:multichannel-input
+Input 2 pad, ALSA numid 19: off
+Analogue output 3, numid 26: 11 (Mix C)
+Analogue output 4, numid 27: 12 (Mix D)
+All saved ALSA controls were verified against interface-before.json.</pre>
+<p>This is a record of that verification, not a claim that a future user's settings cannot change. Do not switch back to Pro Audio for offline analysis. Physical knob position is not software-readable; the capture instruction was Input 2 gain minimum. No new absolute level calibration was performed.</p>
+<p>If another hardware experiment is actually needed later, save the then-current state before configuring it. The completed capture rig used Pro Audio, 48 kHz/128 frames, output 3=PCM 3 (numid 26=19), output 4=PCM 4 (27=20), Input 2 INST/pad ON/AIR off, output 3→pedal→input 2, output 4→input 5 loopback. <a href="verify_capture_interface.py">verify_capture_interface.py</a> is read-only with respect to hardware: it checks this established capture rig and writes a snapshot; it does not configure or restore it. It will correctly fail against the restored everyday profile. Live audio-service access requires filesystem/service escalation here.</p>
+
+<h2>8. Reproduction and data access</h2>
+<p>Recent scripts accept an optional repository argument and write outputs beside their source file. Prefer running the primary copies so new artifacts stay in the repository. Their metadata helper can read missing old JSON from a frozen Git commit; WAVs must still exist locally. The full NS-2 pipeline was repeated from the branch worktree against primary raw data: all ten numerical/curve/plot artifacts were byte-identical. See <a href="ns2_control_reproduction.json">the version and reproduction record</a> (Python 3.14.8, NumPy 2.5.4, SciPy 1.18.1, Numba .68.0).</p>
+<pre>cd <repo>
+export OPENBLAS_NUM_THREADS=1
+export MPLCONFIGDIR=tools/research/.mpl-cache
+
+# Measurement result; verifies original frozen predictions.
+python tools/research/analyze_ns2_history.py
+
+# Rejected-candidate study, only if reproduction/new comparison is needed.
+python tools/research/fit_ns2_control_candidates.py --starts 2
+python tools/research/fit_ns2_control_candidates.py --family continuous_switch --starts 3
+python tools/research/fit_ns2_control_candidates.py --family continuous_switch_capped --starts 3
+python tools/research/validate_ns2_control_candidates.py
+python tools/research/fit_ns2_joint_control.py --starts 2
+python tools/research/fit_ns2_joint_control.py --family continuous_switch_capped --starts 2
+python tools/research/summarize_ns2_control_candidates.py</pre>
+<p>The approximately 12 MB <code>tools/research/ns2_control_regression_cache.npz</code> is local/reproducible, not committed; validation builds it before joint fitting. Committed curve archives are <a href="ns2_history_curves.npz">measured/frozen history curves</a> and <a href="ns2_control_selection_curves.npz">candidate full-rate-derived curves</a>. The first contains a valid mask excluding centered-window contamination at probe boundaries; the primary score window is .1–7.9 seconds.</p>
+<p>BF-3 and CS-3 reproduction commands and exact artifacts are in their linked current reports. The initial <code>audit_captures.py</code> and some older scripts require a complete metadata/tools export with WAV links; they cannot simply be pointed at the sparse main checkout. The original <code>/tmp/namx-dsp-audit/branch</code> export is historical and may disappear. If that audit must be repeated, construct any required data view inside the repository and inspect its path assumptions first. The ZIP is an older snapshot, not the authoritative latest dataset. There is no need to rerun all completed fits merely to resume.</p>
+
+<h2>9. Suggested next-session sequence</h2>
+<ol>
+<li>Read this handoff, check branch/worktree status, then read the specific current report for the intended task. Preserve the restored interface for offline work.</li>
+<li>A useful next scientific task is CS-3 attack/recapture and low-frequency ripple using the existing 110 Hz and 220 Hz data. Preserve the validated release improvement; separately score steady gain, H2–H5, onset/pick spikes and tails. This is a recommendation, not a user-imposed pedal priority.</li>
+<li>BF-3 already has an implementation-agent prototype specification. Research can support fixed-versus-moving validation and sample-rate equivalence; a controlled listening comparison is still required before promotion.</li>
+<li>For collection breadth, inspect DD-8 Tape/Warm repeat spectra and CE-5 mono phase/control composition from existing recordings before proposing any new takes. TR-2/GE-7 need no manufactured redesign; PH-3's accepted sound and OC-5's lower priority remain relevant.</li>
+<li>Only revisit NS-2 if there is a concrete reason to prioritize its near-threshold limitation. Start from the saved failures and closure constraints, not the attractive packet-only coefficients. Do not request more hardware data as a substitute for model selection.</li>
+</ol>
+<p>No further captures, deployment, merge, push, or production code change was promised for the next session. Any future listening claim requires actual listening; none was made in these new analyses.</p>
+
+<h2>10. Research commit trail and navigation</h2>
+<table><tr><th>Commit</th><th>Completed work</th></tr>
+<tr><td><code>961351f</code></td><td>Initial all-nine measurement/model audit.</td></tr>
+<tr><td><code>b6a6b6c</code></td><td>BF-3 complex/discrete phase candidate and PH-3 gain reconciliation; analyzer corrections.</td></tr>
+<tr><td><code>0a34674</code></td><td>BF-3 locked-control validation and corrected Res take.</td></tr>
+<tr><td><code>e4a9b88</code></td><td>CS-3 detector generalization and crossed-level preparation.</td></tr>
+<tr><td><code>8efe836</code></td><td>CS-3 crossed validation, one-state log-release candidate and picked-note checks.</td></tr>
+<tr><td><code>23992ce</code></td><td>NS-2 locator/history preparation.</td></tr>
+<tr><td><code>89919dc</code></td><td>NS-2 locator analysis and frozen matched-history experiment.</td></tr>
+<tr><td><code>cde5c60</code></td><td>NS-2 measured history results; hardware capture stage closed.</td></tr>
+<tr><td><code>ae044de</code></td><td>Five NS-2 candidate fits/rejections, full-rate regression, reproducibility and interface restoration record.</td></tr></table>
+<p>Primary navigation: <a href="BOSS_PEDAL_RESEARCH_AUDIT.html">all-nine audit</a> · <a href="BF3_LOCKED_VALIDATION.html">BF-3 latest</a> · <a href="CS3_CROSSED_VALIDATION.html">CS-3 latest</a> · <a href="NS2_CONTROL_MODEL_SELECTION.html">NS-2 latest</a>. The user-facing plots and reports are already in the primary repository; link there rather than to the auxiliary temporary worktree.</p>
+</html>

@@ -1,0 +1,54 @@
+Kernels: {
+  "0700": {
+    "asymptotic_gain_db": 30.089080408754064,
+    "release_ms": 1202.6328909089846,
+    "fit_rms_db": 0.022355806671917722,
+    "fit_sample_count": 1110,
+    "linear_db_ramp_fit_rms_db": 1.081063067462785,
+    "single_drop_fits": [
+      {
+        "asymptotic_gain_db": 29.047350137284393,
+        "release_ms": 1169.5834088624972,
+        "rms_db": 0.012593120368591695
+      },
+      {
+        "asymptotic_gain_db": 28.2796635649543,
+        "release_ms": 1157.835427298474,
+        "rms_db": 0.010041234128904902
+      }
+    ],
+    "fit_scope": "Both earlier 1 kHz drops, 5 ms onward, excluding the last 1 dB below settled gain; correlated 1 ms samples. Two shared dynamic parameters."
+  },
+  "0500": {
+    "asymptotic_gain_db": 28.756093012409718,
+    "release_ms": 99.81563898157034,
+    "fit_rms_db": 0.07753255461088439,
+    "fit_sample_count": 88,
+    "linear_db_ramp_fit_rms_db": 1.108589178195544,
+    "single_drop_fits": [
+      {
+        "asymptotic_gain_db": 26.349880532036025,
+        "release_ms": 92.85708141265499,
+        "rms_db": 0.04293073836479057
+      },
+      {
+        "asymptotic_gain_db": 22.098134696170238,
+        "release_ms": 84.7119399892663,
+        "rms_db": 0.03884162051020277
+      }
+    ],
+    "fit_scope": "Both earlier 1 kHz drops, 5 ms onward, excluding the last 1 dB below settled gain; correlated 1 ms samples. Two shared dynamic parameters."
+  }
+}
+Calibrated 0700 {"candidate": {"attack_ms": 1.97, "release_ms": 1202.6328909089846, "asymptotic_gain_db": 30.089080408754064, "sustain_db": 19.70781974091725, "makeup_db": -16.148456324754246, "static_fit_rms_db": 0.0391333684098688, "detector_floor_db_re_reference": -60.8016090686427}, "baseline": {"attack_ms": 1.97, "release_ms": 206.62130451106907, "asymptotic_gain_db": 0, "sustain_db": 19.566293549434093, "makeup_db": -16.006930133188067, "static_fit_rms_db": 0.004407218489832099, "training_release_rms_db": 0.8932500219995674}}
+Calibrated 0500 {"candidate": {"attack_ms": 1.58, "release_ms": 99.81563898157034, "asymptotic_gain_db": 28.756093012409718, "sustain_db": 19.63588338704118, "makeup_db": -14.976448627589123, "static_fit_rms_db": 0.011273114089783303, "detector_floor_db_re_reference": -58.267810183517625}, "baseline": {"attack_ms": 1.58, "release_ms": 18.180745761445785, "asymptotic_gain_db": 0, "sustain_db": 19.197468550110074, "makeup_db": -14.538033790862496, "static_fit_rms_db": 0.15379595972291843, "training_release_rms_db": 0.3060259190623593}}
+attack-0700-steps-1000 candidate release RMS [0.0555, 0.0711] t63 [397, 281]
+attack-0700-steps-1000 baseline release RMS [0.7711, 1.0006] t63 [361, 329]
+attack-0700-steps-110 candidate release RMS [0.1663, 0.2262] t63 [398, 283]
+attack-0700-steps-110 baseline release RMS [0.6634, 1.1693] t63 [362, 329]
+attack-0500-steps-1000 candidate release RMS [0.0311, 0.0456] t63 [34, 25]
+attack-0500-steps-1000 baseline release RMS [0.2505, 0.353] t63 [31, 30]
+attack-0500-steps-110 candidate release RMS [0.0914, 0.8874] t63 [34, 25]
+attack-0500-steps-110 baseline release RMS [0.1617, 0.8893] t63 [31, 30]
+attack-0700-crossed-1000 candidate release RMS [0.1228, 0.0405] t63 [463, 204]
+attack-0700-crossed-1000 baseline release RMS [0.722, 0.6961] t63 [444, 247]

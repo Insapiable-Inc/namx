@@ -1,0 +1,1849 @@
+{
+  "pedal": "Boss NS-2 Noise Suppressor — the gain read directly: the signal into INPUT, a probe into RETURN (mono: OUTPUT)",
+  "comment": "The NS-2's detector listens to INPUT; its gain element sits between RETURN and OUTPUT. The interface's loopback output plays a steady three-tone probe into RETURN (loop_probe), so OUTPUT is the probe times the gate's gain at every instant, however quiet the input. Cabling: interface out 3 to INPUT as always; the loopback cable's far end moves from interface input 5 to the pedal's RETURN (its near end stays in interface out 4); SEND empty; OUTPUT to interface input 2. Each setting has a take of test tones placed around its threshold and a take of guitar (tools/capture/ns2/make_focused_plan.py writes this file and says what is in them). Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise, 3:00 pointer horizontal. Takes ordered so each step turns one knob.",
+  "quiet_dbfs": -60,
+  "marker_to_pedal": false,
+  "loop_probe": {
+    "freq": [
+      1877,
+      2341,
+      3163
+    ],
+    "level_db": -12
+  },
+  "knobs": [
+    "Threshold",
+    "Decay",
+    "Mode"
+  ],
+  "takes": [
+    {
+      "name": "bypass-probe",
+      "bypass": true,
+      "signal": {
+        "type": "sequence",
+        "tail": 0,
+        "parts": [
+          {
+            "type": "silence",
+            "seconds": 2,
+            "tail": 0
+          },
+          {
+            "type": "sine",
+            "freq": 1000,
+            "seconds": 3,
+            "tail": 1
+          }
+        ]
+      },
+      "note": "The pedal off (its CHECK light off): the probe's reference. Cabling for the whole session: interface out 3 to INPUT; unplug the loopback cable from interface input 5 and plug that end into the pedal's RETURN (the other end stays in interface out 4); nothing in SEND; OUTPUT to interface input 2; the 9 V adapter. You will hear a steady three-note tone: that is the probe. With the pedal on it pumps as the gate works."
+    },
+    {
+      "name": "threshold-1200-decay-0700-tones",
+      "settings": {
+        "Threshold": "12:00",
+        "Decay": "7:00",
+        "Mode": "REDUCTION"
+      },
+      "signal": {
+        "type": "sequence",
+        "tail": 0,
+        "parts": [
+          {
+            "type": "silence",
+            "seconds": 2,
+            "tail": 0
+          },
+          {
+            "type": "steps",
+            "freq": 82,
+            "levels_db": [
+              -74.7,
+              -72.7,
+              -70.7,
+              -68.7,
+              -66.7,
+              -64.7,
+              -62.7,
+              -60.7,
+              -58.7,
+              -56.7,
+              -54.7
+            ],
+            "step_seconds": 0.3,
+            "tail": 1.0
+          },
+          {
+            "type": "steps",
+            "freq": 220,
+            "levels_db": [
+              -74.7,
+              -72.7,
+              -70.7,
+              -68.7,
+              -66.7,
+              -64.7,
+              -62.7,
+              -60.7,
+              -58.7,
+              -56.7,
+              -54.7
+            ],
+            "step_seconds": 0.3,
+            "tail": 1.0
+          },
+          {
+            "type": "steps",
+            "freq": 660,
+            "levels_db": [
+              -74.7,
+              -72.7,
+              -70.7,
+              -68.7,
+              -66.7,
+              -64.7,
+              -62.7,
+              -60.7,
+              -58.7,
+              -56.7,
+              -54.7
+            ],
+            "step_seconds": 0.3,
+            "tail": 1.0
+          },
+          {
+            "type": "steps",
+            "freq": 2000,
+            "levels_db": [
+              -74.7,
+              -72.7,
+              -70.7,
+              -68.7,
+              -66.7,
+              -64.7,
+              -62.7,
+              -60.7,
+              -58.7,
+              -56.7,
+              -54.7
+            ],
+            "step_seconds": 0.3,
+            "tail": 1.0
+          },
+          {
+            "type": "steps",
+            "freq": 6000,
+            "levels_db": [
+              -74.7,
+              -72.7,
+              -70.7,
+              -68.7,
+              -66.7,
+              -64.7,
+              -62.7,
+              -60.7,
+              -58.7,
+              -56.7,
+              -54.7
+            ],
+            "step_seconds": 0.3,
+            "tail": 1.0
+          },
+          {
+            "type": "steps",
+            "freq": 1000,
+            "levels_db": [
+              -46.7,
+              -68.7,
+              -68.7,
+              -46.7,
+              -71.7,
+              -71.7,
+              -46.7,
+              -74.7,
+              -74.7,
+              -46.7,
+              -78.7,
+              -78.7,
+              -46.7,
+              -82.7,
+              -82.7,
+              -46.7,
+              -88.7,
+              -88.7,
+              -46.7,
+              -96.7,
+              -96.7,
+              -46.7,
+              -120,
+              -120,
+              0,
+              -74.7,
+              -74.7
+            ],
+            "step_seconds": 0.5,
+            "tail": 1
+          },
+          {
+            "type": "pluck-train",
+            "freq": [
+              110,
+              220,
+              440,
+              880
+            ],
+            "onsets": [
+              0.0,
+              3.1,
+              6.2,
+              9.3
+            ],
+            "decay_seconds": 0.248,
+            "seconds": 12.4,
+            "repick": true,
+            "tail": 0.5
+          },
+          {
+            "type": "pluck-train",
+            "freq": [
+              110,
+              440
+            ],
+            "onsets": [
+              0,
+              6.9
+            ],
+            "decay_seconds": 0.724,
+            "seconds": 13.8,
+            "repick": true,
+            "level_db": -12,
+            "tail": 0.5
+          },
+          {
+            "type": "noise",
+            "seconds": 0.15,
+            "seed": 1,
+            "level_db": -6,
+            "tail": 0
+          },
+          {
+            "type": "noise",
+            "seconds": 1.0,
+            "seed": 2,
+            "level_db": -60.7,
+            "tail": 0.6
+          },
+          {
+            "type": "noise",
+            "seconds": 0.15,
+            "seed": 1,
+            "level_db": -6,
+            "tail": 0
+          },
+          {
+            "type": "noise",
+            "seconds": 1.0,
+            "seed": 2,
+            "level_db": -65.7,
+            "tail": 0.6
+          },
+          {
+            "type": "noise",
+            "seconds": 0.15,
+            "seed": 1,
+            "level_db": -6,
+            "tail": 0
+          },
+          {
+            "type": "noise",
+            "seconds": 1.0,
+            "seed": 2,
+            "level_db": -70.7,
+            "tail": 0.6
+          },
+          {
+            "type": "noise",
+            "seconds": 0.15,
+            "seed": 1,
+            "level_db": -6,
+            "tail": 0
+          },
+          {
+            "type": "noise",
+            "seconds": 1.0,
+            "seed": 2,
+            "level_db": -75.7,
+            "tail": 0.6
+          }
+        ]
+      },
+      "note": "The pedal on (its CHECK light lit). Mode REDUCTION. Threshold 12:00, Decay fully down."
+    },
+    {
+      "name": "threshold-1200-decay-0700-guitar",
+      "settings": {
+        "Threshold": "12:00",
+        "Decay": "7:00",
+        "Mode": "REDUCTION"
+      },
+      "signal": {
+        "type": "sequence",
+        "tail": 0,
+        "parts": [
+          {
+            "type": "file",
+            "path": "captures/di/stabs.wav",
+            "seconds": 13,
+            "tail": 1.5
+          },
+          {
+            "type": "file",
+            "path": "captures/di/funk.wav",
+            "seconds": 12,
+            "tail": 1.5
+          },
+          {
+            "type": "file",
+            "path": "captures/di/notes.wav",
+            "start": 48,
+            "seconds": 22,
+            "tail": 1.5
+          },
+          {
+            "type": "file",
+            "path": "captures/di/dynamics.wav",
+            "seconds": 15,
+            "tail": 1.5
+          }
+        ]
+      },
+      "note": "Leave every control in place: the guitar at the same setting."
+    },
+    {
+      "name": "threshold-1200-decay-1200-tones",
+      "settings": {
+        "Threshold": "12:00",
+        "Decay": "12:00",
+        "Mode": "REDUCTION"
+      },
+      "signal": {
+        "type": "sequence",
+        "tail": 0,
+        "parts": [
+          {
+            "type": "silence",
+            "seconds": 2,
+            "tail": 0
+          },
+          {
+            "type": "steps",
+            "freq": 82,
+            "levels_db": [
+              -74.7,
+              -72.7,
+              -70.7,
+              -68.7,
+              -66.7,
+              -64.7,
+              -62.7,
+              -60.7,
+              -58.7,
+              -56.7,
+              -54.7
+            ],
+            "step_seconds": 0.3,
+            "tail": 1.5
+          },
+          {
+            "type": "steps",
+            "freq": 220,
+            "levels_db": [
+              -74.7,
+              -72.7,
+              -70.7,
+              -68.7,
+              -66.7,
+              -64.7,
+              -62.7,
+              -60.7,
+              -58.7,
+              -56.7,
+              -54.7
+            ],
+            "step_seconds": 0.3,
+            "tail": 1.5
+          },
+          {
+            "type": "steps",
+            "freq": 660,
+            "levels_db": [
+              -74.7,
+              -72.7,
+              -70.7,
+              -68.7,
+              -66.7,
+              -64.7,
+              -62.7,
+              -60.7,
+              -58.7,
+              -56.7,
+              -54.7
+            ],
+            "step_seconds": 0.3,
+            "tail": 1.5
+          },
+          {
+            "type": "steps",
+            "freq": 2000,
+            "levels_db": [
+              -74.7,
+              -72.7,
+              -70.7,
+              -68.7,
+              -66.7,
+              -64.7,
+              -62.7,
+              -60.7,
+              -58.7,
+              -56.7,
+              -54.7
+            ],
+            "step_seconds": 0.3,
+            "tail": 1.5
+          },
+          {
+            "type": "steps",
+            "freq": 6000,
+            "levels_db": [
+              -74.7,
+              -72.7,
+              -70.7,
+              -68.7,
+              -66.7,
+              -64.7,
+              -62.7,
+              -60.7,
+              -58.7,
+              -56.7,
+              -54.7
+            ],
+            "step_seconds": 0.3,
+            "tail": 1.5
+          },
+          {
+            "type": "steps",
+            "freq": 1000,
+            "levels_db": [
+              -46.7,
+              -68.7,
+              -68.7,
+              -68.7,
+              -68.7,
+              -68.7,
+              -46.7,
+              -71.7,
+              -71.7,
+              -71.7,
+              -71.7,
+              -71.7,
+              -46.7,
+              -74.7,
+              -74.7,
+              -74.7,
+              -74.7,
+              -74.7,
+              -46.7,
+              -78.7,
+              -78.7,
+              -78.7,
+              -78.7,
+              -78.7,
+              -46.7,
+              -82.7,
+              -82.7,
+              -82.7,
+              -82.7,
+              -82.7,
+              -46.7,
+              -88.7,
+              -88.7,
+              -88.7,
+              -88.7,
+              -88.7,
+              -46.7,
+              -96.7,
+              -96.7,
+              -96.7,
+              -96.7,
+              -96.7,
+              -46.7,
+              -120,
+              -120,
+              -120,
+              -120,
+              -120,
+              0,
+              -74.7,
+              -74.7,
+              -74.7,
+              -74.7,
+              -74.7
+            ],
+            "step_seconds": 0.5,
+            "tail": 1
+          },
+          {
+            "type": "pluck-train",
+            "freq": [
+              110,
+              220,
+              440,
+              880
+            ],
+            "onsets": [
+              0.0,
+              3.1,
+              6.2,
+              9.3
+            ],
+            "decay_seconds": 0.248,
+            "seconds": 12.4,
+            "repick": true,
+            "tail": 0.5
+          },
+          {
+            "type": "pluck-train",
+            "freq": [
+              110,
+              440
+            ],
+            "onsets": [
+              0,
+              6.9
+            ],
+            "decay_seconds": 0.724,
+            "seconds": 13.8,
+            "repick": true,
+            "level_db": -12,
+            "tail": 0.5
+          },
+          {
+            "type": "noise",
+            "seconds": 0.15,
+            "seed": 1,
+            "level_db": -6,
+            "tail": 0
+          },
+          {
+            "type": "noise",
+            "seconds": 1.5,
+            "seed": 2,
+            "level_db": -60.7,
+            "tail": 0.6
+          },
+          {
+            "type": "noise",
+            "seconds": 0.15,
+            "seed": 1,
+            "level_db": -6,
+            "tail": 0
+          },
+          {
+            "type": "noise",
+            "seconds": 1.5,
+            "seed": 2,
+            "level_db": -65.7,
+            "tail": 0.6
+          },
+          {
+            "type": "noise",
+            "seconds": 0.15,
+            "seed": 1,
+            "level_db": -6,
+            "tail": 0
+          },
+          {
+            "type": "noise",
+            "seconds": 1.5,
+            "seed": 2,
+            "level_db": -70.7,
+            "tail": 0.6
+          },
+          {
+            "type": "noise",
+            "seconds": 0.15,
+            "seed": 1,
+            "level_db": -6,
+            "tail": 0
+          },
+          {
+            "type": "noise",
+            "seconds": 1.5,
+            "seed": 2,
+            "level_db": -75.7,
+            "tail": 0.6
+          }
+        ]
+      },
+      "note": "Decay to 12:00."
+    },
+    {
+      "name": "threshold-1200-decay-1200-guitar",
+      "settings": {
+        "Threshold": "12:00",
+        "Decay": "12:00",
+        "Mode": "REDUCTION"
+      },
+      "signal": {
+        "type": "sequence",
+        "tail": 0,
+        "parts": [
+          {
+            "type": "file",
+            "path": "captures/di/stabs.wav",
+            "seconds": 13,
+            "tail": 1.5
+          },
+          {
+            "type": "file",
+            "path": "captures/di/funk.wav",
+            "seconds": 12,
+            "tail": 1.5
+          },
+          {
+            "type": "file",
+            "path": "captures/di/notes.wav",
+            "start": 48,
+            "seconds": 22,
+            "tail": 1.5
+          },
+          {
+            "type": "file",
+            "path": "captures/di/dynamics.wav",
+            "seconds": 15,
+            "tail": 1.5
+          }
+        ]
+      },
+      "note": "Leave every control in place: the guitar at the same setting."
+    },
+    {
+      "name": "threshold-0500-decay-1200-tones",
+      "settings": {
+        "Threshold": "5:00",
+        "Decay": "12:00",
+        "Mode": "REDUCTION"
+      },
+      "signal": {
+        "type": "sequence",
+        "tail": 0,
+        "parts": [
+          {
+            "type": "silence",
+            "seconds": 2,
+            "tail": 0
+          },
+          {
+            "type": "steps",
+            "freq": 82,
+            "levels_db": [
+              -35.3,
+              -33.3,
+              -31.3,
+              -29.3,
+              -27.3,
+              -25.3,
+              -23.3,
+              -21.3,
+              -19.3,
+              -17.3,
+              -15.3
+            ],
+            "step_seconds": 0.3,
+            "tail": 1.5
+          },
+          {
+            "type": "steps",
+            "freq": 220,
+            "levels_db": [
+              -35.3,
+              -33.3,
+              -31.3,
+              -29.3,
+              -27.3,
+              -25.3,
+              -23.3,
+              -21.3,
+              -19.3,
+              -17.3,
+              -15.3
+            ],
+            "step_seconds": 0.3,
+            "tail": 1.5
+          },
+          {
+            "type": "steps",
+            "freq": 660,
+            "levels_db": [
+              -35.3,
+              -33.3,
+              -31.3,
+              -29.3,
+              -27.3,
+              -25.3,
+              -23.3,
+              -21.3,
+              -19.3,
+              -17.3,
+              -15.3
+            ],
+            "step_seconds": 0.3,
+            "tail": 1.5
+          },
+          {
+            "type": "steps",
+            "freq": 2000,
+            "levels_db": [
+              -35.3,
+              -33.3,
+              -31.3,
+              -29.3,
+              -27.3,
+              -25.3,
+              -23.3,
+              -21.3,
+              -19.3,
+              -17.3,
+              -15.3
+            ],
+            "step_seconds": 0.3,
+            "tail": 1.5
+          },
+          {
+            "type": "steps",
+            "freq": 6000,
+            "levels_db": [
+              -35.3,
+              -33.3,
+              -31.3,
+              -29.3,
+              -27.3,
+              -25.3,
+              -23.3,
+              -21.3,
+              -19.3,
+              -17.3,
+              -15.3
+            ],
+            "step_seconds": 0.3,
+            "tail": 1.5
+          },
+          {
+            "type": "steps",
+            "freq": 1000,
+            "levels_db": [
+              -7.3,
+              -29.3,
+              -29.3,
+              -29.3,
+              -29.3,
+              -29.3,
+              -7.3,
+              -32.3,
+              -32.3,
+              -32.3,
+              -32.3,
+              -32.3,
+              -7.3,
+              -35.3,
+              -35.3,
+              -35.3,
+              -35.3,
+              -35.3,
+              -7.3,
+              -39.3,
+              -39.3,
+              -39.3,
+              -39.3,
+              -39.3,
+              -7.3,
+              -43.3,
+              -43.3,
+              -43.3,
+              -43.3,
+              -43.3,
+              -7.3,
+              -49.3,
+              -49.3,
+              -49.3,
+              -49.3,
+              -49.3,
+              -7.3,
+              -57.3,
+              -57.3,
+              -57.3,
+              -57.3,
+              -57.3,
+              -7.3,
+              -120,
+              -120,
+              -120,
+              -120,
+              -120,
+              0,
+              -35.3,
+              -35.3,
+              -35.3,
+              -35.3,
+              -35.3
+            ],
+            "step_seconds": 0.5,
+            "tail": 1
+          },
+          {
+            "type": "pluck-train",
+            "freq": [
+              110,
+              220,
+              440,
+              880
+            ],
+            "onsets": [
+              0.0,
+              1.9,
+              3.8,
+              5.7
+            ],
+            "decay_seconds": 0.248,
+            "seconds": 7.6,
+            "repick": true,
+            "tail": 0.5
+          },
+          {
+            "type": "pluck-train",
+            "freq": [
+              110,
+              440
+            ],
+            "onsets": [
+              0,
+              3.7
+            ],
+            "decay_seconds": 0.724,
+            "seconds": 7.4,
+            "repick": true,
+            "level_db": -12,
+            "tail": 0.5
+          },
+          {
+            "type": "noise",
+            "seconds": 0.15,
+            "seed": 1,
+            "level_db": -6,
+            "tail": 0
+          },
+          {
+            "type": "noise",
+            "seconds": 1.5,
+            "seed": 2,
+            "level_db": -21.3,
+            "tail": 0.6
+          },
+          {
+            "type": "noise",
+            "seconds": 0.15,
+            "seed": 1,
+            "level_db": -6,
+            "tail": 0
+          },
+          {
+            "type": "noise",
+            "seconds": 1.5,
+            "seed": 2,
+            "level_db": -26.3,
+            "tail": 0.6
+          },
+          {
+            "type": "noise",
+            "seconds": 0.15,
+            "seed": 1,
+            "level_db": -6,
+            "tail": 0
+          },
+          {
+            "type": "noise",
+            "seconds": 1.5,
+            "seed": 2,
+            "level_db": -31.3,
+            "tail": 0.6
+          },
+          {
+            "type": "noise",
+            "seconds": 0.15,
+            "seed": 1,
+            "level_db": -6,
+            "tail": 0
+          },
+          {
+            "type": "noise",
+            "seconds": 1.5,
+            "seed": 2,
+            "level_db": -36.3,
+            "tail": 0.6
+          }
+        ]
+      },
+      "note": "Threshold fully up."
+    },
+    {
+      "name": "threshold-0500-decay-1200-guitar",
+      "settings": {
+        "Threshold": "5:00",
+        "Decay": "12:00",
+        "Mode": "REDUCTION"
+      },
+      "signal": {
+        "type": "sequence",
+        "tail": 0,
+        "parts": [
+          {
+            "type": "file",
+            "path": "captures/di/stabs.wav",
+            "seconds": 13,
+            "tail": 1.5
+          },
+          {
+            "type": "file",
+            "path": "captures/di/funk.wav",
+            "seconds": 12,
+            "tail": 1.5
+          },
+          {
+            "type": "file",
+            "path": "captures/di/notes.wav",
+            "start": 48,
+            "seconds": 22,
+            "tail": 1.5
+          },
+          {
+            "type": "file",
+            "path": "captures/di/dynamics.wav",
+            "seconds": 15,
+            "tail": 1.5
+          }
+        ]
+      },
+      "note": "Leave every control in place: the guitar at the same setting."
+    },
+    {
+      "name": "threshold-0300-decay-1200-tones",
+      "settings": {
+        "Threshold": "3:00",
+        "Decay": "12:00",
+        "Mode": "REDUCTION"
+      },
+      "signal": {
+        "type": "sequence",
+        "tail": 0,
+        "parts": [
+          {
+            "type": "silence",
+            "seconds": 2,
+            "tail": 0
+          },
+          {
+            "type": "steps",
+            "freq": 82,
+            "levels_db": [
+              -57.4,
+              -55.4,
+              -53.4,
+              -51.4,
+              -49.4,
+              -47.4,
+              -45.4,
+              -43.4,
+              -41.4,
+              -39.4,
+              -37.4
+            ],
+            "step_seconds": 0.3,
+            "tail": 1.5
+          },
+          {
+            "type": "steps",
+            "freq": 220,
+            "levels_db": [
+              -57.4,
+              -55.4,
+              -53.4,
+              -51.4,
+              -49.4,
+              -47.4,
+              -45.4,
+              -43.4,
+              -41.4,
+              -39.4,
+              -37.4
+            ],
+            "step_seconds": 0.3,
+            "tail": 1.5
+          },
+          {
+            "type": "steps",
+            "freq": 660,
+            "levels_db": [
+              -57.4,
+              -55.4,
+              -53.4,
+              -51.4,
+              -49.4,
+              -47.4,
+              -45.4,
+              -43.4,
+              -41.4,
+              -39.4,
+              -37.4
+            ],
+            "step_seconds": 0.3,
+            "tail": 1.5
+          },
+          {
+            "type": "steps",
+            "freq": 2000,
+            "levels_db": [
+              -57.4,
+              -55.4,
+              -53.4,
+              -51.4,
+              -49.4,
+              -47.4,
+              -45.4,
+              -43.4,
+              -41.4,
+              -39.4,
+              -37.4
+            ],
+            "step_seconds": 0.3,
+            "tail": 1.5
+          },
+          {
+            "type": "steps",
+            "freq": 6000,
+            "levels_db": [
+              -57.4,
+              -55.4,
+              -53.4,
+              -51.4,
+              -49.4,
+              -47.4,
+              -45.4,
+              -43.4,
+              -41.4,
+              -39.4,
+              -37.4
+            ],
+            "step_seconds": 0.3,
+            "tail": 1.5
+          },
+          {
+            "type": "steps",
+            "freq": 1000,
+            "levels_db": [
+              -29.4,
+              -51.4,
+              -51.4,
+              -51.4,
+              -51.4,
+              -51.4,
+              -29.4,
+              -54.4,
+              -54.4,
+              -54.4,
+              -54.4,
+              -54.4,
+              -29.4,
+              -57.4,
+              -57.4,
+              -57.4,
+              -57.4,
+              -57.4,
+              -29.4,
+              -61.4,
+              -61.4,
+              -61.4,
+              -61.4,
+              -61.4,
+              -29.4,
+              -65.4,
+              -65.4,
+              -65.4,
+              -65.4,
+              -65.4,
+              -29.4,
+              -71.4,
+              -71.4,
+              -71.4,
+              -71.4,
+              -71.4,
+              -29.4,
+              -79.4,
+              -79.4,
+              -79.4,
+              -79.4,
+              -79.4,
+              -29.4,
+              -120,
+              -120,
+              -120,
+              -120,
+              -120,
+              0,
+              -57.4,
+              -57.4,
+              -57.4,
+              -57.4,
+              -57.4
+            ],
+            "step_seconds": 0.5,
+            "tail": 1
+          },
+          {
+            "type": "pluck-train",
+            "freq": [
+              110,
+              220,
+              440,
+              880
+            ],
+            "onsets": [
+              0.0,
+              2.6,
+              5.2,
+              7.8
+            ],
+            "decay_seconds": 0.248,
+            "seconds": 10.4,
+            "repick": true,
+            "tail": 0.5
+          },
+          {
+            "type": "pluck-train",
+            "freq": [
+              110,
+              440
+            ],
+            "onsets": [
+              0,
+              5.5
+            ],
+            "decay_seconds": 0.724,
+            "seconds": 11.0,
+            "repick": true,
+            "level_db": -12,
+            "tail": 0.5
+          },
+          {
+            "type": "noise",
+            "seconds": 0.15,
+            "seed": 1,
+            "level_db": -6,
+            "tail": 0
+          },
+          {
+            "type": "noise",
+            "seconds": 1.5,
+            "seed": 2,
+            "level_db": -43.4,
+            "tail": 0.6
+          },
+          {
+            "type": "noise",
+            "seconds": 0.15,
+            "seed": 1,
+            "level_db": -6,
+            "tail": 0
+          },
+          {
+            "type": "noise",
+            "seconds": 1.5,
+            "seed": 2,
+            "level_db": -48.4,
+            "tail": 0.6
+          },
+          {
+            "type": "noise",
+            "seconds": 0.15,
+            "seed": 1,
+            "level_db": -6,
+            "tail": 0
+          },
+          {
+            "type": "noise",
+            "seconds": 1.5,
+            "seed": 2,
+            "level_db": -53.4,
+            "tail": 0.6
+          },
+          {
+            "type": "noise",
+            "seconds": 0.15,
+            "seed": 1,
+            "level_db": -6,
+            "tail": 0
+          },
+          {
+            "type": "noise",
+            "seconds": 1.5,
+            "seed": 2,
+            "level_db": -58.4,
+            "tail": 0.6
+          }
+        ]
+      },
+      "note": "Threshold back to 3:00 (pointer horizontal)."
+    },
+    {
+      "name": "threshold-0300-decay-1200-guitar",
+      "settings": {
+        "Threshold": "3:00",
+        "Decay": "12:00",
+        "Mode": "REDUCTION"
+      },
+      "signal": {
+        "type": "sequence",
+        "tail": 0,
+        "parts": [
+          {
+            "type": "file",
+            "path": "captures/di/stabs.wav",
+            "seconds": 13,
+            "tail": 1.5
+          },
+          {
+            "type": "file",
+            "path": "captures/di/funk.wav",
+            "seconds": 12,
+            "tail": 1.5
+          },
+          {
+            "type": "file",
+            "path": "captures/di/notes.wav",
+            "start": 48,
+            "seconds": 22,
+            "tail": 1.5
+          },
+          {
+            "type": "file",
+            "path": "captures/di/dynamics.wav",
+            "seconds": 15,
+            "tail": 1.5
+          }
+        ]
+      },
+      "note": "Leave every control in place: the guitar at the same setting."
+    },
+    {
+      "name": "threshold-0300-decay-0700-tones",
+      "settings": {
+        "Threshold": "3:00",
+        "Decay": "7:00",
+        "Mode": "REDUCTION"
+      },
+      "signal": {
+        "type": "sequence",
+        "tail": 0,
+        "parts": [
+          {
+            "type": "silence",
+            "seconds": 2,
+            "tail": 0
+          },
+          {
+            "type": "steps",
+            "freq": 82,
+            "levels_db": [
+              -57.4,
+              -55.4,
+              -53.4,
+              -51.4,
+              -49.4,
+              -47.4,
+              -45.4,
+              -43.4,
+              -41.4,
+              -39.4,
+              -37.4
+            ],
+            "step_seconds": 0.3,
+            "tail": 1.0
+          },
+          {
+            "type": "steps",
+            "freq": 220,
+            "levels_db": [
+              -57.4,
+              -55.4,
+              -53.4,
+              -51.4,
+              -49.4,
+              -47.4,
+              -45.4,
+              -43.4,
+              -41.4,
+              -39.4,
+              -37.4
+            ],
+            "step_seconds": 0.3,
+            "tail": 1.0
+          },
+          {
+            "type": "steps",
+            "freq": 660,
+            "levels_db": [
+              -57.4,
+              -55.4,
+              -53.4,
+              -51.4,
+              -49.4,
+              -47.4,
+              -45.4,
+              -43.4,
+              -41.4,
+              -39.4,
+              -37.4
+            ],
+            "step_seconds": 0.3,
+            "tail": 1.0
+          },
+          {
+            "type": "steps",
+            "freq": 2000,
+            "levels_db": [
+              -57.4,
+              -55.4,
+              -53.4,
+              -51.4,
+              -49.4,
+              -47.4,
+              -45.4,
+              -43.4,
+              -41.4,
+              -39.4,
+              -37.4
+            ],
+            "step_seconds": 0.3,
+            "tail": 1.0
+          },
+          {
+            "type": "steps",
+            "freq": 6000,
+            "levels_db": [
+              -57.4,
+              -55.4,
+              -53.4,
+              -51.4,
+              -49.4,
+              -47.4,
+              -45.4,
+              -43.4,
+              -41.4,
+              -39.4,
+              -37.4
+            ],
+            "step_seconds": 0.3,
+            "tail": 1.0
+          },
+          {
+            "type": "steps",
+            "freq": 1000,
+            "levels_db": [
+              -29.4,
+              -51.4,
+              -51.4,
+              -29.4,
+              -54.4,
+              -54.4,
+              -29.4,
+              -57.4,
+              -57.4,
+              -29.4,
+              -61.4,
+              -61.4,
+              -29.4,
+              -65.4,
+              -65.4,
+              -29.4,
+              -71.4,
+              -71.4,
+              -29.4,
+              -79.4,
+              -79.4,
+              -29.4,
+              -120,
+              -120,
+              0,
+              -57.4,
+              -57.4
+            ],
+            "step_seconds": 0.5,
+            "tail": 1
+          },
+          {
+            "type": "pluck-train",
+            "freq": [
+              110,
+              220,
+              440,
+              880
+            ],
+            "onsets": [
+              0.0,
+              2.6,
+              5.2,
+              7.8
+            ],
+            "decay_seconds": 0.248,
+            "seconds": 10.4,
+            "repick": true,
+            "tail": 0.5
+          },
+          {
+            "type": "pluck-train",
+            "freq": [
+              110,
+              440
+            ],
+            "onsets": [
+              0,
+              5.5
+            ],
+            "decay_seconds": 0.724,
+            "seconds": 11.0,
+            "repick": true,
+            "level_db": -12,
+            "tail": 0.5
+          },
+          {
+            "type": "noise",
+            "seconds": 0.15,
+            "seed": 1,
+            "level_db": -6,
+            "tail": 0
+          },
+          {
+            "type": "noise",
+            "seconds": 1.0,
+            "seed": 2,
+            "level_db": -43.4,
+            "tail": 0.6
+          },
+          {
+            "type": "noise",
+            "seconds": 0.15,
+            "seed": 1,
+            "level_db": -6,
+            "tail": 0
+          },
+          {
+            "type": "noise",
+            "seconds": 1.0,
+            "seed": 2,
+            "level_db": -48.4,
+            "tail": 0.6
+          },
+          {
+            "type": "noise",
+            "seconds": 0.15,
+            "seed": 1,
+            "level_db": -6,
+            "tail": 0
+          },
+          {
+            "type": "noise",
+            "seconds": 1.0,
+            "seed": 2,
+            "level_db": -53.4,
+            "tail": 0.6
+          },
+          {
+            "type": "noise",
+            "seconds": 0.15,
+            "seed": 1,
+            "level_db": -6,
+            "tail": 0
+          },
+          {
+            "type": "noise",
+            "seconds": 1.0,
+            "seed": 2,
+            "level_db": -58.4,
+            "tail": 0.6
+          }
+        ]
+      },
+      "note": "Decay fully down."
+    },
+    {
+      "name": "threshold-0300-decay-0700-guitar",
+      "settings": {
+        "Threshold": "3:00",
+        "Decay": "7:00",
+        "Mode": "REDUCTION"
+      },
+      "signal": {
+        "type": "sequence",
+        "tail": 0,
+        "parts": [
+          {
+            "type": "file",
+            "path": "captures/di/stabs.wav",
+            "seconds": 13,
+            "tail": 1.5
+          },
+          {
+            "type": "file",
+            "path": "captures/di/funk.wav",
+            "seconds": 12,
+            "tail": 1.5
+          },
+          {
+            "type": "file",
+            "path": "captures/di/notes.wav",
+            "start": 48,
+            "seconds": 22,
+            "tail": 1.5
+          },
+          {
+            "type": "file",
+            "path": "captures/di/dynamics.wav",
+            "seconds": 15,
+            "tail": 1.5
+          }
+        ]
+      },
+      "note": "Leave every control in place: the guitar at the same setting."
+    },
+    {
+      "name": "threshold-0300-decay-0500-tones",
+      "settings": {
+        "Threshold": "3:00",
+        "Decay": "5:00",
+        "Mode": "REDUCTION"
+      },
+      "signal": {
+        "type": "sequence",
+        "tail": 0,
+        "parts": [
+          {
+            "type": "silence",
+            "seconds": 2,
+            "tail": 0
+          },
+          {
+            "type": "steps",
+            "freq": 82,
+            "levels_db": [
+              -57.4,
+              -55.4,
+              -53.4,
+              -51.4,
+              -49.4,
+              -47.4,
+              -45.4,
+              -43.4,
+              -41.4,
+              -39.4,
+              -37.4
+            ],
+            "step_seconds": 0.3,
+            "tail": 3.0
+          },
+          {
+            "type": "steps",
+            "freq": 220,
+            "levels_db": [
+              -57.4,
+              -55.4,
+              -53.4,
+              -51.4,
+              -49.4,
+              -47.4,
+              -45.4,
+              -43.4,
+              -41.4,
+              -39.4,
+              -37.4
+            ],
+            "step_seconds": 0.3,
+            "tail": 3.0
+          },
+          {
+            "type": "steps",
+            "freq": 660,
+            "levels_db": [
+              -57.4,
+              -55.4,
+              -53.4,
+              -51.4,
+              -49.4,
+              -47.4,
+              -45.4,
+              -43.4,
+              -41.4,
+              -39.4,
+              -37.4
+            ],
+            "step_seconds": 0.3,
+            "tail": 3.0
+          },
+          {
+            "type": "steps",
+            "freq": 2000,
+            "levels_db": [
+              -57.4,
+              -55.4,
+              -53.4,
+              -51.4,
+              -49.4,
+              -47.4,
+              -45.4,
+              -43.4,
+              -41.4,
+              -39.4,
+              -37.4
+            ],
+            "step_seconds": 0.3,
+            "tail": 3.0
+          },
+          {
+            "type": "steps",
+            "freq": 6000,
+            "levels_db": [
+              -57.4,
+              -55.4,
+              -53.4,
+              -51.4,
+              -49.4,
+              -47.4,
+              -45.4,
+              -43.4,
+              -41.4,
+              -39.4,
+              -37.4
+            ],
+            "step_seconds": 0.3,
+            "tail": 3.0
+          },
+          {
+            "type": "steps",
+            "freq": 1000,
+            "levels_db": [
+              -29.4,
+              -51.4,
+              -51.4,
+              -51.4,
+              -51.4,
+              -51.4,
+              -51.4,
+              -51.4,
+              -51.4,
+              -51.4,
+              -51.4,
+              -29.4,
+              -55.4,
+              -55.4,
+              -55.4,
+              -55.4,
+              -55.4,
+              -55.4,
+              -55.4,
+              -55.4,
+              -55.4,
+              -55.4,
+              -29.4,
+              -61.4,
+              -61.4,
+              -61.4,
+              -61.4,
+              -61.4,
+              -61.4,
+              -61.4,
+              -61.4,
+              -61.4,
+              -61.4,
+              -29.4,
+              -69.4,
+              -69.4,
+              -69.4,
+              -69.4,
+              -69.4,
+              -69.4,
+              -69.4,
+              -69.4,
+              -69.4,
+              -69.4,
+              -29.4,
+              -120,
+              -120,
+              -120,
+              -120,
+              -120,
+              -120,
+              -120,
+              -120,
+              -120,
+              -120,
+              0,
+              -57.4,
+              -57.4,
+              -57.4,
+              -57.4,
+              -57.4,
+              -57.4,
+              -57.4,
+              -57.4,
+              -57.4,
+              -57.4
+            ],
+            "step_seconds": 0.5,
+            "tail": 1
+          },
+          {
+            "type": "pluck-train",
+            "freq": [
+              110,
+              220,
+              440,
+              880
+            ],
+            "onsets": [
+              0.0,
+              4.1,
+              8.2,
+              12.3
+            ],
+            "decay_seconds": 0.248,
+            "seconds": 16.4,
+            "repick": true,
+            "tail": 0.5
+          },
+          {
+            "type": "pluck-train",
+            "freq": [
+              110,
+              440
+            ],
+            "onsets": [
+              0,
+              5.5
+            ],
+            "decay_seconds": 0.724,
+            "seconds": 11.0,
+            "repick": true,
+            "level_db": -12,
+            "tail": 0.5
+          },
+          {
+            "type": "noise",
+            "seconds": 0.15,
+            "seed": 1,
+            "level_db": -6,
+            "tail": 0
+          },
+          {
+            "type": "noise",
+            "seconds": 3.0,
+            "seed": 2,
+            "level_db": -43.4,
+            "tail": 0.6
+          },
+          {
+            "type": "noise",
+            "seconds": 0.15,
+            "seed": 1,
+            "level_db": -6,
+            "tail": 0
+          },
+          {
+            "type": "noise",
+            "seconds": 3.0,
+            "seed": 2,
+            "level_db": -48.4,
+            "tail": 0.6
+          },
+          {
+            "type": "noise",
+            "seconds": 0.15,
+            "seed": 1,
+            "level_db": -6,
+            "tail": 0
+          },
+          {
+            "type": "noise",
+            "seconds": 3.0,
+            "seed": 2,
+            "level_db": -53.4,
+            "tail": 0.6
+          },
+          {
+            "type": "noise",
+            "seconds": 0.15,
+            "seed": 1,
+            "level_db": -6,
+            "tail": 0
+          },
+          {
+            "type": "noise",
+            "seconds": 3.0,
+            "seed": 2,
+            "level_db": -58.4,
+            "tail": 0.6
+          }
+        ]
+      },
+      "note": "Decay fully up."
+    },
+    {
+      "name": "threshold-0300-decay-0500-guitar",
+      "settings": {
+        "Threshold": "3:00",
+        "Decay": "5:00",
+        "Mode": "REDUCTION"
+      },
+      "signal": {
+        "type": "sequence",
+        "tail": 0,
+        "parts": [
+          {
+            "type": "file",
+            "path": "captures/di/stabs.wav",
+            "seconds": 13,
+            "tail": 1.5
+          },
+          {
+            "type": "file",
+            "path": "captures/di/funk.wav",
+            "seconds": 12,
+            "tail": 1.5
+          },
+          {
+            "type": "file",
+            "path": "captures/di/notes.wav",
+            "start": 48,
+            "seconds": 22,
+            "tail": 1.5
+          },
+          {
+            "type": "file",
+            "path": "captures/di/dynamics.wav",
+            "seconds": 15,
+            "tail": 1.5
+          }
+        ]
+      },
+      "note": "Leave every control in place: the guitar at the same setting."
+    }
+  ]
+}

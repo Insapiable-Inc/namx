@@ -1,0 +1,392 @@
+{
+  "pedal": "Boss TR-2 Tremolo — focused reamp: guitar excerpts over a probe tone (mono)",
+  "comment": "Short excerpts of the guitar DI dataset (captures/di/) with a steady 9 kHz sine 30 dB under the guitar's peak (the probe: a faint whistle in the headphones). The tremolo runs free, so the probe is what shows the pedal's gain at every moment, guitar or not: each setting has the probe alone (the gain's cycle, as the study measured it with a 1 kHz sine), then guitar over it — does the cycle stay the same under real playing, at -12 dB and at full level (funk: the dataset's hottest peaks), on sustained chords? One take twice (the method's floor), the lead excerpts held out of any fit. Depth 7:00: the pedal's on path without tremolo. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise; 9:00 and 3:00 pointer horizontal. Takes ordered so each step turns one or two knobs.",
+  "quiet_dbfs": -60,
+  "knobs": [
+    "Rate",
+    "Wave",
+    "Depth"
+  ],
+  "takes": [
+    {
+      "name": "bypass-chords",
+      "bypass": true,
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 9000,
+          "level_db": -30
+        },
+        "tail": 1.0
+      },
+      "note": "The pedal off (its LED off): the bypass reference."
+    },
+    {
+      "name": "depth-0700-chords",
+      "settings": {
+        "Rate": "12:00",
+        "Wave": "12:00",
+        "Depth": "7:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 9000,
+          "level_db": -30
+        },
+        "tail": 1.0
+      },
+      "note": "The pedal on (its LED lit). Depth fully counter-clockwise: no tremolo."
+    },
+    {
+      "name": "1200-probe",
+      "settings": {
+        "Rate": "12:00",
+        "Wave": "12:00",
+        "Depth": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 9000,
+        "seconds": 12,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "1200-chords",
+      "settings": {
+        "Rate": "12:00",
+        "Wave": "12:00",
+        "Depth": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 9000,
+          "level_db": -30
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "1200-funk-m12",
+      "settings": {
+        "Rate": "12:00",
+        "Wave": "12:00",
+        "Depth": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": 9000,
+          "level_db": -30
+        },
+        "tail": 1.0,
+        "level_db": -12
+      }
+    },
+    {
+      "name": "1200-funk",
+      "settings": {
+        "Rate": "12:00",
+        "Wave": "12:00",
+        "Depth": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": 9000,
+          "level_db": -30
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "1200-funk-repeat",
+      "settings": {
+        "Rate": "12:00",
+        "Wave": "12:00",
+        "Depth": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": 9000,
+          "level_db": -30
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "1200-lead",
+      "settings": {
+        "Rate": "12:00",
+        "Wave": "12:00",
+        "Depth": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/lead.wav",
+        "seconds": 20,
+        "probe": {
+          "freq": 9000,
+          "level_db": -30
+        },
+        "tail": 1.0,
+        "start": 2
+      }
+    },
+    {
+      "name": "depth-0500-probe",
+      "settings": {
+        "Rate": "12:00",
+        "Wave": "12:00",
+        "Depth": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 9000,
+        "seconds": 12,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "depth-0500-chords",
+      "settings": {
+        "Rate": "12:00",
+        "Wave": "12:00",
+        "Depth": "5:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 9000,
+          "level_db": -30
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "depth-0500-funk",
+      "settings": {
+        "Rate": "12:00",
+        "Wave": "12:00",
+        "Depth": "5:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": 9000,
+          "level_db": -30
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "wave-0700-probe",
+      "settings": {
+        "Rate": "12:00",
+        "Wave": "7:00",
+        "Depth": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 9000,
+        "seconds": 12,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "wave-0700-chords",
+      "settings": {
+        "Rate": "12:00",
+        "Wave": "7:00",
+        "Depth": "5:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 9000,
+          "level_db": -30
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "rate-0300-wave-0700-probe",
+      "settings": {
+        "Rate": "3:00",
+        "Wave": "7:00",
+        "Depth": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 9000,
+        "seconds": 12,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "rate-0300-wave-0700-chords",
+      "settings": {
+        "Rate": "3:00",
+        "Wave": "7:00",
+        "Depth": "5:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 9000,
+          "level_db": -30
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "rate-0300-wave-0700-lead",
+      "settings": {
+        "Rate": "3:00",
+        "Wave": "7:00",
+        "Depth": "5:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/lead.wav",
+        "seconds": 20,
+        "probe": {
+          "freq": 9000,
+          "level_db": -30
+        },
+        "tail": 1.0,
+        "start": 2
+      }
+    },
+    {
+      "name": "wave-0500-probe",
+      "settings": {
+        "Rate": "12:00",
+        "Wave": "5:00",
+        "Depth": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 9000,
+        "seconds": 12,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "wave-0500-chords",
+      "settings": {
+        "Rate": "12:00",
+        "Wave": "5:00",
+        "Depth": "5:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 9000,
+          "level_db": -30
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "wave-0500-funk-m12",
+      "settings": {
+        "Rate": "12:00",
+        "Wave": "5:00",
+        "Depth": "5:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": 9000,
+          "level_db": -30
+        },
+        "tail": 1.0,
+        "level_db": -12
+      }
+    },
+    {
+      "name": "wave-0500-funk",
+      "settings": {
+        "Rate": "12:00",
+        "Wave": "5:00",
+        "Depth": "5:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": 9000,
+          "level_db": -30
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "rate-0900-wave-0500-depth-0300-probe",
+      "settings": {
+        "Rate": "9:00",
+        "Wave": "5:00",
+        "Depth": "3:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 9000,
+        "seconds": 12,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "rate-0900-wave-0500-depth-0300-chords",
+      "settings": {
+        "Rate": "9:00",
+        "Wave": "5:00",
+        "Depth": "3:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 9000,
+          "level_db": -30
+        },
+        "tail": 1.0
+      }
+    }
+  ]
+}

@@ -1,0 +1,168 @@
+
+=== 2026-11-09T21:56:50 · run tools/capture/plans/tr-2-focused.json · tool 54f049d212fadd8a71f1fab4949256ac6a43bd67
+
+=== 2026-11-09T21:56:58 · run tools/capture/plans/tr-2-focused.json · tool 54f049d212fadd8a71f1fab4949256ac6a43bd67
+
+=== 2026-11-09T21:58:08 · run tools/capture/plans/tr-2-focused.json · tool f2b551b9f0840771631adb159b43767d7d1df397
+
+[1/22] bypass-chords: captures/di/chords.wav, 25.0 s + 9000 Hz probe
+  pedal OFF (bypassed)
+  The pedal off (its LED off): the bypass reference.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -22.3 dBFS · loopback -21.8 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[2/22] depth-0700-chords: captures/di/chords.wav, 25.0 s + 9000 Hz probe
+  pedal ON · Rate 12:00 · Wave 12:00 · Depth 7:00 (switch it on)
+  The pedal on (its LED lit). Depth fully counter-clockwise: no tremolo.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -21.9 dBFS · loopback -21.8 dBFS · latency 578 samples (12.04 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[3/22] 1200-probe: 9000 Hz sine, 12 s at -30 dB
+  pedal ON · Rate 12:00 · Wave 12:00 · Depth 12:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -43.0 dBFS · loopback -43.0 dBFS · latency 448 samples (9.33 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[4/22] 1200-chords: captures/di/chords.wav, 25.0 s + 9000 Hz probe
+  pedal ON · Rate 12:00 · Wave 12:00 · Depth 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -21.8 dBFS · loopback -21.8 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[5/22] 1200-funk-m12: captures/di/funk.wav, 12.0 s at -12 dB + 9000 Hz probe
+  pedal ON · Rate 12:00 · Wave 12:00 · Depth 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -29.6 dBFS · loopback -29.1 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[6/22] 1200-funk: captures/di/funk.wav, 12.0 s + 9000 Hz probe
+  pedal ON · Rate 12:00 · Wave 12:00 · Depth 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.6 dBFS · loopback -18.5 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[7/22] 1200-funk-repeat: captures/di/funk.wav, 12.0 s + 9000 Hz probe
+  pedal ON · Rate 12:00 · Wave 12:00 · Depth 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -20.0 dBFS · loopback -18.5 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[8/22] 1200-lead: captures/di/lead.wav from 2 s, 20.0 s + 9000 Hz probe
+  pedal ON · Rate 12:00 · Wave 12:00 · Depth 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -25.2 dBFS · loopback -24.5 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[9/22] depth-0500-probe: 9000 Hz sine, 12 s at -30 dB
+  pedal ON · Rate 12:00 · Wave 12:00 · Depth 5:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -43.6 dBFS · loopback -43.0 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[10/22] depth-0500-chords: captures/di/chords.wav, 25.0 s + 9000 Hz probe
+  pedal ON · Rate 12:00 · Wave 12:00 · Depth 5:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -23.1 dBFS · loopback -21.8 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[11/22] depth-0500-funk: captures/di/funk.wav, 12.0 s + 9000 Hz probe
+  pedal ON · Rate 12:00 · Wave 12:00 · Depth 5:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -20.3 dBFS · loopback -18.5 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[12/22] wave-0700-probe: 9000 Hz sine, 12 s at -30 dB
+  pedal ON · Rate 12:00 · Wave 7:00 (changed) · Depth 5:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -43.2 dBFS · loopback -42.4 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[13/22] wave-0700-chords: captures/di/chords.wav, 25.0 s + 9000 Hz probe
+  pedal ON · Rate 12:00 · Wave 7:00 · Depth 5:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -24.0 dBFS · loopback -21.8 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[14/22] rate-0300-wave-0700-probe: 9000 Hz sine, 12 s at -30 dB
+  pedal ON · Rate 3:00 (changed) · Wave 7:00 · Depth 5:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -43.7 dBFS · loopback -43.0 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: r
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -44.1 dBFS · loopback -43.0 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[15/22] rate-0300-wave-0700-chords: captures/di/chords.wav, 25.0 s + 9000 Hz probe
+  pedal ON · Rate 3:00 · Wave 7:00 · Depth 5:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -24.2 dBFS · loopback -21.8 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[16/22] rate-0300-wave-0700-lead: captures/di/lead.wav from 2 s, 20.0 s + 9000 Hz probe
+  pedal ON · Rate 3:00 · Wave 7:00 · Depth 5:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -27.1 dBFS · loopback -24.5 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[17/22] wave-0500-probe: 9000 Hz sine, 12 s at -30 dB
+  pedal ON · Rate 12:00 (changed) · Wave 5:00 (changed) · Depth 5:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -43.6 dBFS · loopback -43.0 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[18/22] wave-0500-chords: captures/di/chords.wav, 25.0 s + 9000 Hz probe
+  pedal ON · Rate 12:00 · Wave 5:00 · Depth 5:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -22.8 dBFS · loopback -21.8 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[19/22] wave-0500-funk-m12: captures/di/funk.wav, 12.0 s at -12 dB + 9000 Hz probe
+  pedal ON · Rate 12:00 · Wave 5:00 · Depth 5:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -30.8 dBFS · loopback -29.1 dBFS · latency 448 samples (9.33 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[20/22] wave-0500-funk: captures/di/funk.wav, 12.0 s + 9000 Hz probe
+  pedal ON · Rate 12:00 · Wave 5:00 · Depth 5:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.8 dBFS · loopback -18.5 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[21/22] rate-0900-wave-0500-depth-0300-probe: 9000 Hz sine, 12 s at -30 dB
+  pedal ON · Rate 9:00 (changed) · Wave 5:00 · Depth 3:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -43.3 dBFS · loopback -43.0 dBFS · latency 582 samples (12.12 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[22/22] rate-0900-wave-0500-depth-0300-chords: captures/di/chords.wav, 25.0 s + 9000 Hz probe
+  pedal ON · Rate 9:00 · Wave 5:00 · Depth 3:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -22.1 dBFS · loopback -21.8 dBFS · latency 582 samples (12.12 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+All 22 takes are in captures/boss/tr-2/2026-11-09-focused.

@@ -1,0 +1,80 @@
+{
+  "pedal": "Boss BF-3 Flanger, STANDARD mode (mono: Guitar In -> Output A)",
+  "comment": "Reamp: the same recorded guitar (captures/di/phrases.wav, `capture.py di`, played as hard as it was played) through the pedal at a few settings, for a by-ear A/B against NAM-X's type with the same DI and settings. Plus the sweep at Rate 5:00, which the study's 25 ms clicks saw at four phases only. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise; 9:00 and 3:00 pointer horizontal.",
+  "knobs": [
+    "Manual",
+    "Res",
+    "Depth",
+    "Rate"
+  ],
+  "takes": [
+    {
+      "name": "bypass-di",
+      "bypass": true,
+      "signal": {
+        "type": "file",
+        "path": "captures/di/phrases.wav",
+        "tail": 2
+      },
+      "note": "MODE on STANDARD for the whole plan. Guitar In, Output A only (nothing in B)."
+    },
+    {
+      "name": "di-1200",
+      "settings": {
+        "Manual": "12:00",
+        "Res": "12:00",
+        "Depth": "12:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/phrases.wav",
+        "tail": 2
+      }
+    },
+    {
+      "name": "di-jet",
+      "settings": {
+        "Manual": "9:00",
+        "Res": "3:00",
+        "Depth": "3:00",
+        "Rate": "9:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/phrases.wav",
+        "tail": 2
+      }
+    },
+    {
+      "name": "di-fast",
+      "settings": {
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "12:00",
+        "Rate": "3:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/phrases.wav",
+        "tail": 2
+      }
+    },
+    {
+      "name": "rate-0500-clicks",
+      "settings": {
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "12:00",
+        "Rate": "5:00"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 0.0213,
+        "count": 470,
+        "tail": 0.5
+      },
+      "note": "Rate 5:00 again, as the study's rate-0500 but clicks every 21.3 ms: not a divisor of the ~0.1 s cycle, so the clicks drift through every phase of the sweep."
+    }
+  ]
+}

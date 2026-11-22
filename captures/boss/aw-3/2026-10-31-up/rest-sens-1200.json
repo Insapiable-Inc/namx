@@ -1,0 +1,48 @@
+{
+    "take": "rest-sens-1200",
+    "pedal": "Boss AW-3 Dynamic Wah, Up mode (mono: Guitar input -> Output)",
+    "bypass": false,
+    "settings": {
+        "Mode": "Up",
+        "Manual": "7:00",
+        "Sens": "12:00",
+        "Decay": "12:00"
+    },
+    "note": "Relabelled 2026-10-31: recorded as rest-manual-1200 (plan said Manual 12:00, Sens 7:00), but the user turned Sens instead; Manual stayed at 7:00 (the rest peak sits at 189 Hz in every one).",
+    "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -36,
+        "tail": 2
+    },
+    "rate": 48000,
+    "ref_dbfs": -4.67,
+    "marker_start": 14400,
+    "signal_start": 40800,
+    "peaks_dbfs": {
+        "pedal": -35.62,
+        "loop": -48.61
+    },
+    "latency_samples": 455,
+    "latency_quality": 0.998,
+    "xruns": 0,
+    "played_sha256": "31ef1c0f9df1b2ac2f65c599d7f2d9e033dd7470b5bd9ca770ac20705be6a93a",
+    "recorded_at": "2026-10-31T11:10:17",
+    "tool_commit": "979167bf6ba528173a9069fc329ffde098383af4-dirty",
+    "rig": {
+        "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+        "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+        "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+        "loop_in": "Scarlett 8i6 USB Pro:capture_AUX4",
+        "ref_dbfs": -4.67,
+        "calibration": {
+            "target_dbfs": -13.5,
+            "pedal_dbfs": -13.51,
+            "loop_dbfs": -12.96,
+            "at": "2026-10-26T18:43:48"
+        },
+        "note": "Scarlett 8i6 3rd gen; Pro Audio; analogue outputs 3/4 from PCM 3/4; out 3 -> AW-3 Guitar input, Output -> input 2; out 4 -> input 5 loopback; EXP empty; Input 2 INST, AIR off, pad ON, gain fully counter-clockwise. Adapter power. Reference/calibration carried forward from the 2026-10-26 rig."
+    }
+}

@@ -1,9 +1,12 @@
 #pragma once
 
 #include <functional>
+#include <span>
+#include <vector>
 
 #include <QColor>
 #include <QString>
+#include <QStringList>
 #include <QWidget>
 
 #include "Common.h"
@@ -90,11 +93,20 @@ public:
 
     // Hides the name line; for a knob whose value label names itself ("Type: Plate").
     void set_name_visible(bool on);
+    // Renames the knob (e.g. a type that calls the control by its own name). True when the
+    // name is new to it: the owner refits the text column (text_width_needed counts every
+    // name the knob has had).
+    bool set_label(const QString& new_label);
+    // A name that follows something else as it moves (an Equalizer band is named by its
+    // frequency): shown, not remembered. Give set_label the longest such names once, so the
+    // text column is measured for them.
+    void set_live_label(const QString& text);
 
     // Compact knobs line up in columns: each tile's text column has one width, set by
     // the owner from what every knob needs (its name, its widest value in the font in
-    // use) and never below TEXT_COLUMN_WIDTH.
-    static constexpr int TEXT_COLUMN_WIDTH = 81;
+    // use) and never below TEXT_COLUMN_WIDTH (the longest at 9 pt, "Semitones", and a little
+    // air: six knobs on a row then fit a 1920-wide window with the library open).
+    static constexpr int TEXT_COLUMN_WIDTH = 68;
     bool is_compact() const {
         return form == Form::COMPACT;
     }
@@ -106,6 +118,20 @@ public:
     // stored in presets don't change — only how the dial maps to them.
     // Requires min > 0. The wheel then steps 1 % of the travel.
     void set_log_taper(bool on);
+
+    // A measured curve, e.g. a pedal's own knob: the value at points along the travel
+    // (0 = fully counter-clockwise, 1 = fully clockwise), log-interpolated between them as
+    // set_log_taper is between the ends. The first point is (0, min), the last (1, max), travel
+    // and value rising, the values positive — but the first may be 0 (a rate knob's Stop): the
+    // dial then runs straight from 0 to the second point. Values stored in presets don't
+    // change. With a curve the wheel steps 1 % of the travel; an empty one makes the dial
+    // linear again.
+    struct TaperPoint
+    {
+        double travel;
+        double value;
+    };
+    void set_taper(std::span<const TaperPoint> points);
 
     // Set the scroll-wheel increment in value units (e.g. 0.1 for 0.1 dB).
     // Pass 0 to use the default (1% of range).
@@ -136,10 +162,12 @@ private:
     double min, max, default_value;
     QString unit;
     QString label;
+    QStringList other_labels; // names set_label gave it, measured by text_width_needed
+    bool label_is_live = false; // the name in use came from set_live_label
     bool int_display{false};
     double scroll_step{0.0};
     double snap{0.0};
-    bool log_taper{false};
+    std::vector<TaperPoint> taper; // empty = linear
     double last_emitted{0.0}; // snapped knobs emit only on a step change
     std::function<QString(double)> formatter;
 

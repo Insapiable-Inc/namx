@@ -1,0 +1,147 @@
+
+=== 2026-11-01T11:35:01 · run tools/capture/plans/rv-6-shimmer.json · tool 979167bf6ba528173a9069fc329ffde098383af4-dirty
+
+[1/19] bypass-sweep: sweep 20-20000 Hz, 10 s at -24 dB
+  pedal OFF (bypassed)
+  Pedal OFF. Output A -> input 2, Output B -> input 1. From here on the marker goes to the loopback only.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -36.9 dBFS · B -36.8 dBFS · loopback -36.6 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[2/19] modulate-tone-0082: 82.41 Hz sine, 4 s at -24 dB
+  pedal ON · Mode Modulate · Level 5:00 · Tone 12:00 · Time 12:00 (switch it on)
+  Pedal ON, MODE MODULATE, Level fully UP, Tone and Time at 12:00. The tank alone on a note, for Shimmer's reference.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -29.2 dBFS · B -30.3 dBFS · loopback -36.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[3/19] modulate-tone-0330: 329.63 Hz sine, 4 s at -24 dB
+  pedal ON · Mode Modulate · Level 5:00 · Tone 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -27.1 dBFS · B -32.5 dBFS · loopback -36.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[4/19] shimmer-tone-0082: 82.41 Hz sine, 4 s at -24 dB
+  pedal ON · Mode Shimmer (changed) · Level 5:00 · Tone 12:00 · Time 12:00
+  MODE SHIMMER (Level still fully up, Tone and Time 12:00). One held note per take, the low E and its octaves up to 2.6 kHz: each octave's onset, build-up, steady level and decay.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -34.6 dBFS · B -34.3 dBFS · loopback -36.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[5/19] shimmer-tone-0165: 164.81 Hz sine, 4 s at -24 dB
+  pedal ON · Mode Shimmer · Level 5:00 · Tone 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -25.8 dBFS · B -26.2 dBFS · loopback -36.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[6/19] shimmer-tone-0330: 329.63 Hz sine, 4 s at -24 dB
+  pedal ON · Mode Shimmer · Level 5:00 · Tone 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -20.9 dBFS · B -19.0 dBFS · loopback -36.9 dBFS · latency 582 samples (12.12 ms) · xruns 2
+  PROBLEM: 2 xrun(s) during the take: redo it, or raise the quantum
+  Enter = keep, r = redo: (Enter)
+
+[7/19] shimmer-tone-0659: 659.26 Hz sine, 4 s at -24 dB
+  pedal ON · Mode Shimmer · Level 5:00 · Tone 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -21.2 dBFS · B -21.6 dBFS · loopback -36.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[8/19] shimmer-tone-1319: 1318.51 Hz sine, 4 s at -24 dB
+  pedal ON · Mode Shimmer · Level 5:00 · Tone 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -28.1 dBFS · B -26.3 dBFS · loopback -36.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[9/19] shimmer-tone-2637: 2637.02 Hz sine, 4 s at -24 dB
+  pedal ON · Mode Shimmer · Level 5:00 · Tone 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -31.4 dBFS · B -31.2 dBFS · loopback -36.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[10/19] shimmer-tone-0330-quiet: 329.63 Hz sine, 4 s at -36 dB
+  pedal ON · Mode Shimmer · Level 5:00 · Tone 12:00 · Time 12:00
+  The same 330 Hz note 12 dB quieter, then 12 dB louder: is the octave level-dependent?
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -32.6 dBFS · B -31.1 dBFS · loopback -48.9 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[11/19] shimmer-tone-0330-loud: 329.63 Hz sine, 4 s at -12 dB
+  pedal ON · Mode Shimmer · Level 5:00 · Tone 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -9.1 dBFS · B -8.9 dBFS · loopback -24.9 dBFS · latency 448 samples (9.33 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[12/19] shimmer-fifth: 220/329.63 Hz sines, 4 s at -24 dB
+  pedal ON · Mode Shimmer · Level 5:00 · Tone 12:00 · Time 12:00
+  Two notes, then an open E chord: does the shifter keep notes apart (intermodulation)?
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -25.8 dBFS · B -23.6 dBFS · loopback -36.9 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[13/19] shimmer-chord: 82.41/123.47/164.81/207.65/246.94/329.63 Hz sines, 4 s at -24 dB
+  pedal ON · Mode Shimmer · Level 5:00 · Tone 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -30.5 dBFS · B -29.0 dBFS · loopback -36.9 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[14/19] shimmer-plucks: 2 plucks, 82.41-329.63 Hz, 16 s (decay 0.8 s)
+  pedal ON · Mode Shimmer · Level 5:00 · Tone 12:00 · Time 12:00
+  Two plucks 15 s apart (each tail on its own): the low E and the E above middle C.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -8.6 dBFS · B -8.5 dBFS · loopback -12.9 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[15/19] shimmer-tone-0330-tone-0700: 329.63 Hz sine, 4 s at -24 dB
+  pedal ON · Mode Shimmer · Level 5:00 · Tone 7:00 (changed) · Time 12:00
+  Tone fully down, then up: does Tone act before the shifter (the octave's balance)?
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -26.6 dBFS · B -25.2 dBFS · loopback -36.9 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[16/19] shimmer-tone-0330-tone-0500: 329.63 Hz sine, 4 s at -24 dB
+  pedal ON · Mode Shimmer · Level 5:00 · Tone 5:00 (changed) · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -20.8 dBFS · B -18.9 dBFS · loopback -36.9 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[17/19] shimmer-tone-0330-time-0700: 329.63 Hz sine, 4 s at -24 dB
+  pedal ON · Mode Shimmer · Level 5:00 · Tone 12:00 (changed) · Time 7:00 (changed)
+  Tone back to 12:00. Time fully down, then up: does Time change the octaves' feedback or only the tank?
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -21.8 dBFS · B -20.3 dBFS · loopback -36.9 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[18/19] shimmer-tone-0330-time-0500: 329.63 Hz sine, 4 s at -24 dB
+  pedal ON · Mode Shimmer · Level 5:00 · Tone 12:00 · Time 5:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -23.8 dBFS · B -22.5 dBFS · loopback -36.9 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[19/19] shimmer-tone-0330-level-1200: 329.63 Hz sine, 4 s at -24 dB
+  pedal ON · Mode Shimmer · Level 12:00 (changed) · Tone 12:00 · Time 12:00 (changed)
+  Time back to 12:00, Level to 12:00: is Level only an output gain here too?
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -29.8 dBFS · B -28.6 dBFS · loopback -36.9 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+All 19 takes are in captures/boss/rv-6/2026-11-01-shimmer.

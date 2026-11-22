@@ -8,6 +8,7 @@
 #include <chowdsp_wdf/chowdsp_wdf.h>
 
 #include "Common.h"
+#include "Oversampler4x.h"
 
 namespace namx
 {
@@ -25,16 +26,13 @@ namespace namx
 // a current source with the feedback resistance in parallel, the 51 pF beside it, the
 // diode pair at the root (solved in closed form, Wright omega).
 //
-// Oversampling: two 2× stages each way, linear-phase half-band FIRs (latency_samples()).
-// Nothing here allocates.
+// Oversampling: Oversampler4x (latency_samples()). Nothing here allocates.
 class TubeScreamerClipper
 {
 public:
     // Total delay of the oversampling filters, in base-rate samples.
     static constexpr double latency_samples() {
-        // Each half-band FIR delays (TAPS − 1) / 2 samples at its own rate; up and down,
-        // at 2× and 4×: 2 · (h/2 + h/4) with h = (TAPS − 1) / 2.
-        return 2.0 * ((TAPS - 1) / 2.0 / 2.0 + (TAPS - 1) / 2.0 / 4.0);
+        return Oversampler4x::latency_samples();
     }
 
     void prepare(double sr) {
@@ -50,10 +48,7 @@ public:
     void reset() {
         c_fb.reset();
         hp_x1 = hp_y1 = 0.0f;
-        for (auto* s : {&up1, &up2, &down1, &down2}) {
-            s->fill(0.0f);
-        }
-        pos1 = pos2 = pos3 = pos4 = 0;
+        oversampler.reset();
     }
 
     // Drive 0–1 → the 500 kΩ log pot (≈ quadratic) after 51 kΩ.
@@ -64,24 +59,13 @@ public:
 
     // Volts in, volts out (the caller scales digital full scale to volts).
     float process(float vin) {
-        // 1× → 2× → 4×: zero-stuff and filter twice (gain 2 per stage restores the level).
-        float x2[2], x4[4];
-        x2[0] = 2.0f * fir(up1, pos1, vin);
-        x2[1] = 2.0f * fir(up1, pos1, 0.0f);
-        for (int i = 0; i < 2; ++i) {
-            x4[2 * i] = 2.0f * fir(up2, pos2, x2[i]);
-            x4[2 * i + 1] = 2.0f * fir(up2, pos2, 0.0f);
+        // The circuit at 4× the rate.
+        std::array<float, 4> x4{};
+        oversampler.up(vin, x4);
+        for (float& v : x4) {
+            v = circuit(v);
         }
-        // The circuit at 4×, then 4× → 2× → 1× (filter, keep every other sample).
-        float y2[2];
-        for (int i = 0; i < 2; ++i) {
-            const float a = fir(down2, pos3, circuit(x4[2 * i]));
-            fir(down2, pos3, circuit(x4[2 * i + 1]));
-            y2[i] = a;
-        }
-        const float y = fir(down1, pos4, y2[0]);
-        fir(down1, pos4, y2[1]);
-        return y;
+        return oversampler.down(x4);
     }
 
 private:
@@ -90,7 +74,6 @@ private:
     // 1N914: saturation current and thermal voltage × ideality factor (Yeh 2007).
     static constexpr float DIODE_IS = 2.52e-9f;
     static constexpr float DIODE_VT = 25.85e-3f * 1.752f;
-    static constexpr int TAPS = 31; // half-band FIR length (odd)
 
     // One step of the oversampled circuit.
     float circuit(float vin) {
@@ -104,59 +87,9 @@ private:
         return vin + chowdsp::wdft::voltage<float>(c_fb);
     }
 
-    // Half-band low-pass: windowed sinc at a quarter of the rate (Kaiser, β = 8).
-    static constexpr std::array<float, TAPS> design() {
-        std::array<float, TAPS> h{};
-        constexpr int mid = (TAPS - 1) / 2;
-        // Kaiser window via the series for I0, constexpr-friendly.
-        auto i0 = [](double x) {
-            double sum = 1.0, term = 1.0;
-            for (int k = 1; k < 30; ++k) {
-                term *= (x / (2.0 * k)) * (x / (2.0 * k));
-                sum += term;
-            }
-            return sum;
-        };
-        constexpr double beta = 8.0;
-        double total = 0.0;
-        for (int n = 0; n < TAPS; ++n) {
-            const int m = n - mid;
-            double sinc = 0.5;
-            if (m != 0) {
-                // sin(π m / 2) / (π m): 0 for even m, ±1/(π m) for odd.
-                sinc = (m % 2 == 0)
-                           ? 0.0
-                           : ((m % 4 == 1 || m % 4 == -3) ? 1.0 : -1.0) / (std::numbers::pi * m);
-            }
-            const double r = static_cast<double>(m) / mid;
-            const double w = i0(beta * std::sqrt(std::max(0.0, 1.0 - r * r))) / i0(beta);
-            h[static_cast<size_t>(n)] = static_cast<float>(sinc * w);
-            total += sinc * w;
-        }
-        for (float& v : h) {
-            v = static_cast<float>(v / total);
-        }
-        return h;
-    }
-    static inline const std::array<float, TAPS> HALF_BAND = design();
-
-    // A direct-form FIR over a circular history (2 × TAPS so the window is contiguous).
-    static float fir(std::array<float, 2 * TAPS>& hist, int& pos, float x) {
-        hist[static_cast<size_t>(pos)] = x;
-        hist[static_cast<size_t>(pos + TAPS)] = x;
-        const float* window = &hist[static_cast<size_t>(pos + 1)]; // oldest → newest
-        float acc = 0.0f;
-        for (int k = 0; k < TAPS; ++k) {
-            acc += HALF_BAND[static_cast<size_t>(TAPS - 1 - k)] * window[k];
-        }
-        pos = pos + 1 == TAPS ? 0 : pos + 1;
-        return acc;
-    }
-
     double os_rate = 192000.0;
     float hp_b = 1.0f, hp_a = 0.0f, hp_x1 = 0.0f, hp_y1 = 0.0f;
-    std::array<float, 2 * TAPS> up1{}, up2{}, down1{}, down2{};
-    int pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+    Oversampler4x oversampler;
 
     // The WDF tree (members in construction order: children before their adaptors).
     chowdsp::wdft::ResistiveCurrentSourceT<float> source{51.0e3f};

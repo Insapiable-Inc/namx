@@ -1,0 +1,71 @@
+{
+  "pedal": "Boss NS-2 Noise Suppressor (mono: Input -> Output; Send/Return empty)",
+  "comment": "Locate today's near-threshold transition before selecting history-test levels. Threshold stays 3:00, Decay minimum, Mode Reduction. True bypass first: explicitly switch OFF. Each signal has a low reset, 2 dB rising staircase, a -12 dB open-path reference and a low closing step. Keep interface and input gain unchanged.",
+  "knobs": [
+    "Threshold",
+    "Decay",
+    "Mode"
+  ],
+  "takes": [
+    {
+      "name": "bypass-locator-1000",
+      "bypass": true,
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -100,
+          -62,
+          -60,
+          -58,
+          -56,
+          -54,
+          -52,
+          -50,
+          -48,
+          -46,
+          -44,
+          -12,
+          -100
+        ],
+        "step_seconds": 4,
+        "gap_seconds": 0,
+        "level_db": 0,
+        "tail": 2
+      },
+      "note": "NS-2 OFF / BYPASSED, not engaged with its gate closed. Input -> Output; Send and Return empty. Set Mode Reduction, Threshold 3:00 and Decay fully counter-clockwise now. Input 2 physical gain stays fully counter-clockwise."
+    },
+    {
+      "name": "threshold-0300-decay-0700-locator-1000",
+      "settings": {
+        "Threshold": "3:00",
+        "Decay": "7:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -100,
+          -62,
+          -60,
+          -58,
+          -56,
+          -54,
+          -52,
+          -50,
+          -48,
+          -46,
+          -44,
+          -12,
+          -100
+        ],
+        "step_seconds": 4,
+        "gap_seconds": 0,
+        "level_db": 0,
+        "tail": 2
+      },
+      "note": "Switch NS-2 ON. Threshold exactly 3:00; Decay fully counter-clockwise; Mode Reduction. Do not move Threshold or interface gain afterward; the next experiment will reuse this position."
+    }
+  ]
+}

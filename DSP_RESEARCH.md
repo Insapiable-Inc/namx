@@ -233,7 +233,9 @@ neural opto as an optional "character" mode later.
   Nyquist at 44.1/48 kHz; matched-response designs fix that. Minor for guitar, not
   researched here.
 - **Tremolo:** fine. An optional harmonic (Brownface-style) tremolo would be a feature,
-  not a quality fix.
+  not a quality fix. A real Boss TR-2 was captured and modelled on 2026-10-26 (soft-clamped
+  offset triangle, fast-fall/slow-rise follower, 70 Hz low cut; median error 1.5 % of full
+  gain): [`captures/boss/tr-2/README.md`](captures/boss/tr-2/README.md).
 - **Tuner:** McLeod (NSDF) is a solid choice. [PESTO][pesto] (neural, < 5 ms) is an option
   if accuracy on low or noisy notes ever becomes a problem.
 

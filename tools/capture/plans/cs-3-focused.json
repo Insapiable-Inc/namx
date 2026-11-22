@@ -1,0 +1,516 @@
+{
+  "pedal": "Boss CS-3 Compression Sustainer — focused reamp: guitar excerpts over a quiet probe tone (mono)",
+  "comment": "Short excerpts of the guitar DI dataset (captures/di/) over a steady 9 kHz sine 50 dB under the guitar's peak (the probe: under the pedal's threshold at every Sustain position, so it shows the gain at every moment without being compressed itself; where the guitar is loud the gain is read from the guitar). Level and Tone stay at 12:00 throughout: only Sustain and Attack turn, one per step. What each kind of take is for: stabs (a chord, then silence) = the recovery after each hit, read on the probe; funk = fast picking at the dataset's hottest level (attacks, what the release leaves between strokes); chords = sustained notes held at the ceiling as they die away; dynamics = soft to hard picks (the static curve on real notes); lead = held out of any fit. At the main setting (everything at 12:00) also: the probe alone (the idle gain), the stabs without the probe (does the probe change what the pedal does?), funk twice (the pedal against itself: the method's floor), funk 12 dB down and chords 12 and 24 dB down (a ladder: the same playing crossing the threshold at different points). With Sustain fully clockwise the probe is 10 dB quieter still (-60 dB: the threshold is lower there). Sustain 7:00: the pedal's path with the compressor hardly working. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise. Takes ordered so each step turns one knob.",
+  "quiet_dbfs": -60,
+  "knobs": [
+    "Level",
+    "Tone",
+    "Attack",
+    "Sustain"
+  ],
+  "takes": [
+    {
+      "name": "bypass-chords",
+      "bypass": true,
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 9000,
+          "level_db": -50
+        },
+        "tail": 1.0
+      },
+      "note": "The pedal off (its LED off): the bypass reference."
+    },
+    {
+      "name": "bypass-stabs",
+      "bypass": true,
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": 9000,
+          "level_db": -50
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "bypass-funk",
+      "bypass": true,
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": 9000,
+          "level_db": -50
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "s0700-chords",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "12:00",
+        "Sustain": "7:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 9000,
+          "level_db": -50
+        },
+        "tail": 1.0
+      },
+      "note": "The pedal on (its LED lit). Sustain fully counter-clockwise: the limiter, hardly working. Level and Tone stay at 12:00 for the whole session: set them once and don't touch them."
+    },
+    {
+      "name": "s0700-funk",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "12:00",
+        "Sustain": "7:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": 9000,
+          "level_db": -50
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "1200-probe",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "12:00",
+        "Sustain": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 9000,
+        "seconds": 8,
+        "level_db": -50,
+        "tail": 1.0
+      },
+      "note": "Sustain to 12:00. Eleven takes at this setting; they differ in what is played (see the plan's comment)."
+    },
+    {
+      "name": "1200-stabs",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "12:00",
+        "Sustain": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": 9000,
+          "level_db": -50
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "1200-stabs-noprobe",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "12:00",
+        "Sustain": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "seconds": 12,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "1200-funk",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "12:00",
+        "Sustain": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": 9000,
+          "level_db": -50
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "1200-funk-repeat",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "12:00",
+        "Sustain": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": 9000,
+          "level_db": -50
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "1200-funk-m12",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "12:00",
+        "Sustain": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": 9000,
+          "level_db": -50
+        },
+        "tail": 1.0,
+        "level_db": -12
+      }
+    },
+    {
+      "name": "1200-chords",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "12:00",
+        "Sustain": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 9000,
+          "level_db": -50
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "1200-chords-m12",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "12:00",
+        "Sustain": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 9000,
+          "level_db": -50
+        },
+        "tail": 1.0,
+        "level_db": -12
+      }
+    },
+    {
+      "name": "1200-chords-m24",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "12:00",
+        "Sustain": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 9000,
+          "level_db": -50
+        },
+        "tail": 1.0,
+        "level_db": -24
+      }
+    },
+    {
+      "name": "1200-dynamics",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "12:00",
+        "Sustain": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/dynamics.wav",
+        "seconds": 40,
+        "probe": {
+          "freq": 9000,
+          "level_db": -50
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "1200-lead",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "12:00",
+        "Sustain": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/lead.wav",
+        "seconds": 20,
+        "start": 2,
+        "probe": {
+          "freq": 9000,
+          "level_db": -50
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "a0700-stabs",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "7:00",
+        "Sustain": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": 9000,
+          "level_db": -50
+        },
+        "tail": 1.0
+      },
+      "note": "Attack fully counter-clockwise (the slowest recovery)."
+    },
+    {
+      "name": "a0700-funk",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "7:00",
+        "Sustain": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": 9000,
+          "level_db": -50
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "a0700-chords",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "7:00",
+        "Sustain": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 9000,
+          "level_db": -50
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "a0500-stabs",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "5:00",
+        "Sustain": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": 9000,
+          "level_db": -50
+        },
+        "tail": 1.0
+      },
+      "note": "Attack fully clockwise (the fastest recovery)."
+    },
+    {
+      "name": "a0500-funk",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "5:00",
+        "Sustain": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": 9000,
+          "level_db": -50
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "a0500-chords",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "5:00",
+        "Sustain": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 9000,
+          "level_db": -50
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "s0500-a0500-stabs",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "5:00",
+        "Sustain": "5:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": 9000,
+          "level_db": -60
+        },
+        "tail": 1.0
+      },
+      "note": "Sustain fully clockwise too."
+    },
+    {
+      "name": "s0500-a0500-funk",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "5:00",
+        "Sustain": "5:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": 9000,
+          "level_db": -60
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "s0500-stabs",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "12:00",
+        "Sustain": "5:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": 9000,
+          "level_db": -60
+        },
+        "tail": 1.0
+      },
+      "note": "Attack back to 12:00."
+    },
+    {
+      "name": "s0500-chords",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "12:00",
+        "Sustain": "5:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 9000,
+          "level_db": -60
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "s0500-lead",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "12:00",
+        "Sustain": "5:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/lead.wav",
+        "seconds": 20,
+        "start": 2,
+        "probe": {
+          "freq": 9000,
+          "level_db": -60
+        },
+        "tail": 1.0
+      }
+    }
+  ]
+}

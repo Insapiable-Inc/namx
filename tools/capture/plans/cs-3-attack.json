@@ -1,0 +1,214 @@
+{
+  "pedal": "Boss CS-3 Compression Sustainer — Attack in between (mono)",
+  "comment": "Follow-up to the focused session. Eight Attack positions with Sustain fully clockwise, the same chord stabs over a probe 60 dB under the guitar's peak each time: every take gives the recovery's time scale (the exponential after each stab) and the gain with nothing played (the probe before the first stab) together, so the pair is exact even when the knob's angle is approximate: NAM-X's Release knob is in ms, not in positions. Sustain fully clockwise because the recoveries are longest and cleanest there, and it is an end stop. The last take, at Sustain fully counter-clockwise: a 1 kHz staircase, to compare the limiter's threshold on a steady tone with the chords of the focused session (the model compresses the loudest chords there, the pedal doesn't). Level and Tone at 12:00 throughout, untouched. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise.",
+  "quiet_dbfs": -60,
+  "knobs": [
+    "Level",
+    "Tone",
+    "Attack",
+    "Sustain"
+  ],
+  "takes": [
+    {
+      "name": "bypass-stabs",
+      "bypass": true,
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": 9000,
+          "level_db": -60
+        },
+        "tail": 1.0
+      },
+      "note": "The pedal off (its LED off): the bypass reference. Level and Tone at 12:00, as in the focused session, and left alone."
+    },
+    {
+      "name": "s0500-a1200-stabs",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "12:00",
+        "Sustain": "5:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": 9000,
+          "level_db": -60
+        },
+        "tail": 1.0
+      },
+      "note": "The pedal on. Sustain fully clockwise for the next eight takes; only Attack turns."
+    },
+    {
+      "name": "s0500-a0130-stabs",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "1:30",
+        "Sustain": "5:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": 9000,
+          "level_db": -60
+        },
+        "tail": 1.0
+      },
+      "note": "Attack about halfway between 12:00 and 3:00. The exact angle doesn't matter: the take measures its own recovery time."
+    },
+    {
+      "name": "s0500-a0300-stabs",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "3:00",
+        "Sustain": "5:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": 9000,
+          "level_db": -60
+        },
+        "tail": 1.0
+      },
+      "note": "Attack to about 3:00."
+    },
+    {
+      "name": "s0500-a0400-stabs",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "4:00",
+        "Sustain": "5:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": 9000,
+          "level_db": -60
+        },
+        "tail": 1.0
+      },
+      "note": "Attack about halfway between 3:00 and fully clockwise."
+    },
+    {
+      "name": "s0500-a0500-stabs",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "5:00",
+        "Sustain": "5:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": 9000,
+          "level_db": -60
+        },
+        "tail": 1.0
+      },
+      "note": "Attack fully clockwise."
+    },
+    {
+      "name": "s0500-a0700-stabs",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "7:00",
+        "Sustain": "5:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": 9000,
+          "level_db": -60
+        },
+        "tail": 1.0
+      },
+      "note": "Attack fully counter-clockwise."
+    },
+    {
+      "name": "s0500-a0900-stabs",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "9:00",
+        "Sustain": "5:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": 9000,
+          "level_db": -60
+        },
+        "tail": 1.0
+      },
+      "note": "Attack to about 9:00."
+    },
+    {
+      "name": "s0500-a1030-stabs",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "10:30",
+        "Sustain": "5:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": 9000,
+          "level_db": -60
+        },
+        "tail": 1.0
+      },
+      "note": "Attack about halfway between 9:00 and 12:00."
+    },
+    {
+      "name": "s0700-steps-1k",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "12:00",
+        "Sustain": "7:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -24,
+          -18,
+          -15,
+          -12,
+          -9,
+          -6,
+          -3,
+          0
+        ],
+        "step_seconds": 1.5,
+        "tail": 1.0
+      },
+      "note": "Sustain fully counter-clockwise, Attack back to 12:00. A 1 kHz tone in eight steps up to the guitar's peak: where the limiter starts on a steady tone, against where it starts on chords."
+    }
+  ]
+}

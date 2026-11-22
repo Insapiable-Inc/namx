@@ -1,0 +1,802 @@
+{
+  "pedal": "Boss AW-3 Dynamic Wah — a check at settings in no fit: guitar excerpts over a quiet comb of tones (mono: Guitar input -> Output)",
+  "comment": "A short session to look for any large difference between the pedal and NAM-X's Wah where nothing was fitted: four knob settings (two at the end stops, two in between), each in Up, Down and Sharp. Never fit on it. Each take plays stabs, funk and dynamics from the guitar DI dataset (captures/di/) over five steady sines (331 Hz to 2971 Hz, each 50 dB under the guitar's peak), as the focused session of 2026-11-11 did: the filter's place over time is read on the tones between hits and on the guitar while it plays. The knobs are frozen per block of three takes; only Mode turns inside a block, and it stays where it is from one block to the next. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise.",
+  "quiet_dbfs": -60,
+  "knobs": [
+    "Mode",
+    "Manual",
+    "Sens",
+    "Decay"
+  ],
+  "takes": [
+    {
+      "name": "bypass-funk",
+      "bypass": true,
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": [
+            331,
+            577,
+            997,
+            1723,
+            2971
+          ],
+          "level_db": -50
+        },
+        "tail": 1.0
+      },
+      "note": "The pedal off (its LED off): the reference. Interface out 3 to Guitar input, Output to interface input 2, nothing in EXP/CTL, the 9 V adapter. The short patch cable back between interface out 4 and input 5."
+    },
+    {
+      "name": "up-m0700-s0500-d0500",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "7:00",
+        "Sens": "5:00",
+        "Decay": "5:00"
+      },
+      "signal": {
+        "type": "sequence",
+        "tail": 0,
+        "parts": [
+          {
+            "type": "file",
+            "path": "captures/di/stabs.wav",
+            "seconds": 12,
+            "probe": {
+              "freq": [
+                331,
+                577,
+                997,
+                1723,
+                2971
+              ],
+              "level_db": -50
+            },
+            "tail": 1.0
+          },
+          {
+            "type": "file",
+            "path": "captures/di/funk.wav",
+            "seconds": 12,
+            "probe": {
+              "freq": [
+                331,
+                577,
+                997,
+                1723,
+                2971
+              ],
+              "level_db": -50
+            },
+            "tail": 1.0
+          },
+          {
+            "type": "file",
+            "path": "captures/di/dynamics.wav",
+            "seconds": 20,
+            "probe": {
+              "freq": [
+                331,
+                577,
+                997,
+                1723,
+                2971
+              ],
+              "level_db": -50
+            },
+            "tail": 1.0
+          }
+        ]
+      },
+      "note": "The pedal on. Mode Up. Manual fully counter-clockwise, Sens and Decay fully clockwise. Every take from here plays the same 47 s: stabs, funk, then picks from soft to hard."
+    },
+    {
+      "name": "down-m0700-s0500-d0500",
+      "settings": {
+        "Mode": "Down",
+        "Manual": "7:00",
+        "Sens": "5:00",
+        "Decay": "5:00"
+      },
+      "signal": {
+        "type": "sequence",
+        "tail": 0,
+        "parts": [
+          {
+            "type": "file",
+            "path": "captures/di/stabs.wav",
+            "seconds": 12,
+            "probe": {
+              "freq": [
+                331,
+                577,
+                997,
+                1723,
+                2971
+              ],
+              "level_db": -50
+            },
+            "tail": 1.0
+          },
+          {
+            "type": "file",
+            "path": "captures/di/funk.wav",
+            "seconds": 12,
+            "probe": {
+              "freq": [
+                331,
+                577,
+                997,
+                1723,
+                2971
+              ],
+              "level_db": -50
+            },
+            "tail": 1.0
+          },
+          {
+            "type": "file",
+            "path": "captures/di/dynamics.wav",
+            "seconds": 20,
+            "probe": {
+              "freq": [
+                331,
+                577,
+                997,
+                1723,
+                2971
+              ],
+              "level_db": -50
+            },
+            "tail": 1.0
+          }
+        ]
+      },
+      "note": "Mode to Down. The knobs stay."
+    },
+    {
+      "name": "sharp-m0700-s0500-d0500",
+      "settings": {
+        "Mode": "Sharp",
+        "Manual": "7:00",
+        "Sens": "5:00",
+        "Decay": "5:00"
+      },
+      "signal": {
+        "type": "sequence",
+        "tail": 0,
+        "parts": [
+          {
+            "type": "file",
+            "path": "captures/di/stabs.wav",
+            "seconds": 12,
+            "probe": {
+              "freq": [
+                331,
+                577,
+                997,
+                1723,
+                2971
+              ],
+              "level_db": -50
+            },
+            "tail": 1.0
+          },
+          {
+            "type": "file",
+            "path": "captures/di/funk.wav",
+            "seconds": 12,
+            "probe": {
+              "freq": [
+                331,
+                577,
+                997,
+                1723,
+                2971
+              ],
+              "level_db": -50
+            },
+            "tail": 1.0
+          },
+          {
+            "type": "file",
+            "path": "captures/di/dynamics.wav",
+            "seconds": 20,
+            "probe": {
+              "freq": [
+                331,
+                577,
+                997,
+                1723,
+                2971
+              ],
+              "level_db": -50
+            },
+            "tail": 1.0
+          }
+        ]
+      },
+      "note": "Mode to Sharp. The knobs stay."
+    },
+    {
+      "name": "sharp-m0500-s0500-d0700",
+      "settings": {
+        "Mode": "Sharp",
+        "Manual": "5:00",
+        "Sens": "5:00",
+        "Decay": "7:00"
+      },
+      "signal": {
+        "type": "sequence",
+        "tail": 0,
+        "parts": [
+          {
+            "type": "file",
+            "path": "captures/di/stabs.wav",
+            "seconds": 12,
+            "probe": {
+              "freq": [
+                331,
+                577,
+                997,
+                1723,
+                2971
+              ],
+              "level_db": -50
+            },
+            "tail": 1.0
+          },
+          {
+            "type": "file",
+            "path": "captures/di/funk.wav",
+            "seconds": 12,
+            "probe": {
+              "freq": [
+                331,
+                577,
+                997,
+                1723,
+                2971
+              ],
+              "level_db": -50
+            },
+            "tail": 1.0
+          },
+          {
+            "type": "file",
+            "path": "captures/di/dynamics.wav",
+            "seconds": 20,
+            "probe": {
+              "freq": [
+                331,
+                577,
+                997,
+                1723,
+                2971
+              ],
+              "level_db": -50
+            },
+            "tail": 1.0
+          }
+        ]
+      },
+      "note": "Mode stays at Sharp. Manual fully clockwise, Decay fully counter-clockwise. Sens stays."
+    },
+    {
+      "name": "down-m0500-s0500-d0700",
+      "settings": {
+        "Mode": "Down",
+        "Manual": "5:00",
+        "Sens": "5:00",
+        "Decay": "7:00"
+      },
+      "signal": {
+        "type": "sequence",
+        "tail": 0,
+        "parts": [
+          {
+            "type": "file",
+            "path": "captures/di/stabs.wav",
+            "seconds": 12,
+            "probe": {
+              "freq": [
+                331,
+                577,
+                997,
+                1723,
+                2971
+              ],
+              "level_db": -50
+            },
+            "tail": 1.0
+          },
+          {
+            "type": "file",
+            "path": "captures/di/funk.wav",
+            "seconds": 12,
+            "probe": {
+              "freq": [
+                331,
+                577,
+                997,
+                1723,
+                2971
+              ],
+              "level_db": -50
+            },
+            "tail": 1.0
+          },
+          {
+            "type": "file",
+            "path": "captures/di/dynamics.wav",
+            "seconds": 20,
+            "probe": {
+              "freq": [
+                331,
+                577,
+                997,
+                1723,
+                2971
+              ],
+              "level_db": -50
+            },
+            "tail": 1.0
+          }
+        ]
+      },
+      "note": "Mode to Down. The knobs stay."
+    },
+    {
+      "name": "up-m0500-s0500-d0700",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "5:00",
+        "Sens": "5:00",
+        "Decay": "7:00"
+      },
+      "signal": {
+        "type": "sequence",
+        "tail": 0,
+        "parts": [
+          {
+            "type": "file",
+            "path": "captures/di/stabs.wav",
+            "seconds": 12,
+            "probe": {
+              "freq": [
+                331,
+                577,
+                997,
+                1723,
+                2971
+              ],
+              "level_db": -50
+            },
+            "tail": 1.0
+          },
+          {
+            "type": "file",
+            "path": "captures/di/funk.wav",
+            "seconds": 12,
+            "probe": {
+              "freq": [
+                331,
+                577,
+                997,
+                1723,
+                2971
+              ],
+              "level_db": -50
+            },
+            "tail": 1.0
+          },
+          {
+            "type": "file",
+            "path": "captures/di/dynamics.wav",
+            "seconds": 20,
+            "probe": {
+              "freq": [
+                331,
+                577,
+                997,
+                1723,
+                2971
+              ],
+              "level_db": -50
+            },
+            "tail": 1.0
+          }
+        ]
+      },
+      "note": "Mode to Up. The knobs stay."
+    },
+    {
+      "name": "up-m0300-s0900-d0900",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "3:00",
+        "Sens": "9:00",
+        "Decay": "9:00"
+      },
+      "signal": {
+        "type": "sequence",
+        "tail": 0,
+        "parts": [
+          {
+            "type": "file",
+            "path": "captures/di/stabs.wav",
+            "seconds": 12,
+            "probe": {
+              "freq": [
+                331,
+                577,
+                997,
+                1723,
+                2971
+              ],
+              "level_db": -50
+            },
+            "tail": 1.0
+          },
+          {
+            "type": "file",
+            "path": "captures/di/funk.wav",
+            "seconds": 12,
+            "probe": {
+              "freq": [
+                331,
+                577,
+                997,
+                1723,
+                2971
+              ],
+              "level_db": -50
+            },
+            "tail": 1.0
+          },
+          {
+            "type": "file",
+            "path": "captures/di/dynamics.wav",
+            "seconds": 20,
+            "probe": {
+              "freq": [
+                331,
+                577,
+                997,
+                1723,
+                2971
+              ],
+              "level_db": -50
+            },
+            "tail": 1.0
+          }
+        ]
+      },
+      "note": "Mode stays at Up. Manual 3:00, Sens 9:00, Decay 9:00."
+    },
+    {
+      "name": "down-m0300-s0900-d0900",
+      "settings": {
+        "Mode": "Down",
+        "Manual": "3:00",
+        "Sens": "9:00",
+        "Decay": "9:00"
+      },
+      "signal": {
+        "type": "sequence",
+        "tail": 0,
+        "parts": [
+          {
+            "type": "file",
+            "path": "captures/di/stabs.wav",
+            "seconds": 12,
+            "probe": {
+              "freq": [
+                331,
+                577,
+                997,
+                1723,
+                2971
+              ],
+              "level_db": -50
+            },
+            "tail": 1.0
+          },
+          {
+            "type": "file",
+            "path": "captures/di/funk.wav",
+            "seconds": 12,
+            "probe": {
+              "freq": [
+                331,
+                577,
+                997,
+                1723,
+                2971
+              ],
+              "level_db": -50
+            },
+            "tail": 1.0
+          },
+          {
+            "type": "file",
+            "path": "captures/di/dynamics.wav",
+            "seconds": 20,
+            "probe": {
+              "freq": [
+                331,
+                577,
+                997,
+                1723,
+                2971
+              ],
+              "level_db": -50
+            },
+            "tail": 1.0
+          }
+        ]
+      },
+      "note": "Mode to Down. The knobs stay."
+    },
+    {
+      "name": "sharp-m0300-s0900-d0900",
+      "settings": {
+        "Mode": "Sharp",
+        "Manual": "3:00",
+        "Sens": "9:00",
+        "Decay": "9:00"
+      },
+      "signal": {
+        "type": "sequence",
+        "tail": 0,
+        "parts": [
+          {
+            "type": "file",
+            "path": "captures/di/stabs.wav",
+            "seconds": 12,
+            "probe": {
+              "freq": [
+                331,
+                577,
+                997,
+                1723,
+                2971
+              ],
+              "level_db": -50
+            },
+            "tail": 1.0
+          },
+          {
+            "type": "file",
+            "path": "captures/di/funk.wav",
+            "seconds": 12,
+            "probe": {
+              "freq": [
+                331,
+                577,
+                997,
+                1723,
+                2971
+              ],
+              "level_db": -50
+            },
+            "tail": 1.0
+          },
+          {
+            "type": "file",
+            "path": "captures/di/dynamics.wav",
+            "seconds": 20,
+            "probe": {
+              "freq": [
+                331,
+                577,
+                997,
+                1723,
+                2971
+              ],
+              "level_db": -50
+            },
+            "tail": 1.0
+          }
+        ]
+      },
+      "note": "Mode to Sharp. The knobs stay."
+    },
+    {
+      "name": "sharp-m0900-s0300-d0300",
+      "settings": {
+        "Mode": "Sharp",
+        "Manual": "9:00",
+        "Sens": "3:00",
+        "Decay": "3:00"
+      },
+      "signal": {
+        "type": "sequence",
+        "tail": 0,
+        "parts": [
+          {
+            "type": "file",
+            "path": "captures/di/stabs.wav",
+            "seconds": 12,
+            "probe": {
+              "freq": [
+                331,
+                577,
+                997,
+                1723,
+                2971
+              ],
+              "level_db": -50
+            },
+            "tail": 1.0
+          },
+          {
+            "type": "file",
+            "path": "captures/di/funk.wav",
+            "seconds": 12,
+            "probe": {
+              "freq": [
+                331,
+                577,
+                997,
+                1723,
+                2971
+              ],
+              "level_db": -50
+            },
+            "tail": 1.0
+          },
+          {
+            "type": "file",
+            "path": "captures/di/dynamics.wav",
+            "seconds": 20,
+            "probe": {
+              "freq": [
+                331,
+                577,
+                997,
+                1723,
+                2971
+              ],
+              "level_db": -50
+            },
+            "tail": 1.0
+          }
+        ]
+      },
+      "note": "Mode stays at Sharp. Manual 9:00, Sens 3:00, Decay 3:00."
+    },
+    {
+      "name": "down-m0900-s0300-d0300",
+      "settings": {
+        "Mode": "Down",
+        "Manual": "9:00",
+        "Sens": "3:00",
+        "Decay": "3:00"
+      },
+      "signal": {
+        "type": "sequence",
+        "tail": 0,
+        "parts": [
+          {
+            "type": "file",
+            "path": "captures/di/stabs.wav",
+            "seconds": 12,
+            "probe": {
+              "freq": [
+                331,
+                577,
+                997,
+                1723,
+                2971
+              ],
+              "level_db": -50
+            },
+            "tail": 1.0
+          },
+          {
+            "type": "file",
+            "path": "captures/di/funk.wav",
+            "seconds": 12,
+            "probe": {
+              "freq": [
+                331,
+                577,
+                997,
+                1723,
+                2971
+              ],
+              "level_db": -50
+            },
+            "tail": 1.0
+          },
+          {
+            "type": "file",
+            "path": "captures/di/dynamics.wav",
+            "seconds": 20,
+            "probe": {
+              "freq": [
+                331,
+                577,
+                997,
+                1723,
+                2971
+              ],
+              "level_db": -50
+            },
+            "tail": 1.0
+          }
+        ]
+      },
+      "note": "Mode to Down. The knobs stay."
+    },
+    {
+      "name": "up-m0900-s0300-d0300",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "9:00",
+        "Sens": "3:00",
+        "Decay": "3:00"
+      },
+      "signal": {
+        "type": "sequence",
+        "tail": 0,
+        "parts": [
+          {
+            "type": "file",
+            "path": "captures/di/stabs.wav",
+            "seconds": 12,
+            "probe": {
+              "freq": [
+                331,
+                577,
+                997,
+                1723,
+                2971
+              ],
+              "level_db": -50
+            },
+            "tail": 1.0
+          },
+          {
+            "type": "file",
+            "path": "captures/di/funk.wav",
+            "seconds": 12,
+            "probe": {
+              "freq": [
+                331,
+                577,
+                997,
+                1723,
+                2971
+              ],
+              "level_db": -50
+            },
+            "tail": 1.0
+          },
+          {
+            "type": "file",
+            "path": "captures/di/dynamics.wav",
+            "seconds": 20,
+            "probe": {
+              "freq": [
+                331,
+                577,
+                997,
+                1723,
+                2971
+              ],
+              "level_db": -50
+            },
+            "tail": 1.0
+          }
+        ]
+      },
+      "note": "Mode to Up. The knobs stay."
+    }
+  ]
+}

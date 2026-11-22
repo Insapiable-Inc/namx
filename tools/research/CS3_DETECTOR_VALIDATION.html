@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8">
+<title>NAM-X — CS-3 detector validation</title>
+<style>
+body{font:17px/1.55 system-ui,sans-serif;color:#202a34;background:#fafaf8;max-width:1100px;margin:40px auto;padding:0 25px}h1,h2{line-height:1.2;color:#12394a}h2{margin-top:2em}table{border-collapse:collapse;width:100%;font-size:15px;margin:20px 0}td,th{border-bottom:1px solid #ccd5d7;padding:9px;text-align:left;vertical-align:top}th{background:#e8eff0}pre{white-space:pre-wrap;background:#edf1f2;padding:18px;font-size:14px}img{max-width:100%}a{color:#006e87}.note{border-left:4px solid #16839a;padding:12px 20px;background:#edf5f5}code{font-size:.9em}@media print{body{font-size:11pt;margin:0;max-width:none}h2{break-after:avoid}}
+</style>
+<h1>CS-3: the existing release constants do not generalize to both new jumps</h1>
+<p>30 October 2026 · Physical captures at 110 Hz and 1 kHz · Analysis only</p>
+<p class="note"><strong>Follow-up completed:</strong> the <a href="CS3_CROSSED_VALIDATION.html">crossed-level study</a> confirms the limitation and identifies a promising one-state log-release candidate. This report preserves the earlier measurements and pre-recording predictions; its proposed capture has now been completed.</p>
+<p class="note"><strong>Conclusion:</strong> the current rectified-amplitude detector remains a useful baseline, but its fixed release law is inadequate across the tested level changes. Recovery into the lower quiet level is too fast; recovery into the higher quiet level is slightly too slow. One global adjustment of Release cannot correct both. The result repeats at both carriers and both Attack extremes. A replacement model is not yet identified.</p>
+<p>This continues the <a href="BOSS_PEDAL_RESEARCH_AUDIT.html">collection audit</a>. The frozen reference is commit <code>0a346743de472e253869e43887a02727c6a73322</code>, recorded before the new captures. No production C++ was changed.</p>
+
+<h2>1. Measurements and calibration limits</h2>
+<p>The <a href="../capture/plans/cs-3-detector-check.json">six-take plan</a> contains two bypass references and four engaged recordings. Each signal has four-second plateaus at [−36, −12, −36, −24, −6, −24] dB relative to the guitar-peak reference. Level, Tone and Sustain remain at noon; Attack is minimum or maximum; carriers are 110 Hz and 1 kHz. All six played-float32 hashes match their sidecars, all report zero xruns, and no recorded sample reaches |x|≥.999. Marker quality is .998 throughout.</p>
+<p>At a settled −12 dB plateau, each engaged take's loopback fundamental differs from its same-carrier bypass by less than .000066 dB and .000080 phase-equivalent sample after stored integer alignment. This does not certify arbitrary timing throughout each recording, but it gives no evidence of an interface gain or alignment error large enough to explain an 80–145 ms recovery discrepancy. Recorded output noise in the final half-second is roughly −99 to −101.5 dBFS RMS. The repeated quiet plateaus within each take agree closely.</p>
+<p><strong>Separate level observation:</strong> at the −36 dB input plateau, changing Attack from minimum to maximum raises gain by 1.10 dB at 1 kHz and 1.08 dB at 110 Hz. The model predicts no change because its limiter is inactive there. This is associated with the Attack-setting change; gain coupling in the pedal is a hypothesis. There was no return-to-minimum repeat or final bypass, so accidental control movement or pedal-side level drift cannot be fully excluded. The next small session below checks the return condition as well as dynamics.</p>
+
+<h2>2. What was held fixed</h2>
+<pre>E[n] = E[n−1] + a± (|x[n]| − E[n−1])
+a± = 1 − exp(−1/(fs τ±))
+L[n] = 20 log10(max(E[n], ε))          // input normalized to guitar reference
+gain_dB[n] = G + M − (1−m) max(0, L[n]+G−C)
+y[n] = Tone{x[n] · 10^(gain_dB[n]/20)}
+
+C = −14.25 dB, m = .0117
+Attack minimum: τattack = 1.97 ms, τrelease = 189.1 ms
+Attack maximum: τattack = 1.58 ms, τrelease = 16.4 ms</pre>
+<p>The noon Tone chain is unchanged: HP 38.3 Hz/Q .467, LP 18 kHz/Q .482, low shelves 655.8 Hz/Q .480/+0.57 dB and 5456.4 Hz/Q .661/+1.95 dB, normalized at 1 kHz. The renderer simulates the full played marker/gap preamble and signal in double precision.</p>
+<p>The application exposes Threshold and makeup rather than a physical Sustain/Level noon map. The missing control mapping was reconstructed using <em>old data only</em>: old Level noon versus full gives M=−14.930884 dB; the old uncompressed noon-Sustain staircase gives gain 3.493320 dB, hence G=18.424204 dB and threshold C−G=−32.674204 dB relative to reference. These mappings are not newly fitted to the validation recordings, but they carry hand-setting and original-calibration uncertainty. Absolute error must be distinguished from dynamic-shape error.</p>
+<p>Gain is measured from centered one-carrier-period RMS of output divided by its paired bypass; the same estimator is applied to the model and its input. Output spacing is 1 ms, but effective resolution at 110 Hz is about 9.09 ms. Release t63/t90 use each trace's own settled pre-drop and final gains. RMS scores omit the first two carrier periods, with a minimum exclusion of 5 ms, and cover the following recovery up to 1.2 s. These samples are correlated; no population confidence intervals are claimed.</p>
+
+<h2>3. New recovery results</h2>
+<table><tr><th>Attack / carrier</th><th>−12 → −36 dB: measured / predicted t63</th><th>−6 → −24 dB: measured / predicted t63</th></tr>
+<tr><td>Minimum / 110 Hz</td><td>394 / 312 ms</td><td>284 / 302 ms</td></tr>
+<tr><td>Minimum / 1 kHz</td><td><strong>397 / 311 ms</strong></td><td><strong>283 / 301 ms</strong></td></tr>
+<tr><td>Maximum / 110 Hz</td><td>34 / 28 ms</td><td>25 / 28 ms</td></tr>
+<tr><td>Maximum / 1 kHz</td><td>34 / 26 ms</td><td>25 / 27 ms</td></tr></table>
+<p>The slow, lower-destination jump also reaches t90 at 616 ms versus 471 ms predicted at 1 kHz. The mismatch is not just a constant output offset. After normalizing both start and final gain endpoints, its recovery-shape RMS is 1.858 dB equivalent at 1 kHz and 1.776 dB at 110 Hz. The higher-destination jump's corresponding errors are .517/.503 dB.</p>
+<p>At maximum Attack, shape RMS over the same 1.2-second window is .542/.471 dB for the lower destination and .154/.152 dB for the higher destination (1 kHz/110 Hz). That long window contains much settled output at this fast setting: over the first 200 ms, the lower-destination shape errors are 1.341/1.203 dB equivalent. Raw, unnormalized release RMS across the eight conditions ranges from .253 to 2.018 dB; full per-condition values are in the results artifact.</p>
+<img src="cs3_detector_validation.png" alt="Measured and frozen-model CS-3 recovery curves for two jump sizes, both carrier frequencies and both Attack extremes. The model recovers too early into the lower quiet level and slightly too late into the higher quiet level.">
+<p><strong>Renderer cross-check:</strong> the same analysis applied to the original 0 → −30 dB jump gives slow t63/t90 of 455/715 ms measured versus 448/703 ms predicted, with .266 dB endpoint-normalized shape RMS. At maximum Attack those times are 41/65 versus 39/63 ms, with .112 dB shape RMS. Thus the original timing calibration largely reproduces while the new lower-destination jump fails. With the explicit old-data control mapping, absolute old-jump RMS is 1.382/.283 dB at minimum/maximum Attack; the archived .27–.34 dB headline must not be treated as an absolute guarantee under every control mapping or new condition.</p>
+
+<h2>4. What else works, and what does not</h2>
+<p><strong>Tone:</strong> at the low, uncompressed plateau, measured 110 Hz versus 1 kHz gain is about −.86 to −.88 dB; the existing Tone model predicts −.825 dB. This is good agreement at those two frequencies. A new ordinary output-tone filter is not the leading explanation for the compression-dependent discrepancy.</p>
+<p><strong>Attack transient:</strong> at 1 kHz, measured versus predicted settling within 1 dB is 14/11 and 13/11 ms for the two rises at minimum Attack, and 7/7 and 6/7 ms at maximum. Cycle-RMS overshoot differs by less than .8 dB in those cases. At 110 Hz, measured overshoot exceeds the model by roughly 2.3–3.7 dB, but the measurement window is one 9.09 ms cycle and tone/phase effects matter. Do not change attack constants based on an apparent sub-cycle timing discrepancy.</p>
+<p><strong>Harmonics:</strong> the model correctly produces much stronger detector-related distortion at 110 Hz with fast recovery. At maximum Attack and −6 dB input, measured harmonics 2–5 give 3.51% THD at 110 Hz versus 2.74% modeled; at 1 kHz the values are .418% versus .261%. Paired bypass values are about .036% and .035%, respectively. The dominant measured third harmonics are well above the nearby-bin noise estimates. These are coherent steady-sine measurements, not a general guitar distortion score or proof of the physical nonlinear mechanism.</p>
+<p><strong>Scale dependence:</strong> a homogeneous linear detector with this fixed gain law predicts output changes of m·6=.0702 dB for a 6 dB input increase while fully compressed, regardless of carrier or time constants. From −12 to −6 dB input at maximum Attack, the measured increases are .193 dB at 1 kHz and .327 dB at 110 Hz. This is additional evidence that the frozen structure misses some amplitude dependence. It does not uniquely distinguish rectifier behavior, VCA law, feedback control or other internal dynamics.</p>
+
+<h2>5. Diagnostic fits and competing explanations</h2>
+<p>As a diagnostic only, fitting one release constant separately to each endpoint-normalized recovery gives:</p>
+<table><tr><th>Attack</th><th>Current τ</th><th>Required for −12 → −36 dB</th><th>Required for −6 → −24 dB</th></tr>
+<tr><td>Minimum</td><td>189.1 ms</td><td>240.8–243.1 ms</td><td>173.1–173.6 ms</td></tr>
+<tr><td>Maximum</td><td>16.4 ms</td><td>21.06–21.37 ms</td><td>14.68–14.90 ms</td></tr></table>
+<p>Each range spans the two carriers. The required factors are roughly 1.28 and .91 across both knob settings. These are fitted effective values, not identified physical time constants and not parameters to install per signal condition. Their opposing changes reject a simple uniform rescaling of the existing Release map.</p>
+<p><strong>Supported conclusion:</strong> the fixed-law model has an operating-level generalization problem that persists after removing endpoint differences. <strong>Unresolved:</strong> the starting level, destination level and jump size all changed together in the two new packets. A state-dependent discharge law, a different static gain law near the limiter knee, and control-loop dynamics are competing hypotheses. The present evidence does not justify adding a second detector state or claiming a particular circuit.</p>
+<p>The first low-cost candidate to investigate after separating those factors is a one-state nonlinear release, with a positive, bounded time scale depending on detector state or input operating level. Its coefficients are not identified here. Any candidate must explain the original 30 dB jump, both new packets and the next crossed packets with one control law; it must also preserve the reasonably matched 1 kHz attack behavior and low-frequency distortion trend.</p>
+
+<h2>6. Minimum discriminating follow-up: two takes</h2>
+<p>The prepared <a href="../capture/plans/cs-3-detector-crossed.json">crossed-level plan</a> has one bypass and one engaged take, both at 1 kHz. Each uses [−36, −6, −36, −24, −12, −24] dB plateaus of four seconds, plus a two-second tail. Set only Attack back to its minimum hard stop; keep Level, Tone and Sustain at noon and the interface unchanged. Total recorded audio is about 54 seconds.</p>
+<p>This completes the two-by-two comparison: the new drops are −6 → −36 and −12 → −24 dB. Each swaps the starting level while holding one previous destination level. Returning Attack to minimum also checks whether the earlier low-level gain returns, and the new bypass checks calibration. It is more informative than another intermediate Attack setting or a repeat of the original 30 dB jump.</p>
+<table><tr><th>Frozen diagnostic hypothesis</th><th>Predicted t63 for −6 → −36</th><th>Predicted t63 for −12 → −24</th></tr>
+<tr><td>Existing fixed τ=189.1 ms</td><td>388 ms</td><td>226 ms</td></tr>
+<tr><td>Effective τ follows destination level</td><td>500 ms</td><td>207 ms</td></tr>
+<tr><td>Effective τ follows starting level</td><td>355 ms</td><td>290 ms</td></tr></table>
+<p>The hypotheses deliberately predict different orderings. Full frozen predictions and source-result hashes are saved in the new session's <code>analysis-protocol.json</code>. Compare entire normalized recovery shapes and t63/t90, not just whichever single timing number happens to agree. Agreement with one explanation would favor it behaviorally; disagreement with both points toward jump-size/history or within-release state dependence. Neither outcome identifies the original circuit.</p>
+<pre>cd <repo>
+python tools/capture/capture.py run \
+  captures/boss/cs-3/2026-10-30-detector-crossed \
+  tools/capture/plans/cs-3-detector-crossed.json</pre>
+
+<h2>7. Implementation handoff and reproduction</h2>
+<p><strong>Keep the current CS-3 as the baseline.</strong> Do not replace the Release table with the single-drop fits, add a carrier-dependent correction, or change the output Tone to hide detector mismatch. No validated replacement architecture is ready yet. A roughly 100 ms recovery-shape difference could matter for quiet notes following loud notes, but audibility has not been tested. Gain-control coupling and harmonic refinements should not grow the model unless they improve the intended musical behavior.</p>
+<pre>OPENBLAS_NUM_THREADS=1 MPLCONFIGDIR=/tmp/namx-mpl \
+  python tools/research/analyze_cs3_detector.py</pre>
+<p><a href="analyze_cs3_detector.py">Analysis and numerical renderer</a> · <a href="cs3_detector_results.json">complete measurements and diagnostics</a> · <a href="cs3_detector_validation.png">figure</a>. The script needs NumPy, SciPy, SoundFile, Numba and Matplotlib, plus the old and new WAVs in their capture directories. Old sidecars can be read from the frozen Git commit when absent in the working checkout. The fixed detector and gain-law prediction is separate from explicitly labeled post-hoc tau fits and endpoint-normalized diagnostics.</p>
+</html>

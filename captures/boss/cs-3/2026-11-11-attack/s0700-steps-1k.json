@@ -1,0 +1,56 @@
+{
+  "take": "s0700-steps-1k",
+  "pedal": "Boss CS-3 Compression Sustainer \u2014 Attack in between (mono)",
+  "bypass": false,
+  "settings": {
+    "Level": "12:00",
+    "Tone": "12:00",
+    "Attack": "12:00",
+    "Sustain": "7:00"
+  },
+  "note": "Sustain fully counter-clockwise, Attack back to 12:00. A 1 kHz tone in eight steps up to the guitar's peak: where the limiter starts on a steady tone, against where it starts on chords.",
+  "signal": {
+    "type": "steps",
+    "freq": 1000,
+    "levels_db": [
+      -24,
+      -18,
+      -15,
+      -12,
+      -9,
+      -6,
+      -3,
+      0
+    ],
+    "step_seconds": 1.5,
+    "tail": 1.0
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -39.95,
+    "loop": -12.96
+  },
+  "latency_samples": 449,
+  "latency_quality": 0.998,
+  "xruns": 0,
+  "played_sha256": "4a667322abfb92569daa38e2b4e3adf7a413553c040254ceb2ad42b4214d60e2",
+  "recorded_at": "2026-11-11T19:32:59",
+  "tool_commit": "3118c2f26b35470eb134651483d9fe7d10114d32",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX4",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Boss CS-3 on its 9 V adapter: the guitar DI dataset. Input from interface out 3; OUTPUT -> input 2; INST, AIR off, pad on, gain fully counter-clockwise."
+  }
+}

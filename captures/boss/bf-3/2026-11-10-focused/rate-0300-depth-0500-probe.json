@@ -1,0 +1,50 @@
+{
+  "take": "rate-0300-depth-0500-probe",
+  "pedal": "Boss BF-3 Flanger \u2014 focused reamp, both outputs recorded (Output A: the pedal as the model has it; Output B: never measured)",
+  "bypass": false,
+  "settings": {
+    "Mode": "Standard",
+    "Manual": "12:00",
+    "Res": "7:00",
+    "Depth": "5:00",
+    "Rate": "3:00"
+  },
+  "note": "",
+  "signal": {
+    "type": "sine",
+    "freq": 8000,
+    "seconds": 12,
+    "level_db": -30,
+    "tail": 1.0
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -38.29,
+    "loop": -42.09,
+    "pedal_b": -38.35
+  },
+  "latency_samples": 455,
+  "latency_quality": 0.998,
+  "xruns": 0,
+  "played_sha256": "dd468558d8bce583088d40fbf1fe752b95a509617fa42f458218f8786b8d6a95",
+  "recorded_at": "2026-11-10T16:08:33",
+  "tool_commit": "ec03e0558db64de4d9eb78eabe6ffb3769e4a0a8",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX4",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Boss BF-3 on its 9 V adapter: the guitar DI dataset. Input from interface out 3; OUTPUT A -> input 2, OUTPUT B -> input 1; INST, AIR off, pad on, gain fully counter-clockwise.",
+    "pedal_in_b": "Scarlett 8i6 USB Pro:capture_AUX0"
+  }
+}

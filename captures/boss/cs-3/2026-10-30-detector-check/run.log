@@ -1,0 +1,52 @@
+
+=== 2026-10-30T14:03:09 · run tools/capture/plans/cs-3-detector-check.json · tool 979167bf6ba528173a9069fc329ffde098383af4-dirty
+
+[1/6] bypass-steps-110: 110 Hz at -36/-12/-36/-24/-6/-24 dB, 4 s each
+  pedal OFF (bypassed)
+  CS-3 bypassed. Keep the interface configuration, input gain and cables fixed. These are two different jump sizes, with four seconds at every level.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.3 dBFS · loopback -18.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[2/6] bypass-steps-1000: 1000 Hz at -36/-12/-36/-24/-6/-24 dB, 4 s each
+  pedal OFF (bypassed)
+  CS-3 bypassed. Keep the interface configuration, input gain and cables fixed. These are two different jump sizes, with four seconds at every level.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.5 dBFS · loopback -18.9 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[3/6] attack-0700-steps-110: 110 Hz at -36/-12/-36/-24/-6/-24 dB, 4 s each
+  pedal ON · Level 12:00 · Tone 12:00 · Attack 7:00 · Sustain 12:00 (switch it on)
+  Pedal ON. Level, Tone and Sustain stay at 12:00 for all four engaged takes. Change only Attack when requested; the test signal changes automatically.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -32.0 dBFS · loopback -18.9 dBFS · latency 582 samples (12.12 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[4/6] attack-0700-steps-1000: 1000 Hz at -36/-12/-36/-24/-6/-24 dB, 4 s each
+  pedal ON · Level 12:00 · Tone 12:00 · Attack 7:00 · Sustain 12:00
+  Pedal ON. Level, Tone and Sustain stay at 12:00 for all four engaged takes. Change only Attack when requested; the test signal changes automatically.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -29.4 dBFS · loopback -18.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[5/6] attack-0500-steps-1000: 1000 Hz at -36/-12/-36/-24/-6/-24 dB, 4 s each
+  pedal ON · Level 12:00 · Tone 12:00 · Attack 5:00 (changed) · Sustain 12:00
+  Pedal ON. Level, Tone and Sustain stay at 12:00 for all four engaged takes. Change only Attack when requested; the test signal changes automatically.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -29.0 dBFS · loopback -18.9 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[6/6] attack-0500-steps-110: 110 Hz at -36/-12/-36/-24/-6/-24 dB, 4 s each
+  pedal ON · Level 12:00 · Tone 12:00 · Attack 5:00 · Sustain 12:00
+  Pedal ON. Level, Tone and Sustain stay at 12:00 for all four engaged takes. Change only Attack when requested; the test signal changes automatically.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -31.4 dBFS · loopback -18.9 dBFS · latency 578 samples (12.04 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+All 6 takes are in captures/boss/cs-3/2026-10-30-detector-check.

@@ -238,12 +238,14 @@ TempoBar::TempoBar(Metronome& metronome, QWidget* parent)
     // Level + pan.
     volume = new KnobWidget("Click Level", -40.0, 6.0, -6.0, "dB");
     volume->set_scroll_step(1.0);
+    volume->setToolTip("The metronome's volume");
     volume->set_accent(Theme::generic_accent());
     volume->set_value(s.value("metronome/volume", -6.0).toDouble());
     metro.set_volume_db(static_cast<float>(volume->value()));
     connect(volume, &KnobWidget::value_changed, this, &TempoBar::on_volume_changed);
     pan = new KnobWidget("Click Pan", -100.0, 100.0, 0.0, "%");
     pan->set_scroll_step(10.0);
+    pan->setToolTip("Where the metronome sits between the left and right speakers");
     pan->set_accent(Theme::generic_accent());
     pan->set_value_formatter(&format_pan);
     pan->set_value(s.value("metronome/pan", 0.0).toDouble());

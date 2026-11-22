@@ -1,0 +1,1566 @@
+{
+  "pedal": "Boss RT-2 Rotary Ensemble (mono in: INPUT A only; stereo out: OUTPUT A and B)",
+  "comment": "First session: the rotors (rate per Slow/Fast position, the horn's and drum's pitch and level swings, the crossover, the two outputs' microphones), the speed changes per Rise/Fall, Drive per Mode, Balance, Level, Modes I/II/III. Signals: a chord of 11 equal sines 97 Hz-7.5 kHz (demodulated tone by tone: AM, Doppler delay, which rotor each follows), click trains every 100.9 ms (impulse responses at many rotor angles), 441 Hz bursts (Drive's curve), noise (average tone), the guitar DI. Factory settings assumed: OUTPUT MODE stereo, noise suppressor off, pedal switch Type 1 (press = on/off, hold = rotors slow/fast; LED green = slow, red = fast; recorded as LED; takes 6-11 call it Speed in their sidecars). The SPEED jack is left empty. Knob 1: Level (inner), Drive/Balance (outer: the Drive Knob toggle picks which stored value the ring sets; both act all the time; Balance at its factory centre except in the Balance takes). Knob 2: Fast (inner), Slow (outer). Toggles on top: Mode, Rise/Fall, Drive Knob. 48 kHz internally (spec). Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise; 9:00 and 3:00 pointer horizontal. Takes ordered by setting, for the fewest knob turns.",
+  "quiet_dbfs": -60,
+  "knobs": [
+    "Mode",
+    "Rise/Fall",
+    "LED",
+    "Level",
+    "Drive/Balance",
+    "Fast",
+    "Slow"
+  ],
+  "takes": [
+    {
+      "name": "bypass-silence",
+      "bypass": true,
+      "signal": {
+        "type": "silence",
+        "seconds": 5,
+        "tail": 0.5
+      },
+      "note": "Effect off (CHECK unlit). Mono in: INPUT A only. OUTPUT A and B both recorded."
+    },
+    {
+      "name": "bypass-noise",
+      "bypass": true,
+      "signal": {
+        "type": "noise",
+        "seconds": 10,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 1
+      }
+    },
+    {
+      "name": "bypass-chord",
+      "bypass": true,
+      "signal": {
+        "type": "sine",
+        "freq": [
+          97,
+          197,
+          307,
+          499,
+          701,
+          997,
+          1499,
+          2203,
+          3301,
+          4999,
+          7499
+        ],
+        "seconds": 10,
+        "level_db": -6,
+        "tail": 1
+      }
+    },
+    {
+      "name": "bypass-clicks",
+      "bypass": true,
+      "signal": {
+        "type": "clicks",
+        "period": 0.1009,
+        "count": 150,
+        "level_db": 0,
+        "tail": 1
+      }
+    },
+    {
+      "name": "bypass-steps",
+      "bypass": true,
+      "signal": {
+        "type": "steps",
+        "freq": 441,
+        "levels_db": [
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          -3,
+          0,
+          3
+        ],
+        "step_seconds": 2.5,
+        "gap_seconds": 0.4,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m1-slow-silence",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "silence",
+        "seconds": 5,
+        "tail": 0.5
+      },
+      "note": "Effect on, LED green. Balance stays at its factory centre unless a take says otherwise."
+    },
+    {
+      "name": "m1-slow-chord",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          97,
+          197,
+          307,
+          499,
+          701,
+          997,
+          1499,
+          2203,
+          3301,
+          4999,
+          7499
+        ],
+        "seconds": 20,
+        "level_db": -6,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m1-slow-noise",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 10,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m1-slow-clicks",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 0.1009,
+        "count": 150,
+        "level_db": 0,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m1-slow-steps",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 441,
+        "levels_db": [
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          -3,
+          0,
+          3
+        ],
+        "step_seconds": 2.5,
+        "gap_seconds": 0.4,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m1-slow-reamp",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/lowe-chromatic.wav",
+        "tail": 2
+      }
+    },
+    {
+      "name": "m1-fast-chord",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "red",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          97,
+          197,
+          307,
+          499,
+          701,
+          997,
+          1499,
+          2203,
+          3301,
+          4999,
+          7499
+        ],
+        "seconds": 10,
+        "level_db": -6,
+        "tail": 1
+      },
+      "note": "Step on the RT-2's own pedal and hold it until the LED changes colour (green = rotors slow, red = rotors fast); leave the Rise/Fall toggle alone. Give the rotors ~10 s to settle before Enter."
+    },
+    {
+      "name": "m1-fast-noise",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "red",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 10,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m1-fast-clicks",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "red",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 0.1009,
+        "count": 150,
+        "level_db": 0,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m1-fast-reamp",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "red",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/lowe-chromatic.wav",
+        "tail": 2
+      }
+    },
+    {
+      "name": "m1-fast-0900-chord",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "red",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "9:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          97,
+          197,
+          307,
+          499,
+          701,
+          997,
+          1499,
+          2203,
+          3301,
+          4999,
+          7499
+        ],
+        "seconds": 10,
+        "level_db": -6,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m1-fast-0700-chord",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "red",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "7:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          97,
+          197,
+          307,
+          499,
+          701,
+          997,
+          1499,
+          2203,
+          3301,
+          4999,
+          7499
+        ],
+        "seconds": 10,
+        "level_db": -6,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m1-fast-0300-chord",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "red",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "3:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          97,
+          197,
+          307,
+          499,
+          701,
+          997,
+          1499,
+          2203,
+          3301,
+          4999,
+          7499
+        ],
+        "seconds": 8,
+        "level_db": -6,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m1-fast-0500-chord",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "red",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "5:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          97,
+          197,
+          307,
+          499,
+          701,
+          997,
+          1499,
+          2203,
+          3301,
+          4999,
+          7499
+        ],
+        "seconds": 8,
+        "level_db": -6,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m1-level-0900-chord",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "red",
+        "Level": "9:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          97,
+          197,
+          307,
+          499,
+          701,
+          997,
+          1499,
+          2203,
+          3301,
+          4999,
+          7499
+        ],
+        "seconds": 5,
+        "level_db": -6,
+        "tail": 1
+      },
+      "note": "Fast back to 12:00."
+    },
+    {
+      "name": "m1-level-0700-chord",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "red",
+        "Level": "7:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          97,
+          197,
+          307,
+          499,
+          701,
+          997,
+          1499,
+          2203,
+          3301,
+          4999,
+          7499
+        ],
+        "seconds": 5,
+        "level_db": -6,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m1-level-0300-chord",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "red",
+        "Level": "3:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          97,
+          197,
+          307,
+          499,
+          701,
+          997,
+          1499,
+          2203,
+          3301,
+          4999,
+          7499
+        ],
+        "seconds": 5,
+        "level_db": -6,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m1-level-0500-chord",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "red",
+        "Level": "5:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          97,
+          197,
+          307,
+          499,
+          701,
+          997,
+          1499,
+          2203,
+          3301,
+          4999,
+          7499
+        ],
+        "seconds": 5,
+        "level_db": -6,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m1-balance-0900-chord",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "red",
+        "Level": "12:00",
+        "Drive/Balance": "BALANCE 9:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          97,
+          197,
+          307,
+          499,
+          701,
+          997,
+          1499,
+          2203,
+          3301,
+          4999,
+          7499
+        ],
+        "seconds": 8,
+        "level_db": -6,
+        "tail": 1
+      },
+      "note": "Level back to 12:00. Flip the Drive Knob toggle to BALANCE: from now the outer ring sets Balance (Drive stays at 7:00)."
+    },
+    {
+      "name": "m1-balance-0700-chord",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "red",
+        "Level": "12:00",
+        "Drive/Balance": "BALANCE 7:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          97,
+          197,
+          307,
+          499,
+          701,
+          997,
+          1499,
+          2203,
+          3301,
+          4999,
+          7499
+        ],
+        "seconds": 8,
+        "level_db": -6,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m1-balance-0300-chord",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "red",
+        "Level": "12:00",
+        "Drive/Balance": "BALANCE 3:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          97,
+          197,
+          307,
+          499,
+          701,
+          997,
+          1499,
+          2203,
+          3301,
+          4999,
+          7499
+        ],
+        "seconds": 8,
+        "level_db": -6,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m1-balance-0500-chord",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "red",
+        "Level": "12:00",
+        "Drive/Balance": "BALANCE 5:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          97,
+          197,
+          307,
+          499,
+          701,
+          997,
+          1499,
+          2203,
+          3301,
+          4999,
+          7499
+        ],
+        "seconds": 8,
+        "level_db": -6,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m1-balance-0500-noise",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "red",
+        "Level": "12:00",
+        "Drive/Balance": "BALANCE 5:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 8,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m1-ramp-risefast-chord",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "red",
+        "Level": "12:00",
+        "Drive/Balance": "BALANCE 12:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          97,
+          197,
+          307,
+          499,
+          701,
+          997,
+          1499,
+          2203,
+          3301,
+          4999,
+          7499
+        ],
+        "seconds": 45,
+        "level_db": -6,
+        "tail": 1
+      },
+      "note": "Ring back to 12:00 (Balance centre); leave the toggle on BALANCE. Starts with the LED red. About 5 s after recording starts, step on the RT-2's pedal and hold it until the LED turns green; about 20 s later step and hold it again until it turns red. Note roughly when you pressed (the log keeps it if you type it at the redo prompt)."
+    },
+    {
+      "name": "m1-ramp-riseslow-chord",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "SLOW",
+        "LED": "red",
+        "Level": "12:00",
+        "Drive/Balance": "BALANCE 12:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          97,
+          197,
+          307,
+          499,
+          701,
+          997,
+          1499,
+          2203,
+          3301,
+          4999,
+          7499
+        ],
+        "seconds": 75,
+        "level_db": -6,
+        "tail": 1
+      },
+      "note": "Starts with the LED red. About 5 s after recording starts, step on the RT-2's pedal and hold it until the LED turns green; about 35 s later step and hold it again until it turns red."
+    },
+    {
+      "name": "m1-slow-0900-chord",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "BALANCE 12:00",
+        "Fast": "12:00",
+        "Slow": "9:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          97,
+          197,
+          307,
+          499,
+          701,
+          997,
+          1499,
+          2203,
+          3301,
+          4999,
+          7499
+        ],
+        "seconds": 20,
+        "level_db": -6,
+        "tail": 1
+      },
+      "note": "Rise/Fall toggle back to FAST. Then step on the RT-2's pedal and hold it until the LED turns green; give the rotors ~10 s to settle before Enter."
+    },
+    {
+      "name": "m1-slow-0700-chord",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "BALANCE 12:00",
+        "Fast": "12:00",
+        "Slow": "7:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          97,
+          197,
+          307,
+          499,
+          701,
+          997,
+          1499,
+          2203,
+          3301,
+          4999,
+          7499
+        ],
+        "seconds": 40,
+        "level_db": -6,
+        "tail": 1
+      },
+      "note": "Slow 7:00 may turn very slowly: 40 s."
+    },
+    {
+      "name": "m1-slow-0300-chord",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "BALANCE 12:00",
+        "Fast": "12:00",
+        "Slow": "3:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          97,
+          197,
+          307,
+          499,
+          701,
+          997,
+          1499,
+          2203,
+          3301,
+          4999,
+          7499
+        ],
+        "seconds": 15,
+        "level_db": -6,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m1-slow-0500-chord",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "BALANCE 12:00",
+        "Fast": "12:00",
+        "Slow": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          97,
+          197,
+          307,
+          499,
+          701,
+          997,
+          1499,
+          2203,
+          3301,
+          4999,
+          7499
+        ],
+        "seconds": 12,
+        "level_db": -6,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m1-drive-0900-steps",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 9:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 441,
+        "levels_db": [
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          -3,
+          0,
+          3
+        ],
+        "step_seconds": 2.5,
+        "gap_seconds": 0.4,
+        "tail": 1
+      },
+      "note": "Slow back to 12:00. Flip the Drive Knob toggle to DRIVE, then turn the ring to 9:00."
+    },
+    {
+      "name": "m1-drive-1200-steps",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 12:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 441,
+        "levels_db": [
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          -3,
+          0,
+          3
+        ],
+        "step_seconds": 2.5,
+        "gap_seconds": 0.4,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m1-drive-0300-steps",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 3:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 441,
+        "levels_db": [
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          -3,
+          0,
+          3
+        ],
+        "step_seconds": 2.5,
+        "gap_seconds": 0.4,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m1-drive-0500-steps",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 5:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 441,
+        "levels_db": [
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          -3,
+          0,
+          3
+        ],
+        "step_seconds": 2.5,
+        "gap_seconds": 0.4,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m1-drive-0500-reamp",
+      "settings": {
+        "Mode": "I",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 5:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/lowe-chromatic.wav",
+        "tail": 2
+      }
+    },
+    {
+      "name": "m3-drive-0500-steps",
+      "settings": {
+        "Mode": "III",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 5:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 441,
+        "levels_db": [
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          -3,
+          0,
+          3
+        ],
+        "step_seconds": 2.5,
+        "gap_seconds": 0.4,
+        "tail": 1
+      },
+      "note": "Mode III."
+    },
+    {
+      "name": "m3-drive-0300-steps",
+      "settings": {
+        "Mode": "III",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 3:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 441,
+        "levels_db": [
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          -3,
+          0,
+          3
+        ],
+        "step_seconds": 2.5,
+        "gap_seconds": 0.4,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m3-drive-1200-steps",
+      "settings": {
+        "Mode": "III",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 12:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 441,
+        "levels_db": [
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          -3,
+          0,
+          3
+        ],
+        "step_seconds": 2.5,
+        "gap_seconds": 0.4,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m3-drive-0900-steps",
+      "settings": {
+        "Mode": "III",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 9:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 441,
+        "levels_db": [
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          -3,
+          0,
+          3
+        ],
+        "step_seconds": 2.5,
+        "gap_seconds": 0.4,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m3-drive-0700-steps",
+      "settings": {
+        "Mode": "III",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 441,
+        "levels_db": [
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          -3,
+          0,
+          3
+        ],
+        "step_seconds": 2.5,
+        "gap_seconds": 0.4,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m3-drive-0300-reamp",
+      "settings": {
+        "Mode": "III",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 3:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/lowe-chromatic.wav",
+        "tail": 2
+      },
+      "note": "Drive back up to 3:00 for a driven Mode III reamp."
+    },
+    {
+      "name": "m3-slow-chord",
+      "settings": {
+        "Mode": "III",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          97,
+          197,
+          307,
+          499,
+          701,
+          997,
+          1499,
+          2203,
+          3301,
+          4999,
+          7499
+        ],
+        "seconds": 20,
+        "level_db": -6,
+        "tail": 1
+      },
+      "note": "Drive back to 7:00."
+    },
+    {
+      "name": "m3-slow-noise",
+      "settings": {
+        "Mode": "III",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 10,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m3-slow-clicks",
+      "settings": {
+        "Mode": "III",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 0.1009,
+        "count": 150,
+        "level_db": 0,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m3-slow-silence",
+      "settings": {
+        "Mode": "III",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "silence",
+        "seconds": 5,
+        "tail": 0.5
+      }
+    },
+    {
+      "name": "m3-slow-reamp",
+      "settings": {
+        "Mode": "III",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/lowe-chromatic.wav",
+        "tail": 2
+      }
+    },
+    {
+      "name": "m3-fast-chord",
+      "settings": {
+        "Mode": "III",
+        "Rise/Fall": "FAST",
+        "LED": "red",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          97,
+          197,
+          307,
+          499,
+          701,
+          997,
+          1499,
+          2203,
+          3301,
+          4999,
+          7499
+        ],
+        "seconds": 10,
+        "level_db": -6,
+        "tail": 1
+      },
+      "note": "Step on the RT-2's own pedal and hold it until the LED changes colour (green = rotors slow, red = rotors fast); leave the Rise/Fall toggle alone. Give the rotors ~10 s to settle before Enter."
+    },
+    {
+      "name": "m3-fast-clicks",
+      "settings": {
+        "Mode": "III",
+        "Rise/Fall": "FAST",
+        "LED": "red",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 0.1009,
+        "count": 150,
+        "level_db": 0,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m3-fast-reamp",
+      "settings": {
+        "Mode": "III",
+        "Rise/Fall": "FAST",
+        "LED": "red",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/lowe-chromatic.wav",
+        "tail": 2
+      }
+    },
+    {
+      "name": "m2-fast-chord",
+      "settings": {
+        "Mode": "II",
+        "Rise/Fall": "FAST",
+        "LED": "red",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          97,
+          197,
+          307,
+          499,
+          701,
+          997,
+          1499,
+          2203,
+          3301,
+          4999,
+          7499
+        ],
+        "seconds": 10,
+        "level_db": -6,
+        "tail": 1
+      },
+      "note": "Mode II."
+    },
+    {
+      "name": "m2-fast-clicks",
+      "settings": {
+        "Mode": "II",
+        "Rise/Fall": "FAST",
+        "LED": "red",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 0.1009,
+        "count": 150,
+        "level_db": 0,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m2-fast-reamp",
+      "settings": {
+        "Mode": "II",
+        "Rise/Fall": "FAST",
+        "LED": "red",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/lowe-chromatic.wav",
+        "tail": 2
+      }
+    },
+    {
+      "name": "m2-slow-chord",
+      "settings": {
+        "Mode": "II",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          97,
+          197,
+          307,
+          499,
+          701,
+          997,
+          1499,
+          2203,
+          3301,
+          4999,
+          7499
+        ],
+        "seconds": 20,
+        "level_db": -6,
+        "tail": 1
+      },
+      "note": "Step on the RT-2's own pedal and hold it until the LED changes colour (green = rotors slow, red = rotors fast); leave the Rise/Fall toggle alone. Give the rotors ~10 s to settle before Enter."
+    },
+    {
+      "name": "m2-slow-noise",
+      "settings": {
+        "Mode": "II",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 10,
+        "level_db": -12,
+        "seed": 1,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m2-slow-clicks",
+      "settings": {
+        "Mode": "II",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 0.1009,
+        "count": 150,
+        "level_db": 0,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m2-slow-steps",
+      "settings": {
+        "Mode": "II",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 441,
+        "levels_db": [
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          -3,
+          0,
+          3
+        ],
+        "step_seconds": 2.5,
+        "gap_seconds": 0.4,
+        "tail": 1
+      }
+    },
+    {
+      "name": "m2-slow-silence",
+      "settings": {
+        "Mode": "II",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "silence",
+        "seconds": 5,
+        "tail": 0.5
+      }
+    },
+    {
+      "name": "m2-slow-reamp",
+      "settings": {
+        "Mode": "II",
+        "Rise/Fall": "FAST",
+        "LED": "green",
+        "Level": "12:00",
+        "Drive/Balance": "DRIVE 7:00",
+        "Fast": "12:00",
+        "Slow": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/lowe-chromatic.wav",
+        "tail": 2
+      }
+    }
+  ]
+}

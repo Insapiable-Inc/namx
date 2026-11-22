@@ -1,0 +1,340 @@
+{
+  "pedal": "Boss RV-6 Reverb (stereo: Input A -> Outputs A and B; Input B and EXP empty)",
+  "comment": "RV-6 Shimmer session (proposed 2026-10-31 after the first fit missed the plucks' octaves by 5-8 dB): one held note per take from silence (the marker to the loopback only, so no shimmered marker tail), the low E and its octaves to 2.6 kHz, two levels, an interval and a chord, two isolated plucks, Tone, Time and Level ends at 330 Hz, and Modulate's tank on two of the notes. Mode turns one way.",
+  "quiet_dbfs": -60,
+  "marker_to_pedal": false,
+  "knobs": [
+    "Mode",
+    "Level",
+    "Tone",
+    "Time"
+  ],
+  "takes": [
+    {
+      "name": "bypass-sweep",
+      "bypass": true,
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 3
+      },
+      "note": "Pedal OFF. Output A -> input 2, Output B -> input 1. From here on the marker goes to the loopback only."
+    },
+    {
+      "name": "modulate-tone-0082",
+      "settings": {
+        "Mode": "Modulate",
+        "Level": "5:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 82.41,
+        "seconds": 4,
+        "level_db": -24,
+        "tail": 20
+      },
+      "note": "Pedal ON, MODE MODULATE, Level fully UP, Tone and Time at 12:00. The tank alone on a note, for Shimmer's reference."
+    },
+    {
+      "name": "modulate-tone-0330",
+      "settings": {
+        "Mode": "Modulate",
+        "Level": "5:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 329.63,
+        "seconds": 4,
+        "level_db": -24,
+        "tail": 20
+      }
+    },
+    {
+      "name": "shimmer-tone-0082",
+      "settings": {
+        "Mode": "Shimmer",
+        "Level": "5:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 82.41,
+        "seconds": 4,
+        "level_db": -24,
+        "tail": 20
+      },
+      "note": "MODE SHIMMER (Level still fully up, Tone and Time 12:00). One held note per take, the low E and its octaves up to 2.6 kHz: each octave's onset, build-up, steady level and decay."
+    },
+    {
+      "name": "shimmer-tone-0165",
+      "settings": {
+        "Mode": "Shimmer",
+        "Level": "5:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 164.81,
+        "seconds": 4,
+        "level_db": -24,
+        "tail": 20
+      }
+    },
+    {
+      "name": "shimmer-tone-0330",
+      "settings": {
+        "Mode": "Shimmer",
+        "Level": "5:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 329.63,
+        "seconds": 4,
+        "level_db": -24,
+        "tail": 20
+      }
+    },
+    {
+      "name": "shimmer-tone-0659",
+      "settings": {
+        "Mode": "Shimmer",
+        "Level": "5:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 659.26,
+        "seconds": 4,
+        "level_db": -24,
+        "tail": 20
+      }
+    },
+    {
+      "name": "shimmer-tone-1319",
+      "settings": {
+        "Mode": "Shimmer",
+        "Level": "5:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1318.51,
+        "seconds": 4,
+        "level_db": -24,
+        "tail": 20
+      }
+    },
+    {
+      "name": "shimmer-tone-2637",
+      "settings": {
+        "Mode": "Shimmer",
+        "Level": "5:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 2637.02,
+        "seconds": 4,
+        "level_db": -24,
+        "tail": 20
+      }
+    },
+    {
+      "name": "shimmer-tone-0330-quiet",
+      "settings": {
+        "Mode": "Shimmer",
+        "Level": "5:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 329.63,
+        "seconds": 4,
+        "level_db": -36,
+        "tail": 20
+      },
+      "note": "The same 330 Hz note 12 dB quieter, then 12 dB louder: is the octave level-dependent?"
+    },
+    {
+      "name": "shimmer-tone-0330-loud",
+      "settings": {
+        "Mode": "Shimmer",
+        "Level": "5:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 329.63,
+        "seconds": 4,
+        "level_db": -12,
+        "tail": 20
+      }
+    },
+    {
+      "name": "shimmer-fifth",
+      "settings": {
+        "Mode": "Shimmer",
+        "Level": "5:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          220.0,
+          329.63
+        ],
+        "seconds": 4,
+        "level_db": -24,
+        "tail": 20
+      },
+      "note": "Two notes, then an open E chord: does the shifter keep notes apart (intermodulation)?"
+    },
+    {
+      "name": "shimmer-chord",
+      "settings": {
+        "Mode": "Shimmer",
+        "Level": "5:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          82.41,
+          123.47,
+          164.81,
+          207.65,
+          246.94,
+          329.63
+        ],
+        "seconds": 4,
+        "level_db": -24,
+        "tail": 20
+      }
+    },
+    {
+      "name": "shimmer-plucks",
+      "settings": {
+        "Mode": "Shimmer",
+        "Level": "5:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "pluck-train",
+        "freq": [
+          82.41,
+          329.63
+        ],
+        "onsets": [
+          0,
+          15
+        ],
+        "seconds": 21,
+        "decay_seconds": 0.8,
+        "tail": 20
+      },
+      "note": "Two plucks 15 s apart (each tail on its own): the low E and the E above middle C."
+    },
+    {
+      "name": "shimmer-tone-0330-tone-0700",
+      "settings": {
+        "Mode": "Shimmer",
+        "Level": "5:00",
+        "Tone": "7:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 329.63,
+        "seconds": 4,
+        "level_db": -24,
+        "tail": 20
+      },
+      "note": "Tone fully down, then up: does Tone act before the shifter (the octave's balance)?"
+    },
+    {
+      "name": "shimmer-tone-0330-tone-0500",
+      "settings": {
+        "Mode": "Shimmer",
+        "Level": "5:00",
+        "Tone": "5:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 329.63,
+        "seconds": 4,
+        "level_db": -24,
+        "tail": 20
+      }
+    },
+    {
+      "name": "shimmer-tone-0330-time-0700",
+      "settings": {
+        "Mode": "Shimmer",
+        "Level": "5:00",
+        "Tone": "12:00",
+        "Time": "7:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 329.63,
+        "seconds": 4,
+        "level_db": -24,
+        "tail": 12
+      },
+      "note": "Tone back to 12:00. Time fully down, then up: does Time change the octaves' feedback or only the tank?"
+    },
+    {
+      "name": "shimmer-tone-0330-time-0500",
+      "settings": {
+        "Mode": "Shimmer",
+        "Level": "5:00",
+        "Tone": "12:00",
+        "Time": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 329.63,
+        "seconds": 4,
+        "level_db": -24,
+        "tail": 35
+      }
+    },
+    {
+      "name": "shimmer-tone-0330-level-1200",
+      "settings": {
+        "Mode": "Shimmer",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 329.63,
+        "seconds": 4,
+        "level_db": -24,
+        "tail": 20
+      },
+      "note": "Time back to 12:00, Level to 12:00: is Level only an output gain here too?"
+    }
+  ]
+}

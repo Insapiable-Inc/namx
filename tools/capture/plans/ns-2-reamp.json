@@ -1,0 +1,296 @@
+{
+  "pedal": "Boss NS-2 Noise Suppressor — reamps of the guitar DI dataset (mono: OUTPUT)",
+  "comment": "The guitar DI dataset (captures/di/: noise, notes, dynamics, chords, chugs, funk, stabs, lead, neck; see tools/capture/README.md, Reamp takes) through the pedal: the main setting with every segment, the extra settings with the segments that show them. For the by-ear A/B and the numbers against NAM-X's model. INPUT from the interface, OUTPUT to input 2; SEND and RETURN empty. Threshold barely moves below 12:00 (the study: it opens at -68 dB re the guitar's peak at 9:00, -64 at 12:00), so the extra settings are at its top half: 5:00, where the model misses most (it closes ~1 s late), and 3:00, where it cuts a note's tail around -60 dB, with Decay at both ends. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise; 9:00 and 3:00 pointer horizontal. Takes ordered for the fewest knob turns: each step turns one knob.",
+  "quiet_dbfs": -60,
+  "knobs": [
+    "Threshold",
+    "Decay",
+    "Mode"
+  ],
+  "takes": [
+    {
+      "name": "bypass-dynamics",
+      "bypass": true,
+      "signal": {
+        "type": "file",
+        "path": "captures/di/dynamics.wav",
+        "tail": 1.0
+      },
+      "note": "The pedal off (its LED off): the bypass reference."
+    },
+    {
+      "name": "threshold-1200-notes",
+      "settings": {
+        "Threshold": "12:00",
+        "Decay": "12:00",
+        "Mode": "REDUCTION"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/notes.wav",
+        "tail": 1.0
+      },
+      "note": "The pedal on (its LED lit)."
+    },
+    {
+      "name": "threshold-1200-dynamics",
+      "settings": {
+        "Threshold": "12:00",
+        "Decay": "12:00",
+        "Mode": "REDUCTION"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/dynamics.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "threshold-1200-chords",
+      "settings": {
+        "Threshold": "12:00",
+        "Decay": "12:00",
+        "Mode": "REDUCTION"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "threshold-1200-chugs",
+      "settings": {
+        "Threshold": "12:00",
+        "Decay": "12:00",
+        "Mode": "REDUCTION"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chugs.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "threshold-1200-funk",
+      "settings": {
+        "Threshold": "12:00",
+        "Decay": "12:00",
+        "Mode": "REDUCTION"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "threshold-1200-stabs",
+      "settings": {
+        "Threshold": "12:00",
+        "Decay": "12:00",
+        "Mode": "REDUCTION"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "threshold-1200-lead",
+      "settings": {
+        "Threshold": "12:00",
+        "Decay": "12:00",
+        "Mode": "REDUCTION"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/lead.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "threshold-1200-neck",
+      "settings": {
+        "Threshold": "12:00",
+        "Decay": "12:00",
+        "Mode": "REDUCTION"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/neck.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "threshold-1200-noise",
+      "settings": {
+        "Threshold": "12:00",
+        "Decay": "12:00",
+        "Mode": "REDUCTION"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/noise.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "threshold-0500-noise",
+      "settings": {
+        "Threshold": "5:00",
+        "Decay": "12:00",
+        "Mode": "REDUCTION"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/noise.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "threshold-0500-notes",
+      "settings": {
+        "Threshold": "5:00",
+        "Decay": "12:00",
+        "Mode": "REDUCTION"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/notes.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "threshold-0500-dynamics",
+      "settings": {
+        "Threshold": "5:00",
+        "Decay": "12:00",
+        "Mode": "REDUCTION"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/dynamics.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "threshold-0500-chugs",
+      "settings": {
+        "Threshold": "5:00",
+        "Decay": "12:00",
+        "Mode": "REDUCTION"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chugs.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "threshold-0300-chugs",
+      "settings": {
+        "Threshold": "3:00",
+        "Decay": "12:00",
+        "Mode": "REDUCTION"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chugs.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "threshold-0300-notes",
+      "settings": {
+        "Threshold": "3:00",
+        "Decay": "12:00",
+        "Mode": "REDUCTION"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/notes.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "threshold-0300-noise",
+      "settings": {
+        "Threshold": "3:00",
+        "Decay": "12:00",
+        "Mode": "REDUCTION"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/noise.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "threshold-0300-decay-0700-chugs",
+      "settings": {
+        "Threshold": "3:00",
+        "Decay": "7:00",
+        "Mode": "REDUCTION"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chugs.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "threshold-0300-decay-0700-stabs",
+      "settings": {
+        "Threshold": "3:00",
+        "Decay": "7:00",
+        "Mode": "REDUCTION"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "threshold-0300-decay-0700-funk",
+      "settings": {
+        "Threshold": "3:00",
+        "Decay": "7:00",
+        "Mode": "REDUCTION"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "threshold-0300-decay-0300-chugs",
+      "settings": {
+        "Threshold": "3:00",
+        "Decay": "3:00",
+        "Mode": "REDUCTION"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chugs.wav",
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "threshold-0300-decay-0300-notes",
+      "settings": {
+        "Threshold": "3:00",
+        "Decay": "3:00",
+        "Mode": "REDUCTION"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/notes.wav",
+        "tail": 1.0
+      }
+    }
+  ]
+}

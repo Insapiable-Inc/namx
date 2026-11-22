@@ -1,0 +1,102 @@
+
+=== 2026-11-07T20:25:06 · run tools/capture/plans/rt-2-isolated.json · tool 1fee5b9751478b9d95f2b64f05c05bfc969541c7
+
+[1/10] bypass-noise: white noise, 10 s at -12 dB
+  pedal OFF (bypassed)
+  Effect off. Same cables: OUTPUT A -> input 2, OUTPUT B -> input 1.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -26.2 dBFS · B -26.2 dBFS · loopback -25.4 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[2/10] m1-both-noise: white noise, 60 s at -12 dB
+  pedal ON · Mode I · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance BALANCE 12:00 · Fast 12:00 · Slow 9:00 (switch it on)
+  Effect on, LED green (hold the RT-2's own pedal if it's red), Slow (outer ring of knob 2) to 9:00. Set the outer ring of knob 1 twice: Drive Knob toggle to DRIVE, ring to 7:00 (no Drive); then toggle to BALANCE, ring to 12:00. Leave the toggle on BALANCE for the whole run: from here on the ring sets Balance only. Give the rotors ~10 s.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+
+Stopped; the takes recorded so far are kept.
+
+=== 2026-11-07T20:28:03 · run tools/capture/plans/rt-2-isolated.json · tool 1fee5b9751478b9d95f2b64f05c05bfc969541c7
+
+[2/10] m1-both-noise: white noise, 60 s at -12 dB
+  pedal ON · Mode I · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance BALANCE 12:00 · Fast 12:00 · Slow 9:00 (switch it on)
+  Effect on, LED green (hold the RT-2's own pedal if it's red), Slow (outer ring of knob 2) to 9:00. Set the outer ring of knob 1 twice: Drive Knob toggle to DRIVE, ring to 7:00 (no Drive); then toggle to BALANCE, ring to 12:00. Leave the toggle on BALANCE for the whole run: from here on the ring sets Balance only. Give the rotors ~10 s.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -29.6 dBFS · B -30.2 dBFS · loopback -24.5 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  PROBLEM: Output A isn't like m1-slow-noise (125 Hz +1.9 dB, 250 Hz +2.0 dB, 500 Hz +1.5 dB): Drive and Balance aren't where the plan says (Drive 7:00, Balance 12:00). Set the ring again: toggle to DRIVE, ring to 7:00; toggle to BALANCE, ring to 12:00; then r.
+  PROBLEM: Output B isn't like m1-slow-noise (125 Hz +1.9 dB, 250 Hz +2.0 dB): Drive and Balance aren't where the plan says (Drive 7:00, Balance 12:00). Set the ring again: toggle to DRIVE, ring to 7:00; toggle to BALANCE, ring to 12:00; then r.
+  Enter = keep, r = redo: r
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -28.9 dBFS · B -29.9 dBFS · loopback -24.5 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  PROBLEM: Output A isn't like m1-slow-noise (125 Hz +1.9 dB, 250 Hz +2.0 dB): Drive and Balance aren't where the plan says (Drive 7:00, Balance 12:00). Set the ring again: toggle to DRIVE, ring to 7:00; toggle to BALANCE, ring to 12:00; then r.
+  PROBLEM: Output B isn't like m1-slow-noise (125 Hz +1.9 dB, 250 Hz +2.0 dB, 500 Hz +1.6 dB): Drive and Balance aren't where the plan says (Drive 7:00, Balance 12:00). Set the ring again: toggle to DRIVE, ring to 7:00; toggle to BALANCE, ring to 12:00; then r.
+  Enter = keep, r = redo: (Enter)
+
+[3/10] m1-horn-noise: white noise, 60 s at -12 dB
+  pedal ON · Mode I · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance BALANCE 5:00 (changed) · Fast 12:00 · Slow 9:00
+  Ring to 5:00 (the toggle stays on BALANCE): the horn alone.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -22.8 dBFS · B -22.7 dBFS · loopback -24.5 dBFS · latency 578 samples (12.04 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[4/10] m1-drum-noise: white noise, 60 s at -12 dB
+  pedal ON · Mode I · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance BALANCE 7:00 (changed) · Fast 12:00 · Slow 9:00
+  Ring to 7:00 (the toggle stays on BALANCE): the drum alone.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -33.1 dBFS · B -33.0 dBFS · loopback -24.5 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[5/10] m2-both-noise: white noise, 45 s at -12 dB
+  pedal ON · Mode II (changed) · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance BALANCE 12:00 (changed) · Fast 12:00 · Slow 9:00
+  Mode toggle to II; ring back to 12:00 (the toggle stays on BALANCE).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -29.0 dBFS · B -29.1 dBFS · loopback -25.2 dBFS · latency 576 samples (12.00 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[6/10] m2-horn-noise: white noise, 45 s at -12 dB
+  pedal ON · Mode II · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance BALANCE 5:00 (changed) · Fast 12:00 · Slow 9:00
+  Ring to 5:00 (the toggle stays on BALANCE): the horn alone.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -22.3 dBFS · B -21.9 dBFS · loopback -25.2 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[7/10] m2-drum-noise: white noise, 45 s at -12 dB
+  pedal ON · Mode II · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance BALANCE 7:00 (changed) · Fast 12:00 · Slow 9:00
+  Ring to 7:00 (the toggle stays on BALANCE): the drum alone.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -32.9 dBFS · B -32.8 dBFS · loopback -25.2 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[8/10] m3-both-noise: white noise, 45 s at -12 dB
+  pedal ON · Mode III (changed) · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance BALANCE 12:00 (changed) · Fast 12:00 · Slow 9:00
+  Mode toggle to III; ring back to 12:00 (the toggle stays on BALANCE).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -29.8 dBFS · B -30.2 dBFS · loopback -25.2 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[9/10] m3-horn-noise: white noise, 45 s at -12 dB
+  pedal ON · Mode III · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance BALANCE 5:00 (changed) · Fast 12:00 · Slow 9:00
+  Ring to 5:00 (the toggle stays on BALANCE): the horn alone.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -22.5 dBFS · B -24.7 dBFS · loopback -25.2 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[10/10] m3-drum-noise: white noise, 45 s at -12 dB
+  pedal ON · Mode III · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance BALANCE 7:00 (changed) · Fast 12:00 · Slow 9:00
+  Ring to 7:00 (the toggle stays on BALANCE): the drum alone.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -35.7 dBFS · B -35.6 dBFS · loopback -25.2 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+All 10 takes are in captures/boss/rt-2/2026-11-07-isolated.

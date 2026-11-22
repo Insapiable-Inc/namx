@@ -1,0 +1,4 @@
+plucks-attack-0700 candidate offset [0.394, 0.391, 0.391, 0.391] shape RMS sustain/tail [(0.037, 0.15), (0.038, 0.15), (0.038, 0.15), (0.038, 0.15)] pick error [-2.675, -2.184, -2.185, -2.185]
+plucks-attack-0700 baseline offset [0.195, 0.192, 0.192, 0.193] shape RMS sustain/tail [(0.014, 0.245), (0.016, 0.247), (0.016, 0.247), (0.016, 0.246)] pick error [-2.158, -1.862, -1.862, -1.862]
+plucks-attack-0500 candidate offset [-0.171, -0.169, -0.169, -0.169] shape RMS sustain/tail [(0.032, 0.462), (0.032, 0.461), (0.031, 0.461), (0.032, 0.461)] pick error [-1.709, -2.053, -2.053, -2.054]
+plucks-attack-0500 baseline offset [-0.469, -0.468, -0.467, -0.468] shape RMS sustain/tail [(0.083, 0.784), (0.083, 0.783), (0.083, 0.783), (0.083, 0.783)] pick error [-0.976, -1.38, -1.38, -1.38]

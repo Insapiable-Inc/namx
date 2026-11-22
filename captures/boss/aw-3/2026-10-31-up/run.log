@@ -1,0 +1,369 @@
+
+=== 2026-10-31T10:59:39 · run tools/capture/plans/aw-3.json · tool 979167bf6ba528173a9069fc329ffde098383af4-dirty
+
+[1/31] bypass-sweep: sweep 20-20000 Hz, 10 s at -36 dB
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -48.0 dBFS · loopback -48.6 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[2/31] bypass-stairs: white noise at -54/-48/-42/-36/-30/-24/-18/-12/-6/0/3 dB, 1.5 s each
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -11.0 dBFS · loopback -11.1 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[3/31] bypass-jump: white noise at -48/0/-48 dB, 4 s each
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.6 dBFS · loopback -13.8 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[4/31] bypass-plucks: 4 plucks, 82.41-329.63 Hz, 12 s (decay 0.8 s, re-picked)
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -12.5 dBFS · loopback -12.9 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[5/31] rest-manual-0700: sweep 20-20000 Hz, 10 s at -36 dB
+  pedal ON · Mode Up · Manual 7:00 · Sens 7:00 · Decay 12:00 (switch it on)
+  Pedal on, MODE UP. Sens fully down; Manual through all eleven positions, one hour at a time: the filter at rest.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -34.7 dBFS · loopback -48.6 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[6/31] rest-manual-0800: sweep 20-20000 Hz, 10 s at -36 dB
+  pedal ON · Mode Up · Manual 8:00 (changed) · Sens 7:00 · Decay 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -34.7 dBFS · loopback -48.6 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[7/31] rest-manual-0900: sweep 20-20000 Hz, 10 s at -36 dB
+  pedal ON · Mode Up · Manual 9:00 (changed) · Sens 7:00 · Decay 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -34.6 dBFS · loopback -48.6 dBFS · latency 454 samples (9.46 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[8/31] rest-manual-1000: sweep 20-20000 Hz, 10 s at -36 dB
+  pedal ON · Mode Up · Manual 10:00 (changed) · Sens 7:00 · Decay 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -34.6 dBFS · loopback -48.6 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[9/31] rest-manual-1100: sweep 20-20000 Hz, 10 s at -36 dB
+  pedal ON · Mode Up · Manual 11:00 (changed) · Sens 7:00 · Decay 12:00
+  Enter = record, s = skip, q = quit:
+Stopped; the takes recorded so far are kept.
+
+[2026-10-31] The 8 takes above (bypass-sweep … rest-manual-1000) were deleted: input 2 gain was not at minimum. Recapturing from the start with the gain fully counter-clockwise.
+
+=== 2026-10-31T11:04:30 · run tools/capture/plans/aw-3.json · tool 979167bf6ba528173a9069fc329ffde098383af4-dirty
+
+[1/31] bypass-sweep: sweep 20-20000 Hz, 10 s at -36 dB
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -48.9 dBFS · loopback -48.6 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[2/31] bypass-stairs: white noise at -54/-48/-42/-36/-30/-24/-18/-12/-6/0/3 dB, 1.5 s each
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -11.9 dBFS · loopback -11.1 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[3/31] bypass-jump: white noise at -48/0/-48 dB, 4 s each
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -14.5 dBFS · loopback -13.8 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[4/31] bypass-plucks: 4 plucks, 82.41-329.63 Hz, 12 s (decay 0.8 s, re-picked)
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.4 dBFS · loopback -12.9 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[5/31] rest-manual-0700: sweep 20-20000 Hz, 10 s at -36 dB
+  pedal ON · Mode Up · Manual 7:00 · Sens 7:00 · Decay 12:00 (switch it on)
+  Pedal on, MODE UP. Sens fully down; Manual through all eleven positions, one hour at a time: the filter at rest.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -35.6 dBFS · loopback -48.6 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[6/31] rest-manual-0800: sweep 20-20000 Hz, 10 s at -36 dB
+  pedal ON · Mode Up · Manual 8:00 (changed) · Sens 7:00 · Decay 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -35.6 dBFS · loopback -48.6 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[7/31] rest-manual-0900: sweep 20-20000 Hz, 10 s at -36 dB
+  pedal ON · Mode Up · Manual 9:00 (changed) · Sens 7:00 · Decay 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -35.6 dBFS · loopback -48.6 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[8/31] rest-manual-1000: sweep 20-20000 Hz, 10 s at -36 dB
+  pedal ON · Mode Up · Manual 10:00 (changed) · Sens 7:00 · Decay 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -35.6 dBFS · loopback -48.6 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[9/31] rest-manual-1100: sweep 20-20000 Hz, 10 s at -36 dB
+  pedal ON · Mode Up · Manual 11:00 (changed) · Sens 7:00 · Decay 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -35.6 dBFS · loopback -48.6 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[10/31] rest-manual-1200: sweep 20-20000 Hz, 10 s at -36 dB
+  pedal ON · Mode Up · Manual 12:00 (changed) · Sens 7:00 · Decay 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -35.6 dBFS · loopback -48.6 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[11/31] rest-manual-0100: sweep 20-20000 Hz, 10 s at -36 dB
+  pedal ON · Mode Up · Manual 1:00 (changed) · Sens 7:00 · Decay 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -35.6 dBFS · loopback -48.6 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[12/31] rest-manual-0200: sweep 20-20000 Hz, 10 s at -36 dB
+  pedal ON · Mode Up · Manual 2:00 (changed) · Sens 7:00 · Decay 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -35.6 dBFS · loopback -48.6 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[13/31] rest-manual-0300: sweep 20-20000 Hz, 10 s at -36 dB
+  pedal ON · Mode Up · Manual 3:00 (changed) · Sens 7:00 · Decay 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -35.6 dBFS · loopback -48.6 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[14/31] rest-manual-0400: sweep 20-20000 Hz, 10 s at -36 dB
+  pedal ON · Mode Up · Manual 4:00 (changed) · Sens 7:00 · Decay 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -35.6 dBFS · loopback -48.6 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[15/31] rest-manual-0500: sweep 20-20000 Hz, 10 s at -36 dB
+  pedal ON · Mode Up · Manual 5:00 (changed) · Sens 7:00 · Decay 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -35.6 dBFS · loopback -48.6 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[16/31] stairs-manual-0500: white noise at -54/-48/-42/-36/-30/-24/-18/-12/-6/0/3 dB, 1.5 s each
+  pedal ON · Mode Up · Manual 5:00 · Sens 12:00 (changed) · Decay 12:00
+  Sens to 12:00. Does Manual move the whole swept range, or only where it starts?
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.0 dBFS · loopback -11.1 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[17/31] stairs-manual-0700: white noise at -54/-48/-42/-36/-30/-24/-18/-12/-6/0/3 dB, 1.5 s each
+  pedal ON · Mode Up · Manual 7:00 (changed) · Sens 12:00 · Decay 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -12.9 dBFS · loopback -11.1 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[18/31] stairs-sens-1200: white noise at -54/-48/-42/-36/-30/-24/-18/-12/-6/0/3 dB, 1.5 s each
+  pedal ON · Mode Up · Manual 12:00 (changed) · Sens 12:00 · Decay 12:00
+  Every knob at 12:00 (the next three takes).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -12.8 dBFS · loopback -11.1 dBFS · latency 504 samples (10.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[19/31] jump-decay-1200: white noise at -48/0/-48 dB, 4 s each
+  pedal ON · Mode Up · Manual 12:00 · Sens 12:00 · Decay 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.9 dBFS · loopback -13.8 dBFS · latency 504 samples (10.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[20/31] plucks-decay-1200: 4 plucks, 82.41-329.63 Hz, 12 s (decay 0.8 s, re-picked)
+  pedal ON · Mode Up · Manual 12:00 · Sens 12:00 · Decay 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -9.3 dBFS · loopback -12.9 dBFS · latency 504 samples (10.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[21/31] jump-decay-0900: white noise at -48/0/-48 dB, 4 s each
+  pedal ON · Mode Up · Manual 12:00 · Sens 12:00 · Decay 9:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.9 dBFS · loopback -13.8 dBFS · latency 578 samples (12.04 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[22/31] jump-decay-0700: white noise at -48/0/-48 dB, 4 s each
+  pedal ON · Mode Up · Manual 12:00 · Sens 12:00 · Decay 7:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.7 dBFS · loopback -13.8 dBFS · latency 578 samples (12.04 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[23/31] plucks-decay-0700: 4 plucks, 82.41-329.63 Hz, 12 s (decay 0.8 s, re-picked)
+  pedal ON · Mode Up · Manual 12:00 · Sens 12:00 · Decay 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -9.4 dBFS · loopback -12.9 dBFS · latency 578 samples (12.04 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[24/31] jump-decay-0300: white noise at -48/0/-48 dB, 4 s each
+  pedal ON · Mode Up · Manual 12:00 · Sens 12:00 · Decay 3:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.6 dBFS · loopback -13.8 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[25/31] jump-decay-0500: white noise at -48/0/-48 dB, 4 s each
+  pedal ON · Mode Up · Manual 12:00 · Sens 12:00 · Decay 5:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -14.0 dBFS · loopback -13.8 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[26/31] plucks-decay-0500: 4 plucks, 82.41-329.63 Hz, 12 s (decay 0.8 s, re-picked)
+  pedal ON · Mode Up · Manual 12:00 · Sens 12:00 · Decay 5:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -9.2 dBFS · loopback -12.9 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[27/31] stairs-sens-0500: white noise at -54/-48/-42/-36/-30/-24/-18/-12/-6/0/3 dB, 1.5 s each
+  pedal ON · Mode Up · Manual 12:00 · Sens 5:00 (changed) · Decay 12:00 (changed)
+  Decay back to 12:00, Sens up.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -12.9 dBFS · loopback -11.1 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[28/31] noise-sens-0500: silence, 8 s
+  pedal ON · Mode Up · Manual 12:00 · Sens 5:00 · Decay 12:00
+  Nothing played: the noise floor at full Sens.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -82.8 dBFS · loopback -93.4 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[29/31] stairs-sens-0300: white noise at -54/-48/-42/-36/-30/-24/-18/-12/-6/0/3 dB, 1.5 s each
+  pedal ON · Mode Up · Manual 12:00 · Sens 3:00 (changed) · Decay 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.1 dBFS · loopback -11.1 dBFS · latency 578 samples (12.04 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[30/31] stairs-sens-0900: white noise at -54/-48/-42/-36/-30/-24/-18/-12/-6/0/3 dB, 1.5 s each
+  pedal ON · Mode Up · Manual 12:00 · Sens 9:00 (changed) · Decay 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -20.5 dBFS · loopback -11.1 dBFS · latency 578 samples (12.04 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[31/31] stairs-sens-0700: white noise at -54/-48/-42/-36/-30/-24/-18/-12/-6/0/3 dB, 1.5 s each
+  pedal ON · Mode Up · Manual 12:00 · Sens 7:00 (changed) · Decay 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -28.6 dBFS · loopback -11.1 dBFS · latency 578 samples (12.04 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+All 31 takes are in captures/boss/aw-3/2026-10-31-up.
+
+[2026-10-31] Takes 6-15 (rest-manual-0800 … 0500) were recorded with Sens turned instead of Manual (Manual stayed 7:00, checked: rest peak 189 Hz in all). Relabelled rest-sens-0800 … 0500 (Manual 7:00, Sens as named); the plan now has them under those names and adds the real rest-manual-0800 … 0500 at its end.
+
+=== 2026-10-31T11:23:26 · run tools/capture/plans/aw-3.json · tool 979167bf6ba528173a9069fc329ffde098383af4-dirty
+
+[32/41] rest-manual-0800: sweep 20-20000 Hz, 10 s at -36 dB
+  pedal ON · Mode Up · Manual 8:00 (changed) · Sens 7:00 · Decay 12:00
+  Sens stays at 7:00 (fully down); Manual through the hours, from 8:00 to 5:00: the filter at rest.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -35.6 dBFS · loopback -48.6 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[33/41] rest-manual-0900: sweep 20-20000 Hz, 10 s at -36 dB
+  pedal ON · Mode Up · Manual 9:00 (changed) · Sens 7:00 · Decay 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -35.5 dBFS · loopback -48.6 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[34/41] rest-manual-1000: sweep 20-20000 Hz, 10 s at -36 dB
+  pedal ON · Mode Up · Manual 10:00 (changed) · Sens 7:00 · Decay 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -35.5 dBFS · loopback -48.6 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[35/41] rest-manual-1100: sweep 20-20000 Hz, 10 s at -36 dB
+  pedal ON · Mode Up · Manual 11:00 (changed) · Sens 7:00 · Decay 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -35.5 dBFS · loopback -48.6 dBFS · latency 578 samples (12.04 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[36/41] rest-manual-1200: sweep 20-20000 Hz, 10 s at -36 dB
+  pedal ON · Mode Up · Manual 12:00 (changed) · Sens 7:00 · Decay 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -35.5 dBFS · loopback -48.6 dBFS · latency 578 samples (12.04 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[37/41] rest-manual-0100: sweep 20-20000 Hz, 10 s at -36 dB
+  pedal ON · Mode Up · Manual 1:00 (changed) · Sens 7:00 · Decay 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -35.5 dBFS · loopback -48.6 dBFS · latency 578 samples (12.04 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[38/41] rest-manual-0200: sweep 20-20000 Hz, 10 s at -36 dB
+  pedal ON · Mode Up · Manual 2:00 (changed) · Sens 7:00 · Decay 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -35.4 dBFS · loopback -48.6 dBFS · latency 578 samples (12.04 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[39/41] rest-manual-0300: sweep 20-20000 Hz, 10 s at -36 dB
+  pedal ON · Mode Up · Manual 3:00 (changed) · Sens 7:00 · Decay 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -35.3 dBFS · loopback -48.6 dBFS · latency 578 samples (12.04 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[40/41] rest-manual-0400: sweep 20-20000 Hz, 10 s at -36 dB
+  pedal ON · Mode Up · Manual 4:00 (changed) · Sens 7:00 · Decay 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -35.3 dBFS · loopback -48.6 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[41/41] rest-manual-0500: sweep 20-20000 Hz, 10 s at -36 dB
+  pedal ON · Mode Up · Manual 5:00 (changed) · Sens 7:00 · Decay 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -35.2 dBFS · loopback -48.6 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+All 41 takes are in captures/boss/aw-3/2026-10-31-up.

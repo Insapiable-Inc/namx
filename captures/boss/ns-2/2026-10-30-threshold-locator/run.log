@@ -1,0 +1,20 @@
+
+=== 2026-10-30T15:51:58 · run tools/capture/plans/ns-2-threshold-locator.json · tool 979167bf6ba528173a9069fc329ffde098383af4-dirty
+
+[1/2] bypass-locator-1000: 1000 Hz at -100/-62/-60/-58/-56/-54/-52/-50/-48/-46/-44/-12/-100 dB, 4 s each
+  pedal OFF (bypassed)
+  NS-2 OFF / BYPASSED, not engaged with its gate closed. Input -> Output; Send and Return empty. Set Mode Reduction, Threshold 3:00 and Decay fully counter-clockwise now. Input 2 physical gain stays fully counter-clockwise.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -25.9 dBFS · loopback -24.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[2/2] threshold-0300-decay-0700-locator-1000: 1000 Hz at -100/-62/-60/-58/-56/-54/-52/-50/-48/-46/-44/-12/-100 dB, 4 s each
+  pedal ON · Threshold 3:00 · Decay 7:00 · Mode Reduction (switch it on)
+  Switch NS-2 ON. Threshold exactly 3:00; Decay fully counter-clockwise; Mode Reduction. Do not move Threshold or interface gain afterward; the next experiment will reuse this position.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -25.2 dBFS · loopback -24.9 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+All 2 takes are in captures/boss/ns-2/2026-10-30-threshold-locator.

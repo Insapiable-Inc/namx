@@ -1,0 +1,916 @@
+
+=== 2026-11-15T12:31:04 · run tools/capture/plans/rv-6-focused.json · tool dcbb1d8bb8e9538d770bbdfe9ec8a0331433ae7a
+
+[1/123] bypass-sweep: 2 signals, 18 s: sweep 20-20000 Hz, 10 s at -24 dB + 2 s; white noise at -24/-12/0 dB, 0.05 s each + 2 s gaps + 0 s
+  pedal OFF (bypassed)
+  The pedal off (its LED off): the bypass reference. OUTPUT A on input 2, OUTPUT B on input 1, INPUT A only, the adapter (not a battery).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -15.5 dBFS · B -15.6 dBFS · loopback -14.4 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[2/123] bypass-guitar: 4 signals, 68 s: captures/di/stabs.wav, 12.0 s + 2 s; captures/di/chords.wav, 20.0 s + 2 s; captures/di/lead.wav from 2 s, 20.0 s + 2 s; captures/di/funk.wav, 8.0 s at -12 dB + 2 s
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[3/123] level-0700-hall: 2 signals, 25 s: sweep 20-20000 Hz, 10 s at -24 dB + 3 s; captures/di/stabs.wav, 10.0 s + 2 s
+  pedal ON · Mode Hall · E.Level 7:00 · Tone 12:00 · Time 12:00 (switch it on)
+  The pedal on (its LED lit), E.LEVEL fully counter-clockwise: the dry alone through the effect's path.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[4/123] noon-modulate: 3 signals, 50 s: sweep 20-20000 Hz, 10 s at -24 dB + 7 s; white noise at -24/-12/0 dB, 0.05 s each + 7 s gaps + 0 s; 1000 Hz sine, 5 s at -24 dB + 7 s
+  pedal ON · Mode Modulate (changed) · E.Level 12:00 (changed) · Tone 12:00 · Time 12:00
+  Everything at 12:00. From here on: set the three knobs once per block, then only MODE turns from take to take (it also clears the last take's tail).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -17.6 dBFS · B -17.6 dBFS · loopback -16.0 dBFS · latency 578 samples (12.04 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[5/123] noon-spring: 2 signals, 26 s: sweep 20-20000 Hz, 10 s at -24 dB + 4 s; white noise at -24/-12/0 dB, 0.05 s each + 4 s gaps + 0 s
+  pedal ON · Mode Spring (changed) · E.Level 12:00 · Tone 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -16.6 dBFS · B -16.6 dBFS · loopback -16.2 dBFS · latency 578 samples (12.04 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[6/123] noon-plate: 2 signals, 26 s: sweep 20-20000 Hz, 10 s at -24 dB + 4 s; white noise at -24/-12/0 dB, 0.05 s each + 4 s gaps + 0 s
+  pedal ON · Mode Plate (changed) · E.Level 12:00 · Tone 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -16.6 dBFS · B -16.6 dBFS · loopback -16.2 dBFS · latency 578 samples (12.04 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[7/123] noon-hall: 2 signals, 34 s: sweep 20-20000 Hz, 10 s at -24 dB + 6 s; white noise at -24/-12/0 dB, 0.05 s each + 6 s gaps + 0 s
+  pedal ON · Mode Hall (changed) · E.Level 12:00 · Tone 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -16.4 dBFS · B -16.4 dBFS · loopback -16.3 dBFS · latency 578 samples (12.04 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[8/123] noon-room: 2 signals, 20 s: sweep 20-20000 Hz, 10 s at -24 dB + 2.5 s; white noise at -24/-12/0 dB, 0.05 s each + 2.5 s gaps + 0 s
+  pedal ON · Mode Room (changed) · E.Level 12:00 · Tone 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -15.8 dBFS · B -15.8 dBFS · loopback -15.7 dBFS · latency 578 samples (12.04 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[9/123] noon-shimmer: 3 signals, 105 s: sweep 20-20000 Hz, 10 s at -24 dB + 18 s; white noise at -24/-12/0 dB, 0.05 s each + 18 s gaps + 0 s; 329.63 Hz sine, 5 s at -24 dB + 18 s
+  pedal ON · Mode Shimmer (changed) · E.Level 12:00 · Tone 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -17.4 dBFS · B -17.3 dBFS · loopback -17.4 dBFS · latency 578 samples (12.04 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[10/123] noon-guitar-shimmer: 4 signals, 103 s: captures/di/stabs.wav, 12.0 s + 10.8 s; captures/di/chords.wav, 20.0 s + 10.8 s; captures/di/lead.wav from 2 s, 20.0 s + 10.8 s; captures/di/funk.wav, 8.0 s at -12 dB + 10.8 s
+  pedal ON · Mode Shimmer · E.Level 12:00 · Tone 12:00 · Time 12:00
+  Same knobs, the guitar: MODE back the other way.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 578 samples (12.04 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[11/123] noon-guitar-room: 4 signals, 68 s: captures/di/stabs.wav, 12.0 s + 2 s; captures/di/chords.wav, 20.0 s + 2 s; captures/di/lead.wav from 2 s, 20.0 s + 2 s; captures/di/funk.wav, 8.0 s at -12 dB + 2 s
+  pedal ON · Mode Room (changed) · E.Level 12:00 · Tone 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit:
+Stopped; the takes recorded so far are kept.
+
+=== 2026-11-15T12:54:47 · run tools/capture/plans/rv-6-focused.json · tool dcbb1d8bb8e9538d770bbdfe9ec8a0331433ae7a
+
+[11/123] noon-guitar-room: 4 signals, 68 s: captures/di/stabs.wav, 12.0 s + 2 s; captures/di/chords.wav, 20.0 s + 2 s; captures/di/lead.wav from 2 s, 20.0 s + 2 s; captures/di/funk.wav, 8.0 s at -12 dB + 2 s
+  pedal ON · Mode Room (changed) · E.Level 12:00 · Tone 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: r
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[12/123] noon-guitar-hall: 4 signals, 74 s: captures/di/stabs.wav, 12.0 s + 3.6 s; captures/di/chords.wav, 20.0 s + 3.6 s; captures/di/lead.wav from 2 s, 20.0 s + 3.6 s; captures/di/funk.wav, 8.0 s at -12 dB + 3.6 s
+  pedal ON · Mode Hall (changed) · E.Level 12:00 · Tone 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[13/123] noon-guitar-plate: 4 signals, 70 s: captures/di/stabs.wav, 12.0 s + 2.4 s; captures/di/chords.wav, 20.0 s + 2.4 s; captures/di/lead.wav from 2 s, 20.0 s + 2.4 s; captures/di/funk.wav, 8.0 s at -12 dB + 2.4 s
+  pedal ON · Mode Plate (changed) · E.Level 12:00 · Tone 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[14/123] noon-guitar-spring: 4 signals, 70 s: captures/di/stabs.wav, 12.0 s + 2.4 s; captures/di/chords.wav, 20.0 s + 2.4 s; captures/di/lead.wav from 2 s, 20.0 s + 2.4 s; captures/di/funk.wav, 8.0 s at -12 dB + 2.4 s
+  pedal ON · Mode Spring (changed) · E.Level 12:00 · Tone 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[15/123] noon-guitar-modulate: 4 signals, 77 s: captures/di/stabs.wav, 12.0 s + 4.2 s; captures/di/chords.wav, 20.0 s + 4.2 s; captures/di/lead.wav from 2 s, 20.0 s + 4.2 s; captures/di/funk.wav, 8.0 s at -12 dB + 4.2 s
+  pedal ON · Mode Modulate (changed) · E.Level 12:00 · Tone 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[16/123] time-0300-modulate: 4 signals, 68 s: sweep 20-20000 Hz, 10 s at -24 dB + 12 s; white noise at -12 dB, 0.05 s each + 12 s; 1000 Hz sine, 5 s at -24 dB + 12 s; captures/di/stabs.wav, 10.0 s + 7.2 s
+  pedal ON · Mode Modulate · E.Level 12:00 · Tone 12:00 · Time 3:00 (changed)
+  TIME to 3:00.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 578 samples (12.04 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[17/123] time-0300-spring: 3 signals, 38 s: sweep 20-20000 Hz, 10 s at -24 dB + 7 s; white noise at -12 dB, 0.05 s each + 7 s; captures/di/stabs.wav, 10.0 s + 4.2 s
+  pedal ON · Mode Spring (changed) · E.Level 12:00 · Tone 12:00 · Time 3:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 578 samples (12.04 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[18/123] time-0300-plate: 3 signals, 43 s: sweep 20-20000 Hz, 10 s at -24 dB + 9 s; white noise at -12 dB, 0.05 s each + 9 s; captures/di/stabs.wav, 10.0 s + 5.4 s
+  pedal ON · Mode Plate (changed) · E.Level 12:00 · Tone 12:00 · Time 3:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 578 samples (12.04 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[19/123] time-0300-hall: 3 signals, 46 s: sweep 20-20000 Hz, 10 s at -24 dB + 10 s; white noise at -12 dB, 0.05 s each + 10 s; captures/di/stabs.wav, 10.0 s + 6 s
+  pedal ON · Mode Hall (changed) · E.Level 12:00 · Tone 12:00 · Time 3:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.5 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 578 samples (12.04 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[20/123] time-0300-room: 3 signals, 33 s: sweep 20-20000 Hz, 10 s at -24 dB + 5 s; white noise at -12 dB, 0.05 s each + 5 s; captures/di/stabs.wav, 10.0 s + 3 s
+  pedal ON · Mode Room (changed) · E.Level 12:00 · Tone 12:00 · Time 3:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 454 samples (9.46 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[21/123] time-0300-shimmer: 4 signals, 119 s: sweep 20-20000 Hz, 10 s at -24 dB + 26 s; white noise at -12 dB, 0.05 s each + 26 s; 329.63 Hz sine, 5 s at -24 dB + 26 s; captures/di/stabs.wav, 10.0 s + 15.6 s
+  pedal ON · Mode Shimmer (changed) · E.Level 12:00 · Tone 12:00 · Time 3:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.5 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[22/123] time-0500-shimmer: 4 signals, 147 s: sweep 20-20000 Hz, 10 s at -24 dB + 34 s; white noise at -12 dB, 0.05 s each + 34 s; 329.63 Hz sine, 5 s at -24 dB + 34 s; captures/di/stabs.wav, 10.0 s + 20.4 s
+  pedal ON · Mode Shimmer · E.Level 12:00 · Tone 12:00 · Time 5:00 (changed)
+  TIME fully clockwise. Long tails: Shimmer's take runs over two minutes.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[23/123] time-0500-room: 3 signals, 38 s: sweep 20-20000 Hz, 10 s at -24 dB + 7 s; white noise at -12 dB, 0.05 s each + 7 s; captures/di/stabs.wav, 10.0 s + 4.2 s
+  pedal ON · Mode Room (changed) · E.Level 12:00 · Tone 12:00 · Time 5:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[24/123] time-0500-hall: 3 signals, 56 s: sweep 20-20000 Hz, 10 s at -24 dB + 14 s; white noise at -12 dB, 0.05 s each + 14 s; captures/di/stabs.wav, 10.0 s + 8.4 s
+  pedal ON · Mode Hall (changed) · E.Level 12:00 · Tone 12:00 · Time 5:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.5 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 582 samples (12.12 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[25/123] time-0500-plate: 3 signals, 54 s: sweep 20-20000 Hz, 10 s at -24 dB + 13 s; white noise at -12 dB, 0.05 s each + 13 s; captures/di/stabs.wav, 10.0 s + 7.8 s
+  pedal ON · Mode Plate (changed) · E.Level 12:00 · Tone 12:00 · Time 5:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[26/123] time-0500-spring: 3 signals, 43 s: sweep 20-20000 Hz, 10 s at -24 dB + 9 s; white noise at -12 dB, 0.05 s each + 9 s; captures/di/stabs.wav, 10.0 s + 5.4 s
+  pedal ON · Mode Spring (changed) · E.Level 12:00 · Tone 12:00 · Time 5:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[27/123] time-0500-modulate: 4 signals, 83 s: sweep 20-20000 Hz, 10 s at -24 dB + 16 s; white noise at -12 dB, 0.05 s each + 16 s; 1000 Hz sine, 5 s at -24 dB + 16 s; captures/di/stabs.wav, 10.0 s + 9.6 s
+  pedal ON · Mode Modulate (changed) · E.Level 12:00 · Tone 12:00 · Time 5:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[28/123] tone-0700-time-0500-modulate: 4 signals, 83 s: sweep 20-20000 Hz, 10 s at -24 dB + 16 s; white noise at -12 dB, 0.05 s each + 16 s; 1000 Hz sine, 5 s at -24 dB + 16 s; captures/di/stabs.wav, 10.0 s + 9.6 s
+  pedal ON · Mode Modulate · E.Level 12:00 · Tone 7:00 (changed) · Time 5:00
+  TONE fully counter-clockwise, TIME stays at 5:00.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.5 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 582 samples (12.12 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[29/123] tone-0700-time-0500-spring: 3 signals, 43 s: sweep 20-20000 Hz, 10 s at -24 dB + 9 s; white noise at -12 dB, 0.05 s each + 9 s; captures/di/stabs.wav, 10.0 s + 5.4 s
+  pedal ON · Mode Spring (changed) · E.Level 12:00 · Tone 7:00 · Time 5:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[30/123] tone-0700-time-0500-plate: 3 signals, 54 s: sweep 20-20000 Hz, 10 s at -24 dB + 13 s; white noise at -12 dB, 0.05 s each + 13 s; captures/di/stabs.wav, 10.0 s + 7.8 s
+  pedal ON · Mode Plate (changed) · E.Level 12:00 · Tone 7:00 · Time 5:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[31/123] tone-0700-time-0500-hall: 3 signals, 56 s: sweep 20-20000 Hz, 10 s at -24 dB + 14 s; white noise at -12 dB, 0.05 s each + 14 s; captures/di/stabs.wav, 10.0 s + 8.4 s
+  pedal ON · Mode Hall (changed) · E.Level 12:00 · Tone 7:00 · Time 5:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[32/123] tone-0700-time-0500-room: 3 signals, 38 s: sweep 20-20000 Hz, 10 s at -24 dB + 7 s; white noise at -12 dB, 0.05 s each + 7 s; captures/di/stabs.wav, 10.0 s + 4.2 s
+  pedal ON · Mode Room (changed) · E.Level 12:00 · Tone 7:00 · Time 5:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 578 samples (12.04 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[33/123] tone-0700-time-0500-shimmer: 4 signals, 147 s: sweep 20-20000 Hz, 10 s at -24 dB + 34 s; white noise at -12 dB, 0.05 s each + 34 s; 329.63 Hz sine, 5 s at -24 dB + 34 s; captures/di/stabs.wav, 10.0 s + 20.4 s
+  pedal ON · Mode Shimmer (changed) · E.Level 12:00 · Tone 7:00 · Time 5:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.1 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[34/123] tone-0500-time-0500-shimmer: 4 signals, 147 s: sweep 20-20000 Hz, 10 s at -24 dB + 34 s; white noise at -12 dB, 0.05 s each + 34 s; 329.63 Hz sine, 5 s at -24 dB + 34 s; captures/di/stabs.wav, 10.0 s + 20.4 s
+  pedal ON · Mode Shimmer · E.Level 12:00 · Tone 5:00 (changed) · Time 5:00
+  TONE fully clockwise.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[35/123] tone-0500-time-0500-room: 3 signals, 38 s: sweep 20-20000 Hz, 10 s at -24 dB + 7 s; white noise at -12 dB, 0.05 s each + 7 s; captures/di/stabs.wav, 10.0 s + 4.2 s
+  pedal ON · Mode Room (changed) · E.Level 12:00 · Tone 5:00 · Time 5:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[36/123] tone-0500-time-0500-hall: 3 signals, 56 s: sweep 20-20000 Hz, 10 s at -24 dB + 14 s; white noise at -12 dB, 0.05 s each + 14 s; captures/di/stabs.wav, 10.0 s + 8.4 s
+  pedal ON · Mode Hall (changed) · E.Level 12:00 · Tone 5:00 · Time 5:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.5 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[37/123] tone-0500-time-0500-plate: 3 signals, 54 s: sweep 20-20000 Hz, 10 s at -24 dB + 13 s; white noise at -12 dB, 0.05 s each + 13 s; captures/di/stabs.wav, 10.0 s + 7.8 s
+  pedal ON · Mode Plate (changed) · E.Level 12:00 · Tone 5:00 · Time 5:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[38/123] tone-0500-time-0500-spring: 3 signals, 43 s: sweep 20-20000 Hz, 10 s at -24 dB + 9 s; white noise at -12 dB, 0.05 s each + 9 s; captures/di/stabs.wav, 10.0 s + 5.4 s
+  pedal ON · Mode Spring (changed) · E.Level 12:00 · Tone 5:00 · Time 5:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 576 samples (12.00 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[39/123] tone-0500-time-0500-modulate: 4 signals, 83 s: sweep 20-20000 Hz, 10 s at -24 dB + 16 s; white noise at -12 dB, 0.05 s each + 16 s; 1000 Hz sine, 5 s at -24 dB + 16 s; captures/di/stabs.wav, 10.0 s + 9.6 s
+  pedal ON · Mode Modulate (changed) · E.Level 12:00 · Tone 5:00 · Time 5:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[40/123] tone-0500-time-0700-modulate: 4 signals, 33 s: sweep 20-20000 Hz, 10 s at -24 dB + 2 s; white noise at -12 dB, 0.05 s each + 2 s; 1000 Hz sine, 5 s at -24 dB + 2 s; captures/di/stabs.wav, 10.0 s + 2 s
+  pedal ON · Mode Modulate · E.Level 12:00 · Tone 5:00 · Time 7:00 (changed)
+  TIME fully counter-clockwise, TONE stays at 5:00. Short takes now.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 454 samples (9.46 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[41/123] tone-0500-time-0700-spring: 3 signals, 26 s: sweep 20-20000 Hz, 10 s at -24 dB + 2 s; white noise at -12 dB, 0.05 s each + 2 s; captures/di/stabs.wav, 10.0 s + 2 s
+  pedal ON · Mode Spring (changed) · E.Level 12:00 · Tone 5:00 · Time 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[42/123] tone-0500-time-0700-plate: 3 signals, 26 s: sweep 20-20000 Hz, 10 s at -24 dB + 2 s; white noise at -12 dB, 0.05 s each + 2 s; captures/di/stabs.wav, 10.0 s + 2 s
+  pedal ON · Mode Plate (changed) · E.Level 12:00 · Tone 5:00 · Time 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[43/123] tone-0500-time-0700-hall: 3 signals, 26 s: sweep 20-20000 Hz, 10 s at -24 dB + 2 s; white noise at -12 dB, 0.05 s each + 2 s; captures/di/stabs.wav, 10.0 s + 2 s
+  pedal ON · Mode Hall (changed) · E.Level 12:00 · Tone 5:00 · Time 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 578 samples (12.04 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[44/123] tone-0500-time-0700-room: 3 signals, 26 s: sweep 20-20000 Hz, 10 s at -24 dB + 2 s; white noise at -12 dB, 0.05 s each + 2 s; captures/di/stabs.wav, 10.0 s + 2 s
+  pedal ON · Mode Room (changed) · E.Level 12:00 · Tone 5:00 · Time 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 454 samples (9.46 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[45/123] tone-0500-time-0700-shimmer: 4 signals, 61 s: sweep 20-20000 Hz, 10 s at -24 dB + 10 s; white noise at -12 dB, 0.05 s each + 10 s; 329.63 Hz sine, 5 s at -24 dB + 10 s; captures/di/stabs.wav, 10.0 s + 6 s
+  pedal ON · Mode Shimmer (changed) · E.Level 12:00 · Tone 5:00 · Time 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[46/123] tone-0700-time-0700-shimmer: 4 signals, 61 s: sweep 20-20000 Hz, 10 s at -24 dB + 10 s; white noise at -12 dB, 0.05 s each + 10 s; 329.63 Hz sine, 5 s at -24 dB + 10 s; captures/di/stabs.wav, 10.0 s + 6 s
+  pedal ON · Mode Shimmer · E.Level 12:00 · Tone 7:00 (changed) · Time 7:00
+  TONE fully counter-clockwise.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.2 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[47/123] tone-0700-time-0700-room: 3 signals, 26 s: sweep 20-20000 Hz, 10 s at -24 dB + 2 s; white noise at -12 dB, 0.05 s each + 2 s; captures/di/stabs.wav, 10.0 s + 2 s
+  pedal ON · Mode Room (changed) · E.Level 12:00 · Tone 7:00 · Time 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.2 dBFS · B -19.3 dBFS · loopback -18.9 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[48/123] tone-0700-time-0700-hall: 3 signals, 26 s: sweep 20-20000 Hz, 10 s at -24 dB + 2 s; white noise at -12 dB, 0.05 s each + 2 s; captures/di/stabs.wav, 10.0 s + 2 s
+  pedal ON · Mode Hall (changed) · E.Level 12:00 · Tone 7:00 · Time 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[49/123] tone-0700-time-0700-plate: 3 signals, 26 s: sweep 20-20000 Hz, 10 s at -24 dB + 2 s; white noise at -12 dB, 0.05 s each + 2 s; captures/di/stabs.wav, 10.0 s + 2 s
+  pedal ON · Mode Plate (changed) · E.Level 12:00 · Tone 7:00 · Time 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[50/123] tone-0700-time-0700-spring: 3 signals, 26 s: sweep 20-20000 Hz, 10 s at -24 dB + 2 s; white noise at -12 dB, 0.05 s each + 2 s; captures/di/stabs.wav, 10.0 s + 2 s
+  pedal ON · Mode Spring (changed) · E.Level 12:00 · Tone 7:00 · Time 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[51/123] tone-0700-time-0700-modulate: 4 signals, 33 s: sweep 20-20000 Hz, 10 s at -24 dB + 2 s; white noise at -12 dB, 0.05 s each + 2 s; 1000 Hz sine, 5 s at -24 dB + 2 s; captures/di/stabs.wav, 10.0 s + 2 s
+  pedal ON · Mode Modulate (changed) · E.Level 12:00 · Tone 7:00 · Time 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[52/123] time-0700-modulate: 4 signals, 33 s: sweep 20-20000 Hz, 10 s at -24 dB + 2 s; white noise at -12 dB, 0.05 s each + 2 s; 1000 Hz sine, 5 s at -24 dB + 2 s; captures/di/stabs.wav, 10.0 s + 2 s
+  pedal ON · Mode Modulate · E.Level 12:00 · Tone 12:00 (changed) · Time 7:00
+  TONE back to 12:00.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[53/123] time-0700-spring: 3 signals, 26 s: sweep 20-20000 Hz, 10 s at -24 dB + 2 s; white noise at -12 dB, 0.05 s each + 2 s; captures/di/stabs.wav, 10.0 s + 2 s
+  pedal ON · Mode Spring (changed) · E.Level 12:00 · Tone 12:00 · Time 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[54/123] time-0700-plate: 3 signals, 26 s: sweep 20-20000 Hz, 10 s at -24 dB + 2 s; white noise at -12 dB, 0.05 s each + 2 s; captures/di/stabs.wav, 10.0 s + 2 s
+  pedal ON · Mode Plate (changed) · E.Level 12:00 · Tone 12:00 · Time 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 454 samples (9.46 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[55/123] time-0700-hall: 3 signals, 26 s: sweep 20-20000 Hz, 10 s at -24 dB + 2 s; white noise at -12 dB, 0.05 s each + 2 s; captures/di/stabs.wav, 10.0 s + 2 s
+  pedal ON · Mode Hall (changed) · E.Level 12:00 · Tone 12:00 · Time 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[56/123] time-0700-room: 3 signals, 26 s: sweep 20-20000 Hz, 10 s at -24 dB + 2 s; white noise at -12 dB, 0.05 s each + 2 s; captures/di/stabs.wav, 10.0 s + 2 s
+  pedal ON · Mode Room (changed) · E.Level 12:00 · Tone 12:00 · Time 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[57/123] time-0700-shimmer: 4 signals, 61 s: sweep 20-20000 Hz, 10 s at -24 dB + 10 s; white noise at -12 dB, 0.05 s each + 10 s; 329.63 Hz sine, 5 s at -24 dB + 10 s; captures/di/stabs.wav, 10.0 s + 6 s
+  pedal ON · Mode Shimmer (changed) · E.Level 12:00 · Tone 12:00 · Time 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[58/123] time-0900-shimmer: 4 signals, 61 s: sweep 20-20000 Hz, 10 s at -24 dB + 10 s; white noise at -12 dB, 0.05 s each + 10 s; 329.63 Hz sine, 5 s at -24 dB + 10 s; captures/di/stabs.wav, 10.0 s + 6 s
+  pedal ON · Mode Shimmer · E.Level 12:00 · Tone 12:00 · Time 9:00 (changed)
+  TIME to 9:00.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[59/123] time-0900-room: 3 signals, 26 s: sweep 20-20000 Hz, 10 s at -24 dB + 2 s; white noise at -12 dB, 0.05 s each + 2 s; captures/di/stabs.wav, 10.0 s + 2 s
+  pedal ON · Mode Room (changed) · E.Level 12:00 · Tone 12:00 · Time 9:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[60/123] time-0900-hall: 3 signals, 26 s: sweep 20-20000 Hz, 10 s at -24 dB + 2 s; white noise at -12 dB, 0.05 s each + 2 s; captures/di/stabs.wav, 10.0 s + 2 s
+  pedal ON · Mode Hall (changed) · E.Level 12:00 · Tone 12:00 · Time 9:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[61/123] time-0900-plate: 3 signals, 26 s: sweep 20-20000 Hz, 10 s at -24 dB + 2 s; white noise at -12 dB, 0.05 s each + 2 s; captures/di/stabs.wav, 10.0 s + 2 s
+  pedal ON · Mode Plate (changed) · E.Level 12:00 · Tone 12:00 · Time 9:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[62/123] time-0900-spring: 3 signals, 26 s: sweep 20-20000 Hz, 10 s at -24 dB + 2 s; white noise at -12 dB, 0.05 s each + 2 s; captures/di/stabs.wav, 10.0 s + 2 s
+  pedal ON · Mode Spring (changed) · E.Level 12:00 · Tone 12:00 · Time 9:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[63/123] time-0900-modulate: 4 signals, 33 s: sweep 20-20000 Hz, 10 s at -24 dB + 2 s; white noise at -12 dB, 0.05 s each + 2 s; 1000 Hz sine, 5 s at -24 dB + 2 s; captures/di/stabs.wav, 10.0 s + 2 s
+  pedal ON · Mode Modulate (changed) · E.Level 12:00 · Tone 12:00 · Time 9:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[64/123] tone-0900-modulate: 4 signals, 50 s: sweep 20-20000 Hz, 10 s at -24 dB + 7 s; white noise at -12 dB, 0.05 s each + 7 s; 1000 Hz sine, 5 s at -24 dB + 7 s; captures/di/stabs.wav, 10.0 s + 4.2 s
+  pedal ON · Mode Modulate · E.Level 12:00 · Tone 9:00 (changed) · Time 12:00 (changed)
+  TIME back to 12:00, TONE to 9:00.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[65/123] tone-0900-spring: 3 signals, 30 s: sweep 20-20000 Hz, 10 s at -24 dB + 4 s; white noise at -12 dB, 0.05 s each + 4 s; captures/di/stabs.wav, 10.0 s + 2.4 s
+  pedal ON · Mode Spring (changed) · E.Level 12:00 · Tone 9:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[66/123] tone-0900-plate: 3 signals, 30 s: sweep 20-20000 Hz, 10 s at -24 dB + 4 s; white noise at -12 dB, 0.05 s each + 4 s; captures/di/stabs.wav, 10.0 s + 2.4 s
+  pedal ON · Mode Plate (changed) · E.Level 12:00 · Tone 9:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[67/123] tone-0900-hall: 3 signals, 36 s: sweep 20-20000 Hz, 10 s at -24 dB + 6 s; white noise at -12 dB, 0.05 s each + 6 s; captures/di/stabs.wav, 10.0 s + 3.6 s
+  pedal ON · Mode Hall (changed) · E.Level 12:00 · Tone 9:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[68/123] tone-0900-room: 3 signals, 27 s: sweep 20-20000 Hz, 10 s at -24 dB + 2.5 s; white noise at -12 dB, 0.05 s each + 2.5 s; captures/di/stabs.wav, 10.0 s + 2 s
+  pedal ON · Mode Room (changed) · E.Level 12:00 · Tone 9:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[69/123] tone-0900-shimmer: 4 signals, 90 s: sweep 20-20000 Hz, 10 s at -24 dB + 18 s; white noise at -12 dB, 0.05 s each + 18 s; 329.63 Hz sine, 5 s at -24 dB + 18 s; captures/di/stabs.wav, 10.0 s + 10.8 s
+  pedal ON · Mode Shimmer (changed) · E.Level 12:00 · Tone 9:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[70/123] tone-0700-shimmer: 4 signals, 90 s: sweep 20-20000 Hz, 10 s at -24 dB + 18 s; white noise at -12 dB, 0.05 s each + 18 s; 329.63 Hz sine, 5 s at -24 dB + 18 s; captures/di/stabs.wav, 10.0 s + 10.8 s
+  pedal ON · Mode Shimmer · E.Level 12:00 · Tone 7:00 (changed) · Time 12:00
+  TONE fully counter-clockwise.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.3 dBFS · B -19.5 dBFS · loopback -18.9 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[71/123] tone-0700-room: 3 signals, 27 s: sweep 20-20000 Hz, 10 s at -24 dB + 2.5 s; white noise at -12 dB, 0.05 s each + 2.5 s; captures/di/stabs.wav, 10.0 s + 2 s
+  pedal ON · Mode Room (changed) · E.Level 12:00 · Tone 7:00 · Time 12:00
+  Enter = record, s = skip, q = quit:
+Stopped; the takes recorded so far are kept.
+
+=== 2026-11-15T14:50:33 · run tools/capture/plans/rv-6-focused.json · tool dcbb1d8bb8e9538d770bbdfe9ec8a0331433ae7a
+
+[71/123] tone-0700-room: 3 signals, 27 s: sweep 20-20000 Hz, 10 s at -24 dB + 2.5 s; white noise at -12 dB, 0.05 s each + 2.5 s; captures/di/stabs.wav, 10.0 s + 2 s
+  pedal ON · Mode Room (changed) · E.Level 12:00 · Tone 7:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 457 samples (9.52 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[72/123] tone-0700-hall: 3 signals, 36 s: sweep 20-20000 Hz, 10 s at -24 dB + 6 s; white noise at -12 dB, 0.05 s each + 6 s; captures/di/stabs.wav, 10.0 s + 3.6 s
+  pedal ON · Mode Hall (changed) · E.Level 12:00 · Tone 7:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 457 samples (9.52 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[73/123] tone-0700-plate: 3 signals, 30 s: sweep 20-20000 Hz, 10 s at -24 dB + 4 s; white noise at -12 dB, 0.05 s each + 4 s; captures/di/stabs.wav, 10.0 s + 2.4 s
+  pedal ON · Mode Plate (changed) · E.Level 12:00 · Tone 7:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 457 samples (9.52 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[74/123] tone-0700-spring: 3 signals, 30 s: sweep 20-20000 Hz, 10 s at -24 dB + 4 s; white noise at -12 dB, 0.05 s each + 4 s; captures/di/stabs.wav, 10.0 s + 2.4 s
+  pedal ON · Mode Spring (changed) · E.Level 12:00 · Tone 7:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 457 samples (9.52 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[75/123] tone-0700-modulate: 4 signals, 50 s: sweep 20-20000 Hz, 10 s at -24 dB + 7 s; white noise at -12 dB, 0.05 s each + 7 s; 1000 Hz sine, 5 s at -24 dB + 7 s; captures/di/stabs.wav, 10.0 s + 4.2 s
+  pedal ON · Mode Modulate (changed) · E.Level 12:00 · Tone 7:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 457 samples (9.52 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[76/123] tone-0300-modulate: 4 signals, 50 s: sweep 20-20000 Hz, 10 s at -24 dB + 7 s; white noise at -12 dB, 0.05 s each + 7 s; 1000 Hz sine, 5 s at -24 dB + 7 s; captures/di/stabs.wav, 10.0 s + 4.2 s
+  pedal ON · Mode Modulate · E.Level 12:00 · Tone 3:00 (changed) · Time 12:00
+  TONE to 3:00.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 457 samples (9.52 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[77/123] tone-0300-spring: 3 signals, 30 s: sweep 20-20000 Hz, 10 s at -24 dB + 4 s; white noise at -12 dB, 0.05 s each + 4 s; captures/di/stabs.wav, 10.0 s + 2.4 s
+  pedal ON · Mode Spring (changed) · E.Level 12:00 · Tone 3:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[78/123] tone-0300-plate: 3 signals, 30 s: sweep 20-20000 Hz, 10 s at -24 dB + 4 s; white noise at -12 dB, 0.05 s each + 4 s; captures/di/stabs.wav, 10.0 s + 2.4 s
+  pedal ON · Mode Plate (changed) · E.Level 12:00 · Tone 3:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[79/123] tone-0300-hall: 3 signals, 36 s: sweep 20-20000 Hz, 10 s at -24 dB + 6 s; white noise at -12 dB, 0.05 s each + 6 s; captures/di/stabs.wav, 10.0 s + 3.6 s
+  pedal ON · Mode Hall (changed) · E.Level 12:00 · Tone 3:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[80/123] tone-0300-room: 3 signals, 27 s: sweep 20-20000 Hz, 10 s at -24 dB + 2.5 s; white noise at -12 dB, 0.05 s each + 2.5 s; captures/di/stabs.wav, 10.0 s + 2 s
+  pedal ON · Mode Room (changed) · E.Level 12:00 · Tone 3:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[81/123] tone-0300-shimmer: 4 signals, 90 s: sweep 20-20000 Hz, 10 s at -24 dB + 18 s; white noise at -12 dB, 0.05 s each + 18 s; 329.63 Hz sine, 5 s at -24 dB + 18 s; captures/di/stabs.wav, 10.0 s + 10.8 s
+  pedal ON · Mode Shimmer (changed) · E.Level 12:00 · Tone 3:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[82/123] tone-0500-shimmer: 4 signals, 90 s: sweep 20-20000 Hz, 10 s at -24 dB + 18 s; white noise at -12 dB, 0.05 s each + 18 s; 329.63 Hz sine, 5 s at -24 dB + 18 s; captures/di/stabs.wav, 10.0 s + 10.8 s
+  pedal ON · Mode Shimmer · E.Level 12:00 · Tone 5:00 (changed) · Time 12:00
+  TONE fully clockwise.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 582 samples (12.12 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[83/123] tone-0500-room: 3 signals, 27 s: sweep 20-20000 Hz, 10 s at -24 dB + 2.5 s; white noise at -12 dB, 0.05 s each + 2.5 s; captures/di/stabs.wav, 10.0 s + 2 s
+  pedal ON · Mode Room (changed) · E.Level 12:00 · Tone 5:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[84/123] tone-0500-hall: 3 signals, 36 s: sweep 20-20000 Hz, 10 s at -24 dB + 6 s; white noise at -12 dB, 0.05 s each + 6 s; captures/di/stabs.wav, 10.0 s + 3.6 s
+  pedal ON · Mode Hall (changed) · E.Level 12:00 · Tone 5:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[85/123] tone-0500-plate: 3 signals, 30 s: sweep 20-20000 Hz, 10 s at -24 dB + 4 s; white noise at -12 dB, 0.05 s each + 4 s; captures/di/stabs.wav, 10.0 s + 2.4 s
+  pedal ON · Mode Plate (changed) · E.Level 12:00 · Tone 5:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[86/123] tone-0500-spring: 3 signals, 30 s: sweep 20-20000 Hz, 10 s at -24 dB + 4 s; white noise at -12 dB, 0.05 s each + 4 s; captures/di/stabs.wav, 10.0 s + 2.4 s
+  pedal ON · Mode Spring (changed) · E.Level 12:00 · Tone 5:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[87/123] tone-0500-modulate: 4 signals, 50 s: sweep 20-20000 Hz, 10 s at -24 dB + 7 s; white noise at -12 dB, 0.05 s each + 7 s; 1000 Hz sine, 5 s at -24 dB + 7 s; captures/di/stabs.wav, 10.0 s + 4.2 s
+  pedal ON · Mode Modulate (changed) · E.Level 12:00 · Tone 5:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[88/123] level-0500-modulate: 2 signals, 35 s: white noise at -24/-12/0 dB, 0.05 s each + 7 s gaps + 0 s; captures/di/stabs.wav, 10.0 s + 4.2 s
+  pedal ON · Mode Modulate · E.Level 5:00 (changed) · Tone 12:00 (changed) · Time 12:00
+  TONE back to 12:00, E.LEVEL fully clockwise: the loudest the reverb gets. If the tool says an input clipped, tell me rather than turning the interface down mid-session.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -17.6 dBFS · B -17.6 dBFS · loopback -16.0 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[89/123] level-0500-spring: 2 signals, 25 s: white noise at -24/-12/0 dB, 0.05 s each + 4 s gaps + 0 s; captures/di/stabs.wav, 10.0 s + 2.4 s
+  pedal ON · Mode Spring (changed) · E.Level 5:00 · Tone 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -16.6 dBFS · B -16.5 dBFS · loopback -16.2 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[90/123] level-0500-plate: 2 signals, 25 s: white noise at -24/-12/0 dB, 0.05 s each + 4 s gaps + 0 s; captures/di/stabs.wav, 10.0 s + 2.4 s
+  pedal ON · Mode Plate (changed) · E.Level 5:00 · Tone 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit:
+Stopped; the takes recorded so far are kept.
+
+=== 2026-11-15T15:09:37 · run tools/capture/plans/rv-6-focused.json · tool dcbb1d8bb8e9538d770bbdfe9ec8a0331433ae7a
+
+[90/123] level-0500-plate: 2 signals, 25 s: white noise at -24/-12/0 dB, 0.05 s each + 4 s gaps + 0 s; captures/di/stabs.wav, 10.0 s + 2.4 s
+  pedal ON · Mode Plate (changed) · E.Level 5:00 · Tone 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -16.6 dBFS · B -16.5 dBFS · loopback -16.2 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[91/123] level-0500-hall: 2 signals, 32 s: white noise at -24/-12/0 dB, 0.05 s each + 6 s gaps + 0 s; captures/di/stabs.wav, 10.0 s + 3.6 s
+  pedal ON · Mode Hall (changed) · E.Level 5:00 · Tone 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -16.3 dBFS · B -16.3 dBFS · loopback -16.3 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[92/123] level-0500-room: 2 signals, 20 s: white noise at -24/-12/0 dB, 0.05 s each + 2.5 s gaps + 0 s; captures/di/stabs.wav, 10.0 s + 2 s
+  pedal ON · Mode Room (changed) · E.Level 5:00 · Tone 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -15.8 dBFS · B -15.8 dBFS · loopback -15.7 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[93/123] level-0500-shimmer: 2 signals, 75 s: white noise at -24/-12/0 dB, 0.05 s each + 18 s gaps + 0 s; captures/di/stabs.wav, 10.0 s + 10.8 s
+  pedal ON · Mode Shimmer (changed) · E.Level 5:00 · Tone 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -17.0 dBFS · B -15.8 dBFS · loopback -17.4 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[94/123] level-0300-shimmer: 2 signals, 75 s: white noise at -24/-12/0 dB, 0.05 s each + 18 s gaps + 0 s; captures/di/stabs.wav, 10.0 s + 10.8 s
+  pedal ON · Mode Shimmer · E.Level 3:00 (changed) · Tone 12:00 · Time 12:00
+  E.LEVEL to 3:00.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -17.4 dBFS · B -17.3 dBFS · loopback -17.4 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[95/123] level-0300-room: 2 signals, 20 s: white noise at -24/-12/0 dB, 0.05 s each + 2.5 s gaps + 0 s; captures/di/stabs.wav, 10.0 s + 2 s
+  pedal ON · Mode Room (changed) · E.Level 3:00 · Tone 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -15.8 dBFS · B -15.8 dBFS · loopback -15.7 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[96/123] level-0300-hall: 2 signals, 32 s: white noise at -24/-12/0 dB, 0.05 s each + 6 s gaps + 0 s; captures/di/stabs.wav, 10.0 s + 3.6 s
+  pedal ON · Mode Hall (changed) · E.Level 3:00 · Tone 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -16.3 dBFS · B -16.3 dBFS · loopback -16.3 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[97/123] level-0300-plate: 2 signals, 25 s: white noise at -24/-12/0 dB, 0.05 s each + 4 s gaps + 0 s; captures/di/stabs.wav, 10.0 s + 2.4 s
+  pedal ON · Mode Plate (changed) · E.Level 3:00 · Tone 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -16.6 dBFS · B -16.5 dBFS · loopback -16.2 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[98/123] level-0300-spring: 2 signals, 25 s: white noise at -24/-12/0 dB, 0.05 s each + 4 s gaps + 0 s; captures/di/stabs.wav, 10.0 s + 2.4 s
+  pedal ON · Mode Spring (changed) · E.Level 3:00 · Tone 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -16.6 dBFS · B -16.5 dBFS · loopback -16.2 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[99/123] level-0300-modulate: 2 signals, 35 s: white noise at -24/-12/0 dB, 0.05 s each + 7 s gaps + 0 s; captures/di/stabs.wav, 10.0 s + 4.2 s
+  pedal ON · Mode Modulate (changed) · E.Level 3:00 · Tone 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -17.6 dBFS · B -17.6 dBFS · loopback -16.0 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[100/123] check-a-modulate: 3 signals, 51 s: white noise at -12 dB, 0.05 s each + 12 s; captures/di/stabs.wav, 10.0 s + 7.2 s; captures/di/lead.wav from 25 s, 15.0 s + 7.2 s
+  pedal ON · Mode Modulate · E.Level 3:00 · Tone 9:00 (changed) · Time 3:00 (changed)
+  A setting kept out of every fit: E.LEVEL stays at 3:00, TONE 9:00, TIME 3:00.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.2 dBFS · B -19.3 dBFS · loopback -18.9 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[101/123] check-a-spring: 3 signals, 40 s: white noise at -12 dB, 0.05 s each + 7 s; captures/di/stabs.wav, 10.0 s + 4.2 s; captures/di/lead.wav from 25 s, 15.0 s + 4.2 s
+  pedal ON · Mode Spring (changed) · E.Level 3:00 · Tone 9:00 · Time 3:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: r
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[102/123] check-a-plate: 3 signals, 45 s: white noise at -12 dB, 0.05 s each + 9 s; captures/di/stabs.wav, 10.0 s + 5.4 s; captures/di/lead.wav from 25 s, 15.0 s + 5.4 s
+  pedal ON · Mode Plate (changed) · E.Level 3:00 · Tone 9:00 · Time 3:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[103/123] check-a-hall: 3 signals, 47 s: white noise at -12 dB, 0.05 s each + 10 s; captures/di/stabs.wav, 10.0 s + 6 s; captures/di/lead.wav from 25 s, 15.0 s + 6 s
+  pedal ON · Mode Hall (changed) · E.Level 3:00 · Tone 9:00 · Time 3:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.5 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[104/123] check-a-room: 3 signals, 36 s: white noise at -12 dB, 0.05 s each + 5 s; captures/di/stabs.wav, 10.0 s + 3 s; captures/di/lead.wav from 25 s, 15.0 s + 3 s
+  pedal ON · Mode Room (changed) · E.Level 3:00 · Tone 9:00 · Time 3:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[105/123] check-a-shimmer: 3 signals, 82 s: white noise at -12 dB, 0.05 s each + 26 s; captures/di/stabs.wav, 10.0 s + 15.6 s; captures/di/lead.wav from 25 s, 15.0 s + 15.6 s
+  pedal ON · Mode Shimmer (changed) · E.Level 3:00 · Tone 9:00 · Time 3:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -17.4 dBFS · B -16.2 dBFS · loopback -18.9 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[106/123] check-b-shimmer: 3 signals, 47 s: white noise at -12 dB, 0.05 s each + 10 s; captures/di/stabs.wav, 10.0 s + 6 s; captures/di/lead.wav from 25 s, 15.0 s + 6 s
+  pedal ON · Mode Shimmer · E.Level 9:00 (changed) · Tone 3:00 (changed) · Time 9:00 (changed)
+  The other one: E.LEVEL 9:00, TONE 3:00, TIME 9:00.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[107/123] check-b-room: 3 signals, 31 s: white noise at -12 dB, 0.05 s each + 2 s; captures/di/stabs.wav, 10.0 s + 2 s; captures/di/lead.wav from 25 s, 15.0 s + 2 s
+  pedal ON · Mode Room (changed) · E.Level 9:00 · Tone 3:00 · Time 9:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[108/123] check-b-hall: 3 signals, 31 s: white noise at -12 dB, 0.05 s each + 2 s; captures/di/stabs.wav, 10.0 s + 2 s; captures/di/lead.wav from 25 s, 15.0 s + 2 s
+  pedal ON · Mode Hall (changed) · E.Level 9:00 · Tone 3:00 · Time 9:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[109/123] check-b-plate: 3 signals, 31 s: white noise at -12 dB, 0.05 s each + 2 s; captures/di/stabs.wav, 10.0 s + 2 s; captures/di/lead.wav from 25 s, 15.0 s + 2 s
+  pedal ON · Mode Plate (changed) · E.Level 9:00 · Tone 3:00 · Time 9:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[110/123] check-b-spring: 3 signals, 31 s: white noise at -12 dB, 0.05 s each + 2 s; captures/di/stabs.wav, 10.0 s + 2 s; captures/di/lead.wav from 25 s, 15.0 s + 2 s
+  pedal ON · Mode Spring (changed) · E.Level 9:00 · Tone 3:00 · Time 9:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[111/123] check-b-modulate: 3 signals, 31 s: white noise at -12 dB, 0.05 s each + 2 s; captures/di/stabs.wav, 10.0 s + 2 s; captures/di/lead.wav from 25 s, 15.0 s + 2 s
+  pedal ON · Mode Modulate (changed) · E.Level 9:00 · Tone 3:00 · Time 9:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[112/123] level-0900-modulate: 2 signals, 35 s: white noise at -24/-12/0 dB, 0.05 s each + 7 s gaps + 0 s; captures/di/stabs.wav, 10.0 s + 4.2 s
+  pedal ON · Mode Modulate · E.Level 9:00 · Tone 12:00 (changed) · Time 12:00 (changed)
+  TONE and TIME back to 12:00, E.LEVEL stays at 9:00.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -17.6 dBFS · B -17.5 dBFS · loopback -16.0 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[113/123] level-0900-spring: 2 signals, 25 s: white noise at -24/-12/0 dB, 0.05 s each + 4 s gaps + 0 s; captures/di/stabs.wav, 10.0 s + 2.4 s
+  pedal ON · Mode Spring (changed) · E.Level 9:00 · Tone 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -16.6 dBFS · B -16.5 dBFS · loopback -16.2 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[114/123] level-0900-plate: 2 signals, 25 s: white noise at -24/-12/0 dB, 0.05 s each + 4 s gaps + 0 s; captures/di/stabs.wav, 10.0 s + 2.4 s
+  pedal ON · Mode Plate (changed) · E.Level 9:00 · Tone 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -16.6 dBFS · B -16.5 dBFS · loopback -16.2 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[115/123] level-0900-hall: 2 signals, 32 s: white noise at -24/-12/0 dB, 0.05 s each + 6 s gaps + 0 s; captures/di/stabs.wav, 10.0 s + 3.6 s
+  pedal ON · Mode Hall (changed) · E.Level 9:00 · Tone 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -16.3 dBFS · B -16.3 dBFS · loopback -16.3 dBFS · latency 582 samples (12.12 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[116/123] level-0900-room: 2 signals, 20 s: white noise at -24/-12/0 dB, 0.05 s each + 2.5 s gaps + 0 s; captures/di/stabs.wav, 10.0 s + 2 s
+  pedal ON · Mode Room (changed) · E.Level 9:00 · Tone 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -15.8 dBFS · B -15.8 dBFS · loopback -15.7 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[117/123] level-0900-shimmer: 2 signals, 75 s: white noise at -24/-12/0 dB, 0.05 s each + 18 s gaps + 0 s; captures/di/stabs.wav, 10.0 s + 10.8 s
+  pedal ON · Mode Shimmer (changed) · E.Level 9:00 · Tone 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -17.3 dBFS · B -17.3 dBFS · loopback -17.4 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[118/123] again-shimmer: 2 signals, 51 s: sweep 20-20000 Hz, 10 s at -24 dB + 18 s; captures/di/stabs.wav, 12.0 s + 10.8 s
+  pedal ON · Mode Shimmer · E.Level 12:00 (changed) · Tone 12:00 · Time 12:00
+  Everything back to 12:00: the first block again, the pedal against itself an hour on.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[119/123] again-room: 2 signals, 26 s: sweep 20-20000 Hz, 10 s at -24 dB + 2.5 s; captures/di/stabs.wav, 12.0 s + 2 s
+  pedal ON · Mode Room (changed) · E.Level 12:00 · Tone 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[120/123] again-hall: 2 signals, 32 s: sweep 20-20000 Hz, 10 s at -24 dB + 6 s; captures/di/stabs.wav, 12.0 s + 3.6 s
+  pedal ON · Mode Hall (changed) · E.Level 12:00 · Tone 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[121/123] again-plate: 2 signals, 28 s: sweep 20-20000 Hz, 10 s at -24 dB + 4 s; captures/di/stabs.wav, 12.0 s + 2.4 s
+  pedal ON · Mode Plate (changed) · E.Level 12:00 · Tone 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[122/123] again-spring: 2 signals, 28 s: sweep 20-20000 Hz, 10 s at -24 dB + 4 s; captures/di/stabs.wav, 12.0 s + 2.4 s
+  pedal ON · Mode Spring (changed) · E.Level 12:00 · Tone 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[123/123] again-modulate: 2 signals, 33 s: sweep 20-20000 Hz, 10 s at -24 dB + 7 s; captures/di/stabs.wav, 12.0 s + 4.2 s
+  pedal ON · Mode Modulate (changed) · E.Level 12:00 · Tone 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.4 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 448 samples (9.33 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+All 123 takes are in captures/boss/rv-6/2026-11-15-focused.

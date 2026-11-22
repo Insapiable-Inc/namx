@@ -1,0 +1,1415 @@
+{
+  "source_commit": "cde5c60",
+  "calibration": {
+    "original_1khz_bypass_transfer_db": -9.188216074370866,
+    "limitation": "Original 220 Hz recordings use the 1 kHz bypass calibration; open-path spectral flatness is only known to about 0.2 dB. No candidate-specific recalibration. Old dynamics bypass names are engaged captures."
+  },
+  "mask": "Recorded carrier >20 dB above tail coherent-amplitude median, input between -95 and -6 dB re reference; discard abrupt-transition +/-30 ms. Same mask for every model. Internal gain at 1 ms is an approximation, checked by sample-rate rendering.",
+  "fit_parameters": {
+    "asymmetric_envelope": [
+      1.5481921874525346,
+      0.4396463183735704,
+      0.2877560304252444,
+      -6.907755278982135,
+      0.885008719159796,
+      2.1887417590780545
+    ],
+    "leaky_envelope": [
+      -6.796188283577571,
+      7.999999999826878,
+      1.5408034541241586,
+      -6.907755278982136,
+      0.30000000000000004,
+      2.0879132994736835
+    ],
+    "nonlinear_charge": [
+      -1.9103329855615376,
+      0.6849691663853059,
+      2.572275926030095,
+      4.872327014516909
+    ],
+    "continuous_switch": [
+      0.10889192133255116,
+      0.30799018243999315,
+      3.5671268594318493,
+      1.3749844620923135,
+      1.0751563250025553,
+      -0.7976825221126277,
+      0.6249132720956219,
+      2.9025485912325215
+    ],
+    "continuous_switch_capped": [
+      0.9622070017654591,
+      0.3376956005732637,
+      3.233493039682472,
+      0.6102331292733583,
+      0.4663566467678413,
+      2.4019175591032367,
+      0.3797559055968837,
+      3.145624847995086,
+      2.201935688658577
+    ]
+  },
+  "regression": [
+    {
+      "name": "2026-10-27/jump-12",
+      "threshold_tag": "1200",
+      "tag": "1200",
+      "freq": 1000,
+      "noise_proxy_dbfs": -132.21696644350376,
+      "played_sha256": "8d03d373217e2bd504f19113c947016b21ae11828740ef5a2b9ed095e5f9867b",
+      "recorded_sha256": "93e6e895d3ed7003bb232da68369d50eb507eab2734a12d0e64d7cccbccc4743",
+      "reinterpretation": null,
+      "scored_seconds": 4.624,
+      "rms_db": {
+        "baseline": 2.8985661759122325,
+        "asymmetric_envelope": 3.3167283601833795,
+        "leaky_envelope": 3.316728360183378,
+        "nonlinear_charge": 2.9984803525857124,
+        "continuous_switch": 3.2460305946658967,
+        "continuous_switch_capped": 3.2664867657381924
+      },
+      "bias_db": {
+        "baseline": 0.00982486780168712,
+        "asymmetric_envelope": 0.00982486780168712,
+        "leaky_envelope": 0.00982486780168701,
+        "nonlinear_charge": 0.00982486780168712,
+        "continuous_switch": 0.00982486780168712,
+        "continuous_switch_capped": 0.00982486780168712
+      }
+    },
+    {
+      "name": "2026-10-27/jump-decay-0300",
+      "threshold_tag": "1200",
+      "tag": "0300",
+      "freq": 1000,
+      "noise_proxy_dbfs": -132.48408075755938,
+      "played_sha256": "8d03d373217e2bd504f19113c947016b21ae11828740ef5a2b9ed095e5f9867b",
+      "recorded_sha256": "308f8ffa0c68fe0074cbf801c211fd04a57e111d2be91a562984bdd1cbb36f0a",
+      "reinterpretation": null,
+      "scored_seconds": 8.176,
+      "rms_db": {
+        "baseline": 2.2873734821061755,
+        "asymmetric_envelope": 6.019638604650027,
+        "leaky_envelope": 6.306005025109396,
+        "nonlinear_charge": 4.61322131111445,
+        "continuous_switch": 5.2600718430327635,
+        "continuous_switch_capped": 5.354353161805029
+      },
+      "bias_db": {
+        "baseline": 0.012992625381510692,
+        "asymmetric_envelope": 0.013147071150285794,
+        "leaky_envelope": 0.013147071150285683,
+        "nonlinear_charge": 0.01304324611622626,
+        "continuous_switch": 0.013107182511371662,
+        "continuous_switch_capped": 0.013118812842209615
+      }
+    },
+    {
+      "name": "2026-10-27/jump-decay-0500",
+      "threshold_tag": "1200",
+      "tag": "0500",
+      "freq": 1000,
+      "noise_proxy_dbfs": -132.27262234283918,
+      "played_sha256": "8d03d373217e2bd504f19113c947016b21ae11828740ef5a2b9ed095e5f9867b",
+      "recorded_sha256": "3a22fa3cfa0e707c0f77525e833a3a368005bdbe4a6878d47dd9d53123c67d07",
+      "reinterpretation": null,
+      "scored_seconds": 9.437,
+      "rms_db": {
+        "baseline": 4.64342257521964,
+        "asymmetric_envelope": 6.350386619063413,
+        "leaky_envelope": 6.350386619063413,
+        "nonlinear_charge": 5.308522782785343,
+        "continuous_switch": 6.080590061824853,
+        "continuous_switch_capped": 6.154237549061432
+      },
+      "bias_db": {
+        "baseline": 0.014827589788449225,
+        "asymmetric_envelope": 0.014827589788449225,
+        "leaky_envelope": 0.014827589788449114,
+        "nonlinear_charge": 0.014583787561595396,
+        "continuous_switch": 0.014826353856175145,
+        "continuous_switch_capped": 0.014827589788449225
+      }
+    },
+    {
+      "name": "2026-10-27/jump-decay-0700",
+      "threshold_tag": "1200",
+      "tag": "0700",
+      "freq": 1000,
+      "noise_proxy_dbfs": -133.44111794145323,
+      "played_sha256": "8d03d373217e2bd504f19113c947016b21ae11828740ef5a2b9ed095e5f9867b",
+      "recorded_sha256": "03bef43931af1075925b7c04f21c283f2aade2a252797d490e1b620aa2165a0f",
+      "reinterpretation": null,
+      "scored_seconds": 4.019,
+      "rms_db": {
+        "baseline": 1.6864682648090918,
+        "asymmetric_envelope": 1.6864682648090918,
+        "leaky_envelope": 1.6864682648090892,
+        "nonlinear_charge": 1.6864682648090918,
+        "continuous_switch": 1.6864682648090918,
+        "continuous_switch_capped": 1.6864682648090918
+      },
+      "bias_db": {
+        "baseline": -0.006422666410420774,
+        "asymmetric_envelope": -0.006422666410420774,
+        "leaky_envelope": -0.006422666410420885,
+        "nonlinear_charge": -0.006422666410420774,
+        "continuous_switch": -0.006422666410420774,
+        "continuous_switch_capped": -0.006422666410420774
+      }
+    },
+    {
+      "name": "2026-10-27/jump-decay-0900",
+      "threshold_tag": "1200",
+      "tag": "0900",
+      "freq": 1000,
+      "noise_proxy_dbfs": -133.24672482607411,
+      "played_sha256": "8d03d373217e2bd504f19113c947016b21ae11828740ef5a2b9ed095e5f9867b",
+      "recorded_sha256": "895246fd650670ec628e809af60181a7a3f4148d0db88e4632ad303f8f74b170",
+      "reinterpretation": null,
+      "scored_seconds": 4.155,
+      "rms_db": {
+        "baseline": 2.708431457850634,
+        "asymmetric_envelope": 2.708431457850634,
+        "leaky_envelope": 2.7084314578506334,
+        "nonlinear_charge": 2.701224061683509,
+        "continuous_switch": 2.708431457850634,
+        "continuous_switch_capped": 2.708431457850634
+      },
+      "bias_db": {
+        "baseline": -0.003692868289119855,
+        "asymmetric_envelope": -0.003692868289119855,
+        "leaky_envelope": -0.003692868289119966,
+        "nonlinear_charge": -0.003692868289119855,
+        "continuous_switch": -0.003692868289119855,
+        "continuous_switch_capped": -0.003692868289119855
+      }
+    },
+    {
+      "name": "2026-10-27/jump-threshold-0300",
+      "threshold_tag": "0300",
+      "tag": "1200",
+      "freq": 1000,
+      "noise_proxy_dbfs": -133.1316031907919,
+      "played_sha256": "8d03d373217e2bd504f19113c947016b21ae11828740ef5a2b9ed095e5f9867b",
+      "recorded_sha256": "394d84246c6996f1000ed2a1b21f19f0afd3745d87991a8016595cc015691038",
+      "reinterpretation": null,
+      "scored_seconds": 4.404,
+      "rms_db": {
+        "baseline": 2.617396902856489,
+        "asymmetric_envelope": 2.833075040029192,
+        "leaky_envelope": 2.8330750400047298,
+        "nonlinear_charge": 2.625666384028309,
+        "continuous_switch": 2.799014047308152,
+        "continuous_switch_capped": 2.809083021072876
+      },
+      "bias_db": {
+        "baseline": 0.01810918649110793,
+        "asymmetric_envelope": 0.01810918649110793,
+        "leaky_envelope": 0.01810918648668991,
+        "nonlinear_charge": 0.01810918649110793,
+        "continuous_switch": 0.01810918649110793,
+        "continuous_switch_capped": 0.01810918649110793
+      }
+    },
+    {
+      "name": "2026-10-27/jump-threshold-0500",
+      "threshold_tag": "0500",
+      "tag": "1200",
+      "freq": 1000,
+      "noise_proxy_dbfs": -132.53886988814602,
+      "played_sha256": "8d03d373217e2bd504f19113c947016b21ae11828740ef5a2b9ed095e5f9867b",
+      "recorded_sha256": "74ab3325d0ae590f2ae64ae22be17602b0176bc3b079fc92055b05c8266caa01",
+      "reinterpretation": null,
+      "scored_seconds": 4.322,
+      "rms_db": {
+        "baseline": 1.9259326962521037,
+        "asymmetric_envelope": 2.3467957814695186,
+        "leaky_envelope": 2.388661560830223,
+        "nonlinear_charge": 2.1344023946860293,
+        "continuous_switch": 2.2984869169277227,
+        "continuous_switch_capped": 2.2953662758412743
+      },
+      "bias_db": {
+        "baseline": 0.022341963656413222,
+        "asymmetric_envelope": 0.022341963656413222,
+        "leaky_envelope": 0.02233461968763134,
+        "nonlinear_charge": 0.022338987755288087,
+        "continuous_switch": 0.022341963656413222,
+        "continuous_switch_capped": 0.022341963656413222
+      }
+    },
+    {
+      "name": "2026-10-27/jump-threshold-0700",
+      "threshold_tag": "0700",
+      "tag": "1200",
+      "freq": 1000,
+      "noise_proxy_dbfs": -134.92793790298376,
+      "played_sha256": "8d03d373217e2bd504f19113c947016b21ae11828740ef5a2b9ed095e5f9867b",
+      "recorded_sha256": "c3bd7c458a1b60be49368c89cf7ad479f49508db58d0c46048a0727567e5bd1a",
+      "reinterpretation": null,
+      "scored_seconds": 5.538,
+      "rms_db": {
+        "baseline": 4.976481780974846,
+        "asymmetric_envelope": 6.792849693261818,
+        "leaky_envelope": 6.84452689733201,
+        "nonlinear_charge": 5.854913025703636,
+        "continuous_switch": 6.432566320985695,
+        "continuous_switch_capped": 6.511189773655344
+      },
+      "bias_db": {
+        "baseline": -0.020597277804074887,
+        "asymmetric_envelope": -0.020596611138818943,
+        "leaky_envelope": -0.020596611138818943,
+        "nonlinear_charge": -0.020596611138818943,
+        "continuous_switch": -0.020596611138818943,
+        "continuous_switch_capped": -0.020596611138818943
+      }
+    },
+    {
+      "name": "2026-10-27/jump-threshold-0900",
+      "threshold_tag": "0900",
+      "tag": "1200",
+      "freq": 1000,
+      "noise_proxy_dbfs": -133.8436367309542,
+      "played_sha256": "8d03d373217e2bd504f19113c947016b21ae11828740ef5a2b9ed095e5f9867b",
+      "recorded_sha256": "b13933d26efb8c75d67bc13d0a47c524168cbef9c5cad524234a6a666f9314cb",
+      "reinterpretation": null,
+      "scored_seconds": 5.158,
+      "rms_db": {
+        "baseline": 4.156733343962498,
+        "asymmetric_envelope": 5.436592456469828,
+        "leaky_envelope": 5.436683034139568,
+        "nonlinear_charge": 4.70142766072774,
+        "continuous_switch": 5.192869568999553,
+        "continuous_switch_capped": 5.258126202120815
+      },
+      "bias_db": {
+        "baseline": -0.010182038902083523,
+        "asymmetric_envelope": -0.010182038902083523,
+        "leaky_envelope": -0.010182038902083523,
+        "nonlinear_charge": -0.010182038902083523,
+        "continuous_switch": -0.010182038902083523,
+        "continuous_switch_capped": -0.010182038902083523
+      }
+    },
+    {
+      "name": "2026-10-27/plucks-12",
+      "threshold_tag": "1200",
+      "tag": "1200",
+      "freq": 220,
+      "noise_proxy_dbfs": -135.8759244797775,
+      "played_sha256": "8a69840a1a946f6bc6da688833b19b6c55aaec81515426a8fb8ac934cf97084e",
+      "recorded_sha256": "d720608b62b25ba3b28453f885ae8a9a984126ce532c085040dc76b266b2a018",
+      "reinterpretation": null,
+      "scored_seconds": 10.633,
+      "rms_db": {
+        "baseline": 0.12598928514676375,
+        "asymmetric_envelope": 0.12598928514676375,
+        "leaky_envelope": 0.1259892929512157,
+        "nonlinear_charge": 0.12598928514676375,
+        "continuous_switch": 0.12598928514676375,
+        "continuous_switch_capped": 0.12598928514676375
+      },
+      "bias_db": {
+        "baseline": -0.1260073692049466,
+        "asymmetric_envelope": -0.1260073692049466,
+        "leaky_envelope": -0.12600736920496058,
+        "nonlinear_charge": -0.1260073692049466,
+        "continuous_switch": -0.1260073692049466,
+        "continuous_switch_capped": -0.1260073692049466
+      }
+    },
+    {
+      "name": "2026-10-27/plucks-decay-0300",
+      "threshold_tag": "1200",
+      "tag": "0300",
+      "freq": 220,
+      "noise_proxy_dbfs": -134.50767416418094,
+      "played_sha256": "8a69840a1a946f6bc6da688833b19b6c55aaec81515426a8fb8ac934cf97084e",
+      "recorded_sha256": "a1785a23f3e3d4eeb44caf9d127fef6e6b0a50135423953271e2e4a5c7e733bf",
+      "reinterpretation": null,
+      "scored_seconds": 10.633,
+      "rms_db": {
+        "baseline": 0.12364194097251688,
+        "asymmetric_envelope": 0.12364194097251688,
+        "leaky_envelope": 0.12364194097280443,
+        "nonlinear_charge": 0.12364194097251688,
+        "continuous_switch": 0.12364194097251688,
+        "continuous_switch_capped": 0.12364194097251688
+      },
+      "bias_db": {
+        "baseline": -0.12358459308833991,
+        "asymmetric_envelope": -0.12358459308833991,
+        "leaky_envelope": -0.12358459308834002,
+        "nonlinear_charge": -0.12358459308833991,
+        "continuous_switch": -0.12358459308833991,
+        "continuous_switch_capped": -0.12358459308833991
+      }
+    },
+    {
+      "name": "2026-10-27/plucks-decay-0500",
+      "threshold_tag": "1200",
+      "tag": "0500",
+      "freq": 220,
+      "noise_proxy_dbfs": -131.49138183564457,
+      "played_sha256": "8a69840a1a946f6bc6da688833b19b6c55aaec81515426a8fb8ac934cf97084e",
+      "recorded_sha256": "af895c00e783dcc15a5295ac040eb5fd092efb48455496bfd6d27a1ec6005ce4",
+      "reinterpretation": null,
+      "scored_seconds": 10.633,
+      "rms_db": {
+        "baseline": 0.12204998108760098,
+        "asymmetric_envelope": 0.12204998108760098,
+        "leaky_envelope": 0.12204998108760098,
+        "nonlinear_charge": 0.12204998108760098,
+        "continuous_switch": 0.12204998108760098,
+        "continuous_switch_capped": 0.12204998108760098
+      },
+      "bias_db": {
+        "baseline": -0.12199064130980242,
+        "asymmetric_envelope": -0.12199064130980242,
+        "leaky_envelope": -0.12199064130980242,
+        "nonlinear_charge": -0.12199064130980242,
+        "continuous_switch": -0.12199064130980242,
+        "continuous_switch_capped": -0.12199064130980242
+      }
+    },
+    {
+      "name": "2026-10-27/plucks-decay-0700",
+      "threshold_tag": "1200",
+      "tag": "0700",
+      "freq": 220,
+      "noise_proxy_dbfs": -134.94324964834928,
+      "played_sha256": "8a69840a1a946f6bc6da688833b19b6c55aaec81515426a8fb8ac934cf97084e",
+      "recorded_sha256": "62110f70216a0c5b6f8470f9773a1e73a954bf2bbfdca1e926ca1614db46e29b",
+      "reinterpretation": null,
+      "scored_seconds": 10.633,
+      "rms_db": {
+        "baseline": 0.1421387100118289,
+        "asymmetric_envelope": 0.1421387100118289,
+        "leaky_envelope": 0.14214969836099922,
+        "nonlinear_charge": 0.1421387100118289,
+        "continuous_switch": 0.1421387100118289,
+        "continuous_switch_capped": 0.1421387100118289
+      },
+      "bias_db": {
+        "baseline": -0.14205328250882132,
+        "asymmetric_envelope": -0.14205328250882132,
+        "leaky_envelope": -0.14205514369001992,
+        "nonlinear_charge": -0.14205328250882132,
+        "continuous_switch": -0.14205328250882132,
+        "continuous_switch_capped": -0.14205328250882132
+      }
+    },
+    {
+      "name": "2026-10-27/plucks-decay-0900",
+      "threshold_tag": "1200",
+      "tag": "0900",
+      "freq": 220,
+      "noise_proxy_dbfs": -137.11572791112627,
+      "played_sha256": "8a69840a1a946f6bc6da688833b19b6c55aaec81515426a8fb8ac934cf97084e",
+      "recorded_sha256": "5ec0a8a1336b8f002bf628bebb2b19436f9be938aa668ecdf59170dda07fb9cc",
+      "reinterpretation": null,
+      "scored_seconds": 10.633,
+      "rms_db": {
+        "baseline": 0.13928746703888675,
+        "asymmetric_envelope": 0.13928746703888675,
+        "leaky_envelope": 0.13929812063609914,
+        "nonlinear_charge": 0.13928746703888675,
+        "continuous_switch": 0.13928746703888675,
+        "continuous_switch_capped": 0.13928746703888675
+      },
+      "bias_db": {
+        "baseline": -0.1393877301368055,
+        "asymmetric_envelope": -0.1393877301368055,
+        "leaky_envelope": -0.13938843834295567,
+        "nonlinear_charge": -0.1393877301368055,
+        "continuous_switch": -0.1393877301368055,
+        "continuous_switch_capped": -0.1393877301368055
+      }
+    },
+    {
+      "name": "2026-10-27/plucks-threshold-0300",
+      "threshold_tag": "0300",
+      "tag": "1200",
+      "freq": 220,
+      "noise_proxy_dbfs": -134.2921280968718,
+      "played_sha256": "8a69840a1a946f6bc6da688833b19b6c55aaec81515426a8fb8ac934cf97084e",
+      "recorded_sha256": "eb3f07f8aa2cafbad1761dbcbf81d7b8a29823e5ff6384f4f7b7c0868f16bcec",
+      "reinterpretation": null,
+      "scored_seconds": 10.633,
+      "rms_db": {
+        "baseline": 0.11777076233726498,
+        "asymmetric_envelope": 0.11777101962841259,
+        "leaky_envelope": 0.1183924678773685,
+        "nonlinear_charge": 0.22375654940410966,
+        "continuous_switch": 0.11952180793285398,
+        "continuous_switch_capped": 0.11821786687964748
+      },
+      "bias_db": {
+        "baseline": -0.11782394685575603,
+        "asymmetric_envelope": -0.11782394685575603,
+        "leaky_envelope": -0.11789044007932958,
+        "nonlinear_charge": -0.11790129886109879,
+        "continuous_switch": -0.1178468655315259,
+        "continuous_switch_capped": -0.1178386957730646
+      }
+    },
+    {
+      "name": "2026-10-27/plucks-threshold-0500",
+      "threshold_tag": "0500",
+      "tag": "1200",
+      "freq": 220,
+      "noise_proxy_dbfs": -135.6033678934753,
+      "played_sha256": "8a69840a1a946f6bc6da688833b19b6c55aaec81515426a8fb8ac934cf97084e",
+      "recorded_sha256": "b2c7b32a85a308e78846c98fc40f5f83850ed9c8faae33fc5e216881350c4bbd",
+      "reinterpretation": null,
+      "scored_seconds": 10.633,
+      "rms_db": {
+        "baseline": 2.075409263094987,
+        "asymmetric_envelope": 5.056998261060349,
+        "leaky_envelope": 21.42750128740916,
+        "nonlinear_charge": 6.36581194319514,
+        "continuous_switch": 5.139173482766204,
+        "continuous_switch_capped": 5.009405573509898
+      },
+      "bias_db": {
+        "baseline": -0.11473459329918667,
+        "asymmetric_envelope": -0.11406891639444894,
+        "leaky_envelope": -0.15777066175582077,
+        "nonlinear_charge": -0.1142660574247335,
+        "continuous_switch": -0.11414097592281214,
+        "continuous_switch_capped": -0.11413140157448776
+      }
+    },
+    {
+      "name": "2026-10-27/plucks-threshold-0700",
+      "threshold_tag": "0700",
+      "tag": "1200",
+      "freq": 220,
+      "noise_proxy_dbfs": -135.0779468115839,
+      "played_sha256": "8a69840a1a946f6bc6da688833b19b6c55aaec81515426a8fb8ac934cf97084e",
+      "recorded_sha256": "7ff456733752f3cf05e8d58c74854bc97cc93efa4a018fada480a149eefb469c",
+      "reinterpretation": null,
+      "scored_seconds": 10.633,
+      "rms_db": {
+        "baseline": 0.15535132089684436,
+        "asymmetric_envelope": 0.15535132089684436,
+        "leaky_envelope": 0.15535132230864757,
+        "nonlinear_charge": 0.15535132089684436,
+        "continuous_switch": 0.15535132089684436,
+        "continuous_switch_capped": 0.15535132089684436
+      },
+      "bias_db": {
+        "baseline": -0.15500271545653121,
+        "asymmetric_envelope": -0.15500271545653121,
+        "leaky_envelope": -0.15500271545653121,
+        "nonlinear_charge": -0.15500271545653121,
+        "continuous_switch": -0.15500271545653121,
+        "continuous_switch_capped": -0.15500271545653121
+      }
+    },
+    {
+      "name": "2026-10-27/plucks-threshold-0900",
+      "threshold_tag": "0900",
+      "tag": "1200",
+      "freq": 220,
+      "noise_proxy_dbfs": -135.57565215848248,
+      "played_sha256": "8a69840a1a946f6bc6da688833b19b6c55aaec81515426a8fb8ac934cf97084e",
+      "recorded_sha256": "5fcb0869e18e5aab3f6464b75cc29b0cfa299983fc5aae015688b4e95b942838",
+      "reinterpretation": null,
+      "scored_seconds": 10.633,
+      "rms_db": {
+        "baseline": 0.14569376712094245,
+        "asymmetric_envelope": 0.14569376712094245,
+        "leaky_envelope": 0.14569376890639557,
+        "nonlinear_charge": 0.14569376712094245,
+        "continuous_switch": 0.14569376712094245,
+        "continuous_switch_capped": 0.14569376712094245
+      },
+      "bias_db": {
+        "baseline": -0.1454247552637179,
+        "asymmetric_envelope": -0.1454247552637179,
+        "leaky_envelope": -0.14542475526372411,
+        "nonlinear_charge": -0.1454247552637179,
+        "continuous_switch": -0.1454247552637179,
+        "continuous_switch_capped": -0.1454247552637179
+      }
+    },
+    {
+      "name": "2026-10-27/stairs-threshold-0300",
+      "threshold_tag": "0300",
+      "tag": "1200",
+      "freq": 1000,
+      "noise_proxy_dbfs": -132.51139562407462,
+      "played_sha256": "ea912a6a4d1b848273409a7c36349664dce5353c5b6e8f4459fefb10ab15a8c7",
+      "recorded_sha256": "d64abc233239881515a873375d4c1d4cb35895c3b18605907b1bf65c64216ac0",
+      "reinterpretation": null,
+      "scored_seconds": 47.441,
+      "rms_db": {
+        "baseline": 3.303932576201035,
+        "asymmetric_envelope": 6.010585732630347,
+        "leaky_envelope": 48.96639271535013,
+        "nonlinear_charge": 7.597397563883442,
+        "continuous_switch": 6.018438797195949,
+        "continuous_switch_capped": 6.118070871334857
+      },
+      "bias_db": {
+        "baseline": 0.01619690470006996,
+        "asymmetric_envelope": 0.0166516927295306,
+        "leaky_envelope": 0.015510930889023666,
+        "nonlinear_charge": 0.016846246172270707,
+        "continuous_switch": 0.016725539355966546,
+        "continuous_switch_capped": 0.01672836682069634
+      }
+    },
+    {
+      "name": "2026-10-27/stairs-threshold-0500",
+      "threshold_tag": "0500",
+      "tag": "1200",
+      "freq": 1000,
+      "noise_proxy_dbfs": -133.6217355869363,
+      "played_sha256": "ea912a6a4d1b848273409a7c36349664dce5353c5b6e8f4459fefb10ab15a8c7",
+      "recorded_sha256": "e5266323760043f4054013de1a05d698c8acc64eb80989443e4836e4142286a7",
+      "reinterpretation": null,
+      "scored_seconds": 41.676,
+      "rms_db": {
+        "baseline": 4.772200133246858,
+        "asymmetric_envelope": 8.635644866433362,
+        "leaky_envelope": 75.93818615359433,
+        "nonlinear_charge": 14.242674348455711,
+        "continuous_switch": 9.634731523210002,
+        "continuous_switch_capped": 10.431005938588982
+      },
+      "bias_db": {
+        "baseline": 0.020032980894008068,
+        "asymmetric_envelope": 0.022067996651456312,
+        "leaky_envelope": -39.91658058135353,
+        "nonlinear_charge": 0.022963213735861854,
+        "continuous_switch": 0.02167611126715241,
+        "continuous_switch_capped": 0.022360805587128996
+      }
+    },
+    {
+      "name": "2026-10-27/stairs-threshold-0700",
+      "threshold_tag": "0700",
+      "tag": "1200",
+      "freq": 1000,
+      "noise_proxy_dbfs": -132.7149494134503,
+      "played_sha256": "ea912a6a4d1b848273409a7c36349664dce5353c5b6e8f4459fefb10ab15a8c7",
+      "recorded_sha256": "470ef51bfbc8a8793b67a410bd71f75448a8c494e65d087229f4fe0b13836059",
+      "reinterpretation": null,
+      "scored_seconds": 54.709,
+      "rms_db": {
+        "baseline": 2.1788045569586627,
+        "asymmetric_envelope": 4.214707148765227,
+        "leaky_envelope": 11.605918586441303,
+        "nonlinear_charge": 3.9018182809496005,
+        "continuous_switch": 3.971387558570034,
+        "continuous_switch_capped": 3.9827221488582065
+      },
+      "bias_db": {
+        "baseline": -0.026256805624511936,
+        "asymmetric_envelope": -0.0261381822505794,
+        "leaky_envelope": -0.02659273137270235,
+        "nonlinear_charge": -0.025837526792681254,
+        "continuous_switch": -0.025952842633796158,
+        "continuous_switch_capped": -0.026009984248455575
+      }
+    },
+    {
+      "name": "2026-10-27/stairs-threshold-0900",
+      "threshold_tag": "0900",
+      "tag": "1200",
+      "freq": 1000,
+      "noise_proxy_dbfs": -131.63793620270138,
+      "played_sha256": "ea912a6a4d1b848273409a7c36349664dce5353c5b6e8f4459fefb10ab15a8c7",
+      "recorded_sha256": "69af87d6cdefc8b2628b7a9c7ab7d06f29f7b61a77b9c9a662ee2f36e6495d3d",
+      "reinterpretation": null,
+      "scored_seconds": 54.621,
+      "rms_db": {
+        "baseline": 2.406614962132448,
+        "asymmetric_envelope": 4.181876484292761,
+        "leaky_envelope": 12.030026744829279,
+        "nonlinear_charge": 3.910268348123323,
+        "continuous_switch": 3.9418322719420402,
+        "continuous_switch_capped": 3.950679878230752
+      },
+      "bias_db": {
+        "baseline": -0.015409322943469639,
+        "asymmetric_envelope": -0.01517271729064662,
+        "leaky_envelope": -0.015600508225016019,
+        "nonlinear_charge": -0.014735365716444626,
+        "continuous_switch": -0.014906279880174123,
+        "continuous_switch_capped": -0.015005671459368042
+      }
+    },
+    {
+      "name": "2026-10-27/stairs-threshold-1200",
+      "threshold_tag": "1200",
+      "tag": "1200",
+      "freq": 1000,
+      "noise_proxy_dbfs": -132.95864744639385,
+      "played_sha256": "ea912a6a4d1b848273409a7c36349664dce5353c5b6e8f4459fefb10ab15a8c7",
+      "recorded_sha256": "21325d8d7d9bc1e152a2c681a75a32a0915a36572ef83cd9d18411f65b244b33",
+      "reinterpretation": null,
+      "scored_seconds": 53.909,
+      "rms_db": {
+        "baseline": 2.1269764455778075,
+        "asymmetric_envelope": 4.801779126266093,
+        "leaky_envelope": 21.8182042726537,
+        "nonlinear_charge": 4.722463831728688,
+        "continuous_switch": 4.617244120709403,
+        "continuous_switch_capped": 4.672609231383874
+      },
+      "bias_db": {
+        "baseline": 0.0008216771798290612,
+        "asymmetric_envelope": 0.0010889866520770175,
+        "leaky_envelope": 0.000675111876583645,
+        "nonlinear_charge": 0.0011522872729218259,
+        "continuous_switch": 0.001123204429385627,
+        "continuous_switch_capped": 0.0011044572635748873
+      }
+    },
+    {
+      "name": "2026-10-27-dynamics/bypass-jump",
+      "threshold_tag": "0500",
+      "tag": "1200",
+      "freq": 1000,
+      "noise_proxy_dbfs": -134.3942357397083,
+      "played_sha256": "8d03d373217e2bd504f19113c947016b21ae11828740ef5a2b9ed095e5f9867b",
+      "recorded_sha256": "defc41d12db52829e3a566fed63b3f50b02cd25f6806a84e3882d3e4f59ef7c5",
+      "reinterpretation": "Actually engaged: Threshold 5:00, Decay 12:00",
+      "scored_seconds": 4.393,
+      "rms_db": {
+        "baseline": 2.1364869387542265,
+        "asymmetric_envelope": 2.871843200158516,
+        "leaky_envelope": 3.07083137305191,
+        "nonlinear_charge": 2.7418420810453714,
+        "continuous_switch": 2.833108896917851,
+        "continuous_switch_capped": 2.8080375079677253
+      },
+      "bias_db": {
+        "baseline": 0.02742300542328835,
+        "asymmetric_envelope": 0.02742300542328835,
+        "leaky_envelope": 0.027415661454506468,
+        "nonlinear_charge": 0.027421356007644504,
+        "continuous_switch": 0.02742300542328835,
+        "continuous_switch_capped": 0.02742300542328835
+      }
+    },
+    {
+      "name": "2026-10-27-dynamics/bypass-phrase",
+      "threshold_tag": "0500",
+      "tag": "1200",
+      "freq": 220,
+      "noise_proxy_dbfs": -135.37118979891713,
+      "played_sha256": "1e60dd955f833e07a35aa193b4b9cee5ff4cb0691bab881db976bf24fa8ab9d4",
+      "recorded_sha256": "8dc64852cad766cebcc2cc80856b2e0ca5e1cef4774f7b5d0d9422e729ed29c2",
+      "reinterpretation": "Actually engaged: Threshold 5:00, Decay 12:00",
+      "scored_seconds": 7.133,
+      "rms_db": {
+        "baseline": 1.2854127340280435,
+        "asymmetric_envelope": 7.577866812906507,
+        "leaky_envelope": 10.551480326186827,
+        "nonlinear_charge": 9.003341356585278,
+        "continuous_switch": 7.6639027180388695,
+        "continuous_switch_capped": 7.481295441347744
+      },
+      "bias_db": {
+        "baseline": -0.10958734241054546,
+        "asymmetric_envelope": -0.10909093992228991,
+        "leaky_envelope": -0.10909840342459642,
+        "nonlinear_charge": -0.10965706858157687,
+        "continuous_switch": -0.10943028376615949,
+        "continuous_switch_capped": -0.10940728844636571
+      }
+    },
+    {
+      "name": "2026-10-27-dynamics/bypass-plucks",
+      "threshold_tag": "0500",
+      "tag": "1200",
+      "freq": 220,
+      "noise_proxy_dbfs": -136.74851893363746,
+      "played_sha256": "fc7870eabb6d59862a99544d658dc58fb714711bc301e123c55be530e89b3374",
+      "recorded_sha256": "d172981dfdd6ee7d3809d7368d8782ea41fa5e5739857f965e64ed88da2a4a9d",
+      "reinterpretation": "Actually engaged: Threshold 5:00, Decay 12:00",
+      "scored_seconds": 5.939,
+      "rms_db": {
+        "baseline": 1.5248814575899703,
+        "asymmetric_envelope": 8.595525870404098,
+        "leaky_envelope": 11.944416302063276,
+        "nonlinear_charge": 10.20493185560623,
+        "continuous_switch": 8.684340730590913,
+        "continuous_switch_capped": 8.480057459363673
+      },
+      "bias_db": {
+        "baseline": -0.10764544125845477,
+        "asymmetric_envelope": -0.10674077122547754,
+        "leaky_envelope": -0.10675570504189447,
+        "nonlinear_charge": -0.10780257582935071,
+        "continuous_switch": -0.1074600830743625,
+        "continuous_switch_capped": -0.10743475996745455
+      }
+    },
+    {
+      "name": "2026-10-27-dynamics/bypass-soft",
+      "threshold_tag": "0500",
+      "tag": "1200",
+      "freq": 220,
+      "noise_proxy_dbfs": -135.51294798547178,
+      "played_sha256": "88979dd5e825c073b2df413c2944d47a00dd4d5eb11426103b06d624edded096",
+      "recorded_sha256": "606176c1b7959ad501998f70629589d6fd43bc1cfdefda58591555a8814e3676",
+      "reinterpretation": "Actually engaged: Threshold 5:00, Decay 12:00",
+      "scored_seconds": 4.18,
+      "rms_db": {
+        "baseline": 1.1144495194063766,
+        "asymmetric_envelope": 9.368644557103961,
+        "leaky_envelope": 10.484674335963518,
+        "nonlinear_charge": 12.342775502695806,
+        "continuous_switch": 9.974398897133403,
+        "continuous_switch_capped": 9.676941500179208
+      },
+      "bias_db": {
+        "baseline": -0.11051304756636149,
+        "asymmetric_envelope": 4.904643629852591,
+        "leaky_envelope": -0.10795801043642439,
+        "nonlinear_charge": 5.857709436229331,
+        "continuous_switch": 5.265507914651378,
+        "continuous_switch_capped": 5.0124505397437895
+      }
+    },
+    {
+      "name": "2026-10-27-dynamics/bypass-stairs-slow",
+      "threshold_tag": "0500",
+      "tag": "1200",
+      "freq": 1000,
+      "noise_proxy_dbfs": -132.9166193864727,
+      "played_sha256": "78a8607308e49f76e6dac2ccec817a4d67f0752102910e8278bcfe494afb8b09",
+      "recorded_sha256": "41fc0b969c4ff1afb964d6c463c6e05a9a3f546651abaea0ad6a8ac323116cb1",
+      "reinterpretation": "Actually engaged: Threshold 5:00, Decay 12:00",
+      "scored_seconds": 36.517,
+      "rms_db": {
+        "baseline": 1.860907269607735,
+        "asymmetric_envelope": 5.40905854437227,
+        "leaky_envelope": 110.28112309093747,
+        "nonlinear_charge": 19.271256067088547,
+        "continuous_switch": 8.944906220228956,
+        "continuous_switch_capped": 16.72969908514749
+      },
+      "bias_db": {
+        "baseline": -0.8718758291799062,
+        "asymmetric_envelope": 3.503993258419193,
+        "leaky_envelope": -109.35316444890698,
+        "nonlinear_charge": 19.481223835460824,
+        "continuous_switch": 8.438004328567935,
+        "continuous_switch_capped": 17.14226963171356
+      }
+    },
+    {
+      "name": "2026-10-27-dynamics/jump-t0500-d0500",
+      "threshold_tag": "0500",
+      "tag": "0500",
+      "freq": 1000,
+      "noise_proxy_dbfs": -132.04821293735688,
+      "played_sha256": "8d03d373217e2bd504f19113c947016b21ae11828740ef5a2b9ed095e5f9867b",
+      "recorded_sha256": "dc9e1f8fa24de64ac1c7a0589eb843851bca8f08e9144a2905de6515c7f10e91",
+      "reinterpretation": null,
+      "scored_seconds": 7.227,
+      "rms_db": {
+        "baseline": 2.4842789699847376,
+        "asymmetric_envelope": 4.165938512240116,
+        "leaky_envelope": 4.95834868911398,
+        "nonlinear_charge": 4.266996172253938,
+        "continuous_switch": 4.108129693345817,
+        "continuous_switch_capped": 4.030427939009365
+      },
+      "bias_db": {
+        "baseline": 0.024881840127913613,
+        "asymmetric_envelope": 0.0250463599831251,
+        "leaky_envelope": 0.02503909129816817,
+        "nonlinear_charge": 0.02498025879673782,
+        "continuous_switch": 0.02502678285396087,
+        "continuous_switch_capped": 0.02503055501303586
+      }
+    },
+    {
+      "name": "2026-10-27-dynamics/jump-t0500-d0700",
+      "threshold_tag": "0500",
+      "tag": "0700",
+      "freq": 1000,
+      "noise_proxy_dbfs": -132.8400673564592,
+      "played_sha256": "8d03d373217e2bd504f19113c947016b21ae11828740ef5a2b9ed095e5f9867b",
+      "recorded_sha256": "3145c5ee93fdf69e606407e43e8d38f25295c760ca17b4c69ebcf6d68a7559b0",
+      "reinterpretation": null,
+      "scored_seconds": 3.997,
+      "rms_db": {
+        "baseline": 1.2869130697401672,
+        "asymmetric_envelope": 1.2869130697401672,
+        "leaky_envelope": 1.2869024638027051,
+        "nonlinear_charge": 1.2867580503818483,
+        "continuous_switch": 1.2869130697401672,
+        "continuous_switch_capped": 1.2869130697401672
+      },
+      "bias_db": {
+        "baseline": 0.02809141718133812,
+        "asymmetric_envelope": 0.02809141718133812,
+        "leaky_envelope": 0.028084073059140513,
+        "nonlinear_charge": 0.02809141718133812,
+        "continuous_switch": 0.02809141718133812,
+        "continuous_switch_capped": 0.02809141718133812
+      }
+    },
+    {
+      "name": "2026-10-27-dynamics/phrase-t0500-d1200",
+      "threshold_tag": "0500",
+      "tag": "1200",
+      "freq": 220,
+      "noise_proxy_dbfs": -137.01925242060344,
+      "played_sha256": "1e60dd955f833e07a35aa193b4b9cee5ff4cb0691bab881db976bf24fa8ab9d4",
+      "recorded_sha256": "b71342485747ebc1af67c09ed5f3d32e65e56f2a62e3366da5519b1e6e5023f8",
+      "reinterpretation": null,
+      "scored_seconds": 7.204,
+      "rms_db": {
+        "baseline": 1.3435928177044238,
+        "asymmetric_envelope": 7.8323384301478916,
+        "leaky_envelope": 10.937513979899586,
+        "nonlinear_charge": 9.358778475561676,
+        "continuous_switch": 7.937346538955038,
+        "continuous_switch_capped": 7.747656871049639
+      },
+      "bias_db": {
+        "baseline": -0.1091766016129741,
+        "asymmetric_envelope": -0.10857181316395154,
+        "leaky_envelope": -0.10859472124190883,
+        "nonlinear_charge": -0.10914699977138242,
+        "continuous_switch": -0.10892847653378002,
+        "continuous_switch_capped": -0.10889618465651335
+      }
+    },
+    {
+      "name": "2026-10-27-dynamics/phrase-t1200-d1200",
+      "threshold_tag": "1200",
+      "tag": "1200",
+      "freq": 220,
+      "noise_proxy_dbfs": -135.2849326664779,
+      "played_sha256": "1e60dd955f833e07a35aa193b4b9cee5ff4cb0691bab881db976bf24fa8ab9d4",
+      "recorded_sha256": "eb220340cf7ebe952308921d6a84560a04f2567046a5fdf8d08e6dd60dd28119",
+      "reinterpretation": null,
+      "scored_seconds": 8.414,
+      "rms_db": {
+        "baseline": 1.1463764637498686,
+        "asymmetric_envelope": 1.8669231011691505,
+        "leaky_envelope": 1.8669855053507682,
+        "nonlinear_charge": 1.463075468884515,
+        "continuous_switch": 1.721943098800184,
+        "continuous_switch_capped": 1.7591089755663145
+      },
+      "bias_db": {
+        "baseline": -0.10980201681811885,
+        "asymmetric_envelope": -0.10966159504270745,
+        "leaky_envelope": -0.10966159504270745,
+        "nonlinear_charge": -0.1099382213342408,
+        "continuous_switch": -0.10978288235170253,
+        "continuous_switch_capped": -0.10975502833583184
+      }
+    },
+    {
+      "name": "2026-10-27-dynamics/plucks-t0300-d1200",
+      "threshold_tag": "0300",
+      "tag": "1200",
+      "freq": 220,
+      "noise_proxy_dbfs": -135.1008582246914,
+      "played_sha256": "fc7870eabb6d59862a99544d658dc58fb714711bc301e123c55be530e89b3374",
+      "recorded_sha256": "59bf6b8376b9a3550571bc1ff78ba5fcb992825984672dc5e5d90005ceac14ae",
+      "reinterpretation": null,
+      "scored_seconds": 6.622,
+      "rms_db": {
+        "baseline": 2.1051442083591247,
+        "asymmetric_envelope": 4.86911293496005,
+        "leaky_envelope": 5.431468021261146,
+        "nonlinear_charge": 4.4423148055204456,
+        "continuous_switch": 4.541206765874729,
+        "continuous_switch_capped": 4.505127095359462
+      },
+      "bias_db": {
+        "baseline": -0.10969805533353183,
+        "asymmetric_envelope": -0.10938640845078901,
+        "leaky_envelope": -0.1093864084509501,
+        "nonlinear_charge": -0.10990953189721014,
+        "continuous_switch": -0.1097258297576732,
+        "continuous_switch_capped": -0.10970130677899803
+      }
+    },
+    {
+      "name": "2026-10-27-dynamics/plucks-t0500-d0500",
+      "threshold_tag": "0500",
+      "tag": "0500",
+      "freq": 220,
+      "noise_proxy_dbfs": -134.74801201419854,
+      "played_sha256": "fc7870eabb6d59862a99544d658dc58fb714711bc301e123c55be530e89b3374",
+      "recorded_sha256": "9f93edf68fc894e87ee0a0a333b1c6bbf50f50a17de5e1ddace2b166859367e7",
+      "reinterpretation": null,
+      "scored_seconds": 7.43,
+      "rms_db": {
+        "baseline": 1.801502128675635,
+        "asymmetric_envelope": 2.9373679275380997,
+        "leaky_envelope": 2.937414364164385,
+        "nonlinear_charge": 2.3412503742330895,
+        "continuous_switch": 2.7582375707545044,
+        "continuous_switch_capped": 2.804274362175665
+      },
+      "bias_db": {
+        "baseline": -0.11422290455965667,
+        "asymmetric_envelope": -0.11348193455881206,
+        "leaky_envelope": -0.1134819522395461,
+        "nonlinear_charge": -0.11513264138253754,
+        "continuous_switch": -0.11406967947273333,
+        "continuous_switch_capped": -0.11405717239780677
+      }
+    },
+    {
+      "name": "2026-10-27-dynamics/plucks-t0500-d0700",
+      "threshold_tag": "0500",
+      "tag": "0700",
+      "freq": 220,
+      "noise_proxy_dbfs": -136.97528064812462,
+      "played_sha256": "fc7870eabb6d59862a99544d658dc58fb714711bc301e123c55be530e89b3374",
+      "recorded_sha256": "c7566cda31951b9d687357ce1a70c946e591b6e2d4c6b9d085b27e404ea39466",
+      "reinterpretation": null,
+      "scored_seconds": 5.522,
+      "rms_db": {
+        "baseline": 1.8616519572198749,
+        "asymmetric_envelope": 10.585656840506726,
+        "leaky_envelope": 73.03943063783176,
+        "nonlinear_charge": 14.1613962722365,
+        "continuous_switch": 10.988445351835795,
+        "continuous_switch_capped": 10.698329553458754
+      },
+      "bias_db": {
+        "baseline": -0.11117997426281434,
+        "asymmetric_envelope": 6.041021329441155,
+        "leaky_envelope": -31.38993833880349,
+        "nonlinear_charge": 5.50248115961261,
+        "continuous_switch": 5.909153818768117,
+        "continuous_switch_capped": 5.828013762331663
+      }
+    },
+    {
+      "name": "2026-10-27-dynamics/plucks-t0500-d1200",
+      "threshold_tag": "0500",
+      "tag": "1200",
+      "freq": 220,
+      "noise_proxy_dbfs": -134.86603808529162,
+      "played_sha256": "fc7870eabb6d59862a99544d658dc58fb714711bc301e123c55be530e89b3374",
+      "recorded_sha256": "085722bc88661cc93cdbd7fb2a07e788a144a73c93c9cad6754d53f149c43007",
+      "reinterpretation": null,
+      "scored_seconds": 5.823,
+      "rms_db": {
+        "baseline": 1.601800126647977,
+        "asymmetric_envelope": 8.362847587827563,
+        "leaky_envelope": 11.474685533527586,
+        "nonlinear_charge": 9.784449118284465,
+        "continuous_switch": 8.415418135749285,
+        "continuous_switch_capped": 8.223851867459151
+      },
+      "bias_db": {
+        "baseline": -0.10978943460329293,
+        "asymmetric_envelope": -0.10905024004354247,
+        "leaky_envelope": -0.10905779525761716,
+        "nonlinear_charge": -0.1100154858241813,
+        "continuous_switch": -0.10970212890304687,
+        "continuous_switch_capped": -0.1096402277930576
+      }
+    },
+    {
+      "name": "2026-10-27-dynamics/plucks-t0700-d1200",
+      "threshold_tag": "0700",
+      "tag": "1200",
+      "freq": 220,
+      "noise_proxy_dbfs": -135.4191704198003,
+      "played_sha256": "fc7870eabb6d59862a99544d658dc58fb714711bc301e123c55be530e89b3374",
+      "recorded_sha256": "68cb2e0b73dd6bc48347d3007e70d5a344b8f50ae2e8d4b9a2c068e521a005ce",
+      "reinterpretation": null,
+      "scored_seconds": 7.68,
+      "rms_db": {
+        "baseline": 1.4873650746364424,
+        "asymmetric_envelope": 0.597397315888113,
+        "leaky_envelope": 0.5967545023182445,
+        "nonlinear_charge": 1.093639059258669,
+        "continuous_switch": 0.7185730260026092,
+        "continuous_switch_capped": 0.7024375224709674
+      },
+      "bias_db": {
+        "baseline": -0.11131413819310781,
+        "asymmetric_envelope": -0.11103320300891917,
+        "leaky_envelope": -0.11103320300891917,
+        "nonlinear_charge": -0.11154269927251825,
+        "continuous_switch": -0.11131710914920406,
+        "continuous_switch_capped": -0.11126030634952988
+      }
+    },
+    {
+      "name": "2026-10-27-dynamics/plucks-t0900-d1200",
+      "threshold_tag": "0900",
+      "tag": "1200",
+      "freq": 220,
+      "noise_proxy_dbfs": -135.91569849069347,
+      "played_sha256": "fc7870eabb6d59862a99544d658dc58fb714711bc301e123c55be530e89b3374",
+      "recorded_sha256": "bbdd4705185ea14e0b112c46daac6f64625d8e697b0b99cd05138b3803cca425",
+      "reinterpretation": null,
+      "scored_seconds": 7.674,
+      "rms_db": {
+        "baseline": 1.4416535044756966,
+        "asymmetric_envelope": 0.6580526255270437,
+        "leaky_envelope": 0.6590635793750834,
+        "nonlinear_charge": 1.0798606820478491,
+        "continuous_switch": 0.7261264871674583,
+        "continuous_switch_capped": 0.7062321995321831
+      },
+      "bias_db": {
+        "baseline": -0.11156128995013975,
+        "asymmetric_envelope": -0.11124700149635974,
+        "leaky_envelope": -0.11124700149635974,
+        "nonlinear_charge": -0.1117696292560687,
+        "continuous_switch": -0.11155411447046992,
+        "continuous_switch_capped": -0.11149725129929933
+      }
+    },
+    {
+      "name": "2026-10-27-dynamics/plucks-t1200-d0300",
+      "threshold_tag": "1200",
+      "tag": "0300",
+      "freq": 220,
+      "noise_proxy_dbfs": -135.64465854013204,
+      "played_sha256": "fc7870eabb6d59862a99544d658dc58fb714711bc301e123c55be530e89b3374",
+      "recorded_sha256": "070171b503ae6ddc19341e05472c0e7ddfde0c5c0870996f2d7b63a4166f2c61",
+      "reinterpretation": null,
+      "scored_seconds": 7.683,
+      "rms_db": {
+        "baseline": 0.9957601785171274,
+        "asymmetric_envelope": 0.20115838074664802,
+        "leaky_envelope": 0.20115838074664938,
+        "nonlinear_charge": 0.7358449303822406,
+        "continuous_switch": 0.3062171675999276,
+        "continuous_switch_capped": 0.2705732836816366
+      },
+      "bias_db": {
+        "baseline": -0.11241652655120415,
+        "asymmetric_envelope": -0.11207178142298846,
+        "leaky_envelope": -0.11207178142298846,
+        "nonlinear_charge": -0.11276919933000151,
+        "continuous_switch": -0.11238686248296659,
+        "continuous_switch_capped": -0.11230551928443921
+      }
+    },
+    {
+      "name": "2026-10-27-dynamics/plucks-t1200-d0500",
+      "threshold_tag": "1200",
+      "tag": "0500",
+      "freq": 220,
+      "noise_proxy_dbfs": -135.42815918932325,
+      "played_sha256": "fc7870eabb6d59862a99544d658dc58fb714711bc301e123c55be530e89b3374",
+      "recorded_sha256": "d9cbca65078d602763bba53cbf0ff86c322a06e883657c39496ff7fbecfa789d",
+      "reinterpretation": null,
+      "scored_seconds": 7.683,
+      "rms_db": {
+        "baseline": 0.20469138387489275,
+        "asymmetric_envelope": 0.1983263630370362,
+        "leaky_envelope": 0.1983263630370362,
+        "nonlinear_charge": 0.35518764668313757,
+        "continuous_switch": 0.19972348261987014,
+        "continuous_switch_capped": 0.19930990038469873
+      },
+      "bias_db": {
+        "baseline": -0.11354857942444296,
+        "asymmetric_envelope": -0.11352742446951436,
+        "leaky_envelope": -0.11352742446951436,
+        "nonlinear_charge": -0.11389086556876771,
+        "continuous_switch": -0.11353828177185876,
+        "continuous_switch_capped": -0.11353225974718983
+      }
+    },
+    {
+      "name": "2026-10-27-dynamics/plucks-t1200-d0700",
+      "threshold_tag": "1200",
+      "tag": "0700",
+      "freq": 220,
+      "noise_proxy_dbfs": -135.87769046086902,
+      "played_sha256": "fc7870eabb6d59862a99544d658dc58fb714711bc301e123c55be530e89b3374",
+      "recorded_sha256": "2c7276c78061db1dc64d150ec1ae0af3ac3588d08a23a68b81a8ee7303e40a22",
+      "reinterpretation": null,
+      "scored_seconds": 6.616,
+      "rms_db": {
+        "baseline": 2.7830398179307054,
+        "asymmetric_envelope": 4.17772291826015,
+        "leaky_envelope": 14.18643886071499,
+        "nonlinear_charge": 4.071785277510838,
+        "continuous_switch": 4.131460322557127,
+        "continuous_switch_capped": 4.100852553721184
+      },
+      "bias_db": {
+        "baseline": -0.1117508988774027,
+        "asymmetric_envelope": -0.11174880772411311,
+        "leaky_envelope": -0.11220407531258597,
+        "nonlinear_charge": -0.11174880772411311,
+        "continuous_switch": -0.11174880772411311,
+        "continuous_switch_capped": -0.11174880772411311
+      }
+    },
+    {
+      "name": "2026-10-27-dynamics/plucks-t1200-d0900",
+      "threshold_tag": "1200",
+      "tag": "0900",
+      "freq": 220,
+      "noise_proxy_dbfs": -135.74257143912487,
+      "played_sha256": "fc7870eabb6d59862a99544d658dc58fb714711bc301e123c55be530e89b3374",
+      "recorded_sha256": "f8a7472cac877b1fa96d8591c7d58915110c408d164685e9b6fcba06378eb0fa",
+      "reinterpretation": null,
+      "scored_seconds": 6.903,
+      "rms_db": {
+        "baseline": 3.0935972338889166,
+        "asymmetric_envelope": 3.9420460038724596,
+        "leaky_envelope": 3.982749259130692,
+        "nonlinear_charge": 3.3180619049734834,
+        "continuous_switch": 3.73832520855787,
+        "continuous_switch_capped": 3.7628620201800964
+      },
+      "bias_db": {
+        "baseline": -0.11155119457553064,
+        "asymmetric_envelope": -0.11155119457553064,
+        "leaky_envelope": -0.11155119457553064,
+        "nonlinear_charge": -0.11158918955184627,
+        "continuous_switch": -0.11155119457553064,
+        "continuous_switch_capped": -0.11155119457553064
+      }
+    },
+    {
+      "name": "2026-10-27-dynamics/plucks-t1200-d1200",
+      "threshold_tag": "1200",
+      "tag": "1200",
+      "freq": 220,
+      "noise_proxy_dbfs": -137.07899480996008,
+      "played_sha256": "fc7870eabb6d59862a99544d658dc58fb714711bc301e123c55be530e89b3374",
+      "recorded_sha256": "e17f77a3ac2bac7dc0f89f3a68453093162c9c1418c1f71496b61f8461c6047c",
+      "reinterpretation": null,
+      "scored_seconds": 7.419,
+      "rms_db": {
+        "baseline": 1.5689377438230987,
+        "asymmetric_envelope": 2.6416195044676054,
+        "leaky_envelope": 2.6453636125687225,
+        "nonlinear_charge": 2.0571216087188087,
+        "continuous_switch": 2.427273172136907,
+        "continuous_switch_capped": 2.469785938243814
+      },
+      "bias_db": {
+        "baseline": -0.1106058280485549,
+        "asymmetric_envelope": -0.1104603584871694,
+        "leaky_envelope": -0.1104603584871694,
+        "nonlinear_charge": -0.11087074417737541,
+        "continuous_switch": -0.1106220109211391,
+        "continuous_switch_capped": -0.1105863410000213
+      }
+    },
+    {
+      "name": "2026-10-27-dynamics/soft-t0300-d1200",
+      "threshold_tag": "0300",
+      "tag": "1200",
+      "freq": 220,
+      "noise_proxy_dbfs": -133.96132742676173,
+      "played_sha256": "88979dd5e825c073b2df413c2944d47a00dd4d5eb11426103b06d624edded096",
+      "recorded_sha256": "bd2c7e9ec61a51a3a8eb52fd2bb8fab1ef4c5acc01028a84b6799f351602708b",
+      "reinterpretation": null,
+      "scored_seconds": 4.884,
+      "rms_db": {
+        "baseline": 1.7268355740411832,
+        "asymmetric_envelope": 5.020621397586677,
+        "leaky_envelope": 5.9952332629233975,
+        "nonlinear_charge": 4.878002433650802,
+        "continuous_switch": 4.812301492267104,
+        "continuous_switch_capped": 4.736359427217256
+      },
+      "bias_db": {
+        "baseline": -0.109755326812629,
+        "asymmetric_envelope": -0.10861488313926987,
+        "leaky_envelope": -0.1086200199309933,
+        "nonlinear_charge": -0.11051242926490618,
+        "continuous_switch": -0.1097422900093627,
+        "continuous_switch_capped": -0.10968035652809593
+      }
+    },
+    {
+      "name": "2026-10-27-dynamics/soft-t1200-d1200",
+      "threshold_tag": "1200",
+      "tag": "1200",
+      "freq": 220,
+      "noise_proxy_dbfs": -136.24209898547,
+      "played_sha256": "88979dd5e825c073b2df413c2944d47a00dd4d5eb11426103b06d624edded096",
+      "recorded_sha256": "ce62865aa75e0ce65091f7fa67002b80c782ec6b45519752c3e88e6324f8d1b5",
+      "reinterpretation": null,
+      "scored_seconds": 5.688,
+      "rms_db": {
+        "baseline": 1.7361236256233954,
+        "asymmetric_envelope": 2.8973416997996004,
+        "leaky_envelope": 2.9092614066867584,
+        "nonlinear_charge": 2.2708561250083616,
+        "continuous_switch": 2.668031706058113,
+        "continuous_switch_capped": 2.7042295749418392
+      },
+      "bias_db": {
+        "baseline": -0.11020247063264066,
+        "asymmetric_envelope": -0.10968498903829532,
+        "leaky_envelope": -0.10968498903873541,
+        "nonlinear_charge": -0.1111618767905938,
+        "continuous_switch": -0.11021297726266455,
+        "continuous_switch_capped": -0.11004289316522858
+      }
+    },
+    {
+      "name": "2026-10-27-dynamics/stairs-slow-t1200-d0500",
+      "threshold_tag": "1200",
+      "tag": "0500",
+      "freq": 1000,
+      "noise_proxy_dbfs": -133.9218335382115,
+      "played_sha256": "78a8607308e49f76e6dac2ccec817a4d67f0752102910e8278bcfe494afb8b09",
+      "recorded_sha256": "72df8d7bdbc4e8b1c36c56dd9dd7747004588a21b9297bbfd38049333dde6d13",
+      "reinterpretation": null,
+      "scored_seconds": 72.662,
+      "rms_db": {
+        "baseline": 1.8315599623814593,
+        "asymmetric_envelope": 5.379970887743487,
+        "leaky_envelope": 20.141772326813122,
+        "nonlinear_charge": 5.99397841988242,
+        "continuous_switch": 5.385695744879942,
+        "continuous_switch_capped": 5.299292370464152
+      },
+      "bias_db": {
+        "baseline": 0.022078809235947516,
+        "asymmetric_envelope": 0.024856833250933685,
+        "leaky_envelope": 0.020154409295300157,
+        "nonlinear_charge": 0.02597351962780975,
+        "continuous_switch": 0.025636539120267476,
+        "continuous_switch_capped": 0.02532964366960111
+      }
+    },
+    {
+      "name": "2026-10-27-dynamics/stairs-slow-t1200-d0700",
+      "threshold_tag": "1200",
+      "tag": "0700",
+      "freq": 1000,
+      "noise_proxy_dbfs": -132.35169646293113,
+      "played_sha256": "78a8607308e49f76e6dac2ccec817a4d67f0752102910e8278bcfe494afb8b09",
+      "recorded_sha256": "d8474c6e04a944ebee4cc398f922fd26348a64f6b8f549387ed99da2fee07dad",
+      "reinterpretation": null,
+      "scored_seconds": 65.794,
+      "rms_db": {
+        "baseline": 2.452792098008145,
+        "asymmetric_envelope": 5.310452883589976,
+        "leaky_envelope": 38.07541925230541,
+        "nonlinear_charge": 4.681144552910838,
+        "continuous_switch": 4.912222010620086,
+        "continuous_switch_capped": 5.473181628145531
+      },
+      "bias_db": {
+        "baseline": 0.025573105502070204,
+        "asymmetric_envelope": 0.027301277319184303,
+        "leaky_envelope": 0.023524102214795117,
+        "nonlinear_charge": 0.027599059857948915,
+        "continuous_switch": 0.027598198206584046,
+        "continuous_switch_capped": 0.027547872047497646
+      }
+    },
+    {
+      "name": "2026-10-27-dynamics/stairs-slow-t1200-d1200",
+      "threshold_tag": "1200",
+      "tag": "1200",
+      "freq": 1000,
+      "noise_proxy_dbfs": -132.3517081762755,
+      "played_sha256": "78a8607308e49f76e6dac2ccec817a4d67f0752102910e8278bcfe494afb8b09",
+      "recorded_sha256": "b333b4a67b007996cbc0c99e1b5ae4cb0429fd10869432d0b48bd17df850745a",
+      "reinterpretation": null,
+      "scored_seconds": 67.123,
+      "rms_db": {
+        "baseline": 2.1469513982853647,
+        "asymmetric_envelope": 5.087211662887727,
+        "leaky_envelope": 38.4681612188621,
+        "nonlinear_charge": 5.431935249848995,
+        "continuous_switch": 5.122142007724909,
+        "continuous_switch_capped": 5.320567886678834
+      },
+      "bias_db": {
+        "baseline": 0.02643440942644315,
+        "asymmetric_envelope": 0.02892938766519193,
+        "leaky_envelope": 0.025014144589199927,
+        "nonlinear_charge": 0.029954997572445574,
+        "continuous_switch": 0.029664498954749097,
+        "continuous_switch_capped": 0.029398494239504913
+      }
+    }
+  ],
+  "aggregate": {
+    "baseline": {
+      "median_take_rms_db": 1.816531045528547,
+      "worst_take_rms_db": 4.976481780974846,
+      "equal_take_rms_db": 2.208714832356733,
+      "takes_worse_than_baseline_by_05db": 0
+    },
+    "asymmetric_envelope": {
+      "median_take_rms_db": 4.0539922580562875,
+      "worst_take_rms_db": 10.585656840506726,
+      "equal_take_rms_db": 4.773905602838342,
+      "takes_worse_than_baseline_by_05db": 30
+    },
+    "leaky_envelope": {
+      "median_take_rms_db": 4.470548974122336,
+      "worst_take_rms_db": 110.28112309093747,
+      "equal_take_rms_db": 25.562130983075466,
+      "takes_worse_than_baseline_by_05db": 30
+    },
+    "nonlinear_charge": {
+      "median_take_rms_db": 3.609940092961542,
+      "worst_take_rms_db": 19.271256067088547,
+      "equal_take_rms_db": 6.105328065929086,
+      "takes_worse_than_baseline_by_05db": 27
+    },
+    "continuous_switch": {
+      "median_take_rms_db": 3.840078740249955,
+      "worst_take_rms_db": 10.988445351835795,
+      "equal_take_rms_db": 4.89215151028928,
+      "takes_worse_than_baseline_by_05db": 30
+    },
+    "continuous_switch_capped": {
+      "median_take_rms_db": 3.8567709492054245,
+      "worst_take_rms_db": 16.72969908514749,
+      "equal_take_rms_db": 5.303711067856798,
+      "takes_worse_than_baseline_by_05db": 30
+    }
+  },
+  "sample_rate_checks": {
+    "2026-10-27-dynamics/plucks-t0300-d1200": {
+      "coherent_waveform_vs_surrogate_rms_db": 0.006356832259608977,
+      "coherent_waveform_vs_measured_rms_db": 4.546957763018511,
+      "max_abs_predicted_gain_db": 58.405359698630576,
+      "finite_output": true
+    },
+    "2026-10-27-dynamics/plucks-t0500-d1200": {
+      "coherent_waveform_vs_surrogate_rms_db": 0.011944030978802865,
+      "coherent_waveform_vs_measured_rms_db": 8.426207095473949,
+      "max_abs_predicted_gain_db": 58.40535969863062,
+      "finite_output": true
+    },
+    "2026-10-27-dynamics/soft-t0300-d1200": {
+      "coherent_waveform_vs_surrogate_rms_db": 0.009695138368397943,
+      "coherent_waveform_vs_measured_rms_db": 4.821308726318303,
+      "max_abs_predicted_gain_db": 58.405359698630576,
+      "finite_output": true
+    },
+    "2026-10-27-dynamics/stairs-slow-t1200-d0700": {
+      "coherent_waveform_vs_surrogate_rms_db": 0.019538064295915102,
+      "coherent_waveform_vs_measured_rms_db": 4.923234193321826,
+      "max_abs_predicted_gain_db": 58.405359698630335,
+      "finite_output": true
+    }
+  }
+}

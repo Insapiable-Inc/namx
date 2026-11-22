@@ -1,0 +1,556 @@
+{
+  "pedal": "Boss NS-2 Noise Suppressor (mono, Input -> Output): dynamics",
+  "comment": "The follow-up to plans/ns-2.json: notes that decay like a real string (the first plan's plucks never reached the threshold), a slow staircase for the settled closed gain at three Decay positions, Decay at a high threshold, a phrase. Send and Return empty; Mode on Reduction throughout. Ordered by setting: one knob turn per step. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise.",
+  "quiet_dbfs": -60,
+  "knobs": [
+    "Threshold",
+    "Decay",
+    "Mode"
+  ],
+  "takes": [
+    {
+      "name": "bypass-plucks",
+      "bypass": true,
+      "signal": {
+        "type": "plucks",
+        "freq": 220,
+        "period": 6,
+        "count": 3,
+        "decay_seconds": 0.25,
+        "tail": 2
+      }
+    },
+    {
+      "name": "bypass-soft",
+      "bypass": true,
+      "signal": {
+        "type": "plucks",
+        "freq": 220,
+        "period": 6,
+        "count": 3,
+        "decay_seconds": 0.25,
+        "tail": 2,
+        "level_db": -24
+      }
+    },
+    {
+      "name": "bypass-stairs-slow",
+      "bypass": true,
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -88,
+          -84,
+          -80,
+          -76,
+          -72,
+          -68,
+          -64,
+          -60,
+          -56,
+          -52,
+          -48,
+          -44,
+          -48,
+          -52,
+          -56,
+          -60,
+          -64,
+          -68,
+          -72,
+          -76,
+          -80,
+          -84,
+          -88
+        ],
+        "step_seconds": 4,
+        "gap_seconds": 0,
+        "tail": 4
+      }
+    },
+    {
+      "name": "bypass-jump",
+      "bypass": true,
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -84,
+          -12,
+          -84
+        ],
+        "step_seconds": 4,
+        "gap_seconds": 0,
+        "tail": 2
+      }
+    },
+    {
+      "name": "bypass-phrase",
+      "bypass": true,
+      "signal": {
+        "type": "pluck-train",
+        "freq": 220,
+        "onsets": [
+          0,
+          0.3,
+          0.6,
+          0.9,
+          1.2,
+          1.5,
+          4,
+          4.5,
+          5,
+          8
+        ],
+        "decay_seconds": 0.25,
+        "seconds": 14,
+        "tail": 2
+      }
+    },
+    {
+      "name": "plucks-t0700-d1200",
+      "settings": {
+        "Threshold": "7:00",
+        "Decay": "12:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "plucks",
+        "freq": 220,
+        "period": 6,
+        "count": 3,
+        "decay_seconds": 0.25,
+        "tail": 2
+      },
+      "note": "Three picked notes at 220 Hz, 6 s apart, decaying 35 dB/s like a real string: each crosses the threshold, so the gate's hold and fade on a dying note show."
+    },
+    {
+      "name": "plucks-t0900-d1200",
+      "settings": {
+        "Threshold": "9:00",
+        "Decay": "12:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "plucks",
+        "freq": 220,
+        "period": 6,
+        "count": 3,
+        "decay_seconds": 0.25,
+        "tail": 2
+      },
+      "note": "Three picked notes at 220 Hz, 6 s apart, decaying 35 dB/s like a real string: each crosses the threshold, so the gate's hold and fade on a dying note show."
+    },
+    {
+      "name": "plucks-t1200-d1200",
+      "settings": {
+        "Threshold": "12:00",
+        "Decay": "12:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "plucks",
+        "freq": 220,
+        "period": 6,
+        "count": 3,
+        "decay_seconds": 0.25,
+        "tail": 2
+      },
+      "note": "Three picked notes at 220 Hz, 6 s apart, decaying 35 dB/s like a real string: each crosses the threshold, so the gate's hold and fade on a dying note show."
+    },
+    {
+      "name": "soft-t1200-d1200",
+      "settings": {
+        "Threshold": "12:00",
+        "Decay": "12:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "plucks",
+        "freq": 220,
+        "period": 6,
+        "count": 3,
+        "decay_seconds": 0.25,
+        "tail": 2,
+        "level_db": -24
+      },
+      "note": "The same notes 24 dB softer (light picking): they start closer to the threshold."
+    },
+    {
+      "name": "phrase-t1200-d1200",
+      "settings": {
+        "Threshold": "12:00",
+        "Decay": "12:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "pluck-train",
+        "freq": 220,
+        "onsets": [
+          0,
+          0.3,
+          0.6,
+          0.9,
+          1.2,
+          1.5,
+          4,
+          4.5,
+          5,
+          8
+        ],
+        "decay_seconds": 0.25,
+        "seconds": 14,
+        "tail": 2
+      },
+      "note": "A phrase: six notes 0.3 s apart, three 0.5 s apart, one let ring: does the gate stay open between notes?"
+    },
+    {
+      "name": "stairs-slow-t1200-d1200",
+      "settings": {
+        "Threshold": "12:00",
+        "Decay": "12:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -88,
+          -84,
+          -80,
+          -76,
+          -72,
+          -68,
+          -64,
+          -60,
+          -56,
+          -52,
+          -48,
+          -44,
+          -48,
+          -52,
+          -56,
+          -60,
+          -64,
+          -68,
+          -72,
+          -76,
+          -80,
+          -84,
+          -88
+        ],
+        "step_seconds": 4,
+        "gap_seconds": 0,
+        "tail": 4
+      },
+      "note": "A 1 kHz staircase from -88 to -44 dB and back, 4 s per step: slow enough for the closed gain to settle, around the 12:00 threshold."
+    },
+    {
+      "name": "plucks-t0300-d1200",
+      "settings": {
+        "Threshold": "3:00",
+        "Decay": "12:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "plucks",
+        "freq": 220,
+        "period": 6,
+        "count": 3,
+        "decay_seconds": 0.25,
+        "tail": 2
+      },
+      "note": "Three picked notes at 220 Hz, 6 s apart, decaying 35 dB/s like a real string: each crosses the threshold, so the gate's hold and fade on a dying note show."
+    },
+    {
+      "name": "soft-t0300-d1200",
+      "settings": {
+        "Threshold": "3:00",
+        "Decay": "12:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "plucks",
+        "freq": 220,
+        "period": 6,
+        "count": 3,
+        "decay_seconds": 0.25,
+        "tail": 2,
+        "level_db": -24
+      },
+      "note": "The same notes 24 dB softer (light picking): they start closer to the threshold."
+    },
+    {
+      "name": "plucks-t0500-d1200",
+      "settings": {
+        "Threshold": "5:00",
+        "Decay": "12:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "plucks",
+        "freq": 220,
+        "period": 6,
+        "count": 3,
+        "decay_seconds": 0.25,
+        "tail": 2
+      },
+      "note": "Three picked notes at 220 Hz, 6 s apart, decaying 35 dB/s like a real string: each crosses the threshold, so the gate's hold and fade on a dying note show."
+    },
+    {
+      "name": "phrase-t0500-d1200",
+      "settings": {
+        "Threshold": "5:00",
+        "Decay": "12:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "pluck-train",
+        "freq": 220,
+        "onsets": [
+          0,
+          0.3,
+          0.6,
+          0.9,
+          1.2,
+          1.5,
+          4,
+          4.5,
+          5,
+          8
+        ],
+        "decay_seconds": 0.25,
+        "seconds": 14,
+        "tail": 2
+      },
+      "note": "A phrase: six notes 0.3 s apart, three 0.5 s apart, one let ring: does the gate stay open between notes?"
+    },
+    {
+      "name": "jump-t0500-d0700",
+      "settings": {
+        "Threshold": "5:00",
+        "Decay": "7:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -84,
+          -12,
+          -84
+        ],
+        "step_seconds": 4,
+        "gap_seconds": 0,
+        "tail": 2
+      },
+      "note": "A 1 kHz tone at -84, -12, -84 dB, 4 s each: Decay at a high threshold."
+    },
+    {
+      "name": "plucks-t0500-d0700",
+      "settings": {
+        "Threshold": "5:00",
+        "Decay": "7:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "plucks",
+        "freq": 220,
+        "period": 6,
+        "count": 3,
+        "decay_seconds": 0.25,
+        "tail": 2
+      },
+      "note": "Three picked notes at 220 Hz, 6 s apart, decaying 35 dB/s like a real string: each crosses the threshold, so the gate's hold and fade on a dying note show."
+    },
+    {
+      "name": "plucks-t1200-d0700",
+      "settings": {
+        "Threshold": "12:00",
+        "Decay": "7:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "plucks",
+        "freq": 220,
+        "period": 6,
+        "count": 3,
+        "decay_seconds": 0.25,
+        "tail": 2
+      },
+      "note": "Three picked notes at 220 Hz, 6 s apart, decaying 35 dB/s like a real string: each crosses the threshold, so the gate's hold and fade on a dying note show."
+    },
+    {
+      "name": "stairs-slow-t1200-d0700",
+      "settings": {
+        "Threshold": "12:00",
+        "Decay": "7:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -88,
+          -84,
+          -80,
+          -76,
+          -72,
+          -68,
+          -64,
+          -60,
+          -56,
+          -52,
+          -48,
+          -44,
+          -48,
+          -52,
+          -56,
+          -60,
+          -64,
+          -68,
+          -72,
+          -76,
+          -80,
+          -84,
+          -88
+        ],
+        "step_seconds": 4,
+        "gap_seconds": 0,
+        "tail": 4
+      },
+      "note": "A 1 kHz staircase from -88 to -44 dB and back, 4 s per step: slow enough for the closed gain to settle, around the 12:00 threshold."
+    },
+    {
+      "name": "plucks-t1200-d0900",
+      "settings": {
+        "Threshold": "12:00",
+        "Decay": "9:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "plucks",
+        "freq": 220,
+        "period": 6,
+        "count": 3,
+        "decay_seconds": 0.25,
+        "tail": 2
+      },
+      "note": "Three picked notes at 220 Hz, 6 s apart, decaying 35 dB/s like a real string: each crosses the threshold, so the gate's hold and fade on a dying note show."
+    },
+    {
+      "name": "plucks-t1200-d0300",
+      "settings": {
+        "Threshold": "12:00",
+        "Decay": "3:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "plucks",
+        "freq": 220,
+        "period": 6,
+        "count": 3,
+        "decay_seconds": 0.25,
+        "tail": 2
+      },
+      "note": "Three picked notes at 220 Hz, 6 s apart, decaying 35 dB/s like a real string: each crosses the threshold, so the gate's hold and fade on a dying note show."
+    },
+    {
+      "name": "plucks-t1200-d0500",
+      "settings": {
+        "Threshold": "12:00",
+        "Decay": "5:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "plucks",
+        "freq": 220,
+        "period": 6,
+        "count": 3,
+        "decay_seconds": 0.25,
+        "tail": 2
+      },
+      "note": "Three picked notes at 220 Hz, 6 s apart, decaying 35 dB/s like a real string: each crosses the threshold, so the gate's hold and fade on a dying note show."
+    },
+    {
+      "name": "stairs-slow-t1200-d0500",
+      "settings": {
+        "Threshold": "12:00",
+        "Decay": "5:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -88,
+          -84,
+          -80,
+          -76,
+          -72,
+          -68,
+          -64,
+          -60,
+          -56,
+          -52,
+          -48,
+          -44,
+          -48,
+          -52,
+          -56,
+          -60,
+          -64,
+          -68,
+          -72,
+          -76,
+          -80,
+          -84,
+          -88
+        ],
+        "step_seconds": 4,
+        "gap_seconds": 0,
+        "tail": 4
+      },
+      "note": "A 1 kHz staircase from -88 to -44 dB and back, 4 s per step: slow enough for the closed gain to settle, around the 12:00 threshold."
+    },
+    {
+      "name": "jump-t0500-d0500",
+      "settings": {
+        "Threshold": "5:00",
+        "Decay": "5:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -84,
+          -12,
+          -84
+        ],
+        "step_seconds": 4,
+        "gap_seconds": 0,
+        "tail": 2
+      },
+      "note": "A 1 kHz tone at -84, -12, -84 dB, 4 s each: Decay at a high threshold."
+    },
+    {
+      "name": "plucks-t0500-d0500",
+      "settings": {
+        "Threshold": "5:00",
+        "Decay": "5:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "plucks",
+        "freq": 220,
+        "period": 6,
+        "count": 3,
+        "decay_seconds": 0.25,
+        "tail": 2
+      },
+      "note": "Three picked notes at 220 Hz, 6 s apart, decaying 35 dB/s like a real string: each crosses the threshold, so the gate's hold and fade on a dying note show."
+    }
+  ]
+}

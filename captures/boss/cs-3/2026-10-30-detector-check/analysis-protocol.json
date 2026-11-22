@@ -1,0 +1,16 @@
+{
+  "model_reference_commit": "0a346743de472e253869e43887a02727c6a73322",
+  "model_header": "src/dsp/Cs3Compressor.h",
+  "model_header_sha256": "b7baa6c02881e3ddb5994e7c9a6f96ac01b7198d9e438875c9941c96ff1a573d",
+  "prediction_rule": "Freeze existing detector dynamics and static compression law before capture. Align using loopback; use bypass references for level calibration. Any per-condition refit is diagnostic, not held-out prediction.",
+  "primary_comparisons": [
+    "Release gain trajectory and t63/t90 at each jump size and carrier",
+    "Attack overshoot and settling, resolving 110 Hz cycles rather than treating each sample as an independent envelope observation",
+    "Settled gain and carrier harmonics; distinguish detector mismatch from static gain/tone mismatch"
+  ],
+  "outcomes": {
+    "agreement": "Keep current detector architecture and constants; proceed to paired-note/listening validation.",
+    "jump_size_dependence": "Investigate detector/gain law or level-dependent dynamics, using the observed mismatch before proposing extra state.",
+    "carrier_dependence": "Investigate rectifier ripple, detector filtering and extraction bandwidth before changing release time constants."
+  }
+}

@@ -1,0 +1,314 @@
+{
+  "pedal": "Boss PH-3 Phase Shifter — 4 Stage Res at standing points (mono)",
+  "comment": "4 Stage with Res has more in it than four stages and a loop (the study: 4 Stage Res, not solved). Here the sweep stands still at five points (Rate fully counter-clockwise stops the LFO where it is) and each point is read with Res at 7:00, 12:00 and 5:00, Rate untouched: what the Res adds at each corner, and so which part of it follows the corner and which is fixed in frequency. The first point is read again with Res off at the end of its group: whether a stopped sweep stays put. Quiet sweeps (-24 dB: the resonance adds up to 12 dB). The points fall where they fall; they needn't be even. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise.",
+  "quiet_dbfs": -60,
+  "knobs": [
+    "Mode",
+    "Rate",
+    "Depth",
+    "Res"
+  ],
+  "takes": [
+    {
+      "name": "bypass-sweep",
+      "bypass": true,
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      },
+      "note": "The pedal off (its LED off): the bypass reference. OUTPUT on input 2, the adapter."
+    },
+    {
+      "name": "point-1-res-0700",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "7:00",
+        "Depth": "5:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      },
+      "note": "The pedal on (its LED lit), the STAGE switch on 4, Depth fully clockwise, Res and Rate fully counter-clockwise. Turn Rate up to about 9:00 for a few seconds (a different time at each point), then back to fully counter-clockwise: the sweep stops somewhere new."
+    },
+    {
+      "name": "point-1-res-1200",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "7:00",
+        "Depth": "5:00",
+        "Res": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      },
+      "note": "The same point: don't touch Rate. Only Res moves."
+    },
+    {
+      "name": "point-1-res-0500",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "7:00",
+        "Depth": "5:00",
+        "Res": "5:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      },
+      "note": "The same point: don't touch Rate. Res fully clockwise."
+    },
+    {
+      "name": "point-1-res-0700-again",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "7:00",
+        "Depth": "5:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      },
+      "note": "The same point once more with Res fully counter-clockwise, Rate untouched: has the stopped sweep stayed where it was?"
+    },
+    {
+      "name": "point-2-res-0700",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "7:00",
+        "Depth": "5:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      },
+      "note": "Res back to fully counter-clockwise. Turn Rate up to about 9:00 for a few seconds (a different time at each point), then back to fully counter-clockwise: the sweep stops somewhere new."
+    },
+    {
+      "name": "point-2-res-1200",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "7:00",
+        "Depth": "5:00",
+        "Res": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      },
+      "note": "The same point: don't touch Rate. Only Res moves."
+    },
+    {
+      "name": "point-2-res-0500",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "7:00",
+        "Depth": "5:00",
+        "Res": "5:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      },
+      "note": "The same point: don't touch Rate. Res fully clockwise."
+    },
+    {
+      "name": "point-3-res-0700",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "7:00",
+        "Depth": "5:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      },
+      "note": "Res back to fully counter-clockwise. Turn Rate up to about 9:00 for a few seconds (a different time at each point), then back to fully counter-clockwise: the sweep stops somewhere new."
+    },
+    {
+      "name": "point-3-res-1200",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "7:00",
+        "Depth": "5:00",
+        "Res": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      },
+      "note": "The same point: don't touch Rate. Only Res moves."
+    },
+    {
+      "name": "point-3-res-0500",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "7:00",
+        "Depth": "5:00",
+        "Res": "5:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      },
+      "note": "The same point: don't touch Rate. Res fully clockwise."
+    },
+    {
+      "name": "point-4-res-0700",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "7:00",
+        "Depth": "5:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      },
+      "note": "Res back to fully counter-clockwise. Turn Rate up to about 9:00 for a few seconds (a different time at each point), then back to fully counter-clockwise: the sweep stops somewhere new."
+    },
+    {
+      "name": "point-4-res-1200",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "7:00",
+        "Depth": "5:00",
+        "Res": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      },
+      "note": "The same point: don't touch Rate. Only Res moves."
+    },
+    {
+      "name": "point-4-res-0500",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "7:00",
+        "Depth": "5:00",
+        "Res": "5:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      },
+      "note": "The same point: don't touch Rate. Res fully clockwise."
+    },
+    {
+      "name": "point-5-res-0700",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "7:00",
+        "Depth": "5:00",
+        "Res": "7:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      },
+      "note": "Res back to fully counter-clockwise. Turn Rate up to about 9:00 for a few seconds (a different time at each point), then back to fully counter-clockwise: the sweep stops somewhere new."
+    },
+    {
+      "name": "point-5-res-1200",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "7:00",
+        "Depth": "5:00",
+        "Res": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      },
+      "note": "The same point: don't touch Rate. Only Res moves."
+    },
+    {
+      "name": "point-5-res-0500",
+      "settings": {
+        "Mode": "4 Stage",
+        "Rate": "7:00",
+        "Depth": "5:00",
+        "Res": "5:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      },
+      "note": "The same point: don't touch Rate. Res fully clockwise."
+    }
+  ]
+}

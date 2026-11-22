@@ -1,0 +1,131 @@
+0700 [(-56, 'quiet', [-15.534, -11.029, -8.328, -6.153]), (-56, 'loud', [0.647, -4.049, -5.115, -5.36]), (-54, 'quiet', [-7.058, -3.647, -2.07, -1.77]), (-54, 'loud', [0.646, -0.763, -1.633, -1.729]), (-44, 'quiet', [0.642, 0.646, 0.646, 0.646]), (-44, 'loud', [0.646, 0.646, 0.646, 0.646])]
+0500 [(-56, 'quiet', [-15.549, -11.047, -8.32, -5.866]), (-56, 'loud', [0.65, 0.645, 0.647, 0.647]), (-54, 'quiet', [-7.034, -3.626, -1.551, -0.006]), (-54, 'loud', [0.647, 0.645, 0.646, 0.646]), (-44, 'quiet', [0.64, 0.645, 0.645, 0.646]), (-44, 'loud', [0.646, 0.645, 0.645, 0.645])]
+Comparisons {
+  "-56": {
+    "quiet_start_decay_comparison": {
+      "rms_db_01_to_15_seconds": 0.03727438429859387,
+      "rms_db_01_to_3_seconds": 0.032163971850909114,
+      "rms_db_3_to_79_seconds": 0.20130208452128182
+    },
+    "history_differences": {
+      "0700": {
+        "loud_minus_quiet_db": [
+          16.172602389991596,
+          6.98384369173217,
+          3.208934939321921,
+          0.7961246423396098
+        ]
+      },
+      "0500": {
+        "loud_minus_quiet_db": [
+          16.201174073235688,
+          11.678079107342674,
+          8.978534696693337,
+          6.515999584212615
+        ]
+      }
+    }
+  },
+  "-54": {
+    "quiet_start_decay_comparison": {
+      "rms_db_01_to_15_seconds": 0.022140825909430475,
+      "rms_db_01_to_3_seconds": 0.1467150046604248,
+      "rms_db_3_to_79_seconds": 1.3363730430984142
+    },
+    "history_differences": {
+      "0700": {
+        "loud_minus_quiet_db": [
+          7.703427000064583,
+          2.884340796546695,
+          0.43692948450570146,
+          0.042082126746564974
+        ]
+      },
+      "0500": {
+        "loud_minus_quiet_db": [
+          7.6714217457992815,
+          4.274768927417981,
+          2.192845114147566,
+          0.6517019727320985
+        ]
+      }
+    }
+  },
+  "-44": {
+    "quiet_start_decay_comparison": {
+      "rms_db_01_to_15_seconds": 0.003129424496292174,
+      "rms_db_01_to_3_seconds": 0.003120991072529322,
+      "rms_db_3_to_79_seconds": 0.0029645551994965658
+    },
+    "history_differences": {
+      "0700": {
+        "loud_minus_quiet_db": [
+          0.0042332333116323895,
+          -2.8410390443767142e-05,
+          0.0004464659615805999,
+          0.00020617728003280433
+        ]
+      },
+      "0500": {
+        "loud_minus_quiet_db": [
+          0.005686869880584311,
+          -0.00033391735893051333,
+          0.00017201860776516753,
+          -0.0006025845934845009
+        ]
+      }
+    }
+  }
+}
+Diagnostics {
+  "-56": {
+    "early_window_fit": {
+      "asymptotic_gain_db": -8.826938239991978,
+      "excursion_db": 8.54611641018954,
+      "tau_seconds": 0.8661824328283338,
+      "training_rms_db": 0.2795584425439805,
+      "fit_window_seconds": [
+        0.05,
+        3.0
+      ],
+      "same_fit_vs_max_decay_005_to_3_seconds_rms_db": 0.28417917187606984,
+      "extrapolated_min_decay_3_to_79_seconds_rms_db": 2.018154908676514
+    },
+    "whole_window_fit": {
+      "asymptotic_gain_db": -5.915054109552339,
+      "excursion_db": 9.664762006314161,
+      "tau_seconds": 2.257166043220672,
+      "training_rms_db": 0.3664230508334955,
+      "fit_window_seconds": [
+        0.05,
+        7.9
+      ]
+    },
+    "interpretation": "Fitted asymptotes are not measured equilibrium. Fit-window sensitivity tests a universal one-pole claim, not circuit topology."
+  },
+  "-54": {
+    "early_window_fit": {
+      "asymptotic_gain_db": -2.248684550411455,
+      "excursion_db": 6.3069299737529,
+      "tau_seconds": 0.7790509648578482,
+      "training_rms_db": 0.1651376290643037,
+      "fit_window_seconds": [
+        0.05,
+        3.0
+      ],
+      "same_fit_vs_max_decay_005_to_3_seconds_rms_db": 0.2408374197000572,
+      "extrapolated_min_decay_3_to_79_seconds_rms_db": 0.41825049525384067
+    },
+    "whole_window_fit": {
+      "asymptotic_gain_db": -1.812299311119216,
+      "excursion_db": 6.32608598394217,
+      "tau_seconds": 1.0012940426531887,
+      "training_rms_db": 0.13207550862638553,
+      "fit_window_seconds": [
+        0.05,
+        7.9
+      ]
+    },
+    "interpretation": "Fitted asymptotes are not measured equilibrium. Fit-window sensitivity tests a universal one-pole claim, not circuit topology."
+  }
+}

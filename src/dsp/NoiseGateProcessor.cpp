@@ -9,51 +9,40 @@ namespace namx
 {
 
 void NoiseGateProcessor::sync_right_channel() {
-    envelope[1] = envelope[0];
-    gain_per_channel[1] = gain_per_channel[0];
+    control[1] = control[0];
+    tone_state[1] = tone_state[0];
 }
 
 void NoiseGateProcessor::reset() {
-    envelope[0] = envelope[1] = 0.0f;
-    gain_per_channel[0] = gain_per_channel[1] = 0.0f;
+    for (auto& c : control) {
+        c.reset();
+    }
+    tone_state[0].reset();
+    tone_state[1].reset();
 }
 
 void NoiseGateProcessor::process_channel(float* buf, size_t nframes, int ch) {
-    const float thresh_lin = std::pow(10.0f, threshold_db.load() / 20.0f);
-    const float fs = static_cast<float>(sample_rate);
-    const float at_ms = attack_ms.load();
-    const float rel_ms = release_ms.load();
-
-    const float at_coeff = std::exp(-1.0f / (fs * at_ms * 0.001f));
-    const float rel_coeff = std::exp(-1.0f / (fs * rel_ms * 0.001f));
-
-    float& env = envelope[ch];
-    float& gain = gain_per_channel[ch];
-    float min_gain = 1.0f;
-
-    for (size_t i = 0; i < nframes; ++i) {
-        float level = std::abs(buf[i]);
-        if (level > env) {
-            env = at_coeff * env + (1.0f - at_coeff) * level;
-        } else {
-            env = rel_coeff * env + (1.0f - rel_coeff) * level;
+    if (sample_rate != prepared_rate) { // allocation-free, once per rate
+        prepared_rate = sample_rate;
+        tone.design(ns2::TONE, sample_rate);
+        for (auto& c : control) {
+            c.prepare(sample_rate);
         }
-
-        float target = (env >= thresh_lin) ? 1.0f : 0.0f;
-
-        if (target > gain) {
-            gain = at_coeff * gain + (1.0f - at_coeff) * target;
-        } else {
-            gain = rel_coeff * gain + (1.0f - rel_coeff) * target;
-        }
-
-        min_gain = std::min(min_gain, gain);
-        buf[i] *= gain;
     }
-    // One log per block, not per sample.
-    const float gr_db = min_gain > 1e-3f ? -20.0f * std::log10(min_gain) : MAX_GR_DB;
+    static const float REFERENCE = std::pow(10.0f, ns2::REFERENCE_DBFS / 20.0f);
+    static const float OPEN_GAIN = std::pow(10.0f, ns2::OPEN_GAIN_DB / 20.0f);
+    ns2::Control& c = control[ch];
+    c.set(threshold_db.load(), release_ms.load());
+
+    float least = 1.0f;
+    for (size_t i = 0; i < nframes; ++i) {
+        const float gain = c.process(buf[i] / REFERENCE);
+        least = std::min(least, gain);
+        buf[i] = tone_state[ch].process(buf[i] * (gain * OPEN_GAIN), tone);
+    }
+    const float gr_db = std::min(-20.0f * std::log10(least), MAX_GR_DB);
     if (gr_db > gr_peak_db.load(std::memory_order_relaxed)) {
-        gr_peak_db.store(std::min(gr_db, MAX_GR_DB), std::memory_order_relaxed);
+        gr_peak_db.store(gr_db, std::memory_order_relaxed);
     }
 }
 

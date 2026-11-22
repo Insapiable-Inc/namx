@@ -1,0 +1,445 @@
+{
+  "pedal": "JOYO R-07 Aquarius (Low Bit mode, mono: Input -> Output)",
+  "comment": "First pass on the Low Bit delay. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise; 9:00 and 3:00 pointer horizontal. MODE stays on Low Bit throughout; no tap tempo, looper off. Questions: the dry path (digital or analog, any delay); the delay per Time position; the wet's tone; the reduced sample rate (mirror images of the held sine and the sweeps, single clicks dropped or held) and the bit depth (the ladder's repeats: noise against level, the staircase at low levels, the clip at the top); whether the reduction sits before or after Level and inside the feedback loop (repeats crunchier on every pass, or cut off below the last bit). The marker only goes to the loopback: through the pedal its repeat would land on the signal. The ladder and the clicks assume the delay at Time 12:00 lies between 0.25 and 2.75 s (the pedal's longest is said to be ~3.5 s).",
+  "marker_to_pedal": false,
+  "knobs": [
+    "Level",
+    "Feedback",
+    "Time"
+  ],
+  "takes": [
+    {
+      "name": "bypass-sweep",
+      "bypass": true,
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 2,
+        "level_db": -12,
+        "tail": 1
+      },
+      "note": "Pedal OFF. MODE already on LOW BIT, looper off."
+    },
+    {
+      "name": "bypass-ladder",
+      "bypass": true,
+      "signal": {
+        "type": "steps",
+        "freq": 211,
+        "levels_db": [
+          -60,
+          -54,
+          -48,
+          -42,
+          -36,
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          0,
+          3
+        ],
+        "step_seconds": 0.25,
+        "gap_seconds": 2.75,
+        "tail": 3
+      }
+    },
+    {
+      "name": "bypass-silence",
+      "bypass": true,
+      "signal": {
+        "type": "silence",
+        "seconds": 5
+      }
+    },
+    {
+      "name": "dry-sweep",
+      "settings": {
+        "Level": "7:00",
+        "Feedback": "7:00",
+        "Time": "7:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 2,
+        "level_db": -12,
+        "tail": 2
+      },
+      "note": "Pedal ON, MODE on LOW BIT (don't tap the tempo). Level at minimum: the dry path alone."
+    },
+    {
+      "name": "time-0700",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "7:00",
+        "Time": "7:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 2,
+        "level_db": -12,
+        "tail": 2
+      },
+      "note": "Feedback at minimum (one repeat): the shortest delay and its tone."
+    },
+    {
+      "name": "time-0900",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "7:00",
+        "Time": "9:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 2,
+        "level_db": -12,
+        "tail": 3
+      }
+    },
+    {
+      "name": "time-1200",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "7:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 2,
+        "level_db": -12,
+        "tail": 4
+      },
+      "note": "The next five takes share this setting."
+    },
+    {
+      "name": "sweep-0db",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "7:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 2,
+        "level_db": 0,
+        "tail": 4
+      },
+      "note": "As hard as the guitar's peak: where the repeat clips."
+    },
+    {
+      "name": "clicks",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "7:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 0.613,
+        "count": 8,
+        "tail": 4
+      },
+      "note": "Single-sample clicks: a sample-rate reducer without a filter in front misses some."
+    },
+    {
+      "name": "ladder",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "7:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 211,
+        "levels_db": [
+          -60,
+          -54,
+          -48,
+          -42,
+          -36,
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          0,
+          3
+        ],
+        "step_seconds": 0.25,
+        "gap_seconds": 2.75,
+        "tail": 3
+      },
+      "note": "211 Hz bursts from -60 to +3 dB, each repeat landing alone in the gap: the bit depth and the clip."
+    },
+    {
+      "name": "hold-sine",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "7:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1031,
+        "seconds": 6,
+        "level_db": -12,
+        "tail": 4
+      },
+      "note": "A held tone: the reduced sample rate from its mirror images, and any wobble."
+    },
+    {
+      "name": "level-1200",
+      "settings": {
+        "Level": "12:00",
+        "Feedback": "7:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 2,
+        "level_db": -12,
+        "tail": 4
+      }
+    },
+    {
+      "name": "ladder-level1200",
+      "settings": {
+        "Level": "12:00",
+        "Feedback": "7:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 211,
+        "levels_db": [
+          -60,
+          -54,
+          -48,
+          -42,
+          -36,
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          0,
+          3
+        ],
+        "step_seconds": 0.25,
+        "gap_seconds": 2.75,
+        "tail": 3
+      },
+      "note": "Level at 12:00: is the bit reduction before or after the Level knob?"
+    },
+    {
+      "name": "level-0900",
+      "settings": {
+        "Level": "9:00",
+        "Feedback": "7:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 2,
+        "level_db": -12,
+        "tail": 4
+      }
+    },
+    {
+      "name": "level-0300",
+      "settings": {
+        "Level": "3:00",
+        "Feedback": "7:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 2,
+        "level_db": -12,
+        "tail": 4
+      }
+    },
+    {
+      "name": "feedback-0900",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "9:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 2,
+        "level_db": -12,
+        "tail": 8
+      },
+      "note": "Long tail: the gain and tone of every pass round the loop."
+    },
+    {
+      "name": "feedback-1200",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 2,
+        "level_db": -12,
+        "tail": 10
+      },
+      "note": "The next three takes share this setting."
+    },
+    {
+      "name": "noise-floor",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "silence",
+        "seconds": 8
+      }
+    },
+    {
+      "name": "reamp-lowe",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/lowe-chromatic.wav",
+        "tail": 6
+      },
+      "note": "Your low-E DI (50 s) through the pedal, for the A/B against NAM-X later."
+    },
+    {
+      "name": "feedback-0300",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "3:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 2,
+        "level_db": -12,
+        "tail": 12
+      },
+      "note": "The next three takes share this setting."
+    },
+    {
+      "name": "feedback-0300-burst",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "3:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 211,
+        "levels_db": [
+          -6
+        ],
+        "step_seconds": 0.2,
+        "tail": 15
+      },
+      "note": "One 0.2 s burst, then its repeats: do they get crunchier on every pass?"
+    },
+    {
+      "name": "feedback-0300-quiet",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "3:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 211,
+        "levels_db": [
+          -36
+        ],
+        "step_seconds": 0.2,
+        "tail": 15
+      },
+      "note": "The same burst 30 dB quieter: do the repeats stop dead when they fall below the last bit?"
+    },
+    {
+      "name": "feedback-0500",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "5:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 211,
+        "levels_db": [
+          -30
+        ],
+        "step_seconds": 0.2,
+        "tail": 8
+      },
+      "note": "Feedback at maximum, one quiet burst: do the repeats fade, hold or grow? Turn Feedback back to 7:00 right after it."
+    },
+    {
+      "name": "time-0300",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "7:00",
+        "Time": "3:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 2,
+        "level_db": -12,
+        "tail": 7
+      }
+    },
+    {
+      "name": "time-0500",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "7:00",
+        "Time": "5:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 2,
+        "level_db": -12,
+        "tail": 10
+      },
+      "note": "The longest delay: the repeat should land after the 2 s sweep, on its own."
+    }
+  ]
+}

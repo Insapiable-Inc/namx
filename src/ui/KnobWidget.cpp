@@ -297,6 +297,29 @@ void KnobWidget::set_name_visible(bool on) {
     name_label->setVisible(on);
 }
 
+bool KnobWidget::set_label(const QString& new_label) {
+    if (new_label == label) {
+        return false;
+    }
+    const bool is_new = !other_labels.contains(new_label);
+    if (!label_is_live && !other_labels.contains(label)) {
+        other_labels << label;
+    }
+    label_is_live = false;
+    label = new_label;
+    name_label->setText(new_label);
+    return is_new;
+}
+
+void KnobWidget::set_live_label(const QString& text) {
+    if (!label_is_live && !other_labels.contains(label)) {
+        other_labels << label;
+    }
+    label_is_live = true;
+    label = text;
+    name_label->setText(text);
+}
+
 QString KnobWidget::text_for(double v) const {
     if (formatter) {
         return formatter(v);
@@ -318,6 +341,12 @@ void KnobWidget::update_label() {
 
 int KnobWidget::text_width_needed() const {
     int width = name_label->isHidden() ? 0 : name_label->sizeHint().width();
+    if (!name_label->isHidden()) {
+        const QFontMetrics names = name_label->fontMetrics();
+        for (const QString& other : other_labels) {
+            width = std::max(width, names.horizontalAdvance(other));
+        }
+    }
     // The widest value: every position of a stepped knob, else the ends of the range
     // (the most digits, the minus sign) and the default.
     QList<double> values = {min, max, default_value};
@@ -374,7 +403,7 @@ bool KnobWidget::eventFilter(QObject* obj, QEvent* event) {
             return true;
         }
         int dial_step;
-        if (scroll_step > 0.0 && !log_taper) {
+        if (scroll_step > 0.0 && taper.empty()) {
             dial_step = qMax(1, static_cast<int>(scroll_step / (max - min) * STEPS + 0.5));
         } else {
             dial_step = STEPS / 100;
@@ -388,22 +417,62 @@ bool KnobWidget::eventFilter(QObject* obj, QEvent* event) {
 
 double KnobWidget::dial_to_value(int d) const {
     const double t = static_cast<double>(d) / STEPS;
-    if (log_taper) {
-        return min * std::pow(max / min, t);
+    if (taper.empty()) {
+        return min + (max - min) * t;
     }
-    return min + (max - min) * t;
+    size_t upper = 1; // the segment's upper point: the first at or past t, the last at most
+    while (upper + 1 < taper.size() && taper[upper].travel < t) {
+        ++upper;
+    }
+    const TaperPoint& a = taper[upper - 1];
+    const TaperPoint& b = taper[upper];
+    const double along = (t - a.travel) / (b.travel - a.travel);
+    if (a.value <= 0.0) { // up from zero (a rate's Stop): a straight line, a log can't start there
+        return b.value * along;
+    }
+    return a.value * std::pow(b.value / a.value, along);
 }
 
 int KnobWidget::value_to_dial(double v) const {
-    double norm = log_taper ? std::log(qBound(min, v, max) / min) / std::log(max / min)
-                            : (v - min) / (max - min);
+    double norm = 0.0;
+    if (taper.empty()) {
+        norm = (v - min) / (max - min);
+    } else {
+        v = qBound(min, v, max);
+        size_t upper = 1;
+        while (upper + 1 < taper.size() && taper[upper].value < v) {
+            ++upper;
+        }
+        const TaperPoint& a = taper[upper - 1];
+        const TaperPoint& b = taper[upper];
+        const double along =
+            a.value <= 0.0 ? v / b.value : std::log(v / a.value) / std::log(b.value / a.value);
+        norm = a.travel + (b.travel - a.travel) * along;
+    }
     norm = qBound(0.0, norm, 1.0);
     return static_cast<int>(norm * STEPS + 0.5);
 }
 
 void KnobWidget::set_log_taper(bool on) {
+    if (on && min > 0.0 && max > min) { // needs a positive range
+        const TaperPoint ends[] = {{0.0, min}, {1.0, max}};
+        set_taper(ends);
+    } else {
+        set_taper({});
+    }
+}
+
+void KnobWidget::set_taper(std::span<const TaperPoint> points) {
+    // The ends within a float's precision: the curves come from float tables (0.0553f isn't 0.0553).
+    [[maybe_unused]] const auto same = [](double a, double b) {
+        return std::abs(a - b) <= 1e-6 * std::abs(b);
+    };
+    Q_ASSERT(points.empty() ||
+             (points.size() >= 2 && points.front().travel == 0.0 &&
+              (min == 0.0 ? points.front().value == 0.0 : same(points.front().value, min)) &&
+              points.back().travel == 1.0 && same(points.back().value, max) && min >= 0.0));
     const double v = value();
-    log_taper = on && min > 0.0 && max > min; // needs a positive range
+    taper.assign(points.begin(), points.end());
     const bool blocked = dial->blockSignals(true);
     dial->setValue(value_to_dial(v));
     dial->blockSignals(blocked);

@@ -1,0 +1,843 @@
+{
+  "pedal": "Boss AW-3 Dynamic Wah, Up mode (mono: Guitar input -> Output)",
+  "comment": "Up mode in full: Manual at all eleven hour positions (the filter at rest; at the end, as a first pass turned Sens instead — kept as rest-sens-*), Sens and Decay at five, Manual's effect on the swept range at both ends, picked notes at three Decays. Guitar input -> Output, nothing in EXP, adapter power. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise; Manual's printed marks at 9:00, 11:00 and 1:00. Sweeps at -36 dB with Sens at minimum: the filter at rest (the envelope shouldn't move it). Noise staircases (-54 to +3 dB, 1.5 s a step): where the filter settles at each input level, read from the noise's spectrum against the bypass staircase (same seed). Noise jumps (-48 / 0 / -48 dB, 4 s each): how fast it opens and how it falls back (Decay). Takes ordered by setting, for the fewest knob turns.",
+  "quiet_dbfs": -60,
+  "knobs": [
+    "Mode",
+    "Manual",
+    "Sens",
+    "Decay"
+  ],
+  "takes": [
+    {
+      "name": "bypass-sweep",
+      "bypass": true,
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -36,
+        "tail": 2
+      }
+    },
+    {
+      "name": "bypass-stairs",
+      "bypass": true,
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -54,
+          -48,
+          -42,
+          -36,
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          0,
+          3
+        ],
+        "step_seconds": 1.5,
+        "seed": 1,
+        "tail": 3
+      }
+    },
+    {
+      "name": "bypass-jump",
+      "bypass": true,
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -48,
+          0,
+          -48
+        ],
+        "step_seconds": 4,
+        "seed": 2,
+        "tail": 2
+      }
+    },
+    {
+      "name": "bypass-plucks",
+      "bypass": true,
+      "signal": {
+        "type": "pluck-train",
+        "freq": [
+          82.41,
+          110.0,
+          196.0,
+          329.63
+        ],
+        "onsets": [
+          0,
+          3,
+          6,
+          9
+        ],
+        "seconds": 12,
+        "decay_seconds": 0.8,
+        "repick": true,
+        "tail": 2
+      }
+    },
+    {
+      "name": "rest-manual-0700",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "7:00",
+        "Sens": "7:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -36,
+        "tail": 2
+      },
+      "note": "Pedal on, MODE UP. Manual and Sens fully down: the filter at rest."
+    },
+    {
+      "name": "rest-sens-0800",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "7:00",
+        "Sens": "8:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -36,
+        "tail": 2
+      },
+      "note": "Manual stays at 7:00; Sens through the hours: how soon a quiet sweep starts to move the filter."
+    },
+    {
+      "name": "rest-sens-0900",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "7:00",
+        "Sens": "9:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -36,
+        "tail": 2
+      }
+    },
+    {
+      "name": "rest-sens-1000",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "7:00",
+        "Sens": "10:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -36,
+        "tail": 2
+      }
+    },
+    {
+      "name": "rest-sens-1100",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "7:00",
+        "Sens": "11:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -36,
+        "tail": 2
+      }
+    },
+    {
+      "name": "rest-sens-1200",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "7:00",
+        "Sens": "12:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -36,
+        "tail": 2
+      }
+    },
+    {
+      "name": "rest-sens-0100",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "7:00",
+        "Sens": "1:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -36,
+        "tail": 2
+      }
+    },
+    {
+      "name": "rest-sens-0200",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "7:00",
+        "Sens": "2:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -36,
+        "tail": 2
+      }
+    },
+    {
+      "name": "rest-sens-0300",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "7:00",
+        "Sens": "3:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -36,
+        "tail": 2
+      }
+    },
+    {
+      "name": "rest-sens-0400",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "7:00",
+        "Sens": "4:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -36,
+        "tail": 2
+      }
+    },
+    {
+      "name": "rest-sens-0500",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "7:00",
+        "Sens": "5:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -36,
+        "tail": 2
+      }
+    },
+    {
+      "name": "stairs-manual-0500",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "5:00",
+        "Sens": "12:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -54,
+          -48,
+          -42,
+          -36,
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          0,
+          3
+        ],
+        "step_seconds": 1.5,
+        "seed": 1,
+        "tail": 3
+      },
+      "note": "Sens to 12:00. Does Manual move the whole swept range, or only where it starts?"
+    },
+    {
+      "name": "stairs-manual-0700",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "7:00",
+        "Sens": "12:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -54,
+          -48,
+          -42,
+          -36,
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          0,
+          3
+        ],
+        "step_seconds": 1.5,
+        "seed": 1,
+        "tail": 3
+      }
+    },
+    {
+      "name": "stairs-sens-1200",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "12:00",
+        "Sens": "12:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -54,
+          -48,
+          -42,
+          -36,
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          0,
+          3
+        ],
+        "step_seconds": 1.5,
+        "seed": 1,
+        "tail": 3
+      },
+      "note": "Every knob at 12:00 (the next three takes)."
+    },
+    {
+      "name": "jump-decay-1200",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "12:00",
+        "Sens": "12:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -48,
+          0,
+          -48
+        ],
+        "step_seconds": 4,
+        "seed": 2,
+        "tail": 2
+      }
+    },
+    {
+      "name": "plucks-decay-1200",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "12:00",
+        "Sens": "12:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "pluck-train",
+        "freq": [
+          82.41,
+          110.0,
+          196.0,
+          329.63
+        ],
+        "onsets": [
+          0,
+          3,
+          6,
+          9
+        ],
+        "seconds": 12,
+        "decay_seconds": 0.8,
+        "repick": true,
+        "tail": 2
+      }
+    },
+    {
+      "name": "jump-decay-0900",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "12:00",
+        "Sens": "12:00",
+        "Decay": "9:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -48,
+          0,
+          -48
+        ],
+        "step_seconds": 4,
+        "seed": 2,
+        "tail": 2
+      }
+    },
+    {
+      "name": "jump-decay-0700",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "12:00",
+        "Sens": "12:00",
+        "Decay": "7:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -48,
+          0,
+          -48
+        ],
+        "step_seconds": 4,
+        "seed": 2,
+        "tail": 2
+      }
+    },
+    {
+      "name": "plucks-decay-0700",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "12:00",
+        "Sens": "12:00",
+        "Decay": "7:00"
+      },
+      "signal": {
+        "type": "pluck-train",
+        "freq": [
+          82.41,
+          110.0,
+          196.0,
+          329.63
+        ],
+        "onsets": [
+          0,
+          3,
+          6,
+          9
+        ],
+        "seconds": 12,
+        "decay_seconds": 0.8,
+        "repick": true,
+        "tail": 2
+      }
+    },
+    {
+      "name": "jump-decay-0300",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "12:00",
+        "Sens": "12:00",
+        "Decay": "3:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -48,
+          0,
+          -48
+        ],
+        "step_seconds": 4,
+        "seed": 2,
+        "tail": 2
+      }
+    },
+    {
+      "name": "jump-decay-0500",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "12:00",
+        "Sens": "12:00",
+        "Decay": "5:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -48,
+          0,
+          -48
+        ],
+        "step_seconds": 4,
+        "seed": 2,
+        "tail": 2
+      }
+    },
+    {
+      "name": "plucks-decay-0500",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "12:00",
+        "Sens": "12:00",
+        "Decay": "5:00"
+      },
+      "signal": {
+        "type": "pluck-train",
+        "freq": [
+          82.41,
+          110.0,
+          196.0,
+          329.63
+        ],
+        "onsets": [
+          0,
+          3,
+          6,
+          9
+        ],
+        "seconds": 12,
+        "decay_seconds": 0.8,
+        "repick": true,
+        "tail": 2
+      }
+    },
+    {
+      "name": "stairs-sens-0500",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "12:00",
+        "Sens": "5:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -54,
+          -48,
+          -42,
+          -36,
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          0,
+          3
+        ],
+        "step_seconds": 1.5,
+        "seed": 1,
+        "tail": 3
+      },
+      "note": "Decay back to 12:00, Sens up."
+    },
+    {
+      "name": "noise-sens-0500",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "12:00",
+        "Sens": "5:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "silence",
+        "seconds": 8
+      },
+      "note": "Nothing played: the noise floor at full Sens."
+    },
+    {
+      "name": "stairs-sens-0300",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "12:00",
+        "Sens": "3:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -54,
+          -48,
+          -42,
+          -36,
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          0,
+          3
+        ],
+        "step_seconds": 1.5,
+        "seed": 1,
+        "tail": 3
+      }
+    },
+    {
+      "name": "stairs-sens-0900",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "12:00",
+        "Sens": "9:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -54,
+          -48,
+          -42,
+          -36,
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          0,
+          3
+        ],
+        "step_seconds": 1.5,
+        "seed": 1,
+        "tail": 3
+      }
+    },
+    {
+      "name": "stairs-sens-0700",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "12:00",
+        "Sens": "7:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -54,
+          -48,
+          -42,
+          -36,
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          0,
+          3
+        ],
+        "step_seconds": 1.5,
+        "seed": 1,
+        "tail": 3
+      }
+    },
+    {
+      "name": "rest-manual-0800",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "8:00",
+        "Sens": "7:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -36,
+        "tail": 2
+      },
+      "note": "Sens stays at 7:00 (fully down); Manual through the hours, from 8:00 to 5:00: the filter at rest."
+    },
+    {
+      "name": "rest-manual-0900",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "9:00",
+        "Sens": "7:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -36,
+        "tail": 2
+      }
+    },
+    {
+      "name": "rest-manual-1000",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "10:00",
+        "Sens": "7:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -36,
+        "tail": 2
+      }
+    },
+    {
+      "name": "rest-manual-1100",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "11:00",
+        "Sens": "7:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -36,
+        "tail": 2
+      }
+    },
+    {
+      "name": "rest-manual-1200",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "12:00",
+        "Sens": "7:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -36,
+        "tail": 2
+      }
+    },
+    {
+      "name": "rest-manual-0100",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "1:00",
+        "Sens": "7:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -36,
+        "tail": 2
+      }
+    },
+    {
+      "name": "rest-manual-0200",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "2:00",
+        "Sens": "7:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -36,
+        "tail": 2
+      }
+    },
+    {
+      "name": "rest-manual-0300",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "3:00",
+        "Sens": "7:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -36,
+        "tail": 2
+      }
+    },
+    {
+      "name": "rest-manual-0400",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "4:00",
+        "Sens": "7:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -36,
+        "tail": 2
+      }
+    },
+    {
+      "name": "rest-manual-0500",
+      "settings": {
+        "Mode": "Up",
+        "Manual": "5:00",
+        "Sens": "7:00",
+        "Decay": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -36,
+        "tail": 2
+      }
+    }
+  ]
+}

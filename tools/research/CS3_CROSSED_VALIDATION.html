@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8">
+<title>NAM-X — CS-3 crossed-level validation and release candidate</title>
+<style>
+body{font:17px/1.55 system-ui,sans-serif;color:#202a34;background:#fafaf8;max-width:1100px;margin:40px auto;padding:0 25px}h1,h2{line-height:1.2;color:#12394a}h2{margin-top:2em}table{border-collapse:collapse;width:100%;font-size:15px;margin:20px 0}td,th{border-bottom:1px solid #ccd5d7;padding:9px;text-align:left;vertical-align:top}th{background:#e8eff0}pre{white-space:pre-wrap;background:#edf1f2;padding:18px;font-size:14px}img{max-width:100%}a{color:#006e87}.note{border-left:4px solid #16839a;padding:12px 20px;background:#edf5f5}code{font-size:.9em}@media print{body{font-size:11pt;margin:0;max-width:none}h2{break-after:avoid}}
+</style>
+<h1>CS-3: a curved one-state release explains the crossed jumps</h1>
+<p>30 October 2026 · 48 kHz physical captures and offline numerical prototypes · Production DSP unchanged</p>
+<p class="note"><strong>Assessment:</strong> the new captures are useful. They confirm that the original fixed amplitude-release law does not generalize. Comparing whole curves reveals that a single curved recovery trajectory, stopped when the input recaptures the detector, explains the apparent destination dependence. A log-domain relaxation toward a fixed floor is a strong candidate for the release stage. It needs no extra detector state. The complete compressor is <strong>not ready to replace production</strong>: low-frequency gain/distortion and pick transients remain imperfect.</p>
+<p>This continues the <a href="CS3_DETECTOR_VALIDATION.html">six-take detector study</a> and <a href="BOSS_PEDAL_RESEARCH_AUDIT.html">collection audit</a>. The frozen hypothesis test below was specified before recording. The new model family was selected after inspecting the crossed curves; its numerical parameters use the earlier 1 kHz recordings only. Its subsequent results are retrospective generalization checks, not a fresh blind validation.</p>
+
+<h2>1. Measurement validation</h2>
+<p>The <a href="../capture/plans/cs-3-detector-crossed.json">crossed plan</a> adds a bypass and one engaged take: 1 kHz, four-second plateaus [−36, −6, −36, −24, −12, −24] dB relative to the guitar-peak reference. Attack returns to minimum; Level, Tone and Sustain remain at noon. Both played-float32 hashes match their sidecars, both report zero xruns and marker quality .998, and neither recording contains |x|≥.999. Tail noise is approximately −101 dBFS RMS on the pedal channel.</p>
+<p>The engaged take's capture latency is 577 samples versus 455 for bypass. Each take is aligned using its own marker latency. After that compensation, all five loopback envelope edges agree on the 1 ms grid; settled loopback carrier phase differs by less than .00017 phase-equivalent sample and level by less than .00016 dB. Phase alone is periodic and cannot exclude a whole-cycle error; the marker and envelope edges supply that check. The 122-sample latency difference is not left in the recovery measurement.</p>
+<p>New bypass gain differs from the previous same-level bypass by only +.0013 to +.0014 dB. Returning Attack to minimum restores the previous engaged gain to within .032 dB at all four input levels. The earlier approximately +1.1 dB uncompressed gain change at maximum Attack is therefore repeatably associated with that control change, rather than explained by a persistent interface gain shift. This strengthens the coupling hypothesis; it does not identify the physical cause or exclude every accidental control change.</p>
+<p>Gain estimates use centered one-period RMS output divided by the paired bypass. At 1 kHz the analysis grid and carrier period are both 1 ms. At 110 Hz the period is about 9.09 ms, despite the same 1 ms output grid. Recovery RMS excludes the first 5 ms at 1 kHz or 19 ms at 110 Hz and ends at 1.2 s. These samples are correlated. One take per new condition is not a population uncertainty estimate.</p>
+
+<h2>2. The pre-recording predictions</h2>
+<p>The earlier single-drop effective amplitude-release constants were extrapolated in three ways. None of these hypotheses has any parameter fitted to the crossed captures. The source-result hash and all predicted endpoint/timing values in <a href="../../captures/boss/cs-3/2026-10-30-detector-crossed/analysis-protocol.json">the frozen protocol</a> were verified against a replay of the actual played signal.</p>
+<table><tr><th>Hypothesis</th><th>−6 → −36 dB: t63 / t90</th><th>−12 → −24 dB: t63 / t90</th><th>Shape RMS, first / second drop</th></tr>
+<tr><td>Physical pedal</td><td><strong>466 / 734 ms</strong></td><td><strong>205 / 304 ms</strong></td><td>—</td></tr>
+<tr><td>Original fixed τ=189.1 ms</td><td>388 / 586 ms</td><td>226 / 362 ms</td><td>2.056 / .429 dB equivalent</td></tr>
+<tr><td>Effective τ follows destination</td><td>500 / 755 ms</td><td>207 / 332 ms</td><td>.756 / .181 dB equivalent</td></tr>
+<tr><td>Effective τ follows starting level</td><td>355 / 536 ms</td><td>290 / 464 ms</td><td>2.848 / 1.238 dB equivalent</td></tr></table>
+<p>Shape scores normalize each trace to its own start and final gain, removing both an offset and an excursion error. They are not absolute output prediction errors. Destination-based effective constants perform best of these three extrapolations, but still miss parts of the recovery. In particular, matching the second t63 to within 2 ms does not explain its t90 error of 28 ms.</p>
+<img src="cs3_crossed_validation.png" alt="Absolute and endpoint-normalized recovery curves for the crossed CS-3 takes against three predictions frozen before capture.">
+
+<h2>3. Mathematical finding: shared trajectories, different stopping points</h2>
+<p><strong>Observation:</strong> for the same starting level, the two different destinations share almost the same gain change until the higher destination stops recovering. For the −12 dB starting level, the difference is .0110 dB RMS over 5–310 ms. For the −6 dB starting level, it is .0120 dB over 5–452 ms. Each comparison subtracts its own initial gain and stops 1 dB below either final gain. The result argues against selecting a different release speed merely because the destination changed.</p>
+<p><strong>Hypothesis:</strong> during free recovery, gain in dB relaxes toward a latent asymptote beyond the available uncompressed gain. Input recapture or the gain ceiling stops the trajectory earlier:</p>
+<pre>dg/dt = (g∞ − g)/T
+gfree(t) = g∞ + (g0 − g∞) exp(−t/T)
+g(t) ≈ min(gfinal, gfree(t))             // constant post-drop input only</pre>
+<p>The last equation is an envelope diagnostic, not a real-time instruction to know a future endpoint. The causal sample-by-sample detector below implements recapture without future information.</p>
+<table><tr><th>Attack</th><th>Shared g∞</th><th>Shared T</th><th>Fit RMS before recapture</th><th>Best constant dB ramp RMS</th></tr>
+<tr><td>Minimum</td><td>30.0891 dB</td><td>1202.633 ms</td><td>.0224 dB</td><td>1.081 dB</td></tr>
+<tr><td>Maximum</td><td>28.7561 dB</td><td>99.816 ms</td><td>.0775 dB</td><td>1.109 dB</td></tr></table>
+<p>Each row uses both earlier 1 kHz recoveries, from 5 ms onward and more than 1 dB below the final gain. The curved law's extra parameter is justified against a constant dB ramp on these training curves. At minimum Attack, using the earlier static gains as both endpoints, the law predicts crossed t63/t90 of <strong>464/732</strong> and <strong>205/304 ms</strong>. Absolute gain-envelope RMS is .0814/.0444 dB; no crossed endpoint or offset is fitted.</p>
+<p>The old 0 → −30 dB jump is also consistent with this shape. Supplying its measured endpoints, but retaining the new law's parameters, gives .110 dB conditional RMS at minimum Attack and .092 dB at maximum. These are endpoint-conditioned checks, not full absolute predictions across the older hand-reset controls.</p>
+<p><strong>Correction to the earlier interpretation:</strong> the audit rejected a single exponential of gain <em>toward the measured final gain</em>. That model fixes t90/t63 near 2.30. It did not rule out an exponential toward a more distant latent asymptote, stopped early. For the present law,</p>
+<pre>tf = −T log(1 − f (gfinal − g0)/(g∞ − g0))</pre>
+<p>so t90/t63 depends on the excursion and stopping point. The earlier broad preference for the amplitude domain was stronger than the evidence warranted. The new data support a different behavioral release law without recovering or claiming the original circuit.</p>
+<p><strong>Identifiability:</strong> g∞ is extrapolated beyond observable unclipped gain and covaries with T. Individual-drop fits give minimum-Attack T≈1158–1170 ms and g∞≈28.28–29.05 dB, versus the joint 1203 ms/30.09 dB; fast fits vary more. These are sensitivity observations, not confidence bounds. The trajectory over the measured range is better constrained than either latent parameter alone. Output-gain calibration also shifts g∞, so it is not an invariant physical voltage or component value.</p>
+
+<h2>4. Causal one-state prototype and its actual residuals</h2>
+<p>The numerical prototype keeps the existing amplitude-domain attack, fixed limiting slope, ceiling and post-gain Tone chain. It changes only the downward detector update to a relaxation of log amplitude toward a fixed floor. All dynamic parameters come from the two earlier 1 kHz recoveries at each Attack extreme. Two static nuisance mappings, G and M, are calibrated from the settled plateaus of those same takes.</p>
+<p>For a fair comparison, the amplitude-release baseline receives its own G/M recalibration and a best shared release constant fitted to those same two recoveries: 206.621 ms at minimum Attack and 18.181 ms at maximum. It receives no per-drop release constant. The baseline's equations are the production model's; these recalibrated values are an analysis comparator, not a production change.</p>
+<table><tr><th>Evaluation</th><th>Measured t63, first / second</th><th>Candidate t63</th><th>Baseline → candidate absolute recovery RMS, first / second</th></tr>
+<tr><td>Crossed 1 kHz, minimum Attack</td><td>466 / 205 ms</td><td>463 / 204 ms</td><td>.722/.696 → <strong>.123/.041 dB</strong></td></tr>
+<tr><td>Earlier 110 Hz, minimum Attack</td><td>394 / 284 ms</td><td>398 / 283 ms</td><td>.663/1.169 → <strong>.166/.226 dB</strong></td></tr>
+<tr><td>Earlier 110 Hz, maximum Attack</td><td>34 / 25 ms</td><td>34 / 25 ms</td><td>.162/.889 → <strong>.091/.887 dB</strong></td></tr></table>
+<p>The last absolute error does not improve materially because the fast 110 Hz steady gain remains wrong. Endpoint-normalized shape RMS there does improve from .206/.299 to .065/.042 dB equivalent. This separation matters: a good release shape must not hide a bad steady output level.</p>
+<img src="cs3_release_candidate.png" alt="Measured gain and sample-rendered candidate versus recalibrated amplitude-release baseline. The candidate improves recovery timing at crossed levels and 110 Hz.">
+<p><strong>Remaining failures:</strong> at maximum Attack and 110 Hz the candidate's compressed steady output is .89–1.36 dB too low. At −6 dB input, measured H2–H5 THD is 3.51%, versus 4.91% for the candidate and 2.52% for the recalibrated baseline. At 1 kHz the same comparison is .418% measured, .471% candidate, .239% baseline. The new law improves the 1 kHz distortion trend but worsens the low-frequency overshoot of harmonic content. Do not add output EQ to disguise this compression-dependent discrepancy.</p>
+<p>At 1 kHz, candidate onset settling is 10–11 ms versus 13–14 ms measured at minimum Attack, and 6 ms versus 6–7 ms at maximum. At 110 Hz, onset overshoot remains about 2.7–3.6 dB too small under the cycle-RMS estimator. These data already provide useful constraints on the attack/recapture stage; more release-step captures are not the next priority.</p>
+<p><strong>Existing picked-note check:</strong> the four 220 Hz decaying notes were not used to fit either model. After removing each trace's 100–300 ms sustain offset, candidate tail RMS over 600–2500 ms is about .150 dB at minimum Attack and .461 dB at maximum, versus .246/.783 dB for the comparator. Absolute sustain offsets remain about +.391/−.169 dB. Repeated-note pick spikes are about 2.18/2.05 dB smaller than measured, a regression of roughly .32/.67 dB versus the comparator. The first note differs because the marker preamble conditions the state. These are decaying sinusoids, not a listening test on guitar.</p>
+<img src="cs3_candidate_plucks.png" alt="Second existing 220 Hz picked note at slow and fast settings. Sustain-normalized candidate tails improve, but the pick spike remains too small.">
+
+<h2>5. Precise implementation specification for an experimental prototype</h2>
+<p><strong>Recommended architecture:</strong> retain a single detector state, static limiting law and existing post-gain Tone filters. Prototype the log-release update below at the measured Attack extremes. Keep the current production model available for comparison. A destination classifier, separate release table per signal level, extra memory state or recovered-circuit claim is not supported.</p>
+<pre>Input x is normalized to the fixed guitar-peak reference R, not block-normalized.
+fs = sample rate; τa and T below are in seconds.
+C = −14.25 dB; m = .0117
+a = 1 − exp(−1/(fs τa)); q = exp(−1/(fs T))
+Lfloor = [M + m G + (1−m) C − g∞] / (1−m)
+Efloor = 10^(Lfloor/20)
+Initialize E = Efloor.
+
+For each sample:
+    u = max(abs(x), Efloor)
+    if u &gt; E:
+        E = E + a (u − E)               // original amplitude-domain attack
+    else:
+        L = Lfloor + q (20 log10(E) − Lfloor)
+        E = max(u, 10^(L/20))           // causal recapture; no future endpoint
+    L = 20 log10(E)
+    gdB = G + M − (1−m) max(0, L + G − C)
+    y = Tone{x · 10^(gdB/20)}</pre>
+<table><tr><th>Physical Attack</th><th>τa</th><th>T</th><th>Lfloor relative to R</th><th>G</th><th>M</th></tr>
+<tr><td>Minimum</td><td>1.97 ms</td><td>1202.632891 ms</td><td>−60.801609 dB</td><td>19.707820 dB</td><td>−16.148456 dB</td></tr>
+<tr><td>Maximum</td><td>1.58 ms</td><td>99.815639 ms</td><td>−58.267810 dB</td><td>19.635883 dB</td><td>−14.976449 dB</td></tr></table>
+<p>These G/M values are effective nuisance mappings for Level/Tone/Sustain noon, not a newly identified physical potentiometer law. Use the full-precision values in <a href="cs3_release_candidate_results.json">the results JSON</a> to reproduce the scores. The unchanged Tone cascade is HP 38.3 Hz/Q .467, LP 18 kHz/Q .482, low shelves 655.8 Hz/Q .480/+0.57 dB and 5456.4 Hz/Q .661/+1.95 dB, normalized at 1 kHz.</p>
+<p>The free-release time scale T is <strong>not</strong> the displayed or measured t63. Do not relabel the user's Release control as 100–1203 ms using this table. Original-jump-only fits suggest intermediate T≈920 ms at 9:00, 307 ms at noon and 144 ms at 3:00; those values have not been validated at new levels. Logarithmic interpolation of positive T is a reasonable prototype convention, explicitly an assumption. Intermediate floors, Attack-dependent static gain and the full Sustain/Level mapping are not yet specified by a validated model.</p>
+<p>The update has one positive bounded detector state for bounded input: the attack is a convex interpolation, the release moves toward a positive floor, and recapture prevents undershooting the current target. It adds no lookahead or audio latency. Precompute a, q and the floor when controls change; preserve state across audio blocks. The research implementation uses log/power operations and makes no CPU-cost claim. A coding agent can reuse the log level needed by the gain calculation and benchmark optimized forms against this reference. Keep coefficient/control smoothing outside the evidence claim; arbitrary-rate Tone and detector-ripple equivalence still need validation.</p>
+
+<h2>6. Next work and validation gates</h2>
+<p><strong>No additional hardware capture is required now.</strong> The next scientific step is to constrain attack/recapture and low-frequency detector ripple using the existing 110 Hz and 220 Hz recordings. Change one feature at a time and preserve the release-law improvement. The next implementation step is a switchable experimental prototype and level-matched listening comparison; production replacement is premature.</p>
+<ol>
+<li>Reproduce the reference at 48 kHz, including the marker preamble, on the saved played files. Compare gain traces, t63/t90, steady levels, H2–H5 and note spikes separately. Confirm block-size independence and finite state during silence, hot input and control transitions. No audio-thread allocations or added latency are necessary.</li>
+<li>As provisional engineering gates, keep crossed and slow-110-Hz recovery RMS below .25 dB and t63 within 5 ms; retain fast recovery shape RMS below .10 dB equivalent. These tolerances are proposed acceptance criteria, not perceptual thresholds. Fix the approximately 1 dB fast-110-Hz steady error, and do not accept increased harmonic or pick-spike error merely because a release average improves.</li>
+<li>Use the existing picked notes as an attack/tail regression set, especially first-note versus repeated-note behavior. Freeze the final candidate before any new validation packet. Compare actual guitar with gain-matched playback; listen for pick softness, pumping after loud notes, bass buzz and note decay. No claim of audibility or preference has been established here.</li>
+<li>Only after that, a minimum independent capture is one bypass plus one engaged 1 kHz packet at Attack minimum, Level/Tone/Sustain noon: [−42, −9, −30, −18, −3, −42] dB, four seconds each, two-second tail, unchanged reference/interface. It tests new operating levels and floor proximity with two previously unseen recoveries. Agreement supports interpolation; persistent early-trajectory differences at the same gain challenge the one-state autonomous law; errors only near recapture implicate the knee/attack boundary. Save full predictions before recording. Add a maximum-Attack pass only if the revised fast stage needs an independent check.</li>
+</ol>
+<p>Across the pedal collection, BF-3 already has a separate prototype handoff; NS-2 near-threshold memory remains the next distinct capture question. There is no need to collect more CS-3 steps merely to refine one aggregate percentage.</p>
+
+<h2>7. Reproduction and artifacts</h2>
+<pre>cd <repo>
+OPENBLAS_NUM_THREADS=1 MPLCONFIGDIR=tools/research/.mpl-cache \
+  python tools/research/analyze_cs3_crossed.py
+OPENBLAS_NUM_THREADS=1 MPLCONFIGDIR=tools/research/.mpl-cache \
+  python tools/research/fit_cs3_release_candidate.py
+OPENBLAS_NUM_THREADS=1 MPLCONFIGDIR=tools/research/.mpl-cache \
+  python tools/research/validate_cs3_candidate_plucks.py</pre>
+<p>The scripts require NumPy, SciPy, SoundFile, Numba and Matplotlib. Raw WAVs remain local. Older sidecars can be loaded from the frozen Git commit. The preregistered <a href="cs3_crossed_results.json">crossed results</a>, exploratory <a href="cs3_release_candidate_results.json">candidate results</a>, and independent-parameter <a href="cs3_candidate_plucks_results.json">picked-note checks</a> are separate artifacts. Scripts: <a href="analyze_cs3_crossed.py">frozen comparison</a>, <a href="fit_cs3_release_candidate.py">candidate fitting/rendering</a>, <a href="validate_cs3_candidate_plucks.py">picked-note validation</a>. Full logs and three figures are committed alongside this report.</p>
+</html>

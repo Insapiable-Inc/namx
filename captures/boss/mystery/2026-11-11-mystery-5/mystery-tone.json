@@ -1,0 +1,45 @@
+{
+  "take": "mystery-tone",
+  "pedal": "A pedal the user chose, unknown to the analysis \u2014 blind test (mono: the pedal's input -> its mono output)",
+  "bypass": false,
+  "settings": {
+    "Pedal": "?",
+    "Settings": "?"
+  },
+  "note": "",
+  "signal": {
+    "type": "sine",
+    "freq": 440,
+    "seconds": 10,
+    "level_db": -12,
+    "tail": 3
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -18.65,
+    "loop": -24.95
+  },
+  "latency_samples": 455,
+  "latency_quality": 0.998,
+  "xruns": 0,
+  "played_sha256": "780bfb6ce55a7cc22ad66bbcc95cde06705935cd1f051ba9fd88b6a0acc64dd9",
+  "recorded_at": "2026-11-11T23:25:32",
+  "tool_commit": "33a7667b36bc1bee28d6b52a336be1a796eb1e58",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX4",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Boss MYSTERY on its 9 V adapter: the guitar DI dataset. Input from interface out 3; OUTPUT -> input 2; INST, AIR off, pad on, gain fully counter-clockwise."
+  }
+}

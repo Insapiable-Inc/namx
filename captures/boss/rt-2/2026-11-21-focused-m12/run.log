@@ -1,0 +1,237 @@
+
+=== 2026-11-21T14:20:00 · run tools/capture/plans/rt-2-focused-m12.json · tool 7fae975cd3fbe22da658ce6398b7cddbc63093bc-dirty
+
+[1/29] bypass-reference: 5 signals, 37 s: sweep 35-16000 Hz, 4 s at -36 dB + 0.5 s; 110 Hz at -36/-30/-24/-18/-12/-6/0 dB, 0.6 s each + 0.2 s gaps + 0.5 s; 441 Hz at -36/-30/-24/-18/-12/-6/0 dB, 0.6 s each + 0.2 s gaps + 0.5 s; white noise at -36/-24/-18/-12/-6/0/-24 dB, 1.25 s each + 0.5 s; captures/di/funk.wav, 10.0 s + 1 s
+  pedal OFF (bypassed)
+  Start in bypass with the CHECK light off. Use the 9 V adapter, Scarlett out 3 to INPUT A, OUTPUT A to input 2 and OUTPUT B to input 1. Keep the out 4 to input 5 loopback connected.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.2 dBFS · B -13.2 dBFS · loopback -12.9 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  PROBLEM: sound where nothing was played (-50 dBFS): is the pedal really bypassed?
+  Enter = keep, r = redo: (Enter)
+
+[2/29] m1-both-moving-check: white noise, 24 s at -12 dB
+  pedal ON · Mode I · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance DRIVE 7:00 · Fast 12:00 · Slow 9:00 (switch it on)
+  Effect on, LED green (hold the RT-2's own pedal if it's red). Mode I, Rise/Fall FAST. Knob 1: Level (the inner knob) at 12:00 — at 7:00 it mutes the pedal, which is what silenced the 2026-11-18 run; the outer ring twice: Drive Knob toggle to BALANCE, ring to 12:00; then toggle to DRIVE, ring to 7:00. Look at Level again after turning the ring. Knob 2: Fast (inner) at 12:00, Slow (outer ring) at 9:00. Give the rotors 10 s. If the take comes out silent, Level is down: set it to 12:00 and press r.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -30.3 dBFS · B -29.9 dBFS · loopback -25.4 dBFS · latency 454 samples (9.46 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[3/29] m1-both-drive0700: 5 signals, 37 s: sweep 35-16000 Hz, 4 s at -36 dB + 0.5 s; 110 Hz at -36/-30/-24/-18/-12/-6/0 dB, 0.6 s each + 0.2 s gaps + 0.5 s; 441 Hz at -36/-30/-24/-18/-12/-6/0 dB, 0.6 s each + 0.2 s gaps + 0.5 s; white noise at -36/-24/-18/-12/-6/0/-24 dB, 1.25 s each + 0.5 s; captures/di/funk.wav, 10.0 s + 1 s
+  pedal ON · Mode I · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance DRIVE 7:00 · Fast 12:00 · Slow 7:00 (changed)
+  Turn Slow fully down. Wait for the rotor lights to stand still. Keep the pedal engaged and the rotors parked for every remaining take.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -12.0 dBFS · B -11.9 dBFS · loopback -12.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[4/29] m1-drum-check: white noise, 8 s at -18 dB
+  pedal ON · Mode I · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance BALANCE 7:00 (changed) · Fast 12:00 · Slow 7:00
+  Select BALANCE. Move the ring away from the stop and back to 7:00 to store drum only. Drive stays at its minimum.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -44.7 dBFS · B -44.6 dBFS · loopback -31.4 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[5/29] m1-drum-drive0700: 5 signals, 37 s: sweep 35-16000 Hz, 4 s at -36 dB + 0.5 s; 110 Hz at -36/-30/-24/-18/-12/-6/0 dB, 0.6 s each + 0.2 s gaps + 0.5 s; 441 Hz at -36/-30/-24/-18/-12/-6/0 dB, 0.6 s each + 0.2 s gaps + 0.5 s; white noise at -36/-24/-18/-12/-6/0/-24 dB, 1.25 s each + 0.5 s; captures/di/funk.wav, 10.0 s + 1 s
+  pedal ON · Mode I · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance BALANCE 7:00 · Fast 12:00 · Slow 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -10.1 dBFS · B -10.0 dBFS · loopback -12.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[6/29] m1-horn-check: white noise, 8 s at -18 dB
+  pedal ON · Mode I · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance BALANCE 5:00 (changed) · Fast 12:00 · Slow 7:00
+  Leave the toggle on BALANCE and turn the ring fully up to store horn only.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -31.3 dBFS · B -31.7 dBFS · loopback -31.4 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[7/29] m1-horn-drive0700: 5 signals, 37 s: sweep 35-16000 Hz, 4 s at -36 dB + 0.5 s; 110 Hz at -36/-30/-24/-18/-12/-6/0 dB, 0.6 s each + 0.2 s gaps + 0.5 s; 441 Hz at -36/-30/-24/-18/-12/-6/0 dB, 0.6 s each + 0.2 s gaps + 0.5 s; white noise at -36/-24/-18/-12/-6/0/-24 dB, 1.25 s each + 0.5 s; captures/di/funk.wav, 10.0 s + 1 s
+  pedal ON · Mode I · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance BALANCE 5:00 · Fast 12:00 · Slow 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.9 dBFS · B -14.4 dBFS · loopback -12.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[8/29] m1-horn-drive0900: 5 signals, 37 s: sweep 35-16000 Hz, 4 s at -36 dB + 0.5 s; 110 Hz at -36/-30/-24/-18/-12/-6/0 dB, 0.6 s each + 0.2 s gaps + 0.5 s; 441 Hz at -36/-30/-24/-18/-12/-6/0 dB, 0.6 s each + 0.2 s gaps + 0.5 s; white noise at -36/-24/-18/-12/-6/0/-24 dB, 1.25 s each + 0.5 s; captures/di/funk.wav, 10.0 s + 1 s
+  pedal ON · Mode I · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance DRIVE 9:00 (changed) · Fast 12:00 · Slow 7:00
+  Select DRIVE, then turn the ring to 9:00. Leave this Drive setting stored through the drum and both-rotor takes.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -17.1 dBFS · B -17.5 dBFS · loopback -12.9 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[9/29] m1-drum-drive0900: 5 signals, 37 s: sweep 35-16000 Hz, 4 s at -36 dB + 0.5 s; 110 Hz at -36/-30/-24/-18/-12/-6/0 dB, 0.6 s each + 0.2 s gaps + 0.5 s; 441 Hz at -36/-30/-24/-18/-12/-6/0 dB, 0.6 s each + 0.2 s gaps + 0.5 s; white noise at -36/-24/-18/-12/-6/0/-24 dB, 1.25 s each + 0.5 s; captures/di/funk.wav, 10.0 s + 1 s
+  pedal ON · Mode I · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance BALANCE 7:00 (changed) · Fast 12:00 · Slow 7:00
+  Select BALANCE, then turn the ring fully down for drum only.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -14.9 dBFS · B -14.8 dBFS · loopback -12.9 dBFS · latency 578 samples (12.04 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[10/29] m1-both-drive0900: 5 signals, 37 s: sweep 35-16000 Hz, 4 s at -36 dB + 0.5 s; 110 Hz at -36/-30/-24/-18/-12/-6/0 dB, 0.6 s each + 0.2 s gaps + 0.5 s; 441 Hz at -36/-30/-24/-18/-12/-6/0 dB, 0.6 s each + 0.2 s gaps + 0.5 s; white noise at -36/-24/-18/-12/-6/0/-24 dB, 1.25 s each + 0.5 s; captures/di/funk.wav, 10.0 s + 1 s
+  pedal ON · Mode I · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance BALANCE 12:00 (changed) · Fast 12:00 · Slow 7:00
+  With the toggle still on BALANCE, turn the ring to noon. Both rotors stay in the mix for the rest of the session.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.9 dBFS · B -20.2 dBFS · loopback -12.9 dBFS · latency 448 samples (9.33 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[11/29] m1-both-drive0900-repeat: 5 signals, 37 s: sweep 35-16000 Hz, 4 s at -36 dB + 0.5 s; 110 Hz at -36/-30/-24/-18/-12/-6/0 dB, 0.6 s each + 0.2 s gaps + 0.5 s; 441 Hz at -36/-30/-24/-18/-12/-6/0 dB, 0.6 s each + 0.2 s gaps + 0.5 s; white noise at -36/-24/-18/-12/-6/0/-24 dB, 1.25 s each + 0.5 s; captures/di/funk.wav, 10.0 s + 1 s
+  pedal ON · Mode I · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance BALANCE 12:00 · Fast 12:00 · Slow 7:00
+  Leave every control in place. This identical take measures the pedal’s repeatability at the parked angle.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.9 dBFS · B -20.2 dBFS · loopback -12.9 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[12/29] m1-both-drive1200: 5 signals, 37 s: sweep 35-16000 Hz, 4 s at -36 dB + 0.5 s; 110 Hz at -36/-30/-24/-18/-12/-6/0 dB, 0.6 s each + 0.2 s gaps + 0.5 s; 441 Hz at -36/-30/-24/-18/-12/-6/0 dB, 0.6 s each + 0.2 s gaps + 0.5 s; white noise at -36/-24/-18/-12/-6/0/-24 dB, 1.25 s each + 0.5 s; captures/di/funk.wav, 10.0 s + 1 s
+  pedal ON · Mode I · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance DRIVE 12:00 (changed) · Fast 12:00 · Slow 7:00
+  Select DRIVE. The ring already points to noon from setting Balance. Move it away and back to noon so Drive also registers noon.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -23.6 dBFS · B -23.8 dBFS · loopback -12.9 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[13/29] m1-both-drive1200-lead: captures/di/lead.wav from 2 s, 18.0 s
+  pedal ON · Mode I · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance DRIVE 12:00 · Fast 12:00 · Slow 7:00
+  Leave all controls in place. This separate lead excerpt checks the result on playing held out of the fit.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -28.8 dBFS · B -29.2 dBFS · loopback -25.2 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[14/29] m1-both-drive0300: 5 signals, 37 s: sweep 35-16000 Hz, 4 s at -36 dB + 0.5 s; 110 Hz at -36/-30/-24/-18/-12/-6/0 dB, 0.6 s each + 0.2 s gaps + 0.5 s; 441 Hz at -36/-30/-24/-18/-12/-6/0 dB, 0.6 s each + 0.2 s gaps + 0.5 s; white noise at -36/-24/-18/-12/-6/0/-24 dB, 1.25 s each + 0.5 s; captures/di/funk.wav, 10.0 s + 1 s
+  pedal ON · Mode I · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance DRIVE 3:00 (changed) · Fast 12:00 · Slow 7:00
+  Keep the toggle on DRIVE and turn the ring to 3:00.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -24.5 dBFS · B -25.4 dBFS · loopback -12.9 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[15/29] m1-both-drive0500: 5 signals, 37 s: sweep 35-16000 Hz, 4 s at -36 dB + 0.5 s; 110 Hz at -36/-30/-24/-18/-12/-6/0 dB, 0.6 s each + 0.2 s gaps + 0.5 s; 441 Hz at -36/-30/-24/-18/-12/-6/0 dB, 0.6 s each + 0.2 s gaps + 0.5 s; white noise at -36/-24/-18/-12/-6/0/-24 dB, 1.25 s each + 0.5 s; captures/di/funk.wav, 10.0 s + 1 s
+  pedal ON · Mode I · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance DRIVE 5:00 (changed) · Fast 12:00 · Slow 7:00
+  Turn the DRIVE ring fully clockwise.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -24.7 dBFS · B -25.6 dBFS · loopback -12.9 dBFS · latency 578 samples (12.04 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[16/29] m2-both-moving-check: white noise, 24 s at -12 dB
+  pedal ON · Mode II (changed) · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance DRIVE 7:00 (changed) · Fast 12:00 · Slow 9:00 (changed)
+  Second block: Mode toggle to II, nothing else on the left side. Balance is still stored at 12:00 from the last takes; the Drive Knob toggle is on DRIVE: turn the ring fully down to 7:00. Look at Level (the inner knob) again after turning the ring: 12:00. Knob 2: Slow (outer ring) back up to 9:00, Fast stays at 12:00. Give the rotors 10 s.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -29.3 dBFS · B -30.0 dBFS · loopback -25.4 dBFS · latency 578 samples (12.04 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[17/29] m2-both-drive0700: 5 signals, 37 s: sweep 35-16000 Hz, 4 s at -36 dB + 0.5 s; 110 Hz at -36/-30/-24/-18/-12/-6/0 dB, 0.6 s each + 0.2 s gaps + 0.5 s; 441 Hz at -36/-30/-24/-18/-12/-6/0 dB, 0.6 s each + 0.2 s gaps + 0.5 s; white noise at -36/-24/-18/-12/-6/0/-24 dB, 1.25 s each + 0.5 s; captures/di/funk.wav, 10.0 s + 1 s
+  pedal ON · Mode II · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance DRIVE 7:00 · Fast 12:00 · Slow 7:00 (changed)
+  Turn Slow fully down. Wait for the rotor lights to stand still. Keep the pedal engaged and the rotors parked for every remaining take.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -11.6 dBFS · B -11.6 dBFS · loopback -12.9 dBFS · latency 578 samples (12.04 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[18/29] m2-drum-check: white noise, 8 s at -18 dB
+  pedal ON · Mode II · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance BALANCE 7:00 (changed) · Fast 12:00 · Slow 7:00
+  Select BALANCE. Move the ring away from the stop and back to 7:00 to store drum only. Drive stays at its minimum.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -44.2 dBFS · B -44.1 dBFS · loopback -31.4 dBFS · latency 578 samples (12.04 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[19/29] m2-drum-drive0700: 5 signals, 37 s: sweep 35-16000 Hz, 4 s at -36 dB + 0.5 s; 110 Hz at -36/-30/-24/-18/-12/-6/0 dB, 0.6 s each + 0.2 s gaps + 0.5 s; 441 Hz at -36/-30/-24/-18/-12/-6/0 dB, 0.6 s each + 0.2 s gaps + 0.5 s; white noise at -36/-24/-18/-12/-6/0/-24 dB, 1.25 s each + 0.5 s; captures/di/funk.wav, 10.0 s + 1 s
+  pedal ON · Mode II · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance BALANCE 7:00 · Fast 12:00 · Slow 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -10.0 dBFS · B -10.0 dBFS · loopback -12.9 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[20/29] m2-horn-check: white noise, 8 s at -18 dB
+  pedal ON · Mode II · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance BALANCE 5:00 (changed) · Fast 12:00 · Slow 7:00
+  Leave the toggle on BALANCE and turn the ring fully up to store horn only.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -30.1 dBFS · B -29.8 dBFS · loopback -31.4 dBFS · latency 576 samples (12.00 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[21/29] m2-horn-drive0700: 5 signals, 37 s: sweep 35-16000 Hz, 4 s at -36 dB + 0.5 s; 110 Hz at -36/-30/-24/-18/-12/-6/0 dB, 0.6 s each + 0.2 s gaps + 0.5 s; 441 Hz at -36/-30/-24/-18/-12/-6/0 dB, 0.6 s each + 0.2 s gaps + 0.5 s; white noise at -36/-24/-18/-12/-6/0/-24 dB, 1.25 s each + 0.5 s; captures/di/funk.wav, 10.0 s + 1 s
+  pedal ON · Mode II · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance BALANCE 5:00 · Fast 12:00 · Slow 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -12.9 dBFS · B -12.2 dBFS · loopback -12.9 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[22/29] m2-horn-drive0900: 5 signals, 37 s: sweep 35-16000 Hz, 4 s at -36 dB + 0.5 s; 110 Hz at -36/-30/-24/-18/-12/-6/0 dB, 0.6 s each + 0.2 s gaps + 0.5 s; 441 Hz at -36/-30/-24/-18/-12/-6/0 dB, 0.6 s each + 0.2 s gaps + 0.5 s; white noise at -36/-24/-18/-12/-6/0/-24 dB, 1.25 s each + 0.5 s; captures/di/funk.wav, 10.0 s + 1 s
+  pedal ON · Mode II · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance DRIVE 9:00 (changed) · Fast 12:00 · Slow 7:00
+  Select DRIVE, then turn the ring to 9:00. Leave this Drive setting stored through the drum and both-rotor takes.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -18.3 dBFS · B -18.4 dBFS · loopback -12.9 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: r
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -18.1 dBFS · B -18.4 dBFS · loopback -12.9 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[23/29] m2-drum-drive0900: 5 signals, 37 s: sweep 35-16000 Hz, 4 s at -36 dB + 0.5 s; 110 Hz at -36/-30/-24/-18/-12/-6/0 dB, 0.6 s each + 0.2 s gaps + 0.5 s; 441 Hz at -36/-30/-24/-18/-12/-6/0 dB, 0.6 s each + 0.2 s gaps + 0.5 s; white noise at -36/-24/-18/-12/-6/0/-24 dB, 1.25 s each + 0.5 s; captures/di/funk.wav, 10.0 s + 1 s
+  pedal ON · Mode II · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance BALANCE 7:00 (changed) · Fast 12:00 · Slow 7:00
+  Select BALANCE, then turn the ring fully down for drum only.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -16.2 dBFS · B -16.2 dBFS · loopback -12.9 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[24/29] m2-both-drive0900: 5 signals, 37 s: sweep 35-16000 Hz, 4 s at -36 dB + 0.5 s; 110 Hz at -36/-30/-24/-18/-12/-6/0 dB, 0.6 s each + 0.2 s gaps + 0.5 s; 441 Hz at -36/-30/-24/-18/-12/-6/0 dB, 0.6 s each + 0.2 s gaps + 0.5 s; white noise at -36/-24/-18/-12/-6/0/-24 dB, 1.25 s each + 0.5 s; captures/di/funk.wav, 10.0 s + 1 s
+  pedal ON · Mode II · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance BALANCE 12:00 (changed) · Fast 12:00 · Slow 7:00
+  With the toggle still on BALANCE, turn the ring to noon. Both rotors stay in the mix for the rest of the session.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -21.8 dBFS · B -21.9 dBFS · loopback -12.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[25/29] m2-both-drive0900-repeat: 5 signals, 37 s: sweep 35-16000 Hz, 4 s at -36 dB + 0.5 s; 110 Hz at -36/-30/-24/-18/-12/-6/0 dB, 0.6 s each + 0.2 s gaps + 0.5 s; 441 Hz at -36/-30/-24/-18/-12/-6/0 dB, 0.6 s each + 0.2 s gaps + 0.5 s; white noise at -36/-24/-18/-12/-6/0/-24 dB, 1.25 s each + 0.5 s; captures/di/funk.wav, 10.0 s + 1 s
+  pedal ON · Mode II · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance BALANCE 12:00 · Fast 12:00 · Slow 7:00
+  Leave every control in place. This identical take measures the pedal’s repeatability at the parked angle.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -21.8 dBFS · B -21.9 dBFS · loopback -12.9 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[26/29] m2-both-drive1200: 5 signals, 37 s: sweep 35-16000 Hz, 4 s at -36 dB + 0.5 s; 110 Hz at -36/-30/-24/-18/-12/-6/0 dB, 0.6 s each + 0.2 s gaps + 0.5 s; 441 Hz at -36/-30/-24/-18/-12/-6/0 dB, 0.6 s each + 0.2 s gaps + 0.5 s; white noise at -36/-24/-18/-12/-6/0/-24 dB, 1.25 s each + 0.5 s; captures/di/funk.wav, 10.0 s + 1 s
+  pedal ON · Mode II · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance DRIVE 12:00 (changed) · Fast 12:00 · Slow 7:00
+  Select DRIVE. The ring already points to noon from setting Balance. Move it away and back to noon so Drive also registers noon.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -25.3 dBFS · B -25.0 dBFS · loopback -12.9 dBFS · latency 576 samples (12.00 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[27/29] m2-both-drive1200-lead: captures/di/lead.wav from 2 s, 18.0 s
+  pedal ON · Mode II · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance DRIVE 12:00 · Fast 12:00 · Slow 7:00
+  Leave all controls in place. This separate lead excerpt checks the result on playing held out of the fit.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -30.0 dBFS · B -30.6 dBFS · loopback -25.2 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[28/29] m2-both-drive0300: 5 signals, 37 s: sweep 35-16000 Hz, 4 s at -36 dB + 0.5 s; 110 Hz at -36/-30/-24/-18/-12/-6/0 dB, 0.6 s each + 0.2 s gaps + 0.5 s; 441 Hz at -36/-30/-24/-18/-12/-6/0 dB, 0.6 s each + 0.2 s gaps + 0.5 s; white noise at -36/-24/-18/-12/-6/0/-24 dB, 1.25 s each + 0.5 s; captures/di/funk.wav, 10.0 s + 1 s
+  pedal ON · Mode II · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance DRIVE 3:00 (changed) · Fast 12:00 · Slow 7:00
+  Keep the toggle on DRIVE and turn the ring to 3:00.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -26.1 dBFS · B -26.8 dBFS · loopback -12.9 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[29/29] m2-both-drive0500: 5 signals, 37 s: sweep 35-16000 Hz, 4 s at -36 dB + 0.5 s; 110 Hz at -36/-30/-24/-18/-12/-6/0 dB, 0.6 s each + 0.2 s gaps + 0.5 s; 441 Hz at -36/-30/-24/-18/-12/-6/0 dB, 0.6 s each + 0.2 s gaps + 0.5 s; white noise at -36/-24/-18/-12/-6/0/-24 dB, 1.25 s each + 0.5 s; captures/di/funk.wav, 10.0 s + 1 s
+  pedal ON · Mode II · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance DRIVE 5:00 (changed) · Fast 12:00 · Slow 7:00
+  Turn the DRIVE ring fully clockwise.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -26.3 dBFS · B -27.2 dBFS · loopback -12.9 dBFS · latency 582 samples (12.12 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+All 29 takes are in captures/boss/rt-2/2026-11-21-focused-m12.

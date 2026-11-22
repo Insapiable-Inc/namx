@@ -1,0 +1,45 @@
+{
+  "take": "noise-floor",
+  "pedal": "Boss CE-5 Chorus Ensemble (wet only: Input -> Output A, a plug in Output B)",
+  "bypass": false,
+  "settings": {
+    "E.Level": "5:00",
+    "Rate": "12:00",
+    "Depth": "7:00",
+    "Low": "5:00",
+    "High": "5:00"
+  },
+  "note": "No signal: the wet path's hiss.",
+  "signal": {
+    "type": "silence",
+    "seconds": 10
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -65.01,
+    "loop": -92.32
+  },
+  "latency_samples": 583,
+  "latency_quality": 0.998,
+  "xruns": 0,
+  "played_sha256": "fb14df1ed49a6d5b71727842a16f8ac17f40ac87e2b774bf21bfb3691e345a49",
+  "recorded_at": "2026-10-27T11:12:19",
+  "tool_commit": "e37b4516a3f657f12398aaf62d76d63e8049c25e",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX4",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Scarlett 8i6 3rd gen; pedal feed: analogue out 3 (PCM 3, direct routing); loopback: out 4 -> line in 5; pedal into input 2, INST, AIR off, pad ON, gain min; no reamp box; calibration from the TR-2/DD-8 sessions; CE-5 on a 9 V power supply; wet only: Input -> Output A recorded, a patch cable in Output B (other end unconnected)"
+  }
+}

@@ -6,34 +6,27 @@
 
 #include "Common.h"
 #include "EffectBase.h"
+#include "Ge7Eq.h"
 
 namespace namx
 {
 
-// 4-band semi-parametric EQ + low/high cut (Audio EQ Cookbook biquads):
-//   Bass     low shelf    40–500 Hz   (default 250 — the old fixed band)
-//   Middle   peak, Q 0.7  200–2.5 kHz (default 1 kHz)
-//   High-Mid peak, Q 1.0  800–8 kHz   (default 3 kHz)
-//   Treble   high shelf   1.5–12 kHz  (default 4 kHz)
-//   Low Cut  2nd-order high-pass 20–500 Hz (20 = off)
-//   High Cut 2nd-order low-pass 2–20 kHz (20 kHz = off)
-// Lock-free: the GUI only stores gains/frequencies in atomics and bumps a version;
-// the audio thread owns every filter (coefficients and state) and recomputes the
-// coefficients at the top of the next block — no mutex, no skipped blocks, no shared
-// filter state (code review items 04, 18). Independent L/R state.
+// Equalizer: a model of a Boss GE-7 Equalizer (Ge7Eq.h) — its seven bands and Level in dB
+// (−15…+15), each band's frequency movable an octave either way — then a Low Cut and a High
+// Cut (2nd-order Butterworth, Audio EQ Cookbook; 20 Hz / 20 kHz = off).
+// Lock-free: the GUI only stores the settings in atomics and bumps a version; the audio
+// thread owns every filter (coefficients and state) and recomputes the coefficients at the
+// top of the next block — no mutex, no skipped blocks, no shared filter state (code review
+// items 04, 18). Independent L/R state.
 class EQProcessor : public EffectBase
 {
 public:
-    enum class Band : size_t
+    enum class Cut : size_t
     {
-        LOW_CUT = 0,
-        BASS,
-        MIDDLE,
-        HIGH_MID,
-        TREBLE,
-        HIGH_CUT
+        LOW = 0,
+        HIGH
     };
-    static constexpr size_t BANDS = 6;
+    static constexpr size_t CUTS = 2;
 
     EQProcessor();
 
@@ -41,19 +34,11 @@ public:
     void reset() override;
     void sync_right_channel() override;
 
-    void set_gain(Band b, double db);
-    void set_freq(Band b, double hz);
-
-    // Back-compat names (3-band era).
-    void set_low_gain(double db) {
-        set_gain(Band::BASS, db);
-    }
-    void set_mid_gain(double db) {
-        set_gain(Band::MIDDLE, db);
-    }
-    void set_treble_gain(double db) {
-        set_gain(Band::TREBLE, db);
-    }
+    void set_cut(Cut c, double hz);
+    // The sliders: 0–6 the bands (91 Hz … 3.3 kHz, then the shelf), 7 Level; dB.
+    void set_slider(size_t slider, double db);
+    // A band's frequency (ge7::BAND_HZ by default, an octave either way).
+    void set_frequency(size_t band, double hz);
 
 protected:
     void on_sample_rate_changed(double sr) override;
@@ -85,21 +70,24 @@ private:
         }
     };
 
-    Biquad design(Band b, double gain_db, double freq_hz) const;
-    bool active(Band b, double gain_db, double freq_hz) const;
+    Biquad design(Cut c, double freq_hz) const;
+    bool active(Cut c, double freq_hz) const;
     void apply_changes(); // audio thread: picks up new settings, then pending resets
     void reset_filters();
 
     // Written by the GUI (any order), read by the audio thread after `version`.
-    array<atomic<double>, BANDS> gain{}; // dB (shelf/peak bands)
-    array<atomic<double>, BANDS> freq{};
+    array<atomic<double>, CUTS> cut_hz{};
+    array<atomic<double>, ge7::SLIDER_COUNT> slider{};
+    array<atomic<double>, ge7::BAND_COUNT> frequency{};
     atomic<unsigned> version{1}; // bumped after every write
     atomic<bool> reset_pending{false};
 
     // Audio thread only.
     unsigned applied_version = 0;
-    array<Biquad, BANDS> filters_l, filters_r;
-    array<bool, BANDS> band_on{}; // band changes the signal (skip flat ones)
+    array<Biquad, CUTS> cuts_l, cuts_r;
+    array<bool, CUTS> cut_on{}; // the cut changes the signal (skip open ones)
+    ge7::Coefficients coeffs;
+    ge7::State state[2];
 };
 
 } // namespace namx

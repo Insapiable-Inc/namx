@@ -1,0 +1,116 @@
+{
+  "again/stabs": {
+    "old_band_rms_dB": 2.4044601313542233,
+    "prototype_band_rms_dB": 1.3094769210550963,
+    "rack_band_rms_dB": 1.309548081927325
+  },
+  "check-a/stabs": {
+    "old_band_rms_dB": 2.1558013332964054,
+    "prototype_band_rms_dB": 1.7621072715583455,
+    "rack_band_rms_dB": 1.753039779071757
+  },
+  "check-a/lead": {
+    "old_band_rms_dB": 1.944454347701269,
+    "prototype_band_rms_dB": 1.259681978925641,
+    "rack_band_rms_dB": 1.2622544428706641
+  },
+  "check-b/stabs": {
+    "old_band_rms_dB": 2.418161548552165,
+    "prototype_band_rms_dB": 0.5700323180288356,
+    "rack_band_rms_dB": 0.5704437367946414
+  },
+  "check-b/lead": {
+    "old_band_rms_dB": 3.3001743106795196,
+    "prototype_band_rms_dB": 0.5217515174085884,
+    "rack_band_rms_dB": 0.5229110134048278
+  },
+  "noon-guitar/stabs": {
+    "old_band_rms_dB": 1.964427446990688,
+    "prototype_band_rms_dB": 0.4905831203708462,
+    "rack_band_rms_dB": 0.490927900547093,
+    "release_vs_pedal_sweep_pct": [
+      4.652919185988479,
+      8.284543103340608,
+      7.919793972880225,
+      6.082078597370508
+    ],
+    "pedal_release_vs_pedal_sweep_pct": 5.162565359142487
+  },
+  "noon-guitar/chords": {
+    "old_band_rms_dB": 2.141280887977486,
+    "prototype_band_rms_dB": 1.1847762474140486,
+    "rack_band_rms_dB": 1.1848570438539288
+  },
+  "noon-guitar/lead": {
+    "old_band_rms_dB": 1.9656762229431148,
+    "prototype_band_rms_dB": 1.0426536608527541,
+    "rack_band_rms_dB": 1.0425854140610593
+  },
+  "noon-guitar/funk": {
+    "old_band_rms_dB": 3.0149655119384233,
+    "prototype_band_rms_dB": 1.1601682288507407,
+    "rack_band_rms_dB": 1.1605960201149947
+  },
+  "time-0300/stabs": {
+    "old_band_rms_dB": 2.8939799402454827,
+    "prototype_band_rms_dB": 0.9385238649169003,
+    "rack_band_rms_dB": 0.9401898539653499
+  },
+  "time-0500/stabs": {
+    "old_band_rms_dB": 4.185942788166859,
+    "prototype_band_rms_dB": 1.1577503708991619,
+    "rack_band_rms_dB": 1.1590604664985171
+  },
+  "time-0700/stabs": {
+    "old_band_rms_dB": 2.30380000997043,
+    "prototype_band_rms_dB": 0.9064722475419533,
+    "rack_band_rms_dB": 0.9055041836897497,
+    "release_vs_pedal_sweep_pct": [
+      3.116098498205286,
+      8.199537840788071,
+      6.765755178038772,
+      3.835489566176153
+    ],
+    "pedal_release_vs_pedal_sweep_pct": 5.485288803661927
+  },
+  "time-0900/stabs": {
+    "old_band_rms_dB": 1.594595421616793,
+    "prototype_band_rms_dB": 1.1400622521599513,
+    "rack_band_rms_dB": 1.1388434456327465
+  },
+  "tone-0300/stabs": {
+    "old_band_rms_dB": 1.7392990451977892,
+    "prototype_band_rms_dB": 0.4853411820009595,
+    "rack_band_rms_dB": 0.48583132770977117
+  },
+  "tone-0500/stabs": {
+    "old_band_rms_dB": 2.018807379279675,
+    "prototype_band_rms_dB": 0.5573896842022522,
+    "rack_band_rms_dB": 0.5580528998954891
+  },
+  "tone-0500-time-0500/stabs": {
+    "old_band_rms_dB": 4.822444032742565,
+    "prototype_band_rms_dB": 2.1740385156246456,
+    "rack_band_rms_dB": 2.1784234995955756
+  },
+  "tone-0500-time-0700/stabs": {
+    "old_band_rms_dB": 3.185757683061492,
+    "prototype_band_rms_dB": 0.45296433257093316,
+    "rack_band_rms_dB": 0.4529068863467335
+  },
+  "tone-0700/stabs": {
+    "old_band_rms_dB": 1.3029326524864335,
+    "prototype_band_rms_dB": 1.169849859958784,
+    "rack_band_rms_dB": 1.1705245386300118
+  },
+  "tone-0700-time-0500/stabs": {
+    "old_band_rms_dB": 4.470870327855008,
+    "prototype_band_rms_dB": 1.2169723147960445,
+    "rack_band_rms_dB": 1.2167287267456435
+  },
+  "tone-0700-time-0700/stabs": {
+    "old_band_rms_dB": 3.9638719210150057,
+    "prototype_band_rms_dB": 1.1428674120968225,
+    "rack_band_rms_dB": 1.1430455585948955
+  }
+}

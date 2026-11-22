@@ -1,0 +1,46 @@
+{
+  "take": "depth0-sweep-6",
+  "pedal": "Boss TR-2",
+  "bypass": false,
+  "settings": {
+    "Rate": "12:00",
+    "Wave": "12:00",
+    "Depth": "7:00"
+  },
+  "note": "Depth at minimum: the pedal's own tone and gain, and whether it distorts with level.",
+  "signal": {
+    "type": "sweep",
+    "f0": 20,
+    "f1": 20000,
+    "seconds": 10,
+    "level_db": -6
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -13.01,
+    "loop": -12.94
+  },
+  "latency_samples": 456,
+  "latency_quality": 0.998,
+  "xruns": 0,
+  "played_sha256": "5e00b7ef782d8bc9705688444557e2700a8eab79d2a8cb6b666be998e54ec5f0",
+  "recorded_at": "2026-10-26T18:55:14",
+  "tool_commit": "d5672f860195b80e340851a72e3f4c92cc9cae82",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX4",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Scarlett 8i6 3rd gen; pedal feed: analogue out 3 (PCM 3, direct routing); loopback: out 4 -> line in 5; pedal into input 2, INST, AIR off, pad ON, gain min; no reamp box; reference = bridge humbucker, hardest of heavy palm mutes (-13.5 dBFS hold) and hard open strums (-13.9); TR-2 on battery"
+  }
+}

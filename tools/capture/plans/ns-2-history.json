@@ -1,0 +1,60 @@
+{
+  "pedal": "Boss NS-2 Noise Suppressor (mono: Input -> Output; Send/Return empty)",
+  "comment": "Matched quiet/loud history at three selected levels. Keep Threshold at the untouched locator 3:00 position; Mode Reduction. Engaged minimum Decay, engaged maximum Decay, then true bypass. Each long take has deliberately silent 24 s resets; let it run. No manual switching during a take.",
+  "knobs": [
+    "Threshold",
+    "Decay",
+    "Mode"
+  ],
+  "takes": [
+    {
+      "name": "history-threshold-0300-decay-0700",
+      "settings": {
+        "Threshold": "3:00",
+        "Decay": "7:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/stimuli/ns-2-history-1000.wav",
+        "level_db": 0,
+        "tail": 2
+      },
+      "note": "NS-2 ON, Mode Reduction. Leave Threshold exactly where it was for the locator. Set Decay fully counter-clockwise. The 24-second silent stretches are intentional resets; do not stop, switch or adjust anything during the take."
+    },
+    {
+      "name": "history-threshold-0300-decay-0500",
+      "settings": {
+        "Threshold": "3:00",
+        "Decay": "5:00",
+        "Mode": "Reduction"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/stimuli/ns-2-history-1000.wav",
+        "level_db": 0,
+        "tail": 2
+      },
+      "note": "NS-2 ON, Mode Reduction. Leave Threshold exactly where it was for the locator. Set Decay fully clockwise. The 24-second silent stretches are intentional resets; do not stop, switch or adjust anything during the take."
+    },
+    {
+      "name": "bypass-history-check-1000",
+      "bypass": true,
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -56,
+          -54,
+          -44,
+          -12
+        ],
+        "step_seconds": 2,
+        "gap_seconds": 0,
+        "level_db": 0,
+        "tail": 2
+      },
+      "note": "Switch NS-2 OFF / BYPASSED now. Leave all knobs, cables and interface gain unchanged. This short true-bypass check verifies the locator calibration at the probe levels."
+    }
+  ]
+}

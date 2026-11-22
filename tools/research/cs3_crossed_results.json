@@ -1,0 +1,375 @@
+{
+  "source_model_commit": "0a346743de472e253869e43887a02727c6a73322",
+  "protocol_sha256": "73bc23a762cd2b18c901430822f81658c010e4541fc0f452447174a28aeaff20",
+  "previous_results_sha256": "9012fc6daa7bbe355e9479573bf3745a9c666999510b2b408609eaa5bdcb724d",
+  "integrity": {
+    "bypass-crossed-1000": {
+      "recorded_at": "2026-10-30T14:41:53",
+      "settings": {},
+      "xruns": 0,
+      "latency_samples": 455,
+      "marker_quality": 0.998,
+      "played_sha256": "a79749720399d0f115536e822ba13baf7875fd5c40cffe5719c58b0c7ba77090",
+      "recorded_sha256": "2e540e6fec1ffa381baf59f57bfa6c7901667a1a0e103cf8f9c1e20c51c771dd",
+      "abs_ge_0999": 0,
+      "tail_rms_dbfs": [
+        -101.03352597616225,
+        -100.24851019057365
+      ],
+      "aligned_loop_edge_offsets_ms": [
+        0,
+        1,
+        0,
+        0,
+        1
+      ]
+    },
+    "attack-0700-crossed-1000": {
+      "recorded_at": "2026-10-30T14:44:13",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Attack": "7:00",
+        "Sustain": "12:00"
+      },
+      "xruns": 0,
+      "latency_samples": 577,
+      "marker_quality": 0.998,
+      "played_sha256": "a79749720399d0f115536e822ba13baf7875fd5c40cffe5719c58b0c7ba77090",
+      "recorded_sha256": "883ab38143f9bb3a4cfa4bbceedd1be26e4ff44c3a760ad5c010a0747d617182",
+      "abs_ge_0999": 0,
+      "tail_rms_dbfs": [
+        -100.9079251514141,
+        -100.37480859932805
+      ],
+      "aligned_loop_edge_offsets_ms": [
+        0,
+        1,
+        0,
+        0,
+        1
+      ]
+    }
+  },
+  "loopback_engaged_vs_bypass": [
+    {
+      "input_db": -36,
+      "gain_change_db": 3.42946801632454e-06,
+      "phase_equivalent_delay_samples": 5.700122474353124e-05
+    },
+    {
+      "input_db": -6,
+      "gain_change_db": -7.494553956458285e-05,
+      "phase_equivalent_delay_samples": 2.592273390927255e-06
+    },
+    {
+      "input_db": -36,
+      "gain_change_db": -0.00015988281441257045,
+      "phase_equivalent_delay_samples": 0.0001696704922764834
+    },
+    {
+      "input_db": -24,
+      "gain_change_db": -3.943530343847935e-06,
+      "phase_equivalent_delay_samples": 6.312657124454013e-06
+    },
+    {
+      "input_db": -12,
+      "gain_change_db": 1.660383630508411e-05,
+      "phase_equivalent_delay_samples": 6.491400633499946e-07
+    },
+    {
+      "input_db": -24,
+      "gain_change_db": -4.916200807146943e-05,
+      "phase_equivalent_delay_samples": 1.7621696685266192e-05
+    }
+  ],
+  "bypass_vs_previous_session_same_input_level": [
+    {
+      "input_db": -36,
+      "channels": {
+        "pedal": {
+          "gain_change_db": 0.0014001148040912602,
+          "phase_equivalent_delay_samples": 5.6123443916346686e-05
+        },
+        "loop": {
+          "gain_change_db": -0.00015457392600678316,
+          "phase_equivalent_delay_samples": -4.069547974006665e-05
+        }
+      }
+    },
+    {
+      "input_db": -6,
+      "channels": {
+        "pedal": {
+          "gain_change_db": 0.0014377650714211038,
+          "phase_equivalent_delay_samples": 4.2448934624274415e-05
+        },
+        "loop": {
+          "gain_change_db": 8.772237563476835e-06,
+          "phase_equivalent_delay_samples": -2.9283863149407985e-06
+        }
+      }
+    },
+    {
+      "input_db": -36,
+      "channels": {
+        "pedal": {
+          "gain_change_db": 0.0012876336382300368,
+          "phase_equivalent_delay_samples": -4.57520416414169e-06
+        },
+        "loop": {
+          "gain_change_db": -8.421515829722889e-05,
+          "phase_equivalent_delay_samples": -0.00011192220026769378
+        }
+      }
+    },
+    {
+      "input_db": -24,
+      "channels": {
+        "pedal": {
+          "gain_change_db": 0.0014136483484337987,
+          "phase_equivalent_delay_samples": 3.8575470527185786e-05
+        },
+        "loop": {
+          "gain_change_db": -6.378559132238877e-05,
+          "phase_equivalent_delay_samples": -9.913684007248396e-06
+        }
+      }
+    },
+    {
+      "input_db": -12,
+      "channels": {
+        "pedal": {
+          "gain_change_db": 0.001354122484788476,
+          "phase_equivalent_delay_samples": 2.9621705205916245e-05
+        },
+        "loop": {
+          "gain_change_db": -7.922076555243675e-05,
+          "phase_equivalent_delay_samples": -1.4191010757108244e-06
+        }
+      }
+    },
+    {
+      "input_db": -24,
+      "channels": {
+        "pedal": {
+          "gain_change_db": 0.0013733039463724108,
+          "phase_equivalent_delay_samples": 3.891890240943941e-05
+        },
+        "loop": {
+          "gain_change_db": -5.8852131913672245e-05,
+          "phase_equivalent_delay_samples": -6.758189922203164e-06
+        }
+      }
+    }
+  ],
+  "return_to_minimum_attack_gain": [
+    {
+      "input_db": -36,
+      "crossed_gain_db": 3.5274927320492053,
+      "previous_attack_0700_gain_db": 3.5589020713414365,
+      "change_from_attack_0700_db": -0.03140933929223122,
+      "previous_attack_0500_gain_db": 4.659157329928442,
+      "change_from_attack_0500_db": -1.131664597879237
+    },
+    {
+      "input_db": -6,
+      "crossed_gain_db": -23.68722247734386,
+      "previous_attack_0700_gain_db": -23.66601666887966,
+      "change_from_attack_0700_db": -0.02120580846419884,
+      "previous_attack_0500_gain_db": -21.17279136423918,
+      "change_from_attack_0500_db": -2.5144311131046777
+    },
+    {
+      "input_db": -36,
+      "crossed_gain_db": 3.5293581620451393,
+      "previous_attack_0700_gain_db": 3.5589020713414365,
+      "change_from_attack_0700_db": -0.029543909296297244,
+      "previous_attack_0500_gain_db": 4.659157329928442,
+      "change_from_attack_0500_db": -1.129799167883303
+    },
+    {
+      "input_db": -24,
+      "crossed_gain_db": -5.890271374991034,
+      "previous_attack_0700_gain_db": -5.8686490950378065,
+      "change_from_attack_0700_db": -0.02162227995322752,
+      "previous_attack_0500_gain_db": -3.8115864623741773,
+      "change_from_attack_0500_db": -2.0786849126168567
+    },
+    {
+      "input_db": -12,
+      "crossed_gain_db": -17.74215232625251,
+      "previous_attack_0700_gain_db": -17.720985246032626,
+      "change_from_attack_0700_db": -0.02116708021988245,
+      "previous_attack_0500_gain_db": -15.367684492033128,
+      "change_from_attack_0500_db": -2.374467834219381
+    },
+    {
+      "input_db": -24,
+      "crossed_gain_db": -5.890037707402863,
+      "previous_attack_0700_gain_db": -5.8686490950378065,
+      "change_from_attack_0700_db": -0.021388612365056403,
+      "previous_attack_0500_gain_db": -3.8115864623741773,
+      "change_from_attack_0500_db": -2.0784512450286856
+    }
+  ],
+  "frozen_hypothesis_evaluation": {
+    "frozen_baseline": [
+      {
+        "measured": {
+          "start_gain_db": -23.68722247734386,
+          "final_gain_db": 3.5293581620451393,
+          "excursion_db": 27.216580639388997,
+          "t63_ms": 466,
+          "t90_ms": 734
+        },
+        "predicted": {
+          "start_gain_db": -22.576029746531425,
+          "final_gain_db": 3.4933199683664884,
+          "excursion_db": 26.069349714897914,
+          "t63_ms": 388,
+          "t90_ms": 586
+        },
+        "absolute_gain_rms_db": 2.2383878885292727,
+        "endpoint_normalized_shape_rms_fraction": 0.07552437850863757,
+        "endpoint_normalized_shape_rms_db_equivalent": 2.0555153379200717,
+        "t63_error_ms": -78,
+        "t90_error_ms": -148,
+        "drop_at_s": 8,
+        "from_db": -6,
+        "to_db": -36,
+        "effective_release_tau_ms": 189.1
+      },
+      {
+        "measured": {
+          "start_gain_db": -17.74215232625251,
+          "final_gain_db": -5.890037707402863,
+          "excursion_db": 11.852114618849646,
+          "t63_ms": 205,
+          "t90_ms": 304
+        },
+        "predicted": {
+          "start_gain_db": -16.646229744569766,
+          "final_gain_db": -4.786629450053773,
+          "excursion_db": 11.859600294515992,
+          "t63_ms": 226,
+          "t90_ms": 362
+        },
+        "absolute_gain_rms_db": 0.9668551357202488,
+        "endpoint_normalized_shape_rms_fraction": 0.03620454111114152,
+        "endpoint_normalized_shape_rms_db_equivalent": 0.4291003709721034,
+        "t63_error_ms": 21,
+        "t90_error_ms": 58,
+        "drop_at_s": 20,
+        "from_db": -12,
+        "to_db": -24,
+        "effective_release_tau_ms": 189.1
+      }
+    ],
+    "destination_level_effect": [
+      {
+        "measured": {
+          "start_gain_db": -23.68722247734386,
+          "final_gain_db": 3.5293581620451393,
+          "excursion_db": 27.216580639388997,
+          "t63_ms": 466,
+          "t90_ms": 734
+        },
+        "predicted": {
+          "start_gain_db": -22.627833802430448,
+          "final_gain_db": 3.493319968366056,
+          "excursion_db": 26.121153770796504,
+          "t63_ms": 500,
+          "t90_ms": 755
+        },
+        "absolute_gain_rms_db": 0.4453396261089789,
+        "endpoint_normalized_shape_rms_fraction": 0.02778005702920251,
+        "endpoint_normalized_shape_rms_db_equivalent": 0.7560781623021152,
+        "t63_error_ms": 34,
+        "t90_error_ms": 21,
+        "drop_at_s": 8,
+        "from_db": -6,
+        "to_db": -36,
+        "effective_release_tau_ms": 243.1095830451484
+      },
+      {
+        "measured": {
+          "start_gain_db": -17.74215232625251,
+          "final_gain_db": -5.890037707402863,
+          "excursion_db": 11.852114618849646,
+          "t63_ms": 205,
+          "t90_ms": 304
+        },
+        "predicted": {
+          "start_gain_db": -16.631338865982876,
+          "final_gain_db": -4.771738520280799,
+          "excursion_db": 11.859600345702077,
+          "t63_ms": 207,
+          "t90_ms": 332
+        },
+        "absolute_gain_rms_db": 1.07422281509725,
+        "endpoint_normalized_shape_rms_fraction": 0.015303723986378751,
+        "endpoint_normalized_shape_rms_db_equivalent": 0.18138149078179958,
+        "t63_error_ms": 2,
+        "t90_error_ms": 28,
+        "drop_at_s": 20,
+        "from_db": -12,
+        "to_db": -24,
+        "effective_release_tau_ms": 173.10365356046358
+      }
+    ],
+    "starting_level_effect": [
+      {
+        "measured": {
+          "start_gain_db": -23.68722247734386,
+          "final_gain_db": 3.5293581620451393,
+          "excursion_db": 27.216580639388997,
+          "t63_ms": 466,
+          "t90_ms": 734
+        },
+        "predicted": {
+          "start_gain_db": -22.56113884340425,
+          "final_gain_db": 3.4933199683666016,
+          "excursion_db": 26.054458811770854,
+          "t63_ms": 355,
+          "t90_ms": 536
+        },
+        "absolute_gain_rms_db": 3.023460900449638,
+        "endpoint_normalized_shape_rms_fraction": 0.10465001250367831,
+        "endpoint_normalized_shape_rms_db_equivalent": 2.8482155042194277,
+        "t63_error_ms": -111,
+        "t90_error_ms": -198,
+        "drop_at_s": 8,
+        "from_db": -6,
+        "to_db": -36,
+        "effective_release_tau_ms": 173.10365356046358
+      },
+      {
+        "measured": {
+          "start_gain_db": -17.74215232625251,
+          "final_gain_db": -5.890037707402863,
+          "excursion_db": 11.852114618849646,
+          "t63_ms": 205,
+          "t90_ms": 304
+        },
+        "predicted": {
+          "start_gain_db": -16.698033800223715,
+          "final_gain_db": -4.838433504974994,
+          "excursion_db": 11.859600295248722,
+          "t63_ms": 290,
+          "t90_ms": 464
+        },
+        "absolute_gain_rms_db": 1.053072098033356,
+        "endpoint_normalized_shape_rms_fraction": 0.10443758345628802,
+        "endpoint_normalized_shape_rms_db_equivalent": 1.2378062096396012,
+        "t63_error_ms": 85,
+        "t90_error_ms": 160,
+        "drop_at_s": 20,
+        "from_db": -12,
+        "to_db": -24,
+        "effective_release_tau_ms": 243.1095830451484
+      }
+    ]
+  },
+  "scope": "48 kHz, 1 kHz carrier, Attack minimum, Level/Tone/Sustain noon. No new-data fit. Centered one-period RMS gain on 1 ms grid; shape scores 5\u20131200 ms after drop, normalized independently to each trace endpoints. Shape scores remove gain offset and excursion errors; they are not absolute output accuracy. All three are extrapolations from the previous experiment, not identified circuit models. One take per condition; no confidence intervals."
+}

@@ -9,131 +9,190 @@
 namespace namx
 {
 
+using dd8::VOICINGS;
+static_assert(VOICINGS.size() == DelayProcessor::LAST_TYPE - DelayProcessor::FIRST_TYPE + 1);
+
 void DelayProcessor::on_sample_rate_changed(double sr) {
     const size_t n = static_cast<size_t>(MAX_DELAY_MS * sr / 1000.0) + 4;
     for (auto& l : lines) {
         l.samples.resize(n);
     }
-    for (auto& s : shift) {
-        s.prepare(sr, 12.0f);
-    }
     glide_k = 1.0f - std::exp(-1.0f / (0.08f * static_cast<float>(sr)));
+    for (size_t i = 0; i < VOICINGS.size(); ++i) {
+        coefficients[i].prepare(*VOICINGS[i], sr);
+    }
     reset();
 }
 
 void DelayProcessor::sync_right_channel() {
     // The right line takes the left's history (the repeats keep going) and glides
-    // from there to its own delay time; its shifter starts over.
+    // from there to its own delay time.
     if (!lines[0].samples.empty()) {
         lines[1].samples.copy_from(lines[0].samples);
     }
-    lines[1].hp_x = lines[0].hp_x;
-    lines[1].hp_y = lines[0].hp_y;
-    lines[1].lp = lines[0].lp;
+    lines[1].loop_chain = lines[0].loop_chain;
+    lines[1].out_chain = lines[0].out_chain;
+    lines[1].post_chain = lines[0].post_chain;
+    lines[1].feedback_chain = lines[0].feedback_chain;
+    lines[1].loop_lp = lines[0].loop_lp;
+    lines[1].back_ring = lines[0].back_ring;
+    lines[1].back_pos = lines[0].back_pos;
     del_now[1] = del_now[0];
-    shift[1].reset();
 }
 
 void DelayProcessor::reset() {
     for (auto& l : lines) {
         l.samples.clear();
-        l.hp_x = l.hp_y = l.lp = 0.0f;
+        l.loop_chain.reset();
+        l.out_chain.reset();
+        l.post_chain.reset();
+        l.feedback_chain.reset();
+        l.loop_lp = 0.0f;
+        l.back_ring.fill(0.0f);
     }
-    mod_phase = 0.0f;
+    lfo_phase = flutter_phase = 0.0f;
+    wander_offset = wander_slope = wander_target = 0.0f;
+    wander_left = 0;
+    wander_seed = WANDER_SEED;
     del_now[0] = del_now[1] = -1.0f;
-    for (auto& s : shift) {
-        s.reset();
-    }
 }
 
 float DelayProcessor::glide(int line, float target) {
     float& d = del_now[line];
-    d = d < 0.0f ? target : d + (target - d) * glide_k; // exact once it has arrived
+    // Within half a sample it has arrived: left to the one-pole it would stall a few samples
+    // short (the step falls under a float's resolution) and read between samples for good.
+    d = d < 0.0f || std::abs(target - d) < 0.5f ? target : d + (target - d) * glide_k;
     return d;
 }
 
-float DelayProcessor::loop(int line, float d, float read_delay, const Params& p) {
-    if (p.shimmer <= 0.0f) {
-        return d;
-    }
-    // A repeat shorter than the shifter's latency can't be compensated: its octave
-    // arrives late (and it's fed the repeat itself).
-    const float early_delay = read_delay - static_cast<float>(shift[line].latency_samples());
-    const float early = early_delay >= 1.0f ? lines[line].read(early_delay) : d;
-    return d + p.shimmer * (shift[line].process(early) - d);
-}
-
-// The shifters only run while Shimmer is up: on the way back up they would replay
-// the repeats they held when last on (audit 2026-10-04, Fable item 16).
-void DelayProcessor::shimmer_edge(float shimmer) {
-    if (shimmer > 0.0f && !shim_on) {
-        shift[0].reset();
-        shift[1].reset();
-    }
-    shim_on = shimmer > 0.0f;
-}
-
-DelayProcessor::Params DelayProcessor::params() const {
+DelayProcessor::Block DelayProcessor::block_settings() const {
+    const size_t index = static_cast<size_t>(last_type - FIRST_TYPE);
+    const dd8::Voicing& v = *VOICINGS[index];
     const float fs = static_cast<float>(sample_rate);
-    Params p;
-    p.fb = std::min(feedback_pct.load() / 100.0f, 0.99f);
-    p.mix = mix_pct.load() / 100.0f;
-    p.cross = std::clamp(cross_pct.load(), 0.0f, 100.0f) / 100.0f;
-    p.hp_a = std::exp(
-        -(2.0f * std::numbers::pi_v<float>)*std::clamp(low_cut_hz.load(), 20.0f, 2000.0f) / fs);
-    p.lp_k = 1.0f - std::exp(-(2.0f * std::numbers::pi_v<float>)*std::clamp(high_cut_hz.load(),
-                                                                            500.0f, 0.45f * fs) /
-                             fs);
-    p.sat_drive = std::clamp(sat_pct.load(), 0.0f, 100.0f) / 100.0f;
-    p.mod_depth = 0.003f * fs * std::clamp(mod_pct.load(), 0.0f, 100.0f) / 100.0f; // up to ±3 ms
-    p.ph_inc = 0.55f / fs; // 0.55 Hz wobble
-    p.shimmer = std::clamp(shimmer_pct.load(), 0.0f, 100.0f) / 100.0f;
-    const float max_d = static_cast<float>(lines[0].samples.size()) - 2.0f - p.mod_depth;
-    p.del_l = std::clamp(time_ms.load() * fs / 1000.0f, 1.0f + p.mod_depth, max_d);
+    Block b;
+    b.voicing = &v;
+    b.k = &coefficients[index];
+    // Feedback: the gain per round at the loop's loudest frequency (100 %: it holds). Level:
+    // the first repeat re the dry at 1 kHz; its lowest setting is off.
+    b.fb = std::clamp(feedback_pct.load() / 100.0f, 0.0f, 1.0f) / b.k->loop_peak;
+    b.repeat = dd8::db_to_gain(v.repeat_db);
+    const float level = level_db.load();
+    b.level = level <= static_cast<float>(NAMConstants::DELAY_LEVEL_MIN)
+                  ? 0.0f
+                  : dd8::db_to_gain(level) / b.repeat;
+    b.ceiling = dd8::db_to_gain(dd8::REFERENCE_DBFS + dd8::OUT_CEILING_DB);
+    b.line_limit = dd8::db_to_gain(dd8::REFERENCE_DBFS + v.line_db);
+    b.lfo_inc = v.lfo_hz / fs;
+    b.lfo_depth = v.lfo_ms * fs / 1000.0f;
+    b.flutter_inc = v.flutter_hz / fs;
+    b.flutter_depth = v.flutter_ms * fs / 1000.0f;
+    // The reads stay inside the line with the voicing's LFO on top.
+    b.wander_tick = v.wander ? static_cast<int>(std::lround(dd8::WANDER_TICK_S * fs)) : 0;
+    b.wander_edge = 1.0f - std::exp(-1000.0f / (dd8::WANDER_EDGE_MS * fs));
+    b.wander_max = dd8::WANDER_MAX_MS * fs / 1000.0f;
+    const float mod_depth =
+        (v.lfo_ms + v.flutter_ms + (v.wander ? dd8::WANDER_MAX_MS : 0.0f)) * fs / 1000.0f;
+    const float max_d = static_cast<float>(lines[0].samples.size()) - 2.0f - mod_depth;
+    const float advance = v.advance_ms * fs / 1000.0f;
+    b.back_delay = std::min<size_t>(
+        255, static_cast<size_t>(std::lround(dd8::FEEDBACK_DELAY_MS * fs / 1000.0f)));
+    b.del_l = std::clamp(time_ms.load() * fs / 1000.0f - advance, 1.0f + mod_depth, max_d);
     // Stereo off: R Time is unused (its knob is dimmed) — a stereo input runs both lines at Time.
-    p.del_r = is_stereo_mode()
-                  ? std::clamp(right_ms.load() * fs / 1000.0f, 1.0f + p.mod_depth, max_d)
-                  : p.del_l;
-    return p;
-}
-
-float DelayProcessor::tone(Line& l, float x, const Params& p) const {
-    const float hp = p.hp_a * (l.hp_y + x - l.hp_x);
-    l.hp_x = x;
-    l.hp_y = hp;
-    l.lp += p.lp_k * (hp - l.lp);
-    return l.lp;
-}
-
-float DelayProcessor::saturate(float x, float amount) {
-    if (amount <= 0.0f) {
-        return x;
+    b.del_r = is_stereo_mode()
+                  ? std::clamp(right_ms.load() * fs / 1000.0f - advance, 1.0f + mod_depth, max_d)
+                  : b.del_l;
+    if (mod_depth == 0.0f) {
+        // A steady delay is a whole number of samples: nothing is read between samples, so a
+        // repeat loses no treble to the reading however many times it goes round.
+        b.del_l = std::round(b.del_l);
+        b.del_r = std::round(b.del_r);
     }
-    // Blend toward a soft clip (Padé tanh): unity small-signal gain, loud
-    // repeats round off and compress — tape-like, never harsher.
-    const float v = std::clamp(x, -3.0f, 3.0f);
-    const float t = v * (27.0f + v * v) / (27.0f + 9.0f * v * v);
-    return x + amount * (t - x);
+    return b;
+}
+
+void DelayProcessor::type_edge(int current_type) {
+    // A new voicing starts its filters and LFOs from rest; the repeats in the line stay.
+    if (current_type != last_type) {
+        for (auto& l : lines) {
+            l.loop_chain.reset();
+            l.out_chain.reset();
+            l.post_chain.reset();
+            l.feedback_chain.reset();
+            l.loop_lp = 0.0f;
+        }
+        lfo_phase = flutter_phase = 0.0f;
+        wander_offset = wander_slope = wander_target = 0.0f;
+        wander_left = 0;
+        wander_seed = WANDER_SEED;
+        last_type = current_type;
+    }
+}
+
+float DelayProcessor::modulation(const Block& b) {
+    constexpr float TWO_PI = 2.0f * std::numbers::pi_v<float>;
+    if (b.lfo_depth <= 0.0f && b.flutter_depth <= 0.0f && b.wander_tick == 0) {
+        return 0.0f;
+    }
+    const float mod = b.lfo_depth * std::sin(TWO_PI * lfo_phase) +
+                      b.flutter_depth * std::sin(TWO_PI * flutter_phase) + wander(b);
+    lfo_phase += b.lfo_inc;
+    lfo_phase -= lfo_phase >= 1.0f ? 1.0f : 0.0f;
+    flutter_phase += b.flutter_inc;
+    flutter_phase -= flutter_phase >= 1.0f ? 1.0f : 0.0f;
+    return mod;
+}
+
+float DelayProcessor::wander(const Block& b) {
+    if (b.wander_tick == 0) {
+        return 0.0f;
+    }
+    if (--wander_left <= 0) {
+        // A new pitch offset for this tick: one of the 16, from a fixed sequence (the same
+        // every run), and a share of the way back to the centre. A pitch c cents up is the
+        // delay shrinking by ln 2 / 1200 · c samples per sample.
+        wander_left = b.wander_tick;
+        wander_seed = wander_seed * 1664525u + 1013904223u;
+        const float cents = dd8::WANDER_CENTS[wander_seed >> 28];
+        wander_target = -cents * (std::numbers::ln2_v<float> / 1200.0f) -
+                        dd8::WANDER_RETURN * wander_offset / static_cast<float>(b.wander_tick);
+    }
+    wander_slope += b.wander_edge * (wander_target - wander_slope);
+    wander_offset = std::clamp(wander_offset + wander_slope, -b.wander_max, b.wander_max);
+    return wander_offset;
+}
+
+float DelayProcessor::into_line(float x, const Block& b) {
+    // The line's own limit (hard, or Analog's soft saturation).
+    return dd8::clip(x, b.line_limit, b.voicing->line_knee);
+}
+
+float DelayProcessor::heard(Line& l, float r, const Block& b) const {
+    // A repeat on its way out: the mode's tone and gain, the clip, then Level.
+    const float shaped = b.repeat * l.out_chain.process(r, b.k->out);
+    return b.level * l.post_chain.process(dd8::clip(shaped, b.ceiling, 0.0f), b.k->post);
+}
+
+DelayProcessor::Tap DelayProcessor::tap(Line& l, float read_delay, const Block& b) const {
+    // The loop chain acts on every pass; the clip and the out chain on
+    // what is heard.
+    const float r = l.loop_chain.process(l.read(read_delay), b.k->loop);
+    l.loop_lp += b.k->loop_low_pass * (r - l.loop_lp);
+    return {heard(l, r, b),
+            l.delayed(l.feedback_chain.process(l.loop_lp, b.k->feedback), b.back_delay)};
 }
 
 void DelayProcessor::process_block_mono(float* buf, size_t nframes) {
     if (lines[0].samples.empty()) {
         return;
     }
-    const Params p = params();
-    shimmer_edge(p.shimmer);
+    type_edge(type.load());
+    const Block b = block_settings();
     Line& l = lines[0];
     for (size_t i = 0; i < nframes; ++i) {
-        const float mod = p.mod_depth * std::sin((2.0f * std::numbers::pi_v<float>)*mod_phase);
-        mod_phase += p.ph_inc;
-        if (mod_phase >= 1.0f) {
-            mod_phase -= 1.0f;
-        }
-
-        const float rd = glide(0, p.del_l) + mod;
-        const float d = tone(l, l.read(rd), p);
-        l.push(saturate(buf[i] + p.fb * loop(0, d, rd, p), p.sat_drive));
-        buf[i] = buf[i] * (1.0f - p.mix) + d * p.mix;
+        const float rd = glide(0, b.del_l) + modulation(b);
+        const Tap t = tap(l, rd, b);
+        l.push(into_line(buf[i] + b.fb * t.back, b));
+        buf[i] += t.wet;
     }
 }
 
@@ -142,50 +201,47 @@ void DelayProcessor::process_block_dual(float* l, float* r, size_t nframes) {
     if (lines[0].samples.empty()) {
         return;
     }
-    const Params p = params();
-    shimmer_edge(p.shimmer);
+    type_edge(type.load());
+    const Block b = block_settings();
     for (size_t i = 0; i < nframes; ++i) {
-        const float mod = p.mod_depth * std::sin((2.0f * std::numbers::pi_v<float>)*mod_phase);
-        mod_phase += p.ph_inc;
-        if (mod_phase >= 1.0f) {
-            mod_phase -= 1.0f;
-        }
-
-        const float rd_l = glide(0, p.del_l) + mod, rd_r = glide(1, p.del_r) - mod;
-        const float d_l = tone(lines[0], lines[0].read(rd_l), p);
-        const float d_r = tone(lines[1], lines[1].read(rd_r), p);
-        lines[0].push(saturate(l[i] + p.fb * loop(0, d_l, rd_l, p), p.sat_drive));
-        lines[1].push(saturate(r[i] + p.fb * loop(1, d_r, rd_r, p), p.sat_drive));
-        l[i] = l[i] * (1.0f - p.mix) + d_l * p.mix;
-        r[i] = r[i] * (1.0f - p.mix) + d_r * p.mix;
+        const float mod = modulation(b);
+        const Tap t_l = tap(lines[0], glide(0, b.del_l) + mod, b);
+        const Tap t_r = tap(lines[1], glide(1, b.del_r) - mod, b);
+        lines[0].push(into_line(l[i] + b.fb * t_l.back, b));
+        lines[1].push(into_line(r[i] + b.fb * t_r.back, b));
+        l[i] += t_l.wet;
+        r[i] += t_r.wet;
     }
 }
 
 void DelayProcessor::process_block_stereo_out(float* l, float* r, size_t nframes) {
-    // Cross-feed c: 1 = ping-pong (input → left only, repeats alternate),
-    // 0 = two independent lines (input into both, L/R times).
+    // The DD-8 with both outputs connected: one loop, heard twice. A repeat comes on the left
+    // Time after the input and on the right R Time after it — the same repeat, the same level
+    // and tone — and the later of the two is what Feedback sends back, so the
+    // loop is as long as the longer time. R Time = twice Time is the pedal (left, right, left…
+    // evenly); equal times repeat on both sides together.
     if (lines[0].samples.empty()) {
         return;
     }
-    const Params p = params();
-    shimmer_edge(p.shimmer);
-    const float c = p.cross;
+    type_edge(type.load());
+    const Block b = block_settings();
+    Line& loop = lines[0]; // the one line; lines[1] only lends the right tap its filters
+    Line& right = lines[1];
+    const bool right_last = b.del_r >= b.del_l;
     for (size_t i = 0; i < nframes; ++i) {
-        const float mod = p.mod_depth * std::sin((2.0f * std::numbers::pi_v<float>)*mod_phase);
-        mod_phase += p.ph_inc;
-        if (mod_phase >= 1.0f) {
-            mod_phase -= 1.0f;
-        }
-
         const float x = l[i];
-        const float rd_l = glide(0, p.del_l) + mod, rd_r = glide(1, p.del_r) - mod;
-        const float d_l = tone(lines[0], lines[0].read(rd_l), p);
-        const float d_r = tone(lines[1], lines[1].read(rd_r), p);
-        const float f_l = loop(0, d_l, rd_l, p), f_r = loop(1, d_r, rd_r, p);
-        lines[0].push(saturate(x + p.fb * ((1.0f - c) * f_l + c * f_r), p.sat_drive));
-        lines[1].push(saturate((1.0f - c) * x + p.fb * ((1.0f - c) * f_r + c * f_l), p.sat_drive));
-        l[i] = x * (1.0f - p.mix) + d_l * p.mix;
-        r[i] = r[i] * (1.0f - p.mix) + d_r * p.mix;
+        const float mod = modulation(b);
+        // The loop chain on each tap: the same filter on the same signal.
+        const float on_left =
+            loop.loop_chain.process(loop.read(glide(0, b.del_l) + mod), b.k->loop);
+        const float on_right =
+            right.loop_chain.process(loop.read(glide(1, b.del_r) - mod), b.k->loop);
+        loop.loop_lp += b.k->loop_low_pass * ((right_last ? on_right : on_left) - loop.loop_lp);
+        const float back =
+            loop.delayed(loop.feedback_chain.process(loop.loop_lp, b.k->feedback), b.back_delay);
+        loop.push(into_line(x + b.fb * back, b));
+        l[i] = x + heard(loop, on_left, b);
+        r[i] = r[i] + heard(right, on_right, b);
     }
 }
 

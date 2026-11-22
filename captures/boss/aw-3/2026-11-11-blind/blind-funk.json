@@ -1,0 +1,56 @@
+{
+  "take": "blind-funk",
+  "pedal": "Boss AW-3 Dynamic Wah \u2014 blind test: the knobs set by the user, unknown to the analysis (mono: Guitar input -> Output)",
+  "bypass": false,
+  "settings": {
+    "Mode": "?",
+    "Manual": "?",
+    "Sens": "?",
+    "Decay": "?"
+  },
+  "note": "",
+  "signal": {
+    "type": "file",
+    "path": "captures/di/funk.wav",
+    "seconds": 12,
+    "probe": {
+      "freq": [
+        331,
+        577,
+        997,
+        1723,
+        2971
+      ],
+      "level_db": -50
+    },
+    "tail": 1.0
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -18.26,
+    "loop": -19.0
+  },
+  "latency_samples": 498,
+  "latency_quality": 0.998,
+  "xruns": 0,
+  "played_sha256": "c410d537eb3490db3d94144015dfe1baf6d14c7badc39493dffad5e4dfbb1760",
+  "recorded_at": "2026-11-11T22:00:33",
+  "tool_commit": "df8d144f61e53aed7332805fd6dd86cd7aaae2ff",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX4",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Boss AW-3 on its 9 V adapter: the guitar DI dataset. Input from interface out 3; OUTPUT -> input 2; INST, AIR off, pad on, gain fully counter-clockwise."
+  }
+}

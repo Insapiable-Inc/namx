@@ -1,0 +1,29 @@
+{
+  "recorded_take": "std-res-0300-24",
+  "reported_at": "2026-10-30T13:30:27",
+  "reason": "User reported Res was at 9:00 rather than the requested 3:00 and requested a redo.",
+  "declared_settings": {
+    "Manual": "12:00",
+    "Depth": "7:00",
+    "Rate": "7:00",
+    "Res": "3:00"
+  },
+  "actual_settings_correction": {
+    "Res": "9:00"
+  },
+  "action": "Original recording, sidecar and played signal archived unchanged; active files cleared so the existing capture plan offers this take again.",
+  "files": {
+    "std-res-0300-24.wav": {
+      "bytes": 4934488,
+      "sha256": "1dbc66b76a90c37cc020210444605d0be5f27592a2c3c3c7a78fb96c2f825db6"
+    },
+    "std-res-0300-24.json": {
+      "bytes": 1924,
+      "sha256": "dfd077f71c5473f3a2d513e4586c3382476204d3f35070998d5df8297d7f26fe"
+    },
+    "played/std-res-0300-24.wav": {
+      "bytes": 2467280,
+      "sha256": "88dd695693870aed118e9cf242c81a92102ba6e813a6484eb9c4b191f5aeffe8"
+    }
+  }
+}

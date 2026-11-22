@@ -1,0 +1,44 @@
+{
+  "take": "threshold-1200-noise",
+  "pedal": "Boss NS-2 Noise Suppressor \u2014 reamps of the guitar DI dataset (mono: OUTPUT)",
+  "bypass": false,
+  "settings": {
+    "Threshold": "12:00",
+    "Decay": "12:00",
+    "Mode": "REDUCTION"
+  },
+  "note": "",
+  "signal": {
+    "type": "file",
+    "path": "captures/di/noise.wav",
+    "tail": 1.0
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -78.77,
+    "loop": -84.44
+  },
+  "latency_samples": 455,
+  "latency_quality": 0.998,
+  "xruns": 0,
+  "played_sha256": "6979925da91fa32fe3ad13180112acec45e9b34ce3800de1c31aa4f56fa089cc",
+  "recorded_at": "2026-11-08T16:11:58",
+  "tool_commit": "4a6f8dcfedc477aa09cf85404a52cc58df4d8ff7",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX4",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Boss NS-2 on its 9 V adapter: the guitar DI dataset. Input from interface out 3; OUTPUT -> input 2; INST, AIR off, pad on, gain fully counter-clockwise."
+  }
+}

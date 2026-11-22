@@ -387,8 +387,8 @@ The second bar holds the global tempo and the metronome.
 | **Count-in** | 0–2 bars counted in when you press play; **Silent after count-in** keeps only the lights running, to check your own timing |
 | **Click Level / Click Pan** | The click's own volume and position. It is mixed in after the Output knob and isn't shown on the output meter |
 
-**Tempo sync.** Delay **L/Mono Time** and **R Time**, the Tremolo / Chorus / Flanger / Phaser **Rate** and
-the Reverb **Pre-delay** each have a **Sync** switch: on, the knob picks a note value (4 bars … 1/32, dotted and
+**Tempo sync.** Delay **Time** (**L Time** with Stereo on) and **R Time** and the Tremolo / Chorus / Flanger / Phaser **Rate**
+each have a **Sync** switch: on, the knob picks a note value (4 bars … 1/32, dotted and
 triplets) instead of ms / Hz, and follows the tempo. Delay times are capped at 3000 ms.
 
 Every metronome setting belongs to the session, not to presets. A preset with a Sync
@@ -478,26 +478,38 @@ Default order (drag the ≡ grips to reorder any effect). The Volume Pedal sits 
 the effects loop, after the amp, so it swells the level without changing the amp's gain:
 
 ```
-input ─▶ Input Gain ─▶ Tuner ─▶ Transpose ─▶ Noise Gate ─▶ Compressor ─▶ Wah ─▶ Flanger ─▶ Phaser ─▶ Overdrive
-      ─▶ Amplifier (NAM) ─▶ Volume Pedal ─▶ Equalizer ─▶ Chorus ─▶ Tremolo ─▶ Delay ─▶ Reverb
-      ─▶ Cabinet (IR) ─▶ Output Gain ─▶ (+ metronome) ─▶ Limiter ─▶ output L/R
+input ─▶ Input Gain ─▶ Tuner ─▶ Transpose ─▶ Noise Gate ─▶ Compressor ─▶ Wah ─▶ Flanger ─▶ Phaser
+      ─▶ Overdrive ─▶ Amplifier (NAM) ─▶ Volume Pedal ─▶ Equalizer ─▶ Chorus ─▶ Rotary ─▶ Tremolo
+      ─▶ Delay ─▶ Reverb ─▶ Cabinet (IR) ─▶ Output Gain ─▶ (+ metronome) ─▶ Limiter ─▶ output L/R
 ```
 
 The chain starts mono. Effects in stereo mode (Delay and Reverb by default; Chorus,
-Tremolo, Flanger and Phaser when their **Stereo** switch is on) make it stereo from
+Rotary, Tremolo and Phaser when their **Stereo** switch is on) make it stereo from
 there on. A stereo signal reaching the Amplifier runs the model once per channel, at
 twice the CPU — it is never summed to mono.
+
+The pedal effects are models of Boss pedals measured from real ones (2026-10/11; the
+studies are in `captures/`). Their knobs carry the pedals' names; a knob shown as a clock
+position (7:00 … 5:00) is the pedal's knob, turned the same way. An old preset that used
+NAM-X's own effects (before 2026-11-03) loads with the pedal model in their place: its
+Plate, Hall and Room reverbs as the RV-6's, every other effect as the model's first type.
 
 | Stage | Main controls | ▾ More |
 |-------|---------------|--------|
 | Transpose | Mix, Semitones (±12); **Reverse** (pedal heel ↔ toe), **Fine** switch (off: whole semitones; on: smooth whammy-style bends between the steps, the shifter then stays active at 0 st) | — |
 | Overdrive | Level, Drive, Tone — a Tube Screamer circuit model (the op-amp + diode clipper as a wave digital filter, oversampled) | — |
 | Amplifier | On/Off, ‹ › through the library, Input, Level (see Parameters); the row shows the model and its metadata | — |
-| Wah | **Manual** switch (off = Auto: your playing sweeps it), **Reverse** (pedal heel ↔ toe), Mix, Sensitivity (Auto), Position (the sweep in Manual mode — map an expression pedal), Resonance; the controls the current mode ignores are dimmed | — |
-| Flanger / Phaser / Chorus | Mix, Rate (Sync), Depth, Feedback (not Chorus; Phaser up to 90 %); Flanger **Range**. The Phaser is an MXR Phase 90 model: Depth 50 % and Mix 50 % are the pedal, Feedback 0 % the original "script" circuit | — |
-| Equalizer | Bass, Low-Mid, High-Mid, Treble (±12 dB) | the four band frequencies, Low Cut, High Cut |
-| Delay | Mix, L/Mono Time, R Time (the right repeat's own time, Stereo only — dimmed otherwise; Sync covers both), Feedback (two independent echoes in stereo) | Low/High Cut, Saturation, Shimmer (octave-up repeats) |
-| Reverb | Mix, Type (Plate / Hall / Room — reads "Type: Plate"), Decay (0.2–10 s), Damping, Width | Pre-delay (0–250 ms; with the main row's **Sync** on, a note value at the tempo, up to 2 s), Low/High Cut, Shimmer (octave-up feedback into the tail) |
+| Noise Gate | Threshold (where it opens, −74 … −32 dB), Decay — the Boss NS-2: it opens at once and turns the sound down gradually rather than muting it | — |
+| Compressor | Level, Sustain, Attack, Tone (0 % is neutral) — the Boss CS-3; a fixed ceiling, so Sustain is shown as the input level that reaches it | — |
+| Wah | Mix, Sens, Manual (where the filter rests, shown in Hz — map an expression pedal; **Reverse** swaps heel and toe), Decay (shown in ms), Type (Up / Down / Sharp) — the Boss AW-3 Dynamic Wah | — |
+| Flanger | Wet (how loud the effect is beside your dry signal: 100 % = the pedal alone, 0 % = no effect), Rate (Sync; turns like the pedal's, 0.06–10 Hz), Depth, Feedback (the pedal's Res), Manual, Type (Standard / Ultra) — the Boss BF-3 | — |
+| Phaser | Wet (as the Flanger's), Rate (Sync; all the way down is Stop, then the pedal's 0.05–21.5 Hz), Depth, Feedback (the pedal's Res: how much comes back on each pass, up to 75 %), Type (4 / 8 / 10 / 12 Stage, Rise, Fall, Step) — the Boss PH-3 | — |
+| Equalizer | the GE-7's first four bands, in dB (−15 … +15), each named by the frequency it sits at | Freq 1–4 (each band's frequency, an octave either way: the band's name follows it); the other three bands with Level, and Freq 5–7; Low Cut, High Cut |
+| Chorus | Level (the chorus beside the dry, in dB), Rate (Sync; turns like the pedal's, 0.25–5.9 Hz), Depth, Low Cut and High Cut (the pedal's filter knobs, in Hz); **Stereo** = the pedal on each side, the right side's sweep half a cycle behind — the Boss CE-5 | — |
+| Rotary | Level (dB), Slow and Fast (the horn's speed, in Hz; Slow all the way down stops the rotors), Drive, Mode (I / II / III); **Stereo** = the pedal's two outputs; **Fast** switch — the Boss RT-2 Rotary Ensemble | Balance (drum ↔ horn), Rise/Fall (how quickly the rotors change speed) |
+| Tremolo | Rate (Sync), Depth, Wave (triangle → square) — the Boss TR-2; **Stereo** = auto-pan | — |
+| Delay | Level (the first repeat beside the dry, in dB), Time (L Time with Stereo on), R Time (the right repeat's own time, Stereo only — dimmed otherwise; Sync covers both), Feedback, Type (Standard / Analog / Tape / Warm / Mod) — the Boss DD-8 | — |
+| Reverb | Level (dB), Time (shown in seconds; in % for Shimmer), Tone (0 % is neutral), Type (Modulate / Spring / Plate / Hall / Room / Shimmer) — the Boss RV-6 | — |
 | Cabinet | On/Off, ‹ › through the library, Level; the row shows the IR and its metadata | — |
 | Volume Pedal | Volume, Mid (level at half travel), **Reverse** (pedal heel ↔ toe) | — |
 | Output | Gain, **Limit** (look-ahead limiter at −0.3 dBFS) | — |

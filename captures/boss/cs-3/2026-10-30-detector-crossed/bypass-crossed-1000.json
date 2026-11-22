@@ -1,0 +1,53 @@
+{
+  "take": "bypass-crossed-1000",
+  "pedal": "Boss CS-3 Compression Sustainer (mono: Input -> Output)",
+  "bypass": true,
+  "settings": {},
+  "note": "CS-3 BYPASSED. Leave Level, Tone and Sustain at noon. Set only Attack fully counter-clockwise now. Keep the previous cable path and interface gains.",
+  "signal": {
+    "type": "steps",
+    "freq": 1000,
+    "levels_db": [
+      -36,
+      -6,
+      -36,
+      -24,
+      -12,
+      -24
+    ],
+    "step_seconds": 4,
+    "gap_seconds": 0,
+    "level_db": 0,
+    "tail": 2
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -19.54,
+    "loop": -18.95
+  },
+  "latency_samples": 455,
+  "latency_quality": 0.998,
+  "xruns": 0,
+  "played_sha256": "a79749720399d0f115536e822ba13baf7875fd5c40cffe5719c58b0c7ba77090",
+  "recorded_at": "2026-10-30T14:41:53",
+  "tool_commit": "979167bf6ba528173a9069fc329ffde098383af4-dirty",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX4",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Same Scarlett 8i6 measurement rig as the BF-3 locked-control session: Pro Audio, 48 kHz; analogue out 3/4 directly from PCM 3/4; out 3 -> CS-3 Input; CS-3 Output -> input 2; out 4 -> input 5 loopback. Input 2 INST, pad ON, AIR off, physical gain fully counter-clockwise. Keep interface gains fixed; CS-3 adapter powered. Original calibration carried forward, not remeasured. Level/Tone/Sustain noon for engaged takes; only Attack changes. Crossed-level follow-up: only Attack returns to minimum; Level/Tone/Sustain and interface gains stay fixed. No new calibration has been performed.",
+    "capture_tools_source_commit": "b6a6b6c9ed3bbb9b34baec4696a7087506d09181",
+    "capture_plan_sha256": "6f9a78a991f00bc2b7898a978357c2e22ff283206ef01ea8dbddcbb60d2a2391"
+  }
+}

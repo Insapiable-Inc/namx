@@ -24,6 +24,7 @@
 #include "OutputLimiter.h"
 #include "PhaserProcessor.h"
 #include "ReverbProcessor.h"
+#include "RotaryProcessor.h"
 #include "RtSlot.h"
 #include "TransposeProcessor.h"
 #include "TremoloProcessor.h"
@@ -109,6 +110,9 @@ public:
     // Loads publish through RtSlots; when audio is stopped nothing counts
     // blocks, so the wrappers reclaim retired objects eagerly in that case.
     bool load_model(const string& path);
+    // Builds the loaded model afresh from its file (its state from nothing): the way out
+    // when a model's own state has gone non-finite. GUI thread; false with no model.
+    bool reload_model();
     void unload_model();
     bool is_model_loaded() const {
         return nam.is_model_loaded();
@@ -183,6 +187,9 @@ public:
     }
     EQProcessor& get_eq() {
         return eq;
+    }
+    RotaryProcessor& get_rotary() {
+        return rotary;
     }
     ChorusProcessor& get_chorus() {
         return chorus;
@@ -278,6 +285,11 @@ public:
     int take_non_finite_blocks() {
         return non_finite_blocks.exchange(0, std::memory_order_relaxed);
     }
+    // Whether a non-finite sample came out of the chain itself since the last take (the
+    // input's are scrubbed before it): the amp model may be stuck. GUI thread.
+    bool take_model_suspect() {
+        return model_suspect.exchange(false, std::memory_order_relaxed);
+    }
     void reset_xruns() {
         if (backend) {
             backend->reset_xruns();
@@ -328,6 +340,7 @@ private:
     NamProcessor nam;
     EQProcessor eq;
     ChorusProcessor chorus;
+    RotaryProcessor rotary;
     TremoloProcessor tremolo;
     DelayProcessor delay;
     ReverbProcessor reverb;
@@ -349,6 +362,7 @@ private:
     atomic<float> output_peak[2]{0.0f, 0.0f}; // left, right
     atomic<float> dsp_load_peak{0.0f};
     atomic<int> non_finite_blocks{0};
+    atomic<bool> model_suspect{false};
 
     // on_audio = timing around this.
     void process_block(const float* in, float* out_l, float* out_r, size_t nframes);

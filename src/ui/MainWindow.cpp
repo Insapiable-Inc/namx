@@ -1,6 +1,7 @@
 #include "MainWindow.h"
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <numbers>
 
@@ -331,9 +332,18 @@ MainWindow::MainWindow(QWidget* parent)
 
     // Knob tapers (Phase 9): times, rates and frequencies on log dials.
     for (KnobWidget* k :
-         {knob_gate_attack, knob_gate_release, knob_comp_attack, knob_comp_release, knob_fl_rate,
-          knob_ph_rate, knob_ch_rate, knob_tr_rate, knob_del_time, knob_del_right_time}) {
+         {knob_gate_release, knob_comp_release, knob_tr_rate, knob_del_time, knob_del_right_time}) {
         k->set_log_taper(true);
+    }
+    // The Phaser's Rate reaches 0 (Stop), where a log can't: Stop at the bottom, the pedal's
+    // slowest sweep 3 % up, then a log dial to its fastest. (It was listed above, where a
+    // knob that starts at 0 silently stays linear: every slow rate in the first tenth of the
+    // turn.)
+    {
+        using namespace NAMConstants;
+        const KnobWidget::TaperPoint curve[] = {
+            {0.0, PHASER_RATE_MIN}, {0.03, PHASER_RATE_SLOWEST}, {1.0, PHASER_RATE_MAX}};
+        knob_ph_rate->set_taper(curve);
     }
 
     restore_session_state();
@@ -660,12 +670,6 @@ QWidget* MainWindow::make_effect_row(const QString& title, ToggleSwitch*& toggle
 //                     : QString("B %1").arg(b);
 // }
 
-// GUIDELINE EXCEPTION (commented-out code): used by the disabled Chorus Mode knob.
-// static QString format_chorus_mode(double v) {
-//     static const char* names[] = {"Normal", "Tri", "Vintage", "Spatial"};
-//     return QString(names[std::clamp(static_cast<int>(std::lround(v)), 0, 3)]);
-// }
-
 // Whole steps as "+3 st"; Transpose's continuous mode adds a decimal ("+3.4 st").
 static QString format_semitones(double v) {
     const double tenths = std::round(v * 10.0) / 10.0;
@@ -690,6 +694,19 @@ static ToggleSwitch* make_reverse_switch(QWidget* card, const QString& knob_name
 
 // Dimmed, still adjustable, with the reason added to the tooltip: `w` is what fades,
 // `tip` carries the tooltip (a caption switch fades as a whole, its switch has the tip).
+// Readouts for knobs that hold a pedal knob's travel (0–100 %): what the knob does, in its
+// own unit, never the pedal's clock position.
+// A tone knob about its neutral centre: "-40 %", "0 %", "+40 %".
+static QString tilt_percent(double pct) {
+    const long v = std::lround(2.0 * (std::clamp(pct, 0.0, 100.0) - 50.0));
+    return v > 0 ? QString("+%1 %").arg(v) : QString("%1 %").arg(v);
+}
+
+// A gain in dB; "Off" for silence.
+static QString gain_db(double gain) {
+    return gain <= 1e-6 ? QString("Off") : QString("%1 dB").arg(20.0 * std::log10(gain), 0, 'f', 1);
+}
+
 static void set_inactive(QWidget* w, QWidget* tip, bool inactive, const QString& why) {
     if (!tip->property("activeToolTip").isValid()) {
         tip->setProperty("activeToolTip", tip->toolTip());
@@ -706,20 +723,218 @@ static void set_inactive(QWidget* w, QWidget* tip, bool inactive, const QString&
     }
 }
 
+// Names a knob and sets the tooltip set_inactive() builds on; true for a name the knob
+// hasn't had before.
+static bool describe(KnobWidget* k, const QString& name, const QString& tip) {
+    k->setProperty("activeToolTip", tip);
+    k->setToolTip(tip);
+    return k->set_label(name);
+}
+
+void MainWindow::describe_controls() {
+    bool new_name = false;
+    // Noise Gate (NS-2)
+    new_name |=
+        describe(knob_gate_thresh, "Threshold",
+                 "The NS-2's Threshold: the level where it opens (about −74 to −32 dB). Below it "
+                 "the pedal doesn't mute: it turns the sound down gently, and keeps sinking while "
+                 "you stay quiet. Raise it until the hiss between notes is gone");
+    new_name |=
+        describe(knob_gate_release, "Decay",
+                 "The NS-2's Decay: how long a fading note stays open before the pedal starts "
+                 "turning it down (25–460 ms). Longer lets sustained notes ring; shorter tightens "
+                 "palm mutes and stops");
+
+    // Compressor (CS-3)
+    new_name |= describe(knob_comp_thresh, "Sustain",
+                         "The CS-3's Sustain, shown as the input level that reaches the pedal's "
+                         "fixed ceiling. Lower = more sustain: quiet notes are lifted to the same "
+                         "level and a note holds longer before it fades (and the hiss comes up "
+                         "with it)");
+    new_name |= describe(knob_comp_release, "Attack",
+                         "The CS-3's Attack, shown as the pace at which the volume comes back "
+                         "after a loud pick (100–1150 ms: the time it takes to cover about two "
+                         "thirds of the way). Short lets every pick's snap through — a "
+                         "spanky, percussive sound; long evens the notes out into a smooth, "
+                         "squashed sustain");
+    new_name |= describe(knob_comp_makeup, "Level", "The CS-3's Level: the output volume");
+    new_name |= describe(knob_comp_cs3_tone, "Tone",
+                         "The CS-3's Tone: up brightens, down darkens (a tilt around 1 kHz). "
+                         "0 % is neutral");
+    knob_comp_cs3_tone->set_value_formatter(tilt_percent);
+
+    // Wah (AW-3 Up / Down / Sharp)
+    const bool down = std::lround(knob_wah_type->value()) == DynamicWahProcessor::AW3_DOWN;
+    new_name |=
+        describe(knob_wah_sens, "Sens",
+                 down ? "The AW-3's Sens: how far your picking pulls the filter down. At 0 % it "
+                        "doesn't move; past the middle even light picking pulls it all the way "
+                        "(to about 400 Hz). Low settings stop it partway"
+                      : "The AW-3's Sens: how far your picking opens the filter. At 0 % it "
+                        "doesn't move; past the middle even light picking opens it all the way "
+                        "(to about 2.2 kHz). Low settings stop it partway");
+    new_name |=
+        describe(knob_wah_pos, "Manual",
+                 down ? "The AW-3's Manual: where the filter rests while you're not playing, "
+                        "840 Hz to 4 kHz. Playing pulls it down from here. Map an expression "
+                        "pedal here to move the rest point"
+                      : "The AW-3's Manual: where the filter rests while you're not playing, from "
+                        "a deep 190 Hz to 520 Hz (most of the change comes in the last third of "
+                        "the turn). Playing opens it from here. Map an expression pedal here to "
+                        "move the rest point");
+    knob_wah_pos->set_value_formatter([down](double pct) {
+        return format_hz(
+            aw3::rest_hz(down ? aw3::Mode::DOWN : aw3::Mode::UP, static_cast<float>(pct / 100.0)),
+            0.0);
+    });
+    new_name |= describe(knob_wah_mix, "Mix",
+                         "Blends your dry signal back in; 100 % is the pedal alone (the real "
+                         "pedal has no mix)");
+    new_name |=
+        describe(knob_wah_aw3_decay, "Decay",
+                 "The AW-3's Decay: how slowly the filter returns to rest after you play, as "
+                 "the time it takes to cover about two thirds of the way. The lower half of the "
+                 "turn changes little, as on the pedal");
+
+    // Flanger (BF-3)
+    new_name |=
+        describe(knob_fl_range, "Manual",
+                 "The BF-3's Manual: where the sweep sits, as the flanged copy's delay with "
+                 "Depth at 0. Short is bright and metallic (the pedal fully clockwise); long the "
+                 "low, jet-like end (fully counter-clockwise). With Depth at 0 it sets a fixed "
+                 "tone");
+    new_name |= describe(knob_fl_feedback, "Feedback",
+                         "The BF-3's Res: how much of the flanged sound is fed back, as the gain "
+                         "of each pass round the loop. Up = a sharper, ringing, whistling sweep; "
+                         "89 % is the pedal's most (it never runs away into oscillation)");
+    new_name |=
+        describe(knob_fl_depth, "Depth",
+                 "How far the sweep travels from Manual, over the BF-3's Depth range. 0 % holds "
+                 "it still");
+    new_name |= describe(knob_fl_rate, "Rate",
+                         "The BF-3's Rate: how fast the sweep goes up and down, from one sweep "
+                         "in 18 s to ten a second; the knob turns like the pedal's. Sync locks it "
+                         "to the tempo");
+
+    // Not "Mix": the pedal's output holds its own dry, so 50 % isn't equal parts.
+    const QString wet_tip = "How loud the effect is beside your dry signal, which stays as it "
+                            "is: 100 % is the pedal alone, 0 % no effect (the real pedal has no "
+                            "such knob)";
+    new_name |= describe(knob_fl_wet, "Wet", wet_tip);
+    new_name |= describe(knob_ph_wet, "Wet", wet_tip);
+
+    // Phaser (PH-3)
+    new_name |= describe(knob_ph_rate, "Rate",
+                         "The PH-3's Rate: how fast the sweep moves (in Rise and Fall, how fast it "
+                         "climbs or falls; in Step, how fast it steps). All the way down is Stop: "
+                         "the sweep freezes where it is");
+    new_name |= describe(knob_ph_depth, "Depth",
+                         "How much of its travel the sweep covers, over the PH-3's Depth range. At "
+                         "0 the sweep stands still, a fixed filter tone. In Rise and Fall: how "
+                         "deep the notches are, fully up the deepest; turned down they get "
+                         "shallower and the sound louder");
+    new_name |= describe(knob_ph_feedback, "Feedback",
+                         "The PH-3's Res: feeds the sound back for sharper peaks and a more vocal "
+                         "sweep. The value is how much comes back on each pass; the pedal fully "
+                         "clockwise is 66 to 74 %, by mode");
+
+    // Chorus (CE-5)
+    new_name |=
+        describe(knob_ch_mix, "Level",
+                 "How loud the chorus is beside your dry signal, in dB (the CE-5's E.Level "
+                 "range). The dry always stays at full level; fully down the chorus is off");
+    new_name |= describe(knob_ch_rate, "Rate",
+                         "The CE-5's Rate: how fast the chorus moves; the knob turns like the "
+                         "pedal's (0.25 to 5.9 Hz). Sync locks it to the tempo");
+    new_name |= describe(knob_ch_depth, "Depth",
+                         "How deep the pitch wobble is, over the CE-5's Depth range; at 0 there's "
+                         "barely any movement");
+    new_name |=
+        describe(knob_ch_ce5_low, "Low Cut",
+                 "Thins the chorus's bass below this frequency (the CE-5's Low filter; the dry "
+                 "isn't touched). Under about 100 Hz the cut is only a few dB deep. All the way "
+                 "down is Off");
+    new_name |=
+        describe(knob_ch_ce5_high, "High Cut",
+                 "Darkens the chorus above this frequency (the CE-5's High filter, a gentle "
+                 "slope; the dry isn't touched). All the way up is Off");
+
+    // Tremolo (TR-2): Depth and Wave are plain curves over the pedal's range, in %.
+    new_name |= describe(knob_tr_rate, "Rate",
+                         "The TR-2's Rate: how fast the volume pulses. Sync locks it to the tempo");
+    new_name |= describe(knob_tr_depth, "Depth",
+                         "How far the TR-2's pulse dips, from nothing (0 %) to the pedal's "
+                         "deepest (100 %), evenly. With Wave up, the dip reaches silence only "
+                         "near full Depth, as on the pedal");
+    new_name |= describe(knob_tr_wave, "Wave",
+                         "The pulse's shape, from a smooth triangle (0 %) to as hard an on/off "
+                         "square as the pedal gets (100 %; slow rates get squarer than fast "
+                         "ones, as on the pedal). An even curve over the pedal's range, not "
+                         "its knob's positions");
+
+    // Delay (DD-8)
+    new_name |= describe(knob_del_mix, "Level",
+                         "The DD-8's E.Level: how loud the first repeat is against your dry "
+                         "signal, in dB (the same in every mode; all the way down is Off). The "
+                         "dry always stays at full level");
+    new_name |= describe(knob_del_feedback, "Feedback",
+                         "The DD-8's F.Back: how much of each repeat comes back — 50 % halves "
+                         "every repeat (about ten until they are gone), 75 % gives about 24, "
+                         "100 % never fades. The same in every mode, so switching modes shows "
+                         "what each does to the repeats");
+    new_name |= describe(knob_del_time, sw_delay_stereo->isChecked() ? "L Time" : "Time",
+                         "The DD-8's Time: the gap between repeats. With Stereo on, when the "
+                         "left side repeats (R Time is when the right does): with R Time at "
+                         "twice this, the repeats bounce left, right, left… and last about "
+                         "twice as long, as on the pedal with both outputs connected. Sync "
+                         "locks it to the tempo as a note value");
+
+    // Reverb (RV-6): Mix, Decay and Damping are the pedal's E.Level, Time and Tone.
+    {
+        const auto mode =
+            static_cast<size_t>(std::lround(knob_rev_type->value()) - ReverbProcessor::FIRST_TYPE);
+        new_name |=
+            describe(knob_rev_mix, "Level",
+                     "The RV-6's E.Level: how loud the reverb is beside your dry signal, which "
+                     "always stays at full level. In dB from the pedal's knob at its centre; all "
+                     "the way down is Off");
+        knob_rev_mix->set_value_formatter([](double pct) {
+            return gain_db(rv6::level_gain(static_cast<float>(pct / 100.0)));
+        });
+        new_name |=
+            describe(knob_rev_room, "Time",
+                     "The RV-6's Time: how long the reverb lasts in this mode (the time its "
+                     "middle takes to fade away). The first fifth of the turn changes little. As "
+                     "on the pedal, a longer tail starts quieter");
+        // Shimmer's tail isn't one decay: its octaves keep feeding it. No seconds there.
+        const bool tank = mode < static_cast<size_t>(rv6::Mode::SHIMMER);
+        knob_rev_room->set_value_formatter(
+            tank ? std::function<QString(double)>([mode](double pct) {
+                const float s = rv6::knob_table_log(rv6::VOICINGS[mode].rt60_1k,
+                                                    static_cast<float>(pct / 100.0));
+                return QString("%1 s").arg(s, 0, 'f', s < 10.0f ? 2 : 1);
+            })
+                 : std::function<QString(double)>{});
+        new_name |=
+            describe(knob_rev_damping, "Tone",
+                     "The RV-6's Tone: below the centre the reverb gets darker and fuller "
+                     "(treble down, bass up); above, brighter (the treble lifted up to about "
+                     "10 dB). 0 % is neutral");
+        knob_rev_damping->set_value_formatter(tilt_percent);
+    }
+
+    if (new_name) {
+        fit_to_font(); // a longer name may need a wider text column
+    }
+}
+
 void MainWindow::update_inactive_controls() {
+    describe_controls();
     const bool mono_delay = !sw_delay_stereo->isChecked();
-    const QString why_mono = "with Stereo off the delay is one line, at L/Mono Time";
+    const QString why_mono = "with Stereo off the delay is one line, at Time";
     set_inactive(knob_del_right_time, knob_del_right_time, mono_delay, why_mono);
     KnobWidget* right_note = sync_of(knob_del_right_time).note_knob;
     set_inactive(right_note, right_note, mono_delay, why_mono);
-
-    const bool manual = sw_wah_manual->isChecked();
-    set_inactive(knob_wah_sens, knob_wah_sens, manual,
-                 "in Manual mode Position sweeps the wah, not your playing");
-    set_inactive(knob_wah_pos, knob_wah_pos, !manual,
-                 "in Auto mode your playing sweeps the wah; turn Manual on to use Position");
-    set_inactive(sw_wah_reverse->parentWidget(), sw_wah_reverse, !manual,
-                 "Reverse flips Position, which only works in Manual mode");
 }
 
 void MainWindow::setup_ui() {
@@ -926,6 +1141,8 @@ void MainWindow::setup_ui() {
                 engine->get_transpose().set_mix_pct(static_cast<float>(v));
             });
         mix->set_scroll_step(1.0);
+        mix->setToolTip("The shifted pitch against your dry signal: 100 % is the shifted pitch "
+                        "only, lower adds the original for harmonies and octaves");
         QWidget* col = make_effect_row("Transpose", sw_transpose_enable, {mix, semis});
         sw_transpose_reverse = make_reverse_switch(col, "Semitones");
         sw_transpose_continuous = new ToggleSwitch;
@@ -938,21 +1155,18 @@ void MainWindow::setup_ui() {
         fx_cols[&engine->get_transpose()] = col;
     }
 
-    // Noise Gate
+    // Noise Gate: the Boss NS-2 (Ns2Gate.h)
     {
         using namespace NAMConstants;
         knob_gate_thresh = new KnobWidget("Threshold", GATE_THRESH_MIN, GATE_THRESH_MAX,
                                           GATE_THRESH_DEFAULT, "dB");
-        knob_gate_attack =
-            new KnobWidget("Attack", GATE_ATTACK_MIN, GATE_ATTACK_MAX, GATE_ATTACK_DEFAULT, "ms");
         knob_gate_release = new KnobWidget("Release", GATE_RELEASE_MIN, GATE_RELEASE_MAX,
                                            GATE_RELEASE_DEFAULT, "ms");
         knob_gate_thresh->set_scroll_step(1.0);
-        knob_gate_attack->set_scroll_step(1.0);
         knob_gate_release->set_scroll_step(10.0);
 
-        QWidget* col = make_effect_row("Noise Gate", sw_gate_enable,
-                                       {knob_gate_thresh, knob_gate_attack, knob_gate_release});
+        QWidget* col =
+            make_effect_row("Noise Gate", sw_gate_enable, {knob_gate_thresh, knob_gate_release});
         gr_gate = new GainReductionMeter(40.0f, Theme::accent("gate"));
         place_across_switch_columns(col, gr_gate);
         Theme::tag_card(col, "gate");
@@ -960,76 +1174,89 @@ void MainWindow::setup_ui() {
         fx_cols[&engine->get_gate()] = col;
     }
 
-    // Compressor
+    // Compressor: the Boss CS-3 (Cs3Compressor.h)
     {
         using namespace NAMConstants;
         knob_comp_thresh = new KnobWidget("Threshold", COMP_THRESH_MIN, COMP_THRESH_MAX,
                                           COMP_THRESH_DEFAULT, "dB");
-        knob_comp_ratio =
-            new KnobWidget("Ratio", COMP_RATIO_MIN, COMP_RATIO_MAX, COMP_RATIO_DEFAULT, ":1");
-        knob_comp_attack =
-            new KnobWidget("Attack", COMP_ATTACK_MIN, COMP_ATTACK_MAX, COMP_ATTACK_DEFAULT, "ms");
         knob_comp_release = new KnobWidget("Release", COMP_RELEASE_MIN, COMP_RELEASE_MAX,
                                            COMP_RELEASE_DEFAULT, "ms");
         knob_comp_makeup =
             new KnobWidget("Level", COMP_MAKEUP_MIN, COMP_MAKEUP_MAX, COMP_MAKEUP_DEFAULT, "dB");
         knob_comp_thresh->set_scroll_step(1.0);
-        knob_comp_ratio->set_scroll_step(0.5);
-        knob_comp_attack->set_scroll_step(1.0);
         knob_comp_release->set_scroll_step(10.0);
         knob_comp_makeup->set_scroll_step(0.5);
 
         QWidget* col = make_effect_row("Compressor", sw_comp_enable,
-                                       {knob_comp_thresh, knob_comp_ratio, knob_comp_attack,
-                                        knob_comp_release, knob_comp_makeup});
+                                       {knob_comp_makeup, knob_comp_thresh, knob_comp_release});
         gr_comp = new GainReductionMeter(20.0f, Theme::accent("comp"));
         place_across_switch_columns(col, gr_comp);
+        knob_comp_cs3_tone =
+            late_knob("compressor", "cs3Tone", new KnobWidget("Tone", 0.0, 100.0, 50.0, "%"),
+                      [this](double v) {
+                          engine->get_comp().set_tone_pct(static_cast<float>(v));
+                      });
+        knob_comp_cs3_tone->set_scroll_step(1.0);
+        append_to_row(col, knob_comp_cs3_tone);
         Theme::tag_card(col, "comp");
 
         fx_cols[&engine->get_comp()] = col;
     }
 
-    // Wah
+    // Wah: the Boss AW-3 (Aw3Wah.h), shown with the pedal's names
     {
         using namespace NAMConstants;
-        knob_wah_sens =
-            new KnobWidget("Sensitivity", WAH_SENS_MIN, WAH_SENS_MAX, WAH_SENS_DEFAULT, "%");
-        knob_wah_res = new KnobWidget("Resonance", WAH_RES_MIN, WAH_RES_MAX, WAH_RES_DEFAULT, "%");
+        knob_wah_sens = new KnobWidget("Sens", WAH_SENS_MIN, WAH_SENS_MAX, WAH_SENS_DEFAULT, "%");
         knob_wah_mix = new KnobWidget("Mix", WAH_MIX_MIN, WAH_MIX_MAX, WAH_MIX_DEFAULT, "%");
         knob_wah_sens->set_scroll_step(1.0);
-        knob_wah_res->set_scroll_step(1.0);
         knob_wah_mix->set_scroll_step(1.0);
-
-        // Mode: Auto, or Manual when switched on (registered as "dynamicWah/mode").
-        sw_wah_manual = new ToggleSwitch;
-        sw_wah_manual->setCheckable(true);
-        sw_wah_manual->setToolTip("Manual: Position sweeps the wah (map an expression pedal) · "
-                                  "off = Auto: your playing sweeps it");
-        // GUIDELINE EXCEPTION (commented-out code, user's call 2026-10-01): the Mode knob
-        // this switch replaced, kept for reference.
-        // KnobWidget* mode =
-        //     late_knob("dynamicWah", "mode", new KnobWidget("Mode", 0, 1, 0), [this](double v) {
-        //         engine->get_wah().set_pedal_mode(v > 0.5);
-        //     });
-        // mode->set_snap(1.0);
-        // mode->set_value_formatter([](double v) {
-        //     return v > 0.5 ? QString("Pedal") : QString("Auto");
-        // });
-        // mode->setToolTip("Auto: the envelope sweeps the wah · Pedal: Position sweeps it (map an "
-        //                  "expression pedal)");
-        KnobWidget* pos = late_knob("dynamicWah", "position",
-                                    new KnobWidget("Position", WAH_POSITION_MIN, WAH_POSITION_MAX,
-                                                   WAH_POSITION_DEFAULT, "%"),
-                                    [this](double v) {
-                                        engine->get_wah().set_position_pct(static_cast<float>(v));
-                                    });
+        KnobWidget* pos = late_knob(
+            "dynamicWah", "position",
+            new KnobWidget("Manual", WAH_POSITION_MIN, WAH_POSITION_MAX, WAH_POSITION_DEFAULT, "%"),
+            [this](double v) {
+                engine->get_wah().set_position_pct(static_cast<float>(v));
+            });
         pos->set_scroll_step(1.0);
         knob_wah_pos = pos;
-        QWidget* col =
-            make_effect_row("Wah", sw_wah_enable, {knob_wah_mix, knob_wah_sens, pos, knob_wah_res});
-        sw_wah_reverse = make_reverse_switch(col, "Position");
-        put_in_sync_column(col, make_caption_switch(sw_wah_manual, "Manual"));
-        connect(sw_wah_manual, &ToggleSwitch::toggled, this, &MainWindow::update_inactive_controls);
+        knob_wah_aw3_decay =
+            late_knob("dynamicWah", "aw3Decay", new KnobWidget("Decay", 0.0, 100.0, 50.0, "%"),
+                      [this](double v) {
+                          engine->get_wah().set_decay_pct(static_cast<float>(v));
+                      });
+        knob_wah_aw3_decay->set_scroll_step(1.0);
+        knob_wah_aw3_decay->set_value_formatter([](double pct) {
+            const float s = aw3::decay_seconds(static_cast<float>(pct / 100.0));
+            return QString("%1 ms").arg(std::lround(1000.0f * s));
+        });
+        knob_wah_type = late_knob("dynamicWah", "type",
+                                  new KnobWidget("Type", DynamicWahProcessor::FIRST_TYPE,
+                                                 DynamicWahProcessor::LAST_TYPE,
+                                                 DynamicWahProcessor::AW3_UP, ""),
+                                  [this](double v) {
+                                      engine->get_wah().set_type(static_cast<int>(std::lround(v)));
+                                  });
+        knob_wah_type->set_snap(1.0);
+        knob_wah_type->set_scroll_step(1.0);
+        knob_wah_type->set_value_formatter([](double v) {
+            switch (std::lround(v)) {
+                case DynamicWahProcessor::AW3_DOWN:
+                    return QString("Down");
+                case DynamicWahProcessor::AW3_SHARP:
+                    return QString("Sharp");
+                default:
+                    return QString("Up");
+            }
+        });
+        knob_wah_type->setToolTip(
+            "A model of a Boss AW-3 Dynamic Wah, measured from the real pedal, in its Up, Down "
+            "or Sharp mode. Up: playing harder opens the filter toward 2.2 kHz · Down: it rests "
+            "high and playing pulls it down to ~400 Hz · Sharp: Up with a taller, narrower peak");
+        connect(knob_wah_type, &KnobWidget::value_changed, this,
+                &MainWindow::update_inactive_controls); // Down's knobs read differently
+        QWidget* col = make_effect_row("Wah", sw_wah_enable, {knob_wah_mix, knob_wah_sens, pos});
+        sw_wah_reverse = make_reverse_switch(col, "Manual");
+        append_to_row(col, knob_wah_aw3_decay);
+        append_to_row(col, knob_wah_type);
         Theme::tag_card(col, "wah");
 
         fx_cols[&engine->get_wah()] = col;
@@ -1046,6 +1273,12 @@ void MainWindow::setup_ui() {
         knob_drive->set_scroll_step(1.0);
         knob_drive_tone->set_scroll_step(1.0);
         knob_drive_level->set_scroll_step(0.5);
+        knob_drive_level->setToolTip("The overdrive's output volume. With Drive low and Level "
+                                     "up it's a clean boost that pushes the amp harder");
+        knob_drive->setToolTip("How hard the Tube Screamer circuit clips: from a light edge to "
+                               "a thick, singing overdrive");
+        knob_drive_tone->setToolTip("Brightness: lower is smoother and darker, higher is more "
+                                    "cutting");
         QWidget* col = make_effect_row("Overdrive", sw_drive_enable,
                                        {knob_drive_level, knob_drive, knob_drive_tone});
         Theme::tag_card(col, "drive");
@@ -1074,46 +1307,77 @@ void MainWindow::setup_ui() {
         fx_cols[&engine->get_nam()] = col;
     }
 
-    // EQ
+    // EQ: the Boss GE-7 (Ge7Eq.h), then the Low and High Cut
     {
         using namespace NAMConstants;
-        knob_low = new KnobWidget("Bass", EQ_BAND_MIN, EQ_BAND_MAX, EQ_BAND_DEFAULT, "dB");
-        knob_mid = new KnobWidget("Low-Mid", EQ_BAND_MIN, EQ_BAND_MAX, EQ_BAND_DEFAULT, "dB");
-        knob_treble = new KnobWidget("Treble", EQ_BAND_MIN, EQ_BAND_MAX, EQ_BAND_DEFAULT, "dB");
-        knob_low->set_scroll_step(0.1);
-        knob_mid->set_scroll_step(0.1);
-        knob_treble->set_scroll_step(0.1);
-
-        auto eq_set = [this](EQProcessor::Band b, bool gain) {
-            return [this, b, gain](double v) {
-                gain ? engine->get_eq().set_gain(b, v) : engine->get_eq().set_freq(b, v);
-            };
-        };
-        KnobWidget* hi_mid =
-            late_knob("eq", "highMid",
-                      new KnobWidget("High-Mid", EQ_BAND_MIN, EQ_BAND_MAX, EQ_BAND_DEFAULT, "dB"),
-                      eq_set(EQProcessor::Band::HIGH_MID, true));
-        hi_mid->set_scroll_step(0.1);
+        // A band's gain knob is named by where the band sits now, following its frequency
+        // knob (the pedal's own frequencies by default: 91, 196, 370, 729 Hz, 1.5, 3.3 and
+        // 6.4 kHz, where its panel says 100 … 6.4k); the last is a shelf. For MIDI it is
+        // "Band 1" … "Band 7".
+        QList<KnobWidget*> gains, freqs;
+        for (size_t i = 0; i < ge7::BAND_COUNT; ++i) {
+            const bool shelf = i == ge7::SHELF;
+            KnobWidget* gain =
+                late_knob("eq", QString("gain%1").arg(i + 1),
+                          new KnobWidget(QString("Band %1").arg(i + 1), ge7::SLIDER_MIN,
+                                         ge7::SLIDER_MAX, 0.0, "dB"),
+                          [this, i](double v) {
+                              engine->get_eq().set_slider(i, v);
+                          });
+            gain->set_scroll_step(0.1);
+            gain->setProperty("fixedName", QString("Band %1").arg(i + 1));
+            gain->setToolTip(
+                shelf ? QString("The top band of a Boss GE-7 Equalizer, measured from the real "
+                                "pedal: a shelf, in dB — what everything far above its frequency "
+                                "gets (half of it at the frequency itself)")
+                      : QString("A band of a Boss GE-7 Equalizer, measured from the real pedal, "
+                                "in dB: what it does at its own frequency with the other bands "
+                                "at 0. As on the pedal, the bands narrow as they're pushed and "
+                                "neighbours add up"));
+            gains.push_back(gain);
+            KnobWidget* freq = late_knob(
+                "eq", QString("freq%1").arg(i + 1),
+                new KnobWidget(QString("Freq %1").arg(i + 1), ge7::BAND_HZ[i] / ge7::FREQUENCY_SPAN,
+                               ge7::BAND_HZ[i] * ge7::FREQUENCY_SPAN, ge7::BAND_HZ[i], "Hz"),
+                [this, i](double v) {
+                    engine->get_eq().set_frequency(i, v);
+                });
+            freq->set_log_taper(true);
+            freq->set_value_formatter(hz_label());
+            freq->setToolTip(QString("Where the band above sits: the pedal's own frequency by "
+                                     "default, an octave either way%1. The band's knob takes its "
+                                     "name from here")
+                                 .arg(shelf ? " (the shelf reaches half its dB here)" : ""));
+            freqs.push_back(freq);
+            // The gain knob's name: the band's frequency, live. Its two ends first, for the
+            // column's width.
+            gain->set_label(format_hz(ge7::BAND_HZ[i] / ge7::FREQUENCY_SPAN, 0.0));
+            gain->set_label(format_hz(ge7::BAND_HZ[i] * ge7::FREQUENCY_SPAN, 0.0));
+            gain->set_live_label(format_hz(freq->value(), 0.0));
+            connect(freq, &KnobWidget::value_changed, gain, [gain](double hz) {
+                gain->set_live_label(format_hz(hz, 0.0));
+            });
+        }
+        KnobWidget* level = late_knob(
+            "eq", "level", new KnobWidget("Level", ge7::SLIDER_MIN, ge7::SLIDER_MAX, 0.0, "dB"),
+            [this](double v) {
+                engine->get_eq().set_slider(ge7::BAND_COUNT, v);
+            });
+        level->set_scroll_step(0.1);
+        level->setToolTip("The Equalizer's output level, in dB");
+        // Each band's frequency sits under its gain.
         QWidget* col =
-            make_effect_row("Equalizer", sw_eq_enable, {knob_low, knob_mid, hi_mid, knob_treble});
+            make_effect_row("Equalizer", sw_eq_enable, {gains[0], gains[1], gains[2], gains[3]});
+        add_detail_row(col, {freqs[0], freqs[1], freqs[2], freqs[3]});
+        add_detail_row(col, {gains[4], gains[5], gains[6], level});
+        add_detail_row(col, {freqs[4], freqs[5], freqs[6]});
         add_detail_row(
             col,
             {
-                make_eq_freq_knob("lowFreq", "Bass Freq", EQ_BASS_FREQ_MIN, EQ_BASS_FREQ_MAX,
-                                  EQ_BASS_FREQ_DEFAULT, EQProcessor::Band::BASS, 0),
-                make_eq_freq_knob("midFreq", "Low-Mid Freq", EQ_MID_FREQ_MIN, EQ_MID_FREQ_MAX,
-                                  EQ_MID_FREQ_DEFAULT, EQProcessor::Band::MIDDLE, 0),
-                make_eq_freq_knob("highMidFreq", "High-Mid Freq", EQ_HI_MID_FREQ_MIN,
-                                  EQ_HI_MID_FREQ_MAX, EQ_HI_MID_FREQ_DEFAULT,
-                                  EQProcessor::Band::HIGH_MID, 0),
-                make_eq_freq_knob("trebleFreq", "Treble Freq", EQ_TREBLE_FREQ_MIN,
-                                  EQ_TREBLE_FREQ_MAX, EQ_TREBLE_FREQ_DEFAULT,
-                                  EQProcessor::Band::TREBLE, 0),
-                make_eq_freq_knob("lowCut", "Low Cut", LOW_CUT_MIN, LOW_CUT_MAX, LOW_CUT_DEFAULT,
-                                  EQProcessor::Band::LOW_CUT, LOW_CUT_MIN + 0.5),
-                make_eq_freq_knob("highCut", "High Cut", HIGH_CUT_MIN, HIGH_CUT_MAX,
-                                  HIGH_CUT_DEFAULT, EQProcessor::Band::HIGH_CUT,
-                                  -(HIGH_CUT_MAX - 1.0)),
+                make_eq_cut_knob("lowCut", "Low Cut", LOW_CUT_MIN, LOW_CUT_MAX, LOW_CUT_DEFAULT,
+                                 EQProcessor::Cut::LOW, LOW_CUT_MIN + 0.5),
+                make_eq_cut_knob("highCut", "High Cut", HIGH_CUT_MIN, HIGH_CUT_MAX,
+                                 HIGH_CUT_DEFAULT, EQProcessor::Cut::HIGH, -(HIGH_CUT_MAX - 1.0)),
             });
         sw_eq_enable->setChecked(true);
         Theme::tag_card(col, "eq");
@@ -1130,6 +1394,8 @@ void MainWindow::setup_ui() {
         knob_vol_pos->set_scroll_step(1.0);
         knob_vol_mid->set_scroll_step(1.0);
         knob_vol_mid->setToolTip("Level at half travel: lower = swells stay quiet longer");
+        knob_vol_pos->setToolTip("The pedal's position: 0 % silent, 100 % full volume. Map an "
+                                 "expression pedal here for swells");
         QWidget* col =
             make_effect_row("Volume Pedal", sw_volume_enable, {knob_vol_pos, knob_vol_mid});
         sw_volume_reverse = make_reverse_switch(col, "Volume");
@@ -1137,7 +1403,7 @@ void MainWindow::setup_ui() {
         fx_cols[&engine->get_volume()] = col;
     }
 
-    // Flanger
+    // Flanger: the Boss BF-3 (Bf3Flanger.h)
     {
         using namespace NAMConstants;
         knob_fl_rate =
@@ -1146,15 +1412,47 @@ void MainWindow::setup_ui() {
                                        FLANGER_DEPTH_DEFAULT, "%");
         knob_fl_feedback = new KnobWidget("Feedback", FLANGER_FEEDBACK_MIN, FLANGER_FEEDBACK_MAX,
                                           FLANGER_FEEDBACK_DEFAULT, "%");
-        knob_fl_mix =
-            new KnobWidget("Mix", FLANGER_MIX_MIN, FLANGER_MIX_MAX, FLANGER_MIX_DEFAULT, "%");
-        knob_fl_rate->set_scroll_step(0.1);
+        // Rate turns like the pedal's: 0.06 Hz at 7:00, 0.33 Hz at 12:00, 10 Hz at 5:00.
+        std::array<KnobWidget::TaperPoint, bf3::RATE_HZ.size()> rate_curve{};
+        for (size_t i = 0; i < rate_curve.size(); ++i) {
+            rate_curve[i] = {bf3::KNOB_AT[i], bf3::RATE_HZ[i]};
+        }
+        knob_fl_rate->set_taper(rate_curve);
+        knob_fl_rate->set_value_formatter([](double hz) {
+            return QString("%1 Hz").arg(hz, 0, 'f', hz < 1.0 ? 2 : 1);
+        });
         knob_fl_depth->set_scroll_step(1.0);
         knob_fl_feedback->set_scroll_step(1.0);
-        knob_fl_mix->set_scroll_step(1.0);
+        knob_fl_wet = late_knob("flanger", "mix", new KnobWidget("Wet", 0.0, 100.0, 100.0, "%"),
+                                [this](double v) {
+                                    engine->get_flanger().set_wet_pct(static_cast<float>(v));
+                                });
+        knob_fl_wet->set_scroll_step(1.0);
 
+        knob_fl_type = late_knob(
+            "flanger", "type",
+            new KnobWidget("Type", FlangerProcessor::FIRST_TYPE, FlangerProcessor::LAST_TYPE,
+                           FlangerProcessor::BF3_STANDARD, ""),
+            [this](double v) {
+                engine->get_flanger().set_type(static_cast<int>(std::lround(v)));
+            });
+        knob_fl_type->set_snap(1.0);
+        knob_fl_type->set_scroll_step(1.0);
+        knob_fl_type->set_value_formatter([](double v) {
+            switch (std::lround(v)) {
+                case FlangerProcessor::BF3_ULTRA:
+                    return QString("Ultra");
+                default:
+                    return QString("Standard");
+            }
+        });
+        knob_fl_type->setToolTip(
+            "A model of a Boss BF-3 Flanger, measured from the real pedal. Standard / Ultra: its "
+            "two modes (Ultra: four evenly spaced copies, a stronger comb; it is the less "
+            "exact of the two). Stereo is the pedal's two outputs: the same flanger on each "
+            "side, the right side's sweep an eighth of a cycle ahead");
         QWidget* col = make_effect_row("Flanger", sw_flanger_enable,
-                                       {knob_fl_mix, knob_fl_rate, knob_fl_depth, knob_fl_feedback},
+                                       {knob_fl_wet, knob_fl_rate, knob_fl_depth, knob_fl_feedback},
                                        &sw_flanger_stereo);
         add_tempo_sync(col, knob_fl_rate, "Rate", false, 1 /* 2 bars */, FLANGER_RATE_MIN,
                        FLANGER_RATE_MAX, [this](double v) {
@@ -1162,20 +1460,24 @@ void MainWindow::setup_ui() {
                        });
         KnobWidget* range =
             late_knob("flanger", "range",
-                      new KnobWidget("Range", FLANGER_RANGE_MIN, FLANGER_RANGE_MAX,
-                                     FLANGER_RANGE_DEFAULT, "%"),
+                      new KnobWidget("Manual", FLANGER_MANUAL_MIN, FLANGER_MANUAL_MAX,
+                                     FLANGER_MANUAL_DEFAULT, "ms"),
                       [this](double v) {
-                          engine->get_flanger().set_range_pct(static_cast<float>(v));
+                          engine->get_flanger().set_manual_ms(static_cast<float>(v));
                       });
-        range->set_scroll_step(1.0);
-        range->setToolTip("Sweep length: low = short, metallic · high = long jet sweep");
+        range->set_log_taper(true);
+        range->set_value_formatter([](double ms) {
+            return QString("%1 ms").arg(ms, 0, 'f', ms < 10.0 ? 2 : 1);
+        });
+        knob_fl_range = range;
         append_to_row(col, range);
+        append_to_row(col, knob_fl_type);
         Theme::tag_card(col, "flanger");
 
         fx_cols[&engine->get_flanger()] = col;
     }
 
-    // Phaser
+    // Phaser: the Boss PH-3 (Ph3Phaser.h)
     {
         using namespace NAMConstants;
         knob_ph_rate =
@@ -1184,26 +1486,67 @@ void MainWindow::setup_ui() {
             new KnobWidget("Depth", PHASER_DEPTH_MIN, PHASER_DEPTH_MAX, PHASER_DEPTH_DEFAULT, "%");
         knob_ph_feedback = new KnobWidget("Feedback", PHASER_FEEDBACK_MIN, PHASER_FEEDBACK_MAX,
                                           PHASER_FEEDBACK_DEFAULT, "%");
-        knob_ph_mix =
-            new KnobWidget("Mix", PHASER_MIX_MIN, PHASER_MIX_MAX, PHASER_MIX_DEFAULT, "%");
         knob_ph_rate->set_scroll_step(0.1);
+        knob_ph_rate->set_value_formatter([](double v) {
+            if (v <= 0.0) {
+                return QString("Stop");
+            }
+            return QString::number(v, 'f', v < 1.0 ? 2 : 1) + " Hz";
+        });
         knob_ph_depth->set_scroll_step(1.0);
         knob_ph_feedback->set_scroll_step(1.0);
-        knob_ph_mix->set_scroll_step(1.0);
 
+        knob_ph_wet = late_knob("phaser", "mix", new KnobWidget("Wet", 0.0, 100.0, 100.0, "%"),
+                                [this](double v) {
+                                    engine->get_phaser().set_wet_pct(static_cast<float>(v));
+                                });
+        knob_ph_wet->set_scroll_step(1.0);
         QWidget* col = make_effect_row("Phaser", sw_phaser_enable,
-                                       {knob_ph_mix, knob_ph_rate, knob_ph_depth, knob_ph_feedback},
+                                       {knob_ph_wet, knob_ph_rate, knob_ph_depth, knob_ph_feedback},
                                        &sw_phaser_stereo);
         add_tempo_sync(col, knob_ph_rate, "Rate", false, 4 /* 1/2 */, PHASER_RATE_MIN,
                        PHASER_RATE_MAX, [this](double v) {
                            engine->get_phaser().set_rate_hz(static_cast<float>(v));
                        });
+        knob_ph_type =
+            late_knob("phaser", "type",
+                      new KnobWidget("Type", PhaserProcessor::FIRST_TYPE,
+                                     PhaserProcessor::LAST_TYPE, PhaserProcessor::PH3_4_STAGE, ""),
+                      [this](double v) {
+                          engine->get_phaser().set_type(static_cast<int>(std::lround(v)));
+                      });
+        knob_ph_type->set_snap(1.0);
+        knob_ph_type->set_scroll_step(1.0);
+        knob_ph_type->set_value_formatter([](double v) {
+            switch (std::lround(v)) {
+                case PhaserProcessor::PH3_8_STAGE:
+                    return QString("8 Stage");
+                case PhaserProcessor::PH3_10_STAGE:
+                    return QString("10 Stage");
+                case PhaserProcessor::PH3_12_STAGE:
+                    return QString("12 Stage");
+                case PhaserProcessor::PH3_RISE:
+                    return QString("Rise");
+                case PhaserProcessor::PH3_FALL:
+                    return QString("Fall");
+                case PhaserProcessor::PH3_STEP:
+                    return QString("Step");
+                default:
+                    return QString("4 Stage");
+            }
+        });
+        knob_ph_type->setToolTip(
+            "A model of a Boss PH-3 Phase Shifter's seven modes, measured from the real pedal "
+            "(Rise / Fall: an endless sweep up or down; Step: the sweep in steps)");
+        connect(knob_ph_type, &KnobWidget::value_changed, this,
+                &MainWindow::update_inactive_controls);
+        append_to_row(col, knob_ph_type);
         Theme::tag_card(col, "phaser");
 
         fx_cols[&engine->get_phaser()] = col;
     }
 
-    // Chorus
+    // Chorus: the Boss CE-5 (Ce5Chorus.h)
     {
         using namespace NAMConstants;
         knob_ch_rate =
@@ -1211,8 +1554,19 @@ void MainWindow::setup_ui() {
         knob_ch_depth =
             new KnobWidget("Depth", CHORUS_DEPTH_MIN, CHORUS_DEPTH_MAX, CHORUS_DEPTH_DEFAULT, "%");
         knob_ch_mix =
-            new KnobWidget("Mix", CHORUS_MIX_MIN, CHORUS_MIX_MAX, CHORUS_MIX_DEFAULT, "%");
-        knob_ch_rate->set_scroll_step(0.1);
+            new KnobWidget("Level", CHORUS_LEVEL_MIN, CHORUS_LEVEL_MAX, CHORUS_LEVEL_DEFAULT, "dB");
+        knob_ch_mix->set_value_formatter([](double v) {
+            return v <= CHORUS_LEVEL_MIN ? QString("Off") : QString("%1 dB").arg(v, 0, 'f', 1);
+        });
+        // Rate turns like the CE-5's: 0.25 Hz at 7:00, 0.86 Hz at 12:00, 5.9 Hz at 5:00.
+        std::array<KnobWidget::TaperPoint, ce5::RATE_HZ.size()> rate_curve{};
+        for (size_t i = 0; i < rate_curve.size(); ++i) {
+            rate_curve[i] = {ce5::KNOB_AT[i], ce5::RATE_HZ[i]};
+        }
+        knob_ch_rate->set_taper(rate_curve);
+        knob_ch_rate->set_value_formatter([](double hz) {
+            return QString("%1 Hz").arg(hz, 0, 'f', hz < 1.0 ? 2 : 1);
+        });
         knob_ch_depth->set_scroll_step(1.0);
         knob_ch_mix->set_scroll_step(1.0);
 
@@ -1223,23 +1577,141 @@ void MainWindow::setup_ui() {
                        CHORUS_RATE_MAX, [this](double v) {
                            engine->get_chorus().set_rate_hz(static_cast<float>(v));
                        });
-        // GUIDELINE EXCEPTION (commented-out code, user's call 2026-10-01): Chorus modes are
-        // off for now; the chorus stays in its first mode, Normal (the engine default).
-        // KnobWidget* mode =
-        //     late_knob("chorus", "mode", new KnobWidget("Mode", 0, 3, 0), [this](double v) {
-        //         engine->get_chorus().set_mode(static_cast<int>(std::lround(v)));
-        //     });
-        // mode->set_snap(1.0);
-        // mode->set_value_formatter(&format_chorus_mode);
-        // mode->setToolTip("Normal · Tri (three voices) · Vintage (darker, triangle LFO) · "
-        //                  "Spatial (wider stereo)");
-        // append_to_row(col, mode);
+        knob_ch_ce5_low =
+            late_knob("chorus", "ce5Low",
+                      new KnobWidget("Low Cut", CHORUS_LOW_CUT_MIN, CHORUS_LOW_CUT_MAX,
+                                     CHORUS_LOW_CUT_DEFAULT, "Hz"),
+                      [this](double v) {
+                          engine->get_chorus().set_low_cut_hz(static_cast<float>(v));
+                      });
+        knob_ch_ce5_low->set_log_taper(true);
+        knob_ch_ce5_low->set_value_formatter(hz_label(CHORUS_LOW_CUT_MIN + 0.5));
+        knob_ch_ce5_high =
+            late_knob("chorus", "ce5High",
+                      new KnobWidget("High Cut", CHORUS_HIGH_CUT_MIN, CHORUS_HIGH_CUT_MAX,
+                                     CHORUS_HIGH_CUT_DEFAULT, "Hz"),
+                      [this](double v) {
+                          engine->get_chorus().set_high_cut_hz(static_cast<float>(v));
+                      });
+        knob_ch_ce5_high->set_log_taper(true);
+        knob_ch_ce5_high->set_value_formatter(hz_label(-(CHORUS_HIGH_CUT_MAX - 1.0)));
+        append_to_row(col, knob_ch_ce5_low);
+        append_to_row(col, knob_ch_ce5_high);
         Theme::tag_card(col, "chorus");
 
         fx_cols[&engine->get_chorus()] = col;
     }
 
-    // Tremolo
+    // Rotary speaker: the Boss RT-2 (Rt2Rotary.h); the knobs carry the pedal's names
+    {
+        RotaryProcessor& rot = engine->get_rotary();
+        auto speed = [](const std::array<float, 5>& curve) {
+            return [curve](double pct) {
+                const float hz = rt2::knob_law(curve, static_cast<float>(pct / 100.0));
+                if (hz <= 0.0f) {
+                    return QString("Stop");
+                }
+                return QString("%1 Hz").arg(hz, 0, 'f', hz < 1.0f ? 2 : 1);
+            };
+        };
+        KnobWidget* slow = late_knob(
+            "rotary", "slowSpeed", new KnobWidget("Slow", 0.0, 100.0, 50.0, "%"), [&rot](double v) {
+                rot.set_slow_pct(static_cast<float>(v));
+            });
+        slow->set_value_formatter(speed(rt2::SLOW_HZ));
+        slow->setToolTip("The RT-2's Slow: the horn's speed with Fast off (the drum turns a "
+                         "little slower). All the way down stops the rotors");
+        KnobWidget* fast_knob = late_knob(
+            "rotary", "fastSpeed", new KnobWidget("Fast", 0.0, 100.0, 50.0, "%"), [&rot](double v) {
+                rot.set_fast_pct(static_cast<float>(v));
+            });
+        fast_knob->set_value_formatter(speed(rt2::FAST_HZ));
+        fast_knob->setToolTip("The RT-2's Fast: the horn's speed with Fast on, 2.5–10 turns a "
+                              "second (the drum a little slower)");
+        KnobWidget* drive = late_knob(
+            "rotary", "drive", new KnobWidget("Drive", 0.0, 100.0, 0.0, "%"), [&rot](double v) {
+                rot.set_drive_pct(static_cast<float>(v));
+            });
+        drive->setToolTip("The RT-2's Drive: the amp's distortion, the volume held about even. At "
+                          "0 % clean (Mode III always has a little)");
+        KnobWidget* level = late_knob(
+            "rotary", "level", new KnobWidget("Level", 0.0, 100.0, 50.0, "%"), [&rot](double v) {
+                rot.set_level_pct(static_cast<float>(v));
+            });
+        level->set_value_formatter([](double pct) {
+            return gain_db(rt2::knob_gain(rt2::LEVEL_DB, static_cast<float>(pct / 100.0)));
+        });
+        level->setToolTip("The RT-2's Level: the output volume, in dB from the pedal's knob at "
+                          "its centre. All the way down is Off");
+        knob_rotary_type =
+            late_knob("rotary", "type",
+                      new KnobWidget("Mode", RotaryProcessor::FIRST_TYPE,
+                                     RotaryProcessor::LAST_TYPE, RotaryProcessor::MODE_I, ""),
+                      [&rot](double v) {
+                          rot.set_type(static_cast<int>(std::lround(v)));
+                      });
+        knob_rotary_type->set_snap(1.0);
+        knob_rotary_type->set_scroll_step(1.0);
+        knob_rotary_type->set_value_formatter([](double v) {
+            switch (std::lround(v)) {
+                case RotaryProcessor::MODE_II:
+                    return QString("II");
+                case RotaryProcessor::MODE_III:
+                    return QString("III");
+                default:
+                    return QString("I");
+            }
+        });
+        knob_rotary_type->setToolTip(
+            "A model of a Boss RT-2 Rotary Ensemble, measured from the real pedal. Its Mode: I, a "
+            "Leslie 122 as standard · II, the same with a wider range (a closer, cleaner horn) · "
+            "III, a strong sense of rotation and more distortion, drier and more present");
+        KnobWidget* balance =
+            late_knob("rotary", "balance", new KnobWidget("Balance", 0.0, 100.0, 50.0, "%"),
+                      [&rot](double v) {
+                          rot.set_balance_pct(static_cast<float>(v));
+                      });
+        // As a pan reads: "Even", "40 Drum", "100 Horn".
+        balance->set_value_formatter([](double pct) {
+            const long v = std::lround(2.0 * (std::clamp(pct, 0.0, 100.0) - 50.0));
+            return v == 0 ? QString("Even")
+                          : QString("%1 %2").arg(std::abs(v)).arg(v < 0 ? "Drum" : "Horn");
+        });
+        balance->setToolTip("The RT-2's Balance (its Drive knob with the toggle on BALANCE): the "
+                            "bass rotor (the drum) against the treble horn. All the way down the "
+                            "drum alone, the centre both, all the way up the horn alone");
+        KnobWidget* rise = late_knob(
+            "rotary", "riseFall", new KnobWidget("Rise/Fall", 0.0, 1.0, 0.0, ""), [&rot](double v) {
+                rot.set_slow_ramps(std::lround(v) == 1);
+            });
+        rise->set_snap(1.0);
+        rise->set_scroll_step(1.0);
+        rise->set_value_formatter([](double v) {
+            return std::lround(v) == 1 ? QString("Slow") : QString("Fast");
+        });
+        rise->setToolTip("The RT-2's Rise/Fall Time switch: how the rotors change speed. Fast: "
+                         "the horn in about a quarter second, the drum in a second or two · "
+                         "Slow: the horn in a few seconds, the heavy drum coasting down for "
+                         "twenty and taking half a minute to get back up");
+        for (KnobWidget* k : {slow, fast_knob, drive, level, balance}) {
+            k->set_scroll_step(1.0);
+        }
+        QWidget* col = make_effect_row("Rotary", sw_rotary_enable, {level, slow, fast_knob, drive},
+                                       &sw_rotary_stereo);
+        append_to_row(col, knob_rotary_type);
+        add_detail_row(col, {balance, rise});
+        sw_rotary_fast = new ToggleSwitch;
+        sw_rotary_fast->setCheckable(true);
+        sw_rotary_fast->setToolTip(
+            "Fast: the rotors at the Fast speed (the RT-2's LED red) · off: at the Slow speed "
+            "(green), changing with the Rise/Fall time. Map it to a footswitch in MIDI → "
+            "Mappings…");
+        put_in_sync_column(col, make_caption_switch(sw_rotary_fast, "Fast"));
+        Theme::tag_card(col, "rotary");
+        fx_cols[&rot] = col;
+    }
+
+    // Tremolo: the Boss TR-2 (Tr2Tremolo.h)
     {
         using namespace NAMConstants;
         knob_tr_rate =
@@ -1249,8 +1721,17 @@ void MainWindow::setup_ui() {
         knob_tr_rate->set_scroll_step(0.1);
         knob_tr_depth->set_scroll_step(1.0);
 
-        QWidget* col = make_effect_row("Tremolo", sw_tremolo_enable, {knob_tr_depth, knob_tr_rate},
-                                       &sw_tremolo_stereo);
+        KnobWidget* wave = late_knob(
+            "tremolo", "wave",
+            new KnobWidget("Wave", TREMOLO_WAVE_MIN, TREMOLO_WAVE_MAX, TREMOLO_WAVE_DEFAULT, "%"),
+            [this](double v) {
+                engine->get_tremolo().set_wave_pct(static_cast<float>(v));
+            });
+        wave->set_scroll_step(1.0);
+        knob_tr_wave = wave;
+
+        QWidget* col = make_effect_row("Tremolo", sw_tremolo_enable,
+                                       {knob_tr_rate, knob_tr_depth, wave}, &sw_tremolo_stereo);
         add_tempo_sync(col, knob_tr_rate, "Rate", false, 10 /* 1/8 */, TREMOLO_RATE_MIN,
                        TREMOLO_RATE_MAX, [this](double v) {
                            engine->get_tremolo().set_rate_hz(static_cast<float>(v));
@@ -1260,29 +1741,53 @@ void MainWindow::setup_ui() {
         fx_cols[&engine->get_tremolo()] = col;
     }
 
-    // Delay
+    // Delay: the Boss DD-8 (Dd8Delay.h)
     {
         using namespace NAMConstants;
         knob_del_time =
-            new KnobWidget("L/Mono Time", DELAY_TIME_MIN, DELAY_TIME_MAX, DELAY_TIME_DEFAULT, "ms");
+            new KnobWidget("L Time", DELAY_TIME_MIN, DELAY_TIME_MAX, DELAY_TIME_DEFAULT, "ms");
         knob_del_feedback = new KnobWidget("Feedback", DELAY_FEEDBACK_MIN, DELAY_FEEDBACK_MAX,
                                            DELAY_FEEDBACK_DEFAULT, "%");
-        knob_del_mix = new KnobWidget("Mix", DELAY_MIX_MIN, DELAY_MIX_MAX, DELAY_MIX_DEFAULT, "%");
+        knob_del_mix =
+            new KnobWidget("Level", DELAY_LEVEL_MIN, DELAY_LEVEL_MAX, DELAY_LEVEL_DEFAULT, "dB");
+        knob_del_mix->set_value_formatter([](double v) {
+            return v <= DELAY_LEVEL_MIN ? QString("Off") : QString("%1 dB").arg(v, 0, 'f', 1);
+        });
         knob_del_time->set_scroll_step(1.0);
         knob_del_feedback->set_scroll_step(1.0);
         knob_del_mix->set_scroll_step(1.0);
 
-        // R Time: the right line's own time, synced by the row's Sync switch too; beside Time.
+        // R Time: when the right repeats (Stereo on); synced by the row's Sync switch too;
+        // beside Time.
         knob_del_right_time = new KnobWidget("R Time", DELAY_TIME_MIN, DELAY_TIME_MAX,
                                              DELAY_RIGHT_TIME_DEFAULT, "ms");
         knob_del_right_time->set_scroll_step(1.0);
         knob_del_right_time->setToolTip(
-            "Right repeat time (Stereo on): different from L/Mono Time for a wide, uneven bounce");
-        QWidget* col =
-            make_effect_row("Delay", sw_delay_enable,
-                            {knob_del_mix, knob_del_time, knob_del_right_time, knob_del_feedback},
-                            &sw_delay_stereo);
-        add_tempo_sync(col, knob_del_time, "L/Mono Time", true, 8 /* 1/8. */, DELAY_TIME_MIN,
+            "Stereo on: when the right side repeats, as L Time is when the left does. Twice "
+            "L Time is the DD-8's own ping-pong (left, right, left… evenly); equal to it, "
+            "both sides repeat together");
+        knob_del_type =
+            late_knob("delay", "type",
+                      new KnobWidget("Type", DelayProcessor::FIRST_TYPE, DelayProcessor::LAST_TYPE,
+                                     DelayProcessor::DD8_STANDARD, ""),
+                      [this](double v) {
+                          engine->get_delay().set_type(static_cast<int>(std::lround(v)));
+                      });
+        knob_del_type->set_snap(1.0);
+        knob_del_type->set_scroll_step(1.0);
+        knob_del_type->set_value_formatter([](double v) {
+            // Index order is the preset value (delay/type), from FIRST_TYPE.
+            static const QString names[] = {"Standard", "Analog", "Tape", "Warm", "Mod"};
+            const long first = DelayProcessor::FIRST_TYPE, last = DelayProcessor::LAST_TYPE;
+            return names[std::clamp(std::lround(v), first, last) - first];
+        });
+        knob_del_type->setToolTip("Models of a Boss DD-8 Digital Delay's Standard, Analog, Tape, "
+                                  "Warm and Mod modes, measured from the real pedal");
+        QWidget* col = make_effect_row(
+            "Delay", sw_delay_enable,
+            {knob_del_mix, knob_del_time, knob_del_right_time, knob_del_feedback, knob_del_type},
+            &sw_delay_stereo);
+        add_tempo_sync(col, knob_del_time, "L Time", true, 8 /* 1/8. */, DELAY_TIME_MIN,
                        DELAY_TIME_MAX, [this](double v) {
                            engine->get_delay().set_time(static_cast<float>(v));
                        });
@@ -1292,58 +1797,6 @@ void MainWindow::setup_ui() {
                 engine->get_delay().set_right_time(static_cast<float>(v));
             },
             sync_of(knob_del_time).sync);
-        KnobWidget* low_cut = late_knob(
-            "delay", "lowCut",
-            new KnobWidget("Low Cut", LOW_CUT_MIN, DELAY_LOW_CUT_MAX, LOW_CUT_DEFAULT, "Hz"),
-            [this](double v) {
-                engine->get_delay().set_low_cut(static_cast<float>(v));
-            });
-        low_cut->set_log_taper(true);
-        low_cut->set_value_formatter(hz_label(LOW_CUT_MIN + 0.5));
-        KnobWidget* high_cut = late_knob(
-            "delay", "highCut",
-            new KnobWidget("High Cut", DELAY_HIGH_CUT_MIN, HIGH_CUT_MAX, HIGH_CUT_DEFAULT, "Hz"),
-            [this](double v) {
-                engine->get_delay().set_high_cut(static_cast<float>(v));
-            });
-        high_cut->set_log_taper(true);
-        high_cut->set_value_formatter(hz_label(-(HIGH_CUT_MAX - 1.0)));
-        add_detail_row(
-            col,
-            {
-                // GUIDELINE EXCEPTION (commented-out code, user's call 2026-10-01): Cross-feed is
-                // off — the stereo delay is two independent lines (its 0 % default, user
-                // 2026-10-12: L and R times set separately; it was ping-pong before).
-                // make_delay_pct_knob(
-                //     "crossFeed", "Cross-feed", DELAY_CROSS_MIN, DELAY_CROSS_MAX,
-                //     DELAY_CROSS_DEFAULT,
-                //     [this](double v) {
-                //         engine->get_delay().set_cross_feed(static_cast<float>(v));
-                //     },
-                //     "100 % = ping-pong between the sides · 0 % = two separate echoes"),
-                low_cut,
-                high_cut,
-                make_delay_pct_knob(
-                    "saturation", "Saturation", DELAY_SAT_MIN, DELAY_SAT_MAX, DELAY_SAT_DEFAULT,
-                    [this](double v) {
-                        engine->get_delay().set_saturation(static_cast<float>(v));
-                    },
-                    "Tape-style rounding of the repeats as they build up"),
-                // GUIDELINE EXCEPTION (commented-out code, user's call 2026-10-01): Modulation is
-                // off; repeats stay steady (its 0 % default).
-                // make_delay_pct_knob(
-                //     "modulation", "Modulation", DELAY_MOD_MIN, DELAY_MOD_MAX, DELAY_MOD_DEFAULT,
-                //     [this](double v) {
-                //         engine->get_delay().set_modulation(static_cast<float>(v));
-                //     },
-                //     "Wobble on the repeats (tape flutter / chorused echoes)"),
-                make_delay_pct_knob(
-                    "shimmer", "Shimmer", 0.0, 100.0, 0.0,
-                    [this](double v) {
-                        engine->get_delay().set_shimmer_pct(static_cast<float>(v));
-                    },
-                    "Shimmer: octave-up repeats, each echo climbs higher"),
-            });
         sw_delay_stereo->setChecked(true);
         connect(sw_delay_stereo, &ToggleSwitch::toggled, this,
                 &MainWindow::update_inactive_controls);
@@ -1352,80 +1805,41 @@ void MainWindow::setup_ui() {
         fx_cols[&engine->get_delay()] = col;
     }
 
-    // Reverb
+    // Reverb: the Boss RV-6 (Rv6Reverb.h)
     {
         using namespace NAMConstants;
         knob_rev_room =
-            new KnobWidget("Decay", REVERB_ROOM_MIN, REVERB_ROOM_MAX, REVERB_ROOM_DEFAULT, "%");
-        knob_rev_damping = new KnobWidget("Damping", REVERB_DAMPING_MIN, REVERB_DAMPING_MAX,
+            new KnobWidget("Time", REVERB_ROOM_MIN, REVERB_ROOM_MAX, REVERB_ROOM_DEFAULT, "%");
+        knob_rev_damping = new KnobWidget("Tone", REVERB_DAMPING_MIN, REVERB_DAMPING_MAX,
                                           REVERB_DAMPING_DEFAULT, "%");
-        knob_rev_width =
-            new KnobWidget("Width", REVERB_WIDTH_MIN, REVERB_WIDTH_MAX, REVERB_WIDTH_DEFAULT, "%");
         knob_rev_mix =
-            new KnobWidget("Mix", REVERB_MIX_MIN, REVERB_MIX_MAX, REVERB_MIX_DEFAULT, "%");
+            new KnobWidget("Level", REVERB_MIX_MIN, REVERB_MIX_MAX, REVERB_MIX_DEFAULT, "%");
         knob_rev_room->set_scroll_step(1.0);
         knob_rev_damping->set_scroll_step(1.0);
-        knob_rev_width->set_scroll_step(1.0);
         knob_rev_mix->set_scroll_step(1.0);
 
         KnobWidget* rev_type = late_knob(
-            "reverb", "type", new KnobWidget("Type", 0.0, 2.0, 0.0, ""), [this](double v) {
+            "reverb", "type",
+            new KnobWidget("Type", ReverbProcessor::FIRST_TYPE, ReverbProcessor::LAST_TYPE,
+                           static_cast<int>(ReverbProcessor::Type::RV6_PLATE), ""),
+            [this](double v) {
                 engine->get_reverb().set_type(static_cast<int>(std::lround(v)));
             });
         rev_type->set_snap(1.0);
         rev_type->set_scroll_step(1.0);
-        // One line, "Type: Plate", so the knob says what it picks without being turned.
-        rev_type->set_name_visible(false);
         rev_type->set_value_formatter([](double v) {
-            static const char* const names[] = {"Plate", "Hall", "Room"};
-            return QString("Type: %1")
-                .arg(names[std::clamp(static_cast<int>(std::lround(v)), 0, 2)]);
+            // Index order is the preset value (reverb/type), from FIRST_TYPE: append only.
+            static const char* const names[] = {"Modulate", "Spring", "Plate",
+                                                "Hall",     "Room",   "Shimmer"};
+            const long first = ReverbProcessor::FIRST_TYPE, last = ReverbProcessor::LAST_TYPE;
+            return QString(names[std::clamp(std::lround(v), first, last) - first]);
         });
-        rev_type->setToolTip("Plate: dense, bright studio plate · Hall: a big space, distinct "
-                             "early echoes · Room: a smaller space, quick dense echoes");
-        // Decay keeps its 0–100 position (the preset key roomSize) and shows the decay time.
-        knob_rev_room->set_value_formatter([](double v) {
-            const double s = ReverbProcessor::decay_seconds(static_cast<float>(v));
-            return QString("%1 s").arg(s, 0, 'f', s < 1.0 ? 2 : 1);
-        });
-        knob_rev_room->setToolTip("Decay: how long the tail takes to fade by 60 dB, 0.2–10 s "
-                                  "(the shortest settings bottom out at ~0.6 s on Plate and "
-                                  "~0.3 s on Hall)");
-        QWidget* col = make_effect_row(
-            "Reverb", sw_reverb_enable,
-            {knob_rev_mix, rev_type, knob_rev_room, knob_rev_damping, knob_rev_width});
-        knob_rev_pre = new KnobWidget("Pre-delay", REVERB_PRE_DELAY_MIN, REVERB_PRE_DELAY_MAX,
-                                      REVERB_PRE_DELAY_DEFAULT, "ms");
-        KnobWidget* pre = knob_rev_pre;
-        pre->set_scroll_step(5.0);
-        pre->setToolTip("Gap before the tail starts: keeps the note clear of the room");
-        KnobWidget* low_cut = late_knob(
-            "reverb", "lowCut",
-            new KnobWidget("Low Cut", LOW_CUT_MIN, REVERB_LOW_CUT_MAX, LOW_CUT_DEFAULT, "Hz"),
-            [this](double v) {
-                engine->get_reverb().set_low_cut(static_cast<float>(v));
-            });
-        low_cut->set_log_taper(true);
-        low_cut->set_value_formatter(hz_label(LOW_CUT_MIN + 0.5));
-        KnobWidget* high_cut = late_knob(
-            "reverb", "highCut",
-            new KnobWidget("High Cut", REVERB_HIGH_CUT_MIN, HIGH_CUT_MAX, HIGH_CUT_DEFAULT, "Hz"),
-            [this](double v) {
-                engine->get_reverb().set_high_cut(static_cast<float>(v));
-            });
-        high_cut->set_log_taper(true);
-        high_cut->set_value_formatter(hz_label(-(HIGH_CUT_MAX - 1.0)));
-        KnobWidget* shimmer = late_knob(
-            "reverb", "shimmer", new KnobWidget("Shimmer", 0.0, 100.0, 0.0, "%"), [this](double v) {
-                engine->get_reverb().set_shimmer_pct(static_cast<float>(v));
-            });
-        shimmer->set_scroll_step(1.0);
-        shimmer->setToolTip("Octave-up feedback into the tail — the shimmer reverb");
-        add_detail_row(col, {pre, low_cut, high_cut, shimmer});
-        add_tempo_sync(col, pre, "Pre-delay", true, 13 /* 1/16 */, REVERB_PRE_DELAY_MIN,
-                       REVERB_PRE_DELAY_SYNC_MAX, [this](double v) {
-                           engine->get_reverb().set_pre_delay(static_cast<float>(v));
-                       });
+        rev_type->setToolTip("Models of a Boss RV-6 Reverb's Modulate, Spring, Plate, Hall, Room "
+                             "and Shimmer modes, measured from the real pedal");
+        knob_rev_type = rev_type;
+        connect(rev_type, &KnobWidget::value_changed, this, &MainWindow::update_inactive_controls);
+        QWidget* col = make_effect_row("Reverb", sw_reverb_enable,
+                                       {knob_rev_mix, knob_rev_room, knob_rev_damping, rev_type});
         Theme::tag_card(col, "reverb");
 
         fx_cols[&engine->get_reverb()] = col;
@@ -1532,6 +1946,7 @@ void MainWindow::setup_ui() {
         {&engine->get_nam(), sw_nam_enable},
         {&engine->get_eq(), sw_eq_enable},
         {&engine->get_chorus(), sw_chorus_enable},
+        {&engine->get_rotary(), sw_rotary_enable},
         {&engine->get_tremolo(), sw_tremolo_enable},
         {&engine->get_delay(), sw_delay_enable},
         {&engine->get_reverb(), sw_reverb_enable},
@@ -1634,16 +2049,21 @@ void MainWindow::set_tuner_show_hz(bool on) {
     persist_setting("tuner/showHz", on);
 }
 
-// EQ band frequency knob (log taper, "Off" past off_at).
-QWidget* MainWindow::make_eq_freq_knob(const QString& key, const QString& label, double lo,
-                                       double hi, double def, EQProcessor::Band b, double off_at) {
+// EQ cut frequency knob (log taper, "Off" past off_at).
+KnobWidget* MainWindow::make_eq_cut_knob(const QString& key, const QString& label, double lo,
+                                         double hi, double def, EQProcessor::Cut c, double off_at) {
     KnobWidget* k =
-        late_knob("eq", key, new KnobWidget(label, lo, hi, def, "Hz"), [this, b](double v) {
-            engine->get_eq().set_freq(b, v);
+        late_knob("eq", key, new KnobWidget(label, lo, hi, def, "Hz"), [this, c](double v) {
+            engine->get_eq().set_cut(c, v);
         });
     k->set_log_taper(true);
     k->set_value_formatter(hz_label(off_at));
-    return static_cast<QWidget*>(k);
+    k->setToolTip(c == EQProcessor::Cut::LOW
+                      ? "Removes the bass below this frequency: tightens a boomy sound. All the "
+                        "way down is Off"
+                      : "Removes the treble above this frequency: tames fizz and harshness. All "
+                        "the way up is Off");
+    return k;
 }
 
 QWidget* MainWindow::make_delay_pct_knob(const QString& key, const QString& label, double lo,
@@ -1764,6 +2184,10 @@ QWidget* MainWindow::make_gain_column(const QString& title, KnobWidget*& knob, V
     name->setAlignment(Qt::AlignHCenter);
     knob =
         new KnobWidget("Gain", GAIN_MIN, GAIN_MAX, GAIN_DEFAULT, "dB", KnobWidget::Form::STACKED);
+    knob->setToolTip(title == "Input" ? "Level into NAM-X, before every effect: set it so your "
+                                        "hardest playing peaks in the meter's yellow"
+                                      : "Master volume, after every effect and before the "
+                                        "output limiter");
     knob->set_scroll_step(0.1);
     meter = new VUMeter(Qt::Vertical, channel_count);
 
@@ -2426,9 +2850,12 @@ void MainWindow::knob_param(const QString& group, const QString& key, KnobWidget
     apply(knob->value());
     params.push_back({group, key, knob, nullptr, knob->get_default_value(), false, scope});
     const QString card = target_label_for(knob, group, key);
+    // A knob whose name moves (an Equalizer band's) goes by the name it was made with.
+    const QString name = knob->property("fixedName").isValid()
+                             ? knob->property("fixedName").toString()
+                             : knob->get_label();
     midi_mapper->add_knob("param:" + (group.isEmpty() ? key : group + "/" + key), card,
-                          key == "syncNote" ? knob->get_label() + " (note)" : knob->get_label(),
-                          knob);
+                          key == "syncNote" ? name + " (note)" : name, knob);
 }
 
 void MainWindow::toggle_param(const QString& group, const QString& key, ToggleSwitch* sw,
@@ -2791,6 +3218,7 @@ void MainWindow::save_session_state() {
     }
     pending_settings.clear();
     s.beginGroup("session");
+    s.setValue("version", PresetSerializer::VERSION); // what the values below mean
     for (const auto& p : params) {
         const QString path = p.group.isEmpty() ? p.key : p.group + "/" + p.key;
         s.setValue(path, p.knob ? QVariant(p.knob->value()) : QVariant(p.toggle->isChecked()));
@@ -2814,6 +3242,105 @@ void MainWindow::save_session_state() {
 void MainWindow::restore_session_state() {
     QSettings s;
     s.beginGroup("session");
+    // A session from before preset version 3: the Tremolo's Depth and Wave were positions on
+    // the TR-2's knobs.
+    // … from before version 5 the Chorus's Depth and Mix were positions on the CE-5's knobs,
+    // from before version 6 its Low and High too,
+    if (const int saved = s.value("version", 2).toInt(); saved < 6) {
+        QJsonObject chorus;
+        for (const char* key : {"depth", "mix", "ce5Low", "ce5High"}) {
+            if (s.contains(QString("chorus/") + key)) {
+                chorus[key] = s.value(QString("chorus/") + key).toDouble();
+            }
+        }
+        chorus =
+            PresetSerializer::upgrade(QJsonObject{{"version", saved}, {"chorus", chorus}})["chorus"]
+                .toObject();
+        for (auto it = chorus.begin(); it != chorus.end(); ++it) {
+            s.setValue("chorus/" + it.key(), it.value().toDouble());
+        }
+    }
+    // from before version 7 the Flanger's Range, Depth and Feedback were positions on the
+    // BF-3's knobs (and its type 3, the refit, is Standard now),
+    if (const int saved = s.value("version", 2).toInt();
+        saved < 7 || s.value("flanger/type").toInt() == 3) {
+        QJsonObject flanger;
+        for (const char* key : {"range", "depth", "feedback", "type"}) {
+            if (s.contains(QString("flanger/") + key)) {
+                flanger[key] = s.value(QString("flanger/") + key).toDouble();
+            }
+        }
+        flanger = PresetSerializer::upgrade(
+                      QJsonObject{{"version", saved}, {"flanger", flanger}})["flanger"]
+                      .toObject();
+        for (auto it = flanger.begin(); it != flanger.end(); ++it) {
+            s.setValue("flanger/" + it.key(), it.value().toDouble());
+        }
+    }
+    // from before version 8 the Phaser's Depth and Feedback were positions on the PH-3's,
+    if (const int saved = s.value("version", 2).toInt(); saved < 8) {
+        QJsonObject phaser;
+        for (const char* key : {"depth", "feedback", "type"}) {
+            if (s.contains(QString("phaser/") + key)) {
+                phaser[key] = s.value(QString("phaser/") + key).toDouble();
+            }
+        }
+        phaser =
+            PresetSerializer::upgrade(QJsonObject{{"version", saved}, {"phaser", phaser}})["phaser"]
+                .toObject();
+        for (const char* key : {"depth", "feedback"}) {
+            if (phaser.contains(key)) {
+                s.setValue(QString("phaser/") + key, phaser[key].toDouble());
+            }
+        }
+    }
+    // from before version 9 the Compressor's Release was the gain's 63 % recovery time,
+    if (const int saved = s.value("version", 2).toInt();
+        saved < 9 && s.contains("compressor/release")) {
+        const QJsonObject compressor{{"release", s.value("compressor/release").toDouble()}};
+        s.setValue("compressor/release",
+                   PresetSerializer::upgrade(
+                       QJsonObject{{"version", saved}, {"compressor", compressor}})["compressor"]
+                       .toObject()["release"]
+                       .toDouble());
+    }
+    // … and from before version 4 the Delay's Feedback and Mix were positions on the DD-8's.
+    if (s.value("version", 2).toInt() < 4 &&
+        (s.contains("delay/feedback") || s.contains("delay/mix"))) {
+        QJsonObject delay;
+        for (const char* key : {"feedback", "mix", "type"}) {
+            if (s.contains(QString("delay/") + key)) {
+                delay[key] = s.value(QString("delay/") + key).toDouble();
+            }
+        }
+        delay = PresetSerializer::upgrade(QJsonObject{{"version", 3}, {"delay", delay}})["delay"]
+                    .toObject();
+        for (const char* key : {"feedback", "mix"}) {
+            if (delay.contains(key)) {
+                s.setValue(QString("delay/") + key, delay[key].toDouble());
+            }
+        }
+    }
+    if (s.value("version", 2).toInt() < 3 && s.contains("tremolo/depth")) {
+        QJsonObject tremolo;
+        for (const char* key : {"depth", "wave", "rate"}) {
+            if (s.contains(QString("tremolo/") + key)) {
+                tremolo[key] = s.value(QString("tremolo/") + key).toDouble();
+            }
+        }
+        tremolo =
+            PresetSerializer::upgrade(QJsonObject{{"tremolo", tremolo}})["tremolo"].toObject();
+        for (auto it = tremolo.begin(); it != tremolo.end(); ++it) {
+            s.setValue("tremolo/" + it.key(), it.value().toDouble());
+        }
+    }
+    // and before version 10 a Flanger or Phaser `mix` was the removed classic effects' (50 % =
+    // the full effect): today's Wet, on that key, starts at the pedal alone.
+    if (s.value("version", 2).toInt() < 10) {
+        s.remove("flanger/mix");
+        s.remove("phaser/mix");
+    }
+    s.setValue("version", PresetSerializer::VERSION);
     // Session keys are preset keys: an old session's Delay R Time goes through the
     // same upgrade as an old preset's.
     if (s.contains("delay/rightRatio")) {
@@ -2827,6 +3354,30 @@ void MainWindow::restore_session_state() {
         s.setValue("delay/rightTime", delay["rightTime"].toDouble());
         s.setValue("delay/rightSyncNote", delay["rightSyncNote"].toDouble());
         s.remove("delay/rightRatio");
+    }
+    // And an old session's Plate, Hall or Room reverb becomes the RV-6's.
+    if (s.contains("reverb/type")) {
+        const QJsonObject reverb{{"type", s.value("reverb/type").toDouble()}};
+        s.setValue("reverb/type",
+                   PresetSerializer::upgrade(QJsonObject{{"reverb", reverb}})["reverb"]
+                       .toObject()["type"]
+                       .toDouble());
+    }
+    // The same for the Equalizer's sliders saved on the GE-7's printed scale.
+    {
+        QJsonObject eq;
+        for (const char* key : PresetSerializer::EQ_PRINTED_KEYS) {
+            if (s.contains(QString("eq/") + key)) {
+                eq[key] = s.value(QString("eq/") + key).toDouble();
+                s.remove(QString("eq/") + key);
+            }
+        }
+        eq = PresetSerializer::upgrade(QJsonObject{{"eq", eq}})["eq"].toObject();
+        for (auto it = eq.begin(); it != eq.end(); ++it) {
+            if (!s.contains("eq/" + it.key())) {
+                s.setValue("eq/" + it.key(), it.value().toDouble());
+            }
+        }
     }
     for (const auto& p : params) {
         const QString path = p.group.isEmpty() ? p.key : p.group + "/" + p.key;
@@ -2899,9 +3450,6 @@ void MainWindow::register_parameters() {
     knob_param("noiseGate", "threshold", knob_gate_thresh, [e](double v) {
         e->get_gate().set_threshold(static_cast<float>(v));
     });
-    knob_param("noiseGate", "attack", knob_gate_attack, [e](double v) {
-        e->get_gate().set_attack(static_cast<float>(v));
-    });
     knob_param("noiseGate", "release", knob_gate_release, [e](double v) {
         e->get_gate().set_release(static_cast<float>(v));
     });
@@ -2911,12 +3459,6 @@ void MainWindow::register_parameters() {
     });
     knob_param("compressor", "threshold", knob_comp_thresh, [e](double v) {
         e->get_comp().set_threshold(static_cast<float>(v));
-    });
-    knob_param("compressor", "ratio", knob_comp_ratio, [e](double v) {
-        e->get_comp().set_ratio(static_cast<float>(v));
-    });
-    knob_param("compressor", "attack", knob_comp_attack, [e](double v) {
-        e->get_comp().set_attack(static_cast<float>(v));
     });
     knob_param("compressor", "release", knob_comp_release, [e](double v) {
         e->get_comp().set_release(static_cast<float>(v));
@@ -2928,16 +3470,10 @@ void MainWindow::register_parameters() {
     toggle_param("dynamicWah", "enabled", sw_wah_enable, [e](bool b) {
         e->get_wah().set_enabled(b);
     });
-    toggle_param("dynamicWah", "mode", sw_wah_manual, [e](bool b) {
-        e->get_wah().set_pedal_mode(b);
-    });
     // Reverse: read by the MIDI mapper (MidiTarget::reverse), nothing for the engine.
     toggle_param("dynamicWah", "reverse", sw_wah_reverse, [](bool) {});
     knob_param("dynamicWah", "sensitivity", knob_wah_sens, [e](double v) {
         e->get_wah().set_sensitivity_pct(static_cast<float>(v));
-    });
-    knob_param("dynamicWah", "resonance", knob_wah_res, [e](double v) {
-        e->get_wah().set_resonance_pct(static_cast<float>(v));
     });
     knob_param("dynamicWah", "mix", knob_wah_mix, [e](double v) {
         e->get_wah().set_mix_pct(static_cast<float>(v));
@@ -2959,9 +3495,6 @@ void MainWindow::register_parameters() {
     knob_param("flanger", "feedback", knob_fl_feedback, [e](double v) {
         e->get_flanger().set_feedback_pct(static_cast<float>(v));
     });
-    knob_param("flanger", "mix", knob_fl_mix, [e](double v) {
-        e->get_flanger().set_mix_pct(static_cast<float>(v));
-    });
 
     toggle_param("phaser", "enabled", sw_phaser_enable, [e](bool b) {
         e->get_phaser().set_enabled(b);
@@ -2977,9 +3510,6 @@ void MainWindow::register_parameters() {
     });
     knob_param("phaser", "feedback", knob_ph_feedback, [e](double v) {
         e->get_phaser().set_feedback_pct(static_cast<float>(v));
-    });
-    knob_param("phaser", "mix", knob_ph_mix, [e](double v) {
-        e->get_phaser().set_mix_pct(static_cast<float>(v));
     });
 
     toggle_param("drive", "enabled", sw_drive_enable, [e](bool b) {
@@ -3008,16 +3538,16 @@ void MainWindow::register_parameters() {
     toggle_param("eq", "enabled", sw_eq_enable, [e](bool b) {
         e->get_eq().set_enabled(b);
     });
-    knob_param("eq", "low", knob_low, [e](double v) {
-        e->get_eq().set_low_gain(v);
-    });
-    knob_param("eq", "mid", knob_mid, [e](double v) {
-        e->get_eq().set_mid_gain(v);
-    });
-    knob_param("eq", "treble", knob_treble, [e](double v) {
-        e->get_eq().set_treble_gain(v);
-    });
 
+    toggle_param("rotary", "enabled", sw_rotary_enable, [e](bool b) {
+        e->get_rotary().set_enabled(b);
+    });
+    toggle_param("rotary", "stereo", sw_rotary_stereo, [e](bool b) {
+        e->get_rotary().set_stereo_mode(b);
+    });
+    toggle_param("rotary", "fast", sw_rotary_fast, [e](bool b) {
+        e->get_rotary().set_fast(b);
+    });
     toggle_param("chorus", "enabled", sw_chorus_enable, [e](bool b) {
         e->get_chorus().set_enabled(b);
     });
@@ -3031,7 +3561,7 @@ void MainWindow::register_parameters() {
         e->get_chorus().set_depth_pct(static_cast<float>(v));
     });
     knob_param("chorus", "mix", knob_ch_mix, [e](double v) {
-        e->get_chorus().set_mix_pct(static_cast<float>(v));
+        e->get_chorus().set_level_db(static_cast<float>(v));
     });
 
     toggle_param("tremolo", "enabled", sw_tremolo_enable, [e](bool b) {
@@ -3068,7 +3598,7 @@ void MainWindow::register_parameters() {
         e->get_delay().set_feedback_pct(static_cast<float>(v));
     });
     knob_param("delay", "mix", knob_del_mix, [e](double v) {
-        e->get_delay().set_mix_pct(static_cast<float>(v));
+        e->get_delay().set_level_db(static_cast<float>(v));
     });
 
     toggle_param("reverb", "enabled", sw_reverb_enable, [e](bool b) {
@@ -3080,17 +3610,9 @@ void MainWindow::register_parameters() {
     knob_param("reverb", "damping", knob_rev_damping, [e](double v) {
         e->get_reverb().set_damping_pct(static_cast<float>(v));
     });
-    knob_param("reverb", "width", knob_rev_width, [e](double v) {
-        e->get_reverb().set_width_pct(static_cast<float>(v));
-    });
     knob_param("reverb", "mix", knob_rev_mix, [e](double v) {
         e->get_reverb().set_mix_pct(static_cast<float>(v));
     });
-    knob_param("reverb", "preDelay", knob_rev_pre, synced_handler(knob_rev_pre));
-    toggle_param("reverb", "preDelaySync", sync_of(knob_rev_pre).sync,
-                 synced_handler(knob_rev_pre));
-    knob_param("reverb", "preDelaySyncNote", sync_of(knob_rev_pre).note_knob,
-               synced_handler(knob_rev_pre));
 
     toggle_param("", "irEnabled", sw_ir_enable, [e](bool b) {
         e->get_ir().set_enabled(b);
@@ -3196,11 +3718,19 @@ void MainWindow::update_status() {
         set_notice("nonFinite",
                    QString("Invalid audio (NaN/inf) scrubbed %1 time(s): effects were reset")
                        .arg(non_finite_total),
-                   "A sample that wasn't a number reached the output. It came from the "
-                   "input, the amp model or an effect; it was replaced with silence and "
-                   "every effect's state cleared so it couldn't stick in echoes and "
-                   "reverb tails.");
+                   "A sample that wasn't a number came from the input, the amp model or an "
+                   "effect. It was replaced with silence; where it came from inside the "
+                   "chain, every effect's state was cleared so it couldn't stick in echoes "
+                   "and reverb tails, and the amp model was loaded afresh.");
     }
+    // A model whose own state went non-finite stays silent whatever comes in, and nothing
+    // on the audio thread can clear it: build it again from its file (BUGS.md 04). Once per
+    // episode: a model that is non-finite from the start would be reloaded for ever.
+    const bool suspect = engine->take_model_suspect();
+    if (suspect && !model_was_suspect) {
+        engine->reload_model();
+    }
+    model_was_suspect = suspect;
 
     const double model_rate = engine->get_nam().get_resampled_model_rate();
     const double device_rate = engine->sample_rate();
@@ -3487,6 +4017,15 @@ static QString ask_preset_save_path(QWidget* parent, const QString& title, const
         parent, title, start, "NAM Preset (*.nampreset);;JSON (*.json);;All Files (*)");
     if (!path.isEmpty() && QFileInfo(path).suffix().isEmpty()) {
         path += ".nampreset"; // portal dialogs don't append the filter's suffix
+        // The dialog asked about the name as typed, not this one: an existing preset by the
+        // full name would be replaced unasked (BUGS.md 09).
+        if (QFile::exists(path) && QMessageBox::question(parent, title,
+                                                         "\"" + QFileInfo(path).fileName() +
+                                                             "\" already exists.\nReplace it?",
+                                                         QMessageBox::Yes | QMessageBox::No,
+                                                         QMessageBox::No) != QMessageBox::Yes) {
+            return {};
+        }
     }
     return path;
 }
@@ -3582,9 +4121,21 @@ void MainWindow::on_delete_preset() {
         QMessageBox::Yes) {
         return;
     }
-    if (!QFile::moveToTrash(preset_path) && !QFile::remove(preset_path)) {
-        QMessageBox::critical(this, "Delete Preset", "Cannot delete:\n" + preset_path);
-        return;
+    if (!QFile::moveToTrash(preset_path)) {
+        // No usable trash here (some filesystems have none). Deleting for good is not what
+        // was agreed to: it needs its own yes (BUGS.md 08).
+        if (QMessageBox::question(this, "Delete Preset",
+                                  "The preset \"" + name +
+                                      "\" couldn't be moved to the trash.\n"
+                                      "Delete it permanently instead?",
+                                  QMessageBox::Yes | QMessageBox::No,
+                                  QMessageBox::No) != QMessageBox::Yes) {
+            return;
+        }
+        if (!QFile::remove(preset_path)) {
+            QMessageBox::critical(this, "Delete Preset", "Cannot delete:\n" + preset_path);
+            return;
+        }
     }
     library->set_loaded_path(LibraryEntry::Kind::PRESET, {});
     set_current_preset({});

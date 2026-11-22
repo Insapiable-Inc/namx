@@ -1,0 +1,53 @@
+{
+  "take": "m1-horn-check",
+  "pedal": "Boss RT-2 Rotary Ensemble, Modes I and II Drive, mono input A and stereo outputs A and B",
+  "bypass": false,
+  "settings": {
+    "Mode": "I",
+    "Level": "12:00",
+    "Drive/Balance": "BALANCE 5:00",
+    "Fast": "12:00",
+    "Slow": "7:00",
+    "Rise/Fall": "FAST",
+    "LED": "green"
+  },
+  "note": "Leave the toggle on BALANCE and turn the ring fully up to store horn only.",
+  "marker_to_pedal": false,
+  "signal": {
+    "type": "noise",
+    "seconds": 8,
+    "level_db": -18,
+    "seed": 1,
+    "tail": 1
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -31.29,
+    "loop": -31.43,
+    "pedal_b": -31.67
+  },
+  "latency_samples": 455,
+  "latency_quality": 0.998,
+  "xruns": 0,
+  "played_sha256": "d998bd12b34fec8c348fa67b64656a27e0a725ad3ca6cb8d6bd901647db6082f",
+  "recorded_at": "2026-11-21T14:28:26",
+  "tool_commit": "7fae975cd3fbe22da658ce6398b7cddbc63093bc-dirty",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX4",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Boss RT-2 on its 9 V adapter: the guitar DI dataset. Input from interface out 3; OUTPUT A -> input 2, OUTPUT B -> input 1; INST, AIR off, pad on, gain fully counter-clockwise.",
+    "pedal_in_b": "Scarlett 8i6 USB Pro:capture_AUX0"
+  }
+}

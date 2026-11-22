@@ -12,6 +12,7 @@
 #include <cstdio>
 #include <numbers>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <NAM/activations.h>
@@ -303,21 +304,24 @@ double rt60_t20(const vector<float>& y) {
 }
 
 void reverb() {
-    std::printf("\n## Reverb decay\n\nImpulse response at mix 100 %%, damping 50 %%, width 100 "
-                "%%, band-passed to 500 Hz – 2 kHz (where decay is quoted and heard); RT60 from "
-                "Schroeder backward integration (T20, extrapolated to 60 dB), against the time "
-                "the Decay knob shows.\n\n| Decay | Shown | Plate | Hall | Room |\n"
-                "|---|---|---|---|---|\n");
-    for (const float decay : {0.0f, 25.0f, 50.0f, 75.0f, 100.0f}) {
-        std::printf("| %.0f %% | %.2f s |", decay, ReverbProcessor::decay_seconds(decay));
-        for (int type = 0; type < 3; ++type) {
+    std::printf("\n## Reverb decay\n\nImpulse response of each RV-6 mode at Level 5:00 (the dry, "
+                "always at unity, taken off), Tone 12:00, band-passed to 500 Hz – 2 kHz (where "
+                "decay is quoted and heard); RT60 from Schroeder backward integration (T20, "
+                "extrapolated to 60 dB) at the Time knob's clock positions.\n\n| Time | "
+                "Modulate | Spring | Plate | Hall | Room | Shimmer |\n"
+                "|---|---|---|---|---|---|---|\n");
+    const std::pair<float, const char*> times[] = {
+        {0.0f, "7:00"}, {25.0f, "9:30"}, {50.0f, "12:00"}, {75.0f, "2:30"}, {100.0f, "5:00"}};
+    for (const auto& [time, clock] : times) {
+        std::printf("| %s |", clock);
+        for (int type = ReverbProcessor::FIRST_TYPE; type <= ReverbProcessor::LAST_TYPE; ++type) {
             ReverbProcessor rv;
             rv.set_sample_rate(SR);
             rv.set_enabled(true);
-            rv.set_stereo_mode(true);
             rv.set_mix_pct(100.0f);
+            rv.set_damping_pct(50.0f);
             rv.set_type(type);
-            rv.set_room_size_pct(decay);
+            rv.set_room_size_pct(time);
             vector<float> y = render(
                 size_t(20 * SR),
                 [](size_t t) {
@@ -326,6 +330,7 @@ void reverb() {
                 [&](float* l, float* r, size_t n) {
                     rv.process(l, r, n, false);
                 });
+            y[0] -= 1.0f; // the dry impulse
             for (int pass = 0; pass < 2; ++pass) {
                 butterworth(y, 500.0, true);
                 butterworth(y, 2000.0, false);
@@ -344,18 +349,22 @@ void reverb() {
 // ---- Delay modulation ------------------------------------------------------------------
 
 void delay_modulation() {
-    std::printf("\n## Delay modulation\n\nA 1 kHz sine through the delay (250 ms, feedback 0, mix "
-                "100 %%). The modulation's wanted sidebands sit within ±50 Hz of the note; the "
-                "energy further away (zipper noise, interpolation artifacts) relative to the "
-                "total:\n\n| Modulation | Off-note energy |\n|---|---|\n");
-    for (const float mod : {0.0f, 30.0f, 100.0f}) {
+    std::printf("\n## Delay modulation\n\nA 1 kHz sine through the DD-8 voicings that move the "
+                "delay time (250 ms, Feedback 0, Level 100 %%; the dry stays). The modulation's "
+                "wanted sidebands sit within ±50 Hz of the note; the energy further away (zipper "
+                "noise, interpolation artifacts) relative to the total:\n\n| Type | Off-note "
+                "energy |\n|---|---|\n");
+    const std::pair<int, const char*> types[] = {{DelayProcessor::DD8_STANDARD, "Standard"},
+                                                 {DelayProcessor::DD8_TAPE, "Tape"},
+                                                 {DelayProcessor::DD8_MOD, "Mod"}};
+    for (const auto& [type, name] : types) {
         DelayProcessor d;
+        d.set_type(type);
         d.set_sample_rate(SR);
         d.set_enabled(true);
         d.set_time(250.0f);
         d.set_feedback_pct(0.0f);
-        d.set_mix_pct(100.0f);
-        d.set_modulation(mod);
+        d.set_level_db(0.0f);
         const double f = on_bin(1000.0);
         const vector<float> y = render(
             size_t(3 * SR),
@@ -372,7 +381,7 @@ void delay_modulation() {
             near += p[static_cast<size_t>(k)];
         }
         const double total = total_energy(p);
-        std::printf("| %.0f %% | %.1f dB |\n", mod, db((total - near) / total));
+        std::printf("| %s | %.1f dB |\n", name, db((total - near) / total));
     }
 }
 
@@ -406,19 +415,16 @@ double rbj_mag(const char* type, double f0, double gain_db, double q, double hz)
 }
 
 void eq() {
-    EQProcessor e;
-    e.set_sample_rate(SR);
-    e.set_enabled(true);
-    e.set_gain(EQProcessor::Band::BASS, 6.0);
-    e.set_gain(EQProcessor::Band::MIDDLE, -6.0);
-    e.set_gain(EQProcessor::Band::HIGH_MID, 3.0);
-    e.set_gain(EQProcessor::Band::TREBLE, -3.0);
-    e.set_freq(EQProcessor::Band::LOW_CUT, 80.0);
-    e.set_freq(EQProcessor::Band::HIGH_CUT, 8000.0);
-    double worst = 0.0, worst_hz = 0.0;
-    for (int i = 0; i < 40; ++i) {
-        const double hz = 30.0 * std::pow(16000.0 / 30.0, i / 39.0);
-        e.reset();
+    // The cuts alone: each probe's level with them on over its level with them off, so the
+    // GE-7 (its sliders flat) divides out.
+    auto probe = [](double hz, bool cuts) {
+        EQProcessor e;
+        e.set_sample_rate(SR);
+        e.set_enabled(true);
+        if (cuts) {
+            e.set_cut(EQProcessor::Cut::LOW, 80.0);
+            e.set_cut(EQProcessor::Cut::HIGH, 8000.0);
+        }
         const vector<float> y = render(
             size_t(SR),
             [hz](size_t t) {
@@ -427,23 +433,28 @@ void eq() {
             [&](float* l, float* r, size_t n) {
                 e.process(l, r, n, false);
             });
-        double peak = 0.0;
+        // RMS, not the sample peak: near Nyquist a sine's sample peak depends on its phase,
+        // and the cuts shift the phase.
+        double sum = 0.0;
         for (size_t t = y.size() / 2; t < y.size(); ++t) {
-            peak = std::max(peak, std::abs(static_cast<double>(y[t])));
+            sum += static_cast<double>(y[t]) * static_cast<double>(y[t]);
         }
+        return std::sqrt(sum / static_cast<double>(y.size() - y.size() / 2));
+    };
+    double worst = 0.0, worst_hz = 0.0;
+    for (int i = 0; i < 40; ++i) {
+        const double hz = 30.0 * std::pow(16000.0 / 30.0, i / 39.0);
         const double expected =
-            rbj_mag("hp", 80.0, 0, 0.7071, hz) * rbj_mag("lowshelf", 250.0, 6.0, 0, hz) *
-            rbj_mag("peak", 1000.0, -6.0, 0.707, hz) * rbj_mag("peak", 3000.0, 3.0, 1.0, hz) *
-            rbj_mag("highshelf", 4000.0, -3.0, 0, hz) * rbj_mag("lp", 8000.0, 0, 0.7071, hz);
-        const double dev = std::abs(20 * std::log10(peak / 0.1 / expected));
+            rbj_mag("hp", 80.0, 0, 0.7071, hz) * rbj_mag("lp", 8000.0, 0, 0.7071, hz);
+        const double dev = std::abs(20 * std::log10(probe(hz, true) / probe(hz, false) / expected));
         if (dev > worst) {
             worst = dev, worst_hz = hz;
         }
     }
-    std::printf("\n## EQ response\n\nAll six bands engaged (Bass +6 dB @ 250 Hz, Middle −6 @ 1 k, "
-                "High-Mid +3 @ 3 k, Treble −3 @ 4 k, Low Cut 80 Hz, High Cut 8 kHz), 40 sine "
-                "probes 30 Hz–16 kHz against an independent Audio EQ Cookbook evaluation: "
-                "**largest deviation %.3f dB** (at %.0f Hz).\n",
+    std::printf("\n## EQ response\n\nThe Low Cut (80 Hz) and High Cut (8 kHz) after the GE-7 "
+                "(its sliders flat, divided out: each probe with the cuts on over the same "
+                "probe with them off), 40 sine probes 30 Hz–16 kHz against an independent Audio "
+                "EQ Cookbook evaluation: **largest deviation %.3f dB** (at %.0f Hz).\n",
                 worst, worst_hz);
 }
 

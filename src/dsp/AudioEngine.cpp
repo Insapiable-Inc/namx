@@ -44,6 +44,7 @@ AudioEngine::AudioEngine() {
         {"volume", &volume}, // first in the effects loop: swells without touching amp gain
         {"eq", &eq},
         {"chorus", &chorus},
+        {"rotary", &rotary}, // 2026-10-29: after the amp and modulation, like a real cabinet
         {"tremolo", &tremolo},
         {"delay", &delay},
         {"reverb", &reverb},
@@ -70,6 +71,10 @@ bool AudioEngine::load_model(const string& path) {
     const bool ok = nam.load_model(path);
     reclaim_retired();
     return ok;
+}
+
+bool AudioEngine::reload_model() {
+    return nam.is_model_loaded() && load_model(nam.get_model_path());
 }
 
 void AudioEngine::unload_model() {
@@ -326,12 +331,20 @@ void AudioEngine::process_block(const float* in, float* out_l, float* out_r, siz
     }
 
     // 1. Input gain (smoothed) → both work buffers (identical at this point)
+    //    A capture sample that isn't a number stops here, as silence: past this point it
+    //    would settle in an amp model's recurrent state, which no reset on the audio thread
+    //    clears (BUGS.md 04). Counted with the output's for the status bar.
     const float target_in_gain = db_to_linear(input_gain_db.load());
     float in_peak = 0.0f;
+    bool input_finite = true;
     for (size_t i = 0; i < n; ++i) {
         input_gain_smooth =
             smooth_coeff * input_gain_smooth + (1.0f - smooth_coeff) * target_in_gain;
         float s = in[i] * input_gain_smooth;
+        if (!std::isfinite(s)) {
+            s = 0.0f;
+            input_finite = false;
+        }
         work_buf_l[i] = s;
         work_buf_r[i] = s;
         in_peak = std::max(in_peak, std::abs(s));
@@ -395,6 +408,11 @@ void AudioEngine::process_block(const float* in, float* out_l, float* out_r, siz
         for (auto* fx : chain) {
             fx->request_reset();
         }
+        non_finite_blocks.fetch_add(1, std::memory_order_relaxed);
+        // From inside the chain (the input was scrubbed on the way in): the amp model may be
+        // the one that is stuck. Only a fresh model clears that: the GUI builds one.
+        model_suspect.store(true, std::memory_order_relaxed);
+    } else if (!input_finite) {
         non_finite_blocks.fetch_add(1, std::memory_order_relaxed);
     }
 

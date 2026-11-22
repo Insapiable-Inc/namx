@@ -1,0 +1,43 @@
+{
+  "take": "bypass-sweep",
+  "pedal": "Boss AC-3 Acoustic Simulator (mono: Input -> Guitar Amp output; Line Out empty)",
+  "bypass": true,
+  "settings": {},
+  "note": "Switch the pedal OFF. Keep this bypass at the same rig gain as every effect take.",
+  "signal": {
+    "type": "sweep",
+    "f0": 20,
+    "f1": 20000,
+    "seconds": 10,
+    "level_db": -24,
+    "tail": 4
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -37.95,
+    "loop": -36.61
+  },
+  "latency_samples": 455,
+  "latency_quality": 0.998,
+  "xruns": 0,
+  "played_sha256": "ff3676613980844978aff1e3b754f9da8baf952773e64b8200f6feed680d7e16",
+  "recorded_at": "2026-10-31T15:38:17",
+  "tool_commit": "979167bf6ba528173a9069fc329ffde098383af4-dirty",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX4",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Scarlett 8i6 3rd gen; Pro Audio; analogue outputs 3/4 from PCM 3/4; out 3 -> AW-3 Guitar input, Output -> input 2; out 4 -> input 5 loopback; EXP empty; Input 2 INST, AIR off, pad ON, gain fully counter-clockwise. Adapter power. Reference/calibration carried forward from the 2026-10-26 rig. Down and Sharp modes."
+  }
+}

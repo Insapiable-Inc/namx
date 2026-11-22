@@ -1,0 +1,668 @@
+{
+  "pedal": "Boss BF-3 Flanger — focused reamp, both outputs recorded (Output A: the pedal as the model has it; Output B: never measured)",
+  "comment": "Guitar excerpts (captures/di/) over a steady 8 kHz sine 30 dB under the guitar's peak (the probe: on the output it is the dry plus the flanged copy, so its level and phase trace the delay at every moment, guitar or not). Most guitar takes at -12 dB: the pedal's output clips a little over a guitar's peak and a flanger's peaks add 7 dB, so full level is kept for the takes that are about the clip (funk). Depth 7:00 first (the delay stands still: tone, level and timing of the flanged copy against the waveform, Res's loop, three Manual positions — which of NAM-X's two Standard models is closer in the bass), then the sweep: each setting's probe alone and guitar over it, one take twice (the pedal against itself), the lead held out of any fit; Res under a moving delay; the fast rates; then ULTRA. A plug in Output B doesn't change Output A (the October study). Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise; 9:00 and 3:00 pointer horizontal. Takes ordered so each step turns one or two knobs.",
+  "quiet_dbfs": -60,
+  "both_outputs": true,
+  "knobs": [
+    "Mode",
+    "Manual",
+    "Res",
+    "Depth",
+    "Rate"
+  ],
+  "takes": [
+    {
+      "name": "bypass-chords",
+      "bypass": true,
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0
+      },
+      "note": "The pedal off (its LED off): the bypass reference. GUITAR IN from interface out 3, OUTPUT A on input 2, OUTPUT B on input 1, the adapter."
+    },
+    {
+      "name": "bypass-sweep",
+      "bypass": true,
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "static-sweep",
+      "settings": {
+        "Mode": "Standard",
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "7:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 1.0
+      },
+      "note": "The pedal on (its LED lit), MODE on STANDARD. Depth fully counter-clockwise: the flanger stands still."
+    },
+    {
+      "name": "static-chords-m12",
+      "settings": {
+        "Mode": "Standard",
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "7:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0,
+        "level_db": -12
+      }
+    },
+    {
+      "name": "static-funk",
+      "settings": {
+        "Mode": "Standard",
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "7:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "res-0300-static-sweep",
+      "settings": {
+        "Mode": "Standard",
+        "Manual": "12:00",
+        "Res": "3:00",
+        "Depth": "7:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "res-0300-static-chords-m12",
+      "settings": {
+        "Mode": "Standard",
+        "Manual": "12:00",
+        "Res": "3:00",
+        "Depth": "7:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0,
+        "level_db": -12
+      }
+    },
+    {
+      "name": "res-0500-static-chords-m12",
+      "settings": {
+        "Mode": "Standard",
+        "Manual": "12:00",
+        "Res": "5:00",
+        "Depth": "7:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0,
+        "level_db": -12
+      }
+    },
+    {
+      "name": "manual-0700-static-chords-m12",
+      "settings": {
+        "Mode": "Standard",
+        "Manual": "7:00",
+        "Res": "7:00",
+        "Depth": "7:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0,
+        "level_db": -12
+      },
+      "note": "Res back fully counter-clockwise."
+    },
+    {
+      "name": "manual-0300-static-chords-m12",
+      "settings": {
+        "Mode": "Standard",
+        "Manual": "3:00",
+        "Res": "7:00",
+        "Depth": "7:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0,
+        "level_db": -12
+      }
+    },
+    {
+      "name": "1200-probe",
+      "settings": {
+        "Mode": "Standard",
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "12:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 8000,
+        "seconds": 15,
+        "level_db": -30,
+        "tail": 1.0
+      },
+      "note": "Manual back to 12:00; Depth to 12:00: the sweep runs from here on."
+    },
+    {
+      "name": "1200-chords-m12",
+      "settings": {
+        "Mode": "Standard",
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "12:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0,
+        "level_db": -12
+      }
+    },
+    {
+      "name": "1200-chords",
+      "settings": {
+        "Mode": "Standard",
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "12:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "1200-funk",
+      "settings": {
+        "Mode": "Standard",
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "12:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "1200-funk-repeat",
+      "settings": {
+        "Mode": "Standard",
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "12:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "1200-lead-m12",
+      "settings": {
+        "Mode": "Standard",
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "12:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/lead.wav",
+        "seconds": 20,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0,
+        "start": 2,
+        "level_db": -12
+      }
+    },
+    {
+      "name": "res-0300-chords-m12",
+      "settings": {
+        "Mode": "Standard",
+        "Manual": "12:00",
+        "Res": "3:00",
+        "Depth": "12:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0,
+        "level_db": -12
+      }
+    },
+    {
+      "name": "res-0300-funk",
+      "settings": {
+        "Mode": "Standard",
+        "Manual": "12:00",
+        "Res": "3:00",
+        "Depth": "12:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "res-0500-chords-m12",
+      "settings": {
+        "Mode": "Standard",
+        "Manual": "12:00",
+        "Res": "5:00",
+        "Depth": "12:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0,
+        "level_db": -12
+      }
+    },
+    {
+      "name": "depth-0500-probe",
+      "settings": {
+        "Mode": "Standard",
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "5:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 8000,
+        "seconds": 15,
+        "level_db": -30,
+        "tail": 1.0
+      },
+      "note": "Res back fully counter-clockwise."
+    },
+    {
+      "name": "depth-0500-chords-m12",
+      "settings": {
+        "Mode": "Standard",
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "5:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0,
+        "level_db": -12
+      }
+    },
+    {
+      "name": "rate-0300-depth-0500-probe",
+      "settings": {
+        "Mode": "Standard",
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "5:00",
+        "Rate": "3:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 8000,
+        "seconds": 12,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "rate-0300-depth-0500-chords-m12",
+      "settings": {
+        "Mode": "Standard",
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "5:00",
+        "Rate": "3:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0,
+        "level_db": -12
+      }
+    },
+    {
+      "name": "rate-0300-depth-0500-lead-m12",
+      "settings": {
+        "Mode": "Standard",
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "5:00",
+        "Rate": "3:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/lead.wav",
+        "seconds": 20,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0,
+        "start": 2,
+        "level_db": -12
+      }
+    },
+    {
+      "name": "rate-0500-depth-0500-probe",
+      "settings": {
+        "Mode": "Standard",
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "5:00",
+        "Rate": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 8000,
+        "seconds": 12,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "rate-0500-depth-0500-chords-m12",
+      "settings": {
+        "Mode": "Standard",
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "5:00",
+        "Rate": "5:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0,
+        "level_db": -12
+      }
+    },
+    {
+      "name": "rate-0900-depth-0500-probe",
+      "settings": {
+        "Mode": "Standard",
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "5:00",
+        "Rate": "9:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 8000,
+        "seconds": 30,
+        "level_db": -30,
+        "tail": 1.0
+      },
+      "note": "A slow sweep (8 s a cycle): 30 s of the probe alone."
+    },
+    {
+      "name": "ultra-static-chords-m12",
+      "settings": {
+        "Mode": "Ultra",
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "7:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0,
+        "level_db": -12
+      },
+      "note": "MODE on ULTRA. Depth fully counter-clockwise again, Rate back to 12:00."
+    },
+    {
+      "name": "ultra-res-0300-static-chords-m12",
+      "settings": {
+        "Mode": "Ultra",
+        "Manual": "12:00",
+        "Res": "3:00",
+        "Depth": "7:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0,
+        "level_db": -12
+      }
+    },
+    {
+      "name": "ultra-res-0300-chords-m12",
+      "settings": {
+        "Mode": "Ultra",
+        "Manual": "12:00",
+        "Res": "3:00",
+        "Depth": "12:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0,
+        "level_db": -12
+      }
+    },
+    {
+      "name": "ultra-probe",
+      "settings": {
+        "Mode": "Ultra",
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "12:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 8000,
+        "seconds": 15,
+        "level_db": -30,
+        "tail": 1.0
+      },
+      "note": "Res back fully counter-clockwise."
+    },
+    {
+      "name": "ultra-chords-m12",
+      "settings": {
+        "Mode": "Ultra",
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "12:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0,
+        "level_db": -12
+      }
+    },
+    {
+      "name": "ultra-lead-m12",
+      "settings": {
+        "Mode": "Ultra",
+        "Manual": "12:00",
+        "Res": "7:00",
+        "Depth": "12:00",
+        "Rate": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/lead.wav",
+        "seconds": 20,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0,
+        "start": 2,
+        "level_db": -12
+      }
+    }
+  ]
+}

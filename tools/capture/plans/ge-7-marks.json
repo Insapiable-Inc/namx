@@ -1,0 +1,559 @@
+{
+  "pedal": "Boss GE-7 Equalizer (mono)",
+  "comment": "The sliders' law from the printed marks (-15, -10, -5, 0, +5, +10, +15), which can be set exactly (the half-way +/-7.5 of the first sessions couldn't): two LC bands far apart (100 and 800 Hz), the 6.4 kHz shelf and Level. Sliders at 0 unless a take says otherwise; each slider runs end to end, the next one back, for the fewest moves.",
+  "quiet_dbfs": -60,
+  "knobs": [
+    "100 Hz",
+    "200 Hz",
+    "400 Hz",
+    "800 Hz",
+    "1.6 kHz",
+    "3.2 kHz",
+    "6.4 kHz",
+    "Level"
+  ],
+  "takes": [
+    {
+      "name": "bypass-sweep",
+      "bypass": true,
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      }
+    },
+    {
+      "name": "flat-sweep",
+      "settings": {
+        "100 Hz": "0",
+        "200 Hz": "0",
+        "400 Hz": "0",
+        "800 Hz": "0",
+        "1.6 kHz": "0",
+        "3.2 kHz": "0",
+        "6.4 kHz": "0",
+        "Level": "0"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      },
+      "note": "Every slider at 0 (centre), Level too."
+    },
+    {
+      "name": "100Hz-m15-sweep",
+      "settings": {
+        "100 Hz": "-15",
+        "200 Hz": "0",
+        "400 Hz": "0",
+        "800 Hz": "0",
+        "1.6 kHz": "0",
+        "3.2 kHz": "0",
+        "6.4 kHz": "0",
+        "Level": "0"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      },
+      "note": "The 100 Hz slider on each printed mark in turn (-15 = bottom, +15 = top)."
+    },
+    {
+      "name": "100Hz-m10-sweep",
+      "settings": {
+        "100 Hz": "-10",
+        "200 Hz": "0",
+        "400 Hz": "0",
+        "800 Hz": "0",
+        "1.6 kHz": "0",
+        "3.2 kHz": "0",
+        "6.4 kHz": "0",
+        "Level": "0"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      }
+    },
+    {
+      "name": "100Hz-m5-sweep",
+      "settings": {
+        "100 Hz": "-5",
+        "200 Hz": "0",
+        "400 Hz": "0",
+        "800 Hz": "0",
+        "1.6 kHz": "0",
+        "3.2 kHz": "0",
+        "6.4 kHz": "0",
+        "Level": "0"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      }
+    },
+    {
+      "name": "100Hz-p5-sweep",
+      "settings": {
+        "100 Hz": "+5",
+        "200 Hz": "0",
+        "400 Hz": "0",
+        "800 Hz": "0",
+        "1.6 kHz": "0",
+        "3.2 kHz": "0",
+        "6.4 kHz": "0",
+        "Level": "0"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      }
+    },
+    {
+      "name": "100Hz-p10-sweep",
+      "settings": {
+        "100 Hz": "+10",
+        "200 Hz": "0",
+        "400 Hz": "0",
+        "800 Hz": "0",
+        "1.6 kHz": "0",
+        "3.2 kHz": "0",
+        "6.4 kHz": "0",
+        "Level": "0"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      }
+    },
+    {
+      "name": "100Hz-p15-sweep",
+      "settings": {
+        "100 Hz": "+15",
+        "200 Hz": "0",
+        "400 Hz": "0",
+        "800 Hz": "0",
+        "1.6 kHz": "0",
+        "3.2 kHz": "0",
+        "6.4 kHz": "0",
+        "Level": "0"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      }
+    },
+    {
+      "name": "800Hz-p15-sweep",
+      "settings": {
+        "100 Hz": "0",
+        "200 Hz": "0",
+        "400 Hz": "0",
+        "800 Hz": "+15",
+        "1.6 kHz": "0",
+        "3.2 kHz": "0",
+        "6.4 kHz": "0",
+        "Level": "0"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      },
+      "note": "The 800 Hz slider on each printed mark in turn; the previous slider back to 0."
+    },
+    {
+      "name": "800Hz-p10-sweep",
+      "settings": {
+        "100 Hz": "0",
+        "200 Hz": "0",
+        "400 Hz": "0",
+        "800 Hz": "+10",
+        "1.6 kHz": "0",
+        "3.2 kHz": "0",
+        "6.4 kHz": "0",
+        "Level": "0"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      }
+    },
+    {
+      "name": "800Hz-p5-sweep",
+      "settings": {
+        "100 Hz": "0",
+        "200 Hz": "0",
+        "400 Hz": "0",
+        "800 Hz": "+5",
+        "1.6 kHz": "0",
+        "3.2 kHz": "0",
+        "6.4 kHz": "0",
+        "Level": "0"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      }
+    },
+    {
+      "name": "800Hz-m5-sweep",
+      "settings": {
+        "100 Hz": "0",
+        "200 Hz": "0",
+        "400 Hz": "0",
+        "800 Hz": "-5",
+        "1.6 kHz": "0",
+        "3.2 kHz": "0",
+        "6.4 kHz": "0",
+        "Level": "0"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      }
+    },
+    {
+      "name": "800Hz-m10-sweep",
+      "settings": {
+        "100 Hz": "0",
+        "200 Hz": "0",
+        "400 Hz": "0",
+        "800 Hz": "-10",
+        "1.6 kHz": "0",
+        "3.2 kHz": "0",
+        "6.4 kHz": "0",
+        "Level": "0"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      }
+    },
+    {
+      "name": "800Hz-m15-sweep",
+      "settings": {
+        "100 Hz": "0",
+        "200 Hz": "0",
+        "400 Hz": "0",
+        "800 Hz": "-15",
+        "1.6 kHz": "0",
+        "3.2 kHz": "0",
+        "6.4 kHz": "0",
+        "Level": "0"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      }
+    },
+    {
+      "name": "6k4Hz-m15-sweep",
+      "settings": {
+        "100 Hz": "0",
+        "200 Hz": "0",
+        "400 Hz": "0",
+        "800 Hz": "0",
+        "1.6 kHz": "0",
+        "3.2 kHz": "0",
+        "6.4 kHz": "-15",
+        "Level": "0"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      },
+      "note": "The 6.4 kHz slider on each printed mark in turn; the previous slider back to 0."
+    },
+    {
+      "name": "6k4Hz-m10-sweep",
+      "settings": {
+        "100 Hz": "0",
+        "200 Hz": "0",
+        "400 Hz": "0",
+        "800 Hz": "0",
+        "1.6 kHz": "0",
+        "3.2 kHz": "0",
+        "6.4 kHz": "-10",
+        "Level": "0"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      }
+    },
+    {
+      "name": "6k4Hz-m5-sweep",
+      "settings": {
+        "100 Hz": "0",
+        "200 Hz": "0",
+        "400 Hz": "0",
+        "800 Hz": "0",
+        "1.6 kHz": "0",
+        "3.2 kHz": "0",
+        "6.4 kHz": "-5",
+        "Level": "0"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      }
+    },
+    {
+      "name": "6k4Hz-p5-sweep",
+      "settings": {
+        "100 Hz": "0",
+        "200 Hz": "0",
+        "400 Hz": "0",
+        "800 Hz": "0",
+        "1.6 kHz": "0",
+        "3.2 kHz": "0",
+        "6.4 kHz": "+5",
+        "Level": "0"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      }
+    },
+    {
+      "name": "6k4Hz-p10-sweep",
+      "settings": {
+        "100 Hz": "0",
+        "200 Hz": "0",
+        "400 Hz": "0",
+        "800 Hz": "0",
+        "1.6 kHz": "0",
+        "3.2 kHz": "0",
+        "6.4 kHz": "+10",
+        "Level": "0"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      }
+    },
+    {
+      "name": "6k4Hz-p15-sweep",
+      "settings": {
+        "100 Hz": "0",
+        "200 Hz": "0",
+        "400 Hz": "0",
+        "800 Hz": "0",
+        "1.6 kHz": "0",
+        "3.2 kHz": "0",
+        "6.4 kHz": "+15",
+        "Level": "0"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      }
+    },
+    {
+      "name": "level-p15-sweep",
+      "settings": {
+        "100 Hz": "0",
+        "200 Hz": "0",
+        "400 Hz": "0",
+        "800 Hz": "0",
+        "1.6 kHz": "0",
+        "3.2 kHz": "0",
+        "6.4 kHz": "0",
+        "Level": "+15"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      },
+      "note": "The LEVEL slider (the eighth, apart from the seven bands) on each printed mark in turn; the previous slider back to 0."
+    },
+    {
+      "name": "level-p10-sweep",
+      "settings": {
+        "100 Hz": "0",
+        "200 Hz": "0",
+        "400 Hz": "0",
+        "800 Hz": "0",
+        "1.6 kHz": "0",
+        "3.2 kHz": "0",
+        "6.4 kHz": "0",
+        "Level": "+10"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      }
+    },
+    {
+      "name": "level-p5-sweep",
+      "settings": {
+        "100 Hz": "0",
+        "200 Hz": "0",
+        "400 Hz": "0",
+        "800 Hz": "0",
+        "1.6 kHz": "0",
+        "3.2 kHz": "0",
+        "6.4 kHz": "0",
+        "Level": "+5"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      }
+    },
+    {
+      "name": "level-m5-sweep",
+      "settings": {
+        "100 Hz": "0",
+        "200 Hz": "0",
+        "400 Hz": "0",
+        "800 Hz": "0",
+        "1.6 kHz": "0",
+        "3.2 kHz": "0",
+        "6.4 kHz": "0",
+        "Level": "-5"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      }
+    },
+    {
+      "name": "level-m10-sweep",
+      "settings": {
+        "100 Hz": "0",
+        "200 Hz": "0",
+        "400 Hz": "0",
+        "800 Hz": "0",
+        "1.6 kHz": "0",
+        "3.2 kHz": "0",
+        "6.4 kHz": "0",
+        "Level": "-10"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      }
+    },
+    {
+      "name": "level-m15-sweep",
+      "settings": {
+        "100 Hz": "0",
+        "200 Hz": "0",
+        "400 Hz": "0",
+        "800 Hz": "0",
+        "1.6 kHz": "0",
+        "3.2 kHz": "0",
+        "6.4 kHz": "0",
+        "Level": "-15"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 2
+      }
+    }
+  ]
+}

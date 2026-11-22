@@ -1,0 +1,127 @@
+{
+  "pedal": "Boss AW-3 Dynamic Wah — blind test: the knobs set by the user, unknown to the analysis (mono: Guitar input -> Output)",
+  "comment": "The user sets Mode (Up, Down or Sharp), Manual, Sens and Decay anywhere and keeps them there for the four takes; the settings are to be read from the recordings alone. The inputs are October's own: the noise staircase (where the filter rests = Manual, the level at which it starts to move and where it stops = Sens, which way it moves and its shape = Mode) and the noise jump (the return after loud noise = Decay), both with takes at known positions to compare with (2026-10-31-up, 2026-10-31-modes). A very quiet noise shows the rest with the detector nearly idle, and the funk excerpt over the tones is a check of the model at a setting it has never seen.",
+  "quiet_dbfs": -60,
+  "knobs": [
+    "Mode",
+    "Manual",
+    "Sens",
+    "Decay"
+  ],
+  "takes": [
+    {
+      "name": "bypass-stairs",
+      "bypass": true,
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -54,
+          -48,
+          -42,
+          -36,
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          0,
+          3
+        ],
+        "step_seconds": 1.5,
+        "seed": 1,
+        "tail": 3
+      },
+      "note": "The pedal off (its LED off): the bypass reference. Guitar input, Output; nothing in EXP/CTL."
+    },
+    {
+      "name": "blind-quiet",
+      "settings": {
+        "Mode": "?",
+        "Manual": "?",
+        "Sens": "?",
+        "Decay": "?"
+      },
+      "signal": {
+        "type": "noise",
+        "seconds": 5,
+        "seed": 3,
+        "level_db": -66,
+        "tail": 1.0
+      },
+      "note": "The pedal on. Mode on Up, Down or Sharp and the three knobs wherever you like: write them down, do not tell. The same setting for all four takes."
+    },
+    {
+      "name": "blind-stairs",
+      "settings": {
+        "Mode": "?",
+        "Manual": "?",
+        "Sens": "?",
+        "Decay": "?"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -54,
+          -48,
+          -42,
+          -36,
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          0,
+          3
+        ],
+        "step_seconds": 1.5,
+        "seed": 1,
+        "tail": 3
+      }
+    },
+    {
+      "name": "blind-jump",
+      "settings": {
+        "Mode": "?",
+        "Manual": "?",
+        "Sens": "?",
+        "Decay": "?"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -48,
+          0,
+          -48
+        ],
+        "step_seconds": 4,
+        "seed": 2,
+        "tail": 2
+      }
+    },
+    {
+      "name": "blind-funk",
+      "settings": {
+        "Mode": "?",
+        "Manual": "?",
+        "Sens": "?",
+        "Decay": "?"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": [
+            331,
+            577,
+            997,
+            1723,
+            2971
+          ],
+          "level_db": -50
+        },
+        "tail": 1.0
+      }
+    }
+  ]
+}

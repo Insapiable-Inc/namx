@@ -1,0 +1,280 @@
+{
+  "take": "threshold-0300-decay-0700-tones",
+  "pedal": "Boss NS-2 Noise Suppressor \u2014 the gain read directly: the signal into INPUT, a probe into RETURN (mono: OUTPUT)",
+  "bypass": false,
+  "settings": {
+    "Threshold": "3:00",
+    "Decay": "7:00",
+    "Mode": "REDUCTION"
+  },
+  "note": "Decay fully down.",
+  "marker_to_pedal": false,
+  "loop_probe": {
+    "freq": [
+      1877,
+      2341,
+      3163
+    ],
+    "level_db": -12
+  },
+  "signal": {
+    "type": "sequence",
+    "tail": 0,
+    "parts": [
+      {
+        "type": "silence",
+        "seconds": 2,
+        "tail": 0
+      },
+      {
+        "type": "steps",
+        "freq": 82,
+        "levels_db": [
+          -57.4,
+          -55.4,
+          -53.4,
+          -51.4,
+          -49.4,
+          -47.4,
+          -45.4,
+          -43.4,
+          -41.4,
+          -39.4,
+          -37.4
+        ],
+        "step_seconds": 0.3,
+        "tail": 1.0
+      },
+      {
+        "type": "steps",
+        "freq": 220,
+        "levels_db": [
+          -57.4,
+          -55.4,
+          -53.4,
+          -51.4,
+          -49.4,
+          -47.4,
+          -45.4,
+          -43.4,
+          -41.4,
+          -39.4,
+          -37.4
+        ],
+        "step_seconds": 0.3,
+        "tail": 1.0
+      },
+      {
+        "type": "steps",
+        "freq": 660,
+        "levels_db": [
+          -57.4,
+          -55.4,
+          -53.4,
+          -51.4,
+          -49.4,
+          -47.4,
+          -45.4,
+          -43.4,
+          -41.4,
+          -39.4,
+          -37.4
+        ],
+        "step_seconds": 0.3,
+        "tail": 1.0
+      },
+      {
+        "type": "steps",
+        "freq": 2000,
+        "levels_db": [
+          -57.4,
+          -55.4,
+          -53.4,
+          -51.4,
+          -49.4,
+          -47.4,
+          -45.4,
+          -43.4,
+          -41.4,
+          -39.4,
+          -37.4
+        ],
+        "step_seconds": 0.3,
+        "tail": 1.0
+      },
+      {
+        "type": "steps",
+        "freq": 6000,
+        "levels_db": [
+          -57.4,
+          -55.4,
+          -53.4,
+          -51.4,
+          -49.4,
+          -47.4,
+          -45.4,
+          -43.4,
+          -41.4,
+          -39.4,
+          -37.4
+        ],
+        "step_seconds": 0.3,
+        "tail": 1.0
+      },
+      {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -29.4,
+          -51.4,
+          -51.4,
+          -29.4,
+          -54.4,
+          -54.4,
+          -29.4,
+          -57.4,
+          -57.4,
+          -29.4,
+          -61.4,
+          -61.4,
+          -29.4,
+          -65.4,
+          -65.4,
+          -29.4,
+          -71.4,
+          -71.4,
+          -29.4,
+          -79.4,
+          -79.4,
+          -29.4,
+          -120,
+          -120,
+          0,
+          -57.4,
+          -57.4
+        ],
+        "step_seconds": 0.5,
+        "tail": 1
+      },
+      {
+        "type": "pluck-train",
+        "freq": [
+          110,
+          220,
+          440,
+          880
+        ],
+        "onsets": [
+          0.0,
+          2.6,
+          5.2,
+          7.8
+        ],
+        "decay_seconds": 0.248,
+        "seconds": 10.4,
+        "repick": true,
+        "tail": 0.5
+      },
+      {
+        "type": "pluck-train",
+        "freq": [
+          110,
+          440
+        ],
+        "onsets": [
+          0,
+          5.5
+        ],
+        "decay_seconds": 0.724,
+        "seconds": 11.0,
+        "repick": true,
+        "level_db": -12,
+        "tail": 0.5
+      },
+      {
+        "type": "noise",
+        "seconds": 0.15,
+        "seed": 1,
+        "level_db": -6,
+        "tail": 0
+      },
+      {
+        "type": "noise",
+        "seconds": 1.0,
+        "seed": 2,
+        "level_db": -43.4,
+        "tail": 0.6
+      },
+      {
+        "type": "noise",
+        "seconds": 0.15,
+        "seed": 1,
+        "level_db": -6,
+        "tail": 0
+      },
+      {
+        "type": "noise",
+        "seconds": 1.0,
+        "seed": 2,
+        "level_db": -48.4,
+        "tail": 0.6
+      },
+      {
+        "type": "noise",
+        "seconds": 0.15,
+        "seed": 1,
+        "level_db": -6,
+        "tail": 0
+      },
+      {
+        "type": "noise",
+        "seconds": 1.0,
+        "seed": 2,
+        "level_db": -53.4,
+        "tail": 0.6
+      },
+      {
+        "type": "noise",
+        "seconds": 0.15,
+        "seed": 1,
+        "level_db": -6,
+        "tail": 0
+      },
+      {
+        "type": "noise",
+        "seconds": 1.0,
+        "seed": 2,
+        "level_db": -58.4,
+        "tail": 0.6
+      }
+    ]
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -13.04,
+    "loop": -13.04
+  },
+  "latency_samples": 448,
+  "latency_quality": 0.835,
+  "xruns": 0,
+  "played_sha256": "ba328917abfeb19f1a677d12e9fac7238273cc445ed975c235b3b172139588aa",
+  "recorded_at": "2026-11-21T16:31:43",
+  "tool_commit": "7a49ecb6d9caa19c1327cfe1db8c236f0a96bd7f",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Boss NS-2 on its 9 V adapter: the guitar DI dataset. Input from interface out 3; OUTPUT -> input 2; INST, AIR off, pad on, gain fully counter-clockwise."
+  }
+}

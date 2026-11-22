@@ -1,0 +1,61 @@
+{
+  "pedal": "Boss DD-8 (Shimmer mode, mono: Input A -> Output A)",
+  "comment": "Shimmer mode, the minimum: is it a reverb-like wash or octave-shifted repeats? Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise.",
+  "knobs": [
+    "Level",
+    "Feedback",
+    "Time"
+  ],
+  "takes": [
+    {
+      "name": "bypass-burst",
+      "bypass": true,
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -12
+        ],
+        "step_seconds": 0.05,
+        "tail": 4
+      },
+      "note": "Pedal OFF."
+    },
+    {
+      "name": "burst",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "7:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -12
+        ],
+        "step_seconds": 0.05,
+        "tail": 4
+      },
+      "note": "MODE on SHIMMER. One 50 ms burst: the first repeat, discrete or diffuse, at 1 kHz or shifted?"
+    },
+    {
+      "name": "burst-feedback-1200",
+      "settings": {
+        "Level": "5:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -12
+        ],
+        "step_seconds": 0.05,
+        "tail": 10
+      },
+      "note": "Feedback 12:00, 10 s: do the repeats climb in octaves? Do the gaps between them stay silent?"
+    }
+  ]
+}

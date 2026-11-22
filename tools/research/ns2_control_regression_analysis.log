@@ -1,0 +1,43 @@
+Loaded 48 older takes; bypass transfer -9.188216074370866
+Full rate 2026-10-27-dynamics/plucks-t0300-d1200 {'coherent_waveform_vs_surrogate_rms_db': 0.006356832259608977, 'coherent_waveform_vs_measured_rms_db': 4.546957763018511, 'max_abs_predicted_gain_db': 58.405359698630576, 'finite_output': True}
+Full rate 2026-10-27-dynamics/plucks-t0500-d1200 {'coherent_waveform_vs_surrogate_rms_db': 0.011944030978802865, 'coherent_waveform_vs_measured_rms_db': 8.426207095473949, 'max_abs_predicted_gain_db': 58.40535969863062, 'finite_output': True}
+Full rate 2026-10-27-dynamics/soft-t0300-d1200 {'coherent_waveform_vs_surrogate_rms_db': 0.009695138368397943, 'coherent_waveform_vs_measured_rms_db': 4.821308726318303, 'max_abs_predicted_gain_db': 58.405359698630576, 'finite_output': True}
+Full rate 2026-10-27-dynamics/stairs-slow-t1200-d0700 {'coherent_waveform_vs_surrogate_rms_db': 0.019538064295915102, 'coherent_waveform_vs_measured_rms_db': 4.923234193321826, 'max_abs_predicted_gain_db': 58.405359698630335, 'finite_output': True}
+{
+  "baseline": {
+    "median_take_rms_db": 1.816531045528547,
+    "worst_take_rms_db": 4.976481780974846,
+    "equal_take_rms_db": 2.208714832356733,
+    "takes_worse_than_baseline_by_05db": 0
+  },
+  "asymmetric_envelope": {
+    "median_take_rms_db": 4.0539922580562875,
+    "worst_take_rms_db": 10.585656840506726,
+    "equal_take_rms_db": 4.773905602838342,
+    "takes_worse_than_baseline_by_05db": 30
+  },
+  "leaky_envelope": {
+    "median_take_rms_db": 4.470548974122336,
+    "worst_take_rms_db": 110.28112309093747,
+    "equal_take_rms_db": 25.562130983075466,
+    "takes_worse_than_baseline_by_05db": 30
+  },
+  "nonlinear_charge": {
+    "median_take_rms_db": 3.609940092961542,
+    "worst_take_rms_db": 19.271256067088547,
+    "equal_take_rms_db": 6.105328065929086,
+    "takes_worse_than_baseline_by_05db": 27
+  },
+  "continuous_switch": {
+    "median_take_rms_db": 3.840078740249955,
+    "worst_take_rms_db": 10.988445351835795,
+    "equal_take_rms_db": 4.89215151028928,
+    "takes_worse_than_baseline_by_05db": 30
+  },
+  "continuous_switch_capped": {
+    "median_take_rms_db": 3.8567709492054245,
+    "worst_take_rms_db": 16.72969908514749,
+    "equal_take_rms_db": 5.303711067856798,
+    "takes_worse_than_baseline_by_05db": 30
+  }
+}

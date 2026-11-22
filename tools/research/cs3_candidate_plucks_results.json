@@ -1,0 +1,307 @@
+{
+  "candidate_parameters_sha256": "e0cbb6601293311b2f576bdb6d69b77a232188ab9b356d277d21dff220f515b8",
+  "scope": "Check existing 220 Hz picked-note captures with the frozen research candidate.\n\nNo pluck-data fit. Uses parameters from the previous detector-check 1 kHz takes.\nThe 0.1\u20130.3 s output offset is reported separately; removing it is only a shape\ndiagnostic. Evaluate four repeated notes, not four independent experiments.\n",
+  "evaluation": {
+    "plucks-attack-0700": {
+      "candidate": [
+        {
+          "note": 1,
+          "sustain_offset_db": 0.39443991526565014,
+          "onset": {
+            "absolute_envelope_rms_db": 0.49486126081168463,
+            "sustain_offset_removed_envelope_rms_db": 0.802382167009767
+          },
+          "sustain": {
+            "absolute_envelope_rms_db": 0.3786277271263797,
+            "sustain_offset_removed_envelope_rms_db": 0.03699484606360582
+          },
+          "tail": {
+            "absolute_envelope_rms_db": 0.44490613819786107,
+            "sustain_offset_removed_envelope_rms_db": 0.15043185136522177
+          },
+          "measured_pick_spike_db": 10.716655219727478,
+          "predicted_pick_spike_db": 8.04214866071932
+        },
+        {
+          "note": 2,
+          "sustain_offset_db": 0.3906839005242908,
+          "onset": {
+            "absolute_envelope_rms_db": 0.41182178849843576,
+            "sustain_offset_removed_envelope_rms_db": 0.7089294574826113
+          },
+          "sustain": {
+            "absolute_envelope_rms_db": 0.3757596107882237,
+            "sustain_offset_removed_envelope_rms_db": 0.038149678629869566
+          },
+          "tail": {
+            "absolute_envelope_rms_db": 0.4445889560009468,
+            "sustain_offset_removed_envelope_rms_db": 0.1502939882318931
+          },
+          "measured_pick_spike_db": 14.391828466735518,
+          "predicted_pick_spike_db": 12.207542298013422
+        },
+        {
+          "note": 3,
+          "sustain_offset_db": 0.39104557115881455,
+          "onset": {
+            "absolute_envelope_rms_db": 0.4115494900025973,
+            "sustain_offset_removed_envelope_rms_db": 0.7089502478298211
+          },
+          "sustain": {
+            "absolute_envelope_rms_db": 0.3760398809374755,
+            "sustain_offset_removed_envelope_rms_db": 0.03815008402855154
+          },
+          "tail": {
+            "absolute_envelope_rms_db": 0.4447557307209852,
+            "sustain_offset_removed_envelope_rms_db": 0.1501156015983254
+          },
+          "measured_pick_spike_db": 14.392412985930939,
+          "predicted_pick_spike_db": 12.207558681091186
+        },
+        {
+          "note": 4,
+          "sustain_offset_db": 0.3912036141875923,
+          "onset": {
+            "absolute_envelope_rms_db": 0.4113893547487591,
+            "sustain_offset_removed_envelope_rms_db": 0.7086913476166681
+          },
+          "sustain": {
+            "absolute_envelope_rms_db": 0.3763093733125925,
+            "sustain_offset_removed_envelope_rms_db": 0.0380968536960499
+          },
+          "tail": {
+            "absolute_envelope_rms_db": 0.4447776965144797,
+            "sustain_offset_removed_envelope_rms_db": 0.14984233651368412
+          },
+          "measured_pick_spike_db": 14.392129887962682,
+          "predicted_pick_spike_db": 12.207619817247313
+        }
+      ],
+      "baseline": [
+        {
+          "note": 1,
+          "sustain_offset_db": 0.19531803952150817,
+          "onset": {
+            "absolute_envelope_rms_db": 0.4218476639379499,
+            "sustain_offset_removed_envelope_rms_db": 0.564422528908731
+          },
+          "sustain": {
+            "absolute_envelope_rms_db": 0.19565758975707373,
+            "sustain_offset_removed_envelope_rms_db": 0.013584495958066723
+          },
+          "tail": {
+            "absolute_envelope_rms_db": 0.40031174262555447,
+            "sustain_offset_removed_envelope_rms_db": 0.24539864313331675
+          },
+          "measured_pick_spike_db": 10.716655219727478,
+          "predicted_pick_spike_db": 8.558606066134722
+        },
+        {
+          "note": 2,
+          "sustain_offset_db": 0.1920665954169074,
+          "onset": {
+            "absolute_envelope_rms_db": 0.35234788376284715,
+            "sustain_offset_removed_envelope_rms_db": 0.4829042763471889
+          },
+          "sustain": {
+            "absolute_envelope_rms_db": 0.19284987751058555,
+            "sustain_offset_removed_envelope_rms_db": 0.015927598136935457
+          },
+          "tail": {
+            "absolute_envelope_rms_db": 0.3999146621546002,
+            "sustain_offset_removed_envelope_rms_db": 0.24690574301545704
+          },
+          "measured_pick_spike_db": 14.391828466735518,
+          "predicted_pick_spike_db": 12.530092912714835
+        },
+        {
+          "note": 3,
+          "sustain_offset_db": 0.19238665115254427,
+          "onset": {
+            "absolute_envelope_rms_db": 0.3521035560342806,
+            "sustain_offset_removed_envelope_rms_db": 0.4828781231724572
+          },
+          "sustain": {
+            "absolute_envelope_rms_db": 0.1931313375394813,
+            "sustain_offset_removed_envelope_rms_db": 0.01589855816114764
+          },
+          "tail": {
+            "absolute_envelope_rms_db": 0.4000519927565248,
+            "sustain_offset_removed_envelope_rms_db": 0.24673828059718386
+          },
+          "measured_pick_spike_db": 14.392412985930939,
+          "predicted_pick_spike_db": 12.530132318773909
+        },
+        {
+          "note": 4,
+          "sustain_offset_db": 0.19293426523337587,
+          "onset": {
+            "absolute_envelope_rms_db": 0.3519382387661848,
+            "sustain_offset_removed_envelope_rms_db": 0.48296834913073217
+          },
+          "sustain": {
+            "absolute_envelope_rms_db": 0.19340235745251183,
+            "sustain_offset_removed_envelope_rms_db": 0.01591014151441162
+          },
+          "tail": {
+            "absolute_envelope_rms_db": 0.40004276851983833,
+            "sustain_offset_removed_envelope_rms_db": 0.24627256853048513
+          },
+          "measured_pick_spike_db": 14.392129887962682,
+          "predicted_pick_spike_db": 12.530137367882425
+        }
+      ]
+    },
+    "plucks-attack-0500": {
+      "candidate": [
+        {
+          "note": 1,
+          "sustain_offset_db": -0.17074333424353938,
+          "onset": {
+            "absolute_envelope_rms_db": 0.5019245872318711,
+            "sustain_offset_removed_envelope_rms_db": 0.3761490382517432
+          },
+          "sustain": {
+            "absolute_envelope_rms_db": 0.15715552901657945,
+            "sustain_offset_removed_envelope_rms_db": 0.03190542887925329
+          },
+          "tail": {
+            "absolute_envelope_rms_db": 0.3554043000772722,
+            "sustain_offset_removed_envelope_rms_db": 0.4618876008103199
+          },
+          "measured_pick_spike_db": 11.78924021064591,
+          "predicted_pick_spike_db": 10.080287452383637
+        },
+        {
+          "note": 2,
+          "sustain_offset_db": -0.16941141451001407,
+          "onset": {
+            "absolute_envelope_rms_db": 0.5092558953449362,
+            "sustain_offset_removed_envelope_rms_db": 0.385837708791068
+          },
+          "sustain": {
+            "absolute_envelope_rms_db": 0.15588107444036628,
+            "sustain_offset_removed_envelope_rms_db": 0.03173944974561828
+          },
+          "tail": {
+            "absolute_envelope_rms_db": 0.3552097612373202,
+            "sustain_offset_removed_envelope_rms_db": 0.4609130818061846
+          },
+          "measured_pick_spike_db": 11.80495261559754,
+          "predicted_pick_spike_db": 9.751534386859362
+        },
+        {
+          "note": 3,
+          "sustain_offset_db": -0.16884379158713259,
+          "onset": {
+            "absolute_envelope_rms_db": 0.5092944474189978,
+            "sustain_offset_removed_envelope_rms_db": 0.38622732204211113
+          },
+          "sustain": {
+            "absolute_envelope_rms_db": 0.15569631397687345,
+            "sustain_offset_removed_envelope_rms_db": 0.03149370480457667
+          },
+          "tail": {
+            "absolute_envelope_rms_db": 0.3551930324471925,
+            "sustain_offset_removed_envelope_rms_db": 0.4605501160255194
+          },
+          "measured_pick_spike_db": 11.80487485013731,
+          "predicted_pick_spike_db": 9.751539118798853
+        },
+        {
+          "note": 4,
+          "sustain_offset_db": -0.16916278972750298,
+          "onset": {
+            "absolute_envelope_rms_db": 0.5088421871357228,
+            "sustain_offset_removed_envelope_rms_db": 0.38565452735422817
+          },
+          "sustain": {
+            "absolute_envelope_rms_db": 0.15565864771833823,
+            "sustain_offset_removed_envelope_rms_db": 0.03166434540761706
+          },
+          "tail": {
+            "absolute_envelope_rms_db": 0.3550593519152757,
+            "sustain_offset_removed_envelope_rms_db": 0.46064514645664323
+          },
+          "measured_pick_spike_db": 11.805119944315397,
+          "predicted_pick_spike_db": 9.751547057051795
+        }
+      ],
+      "baseline": [
+        {
+          "note": 1,
+          "sustain_offset_db": -0.46878588004343946,
+          "onset": {
+            "absolute_envelope_rms_db": 0.5911137081539575,
+            "sustain_offset_removed_envelope_rms_db": 0.18132961490288352
+          },
+          "sustain": {
+            "absolute_envelope_rms_db": 0.428264309809643,
+            "sustain_offset_removed_envelope_rms_db": 0.08341691471149873
+          },
+          "tail": {
+            "absolute_envelope_rms_db": 0.43755116259755905,
+            "sustain_offset_removed_envelope_rms_db": 0.783846384830273
+          },
+          "measured_pick_spike_db": 11.78924021064591,
+          "predicted_pick_spike_db": 10.813098717090632
+        },
+        {
+          "note": 2,
+          "sustain_offset_db": -0.4677832241628934,
+          "onset": {
+            "absolute_envelope_rms_db": 0.5968089002695546,
+            "sustain_offset_removed_envelope_rms_db": 0.192190670789362
+          },
+          "sustain": {
+            "absolute_envelope_rms_db": 0.4269902547210543,
+            "sustain_offset_removed_envelope_rms_db": 0.0834409507384481
+          },
+          "tail": {
+            "absolute_envelope_rms_db": 0.43738105144492867,
+            "sustain_offset_removed_envelope_rms_db": 0.7831275867321882
+          },
+          "measured_pick_spike_db": 11.80495261559754,
+          "predicted_pick_spike_db": 10.42490200753187
+        },
+        {
+          "note": 3,
+          "sustain_offset_db": -0.46699547801920005,
+          "onset": {
+            "absolute_envelope_rms_db": 0.5968369943080163,
+            "sustain_offset_removed_envelope_rms_db": 0.19262717424025505
+          },
+          "sustain": {
+            "absolute_envelope_rms_db": 0.4268059805329134,
+            "sustain_offset_removed_envelope_rms_db": 0.08305397996734647
+          },
+          "tail": {
+            "absolute_envelope_rms_db": 0.43738499002501713,
+            "sustain_offset_removed_envelope_rms_db": 0.7825510167221169
+          },
+          "measured_pick_spike_db": 11.80487485013731,
+          "predicted_pick_spike_db": 10.424905240379097
+        },
+        {
+          "note": 4,
+          "sustain_offset_db": -0.46754644336175843,
+          "onset": {
+            "absolute_envelope_rms_db": 0.5963528250155259,
+            "sustain_offset_removed_envelope_rms_db": 0.19205638409912404
+          },
+          "sustain": {
+            "absolute_envelope_rms_db": 0.4267675704351801,
+            "sustain_offset_removed_envelope_rms_db": 0.08336941564143655
+          },
+          "tail": {
+            "absolute_envelope_rms_db": 0.43725632380832463,
+            "sustain_offset_removed_envelope_rms_db": 0.7829012690781116
+          },
+          "measured_pick_spike_db": 11.805119944315397,
+          "predicted_pick_spike_db": 10.424914467353183
+        }
+      ]
+    }
+  },
+  "limits": "220 Hz decaying sinusoids, not guitar or polyphonic audio. Same session nominal controls but hand-reset between experiments. One-cycle envelope ~4.54 ms, 1 ms output grid. Relative output shape after removing sustain offset is not an absolute match. No phase-aligned waveform NRMSE or subjective listening claim."
+}

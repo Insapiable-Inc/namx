@@ -1,0 +1,277 @@
+
+=== 2026-10-29T09:51:41 · run tools/capture/plans/oc-5.json · tool 5b39bd50c07405434c51ad5130152e1f0dadbadd
+
+[1/34] bypass-sweep: sweep 20-20000 Hz, 10 s at -12 dB
+  pedal OFF (bypassed)
+  Input -> Output; GUITAR/BASS switch on GUITAR; Mode on VINTAGE until the Poly takes.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -24.9 dBFS · loopback -24.6 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: r
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -24.9 dBFS · loopback -24.6 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[2/34] bypass-tracking: 11 plucks, 73.42-1318.51 Hz, 33 s (decay 0.8 s, re-picked)
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.4 dBFS · loopback -12.9 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[3/34] bypass-dyads: 8 plucks, 82.41-659.26 Hz, 16 s (decay 0.8 s)
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.4 dBFS · loopback -12.9 dBFS · latency 582 samples (12.12 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[4/34] bypass-fade: 2 plucks, 82.41-196 Hz, 20 s (decay 2.5 s, re-picked)
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.3 dBFS · loopback -12.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[5/34] bypass-sine: 220 Hz sine, 4 s
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.5 dBFS · loopback -12.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[6/34] dry-sweep: sweep 20-20000 Hz, 10 s at -12 dB
+  pedal ON · Mode Vintage · Direct Level 12:00 · +1 OCT Level 7:00 · -1 OCT Level 7:00 · -2 OCT/Range 7:00 (switch it on)
+  Every octave knob fully down: the dry path alone.
+  Enter = record, s = skip, q = quit: (Enter)
+  waiting for the pedal to fall silent:  -71.7 dBFS
+  Still sounding after 30 s: turn Feedback down, or switch the pedal off and on; then set the knobs and press Enter.
+  Enter = record, s = skip, q = quit: q
+
+=== 2026-10-29T09:57:40 · run tools/capture/plans/oc-5.json · tool 1bcf9f4d1741f16a0d65a5bfbc8dd9ec9da1534d
+
+[6/34] dry-sweep: sweep 20-20000 Hz, 10 s at -12 dB
+  pedal ON · Mode Vintage · Direct Level 12:00 · +1 OCT Level 7:00 · -1 OCT Level 7:00 · -2 OCT/Range 7:00 (switch it on)
+  Every octave knob fully down: the dry path alone.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -24.2 dBFS · loopback -24.6 dBFS · latency 576 samples (12.00 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[7/34] direct-1200: 220 Hz sine, 4 s
+  pedal ON · Mode Vintage · Direct Level 12:00 · +1 OCT Level 7:00 · -1 OCT Level 7:00 · -2 OCT/Range 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -21.1 dBFS · loopback -12.9 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[8/34] direct-0300: 220 Hz sine, 4 s
+  pedal ON · Mode Vintage · Direct Level 3:00 (changed) · +1 OCT Level 7:00 · -1 OCT Level 7:00 · -2 OCT/Range 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -16.6 dBFS · loopback -12.9 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[9/34] direct-0500: 220 Hz sine, 4 s
+  pedal ON · Mode Vintage · Direct Level 5:00 (changed) · +1 OCT Level 7:00 · -1 OCT Level 7:00 · -2 OCT/Range 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -15.1 dBFS · loopback -12.9 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[10/34] direct-0900: 220 Hz sine, 4 s
+  pedal ON · Mode Vintage · Direct Level 9:00 (changed) · +1 OCT Level 7:00 · -1 OCT Level 7:00 · -2 OCT/Range 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -30.8 dBFS · loopback -12.9 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[11/34] direct-0700: 220 Hz sine, 4 s
+  pedal ON · Mode Vintage · Direct Level 7:00 (changed) · +1 OCT Level 7:00 · -1 OCT Level 7:00 · -2 OCT/Range 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -84.4 dBFS · loopback -12.9 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  PROBLEM: the pedal channel is silent: is it on?
+  Enter = keep, r = redo: (Enter)
+
+[12/34] vintage-down1-0900: 220 Hz sine, 4 s
+  pedal ON · Mode Vintage · Direct Level 7:00 · +1 OCT Level 7:00 · -1 OCT Level 9:00 (changed) · -2 OCT/Range 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -26.3 dBFS · loopback -12.9 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[13/34] vintage-down1-0300: 220 Hz sine, 4 s
+  pedal ON · Mode Vintage · Direct Level 7:00 · +1 OCT Level 7:00 · -1 OCT Level 3:00 (changed) · -2 OCT/Range 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -11.8 dBFS · loopback -12.9 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[14/34] vintage-down1-0500: 220 Hz sine, 4 s
+  pedal ON · Mode Vintage · Direct Level 7:00 · +1 OCT Level 7:00 · -1 OCT Level 5:00 (changed) · -2 OCT/Range 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -10.4 dBFS · loopback -12.9 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[15/34] vintage-down1-sine: 220 Hz sine, 4 s
+  pedal ON · Mode Vintage · Direct Level 7:00 · +1 OCT Level 7:00 · -1 OCT Level 12:00 (changed) · -2 OCT/Range 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -16.3 dBFS · loopback -12.9 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[16/34] vintage-down1-tracking: 11 plucks, 73.42-1318.51 Hz, 33 s (decay 0.8 s, re-picked)
+  pedal ON · Mode Vintage · Direct Level 7:00 · +1 OCT Level 7:00 · -1 OCT Level 12:00 · -2 OCT/Range 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -15.4 dBFS · loopback -12.9 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[17/34] vintage-down1-fade: 2 plucks, 82.41-196 Hz, 20 s (decay 2.5 s, re-picked)
+  pedal ON · Mode Vintage · Direct Level 7:00 · +1 OCT Level 7:00 · -1 OCT Level 12:00 · -2 OCT/Range 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -16.4 dBFS · loopback -12.9 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[18/34] vintage-down1-dyads: 8 plucks, 82.41-659.26 Hz, 16 s (decay 0.8 s)
+  pedal ON · Mode Vintage · Direct Level 7:00 · +1 OCT Level 7:00 · -1 OCT Level 12:00 · -2 OCT/Range 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -15.6 dBFS · loopback -12.9 dBFS · latency 582 samples (12.12 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[19/34] vintage-down2-sine: 220 Hz sine, 4 s
+  pedal ON · Mode Vintage · Direct Level 7:00 · +1 OCT Level 7:00 · -1 OCT Level 7:00 (changed) · -2 OCT/Range 12:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.0 dBFS · loopback -12.9 dBFS · latency 448 samples (9.33 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[20/34] vintage-down2-tracking: 11 plucks, 73.42-1318.51 Hz, 33 s (decay 0.8 s, re-picked)
+  pedal ON · Mode Vintage · Direct Level 7:00 · +1 OCT Level 7:00 · -1 OCT Level 7:00 · -2 OCT/Range 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -17.4 dBFS · loopback -12.9 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[21/34] vintage-down2-fade: 2 plucks, 82.41-196 Hz, 20 s (decay 2.5 s, re-picked)
+  pedal ON · Mode Vintage · Direct Level 7:00 · +1 OCT Level 7:00 · -1 OCT Level 7:00 · -2 OCT/Range 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -18.7 dBFS · loopback -12.9 dBFS · latency 454 samples (9.46 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[22/34] vintage-up1-sine: 220 Hz sine, 4 s
+  pedal ON · Mode Vintage · Direct Level 7:00 · +1 OCT Level 12:00 (changed) · -1 OCT Level 7:00 · -2 OCT/Range 7:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -84.7 dBFS · loopback -12.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  PROBLEM: the pedal channel is silent: is it on?
+  Enter = keep, r = redo: (Enter)
+
+[23/34] vintage-up1-tracking: 11 plucks, 73.42-1318.51 Hz, 33 s (decay 0.8 s, re-picked)
+  pedal ON · Mode Vintage · Direct Level 7:00 · +1 OCT Level 12:00 · -1 OCT Level 7:00 · -2 OCT/Range 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -85.7 dBFS · loopback -12.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  PROBLEM: the pedal channel is silent: is it on?
+  Enter = keep, r = redo: r
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -15.5 dBFS · loopback -12.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[24/34] vintage-up1-fade: 2 plucks, 82.41-196 Hz, 20 s (decay 2.5 s, re-picked)
+  pedal ON · Mode Vintage · Direct Level 7:00 · +1 OCT Level 12:00 · -1 OCT Level 7:00 · -2 OCT/Range 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -15.2 dBFS · loopback -12.9 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[25/34] poly-up1-sine: 220 Hz sine, 4 s
+  pedal ON · Mode Poly (changed) · Direct Level 7:00 · +1 OCT Level 12:00 · -1 OCT Level 7:00 · -2 OCT/Range 5:00 (changed)
+  Range 5:00 (every note shifted, if the manual's description holds).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -17.1 dBFS · loopback -12.9 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[26/34] poly-up1-tracking: 11 plucks, 73.42-1318.51 Hz, 33 s (decay 0.8 s, re-picked)
+  pedal ON · Mode Poly · Direct Level 7:00 · +1 OCT Level 12:00 · -1 OCT Level 7:00 · -2 OCT/Range 5:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -18.5 dBFS · loopback -12.9 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[27/34] poly-up1-dyads: 8 plucks, 82.41-659.26 Hz, 16 s (decay 0.8 s)
+  pedal ON · Mode Poly · Direct Level 7:00 · +1 OCT Level 12:00 · -1 OCT Level 7:00 · -2 OCT/Range 5:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -17.9 dBFS · loopback -12.9 dBFS · latency 576 samples (12.00 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[28/34] poly-down1-range-0500-tracking: 11 plucks, 73.42-1318.51 Hz, 33 s (decay 0.8 s, re-picked)
+  pedal ON · Mode Poly · Direct Level 7:00 · +1 OCT Level 7:00 (changed) · -1 OCT Level 12:00 (changed) · -2 OCT/Range 5:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -15.0 dBFS · loopback -12.9 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[29/34] poly-down1-range-0500-dyads: 8 plucks, 82.41-659.26 Hz, 16 s (decay 0.8 s)
+  pedal ON · Mode Poly · Direct Level 7:00 · +1 OCT Level 7:00 · -1 OCT Level 12:00 · -2 OCT/Range 5:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -15.4 dBFS · loopback -12.9 dBFS · latency 578 samples (12.04 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[30/34] poly-down1-range-1200-tracking: 11 plucks, 73.42-1318.51 Hz, 33 s (decay 0.8 s, re-picked)
+  pedal ON · Mode Poly · Direct Level 7:00 · +1 OCT Level 7:00 · -1 OCT Level 12:00 · -2 OCT/Range 12:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -15.1 dBFS · loopback -12.9 dBFS · latency 578 samples (12.04 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[31/34] poly-down1-range-1200-dyads: 8 plucks, 82.41-659.26 Hz, 16 s (decay 0.8 s)
+  pedal ON · Mode Poly · Direct Level 7:00 · +1 OCT Level 7:00 · -1 OCT Level 12:00 · -2 OCT/Range 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -15.6 dBFS · loopback -12.9 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[32/34] poly-down1-range-0700-tracking: 11 plucks, 73.42-1318.51 Hz, 33 s (decay 0.8 s, re-picked)
+  pedal ON · Mode Poly · Direct Level 7:00 · +1 OCT Level 7:00 · -1 OCT Level 12:00 · -2 OCT/Range 7:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -23.7 dBFS · loopback -12.9 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[33/34] poly-down1-range-0700-dyads: 8 plucks, 82.41-659.26 Hz, 16 s (decay 0.8 s)
+  pedal ON · Mode Poly · Direct Level 7:00 · +1 OCT Level 7:00 · -1 OCT Level 12:00 · -2 OCT/Range 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -24.0 dBFS · loopback -12.9 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[34/34] poly-down1-range-0700-sine: 220 Hz sine, 4 s
+  pedal ON · Mode Poly · Direct Level 7:00 · +1 OCT Level 7:00 · -1 OCT Level 12:00 · -2 OCT/Range 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -24.6 dBFS · loopback -12.9 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+All 34 takes are in captures/boss/oc-5/2026-10-29.
+
+=== 2026-10-29T10:16:33 · run tools/capture/plans/oc-5.json · tool 1bcf9f4d1741f16a0d65a5bfbc8dd9ec9da1534d
+
+[22/34] vintage-up1-sine: 220 Hz sine, 4 s
+  pedal ON · Mode Vintage · Direct Level 7:00 · +1 OCT Level 12:00 (changed) · -1 OCT Level 7:00 · -2 OCT/Range 7:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -17.1 dBFS · loopback -12.9 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+All 34 takes are in captures/boss/oc-5/2026-10-29.

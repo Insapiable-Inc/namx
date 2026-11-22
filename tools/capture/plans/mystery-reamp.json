@@ -1,0 +1,175 @@
+{
+  "pedal": "A pedal the user chose, unknown to the analysis — blind test (mono: the pedal's input -> its mono output)",
+  "comment": "The user picks a pedal and its settings and tells nothing: the pedal and its settings are to be read from the recordings. The signals are general ones, each for a family of effects: a sweep (frequency response, a tone's or an EQ's curve; a delay or a reverb smears it), clicks (echoes and their spacing, a reverb's tail, latency), a steady 440 Hz tone (tremolo, chorus, flanger, phaser, rotary: the rate and depth of whatever moves; an octave or pitch effect; distortion's harmonics), five steady tones together (a filter or notches moving over time), a noise staircase and a 1 kHz staircase (what level does: compressor, gate, envelope filter, clipping), plucks (attack and decay behaviour), and two guitar excerpts. The same pedal and settings for every take after the first.",
+  "quiet_dbfs": -60,
+  "knobs": [
+    "Pedal",
+    "Settings"
+  ],
+  "takes": [
+    {
+      "name": "bypass-sweep",
+      "bypass": true,
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "tail": 2
+      },
+      "note": "The pedal off (its LED off): the reference. Interface out 3 into the pedal's input (the mono one if it has two), its mono output into front input 2. If it has a second output, leave it empty."
+    },
+    {
+      "name": "mystery-sweep",
+      "settings": {
+        "Pedal": "?",
+        "Settings": "?"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "tail": 4
+      },
+      "note": "The pedal on, set as you like: write it down, do not tell. The same pedal and settings for every take from here."
+    },
+    {
+      "name": "mystery-clicks",
+      "settings": {
+        "Pedal": "?",
+        "Settings": "?"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 2.5,
+        "count": 4,
+        "tail": 4
+      }
+    },
+    {
+      "name": "mystery-tone",
+      "settings": {
+        "Pedal": "?",
+        "Settings": "?"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 440,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 3
+      }
+    },
+    {
+      "name": "mystery-comb",
+      "settings": {
+        "Pedal": "?",
+        "Settings": "?"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": [
+          331,
+          577,
+          997,
+          1723,
+          2971
+        ],
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 3
+      }
+    },
+    {
+      "name": "mystery-stairs",
+      "settings": {
+        "Pedal": "?",
+        "Settings": "?"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -54,
+          -48,
+          -42,
+          -36,
+          -30,
+          -24,
+          -18,
+          -12,
+          -6,
+          0,
+          -48
+        ],
+        "step_seconds": 1.5,
+        "seed": 1,
+        "tail": 3
+      }
+    },
+    {
+      "name": "mystery-steps",
+      "settings": {
+        "Pedal": "?",
+        "Settings": "?"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -60,
+          -48,
+          -36,
+          -24,
+          -12,
+          0,
+          -60
+        ],
+        "step_seconds": 1.5,
+        "gap_seconds": 0,
+        "tail": 3
+      }
+    },
+    {
+      "name": "mystery-plucks",
+      "settings": {
+        "Pedal": "?",
+        "Settings": "?"
+      },
+      "signal": {
+        "type": "plucks",
+        "freq": 330,
+        "period": 3,
+        "count": 4,
+        "decay_seconds": 0.3,
+        "tail": 3
+      }
+    },
+    {
+      "name": "mystery-funk",
+      "settings": {
+        "Pedal": "?",
+        "Settings": "?"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "seconds": 12,
+        "tail": 3.0
+      }
+    },
+    {
+      "name": "mystery-stabs",
+      "settings": {
+        "Pedal": "?",
+        "Settings": "?"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "seconds": 12,
+        "tail": 3.0
+      }
+    }
+  ]
+}

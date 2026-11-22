@@ -1,0 +1,547 @@
+{
+  "pedal": "Boss RV-6 Reverb (stereo: Input A -> Outputs A and B; Input B and EXP empty)",
+  "comment": "RV-6 follow-up (proposed 2026-10-31 after the first session's analysis, captures/boss/rv-6/README.md): sweeps at Time 7:00/9:00/3:00/5:00 in the four time-invariant modes (Spring, Plate, Hall, Room: the whole decay per band, the low and top octaves the bursts could not measure, and Time's law from five points with the first session's noon), Tone and Level at more positions (Hall), held 1 kHz/250 Hz tones for Modulate's rate and depth and Shimmer's octaves (Hall's as the static reference), Time 9:00/3:00 bursts in Modulate and Shimmer. Mode turns one way (Modulate, Spring, Plate, Hall, Room, Shimmer); Time runs monotonically within each mode where it can. Same rig as 2026-10-31.",
+  "quiet_dbfs": -60,
+  "knobs": [
+    "Mode",
+    "Level",
+    "Tone",
+    "Time"
+  ],
+  "takes": [
+    {
+      "name": "bypass-sweep",
+      "bypass": true,
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 3
+      },
+      "note": "Pedal OFF. Output A -> input 2, Output B -> input 1 (as on 2026-10-31). The new session's dry reference."
+    },
+    {
+      "name": "modulate-sine-1000",
+      "settings": {
+        "Mode": "Modulate",
+        "Level": "5:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 8
+      },
+      "note": "Pedal ON, MODE MODULATE. Level fully UP (the wet 12 dB louder against the dry), Tone and Time at 12:00. A held 1 kHz tone: the modulation's rate and depth."
+    },
+    {
+      "name": "modulate-sine-250",
+      "settings": {
+        "Mode": "Modulate",
+        "Level": "5:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 250,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 8
+      }
+    },
+    {
+      "name": "modulate-time-0900",
+      "settings": {
+        "Mode": "Modulate",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "9:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -12
+        ],
+        "step_seconds": 0.05,
+        "seed": 3,
+        "tail": 8
+      },
+      "note": "Level back to 12:00."
+    },
+    {
+      "name": "modulate-time-0300",
+      "settings": {
+        "Mode": "Modulate",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "3:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -12
+        ],
+        "step_seconds": 0.05,
+        "seed": 3,
+        "tail": 15
+      }
+    },
+    {
+      "name": "spring-sweep-time-0300",
+      "settings": {
+        "Mode": "Spring",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "3:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 10
+      },
+      "note": "MODE SPRING. Level and Tone at 12:00. Sweeps at four Time positions: the whole decay per band and Time's law."
+    },
+    {
+      "name": "spring-sweep-time-0500",
+      "settings": {
+        "Mode": "Spring",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "5:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 12
+      }
+    },
+    {
+      "name": "spring-sweep-time-0900",
+      "settings": {
+        "Mode": "Spring",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "9:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 6
+      }
+    },
+    {
+      "name": "spring-sweep-time-0700",
+      "settings": {
+        "Mode": "Spring",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "7:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 4
+      }
+    },
+    {
+      "name": "plate-sweep-time-0700",
+      "settings": {
+        "Mode": "Plate",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "7:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 4
+      },
+      "note": "MODE PLATE. Level and Tone at 12:00. Sweeps at four Time positions: the whole decay per band and Time's law."
+    },
+    {
+      "name": "plate-sweep-time-0900",
+      "settings": {
+        "Mode": "Plate",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "9:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 8
+      }
+    },
+    {
+      "name": "plate-sweep-time-0300",
+      "settings": {
+        "Mode": "Plate",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "3:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 15
+      }
+    },
+    {
+      "name": "plate-sweep-time-0500",
+      "settings": {
+        "Mode": "Plate",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "5:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 20
+      }
+    },
+    {
+      "name": "hall-sweep-time-0500",
+      "settings": {
+        "Mode": "Hall",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "5:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 20
+      },
+      "note": "MODE HALL. Level and Tone at 12:00. Sweeps at four Time positions: the whole decay per band and Time's law."
+    },
+    {
+      "name": "hall-sweep-time-0300",
+      "settings": {
+        "Mode": "Hall",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "3:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 15
+      }
+    },
+    {
+      "name": "hall-sweep-time-0900",
+      "settings": {
+        "Mode": "Hall",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "9:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 8
+      }
+    },
+    {
+      "name": "hall-sweep-time-0700",
+      "settings": {
+        "Mode": "Hall",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "7:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 4
+      }
+    },
+    {
+      "name": "hall-sweep-tone-0900",
+      "settings": {
+        "Mode": "Hall",
+        "Level": "12:00",
+        "Tone": "9:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 8
+      },
+      "note": "Time back to 12:00. Tone at four positions: its filter over the whole band and its law."
+    },
+    {
+      "name": "hall-sweep-tone-0700",
+      "settings": {
+        "Mode": "Hall",
+        "Level": "12:00",
+        "Tone": "7:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 8
+      }
+    },
+    {
+      "name": "hall-sweep-tone-0300",
+      "settings": {
+        "Mode": "Hall",
+        "Level": "12:00",
+        "Tone": "3:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 8
+      }
+    },
+    {
+      "name": "hall-sweep-tone-0500",
+      "settings": {
+        "Mode": "Hall",
+        "Level": "12:00",
+        "Tone": "5:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 8
+      }
+    },
+    {
+      "name": "hall-sweep-level-0900",
+      "settings": {
+        "Mode": "Hall",
+        "Level": "9:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 8
+      },
+      "note": "Tone back to 12:00. Level at 9:00 and 3:00: its law."
+    },
+    {
+      "name": "hall-sweep-level-0300",
+      "settings": {
+        "Mode": "Hall",
+        "Level": "3:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 8
+      }
+    },
+    {
+      "name": "hall-sine-1000",
+      "settings": {
+        "Mode": "Hall",
+        "Level": "5:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 8
+      },
+      "note": "Level fully UP. A held 1 kHz tone in a static mode: the reference for Modulate's and Shimmer's."
+    },
+    {
+      "name": "room-sweep-time-0900",
+      "settings": {
+        "Mode": "Room",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "9:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 6
+      },
+      "note": "MODE ROOM. Level and Tone at 12:00. Sweeps at four Time positions: the whole decay per band and Time's law."
+    },
+    {
+      "name": "room-sweep-time-0700",
+      "settings": {
+        "Mode": "Room",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "7:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 4
+      }
+    },
+    {
+      "name": "room-sweep-time-0300",
+      "settings": {
+        "Mode": "Room",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "3:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 8
+      }
+    },
+    {
+      "name": "room-sweep-time-0500",
+      "settings": {
+        "Mode": "Room",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "5:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 10
+      }
+    },
+    {
+      "name": "shimmer-time-0300",
+      "settings": {
+        "Mode": "Shimmer",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "3:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -12
+        ],
+        "step_seconds": 0.05,
+        "seed": 3,
+        "tail": 15
+      },
+      "note": "MODE SHIMMER. Level and Tone at 12:00 (Level back down from 5:00)."
+    },
+    {
+      "name": "shimmer-time-0900",
+      "settings": {
+        "Mode": "Shimmer",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "9:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -12
+        ],
+        "step_seconds": 0.05,
+        "seed": 3,
+        "tail": 8
+      }
+    },
+    {
+      "name": "shimmer-sine-1000",
+      "settings": {
+        "Mode": "Shimmer",
+        "Level": "5:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 10
+      },
+      "note": "Time back to 12:00, Level fully UP. A held 1 kHz tone: the octaves' build-up and steady levels."
+    }
+  ]
+}

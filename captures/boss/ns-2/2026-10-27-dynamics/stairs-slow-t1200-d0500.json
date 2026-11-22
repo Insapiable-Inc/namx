@@ -1,0 +1,71 @@
+{
+  "take": "stairs-slow-t1200-d0500",
+  "pedal": "Boss NS-2 Noise Suppressor (mono, Input -> Output): dynamics",
+  "bypass": false,
+  "settings": {
+    "Threshold": "12:00",
+    "Decay": "5:00",
+    "Mode": "Reduction"
+  },
+  "note": "A 1 kHz staircase from -88 to -44 dB and back, 4 s per step: slow enough for the closed gain to settle, around the 12:00 threshold.",
+  "signal": {
+    "type": "steps",
+    "freq": 1000,
+    "levels_db": [
+      -88,
+      -84,
+      -80,
+      -76,
+      -72,
+      -68,
+      -64,
+      -60,
+      -56,
+      -52,
+      -48,
+      -44,
+      -48,
+      -52,
+      -56,
+      -60,
+      -64,
+      -68,
+      -72,
+      -76,
+      -80,
+      -84,
+      -88
+    ],
+    "step_seconds": 4,
+    "gap_seconds": 0,
+    "tail": 4
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -57.17,
+    "loop": -56.85
+  },
+  "latency_samples": 450,
+  "latency_quality": 0.998,
+  "xruns": 0,
+  "played_sha256": "78a8607308e49f76e6dac2ccec817a4d67f0752102910e8278bcfe494afb8b09",
+  "recorded_at": "2026-10-27T22:28:19",
+  "tool_commit": "04d7ac0a4d8944d44c144d24763d0cab8a58a86e",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX4",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Scarlett 8i6 3rd gen; pedal feed: analogue out 3 (PCM 3, direct routing); loopback: out 4 -> line in 5; pedal into input 2, INST, AIR off, pad ON, gain min; no reamp box; calibration from the TR-2/DD-8 sessions; NS-2 on a 9 V power supply; Input -> Output, Send and Return empty"
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "take": "bypass-dyads",
+  "pedal": "Boss OC-5 Octave (mono: Input -> Output)",
+  "bypass": true,
+  "settings": {},
+  "note": "",
+  "signal": {
+    "type": "pluck-train",
+    "freq": [
+      82.41,
+      196.0,
+      110.0,
+      329.63,
+      146.83,
+      493.88,
+      196.0,
+      659.26
+    ],
+    "onsets": [
+      0,
+      0,
+      4,
+      4,
+      8,
+      8,
+      12,
+      12
+    ],
+    "seconds": 16,
+    "decay_seconds": 0.8
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -13.42,
+    "loop": -12.91
+  },
+  "latency_samples": 582,
+  "latency_quality": 0.998,
+  "xruns": 0,
+  "played_sha256": "9af424276fa8e100a59b77124f0929a6351fdc78ecd2e073f8b634fc56a930b3",
+  "recorded_at": "2026-10-29T09:53:55",
+  "tool_commit": "5b39bd50c07405434c51ad5130152e1f0dadbadd",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX4",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Scarlett 8i6 3rd gen; pedal feed: analogue out 3 (PCM 3, direct routing); loopback: out 4 -> line in 5; pedal into input 2, INST, AIR off, pad ON, gain min; no reamp box; calibration from the TR-2/DD-8 sessions; OC-5 on a 9 V power supply, GUITAR/BASS switch on GUITAR; Input -> Output"
+  }
+}

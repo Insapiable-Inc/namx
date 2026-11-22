@@ -1,0 +1,196 @@
+
+=== 2026-11-02T11:09:49 · run tools/capture/plans/aquarius-low-bit.json · tool 979167bf6ba528173a9069fc329ffde098383af4-dirty
+
+[1/25] bypass-sweep: sweep 20-20000 Hz, 2 s at -12 dB
+  pedal OFF (bypassed)
+  Pedal OFF. MODE already on LOW BIT, looper off.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -24.8 dBFS · loopback -24.6 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[2/25] bypass-ladder: 211 Hz at -60/-54/-48/-42/-36/-30/-24/-18/-12/-6/0/3 dB, 0.25 s each + 2.75 s gaps
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -10.3 dBFS · loopback -9.9 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[3/25] bypass-silence: silence, 5 s
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -91.9 dBFS · loopback -92.7 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[4/25] dry-sweep: sweep 20-20000 Hz, 2 s at -12 dB
+  pedal ON · Level 7:00 · Feedback 7:00 · Time 7:00 (switch it on)
+  Pedal ON, MODE on LOW BIT (don't tap the tempo). Level at minimum: the dry path alone.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -23.7 dBFS · loopback -24.6 dBFS · latency 582 samples (12.12 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[5/25] time-0700: sweep 20-20000 Hz, 2 s at -12 dB
+  pedal ON · Level 5:00 (changed) · Feedback 7:00 · Time 7:00
+  Feedback at minimum (one repeat): the shortest delay and its tone.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -10.3 dBFS · loopback -24.6 dBFS · latency 582 samples (12.12 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[6/25] time-0900: sweep 20-20000 Hz, 2 s at -12 dB
+  pedal ON · Level 5:00 · Feedback 7:00 · Time 9:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -9.7 dBFS · loopback -24.6 dBFS · latency 582 samples (12.12 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[7/25] time-1200: sweep 20-20000 Hz, 2 s at -12 dB
+  pedal ON · Level 5:00 · Feedback 7:00 · Time 12:00 (changed)
+  The next five takes share this setting.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -9.9 dBFS · loopback -24.6 dBFS · latency 582 samples (12.12 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[8/25] sweep-0db: sweep 20-20000 Hz, 2 s
+  pedal ON · Level 5:00 · Feedback 7:00 · Time 12:00
+  As hard as the guitar's peak: where the repeat clips.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -9.1 dBFS · loopback -12.6 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[9/25] clicks: 8 clicks every 0.613 s
+  pedal ON · Level 5:00 · Feedback 7:00 · Time 12:00
+  Single-sample clicks: a sample-rate reducer without a filter in front misses some.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -14.9 dBFS · loopback -14.0 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[10/25] ladder: 211 Hz at -60/-54/-48/-42/-36/-30/-24/-18/-12/-6/0/3 dB, 0.25 s each + 2.75 s gaps
+  pedal ON · Level 5:00 · Feedback 7:00 · Time 12:00
+  211 Hz bursts from -60 to +3 dB, each repeat landing alone in the gap: the bit depth and the clip.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -10.1 dBFS · loopback -9.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[11/25] hold-sine: 1031 Hz sine, 6 s at -12 dB
+  pedal ON · Level 5:00 · Feedback 7:00 · Time 12:00
+  A held tone: the reduced sample rate from its mirror images, and any wobble.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -20.1 dBFS · loopback -24.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[12/25] level-1200: sweep 20-20000 Hz, 2 s at -12 dB
+  pedal ON · Level 12:00 (changed) · Feedback 7:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -15.8 dBFS · loopback -24.6 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[13/25] ladder-level1200: 211 Hz at -60/-54/-48/-42/-36/-30/-24/-18/-12/-6/0/3 dB, 0.25 s each + 2.75 s gaps
+  pedal ON · Level 12:00 · Feedback 7:00 · Time 12:00
+  Level at 12:00: is the bit reduction before or after the Level knob?
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -10.1 dBFS · loopback -9.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[14/25] level-0900: sweep 20-20000 Hz, 2 s at -12 dB
+  pedal ON · Level 9:00 (changed) · Feedback 7:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -23.2 dBFS · loopback -24.6 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[15/25] level-0300: sweep 20-20000 Hz, 2 s at -12 dB
+  pedal ON · Level 3:00 (changed) · Feedback 7:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -10.9 dBFS · loopback -24.6 dBFS · latency 454 samples (9.46 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[16/25] feedback-0900: sweep 20-20000 Hz, 2 s at -12 dB
+  pedal ON · Level 5:00 (changed) · Feedback 9:00 (changed) · Time 12:00
+  Long tail: the gain and tone of every pass round the loop.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -9.6 dBFS · loopback -24.6 dBFS · latency 454 samples (9.46 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[17/25] feedback-1200: sweep 20-20000 Hz, 2 s at -12 dB
+  pedal ON · Level 5:00 · Feedback 12:00 (changed) · Time 12:00
+  The next three takes share this setting.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -9.8 dBFS · loopback -24.6 dBFS · latency 454 samples (9.46 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[18/25] noise-floor: silence, 8 s
+  pedal ON · Level 5:00 · Feedback 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -81.8 dBFS · loopback -93.1 dBFS · latency 454 samples (9.46 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[19/25] reamp-lowe: captures/di/lowe-chromatic.wav, 50.0 s
+  pedal ON · Level 5:00 · Feedback 12:00 · Time 12:00
+  Your low-E DI (50 s) through the pedal, for the A/B against NAM-X later.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -9.8 dBFS · loopback -12.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[20/25] feedback-0300: sweep 20-20000 Hz, 2 s at -12 dB
+  pedal ON · Level 5:00 · Feedback 3:00 (changed) · Time 12:00
+  The next three takes share this setting.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -9.7 dBFS · loopback -24.6 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[21/25] feedback-0300-burst: 211 Hz at -6 dB, 0.2 s each
+  pedal ON · Level 5:00 · Feedback 3:00 · Time 12:00
+  One 0.2 s burst, then its repeats: do they get crunchier on every pass?
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.0 dBFS · loopback -18.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[22/25] feedback-0300-quiet: 211 Hz at -36 dB, 0.2 s each
+  pedal ON · Level 5:00 · Feedback 3:00 · Time 12:00
+  The same burst 30 dB quieter: do the repeats stop dead when they fall below the last bit?
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -48.9 dBFS · loopback -48.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[23/25] feedback-0500: 211 Hz at -30 dB, 0.2 s each
+  pedal ON · Level 5:00 · Feedback 5:00 (changed) · Time 12:00
+  Feedback at maximum, one quiet burst: do the repeats fade, hold or grow? Turn Feedback back to 7:00 right after it.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -43.0 dBFS · loopback -42.9 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[24/25] time-0300: sweep 20-20000 Hz, 2 s at -12 dB
+  pedal ON · Level 5:00 · Feedback 7:00 (changed) · Time 3:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -9.7 dBFS · loopback -24.6 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[25/25] time-0500: sweep 20-20000 Hz, 2 s at -12 dB
+  pedal ON · Level 5:00 · Feedback 7:00 · Time 5:00 (changed)
+  The longest delay: the repeat should land after the 2 s sweep, on its own.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -9.6 dBFS · loopback -24.6 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+All 25 takes are in captures/joyo/aquarius/2026-11-02-low-bit.

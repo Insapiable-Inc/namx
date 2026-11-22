@@ -1,0 +1,786 @@
+{
+  "pedal": "Boss RV-6 Reverb (stereo: Input A -> Outputs A and B; Input B and EXP empty)",
+  "comment": "First RV-6 session (user, 2026-10-31): Modulate, Spring, Plate, Hall, Room, Shimmer (the Mode knob's order) (Dynamic and +Delay left out), stereo. Per mode at noon: a 50 ms noise burst (the tail: decay, density, stereo, modulation), a sweep (the dry path and the linear part of the tail) and plucks; Time at both ends with bursts. Tone at both ends in Hall and Spring; Level at both ends in Hall. Tails grow with Time (4/8/15 s). Output A -> input 2, Output B -> input 1, both INST + pad, gain minimum. Clock positions are strings: 7:00 = 0, 5:00 = 1.",
+  "quiet_dbfs": -60,
+  "knobs": [
+    "Mode",
+    "Level",
+    "Tone",
+    "Time"
+  ],
+  "takes": [
+    {
+      "name": "bypass-sweep",
+      "bypass": true,
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 3
+      },
+      "note": "Pedal OFF. Output A -> input 2, Output B -> input 1."
+    },
+    {
+      "name": "bypass-burst",
+      "bypass": true,
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -12
+        ],
+        "step_seconds": 0.05,
+        "seed": 3,
+        "tail": 3
+      }
+    },
+    {
+      "name": "bypass-plucks",
+      "bypass": true,
+      "signal": {
+        "type": "pluck-train",
+        "freq": [
+          82.41,
+          110.0,
+          196.0,
+          329.63
+        ],
+        "onsets": [
+          0,
+          3,
+          6,
+          9
+        ],
+        "seconds": 12,
+        "decay_seconds": 0.8,
+        "repick": true,
+        "tail": 3
+      }
+    },
+    {
+      "name": "modulate-burst",
+      "settings": {
+        "Mode": "Modulate",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -12
+        ],
+        "step_seconds": 0.05,
+        "seed": 3,
+        "tail": 8
+      },
+      "note": "Pedal ON, MODE MODULATE. Level, Tone, Time at 12:00. A 50 ms noise burst: the tail alone."
+    },
+    {
+      "name": "modulate-sweep",
+      "settings": {
+        "Mode": "Modulate",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 8
+      }
+    },
+    {
+      "name": "modulate-plucks",
+      "settings": {
+        "Mode": "Modulate",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "pluck-train",
+        "freq": [
+          82.41,
+          110.0,
+          196.0,
+          329.63
+        ],
+        "onsets": [
+          0,
+          3,
+          6,
+          9
+        ],
+        "seconds": 12,
+        "decay_seconds": 0.8,
+        "repick": true,
+        "tail": 8
+      }
+    },
+    {
+      "name": "modulate-time-0700",
+      "settings": {
+        "Mode": "Modulate",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "7:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -12
+        ],
+        "step_seconds": 0.05,
+        "seed": 3,
+        "tail": 4
+      },
+      "note": "Time fully down."
+    },
+    {
+      "name": "modulate-time-0500",
+      "settings": {
+        "Mode": "Modulate",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "5:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -12
+        ],
+        "step_seconds": 0.05,
+        "seed": 3,
+        "tail": 15
+      },
+      "note": "Time fully up."
+    },
+    {
+      "name": "spring-burst",
+      "settings": {
+        "Mode": "Spring",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -12
+        ],
+        "step_seconds": 0.05,
+        "seed": 3,
+        "tail": 8
+      },
+      "note": "Pedal ON, MODE SPRING. Level, Tone, Time at 12:00. A 50 ms noise burst: the tail alone."
+    },
+    {
+      "name": "spring-sweep",
+      "settings": {
+        "Mode": "Spring",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 8
+      }
+    },
+    {
+      "name": "spring-plucks",
+      "settings": {
+        "Mode": "Spring",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "pluck-train",
+        "freq": [
+          82.41,
+          110.0,
+          196.0,
+          329.63
+        ],
+        "onsets": [
+          0,
+          3,
+          6,
+          9
+        ],
+        "seconds": 12,
+        "decay_seconds": 0.8,
+        "repick": true,
+        "tail": 8
+      }
+    },
+    {
+      "name": "spring-time-0700",
+      "settings": {
+        "Mode": "Spring",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "7:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -12
+        ],
+        "step_seconds": 0.05,
+        "seed": 3,
+        "tail": 4
+      },
+      "note": "Time fully down."
+    },
+    {
+      "name": "spring-time-0500",
+      "settings": {
+        "Mode": "Spring",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "5:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -12
+        ],
+        "step_seconds": 0.05,
+        "seed": 3,
+        "tail": 15
+      },
+      "note": "Time fully up."
+    },
+    {
+      "name": "spring-tone-0700",
+      "settings": {
+        "Mode": "Spring",
+        "Level": "12:00",
+        "Tone": "7:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -12
+        ],
+        "step_seconds": 0.05,
+        "seed": 3,
+        "tail": 8
+      },
+      "note": "Time back to 12:00. Tone fully down."
+    },
+    {
+      "name": "spring-tone-0500",
+      "settings": {
+        "Mode": "Spring",
+        "Level": "12:00",
+        "Tone": "5:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -12
+        ],
+        "step_seconds": 0.05,
+        "seed": 3,
+        "tail": 8
+      },
+      "note": "Tone fully up."
+    },
+    {
+      "name": "plate-burst",
+      "settings": {
+        "Mode": "Plate",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -12
+        ],
+        "step_seconds": 0.05,
+        "seed": 3,
+        "tail": 8
+      },
+      "note": "Pedal ON, MODE PLATE. Level, Tone, Time at 12:00. A 50 ms noise burst: the tail alone."
+    },
+    {
+      "name": "plate-sweep",
+      "settings": {
+        "Mode": "Plate",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 8
+      }
+    },
+    {
+      "name": "plate-plucks",
+      "settings": {
+        "Mode": "Plate",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "pluck-train",
+        "freq": [
+          82.41,
+          110.0,
+          196.0,
+          329.63
+        ],
+        "onsets": [
+          0,
+          3,
+          6,
+          9
+        ],
+        "seconds": 12,
+        "decay_seconds": 0.8,
+        "repick": true,
+        "tail": 8
+      }
+    },
+    {
+      "name": "plate-time-0700",
+      "settings": {
+        "Mode": "Plate",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "7:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -12
+        ],
+        "step_seconds": 0.05,
+        "seed": 3,
+        "tail": 4
+      },
+      "note": "Time fully down."
+    },
+    {
+      "name": "plate-time-0500",
+      "settings": {
+        "Mode": "Plate",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "5:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -12
+        ],
+        "step_seconds": 0.05,
+        "seed": 3,
+        "tail": 15
+      },
+      "note": "Time fully up."
+    },
+    {
+      "name": "hall-burst",
+      "settings": {
+        "Mode": "Hall",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -12
+        ],
+        "step_seconds": 0.05,
+        "seed": 3,
+        "tail": 8
+      },
+      "note": "Pedal ON, MODE HALL. Level, Tone, Time at 12:00. A 50 ms noise burst: the tail alone."
+    },
+    {
+      "name": "hall-sweep",
+      "settings": {
+        "Mode": "Hall",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 8
+      }
+    },
+    {
+      "name": "hall-plucks",
+      "settings": {
+        "Mode": "Hall",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "pluck-train",
+        "freq": [
+          82.41,
+          110.0,
+          196.0,
+          329.63
+        ],
+        "onsets": [
+          0,
+          3,
+          6,
+          9
+        ],
+        "seconds": 12,
+        "decay_seconds": 0.8,
+        "repick": true,
+        "tail": 8
+      }
+    },
+    {
+      "name": "hall-time-0700",
+      "settings": {
+        "Mode": "Hall",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "7:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -12
+        ],
+        "step_seconds": 0.05,
+        "seed": 3,
+        "tail": 4
+      },
+      "note": "Time fully down."
+    },
+    {
+      "name": "hall-time-0500",
+      "settings": {
+        "Mode": "Hall",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "5:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -12
+        ],
+        "step_seconds": 0.05,
+        "seed": 3,
+        "tail": 15
+      },
+      "note": "Time fully up."
+    },
+    {
+      "name": "hall-tone-0700",
+      "settings": {
+        "Mode": "Hall",
+        "Level": "12:00",
+        "Tone": "7:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -12
+        ],
+        "step_seconds": 0.05,
+        "seed": 3,
+        "tail": 8
+      },
+      "note": "Time back to 12:00. Tone fully down."
+    },
+    {
+      "name": "hall-tone-0500",
+      "settings": {
+        "Mode": "Hall",
+        "Level": "12:00",
+        "Tone": "5:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -12
+        ],
+        "step_seconds": 0.05,
+        "seed": 3,
+        "tail": 8
+      },
+      "note": "Tone fully up."
+    },
+    {
+      "name": "hall-level-0700",
+      "settings": {
+        "Mode": "Hall",
+        "Level": "7:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 8
+      },
+      "note": "Tone back to 12:00. Level fully down: the dry path alone?"
+    },
+    {
+      "name": "hall-level-0500",
+      "settings": {
+        "Mode": "Hall",
+        "Level": "5:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 8
+      },
+      "note": "Level fully up."
+    },
+    {
+      "name": "room-burst",
+      "settings": {
+        "Mode": "Room",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -12
+        ],
+        "step_seconds": 0.05,
+        "seed": 3,
+        "tail": 8
+      },
+      "note": "Pedal ON, MODE ROOM. Level, Tone, Time at 12:00. A 50 ms noise burst: the tail alone."
+    },
+    {
+      "name": "room-sweep",
+      "settings": {
+        "Mode": "Room",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 8
+      }
+    },
+    {
+      "name": "room-plucks",
+      "settings": {
+        "Mode": "Room",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "pluck-train",
+        "freq": [
+          82.41,
+          110.0,
+          196.0,
+          329.63
+        ],
+        "onsets": [
+          0,
+          3,
+          6,
+          9
+        ],
+        "seconds": 12,
+        "decay_seconds": 0.8,
+        "repick": true,
+        "tail": 8
+      }
+    },
+    {
+      "name": "room-time-0700",
+      "settings": {
+        "Mode": "Room",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "7:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -12
+        ],
+        "step_seconds": 0.05,
+        "seed": 3,
+        "tail": 4
+      },
+      "note": "Time fully down."
+    },
+    {
+      "name": "room-time-0500",
+      "settings": {
+        "Mode": "Room",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "5:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -12
+        ],
+        "step_seconds": 0.05,
+        "seed": 3,
+        "tail": 15
+      },
+      "note": "Time fully up."
+    },
+    {
+      "name": "shimmer-burst",
+      "settings": {
+        "Mode": "Shimmer",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -12
+        ],
+        "step_seconds": 0.05,
+        "seed": 3,
+        "tail": 8
+      },
+      "note": "Pedal ON, MODE SHIMMER. Level, Tone, Time at 12:00. A 50 ms noise burst: the tail alone."
+    },
+    {
+      "name": "shimmer-sweep",
+      "settings": {
+        "Mode": "Shimmer",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -24,
+        "tail": 8
+      }
+    },
+    {
+      "name": "shimmer-plucks",
+      "settings": {
+        "Mode": "Shimmer",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "pluck-train",
+        "freq": [
+          82.41,
+          110.0,
+          196.0,
+          329.63
+        ],
+        "onsets": [
+          0,
+          3,
+          6,
+          9
+        ],
+        "seconds": 12,
+        "decay_seconds": 0.8,
+        "repick": true,
+        "tail": 8
+      }
+    },
+    {
+      "name": "shimmer-time-0700",
+      "settings": {
+        "Mode": "Shimmer",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "7:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -12
+        ],
+        "step_seconds": 0.05,
+        "seed": 3,
+        "tail": 4
+      },
+      "note": "Time fully down."
+    },
+    {
+      "name": "shimmer-time-0500",
+      "settings": {
+        "Mode": "Shimmer",
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Time": "5:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -12
+        ],
+        "step_seconds": 0.05,
+        "seed": 3,
+        "tail": 15
+      },
+      "note": "Time fully up."
+    }
+  ]
+}

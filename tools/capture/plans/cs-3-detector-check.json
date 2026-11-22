@@ -1,0 +1,158 @@
+{
+  "pedal": "Boss CS-3 Compression Sustainer (mono: Input -> Output)",
+  "comment": "Prospective detector generalization test. Each carrier contains -36 -> -12 -> -36 dB and -24 -> -6 -> -24 dB jumps, four seconds per plateau. Levels are relative to the existing guitar-peak reference. Two fixed control settings: Level/Tone/Sustain noon, Attack minimum or maximum. Compare with the existing amplitude-domain model using the previously fitted detector constants; do not retune dynamics per frequency or jump size. The lower first quiet level probes recovery across the knee, while the second packet tests a smaller excursion at higher levels. Model reference commit 0a346743de472e253869e43887a02727c6a73322.",
+  "knobs": [
+    "Level",
+    "Tone",
+    "Attack",
+    "Sustain"
+  ],
+  "takes": [
+    {
+      "name": "bypass-steps-110",
+      "bypass": true,
+      "signal": {
+        "type": "steps",
+        "freq": 110,
+        "levels_db": [
+          -36,
+          -12,
+          -36,
+          -24,
+          -6,
+          -24
+        ],
+        "step_seconds": 4,
+        "gap_seconds": 0,
+        "level_db": 0,
+        "tail": 2
+      },
+      "note": "CS-3 bypassed. Keep the interface configuration, input gain and cables fixed. These are two different jump sizes, with four seconds at every level."
+    },
+    {
+      "name": "bypass-steps-1000",
+      "bypass": true,
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -36,
+          -12,
+          -36,
+          -24,
+          -6,
+          -24
+        ],
+        "step_seconds": 4,
+        "gap_seconds": 0,
+        "level_db": 0,
+        "tail": 2
+      },
+      "note": "CS-3 bypassed. Keep the interface configuration, input gain and cables fixed. These are two different jump sizes, with four seconds at every level."
+    },
+    {
+      "name": "attack-0700-steps-110",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Sustain": "12:00",
+        "Attack": "7:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 110,
+        "levels_db": [
+          -36,
+          -12,
+          -36,
+          -24,
+          -6,
+          -24
+        ],
+        "step_seconds": 4,
+        "gap_seconds": 0,
+        "level_db": 0,
+        "tail": 2
+      },
+      "note": "Pedal ON. Level, Tone and Sustain stay at 12:00 for all four engaged takes. Change only Attack when requested; the test signal changes automatically."
+    },
+    {
+      "name": "attack-0700-steps-1000",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Sustain": "12:00",
+        "Attack": "7:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -36,
+          -12,
+          -36,
+          -24,
+          -6,
+          -24
+        ],
+        "step_seconds": 4,
+        "gap_seconds": 0,
+        "level_db": 0,
+        "tail": 2
+      },
+      "note": "Pedal ON. Level, Tone and Sustain stay at 12:00 for all four engaged takes. Change only Attack when requested; the test signal changes automatically."
+    },
+    {
+      "name": "attack-0500-steps-1000",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Sustain": "12:00",
+        "Attack": "5:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -36,
+          -12,
+          -36,
+          -24,
+          -6,
+          -24
+        ],
+        "step_seconds": 4,
+        "gap_seconds": 0,
+        "level_db": 0,
+        "tail": 2
+      },
+      "note": "Pedal ON. Level, Tone and Sustain stay at 12:00 for all four engaged takes. Change only Attack when requested; the test signal changes automatically."
+    },
+    {
+      "name": "attack-0500-steps-110",
+      "settings": {
+        "Level": "12:00",
+        "Tone": "12:00",
+        "Sustain": "12:00",
+        "Attack": "5:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 110,
+        "levels_db": [
+          -36,
+          -12,
+          -36,
+          -24,
+          -6,
+          -24
+        ],
+        "step_seconds": 4,
+        "gap_seconds": 0,
+        "level_db": 0,
+        "tail": 2
+      },
+      "note": "Pedal ON. Level, Tone and Sustain stay at 12:00 for all four engaged takes. Change only Attack when requested; the test signal changes automatically."
+    }
+  ]
+}

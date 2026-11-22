@@ -1,0 +1,81 @@
+{
+  "pedal": "Boss DD-8 Digital Delay — stereo, fed through INPUT B alone (OUTPUT A and OUTPUT B)",
+  "comment": "Does the DD-8 run two independent delays, one per input? The stereo session fed INPUT A (the mono input); here the same signals go into INPUT B with INPUT A empty. If OUTPUT A stays silent (or carries only crosstalk) and OUTPUT B has the dry and its repeats, the two sides are independent paths; if the repeats also come out of A, the sides are mixed or cross-fed, and how says which stereo output type the pedal is in. Standard only, Level, Feedback and Time at 12:00: clicks (each repeat's time and level per side), noise bursts (its tone), the stabs. Run right after the stereo session, nothing else moved.",
+  "quiet_dbfs": -60,
+  "knobs": [
+    "Mode",
+    "Level",
+    "Feedback",
+    "Time"
+  ],
+  "takes": [
+    {
+      "name": "bypass-noise",
+      "bypass": true,
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -12,
+          -12
+        ],
+        "step_seconds": 0.1,
+        "gap_seconds": 3,
+        "seed": 1,
+        "tail": 1.0
+      },
+      "note": "The pedal off (its LED off). The cable from the interface in INPUT B, INPUT A empty; OUTPUT A on input 2, OUTPUT B on input 1."
+    },
+    {
+      "name": "standard-clicks",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 3,
+        "count": 3,
+        "tail": 1.0
+      },
+      "note": "The pedal on (its LED lit)."
+    },
+    {
+      "name": "standard-noise",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "noise-steps",
+        "levels_db": [
+          -12,
+          -12
+        ],
+        "step_seconds": 0.1,
+        "gap_seconds": 3,
+        "seed": 1,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "standard-stabs",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "start": 2,
+        "seconds": 12.5,
+        "tail": 4.0
+      }
+    }
+  ]
+}

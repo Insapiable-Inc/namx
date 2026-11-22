@@ -1,0 +1,200 @@
+
+=== 2026-10-27T22:01:31 · run tools/capture/plans/ns-2-dynamics.json · tool 04d7ac0a4d8944d44c144d24763d0cab8a58a86e
+
+[1/25] bypass-plucks: 3 220 Hz plucks every 6 s (decay 0.25 s)
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.2 dBFS · loopback -13.1 dBFS · latency 448 samples (9.33 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[2/25] bypass-soft: 3 220 Hz plucks every 6 s (decay 0.25 s) at -24 dB
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -35.7 dBFS · loopback -37.1 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[3/25] bypass-stairs-slow: 1000 Hz at -88/-84/-80/-76/-72/-68/-64/-60/-56/-52/-48/-44/-48/-52/-56/-60/-64/-68/-72/-76/-80/-84/-88 dB, 4 s each
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -77.3 dBFS · loopback -56.8 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  PROBLEM: the pedal channel is silent
+  Enter = keep, r = redo: (Enter)
+
+[4/25] bypass-jump: 1000 Hz at -84/-12/-84 dB, 4 s each
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -24.9 dBFS · loopback -25.0 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[5/25] bypass-phrase: 220 Hz plucks at 0, 0.3, 0.6, 0.9, 1.2, 1.5, 4, 4.5, 5, 8 s (decay 0.25 s)
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.2 dBFS · loopback -12.9 dBFS · latency 584 samples (12.17 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[6/25] plucks-t0700-d1200: 3 220 Hz plucks every 6 s (decay 0.25 s)
+  pedal ON · Threshold 7:00 · Decay 12:00 · Mode Reduction (switch it on)
+  Three picked notes at 220 Hz, 6 s apart, decaying 35 dB/s like a real string: each crosses the threshold, so the gate's hold and fade on a dying note show.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.3 dBFS · loopback -13.1 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[7/25] plucks-t0900-d1200: 3 220 Hz plucks every 6 s (decay 0.25 s)
+  pedal ON · Threshold 9:00 (changed) · Decay 12:00 · Mode Reduction
+  Three picked notes at 220 Hz, 6 s apart, decaying 35 dB/s like a real string: each crosses the threshold, so the gate's hold and fade on a dying note show.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.3 dBFS · loopback -13.1 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[8/25] plucks-t1200-d1200: 3 220 Hz plucks every 6 s (decay 0.25 s)
+  pedal ON · Threshold 12:00 (changed) · Decay 12:00 · Mode Reduction
+  Three picked notes at 220 Hz, 6 s apart, decaying 35 dB/s like a real string: each crosses the threshold, so the gate's hold and fade on a dying note show.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.3 dBFS · loopback -13.1 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[9/25] soft-t1200-d1200: 3 220 Hz plucks every 6 s (decay 0.25 s) at -24 dB
+  pedal ON · Threshold 12:00 · Decay 12:00 · Mode Reduction
+  The same notes 24 dB softer (light picking): they start closer to the threshold.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -36.0 dBFS · loopback -37.1 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[10/25] phrase-t1200-d1200: 220 Hz plucks at 0, 0.3, 0.6, 0.9, 1.2, 1.5, 4, 4.5, 5, 8 s (decay 0.25 s)
+  pedal ON · Threshold 12:00 · Decay 12:00 · Mode Reduction
+  A phrase: six notes 0.3 s apart, three 0.5 s apart, one let ring: does the gate stay open between notes?
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.2 dBFS · loopback -12.9 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[11/25] stairs-slow-t1200-d1200: 1000 Hz at -88/-84/-80/-76/-72/-68/-64/-60/-56/-52/-48/-44/-48/-52/-56/-60/-64/-68/-72/-76/-80/-84/-88 dB, 4 s each
+  pedal ON · Threshold 12:00 · Decay 12:00 · Mode Reduction
+  A 1 kHz staircase from -88 to -44 dB and back, 4 s per step: slow enough for the closed gain to settle, around the 12:00 threshold.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -57.1 dBFS · loopback -56.9 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[12/25] plucks-t0300-d1200: 3 220 Hz plucks every 6 s (decay 0.25 s)
+  pedal ON · Threshold 3:00 (changed) · Decay 12:00 · Mode Reduction
+  Three picked notes at 220 Hz, 6 s apart, decaying 35 dB/s like a real string: each crosses the threshold, so the gate's hold and fade on a dying note show.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.3 dBFS · loopback -13.1 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[13/25] soft-t0300-d1200: 3 220 Hz plucks every 6 s (decay 0.25 s) at -24 dB
+  pedal ON · Threshold 3:00 · Decay 12:00 · Mode Reduction
+  The same notes 24 dB softer (light picking): they start closer to the threshold.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -35.9 dBFS · loopback -37.1 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[14/25] plucks-t0500-d1200: 3 220 Hz plucks every 6 s (decay 0.25 s)
+  pedal ON · Threshold 5:00 (changed) · Decay 12:00 · Mode Reduction
+  Three picked notes at 220 Hz, 6 s apart, decaying 35 dB/s like a real string: each crosses the threshold, so the gate's hold and fade on a dying note show.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.3 dBFS · loopback -13.1 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[15/25] phrase-t0500-d1200: 220 Hz plucks at 0, 0.3, 0.6, 0.9, 1.2, 1.5, 4, 4.5, 5, 8 s (decay 0.25 s)
+  pedal ON · Threshold 5:00 · Decay 12:00 · Mode Reduction
+  A phrase: six notes 0.3 s apart, three 0.5 s apart, one let ring: does the gate stay open between notes?
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.2 dBFS · loopback -12.9 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[16/25] jump-t0500-d0700: 1000 Hz at -84/-12/-84 dB, 4 s each
+  pedal ON · Threshold 5:00 · Decay 7:00 (changed) · Mode Reduction
+  A 1 kHz tone at -84, -12, -84 dB, 4 s each: Decay at a high threshold.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -24.9 dBFS · loopback -25.0 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[17/25] plucks-t0500-d0700: 3 220 Hz plucks every 6 s (decay 0.25 s)
+  pedal ON · Threshold 5:00 · Decay 7:00 · Mode Reduction
+  Three picked notes at 220 Hz, 6 s apart, decaying 35 dB/s like a real string: each crosses the threshold, so the gate's hold and fade on a dying note show.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.3 dBFS · loopback -13.1 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[18/25] plucks-t1200-d0700: 3 220 Hz plucks every 6 s (decay 0.25 s)
+  pedal ON · Threshold 12:00 (changed) · Decay 7:00 · Mode Reduction
+  Three picked notes at 220 Hz, 6 s apart, decaying 35 dB/s like a real string: each crosses the threshold, so the gate's hold and fade on a dying note show.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.3 dBFS · loopback -13.1 dBFS · latency 448 samples (9.33 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[19/25] stairs-slow-t1200-d0700: 1000 Hz at -88/-84/-80/-76/-72/-68/-64/-60/-56/-52/-48/-44/-48/-52/-56/-60/-64/-68/-72/-76/-80/-84/-88 dB, 4 s each
+  pedal ON · Threshold 12:00 · Decay 7:00 · Mode Reduction
+  A 1 kHz staircase from -88 to -44 dB and back, 4 s per step: slow enough for the closed gain to settle, around the 12:00 threshold.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -57.2 dBFS · loopback -56.9 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[20/25] plucks-t1200-d0900: 3 220 Hz plucks every 6 s (decay 0.25 s)
+  pedal ON · Threshold 12:00 · Decay 9:00 (changed) · Mode Reduction
+  Three picked notes at 220 Hz, 6 s apart, decaying 35 dB/s like a real string: each crosses the threshold, so the gate's hold and fade on a dying note show.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.3 dBFS · loopback -13.1 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[21/25] plucks-t1200-d0300: 3 220 Hz plucks every 6 s (decay 0.25 s)
+  pedal ON · Threshold 12:00 · Decay 3:00 (changed) · Mode Reduction
+  Three picked notes at 220 Hz, 6 s apart, decaying 35 dB/s like a real string: each crosses the threshold, so the gate's hold and fade on a dying note show.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.3 dBFS · loopback -13.1 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[22/25] plucks-t1200-d0500: 3 220 Hz plucks every 6 s (decay 0.25 s)
+  pedal ON · Threshold 12:00 · Decay 5:00 (changed) · Mode Reduction
+  Three picked notes at 220 Hz, 6 s apart, decaying 35 dB/s like a real string: each crosses the threshold, so the gate's hold and fade on a dying note show.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.3 dBFS · loopback -13.1 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[23/25] stairs-slow-t1200-d0500: 1000 Hz at -88/-84/-80/-76/-72/-68/-64/-60/-56/-52/-48/-44/-48/-52/-56/-60/-64/-68/-72/-76/-80/-84/-88 dB, 4 s each
+  pedal ON · Threshold 12:00 · Decay 5:00 · Mode Reduction
+  A 1 kHz staircase from -88 to -44 dB and back, 4 s per step: slow enough for the closed gain to settle, around the 12:00 threshold.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -57.2 dBFS · loopback -56.9 dBFS · latency 450 samples (9.38 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[24/25] jump-t0500-d0500: 1000 Hz at -84/-12/-84 dB, 4 s each
+  pedal ON · Threshold 5:00 (changed) · Decay 5:00 · Mode Reduction
+  A 1 kHz tone at -84, -12, -84 dB, 4 s each: Decay at a high threshold.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -24.9 dBFS · loopback -25.0 dBFS · latency 576 samples (12.00 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[25/25] plucks-t0500-d0500: 3 220 Hz plucks every 6 s (decay 0.25 s)
+  pedal ON · Threshold 5:00 · Decay 5:00 · Mode Reduction
+  Three picked notes at 220 Hz, 6 s apart, decaying 35 dB/s like a real string: each crosses the threshold, so the gate's hold and fade on a dying note show.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.3 dBFS · loopback -13.1 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+All 25 takes are in captures/boss/ns-2/2026-10-27-dynamics.

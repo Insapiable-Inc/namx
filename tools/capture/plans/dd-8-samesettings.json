@@ -1,0 +1,376 @@
+{
+  "pedal": "Boss DD-8 Digital Delay — the blind test's knob positions in the other modes (mono: Input A -> Output A)",
+  "comment": "The fifth blind test (captures/boss/mystery/2026-11-11-mystery-5) was the DD-8 in Warm with Level about 1:00, Feedback about 1:30, Time about 2:00, read as Standard. The same knob positions, untouched, in Standard, Analog, Tape and Mod: the pedal's own differences between modes at one setting, with no model in between. Five of the blind test's signals per mode, so every take has its Warm twin there: clicks (each repeat's level and tone), a 1 kHz staircase (level and the repeats' limit), plucks, funk and stabs. Validation data: in no fit. Standard first; the rest can be left for another day.",
+  "quiet_dbfs": -60,
+  "knobs": [
+    "Mode",
+    "Level",
+    "Feedback",
+    "Time"
+  ],
+  "takes": [
+    {
+      "name": "bypass-clicks",
+      "bypass": true,
+      "signal": {
+        "type": "clicks",
+        "period": 2.5,
+        "count": 4,
+        "tail": 4
+      },
+      "note": "The pedal off (its LED off): the reference. Level, Feedback and Time stay where the blind test left them for the whole session (about 1:00, 1:30, 2:00): only the Mode knob moves."
+    },
+    {
+      "name": "standard-clicks",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "as set",
+        "Feedback": "as set",
+        "Time": "as set"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 2.5,
+        "count": 4,
+        "tail": 4
+      },
+      "note": "The pedal on. Mode to Standard; five takes."
+    },
+    {
+      "name": "standard-steps",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "as set",
+        "Feedback": "as set",
+        "Time": "as set"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -60,
+          -48,
+          -36,
+          -24,
+          -12,
+          0,
+          -60
+        ],
+        "step_seconds": 1.5,
+        "gap_seconds": 0,
+        "tail": 3
+      }
+    },
+    {
+      "name": "standard-plucks",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "as set",
+        "Feedback": "as set",
+        "Time": "as set"
+      },
+      "signal": {
+        "type": "plucks",
+        "freq": 330,
+        "period": 3,
+        "count": 4,
+        "decay_seconds": 0.3,
+        "tail": 3
+      }
+    },
+    {
+      "name": "standard-funk",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "as set",
+        "Feedback": "as set",
+        "Time": "as set"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "seconds": 12,
+        "tail": 3.0
+      }
+    },
+    {
+      "name": "standard-stabs",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "as set",
+        "Feedback": "as set",
+        "Time": "as set"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "seconds": 12,
+        "tail": 3.0
+      }
+    },
+    {
+      "name": "analog-clicks",
+      "settings": {
+        "Mode": "Analog",
+        "Level": "as set",
+        "Feedback": "as set",
+        "Time": "as set"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 2.5,
+        "count": 4,
+        "tail": 4
+      },
+      "note": "Mode to Analog; five takes. (q quits here if Standard was enough.)"
+    },
+    {
+      "name": "analog-steps",
+      "settings": {
+        "Mode": "Analog",
+        "Level": "as set",
+        "Feedback": "as set",
+        "Time": "as set"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -60,
+          -48,
+          -36,
+          -24,
+          -12,
+          0,
+          -60
+        ],
+        "step_seconds": 1.5,
+        "gap_seconds": 0,
+        "tail": 3
+      }
+    },
+    {
+      "name": "analog-plucks",
+      "settings": {
+        "Mode": "Analog",
+        "Level": "as set",
+        "Feedback": "as set",
+        "Time": "as set"
+      },
+      "signal": {
+        "type": "plucks",
+        "freq": 330,
+        "period": 3,
+        "count": 4,
+        "decay_seconds": 0.3,
+        "tail": 3
+      }
+    },
+    {
+      "name": "analog-funk",
+      "settings": {
+        "Mode": "Analog",
+        "Level": "as set",
+        "Feedback": "as set",
+        "Time": "as set"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "seconds": 12,
+        "tail": 3.0
+      }
+    },
+    {
+      "name": "analog-stabs",
+      "settings": {
+        "Mode": "Analog",
+        "Level": "as set",
+        "Feedback": "as set",
+        "Time": "as set"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "seconds": 12,
+        "tail": 3.0
+      }
+    },
+    {
+      "name": "tape-clicks",
+      "settings": {
+        "Mode": "Tape",
+        "Level": "as set",
+        "Feedback": "as set",
+        "Time": "as set"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 2.5,
+        "count": 4,
+        "tail": 4
+      },
+      "note": "Mode to Tape; five takes."
+    },
+    {
+      "name": "tape-steps",
+      "settings": {
+        "Mode": "Tape",
+        "Level": "as set",
+        "Feedback": "as set",
+        "Time": "as set"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -60,
+          -48,
+          -36,
+          -24,
+          -12,
+          0,
+          -60
+        ],
+        "step_seconds": 1.5,
+        "gap_seconds": 0,
+        "tail": 3
+      }
+    },
+    {
+      "name": "tape-plucks",
+      "settings": {
+        "Mode": "Tape",
+        "Level": "as set",
+        "Feedback": "as set",
+        "Time": "as set"
+      },
+      "signal": {
+        "type": "plucks",
+        "freq": 330,
+        "period": 3,
+        "count": 4,
+        "decay_seconds": 0.3,
+        "tail": 3
+      }
+    },
+    {
+      "name": "tape-funk",
+      "settings": {
+        "Mode": "Tape",
+        "Level": "as set",
+        "Feedback": "as set",
+        "Time": "as set"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "seconds": 12,
+        "tail": 3.0
+      }
+    },
+    {
+      "name": "tape-stabs",
+      "settings": {
+        "Mode": "Tape",
+        "Level": "as set",
+        "Feedback": "as set",
+        "Time": "as set"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "seconds": 12,
+        "tail": 3.0
+      }
+    },
+    {
+      "name": "mod-clicks",
+      "settings": {
+        "Mode": "Mod",
+        "Level": "as set",
+        "Feedback": "as set",
+        "Time": "as set"
+      },
+      "signal": {
+        "type": "clicks",
+        "period": 2.5,
+        "count": 4,
+        "tail": 4
+      },
+      "note": "Mode to Mod; five takes."
+    },
+    {
+      "name": "mod-steps",
+      "settings": {
+        "Mode": "Mod",
+        "Level": "as set",
+        "Feedback": "as set",
+        "Time": "as set"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -60,
+          -48,
+          -36,
+          -24,
+          -12,
+          0,
+          -60
+        ],
+        "step_seconds": 1.5,
+        "gap_seconds": 0,
+        "tail": 3
+      }
+    },
+    {
+      "name": "mod-plucks",
+      "settings": {
+        "Mode": "Mod",
+        "Level": "as set",
+        "Feedback": "as set",
+        "Time": "as set"
+      },
+      "signal": {
+        "type": "plucks",
+        "freq": 330,
+        "period": 3,
+        "count": 4,
+        "decay_seconds": 0.3,
+        "tail": 3
+      }
+    },
+    {
+      "name": "mod-funk",
+      "settings": {
+        "Mode": "Mod",
+        "Level": "as set",
+        "Feedback": "as set",
+        "Time": "as set"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "seconds": 12,
+        "tail": 3.0
+      }
+    },
+    {
+      "name": "mod-stabs",
+      "settings": {
+        "Mode": "Mod",
+        "Level": "as set",
+        "Feedback": "as set",
+        "Time": "as set"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "seconds": 12,
+        "tail": 3.0
+      }
+    }
+  ]
+}

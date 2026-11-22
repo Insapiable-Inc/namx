@@ -9,6 +9,12 @@
 namespace namx
 {
 
+// An effect's output against its input, for a Mix or Wet knob (0–1): at 1 the effect alone,
+// exactly.
+inline float mix_with_dry(float dry, float effect, float mix) {
+    return mix >= 1.0f ? effect : dry + mix * (effect - dry);
+}
+
 // Abstract base for all audio effect processors.
 //
 // Provides: enable/bypass, stereo-mode flag, sample rate, and a unified

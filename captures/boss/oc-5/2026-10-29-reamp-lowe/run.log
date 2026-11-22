@@ -1,0 +1,54 @@
+
+=== 2026-10-29T21:28:16 · run tools/capture/plans/oc-5-reamp-lowe.json · tool e596fe6d6c98cc982d75accdd10121cf55b69ceb-dirty
+
+[1/7] bypass-di: captures/di/lowe-chromatic.wav, 50.0 s
+  pedal OFF (bypassed)
+  Input -> Output; GUITAR/BASS on GUITAR.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.5 dBFS · loopback -13.0 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[2/7] di-poly-range-0700: captures/di/lowe-chromatic.wav, 50.0 s
+  pedal ON · Mode Poly · Direct Level 12:00 · +1 OCT Level 7:00 · -1 OCT Level 12:00 · -2 OCT/Range 7:00 (switch it on)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -12.1 dBFS · loopback -13.0 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[3/7] di-poly-range-0500: captures/di/lowe-chromatic.wav, 50.0 s
+  pedal ON · Mode Poly · Direct Level 12:00 · +1 OCT Level 7:00 · -1 OCT Level 12:00 · -2 OCT/Range 5:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -9.9 dBFS · loopback -13.0 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[4/7] di-poly-organ: captures/di/lowe-chromatic.wav, 50.0 s
+  pedal ON · Mode Poly · Direct Level 12:00 · +1 OCT Level 12:00 (changed) · -1 OCT Level 12:00 · -2 OCT/Range 5:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -9.8 dBFS · loopback -13.0 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[5/7] di-vintage-organ: captures/di/lowe-chromatic.wav, 50.0 s
+  pedal ON · Mode Vintage (changed) · Direct Level 12:00 · +1 OCT Level 12:00 · -1 OCT Level 12:00 · -2 OCT/Range 7:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -10.7 dBFS · loopback -13.0 dBFS · latency 454 samples (9.46 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[6/7] di-vintage-down1: captures/di/lowe-chromatic.wav, 50.0 s
+  pedal ON · Mode Vintage · Direct Level 12:00 · +1 OCT Level 7:00 (changed) · -1 OCT Level 12:00 · -2 OCT/Range 7:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -12.7 dBFS · loopback -13.0 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[7/7] di-vintage-down1-down2: captures/di/lowe-chromatic.wav, 50.0 s
+  pedal ON · Mode Vintage · Direct Level 12:00 · +1 OCT Level 7:00 · -1 OCT Level 12:00 · -2 OCT/Range 12:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -11.2 dBFS · loopback -13.0 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+All 7 takes are in captures/boss/oc-5/2026-10-29-reamp-lowe.

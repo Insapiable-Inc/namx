@@ -2,31 +2,35 @@
 
 #include <algorithm>
 #include <atomic>
-#include <cmath>
 
 #include "Common.h"
-#include "DelayLine.h"
 #include "EffectBase.h"
-#include "ReverbAlgorithms.h"
-#include "StretchShifter.h"
+#include "Rv6Reverb.h"
 
 namespace namx
 {
 
-// Stereo reverb with three tanks (ReverbAlgorithms.h): Plate (Dattorro), Hall and Room
-// (feedback delay networks). Around them: pre-delay, Low/High Cut on the wet signal,
-// Width, Mix, and the shimmer feedback (octave-up wet back into the input).
-// Phase 22, 2026-10-03: replaced Freeverb (metallic, and its Decay squeezed 0.2–0.8 s
-// into three quarters of the knob, then 9 s in the last).
+// Reverb: models of a Boss RV-6's modes (Rv6Reverb.h). The dry stays at unity; Mix is the
+// pedal's Level, Decay its Time, Damping its Tone (0–100 % = 7:00–5:00). The pedal's mono
+// input (a stereo input summed) gives its A and B outputs: stereo out, or summed at equal
+// power for a mono output.
 class ReverbProcessor : public EffectBase
 {
 public:
+    // Values are the preset key reverb/type: append only. 0–2 were NAM-X's own Plate, Hall and
+    // Room, removed 2026-11-03 for the RV-6: an old preset's Plate, Hall or Room loads as the
+    // RV-6's (PresetSerializer::upgrade).
     enum class Type
     {
-        PLATE,
-        HALL,
-        ROOM
+        RV6_MODULATE = 3,
+        RV6_SPRING,
+        RV6_PLATE,
+        RV6_HALL,
+        RV6_ROOM,
+        RV6_SHIMMER
     };
+    static constexpr int FIRST_TYPE = static_cast<int>(Type::RV6_MODULATE);
+    static constexpr int LAST_TYPE = static_cast<int>(Type::RV6_SHIMMER);
 
     ReverbProcessor();
 
@@ -34,43 +38,21 @@ public:
         return true;
     }
     void reset() override;
-    void sync_right_channel() override;
-
-    // Decay knob position (0–100 %; the preset key keeps its old name, roomSize) → RT60
-    // in seconds, 0.2 s … 10 s on a log scale. Measured within ~10 % in the mids at the
-    // default Damping (BENCHMARKS.md); strong Damping also shortens short Hall/Room tails
-    // in the mids (its strength is the one chosen by ear, 2026-10-03).
-    static float decay_seconds(float pct) {
-        return 0.2f * std::pow(50.0f, std::clamp(pct, 0.0f, 100.0f) / 100.0f);
-    }
 
     void set_type(int t) {
-        type.store(std::clamp(t, 0, 2));
+        type.store(std::clamp(t, FIRST_TYPE, LAST_TYPE));
     }
+    // The pedal's Time (the preset key keeps its old name, roomSize).
     void set_room_size_pct(float pct) {
         room_size_pct.store(pct);
     }
+    // The pedal's Tone.
     void set_damping_pct(float pct) {
         damping_pct.store(pct);
     }
-    void set_width_pct(float pct) {
-        width_pct.store(pct);
-    }
+    // The pedal's Level.
     void set_mix_pct(float pct) {
         mix_pct.store(pct);
-    }
-    void set_pre_delay(float ms) {
-        pre_delay_ms.store(ms);
-    } // before the tail: 0–250 ms on the knob, up to 2 s synced
-    void set_low_cut(float hz) {
-        low_cut_hz.store(hz);
-    } // on the wet signal
-    void set_high_cut(float hz) {
-        high_cut_hz.store(hz);
-    }
-    // Octave-up feedback into the tail (0–100 %): the shimmer reverb.
-    void set_shimmer_pct(float pct) {
-        shimmer_pct.store(pct);
     }
 
     float get_room_size_pct() const {
@@ -78,9 +60,6 @@ public:
     }
     float get_damping_pct() const {
         return damping_pct.load();
-    }
-    float get_width_pct() const {
-        return width_pct.load();
     }
     float get_mix_pct() const {
         return mix_pct.load();
@@ -93,36 +72,15 @@ protected:
     void process_block_stereo_out(float* l, float* r, size_t nframes) override;
 
 private:
-    atomic<int> type{static_cast<int>(Type::PLATE)};
+    atomic<int> type{static_cast<int>(Type::RV6_PLATE)};
     atomic<float> room_size_pct{50.0f};
     atomic<float> damping_pct{50.0f};
-    atomic<float> width_pct{100.0f};
     atomic<float> mix_pct{30.0f};
-    atomic<float> pre_delay_ms{0.0f};
-    atomic<float> low_cut_hz{20.0f};
-    atomic<float> high_cut_hz{20000.0f};
-    atomic<float> shimmer_pct{0.0f};
-    StretchShifter shift; // +12 st, for the shimmer
-    float shim_fb = 0.0f; // shifted wet fed into the next input sample
-    bool shim_on = false; // last block's Shimmer > 0 (audio thread)
 
-    static constexpr float MAX_PRE_DELAY_MS = 2000.0f; // a synced note value can be long
-    // Pre-delay line per input channel + wet filters per output channel.
-    DelayLine pre[2];
-    float hp_x[2]{}, hp_y[2]{}, lp[2]{};
+    rv6::Engine rv6;
+    int active_type = 0; // audio thread: the mode that ran last
 
-    reverb_tanks::Plate plate;
-    reverb_tanks::Fdn hall, room;
-    int active_type = 0; // audio thread: the tank that ran last
-    // Level match between the tanks (and to the old Freeverb) at equal decay: wet energy
-    // of a unit impulse at 0.83 s.
-    static constexpr float PLATE_TRIM = 0.616f, HALL_TRIM = 2.21f, ROOM_TRIM = 1.148f;
-
-    float pre_delay(int ch, float x, size_t delay_samples);
-    float wet_filter(int ch, float x, float hp_a, float lp_k);
-    void configure_tank(int t);
-    void tank(int t, float in_l, float in_r, float& out_l, float& out_r);
-    // Stereo in (L == R for mono), stereo wet out; mono out = the mean of the two.
+    // The pedal's mono input (L and R summed), A and B out.
     void run(float* l, float* r, size_t nframes, bool stereo_in, bool stereo_out);
 };
 

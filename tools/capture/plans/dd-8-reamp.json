@@ -1,0 +1,276 @@
+{
+  "pedal": "Boss DD-8 Digital Delay — reamps of the guitar DI dataset (mono: Output A)",
+  "comment": "The guitar DI dataset (captures/di/: noise, notes, dynamics, chords, chugs, funk, stabs, lead, neck; see tools/capture/README.md, Reamp takes) through the pedal: the main setting with every segment, the extra settings with the segments that show them. For the by-ear A/B and the numbers against NAM-X's model. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise; 9:00 and 3:00 pointer horizontal. Takes ordered for the fewest knob turns.",
+  "quiet_dbfs": -60,
+  "knobs": [
+    "Mode",
+    "Level",
+    "Feedback",
+    "Time"
+  ],
+  "takes": [
+    {
+      "name": "bypass-dynamics",
+      "bypass": true,
+      "signal": {
+        "type": "file",
+        "path": "captures/di/dynamics.wav",
+        "tail": 4.0
+      },
+      "note": "Effect off: the bypass reference. Output A on input 2."
+    },
+    {
+      "name": "standard-notes",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/notes.wav",
+        "tail": 4.0
+      },
+      "note": "Effect on."
+    },
+    {
+      "name": "standard-dynamics",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/dynamics.wav",
+        "tail": 4.0
+      }
+    },
+    {
+      "name": "standard-chords",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "tail": 4.0
+      }
+    },
+    {
+      "name": "standard-chugs",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chugs.wav",
+        "tail": 4.0
+      }
+    },
+    {
+      "name": "standard-funk",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "tail": 4.0
+      }
+    },
+    {
+      "name": "standard-stabs",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "tail": 4.0
+      }
+    },
+    {
+      "name": "standard-lead",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/lead.wav",
+        "tail": 4.0
+      }
+    },
+    {
+      "name": "standard-neck",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/neck.wav",
+        "tail": 4.0
+      }
+    },
+    {
+      "name": "standard-noise",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/noise.wav",
+        "tail": 4.0
+      }
+    },
+    {
+      "name": "standard-feedback-0300-time-0900-stabs",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "12:00",
+        "Feedback": "3:00",
+        "Time": "9:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "tail": 4.0
+      }
+    },
+    {
+      "name": "analog-stabs",
+      "settings": {
+        "Mode": "Analog",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "tail": 4.0
+      }
+    },
+    {
+      "name": "analog-lead",
+      "settings": {
+        "Mode": "Analog",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/lead.wav",
+        "tail": 4.0
+      }
+    },
+    {
+      "name": "tape-stabs",
+      "settings": {
+        "Mode": "Tape",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "tail": 4.0
+      }
+    },
+    {
+      "name": "tape-lead",
+      "settings": {
+        "Mode": "Tape",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/lead.wav",
+        "tail": 4.0
+      }
+    },
+    {
+      "name": "warm-stabs",
+      "settings": {
+        "Mode": "Warm",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "tail": 4.0
+      }
+    },
+    {
+      "name": "warm-lead",
+      "settings": {
+        "Mode": "Warm",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/lead.wav",
+        "tail": 4.0
+      }
+    },
+    {
+      "name": "mod-chords",
+      "settings": {
+        "Mode": "Mod",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "tail": 4.0
+      }
+    },
+    {
+      "name": "mod-lead",
+      "settings": {
+        "Mode": "Mod",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/lead.wav",
+        "tail": 4.0
+      }
+    }
+  ]
+}

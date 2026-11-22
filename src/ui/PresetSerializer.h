@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <optional>
 
 #include <QJsonObject>
@@ -41,7 +42,12 @@ struct Applied
 };
 
 // Newest schema this build reads and writes.
-inline constexpr int VERSION = 2;
+// 3 (2026-11-09): the Tremolo's Depth and Wave are plain curves over the TR-2's range; until
+// then they were positions on its knobs (`upgrade` converts).
+// 10 (2026-11-21): the Flanger and the Phaser have a Wet knob (key `mix`, 100 % = the
+// pedal alone); a `mix` an older file carries there is the removed classic effects'
+// (`upgrade` drops it).
+inline constexpr int VERSION = 10;
 
 // Checks that `obj` is a preset this build can apply, before anything changes:
 // a supported `version` (absent = v1), at least one known setting, and the right
@@ -52,8 +58,19 @@ expected<void, QString> validate(const QJsonObject& obj, const ParamRegistry& pa
 
 // Rewrites keys older builds saved into today's (also for session state, which uses the
 // same keys): the Delay's `rightRatio` (R Time as a % of Time, until 2026-10-12) becomes
-// `rightTime` in ms and `rightSyncNote` (the note nearest that share of the Time note).
+// `rightTime` in ms and `rightSyncNote` (the note nearest that share of the Time note); the
+// Reverb's own Plate, Hall and Room (`type` 0–2, until 2026-11-03) become the RV-6's; the
+// Equalizer's sliders on the GE-7's printed scale (until 2026-11-09) become dB;
+// before version 3, the Tremolo's Depth and Wave (positions on the TR-2's knobs) become today's.
 QJsonObject upgrade(QJsonObject obj);
+
+// The Equalizer's sliders as saved until 2026-11-09 (the GE-7's printed scale), in slider
+// order, and the key each one has now (dB): `upgrade` converts them.
+inline constexpr std::array<const char*, 8> EQ_PRINTED_KEYS{
+    "ge7Hz100",  "ge7Hz200",  "ge7Hz400",  "ge7Hz800",
+    "ge7Hz1600", "ge7Hz3200", "ge7Hz6400", "ge7Level",
+};
+QString eq_slider_key(size_t slider);
 
 // Applies all registry parameters to their widgets (the engine follows via
 // the registry's signal connections) and returns the rest. Call validate() first.

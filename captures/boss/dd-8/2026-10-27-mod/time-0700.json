@@ -1,0 +1,45 @@
+{
+  "take": "time-0700",
+  "pedal": "Boss DD-8 (Mod mode, mono: Input A -> Output A)",
+  "bypass": false,
+  "settings": {
+    "Level": "5:00",
+    "Feedback": "7:00",
+    "Time": "7:00"
+  },
+  "note": "",
+  "signal": {
+    "type": "clicks",
+    "period": 2.0,
+    "count": 3,
+    "tail": 2.0
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -14.1,
+    "loop": -13.97
+  },
+  "latency_samples": 577,
+  "latency_quality": 0.998,
+  "xruns": 0,
+  "played_sha256": "5567294613df2fff266b45f966bf8cb1ac338e09e735398c5afe8a8110c0c77a",
+  "recorded_at": "2026-10-27T00:45:18",
+  "tool_commit": "8d0546b4b8b3afdd7c865cf8194345a361c76987",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX4",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Scarlett 8i6 3rd gen; pedal feed: analogue out 3 (PCM 3, direct routing); loopback: out 4 -> line in 5; pedal into input 2, INST, AIR off, pad ON, gain min; no reamp box; calibration copied from the TR-2 sessions (same rig, same playback level = the guitar's peak at the pedal input); DD-8 on a 9 V power supply, MOD mode, mono (Input A -> Output A)"
+  }
+}

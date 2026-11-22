@@ -1,0 +1,34 @@
+
+=== 2026-11-10T00:21:41 · run tools/capture/plans/dd-8-stereo-input-b.json · tool a84c34dc64a37bc6eb7f6f7fe3dbc85e08ae56dc
+
+[1/4] bypass-noise: white noise at -12/-12 dB, 0.1 s each + 3 s gaps
+  pedal OFF (bypassed)
+  The pedal off (its LED off). The cable from the interface in INPUT B, INPUT A empty; OUTPUT A on input 2, OUTPUT B on input 1.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -26.2 dBFS · B -26.2 dBFS · loopback -25.8 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[2/4] standard-clicks: 3 clicks every 3 s
+  pedal ON · Mode Standard · Level 12:00 · Feedback 12:00 · Time 12:00 (switch it on)
+  The pedal on (its LED lit).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -31.9 dBFS · B -14.1 dBFS · loopback -14.0 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[3/4] standard-noise: white noise at -12/-12 dB, 0.1 s each + 3 s gaps
+  pedal ON · Mode Standard · Level 12:00 · Feedback 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -31.9 dBFS · B -26.2 dBFS · loopback -25.8 dBFS · latency 454 samples (9.46 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[4/4] standard-stabs: captures/di/stabs.wav from 2 s, 12.5 s
+  pedal ON · Mode Standard · Level 12:00 · Feedback 12:00 · Time 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -30.3 dBFS · B -19.4 dBFS · loopback -18.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+All 4 takes are in captures/boss/dd-8/2026-11-10-stereo-input-b.

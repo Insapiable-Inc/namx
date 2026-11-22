@@ -144,23 +144,27 @@ Any mono WAV file: PCM 16/24/32-bit or float 32/64-bit, 1 kHz to 768 kHz (it is 
 
 1. Tuner: chromatic, adjustable reference pitch, can mute the output while tuning
 1. Transpose: -12 to +12 semitones
-1. Noise Gate
-1. Compressor
-1. Wah: follows your picking, or a Position knob for an expression pedal
-1. Flanger: mono or stereo
-1. Phaser: a model of the MXR Phase 90 circuit, mono or stereo
+1. Noise Gate: a model of the Boss NS-2
+1. Compressor: a model of the Boss CS-3
+1. Wah: a model of the Boss AW-3 Dynamic Wah (Up, Down, Sharp)
+1. Flanger: a model of the Boss BF-3 (Standard, Ultra)
+1. Phaser: a model of the Boss PH-3 (4, 8, 10 and 12 Stage, Rise, Fall, Step)
 1. Overdrive: a model of the Tube Screamer circuit
 1. Volume Pedal: with an adjustable mid-point for expression pedals
-1. Equalizer: 4 bands plus low and high cuts
-1. Chorus: mono or stereo
-1. Tremolo: mono or stereo
-1. Delay: mono or stereo with separate left/right times, with an octave-up shimmer on the repeats
-1. Reverb: Plate, Hall and Room, with pre-delay and shimmer
+1. Equalizer: a model of the Boss GE-7, plus low and high cuts
+1. Chorus: a model of the Boss CE-5, mono or stereo
+1. Rotary: a rotary speaker, mono or stereo
+1. Tremolo: a model of the Boss TR-2, mono or stereo
+1. Delay: a model of the Boss DD-8 (Standard, Analog, Tape, Warm, Mod), mono or stereo with separate left/right times
+1. Reverb: a model of the Boss RV-6 (Modulate, Spring, Plate, Hall, Room, Shimmer)
 1. Cabinet: loads an impulse response
+
+The Boss models were measured from real pedals (the studies are in `captures/`); their knobs
+carry the pedals' names and show what they do in plain units (Hz, ms, dB, %).
 
 The Output section also has an optional limiter (the **Limit** switch) that keeps the output below clipping.
 
-All effects can be reordered by dragging them. The delay time, the modulation rates and the reverb pre-delay can sync to the global tempo.
+All effects can be reordered by dragging them. The delay time and the modulation rates can sync to the global tempo.
 
 **How many resources does this use?**
 
@@ -222,13 +226,9 @@ It builds on:
   resampler comes from iPlug2 and Cockos WDL (zlib-style licenses);
 - [signalsmith-linear](https://github.com/Signalsmith-Audio/linear) (FFT) and
   [signalsmith-stretch](https://github.com/Signalsmith-Audio/signalsmith-stretch)
-  (the shimmers' pitch shifter), MIT;
+  (a pitch shifter for the Reverb's Shimmer), MIT;
 - [chowdsp_wdf](https://github.com/Chowdhury-DSP/chowdsp_wdf) (the Overdrive's wave digital
   filter), BSD-3;
-- the Phase 90 model follows "Wave Digital Model of the MXR Phase 90 based on a
-  Time-Varying Resistor Approximation of JFET Elements" by Giampiccolo, Del Moro, Eutizi,
-  Massimi, Massi and Bernardini (Politecnico di Milano) and their
-  [MATLAB reference](https://github.com/polimi-ispl/mxrphase90) (MIT);
 - [Qt 6](https://www.qt.io/) (LGPL-3.0), JACK and ALSA.
 
 NAM-X is an independent project and is **not affiliated with the official Neural Amp

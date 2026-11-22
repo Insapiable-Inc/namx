@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/dsp">
+        <file>rv6-shimmer.bin</file>
+    </qresource>
+</RCC>

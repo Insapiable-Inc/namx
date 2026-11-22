@@ -1,0 +1,488 @@
+
+=== 2026-11-07T12:16:29 · run tools/capture/plans/rt-2.json · tool 96c065038e90f4e265ea7f833d6bddcc0472b854
+
+[1/62] bypass-silence: silence, 5 s
+  pedal OFF (bypassed)
+  Effect off (CHECK unlit). Mono in: INPUT A only. OUTPUT A and B both recorded.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -92.2 dBFS · B -92.1 dBFS · loopback -92.8 dBFS · latency 454 samples (9.46 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[2/62] bypass-noise: white noise, 10 s at -12 dB
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -26.2 dBFS · B -26.2 dBFS · loopback -25.4 dBFS · latency 576 samples (12.00 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[3/62] bypass-chord: 97/197/307/499/701/997/1499/2203/3301/4999/7499 Hz sines, 10 s at -6 dB
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -19.6 dBFS · B -19.5 dBFS · loopback -18.9 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[4/62] bypass-clicks: 150 clicks every 0.1009 s
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -14.2 dBFS · B -14.1 dBFS · loopback -14.0 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[5/62] bypass-steps: 441 Hz at -30/-24/-18/-12/-6/-3/0/3 dB, 2.5 s each + 0.4 s gaps
+  pedal OFF (bypassed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -10.6 dBFS · B -10.5 dBFS · loopback -9.9 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[6/62] m1-slow-silence: silence, 5 s
+  pedal ON · Mode I · Rise/Fall FAST · Speed Slow · Slow 12:00 · Fast 12:00 · Drive knob DRIVE · Drive 7:00 · Balance 12:00 · Level 12:00 (switch it on)
+  Effect on, Speed Slow (green). Drive and Balance share the outer knob: set the DRIVE KNOB switch to the one named, then turn the knob to its position (turn it a little off and back if it's already there, so the pedal reads it).
+  Enter = record, s = skip, q = quit:
+Stopped; the takes recorded so far are kept.
+
+=== 2026-11-07T12:24:18 · run tools/capture/plans/rt-2.json · tool c4b0cff6a12f6703379d00c68fb8c4ef42d1fd38
+
+[6/62] m1-slow-silence: silence, 5 s
+  pedal ON · Mode I · Rise/Fall FAST · Speed Slow · Level 12:00 · Drive/Balance DRIVE 7:00 · Fast 12:00 · Slow 12:00 (switch it on)
+  Effect on, Speed Slow (green). Balance stays at its factory centre unless a take says otherwise.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -90.5 dBFS · B -90.2 dBFS · loopback -93.3 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[7/62] m1-slow-chord: 97/197/307/499/701/997/1499/2203/3301/4999/7499 Hz sines, 20 s at -6 dB
+  pedal ON · Mode I · Rise/Fall FAST · Speed Slow · Level 12:00 · Drive/Balance DRIVE 7:00 · Fast 12:00 · Slow 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -15.0 dBFS · B -16.0 dBFS · loopback -18.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[8/62] m1-slow-noise: white noise, 10 s at -12 dB
+  pedal ON · Mode I · Rise/Fall FAST · Speed Slow · Level 12:00 · Drive/Balance DRIVE 7:00 · Fast 12:00 · Slow 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -30.4 dBFS · B -29.4 dBFS · loopback -25.4 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[9/62] m1-slow-clicks: 150 clicks every 0.1009 s
+  pedal ON · Mode I · Rise/Fall FAST · Speed Slow · Level 12:00 · Drive/Balance DRIVE 7:00 · Fast 12:00 · Slow 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -28.8 dBFS · B -28.6 dBFS · loopback -14.0 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[10/62] m1-slow-steps: 441 Hz at -30/-24/-18/-12/-6/-3/0/3 dB, 2.5 s each + 0.4 s gaps
+  pedal ON · Mode I · Rise/Fall FAST · Speed Slow · Level 12:00 · Drive/Balance DRIVE 7:00 · Fast 12:00 · Slow 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -10.3 dBFS · B -10.2 dBFS · loopback -9.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[11/62] m1-slow-reamp: captures/di/lowe-chromatic.wav, 50.0 s
+  pedal ON · Mode I · Rise/Fall FAST · Speed Slow · Level 12:00 · Drive/Balance DRIVE 7:00 · Fast 12:00 · Slow 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -12.5 dBFS · B -12.2 dBFS · loopback -12.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[12/62] m1-fast-chord: 97/197/307/499/701/997/1499/2203/3301/4999/7499 Hz sines, 10 s at -6 dB
+  pedal ON · Mode I · Rise/Fall FAST · Speed Fast (changed) · Level 12:00 · Drive/Balance DRIVE 7:00 · Fast 12:00 · Slow 12:00
+  Long-press the pedal to change speed (LED green = Slow, red = Fast); give the rotors ~10 s to settle before Enter.
+  Enter = record, s = skip, q = quit:
+Stopped; the takes recorded so far are kept.
+
+=== 2026-11-07T12:31:47 · run tools/capture/plans/rt-2.json · tool 45c6dc06e60727ad9f9ab06b2c6c7a1a1a46a4fa
+
+[12/62] m1-fast-chord: 97/197/307/499/701/997/1499/2203/3301/4999/7499 Hz sines, 10 s at -6 dB
+  pedal ON · Mode I · Rise/Fall FAST · LED red (changed) · Level 12:00 · Drive/Balance DRIVE 7:00 · Fast 12:00 · Slow 12:00
+  Step on the RT-2's own pedal and hold it until the LED changes colour (green = rotors slow, red = rotors fast); leave the Rise/Fall toggle alone. Give the rotors ~10 s to settle before Enter.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -16.4 dBFS · B -16.9 dBFS · loopback -18.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[13/62] m1-fast-noise: white noise, 10 s at -12 dB
+  pedal ON · Mode I · Rise/Fall FAST · LED red · Level 12:00 · Drive/Balance DRIVE 7:00 · Fast 12:00 · Slow 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -30.4 dBFS · B -30.2 dBFS · loopback -25.4 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[14/62] m1-fast-clicks: 150 clicks every 0.1009 s
+  pedal ON · Mode I · Rise/Fall FAST · LED red · Level 12:00 · Drive/Balance DRIVE 7:00 · Fast 12:00 · Slow 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -26.3 dBFS · B -27.4 dBFS · loopback -14.0 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[15/62] m1-fast-reamp: captures/di/lowe-chromatic.wav, 50.0 s
+  pedal ON · Mode I · Rise/Fall FAST · LED red · Level 12:00 · Drive/Balance DRIVE 7:00 · Fast 12:00 · Slow 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -14.2 dBFS · B -13.8 dBFS · loopback -12.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[16/62] m1-fast-0900-chord: 97/197/307/499/701/997/1499/2203/3301/4999/7499 Hz sines, 10 s at -6 dB
+  pedal ON · Mode I · Rise/Fall FAST · LED red · Level 12:00 · Drive/Balance DRIVE 7:00 · Fast 9:00 (changed) · Slow 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -15.6 dBFS · B -15.5 dBFS · loopback -18.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[17/62] m1-fast-0700-chord: 97/197/307/499/701/997/1499/2203/3301/4999/7499 Hz sines, 10 s at -6 dB
+  pedal ON · Mode I · Rise/Fall FAST · LED red · Level 12:00 · Drive/Balance DRIVE 7:00 · Fast 7:00 (changed) · Slow 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -16.1 dBFS · B -15.8 dBFS · loopback -18.9 dBFS · latency 454 samples (9.46 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[18/62] m1-fast-0300-chord: 97/197/307/499/701/997/1499/2203/3301/4999/7499 Hz sines, 8 s at -6 dB
+  pedal ON · Mode I · Rise/Fall FAST · LED red · Level 12:00 · Drive/Balance DRIVE 7:00 · Fast 3:00 (changed) · Slow 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -16.9 dBFS · B -17.5 dBFS · loopback -18.9 dBFS · latency 454 samples (9.46 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[19/62] m1-fast-0500-chord: 97/197/307/499/701/997/1499/2203/3301/4999/7499 Hz sines, 8 s at -6 dB
+  pedal ON · Mode I · Rise/Fall FAST · LED red · Level 12:00 · Drive/Balance DRIVE 7:00 · Fast 5:00 (changed) · Slow 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -17.9 dBFS · B -17.8 dBFS · loopback -18.9 dBFS · latency 454 samples (9.46 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[20/62] m1-level-0900-chord: 97/197/307/499/701/997/1499/2203/3301/4999/7499 Hz sines, 5 s at -6 dB
+  pedal ON · Mode I · Rise/Fall FAST · LED red · Level 9:00 (changed) · Drive/Balance DRIVE 7:00 · Fast 12:00 (changed) · Slow 12:00
+  Fast back to 12:00.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -27.2 dBFS · B -27.6 dBFS · loopback -18.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[21/62] m1-level-0700-chord: 97/197/307/499/701/997/1499/2203/3301/4999/7499 Hz sines, 5 s at -6 dB
+  pedal ON · Mode I · Rise/Fall FAST · LED red · Level 7:00 (changed) · Drive/Balance DRIVE 7:00 · Fast 12:00 · Slow 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -83.7 dBFS · B -83.4 dBFS · loopback -18.9 dBFS · latency 454 samples (9.46 ms) · xruns 0
+  PROBLEM: the pedal channel is silent: is it on?
+  PROBLEM: the pedal's B channel is silent: check Output B's cable
+  Enter = keep, r = redo: (Enter)
+
+[22/62] m1-level-0300-chord: 97/197/307/499/701/997/1499/2203/3301/4999/7499 Hz sines, 5 s at -6 dB
+  pedal ON · Mode I · Rise/Fall FAST · LED red · Level 3:00 (changed) · Drive/Balance DRIVE 7:00 · Fast 12:00 · Slow 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -11.2 dBFS · B -10.8 dBFS · loopback -18.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[23/62] m1-level-0500-chord: 97/197/307/499/701/997/1499/2203/3301/4999/7499 Hz sines, 5 s at -6 dB
+  pedal ON · Mode I · Rise/Fall FAST · LED red · Level 5:00 (changed) · Drive/Balance DRIVE 7:00 · Fast 12:00 · Slow 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -10.2 dBFS · B -10.1 dBFS · loopback -18.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[24/62] m1-balance-0900-chord: 97/197/307/499/701/997/1499/2203/3301/4999/7499 Hz sines, 8 s at -6 dB
+  pedal ON · Mode I · Rise/Fall FAST · LED red · Level 12:00 (changed) · Drive/Balance BALANCE 9:00 (changed) · Fast 12:00 · Slow 12:00
+  Level back to 12:00. Flip the Drive Knob toggle to BALANCE: from now the outer ring sets Balance (Drive stays at 7:00).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -18.0 dBFS · B -17.5 dBFS · loopback -18.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[25/62] m1-balance-0700-chord: 97/197/307/499/701/997/1499/2203/3301/4999/7499 Hz sines, 8 s at -6 dB
+  pedal ON · Mode I · Rise/Fall FAST · LED red · Level 12:00 · Drive/Balance BALANCE 7:00 (changed) · Fast 12:00 · Slow 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -16.9 dBFS · B -16.9 dBFS · loopback -18.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[26/62] m1-balance-0300-chord: 97/197/307/499/701/997/1499/2203/3301/4999/7499 Hz sines, 8 s at -6 dB
+  pedal ON · Mode I · Rise/Fall FAST · LED red · Level 12:00 · Drive/Balance BALANCE 3:00 (changed) · Fast 12:00 · Slow 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.2 dBFS · B -13.8 dBFS · loopback -18.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: r
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -13.6 dBFS · B -13.9 dBFS · loopback -18.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[27/62] m1-balance-0500-chord: 97/197/307/499/701/997/1499/2203/3301/4999/7499 Hz sines, 8 s at -6 dB
+  pedal ON · Mode I · Rise/Fall FAST · LED red · Level 12:00 · Drive/Balance BALANCE 5:00 (changed) · Fast 12:00 · Slow 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -11.7 dBFS · B -12.3 dBFS · loopback -18.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[28/62] m1-balance-0500-noise: white noise, 8 s at -12 dB
+  pedal ON · Mode I · Rise/Fall FAST · LED red · Level 12:00 · Drive/Balance BALANCE 5:00 · Fast 12:00 · Slow 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -23.9 dBFS · B -24.5 dBFS · loopback -25.4 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[29/62] m1-ramp-risefast-chord: 97/197/307/499/701/997/1499/2203/3301/4999/7499 Hz sines, 45 s at -6 dB
+  pedal ON · Mode I · Rise/Fall FAST · LED red · Level 12:00 · Drive/Balance BALANCE 12:00 (changed) · Fast 12:00 · Slow 12:00
+  Ring back to 12:00 (Balance centre); leave the toggle on BALANCE. Starts with the LED red. About 5 s after recording starts, step on the RT-2's pedal and hold it until the LED turns green; about 20 s later step and hold it again until it turns red. Note roughly when you pressed (the log keeps it if you type it at the redo prompt).
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -15.4 dBFS · B -14.9 dBFS · loopback -18.9 dBFS · latency 448 samples (9.33 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[30/62] m1-ramp-riseslow-chord: 97/197/307/499/701/997/1499/2203/3301/4999/7499 Hz sines, 75 s at -6 dB
+  pedal ON · Mode I · Rise/Fall SLOW (changed) · LED red · Level 12:00 · Drive/Balance BALANCE 12:00 · Fast 12:00 · Slow 12:00
+  Starts with the LED red. About 5 s after recording starts, step on the RT-2's pedal and hold it until the LED turns green; about 35 s later step and hold it again until it turns red.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -15.1 dBFS · B -15.8 dBFS · loopback -18.9 dBFS · latency 448 samples (9.33 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[31/62] m1-slow-0900-chord: 97/197/307/499/701/997/1499/2203/3301/4999/7499 Hz sines, 20 s at -6 dB
+  pedal ON · Mode I · Rise/Fall FAST (changed) · LED green (changed) · Level 12:00 · Drive/Balance BALANCE 12:00 · Fast 12:00 · Slow 9:00 (changed)
+  Rise/Fall toggle back to FAST. Then step on the RT-2's pedal and hold it until the LED turns green; give the rotors ~10 s to settle before Enter.
+  Enter = record, s = skip, q = quit:
+Stopped; the takes recorded so far are kept.
+
+=== 2026-11-07T12:47:15 · run tools/capture/plans/rt-2.json · tool 45c6dc06e60727ad9f9ab06b2c6c7a1a1a46a4fa
+
+[31/62] m1-slow-0900-chord: 97/197/307/499/701/997/1499/2203/3301/4999/7499 Hz sines, 20 s at -6 dB
+  pedal ON · Mode I · Rise/Fall FAST (changed) · LED green (changed) · Level 12:00 · Drive/Balance BALANCE 12:00 · Fast 12:00 · Slow 9:00 (changed)
+  Rise/Fall toggle back to FAST. Then step on the RT-2's pedal and hold it until the LED turns green; give the rotors ~10 s to settle before Enter.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -14.7 dBFS · B -15.9 dBFS · loopback -18.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[32/62] m1-slow-0700-chord: 97/197/307/499/701/997/1499/2203/3301/4999/7499 Hz sines, 40 s at -6 dB
+  pedal ON · Mode I · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance BALANCE 12:00 · Fast 12:00 · Slow 7:00 (changed)
+  Slow 7:00 may turn very slowly: 40 s.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -16.7 dBFS · B -19.1 dBFS · loopback -18.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[33/62] m1-slow-0300-chord: 97/197/307/499/701/997/1499/2203/3301/4999/7499 Hz sines, 15 s at -6 dB
+  pedal ON · Mode I · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance BALANCE 12:00 · Fast 12:00 · Slow 3:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -15.4 dBFS · B -15.8 dBFS · loopback -18.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[34/62] m1-slow-0500-chord: 97/197/307/499/701/997/1499/2203/3301/4999/7499 Hz sines, 12 s at -6 dB
+  pedal ON · Mode I · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance BALANCE 12:00 · Fast 12:00 · Slow 5:00 (changed)
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -15.3 dBFS · B -16.2 dBFS · loopback -18.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[35/62] m1-drive-0900-steps: 441 Hz at -30/-24/-18/-12/-6/-3/0/3 dB, 2.5 s each + 0.4 s gaps
+  pedal ON · Mode I · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance DRIVE 9:00 (changed) · Fast 12:00 · Slow 12:00 (changed)
+  Slow back to 12:00. Flip the Drive Knob toggle to DRIVE, then turn the ring to 9:00.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -15.2 dBFS · B -18.3 dBFS · loopback -9.9 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[36/62] m1-drive-1200-steps: 441 Hz at -30/-24/-18/-12/-6/-3/0/3 dB, 2.5 s each + 0.4 s gaps
+  pedal ON · Mode I · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance DRIVE 12:00 (changed) · Fast 12:00 · Slow 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -24.2 dBFS · B -24.0 dBFS · loopback -9.9 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[37/62] m1-drive-0300-steps: 441 Hz at -30/-24/-18/-12/-6/-3/0/3 dB, 2.5 s each + 0.4 s gaps
+  pedal ON · Mode I · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance DRIVE 3:00 (changed) · Fast 12:00 · Slow 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -24.6 dBFS · B -26.9 dBFS · loopback -9.9 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[38/62] m1-drive-0500-steps: 441 Hz at -30/-24/-18/-12/-6/-3/0/3 dB, 2.5 s each + 0.4 s gaps
+  pedal ON · Mode I · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance DRIVE 5:00 (changed) · Fast 12:00 · Slow 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -26.4 dBFS · B -27.1 dBFS · loopback -9.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[39/62] m1-drive-0500-reamp: captures/di/lowe-chromatic.wav, 50.0 s
+  pedal ON · Mode I · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance DRIVE 5:00 · Fast 12:00 · Slow 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -23.7 dBFS · B -23.9 dBFS · loopback -12.9 dBFS · latency 454 samples (9.46 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[40/62] m3-drive-0500-steps: 441 Hz at -30/-24/-18/-12/-6/-3/0/3 dB, 2.5 s each + 0.4 s gaps
+  pedal ON · Mode III (changed) · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance DRIVE 5:00 · Fast 12:00 · Slow 12:00
+  Mode III.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -30.5 dBFS · B -32.2 dBFS · loopback -9.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[41/62] m3-drive-0300-steps: 441 Hz at -30/-24/-18/-12/-6/-3/0/3 dB, 2.5 s each + 0.4 s gaps
+  pedal ON · Mode III · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance DRIVE 3:00 (changed) · Fast 12:00 · Slow 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -30.4 dBFS · B -32.1 dBFS · loopback -9.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[42/62] m3-drive-1200-steps: 441 Hz at -30/-24/-18/-12/-6/-3/0/3 dB, 2.5 s each + 0.4 s gaps
+  pedal ON · Mode III · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance DRIVE 12:00 (changed) · Fast 12:00 · Slow 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -31.8 dBFS · B -32.1 dBFS · loopback -9.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[43/62] m3-drive-0900-steps: 441 Hz at -30/-24/-18/-12/-6/-3/0/3 dB, 2.5 s each + 0.4 s gaps
+  pedal ON · Mode III · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance DRIVE 9:00 (changed) · Fast 12:00 · Slow 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -28.4 dBFS · B -29.0 dBFS · loopback -9.9 dBFS · latency 456 samples (9.50 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[44/62] m3-drive-0700-steps: 441 Hz at -30/-24/-18/-12/-6/-3/0/3 dB, 2.5 s each + 0.4 s gaps
+  pedal ON · Mode III · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance DRIVE 7:00 (changed) · Fast 12:00 · Slow 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -20.0 dBFS · B -19.0 dBFS · loopback -9.9 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[45/62] m3-drive-0300-reamp: captures/di/lowe-chromatic.wav, 50.0 s
+  pedal ON · Mode III · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance DRIVE 3:00 (changed) · Fast 12:00 · Slow 12:00
+  Drive back up to 3:00 for a driven Mode III reamp.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -27.9 dBFS · B -27.6 dBFS · loopback -12.9 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[46/62] m3-slow-chord: 97/197/307/499/701/997/1499/2203/3301/4999/7499 Hz sines, 20 s at -6 dB
+  pedal ON · Mode III · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance DRIVE 7:00 (changed) · Fast 12:00 · Slow 12:00
+  Drive back to 7:00.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -18.2 dBFS · B -18.7 dBFS · loopback -18.9 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[47/62] m3-slow-noise: white noise, 10 s at -12 dB
+  pedal ON · Mode III · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance DRIVE 7:00 · Fast 12:00 · Slow 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -31.4 dBFS · B -31.1 dBFS · loopback -25.4 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[48/62] m3-slow-clicks: 150 clicks every 0.1009 s
+  pedal ON · Mode III · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance DRIVE 7:00 · Fast 12:00 · Slow 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -30.1 dBFS · B -29.6 dBFS · loopback -14.0 dBFS · latency 577 samples (12.02 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[49/62] m3-slow-silence: silence, 5 s
+  pedal ON · Mode III · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance DRIVE 7:00 · Fast 12:00 · Slow 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -90.7 dBFS · B -90.1 dBFS · loopback -92.9 dBFS · latency 454 samples (9.46 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[50/62] m3-slow-reamp: captures/di/lowe-chromatic.wav, 50.0 s
+  pedal ON · Mode III · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance DRIVE 7:00 · Fast 12:00 · Slow 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -18.3 dBFS · B -17.8 dBFS · loopback -12.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[51/62] m3-fast-chord: 97/197/307/499/701/997/1499/2203/3301/4999/7499 Hz sines, 10 s at -6 dB
+  pedal ON · Mode III · Rise/Fall FAST · LED red (changed) · Level 12:00 · Drive/Balance DRIVE 7:00 · Fast 12:00 · Slow 12:00
+  Step on the RT-2's own pedal and hold it until the LED changes colour (green = rotors slow, red = rotors fast); leave the Rise/Fall toggle alone. Give the rotors ~10 s to settle before Enter.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -18.7 dBFS · B -19.8 dBFS · loopback -18.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[52/62] m3-fast-clicks: 150 clicks every 0.1009 s
+  pedal ON · Mode III · Rise/Fall FAST · LED red · Level 12:00 · Drive/Balance DRIVE 7:00 · Fast 12:00 · Slow 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -29.5 dBFS · B -29.1 dBFS · loopback -14.0 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[53/62] m3-fast-reamp: captures/di/lowe-chromatic.wav, 50.0 s
+  pedal ON · Mode III · Rise/Fall FAST · LED red · Level 12:00 · Drive/Balance DRIVE 7:00 · Fast 12:00 · Slow 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -18.0 dBFS · B -18.9 dBFS · loopback -12.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[54/62] m2-fast-chord: 97/197/307/499/701/997/1499/2203/3301/4999/7499 Hz sines, 10 s at -6 dB
+  pedal ON · Mode II (changed) · Rise/Fall FAST · LED red · Level 12:00 · Drive/Balance DRIVE 7:00 · Fast 12:00 · Slow 12:00
+  Mode II.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -16.9 dBFS · B -17.3 dBFS · loopback -18.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[55/62] m2-fast-clicks: 150 clicks every 0.1009 s
+  pedal ON · Mode II · Rise/Fall FAST · LED red · Level 12:00 · Drive/Balance DRIVE 7:00 · Fast 12:00 · Slow 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -22.4 dBFS · B -22.4 dBFS · loopback -14.0 dBFS · latency 449 samples (9.35 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[56/62] m2-fast-reamp: captures/di/lowe-chromatic.wav, 50.0 s
+  pedal ON · Mode II · Rise/Fall FAST · LED red · Level 12:00 · Drive/Balance DRIVE 7:00 · Fast 12:00 · Slow 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -11.6 dBFS · B -12.8 dBFS · loopback -12.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[57/62] m2-slow-chord: 97/197/307/499/701/997/1499/2203/3301/4999/7499 Hz sines, 20 s at -6 dB
+  pedal ON · Mode II · Rise/Fall FAST · LED green (changed) · Level 12:00 · Drive/Balance DRIVE 7:00 · Fast 12:00 · Slow 12:00
+  Step on the RT-2's own pedal and hold it until the LED changes colour (green = rotors slow, red = rotors fast); leave the Rise/Fall toggle alone. Give the rotors ~10 s to settle before Enter.
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -16.3 dBFS · B -15.4 dBFS · loopback -18.9 dBFS · latency 631 samples (13.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[58/62] m2-slow-noise: white noise, 10 s at -12 dB
+  pedal ON · Mode II · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance DRIVE 7:00 · Fast 12:00 · Slow 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -29.3 dBFS · B -29.0 dBFS · loopback -25.4 dBFS · latency 454 samples (9.46 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[59/62] m2-slow-clicks: 150 clicks every 0.1009 s
+  pedal ON · Mode II · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance DRIVE 7:00 · Fast 12:00 · Slow 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -22.8 dBFS · B -24.0 dBFS · loopback -14.0 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[60/62] m2-slow-steps: 441 Hz at -30/-24/-18/-12/-6/-3/0/3 dB, 2.5 s each + 0.4 s gaps
+  pedal ON · Mode II · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance DRIVE 7:00 · Fast 12:00 · Slow 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -10.2 dBFS · B -10.2 dBFS · loopback -9.9 dBFS · latency 455 samples (9.48 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[61/62] m2-slow-silence: silence, 5 s
+  pedal ON · Mode II · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance DRIVE 7:00 · Fast 12:00 · Slow 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -90.4 dBFS · B -90.2 dBFS · loopback -92.6 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+[62/62] m2-slow-reamp: captures/di/lowe-chromatic.wav, 50.0 s
+  pedal ON · Mode II · Rise/Fall FAST · LED green · Level 12:00 · Drive/Balance DRIVE 7:00 · Fast 12:00 · Slow 12:00
+  Enter = record, s = skip, q = quit: (Enter)
+  the pedal is silent.
+  pedal peak -10.3 dBFS · B -10.2 dBFS · loopback -12.9 dBFS · latency 583 samples (12.15 ms) · xruns 0
+  Enter = next, r = redo: (Enter)
+
+All 62 takes are in captures/boss/rt-2/2026-11-07.
+
+=== 2026-11-07T14:08:06 · run tools/capture/plans/rt-2.json · tool 88f888e3b9418e48200532ce90e9764e06cccfd4
+
+All 62 takes are in captures/boss/rt-2/2026-11-07.

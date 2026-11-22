@@ -1,0 +1,125 @@
+{
+  "pedal": "Boss TR-2",
+  "comment": "A subset of tr-2.json with the same take names, to compare a session against another (e.g. battery vs power supply). Favours exact knob positions (7:00, 5:00). Knob positions are clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise.",
+  "knobs": [
+    "Rate",
+    "Wave",
+    "Depth"
+  ],
+  "takes": [
+    {
+      "name": "bypass-sweep-0",
+      "bypass": true,
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": 0
+      }
+    },
+    {
+      "name": "bypass-sine",
+      "bypass": true,
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 20
+      }
+    },
+    {
+      "name": "depth0-sweep-0",
+      "settings": {
+        "Rate": "12:00",
+        "Wave": "12:00",
+        "Depth": "7:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": 0
+      },
+      "note": "Depth at minimum: the pedal's own tone and gain, and whether it distorts with level."
+    },
+    {
+      "name": "depth-1200",
+      "settings": {
+        "Rate": "12:00",
+        "Wave": "12:00",
+        "Depth": "12:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 20
+      }
+    },
+    {
+      "name": "wave-1200",
+      "settings": {
+        "Rate": "12:00",
+        "Wave": "12:00",
+        "Depth": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 20
+      }
+    },
+    {
+      "name": "noise-floor",
+      "settings": {
+        "Rate": "12:00",
+        "Wave": "12:00",
+        "Depth": "5:00"
+      },
+      "signal": {
+        "type": "silence",
+        "seconds": 10
+      },
+      "note": "No signal: hum, hiss and any LFO tick bleeding into the output."
+    },
+    {
+      "name": "rate-0700",
+      "settings": {
+        "Rate": "7:00",
+        "Wave": "12:00",
+        "Depth": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 20
+      }
+    },
+    {
+      "name": "rate-0500",
+      "settings": {
+        "Rate": "5:00",
+        "Wave": "12:00",
+        "Depth": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 20
+      }
+    },
+    {
+      "name": "cross-max",
+      "settings": {
+        "Rate": "5:00",
+        "Wave": "5:00",
+        "Depth": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 1000,
+        "seconds": 20
+      }
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "take": "sens-0900",
+  "pedal": "Boss AW-3 Dynamic Wah \u2014 the return after loud noise, by Sens (mono: Guitar input -> Output)",
+  "bypass": false,
+  "settings": {
+    "Mode": "Up",
+    "Manual": "12:00",
+    "Sens": "9:00",
+    "Decay": "12:00"
+  },
+  "note": "The pedal on, Mode Up, Manual and Decay at 12:00 for the next four takes: only Sens moves.",
+  "signal": {
+    "type": "noise-steps",
+    "levels_db": [
+      -48,
+      0,
+      -48,
+      -12,
+      -48,
+      -24,
+      -48
+    ],
+    "step_seconds": 3.5,
+    "seed": 2,
+    "tail": 2
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -21.38,
+    "loop": -14.11
+  },
+  "latency_samples": 583,
+  "latency_quality": 0.998,
+  "xruns": 0,
+  "played_sha256": "5005509c53590da795f0cb71a24b689eba583299f0cfae3b1632fe9d81650046",
+  "recorded_at": "2026-11-11T22:18:46",
+  "tool_commit": "3e0fa693aee536587b5a4928409cfc7dc5b66ada",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX4",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Boss AW-3 on its 9 V adapter: the guitar DI dataset. Input from interface out 3; OUTPUT -> input 2; INST, AIR off, pad on, gain fully counter-clockwise."
+  }
+}

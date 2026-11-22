@@ -1,0 +1,285 @@
+{
+  "model_commit": "8efe8368502646173d9d58b96ebbaa7d39f404b2",
+  "plan_sha256": "b10b05cfdf216fee7ee0c05dcf17f3fc87183232f3ca6e35a8088c38fc6ee11d",
+  "expected_played_sha256": "61f3d99e8d580185bfd945bc68ac868dd0067f761ba2d2d56de10412ec89e9a0",
+  "old_evidence": {
+    "take": "captures/boss/ns-2/2026-10-27/stairs-threshold-0300",
+    "xruns": 0,
+    "played_sha256": "ea912a6a4d1b848273409a7c36349664dce5353c5b6e8f4459fefb10ab15a8c7",
+    "recorded_sha256": "d64abc233239881515a873375d4c1d4cb35895c3b18605907b1bf65c64216ac0",
+    "windows_seconds": [
+      [
+        0.05,
+        0.15
+      ],
+      [
+        0.5,
+        0.6
+      ],
+      [
+        1.3,
+        1.4
+      ]
+    ],
+    "rows": [
+      {
+        "step": 4,
+        "input_db": -64,
+        "direction": "ascending",
+        "gain_db_at_005_050_130_seconds": [
+          -28.50101130709251,
+          -27.714107791482533,
+          -26.511876555250755
+        ],
+        "late_minus_early_db": 1.9891347518417568
+      },
+      {
+        "step": 5,
+        "input_db": -60,
+        "direction": "ascending",
+        "gain_db_at_005_050_130_seconds": [
+          -26.04853848309298,
+          -25.358542752387166,
+          -24.097630535346283
+        ],
+        "late_minus_early_db": 1.9509079477466962
+      },
+      {
+        "step": 6,
+        "input_db": -56,
+        "direction": "ascending",
+        "gain_db_at_005_050_130_seconds": [
+          -17.593574153294412,
+          -13.48367763655405,
+          -11.286052715270564
+        ],
+        "late_minus_early_db": 6.307521438023848
+      },
+      {
+        "step": 7,
+        "input_db": -52,
+        "direction": "ascending",
+        "gain_db_at_005_050_130_seconds": [
+          -2.9264937509080657,
+          -0.22798449878182175,
+          0.5831596025204029
+        ],
+        "late_minus_early_db": 3.509653353428469
+      },
+      {
+        "step": 8,
+        "input_db": -48,
+        "direction": "ascending",
+        "gain_db_at_005_050_130_seconds": [
+          0.5792579775528051,
+          0.5799507010519459,
+          0.5782464393294662
+        ],
+        "late_minus_early_db": -0.0010115382233388814
+      },
+      {
+        "step": 9,
+        "input_db": -44,
+        "direction": "ascending",
+        "gain_db_at_005_050_130_seconds": [
+          0.5822194764924986,
+          0.580426363503787,
+          0.5816522266633827
+        ],
+        "late_minus_early_db": -0.0005672498291159345
+      },
+      {
+        "step": 31,
+        "input_db": -44,
+        "direction": "descending",
+        "gain_db_at_005_050_130_seconds": [
+          0.5818468083433455,
+          0.579876661749833,
+          0.5811425325551581
+        ],
+        "late_minus_early_db": -0.0007042757881873252
+      },
+      {
+        "step": 32,
+        "input_db": -48,
+        "direction": "descending",
+        "gain_db_at_005_050_130_seconds": [
+          0.5790949684403253,
+          0.5782471701628807,
+          0.5794503107188795
+        ],
+        "late_minus_early_db": 0.0003553422785542715
+      },
+      {
+        "step": 33,
+        "input_db": -52,
+        "direction": "descending",
+        "gain_db_at_005_050_130_seconds": [
+          0.577669009247467,
+          0.5775376083278141,
+          0.580229558902015
+        ],
+        "late_minus_early_db": 0.0025605496545479944
+      },
+      {
+        "step": 34,
+        "input_db": -56,
+        "direction": "descending",
+        "gain_db_at_005_050_130_seconds": [
+          0.5839447013809745,
+          0.578366387218525,
+          -0.8871962646936136
+        ],
+        "late_minus_early_db": -1.471140966074588
+      },
+      {
+        "step": 35,
+        "input_db": -60,
+        "direction": "descending",
+        "gain_db_at_005_050_130_seconds": [
+          -2.2531201995629115,
+          -5.3698168854696045,
+          -7.995237263411987
+        ],
+        "late_minus_early_db": -5.742117063849076
+      },
+      {
+        "step": 36,
+        "input_db": -64,
+        "direction": "descending",
+        "gain_db_at_005_050_130_seconds": [
+          -9.346972640480487,
+          -12.091297942891565,
+          -14.45653656262104
+        ],
+        "late_minus_early_db": -5.109563922140552
+      }
+    ]
+  },
+  "locator_predictions": [
+    {
+      "step": 0,
+      "input_db": -100,
+      "internal_gain_window_medians_db": [
+        -38.30263258944488,
+        -51.91801365384758,
+        -51.94342483203654
+      ]
+    },
+    {
+      "step": 1,
+      "input_db": -62,
+      "internal_gain_window_medians_db": [
+        -18.16142242268691,
+        -18.161424480383452,
+        -18.161424480383452
+      ]
+    },
+    {
+      "step": 2,
+      "input_db": -60,
+      "internal_gain_window_medians_db": [
+        -16.383424856082733,
+        -16.383424856082733,
+        -16.383424856082733
+      ]
+    },
+    {
+      "step": 3,
+      "input_db": -58,
+      "internal_gain_window_medians_db": [
+        -14.605424407511553,
+        -14.605424407511553,
+        -14.605424407511553
+      ]
+    },
+    {
+      "step": 4,
+      "input_db": -56,
+      "internal_gain_window_medians_db": [
+        -12.827424625592382,
+        -12.827424625592382,
+        -12.827424625592382
+      ]
+    },
+    {
+      "step": 5,
+      "input_db": -54,
+      "internal_gain_window_medians_db": [
+        -11.049424493825658,
+        -11.049424493825658,
+        -11.049424493825658
+      ]
+    },
+    {
+      "step": 6,
+      "input_db": -52,
+      "internal_gain_window_medians_db": [
+        -9.271424708345224,
+        -9.271424708345224,
+        -9.271424708345224
+      ]
+    },
+    {
+      "step": 7,
+      "input_db": -50,
+      "internal_gain_window_medians_db": [
+        -7.49342450802702,
+        -7.49342450802702,
+        -7.49342450802702
+      ]
+    },
+    {
+      "step": 8,
+      "input_db": -48,
+      "internal_gain_window_medians_db": [
+        0.6,
+        0.6,
+        0.6
+      ]
+    },
+    {
+      "step": 9,
+      "input_db": -46,
+      "internal_gain_window_medians_db": [
+        0.6,
+        0.6,
+        0.6
+      ]
+    },
+    {
+      "step": 10,
+      "input_db": -44,
+      "internal_gain_window_medians_db": [
+        0.6,
+        0.6,
+        0.6
+      ]
+    },
+    {
+      "step": 11,
+      "input_db": -12,
+      "internal_gain_window_medians_db": [
+        0.6,
+        0.6,
+        0.6
+      ]
+    },
+    {
+      "step": 12,
+      "input_db": -100,
+      "internal_gain_window_medians_db": [
+        0.6,
+        -51.3615599060432,
+        -51.943424831980266
+      ]
+    }
+  ],
+  "reset_design": {
+    "max_decay_slow_tau_seconds": 3.654782,
+    "residual_fraction_after_8_seconds": 0.11203846311458589,
+    "residual_fraction_after_24_seconds": 0.001406375941067156,
+    "interpretation": "A 24 s low-input reset reduces the fitted slow-state excess to about .14%; physical reset adequacy must still be checked. The locator uses minimum Decay and does not require that long reset."
+  },
+  "scope": "Old evidence is 10 ms coherent magnitude sampled in 100 ms windows relative to true same-session bypass. Locator predictions are frozen internal sample-level gain, not a complete audio transfer simulation. This capture is adaptive localization, not held-out validation."
+}

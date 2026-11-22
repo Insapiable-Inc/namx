@@ -1,0 +1,51 @@
+{
+  "take": "bypass-history-check-1000",
+  "pedal": "Boss NS-2 Noise Suppressor (mono: Input -> Output; Send/Return empty)",
+  "bypass": true,
+  "settings": {},
+  "note": "Switch NS-2 OFF / BYPASSED now. Leave all knobs, cables and interface gain unchanged. This short true-bypass check verifies the locator calibration at the probe levels.",
+  "signal": {
+    "type": "steps",
+    "freq": 1000,
+    "levels_db": [
+      -56,
+      -54,
+      -44,
+      -12
+    ],
+    "step_seconds": 2,
+    "gap_seconds": 0,
+    "level_db": 0,
+    "tail": 2
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -25.88,
+    "loop": -24.95
+  },
+  "latency_samples": 577,
+  "latency_quality": 0.998,
+  "xruns": 0,
+  "played_sha256": "fc0e5c4cccd130780eccb93140b54ff709b3a200ca2b5e43074720fb756e23a7",
+  "recorded_at": "2026-10-30T16:19:03",
+  "tool_commit": "979167bf6ba528173a9069fc329ffde098383af4-dirty",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX4",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Same fixed Scarlett capture path and reference as NS-2 locator; Threshold remains physically untouched at 3:00, Mode Reduction, Input -> Output with Send/Return empty. Input 2 INST, pad ON, AIR off, physical gain fully counter-clockwise. Only Decay changes between engaged takes. Intentional digital-zero 24 s resets precede each quiet-history probe. Existing absolute calibration retained, not remeasured.",
+    "capture_tools_source_commit": "b6a6b6c9ed3bbb9b34baec4696a7087506d09181",
+    "capture_plan_sha256": "c1adeede20fd153bef6ea3cef1816582c71c8c4c6e166b2d7e19d411c994e203"
+  }
+}

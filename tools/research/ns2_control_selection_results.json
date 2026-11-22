@@ -1,0 +1,819 @@
+{
+  "decision": "Reject the tested replacements for production. Keep the baseline. No additional capture requested.",
+  "history_screening": {
+    "asymmetric_envelope": {
+      "all_12_groups_rms_db": 0.7988597752288508,
+      "near_threshold_8_groups_rms_db": 0.97834377470748,
+      "worst_group_rms_db": 2.1140847248403953
+    },
+    "leaky_envelope": {
+      "all_12_groups_rms_db": 1.442496464901598,
+      "near_threshold_8_groups_rms_db": 1.7666709757742902,
+      "worst_group_rms_db": 2.6907519854250688
+    },
+    "nonlinear_charge": {
+      "all_12_groups_rms_db": 1.7453266153640956,
+      "near_threshold_8_groups_rms_db": 2.13755435484583,
+      "worst_group_rms_db": 4.605644916519169
+    },
+    "continuous_switch": {
+      "all_12_groups_rms_db": 0.3650542136518469,
+      "near_threshold_8_groups_rms_db": 0.44697650590426924,
+      "worst_group_rms_db": 0.745549304547565
+    },
+    "continuous_switch_capped": {
+      "all_12_groups_rms_db": 0.3644538425315854,
+      "near_threshold_8_groups_rms_db": 0.4462410038051111,
+      "worst_group_rms_db": 0.7723098561512735
+    },
+    "baseline": {
+      "near_threshold_8_groups_rms_db": 5.176957915201137
+    }
+  },
+  "joint_validation": {
+    "-54": {
+      "old_held_out_count": 31,
+      "old_held_out_baseline_median_rms_db": 1.4873650746364424,
+      "old_held_out_candidate_median_rms_db": 2.0598138395533963,
+      "old_held_out_worse_by_05db": 13,
+      "new_withheld_group_rms_db": 0.6709439447169951,
+      "new_withheld_worst_rms_db": 1.179102128677969,
+      "fit_dt_vs_1ms_max_rms_db": 0.013013371306333267
+    },
+    "-56": {
+      "old_held_out_count": 31,
+      "old_held_out_baseline_median_rms_db": 1.4873650746364424,
+      "old_held_out_candidate_median_rms_db": 2.139170488874002,
+      "old_held_out_worse_by_05db": 14,
+      "new_withheld_group_rms_db": 5.098272304288013,
+      "new_withheld_worst_rms_db": 9.152155993292698,
+      "fit_dt_vs_1ms_max_rms_db": 0.04732154164121256
+    }
+  },
+  "joint_capped_validation": {
+    "-54": {
+      "old_held_out_count": 31,
+      "old_held_out_baseline_median_rms_db": 1.4873650746364424,
+      "old_held_out_candidate_median_rms_db": 2.0837697919574163,
+      "old_held_out_worse_by_05db": 13,
+      "new_withheld_group_rms_db": 0.755051254818898,
+      "new_withheld_worst_rms_db": 1.2883626878153798,
+      "fit_dt_vs_1ms_max_rms_db": 0.013228844059408123
+    },
+    "-56": {
+      "old_held_out_count": 31,
+      "old_held_out_baseline_median_rms_db": 1.4873650746364424,
+      "old_held_out_candidate_median_rms_db": 2.166891582329896,
+      "old_held_out_worse_by_05db": 14,
+      "new_withheld_group_rms_db": 4.771413745238451,
+      "new_withheld_worst_rms_db": 8.433532277634386,
+      "fit_dt_vs_1ms_max_rms_db": 0.04991537844345128
+    }
+  },
+  "sample_rate_history": {
+    "history_fit_0700": {
+      "rows": [
+        {
+          "input_db": -56,
+          "history": "quiet",
+          "coherent_audio_rms_db": 0.4908393453364623,
+          "full_vs_surrogate_rms_db": 0.007681772739226805
+        },
+        {
+          "input_db": -56,
+          "history": "loud",
+          "coherent_audio_rms_db": 0.4237234322054874,
+          "full_vs_surrogate_rms_db": 0.004760670180130439
+        },
+        {
+          "input_db": -54,
+          "history": "quiet",
+          "coherent_audio_rms_db": 0.5315877342304739,
+          "full_vs_surrogate_rms_db": 0.1826122672235217
+        },
+        {
+          "input_db": -54,
+          "history": "loud",
+          "coherent_audio_rms_db": 0.3409889338099092,
+          "full_vs_surrogate_rms_db": 0.173290501751272
+        },
+        {
+          "input_db": -44,
+          "history": "quiet",
+          "coherent_audio_rms_db": 0.014527290415346015,
+          "full_vs_surrogate_rms_db": 1.3845774927554319e-10,
+          "opening": {
+            "within_1db_for_20ms_at_ms": 2,
+            "coherent_window_ms": 1,
+            "stimulus_ramp_ms": 1,
+            "evaluation_limit_ms": 150
+          }
+        },
+        {
+          "input_db": -44,
+          "history": "loud",
+          "coherent_audio_rms_db": 0.014471599827941566,
+          "full_vs_surrogate_rms_db": 1.6658799560078723e-10,
+          "opening": {
+            "within_1db_for_20ms_at_ms": 1,
+            "coherent_window_ms": 1,
+            "stimulus_ramp_ms": 1,
+            "evaluation_limit_ms": 150
+          }
+        }
+      ],
+      "finite_gain_and_audio": true,
+      "gain_bounds_db": [
+        -58.34530908221623,
+        0.660050616414343
+      ]
+    },
+    "held_-54_0700": {
+      "rows": [
+        {
+          "input_db": -56,
+          "history": "quiet",
+          "coherent_audio_rms_db": 1.1517878971699933,
+          "full_vs_surrogate_rms_db": 0.2142867577113558
+        },
+        {
+          "input_db": -56,
+          "history": "loud",
+          "coherent_audio_rms_db": 0.9110639961158261,
+          "full_vs_surrogate_rms_db": 0.20010372375874627
+        },
+        {
+          "input_db": -54,
+          "history": "quiet",
+          "coherent_audio_rms_db": 0.4689033923205321,
+          "full_vs_surrogate_rms_db": 0.004681454767751366
+        },
+        {
+          "input_db": -54,
+          "history": "loud",
+          "coherent_audio_rms_db": 0.4411782165854742,
+          "full_vs_surrogate_rms_db": 0.0066559083450502135
+        },
+        {
+          "input_db": -44,
+          "history": "quiet",
+          "coherent_audio_rms_db": 0.014527290415923069,
+          "full_vs_surrogate_rms_db": 1.3904127241206455e-10,
+          "opening": {
+            "within_1db_for_20ms_at_ms": 2,
+            "coherent_window_ms": 1,
+            "stimulus_ramp_ms": 1,
+            "evaluation_limit_ms": 150
+          }
+        },
+        {
+          "input_db": -44,
+          "history": "loud",
+          "coherent_audio_rms_db": 0.014471599828539692,
+          "full_vs_surrogate_rms_db": 1.6719274790872765e-10,
+          "opening": {
+            "within_1db_for_20ms_at_ms": 1,
+            "coherent_window_ms": 1,
+            "stimulus_ramp_ms": 1,
+            "evaluation_limit_ms": 150
+          }
+        }
+      ],
+      "finite_gain_and_audio": true,
+      "gain_bounds_db": [
+        -105.89102698712482,
+        0.660050616414343
+      ]
+    },
+    "held_-56_0700": {
+      "rows": [
+        {
+          "input_db": -56,
+          "history": "quiet",
+          "coherent_audio_rms_db": 9.071630569070917,
+          "full_vs_surrogate_rms_db": 0.08261211838330233
+        },
+        {
+          "input_db": -56,
+          "history": "loud",
+          "coherent_audio_rms_db": 3.477087419282405,
+          "full_vs_surrogate_rms_db": 0.06941796269908918
+        },
+        {
+          "input_db": -54,
+          "history": "quiet",
+          "coherent_audio_rms_db": 0.7282101021638834,
+          "full_vs_surrogate_rms_db": 0.1705250701542601
+        },
+        {
+          "input_db": -54,
+          "history": "loud",
+          "coherent_audio_rms_db": 0.3412932182265513,
+          "full_vs_surrogate_rms_db": 0.16111821959843597
+        },
+        {
+          "input_db": -44,
+          "history": "quiet",
+          "coherent_audio_rms_db": 0.014527290414302908,
+          "full_vs_surrogate_rms_db": 1.3740295187364584e-10,
+          "opening": {
+            "within_1db_for_20ms_at_ms": 2,
+            "coherent_window_ms": 1,
+            "stimulus_ramp_ms": 1,
+            "evaluation_limit_ms": 150
+          }
+        },
+        {
+          "input_db": -44,
+          "history": "loud",
+          "coherent_audio_rms_db": 0.01447159982689596,
+          "full_vs_surrogate_rms_db": 1.65530799921759e-10,
+          "opening": {
+            "within_1db_for_20ms_at_ms": 1,
+            "coherent_window_ms": 1,
+            "stimulus_ramp_ms": 1,
+            "evaluation_limit_ms": 150
+          }
+        }
+      ],
+      "finite_gain_and_audio": true,
+      "gain_bounds_db": [
+        -112.84683999866476,
+        0.660050616414343
+      ]
+    },
+    "capped_history_fit_0700": {
+      "rows": [
+        {
+          "input_db": -56,
+          "history": "quiet",
+          "coherent_audio_rms_db": 0.4329420217844978,
+          "full_vs_surrogate_rms_db": 0.010783796433412162
+        },
+        {
+          "input_db": -56,
+          "history": "loud",
+          "coherent_audio_rms_db": 0.3681405450157269,
+          "full_vs_surrogate_rms_db": 0.006109417423209412
+        },
+        {
+          "input_db": -54,
+          "history": "quiet",
+          "coherent_audio_rms_db": 0.41197845773562913,
+          "full_vs_surrogate_rms_db": 0.0019826713806938264
+        },
+        {
+          "input_db": -54,
+          "history": "loud",
+          "coherent_audio_rms_db": 0.43347799286950456,
+          "full_vs_surrogate_rms_db": 0.005969350973152597
+        },
+        {
+          "input_db": -44,
+          "history": "quiet",
+          "coherent_audio_rms_db": 0.014527290414871245,
+          "full_vs_surrogate_rms_db": 1.3797765756212957e-10,
+          "opening": {
+            "within_1db_for_20ms_at_ms": 1,
+            "coherent_window_ms": 1,
+            "stimulus_ramp_ms": 1,
+            "evaluation_limit_ms": 150
+          }
+        },
+        {
+          "input_db": -44,
+          "history": "loud",
+          "coherent_audio_rms_db": 0.01447159982749465,
+          "full_vs_surrogate_rms_db": 1.6613612791172672e-10,
+          "opening": {
+            "within_1db_for_20ms_at_ms": 1,
+            "coherent_window_ms": 1,
+            "stimulus_ramp_ms": 1,
+            "evaluation_limit_ms": 150
+          }
+        }
+      ],
+      "finite_gain_and_audio": true,
+      "gain_bounds_db": [
+        -63.18535388456555,
+        0.660050616414343
+      ]
+    },
+    "capped_held_-54_0700": {
+      "rows": [
+        {
+          "input_db": -56,
+          "history": "quiet",
+          "coherent_audio_rms_db": 1.3263635084054004,
+          "full_vs_surrogate_rms_db": 0.22274862851690552
+        },
+        {
+          "input_db": -56,
+          "history": "loud",
+          "coherent_audio_rms_db": 0.8343178287620427,
+          "full_vs_surrogate_rms_db": 0.2080545078253346
+        },
+        {
+          "input_db": -54,
+          "history": "quiet",
+          "coherent_audio_rms_db": 0.6547590548920873,
+          "full_vs_surrogate_rms_db": 0.00483670309721665
+        },
+        {
+          "input_db": -54,
+          "history": "loud",
+          "coherent_audio_rms_db": 0.44605912812073506,
+          "full_vs_surrogate_rms_db": 0.007780763403549228
+        },
+        {
+          "input_db": -44,
+          "history": "quiet",
+          "coherent_audio_rms_db": 0.014527290416835995,
+          "full_vs_surrogate_rms_db": 1.3996443014146067e-10,
+          "opening": {
+            "within_1db_for_20ms_at_ms": 2,
+            "coherent_window_ms": 1,
+            "stimulus_ramp_ms": 1,
+            "evaluation_limit_ms": 150
+          }
+        },
+        {
+          "input_db": -44,
+          "history": "loud",
+          "coherent_audio_rms_db": 0.014471599829434278,
+          "full_vs_surrogate_rms_db": 1.6809725626805283e-10,
+          "opening": {
+            "within_1db_for_20ms_at_ms": 1,
+            "coherent_window_ms": 1,
+            "stimulus_ramp_ms": 1,
+            "evaluation_limit_ms": 150
+          }
+        }
+      ],
+      "finite_gain_and_audio": true,
+      "gain_bounds_db": [
+        -115.13070832214252,
+        0.660050616414343
+      ]
+    },
+    "capped_held_-56_0700": {
+      "rows": [
+        {
+          "input_db": -56,
+          "history": "quiet",
+          "coherent_audio_rms_db": 8.360560149227652,
+          "full_vs_surrogate_rms_db": 0.07697870291104786
+        },
+        {
+          "input_db": -56,
+          "history": "loud",
+          "coherent_audio_rms_db": 3.619188168504281,
+          "full_vs_surrogate_rms_db": 0.06297399863518764
+        },
+        {
+          "input_db": -54,
+          "history": "quiet",
+          "coherent_audio_rms_db": 0.8593704444034655,
+          "full_vs_surrogate_rms_db": 0.17093128006618558
+        },
+        {
+          "input_db": -54,
+          "history": "loud",
+          "coherent_audio_rms_db": 0.34528735428514684,
+          "full_vs_surrogate_rms_db": 0.16291331444356885
+        },
+        {
+          "input_db": -44,
+          "history": "quiet",
+          "coherent_audio_rms_db": 0.014527290414220314,
+          "full_vs_surrogate_rms_db": 1.3731943613572329e-10,
+          "opening": {
+            "within_1db_for_20ms_at_ms": 2,
+            "coherent_window_ms": 1,
+            "stimulus_ramp_ms": 1,
+            "evaluation_limit_ms": 150
+          }
+        },
+        {
+          "input_db": -44,
+          "history": "loud",
+          "coherent_audio_rms_db": 0.014471599826747906,
+          "full_vs_surrogate_rms_db": 1.653811045387224e-10,
+          "opening": {
+            "within_1db_for_20ms_at_ms": 1,
+            "coherent_window_ms": 1,
+            "stimulus_ramp_ms": 1,
+            "evaluation_limit_ms": 150
+          }
+        }
+      ],
+      "finite_gain_and_audio": true,
+      "gain_bounds_db": [
+        -132.9998267141406,
+        0.660050616414343
+      ]
+    },
+    "history_fit_0500": {
+      "rows": [
+        {
+          "input_db": -56,
+          "history": "quiet",
+          "coherent_audio_rms_db": 0.4272604421848852,
+          "full_vs_surrogate_rms_db": 0.05787092935989224
+        },
+        {
+          "input_db": -56,
+          "history": "loud",
+          "coherent_audio_rms_db": 0.352597082429603,
+          "full_vs_surrogate_rms_db": 0.02566636592368257
+        },
+        {
+          "input_db": -54,
+          "history": "quiet",
+          "coherent_audio_rms_db": 0.7410134614977083,
+          "full_vs_surrogate_rms_db": 0.032295777090184136
+        },
+        {
+          "input_db": -54,
+          "history": "loud",
+          "coherent_audio_rms_db": 0.015899743816250426,
+          "full_vs_surrogate_rms_db": 4.2726764450726755e-10
+        },
+        {
+          "input_db": -44,
+          "history": "quiet",
+          "coherent_audio_rms_db": 0.014946208744919311,
+          "full_vs_surrogate_rms_db": 1.4152207767459257e-10,
+          "opening": {
+            "within_1db_for_20ms_at_ms": 2,
+            "coherent_window_ms": 1,
+            "stimulus_ramp_ms": 1,
+            "evaluation_limit_ms": 150
+          }
+        },
+        {
+          "input_db": -44,
+          "history": "loud",
+          "coherent_audio_rms_db": 0.01507029230819969,
+          "full_vs_surrogate_rms_db": 1.6959853987291127e-10,
+          "opening": {
+            "within_1db_for_20ms_at_ms": 1,
+            "coherent_window_ms": 1,
+            "stimulus_ramp_ms": 1,
+            "evaluation_limit_ms": 150
+          }
+        }
+      ],
+      "finite_gain_and_audio": true,
+      "gain_bounds_db": [
+        -58.34530908221623,
+        0.660050616414343
+      ]
+    },
+    "held_-54_0500": {
+      "rows": [
+        {
+          "input_db": -56,
+          "history": "quiet",
+          "coherent_audio_rms_db": 1.2812554945004095,
+          "full_vs_surrogate_rms_db": 0.003778701426960133
+        },
+        {
+          "input_db": -56,
+          "history": "loud",
+          "coherent_audio_rms_db": 0.1586925807705309,
+          "full_vs_surrogate_rms_db": 0.0012740221183403023
+        },
+        {
+          "input_db": -54,
+          "history": "quiet",
+          "coherent_audio_rms_db": 1.1783865911384006,
+          "full_vs_surrogate_rms_db": 0.003950070472731625
+        },
+        {
+          "input_db": -54,
+          "history": "loud",
+          "coherent_audio_rms_db": 0.015899743828765096,
+          "full_vs_surrogate_rms_db": 4.4111898206104977e-10
+        },
+        {
+          "input_db": -44,
+          "history": "quiet",
+          "coherent_audio_rms_db": 0.01494620874924731,
+          "full_vs_surrogate_rms_db": 1.4589898593891305e-10,
+          "opening": {
+            "within_1db_for_20ms_at_ms": 2,
+            "coherent_window_ms": 1,
+            "stimulus_ramp_ms": 1,
+            "evaluation_limit_ms": 150
+          }
+        },
+        {
+          "input_db": -44,
+          "history": "loud",
+          "coherent_audio_rms_db": 0.01507029231253789,
+          "full_vs_surrogate_rms_db": 1.7397852718325805e-10,
+          "opening": {
+            "within_1db_for_20ms_at_ms": 1,
+            "coherent_window_ms": 1,
+            "stimulus_ramp_ms": 1,
+            "evaluation_limit_ms": 150
+          }
+        }
+      ],
+      "finite_gain_and_audio": true,
+      "gain_bounds_db": [
+        -105.89102698712482,
+        0.660050616414343
+      ]
+    },
+    "held_-56_0500": {
+      "rows": [
+        {
+          "input_db": -56,
+          "history": "quiet",
+          "coherent_audio_rms_db": 2.764610929987359,
+          "full_vs_surrogate_rms_db": 0.004039092840333258
+        },
+        {
+          "input_db": -56,
+          "history": "loud",
+          "coherent_audio_rms_db": 0.01609101258251123,
+          "full_vs_surrogate_rms_db": 9.299709013731547e-11
+        },
+        {
+          "input_db": -54,
+          "history": "quiet",
+          "coherent_audio_rms_db": 0.8480656719613234,
+          "full_vs_surrogate_rms_db": 0.0034611027237942296
+        },
+        {
+          "input_db": -54,
+          "history": "loud",
+          "coherent_audio_rms_db": 0.015899743827901262,
+          "full_vs_surrogate_rms_db": 4.401629081819496e-10
+        },
+        {
+          "input_db": -44,
+          "history": "quiet",
+          "coherent_audio_rms_db": 0.014946208748950798,
+          "full_vs_surrogate_rms_db": 1.4559912423011705e-10,
+          "opening": {
+            "within_1db_for_20ms_at_ms": 2,
+            "coherent_window_ms": 1,
+            "stimulus_ramp_ms": 1,
+            "evaluation_limit_ms": 150
+          }
+        },
+        {
+          "input_db": -44,
+          "history": "loud",
+          "coherent_audio_rms_db": 0.01507029231223845,
+          "full_vs_surrogate_rms_db": 1.736761989413369e-10,
+          "opening": {
+            "within_1db_for_20ms_at_ms": 1,
+            "coherent_window_ms": 1,
+            "stimulus_ramp_ms": 1,
+            "evaluation_limit_ms": 150
+          }
+        }
+      ],
+      "finite_gain_and_audio": true,
+      "gain_bounds_db": [
+        -112.84683999866476,
+        0.660050616414343
+      ]
+    },
+    "capped_history_fit_0500": {
+      "rows": [
+        {
+          "input_db": -56,
+          "history": "quiet",
+          "coherent_audio_rms_db": 0.4484113838153466,
+          "full_vs_surrogate_rms_db": 0.07375852413789406
+        },
+        {
+          "input_db": -56,
+          "history": "loud",
+          "coherent_audio_rms_db": 0.3526340732775301,
+          "full_vs_surrogate_rms_db": 0.03227052985305213
+        },
+        {
+          "input_db": -54,
+          "history": "quiet",
+          "coherent_audio_rms_db": 0.772118526595231,
+          "full_vs_surrogate_rms_db": 0.0019826589280831485
+        },
+        {
+          "input_db": -54,
+          "history": "loud",
+          "coherent_audio_rms_db": 0.028733981117575646,
+          "full_vs_surrogate_rms_db": 0.0004996045524500799
+        },
+        {
+          "input_db": -44,
+          "history": "quiet",
+          "coherent_audio_rms_db": 0.014946208745010547,
+          "full_vs_surrogate_rms_db": 1.416143384416904e-10,
+          "opening": {
+            "within_1db_for_20ms_at_ms": 1,
+            "coherent_window_ms": 1,
+            "stimulus_ramp_ms": 1,
+            "evaluation_limit_ms": 150
+          }
+        },
+        {
+          "input_db": -44,
+          "history": "loud",
+          "coherent_audio_rms_db": 0.015070292308349583,
+          "full_vs_surrogate_rms_db": 1.697498682563928e-10,
+          "opening": {
+            "within_1db_for_20ms_at_ms": 1,
+            "coherent_window_ms": 1,
+            "stimulus_ramp_ms": 1,
+            "evaluation_limit_ms": 150
+          }
+        }
+      ],
+      "finite_gain_and_audio": true,
+      "gain_bounds_db": [
+        -63.18535388456555,
+        0.660050616414343
+      ]
+    },
+    "capped_held_-54_0500": {
+      "rows": [
+        {
+          "input_db": -56,
+          "history": "quiet",
+          "coherent_audio_rms_db": 1.4988069484847122,
+          "full_vs_surrogate_rms_db": 0.004246807182729967
+        },
+        {
+          "input_db": -56,
+          "history": "loud",
+          "coherent_audio_rms_db": 0.11070396542050473,
+          "full_vs_surrogate_rms_db": 0.0011840817233836993
+        },
+        {
+          "input_db": -54,
+          "history": "quiet",
+          "coherent_audio_rms_db": 1.2891463273472643,
+          "full_vs_surrogate_rms_db": 0.004095399167868603
+        },
+        {
+          "input_db": -54,
+          "history": "loud",
+          "coherent_audio_rms_db": 0.015899743829194,
+          "full_vs_surrogate_rms_db": 4.4159368451971857e-10
+        },
+        {
+          "input_db": -44,
+          "history": "quiet",
+          "coherent_audio_rms_db": 0.01494620874939806,
+          "full_vs_surrogate_rms_db": 1.460514415685096e-10,
+          "opening": {
+            "within_1db_for_20ms_at_ms": 2,
+            "coherent_window_ms": 1,
+            "stimulus_ramp_ms": 1,
+            "evaluation_limit_ms": 150
+          }
+        },
+        {
+          "input_db": -44,
+          "history": "loud",
+          "coherent_audio_rms_db": 0.015070292312686489,
+          "full_vs_surrogate_rms_db": 1.7412856282104405e-10,
+          "opening": {
+            "within_1db_for_20ms_at_ms": 1,
+            "coherent_window_ms": 1,
+            "stimulus_ramp_ms": 1,
+            "evaluation_limit_ms": 150
+          }
+        }
+      ],
+      "finite_gain_and_audio": true,
+      "gain_bounds_db": [
+        -115.13070832214252,
+        0.660050616414343
+      ]
+    },
+    "capped_held_-56_0500": {
+      "rows": [
+        {
+          "input_db": -56,
+          "history": "quiet",
+          "coherent_audio_rms_db": 2.5313488358388656,
+          "full_vs_surrogate_rms_db": 0.004681595583278524
+        },
+        {
+          "input_db": -56,
+          "history": "loud",
+          "coherent_audio_rms_db": 0.01609101258199543,
+          "full_vs_surrogate_rms_db": 9.240042002104078e-11
+        },
+        {
+          "input_db": -54,
+          "history": "quiet",
+          "coherent_audio_rms_db": 1.064153370481648,
+          "full_vs_surrogate_rms_db": 0.00490037065098876
+        },
+        {
+          "input_db": -54,
+          "history": "loud",
+          "coherent_audio_rms_db": 0.01589974382747252,
+          "full_vs_surrogate_rms_db": 4.3968834066504366e-10
+        },
+        {
+          "input_db": -44,
+          "history": "quiet",
+          "coherent_audio_rms_db": 0.014946208748804672,
+          "full_vs_surrogate_rms_db": 1.4545134051334875e-10,
+          "opening": {
+            "within_1db_for_20ms_at_ms": 2,
+            "coherent_window_ms": 1,
+            "stimulus_ramp_ms": 1,
+            "evaluation_limit_ms": 150
+          }
+        },
+        {
+          "input_db": -44,
+          "history": "loud",
+          "coherent_audio_rms_db": 0.01507029231208975,
+          "full_vs_surrogate_rms_db": 1.735260714592238e-10,
+          "opening": {
+            "within_1db_for_20ms_at_ms": 1,
+            "coherent_window_ms": 1,
+            "stimulus_ramp_ms": 1,
+            "evaluation_limit_ms": 150
+          }
+        }
+      ],
+      "finite_gain_and_audio": true,
+      "gain_bounds_db": [
+        -132.9998267141406,
+        0.660050616414343
+      ]
+    }
+  },
+  "sample_rate_old": {
+    "2026-10-27-dynamics/bypass-stairs-slow": {
+      "baseline": {
+        "coherent_waveform_vs_surrogate_rms_db": 0.027857412212392667,
+        "coherent_waveform_vs_measured_rms_db": 1.866596537767215,
+        "max_abs_predicted_gain_db": 107.12363,
+        "finite_output": true
+      },
+      "joint_held_minus54": {
+        "coherent_waveform_vs_surrogate_rms_db": 0.007559577513011353,
+        "coherent_waveform_vs_measured_rms_db": 12.540670747108654,
+        "max_abs_predicted_gain_db": 105.95107760353928,
+        "finite_output": true
+      },
+      "capped_joint_held_minus54": {
+        "coherent_waveform_vs_surrogate_rms_db": 0.005626350865064703,
+        "coherent_waveform_vs_measured_rms_db": 4.128475132326649,
+        "max_abs_predicted_gain_db": 115.2358457834705,
+        "finite_output": true
+      }
+    },
+    "2026-10-27-dynamics/plucks-t0700-d1200": {
+      "baseline": {
+        "coherent_waveform_vs_surrogate_rms_db": 0.010182132123231387,
+        "coherent_waveform_vs_measured_rms_db": 1.4801683060190953,
+        "max_abs_predicted_gain_db": 69.7234,
+        "finite_output": true
+      },
+      "joint_held_minus54": {
+        "coherent_waveform_vs_surrogate_rms_db": 0.02520483596204836,
+        "coherent_waveform_vs_measured_rms_db": 4.618380831364955,
+        "max_abs_predicted_gain_db": 105.95107760353852,
+        "finite_output": true
+      },
+      "capped_joint_held_minus54": {
+        "coherent_waveform_vs_surrogate_rms_db": 0.025285800175270448,
+        "coherent_waveform_vs_measured_rms_db": 4.5146622743732925,
+        "max_abs_predicted_gain_db": 114.94490412012391,
+        "finite_output": true
+      }
+    }
+  },
+  "provenance": {
+    "fit_ns2_control_candidates.py": "f238da3c98bf8e87ebd8de6143b7152109dd34b8368b5900a86ebb37589a7476",
+    "validate_ns2_control_candidates.py": "9653495d76f776a2c31bcbb9a0f2cd4befb5b7ebc59f22b7b6fc6b3905d3e3d6",
+    "fit_ns2_joint_control.py": "feca17fb88c9264a5bb365c00a6f269656a3bd9ea6840bbecf6be8e55f611da2",
+    "ns2_history_curves.npz": "eb89b0541b1fc8068acaaf0a6d43899ce1213cb88404b198083d4c6c5a8e95e4",
+    "ns2_control_candidate_results.json": "3be60dd1c85c214dab8af753905c09015069d40ae2792dd78e3657f49727c772",
+    "ns2_continuous_switch_screening.json": "af10ccab856867d0983f254c1499c5c7bcfc24e3e385d71635f63528e8048efb",
+    "ns2_control_regression_results.json": "84608812496fd39466aa4df241831d9c554d42c98b580b6063a780e5570e8fa5",
+    "ns2_joint_control_results.json": "a85efc2b0c1a83cdf0d0d5ffb4dec10eb4764594c3fe8d983e035c60ad466e72",
+    "ns2_continuous_switch_capped_screening.json": "0dfdec274962a74d5fdfa57e1b24ab5fb43c2621ef0b03061eeaa22fe8603d32",
+    "ns2_joint_capped_control_results.json": "396a47f369a51fffbcedc003783df0f2e7c44e5b74238a3466d8e9eead8a05c0"
+  },
+  "limitations": [
+    "Retrospective validation; family selection has seen the data.",
+    "Multistart local optimization is not a proof that every parameterization of a family fails.",
+    "Gain envelopes do not establish perceptual equivalence; no new listening verdict.",
+    "No circuit topology or unique state dimension is identified."
+  ]
+}

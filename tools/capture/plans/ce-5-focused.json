@@ -1,0 +1,590 @@
+{
+  "pedal": "Boss CE-5 Chorus Ensemble — focused reamp, both outputs: the chorus alone on Output A, the dry on Output B",
+  "comment": "With a plug in Output B the pedal sends the chorus alone to Output A and the dry to B: the effect by itself, no subtraction. Guitar excerpts (captures/di/) over a steady 8 kHz sine 30 dB under the guitar's peak (the probe: its phase on Output A is the chorus's delay at every moment, guitar or not). Depth 7:00 first (the delay stands still: the chorus's tone, level and clips against the waveform): a sweep, burst ladders at 1 kHz and 200 Hz from -18 to +4 dB (the two clips), chords, funk at -12 dB and full level; then the ladders again with High at 7:00 and with the filters at 12:00 (a clip before a filter keeps its knee, one after it loses it: where the wet clip sits), chords through three filter settings. Then the sweep: each setting's probe alone and guitar over it, at -12 dB and full level, one take twice (the pedal against itself), the lead held out of any fit. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise; 9:00 and 3:00 pointer horizontal. Low is the Filter's outer ring, High its inner knob. Takes ordered so each step turns one or two knobs.",
+  "quiet_dbfs": -60,
+  "knobs": [
+    "E.Level",
+    "Rate",
+    "Depth",
+    "Low",
+    "High"
+  ],
+  "takes": [
+    {
+      "name": "bypass-chords",
+      "bypass": true,
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0
+      },
+      "note": "The pedal off (its LED off): the bypass reference. OUTPUT A on input 2, OUTPUT B on input 1, the adapter."
+    },
+    {
+      "name": "bypass-ladder-1k",
+      "bypass": true,
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -18,
+          -12,
+          -6,
+          -3,
+          -1.5,
+          0,
+          1.5,
+          3,
+          4
+        ],
+        "step_seconds": 0.1,
+        "gap_seconds": 0.5,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "bypass-ladder-200",
+      "bypass": true,
+      "signal": {
+        "type": "steps",
+        "freq": 200,
+        "levels_db": [
+          -18,
+          -12,
+          -6,
+          -3,
+          -1.5,
+          0,
+          1.5,
+          3,
+          4
+        ],
+        "step_seconds": 0.1,
+        "gap_seconds": 0.5,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "bypass-sweep",
+      "bypass": true,
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "static-sweep",
+      "settings": {
+        "E.Level": "5:00",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Low": "5:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "sweep",
+        "f0": 20,
+        "f1": 20000,
+        "seconds": 10,
+        "level_db": -12,
+        "tail": 1.0
+      },
+      "note": "The pedal on (its LED lit). Depth fully counter-clockwise: the chorus stands still."
+    },
+    {
+      "name": "static-ladder-1k",
+      "settings": {
+        "E.Level": "5:00",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Low": "5:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -18,
+          -12,
+          -6,
+          -3,
+          -1.5,
+          0,
+          1.5,
+          3,
+          4
+        ],
+        "step_seconds": 0.1,
+        "gap_seconds": 0.5,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "static-ladder-200",
+      "settings": {
+        "E.Level": "5:00",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Low": "5:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 200,
+        "levels_db": [
+          -18,
+          -12,
+          -6,
+          -3,
+          -1.5,
+          0,
+          1.5,
+          3,
+          4
+        ],
+        "step_seconds": 0.1,
+        "gap_seconds": 0.5,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "static-chords",
+      "settings": {
+        "E.Level": "5:00",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Low": "5:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "static-funk-m12",
+      "settings": {
+        "E.Level": "5:00",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Low": "5:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0,
+        "level_db": -12
+      }
+    },
+    {
+      "name": "static-funk",
+      "settings": {
+        "E.Level": "5:00",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Low": "5:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "high-0700-ladder-1k",
+      "settings": {
+        "E.Level": "5:00",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Low": "5:00",
+        "High": "7:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 1000,
+        "levels_db": [
+          -18,
+          -12,
+          -6,
+          -3,
+          -1.5,
+          0,
+          1.5,
+          3,
+          4
+        ],
+        "step_seconds": 0.1,
+        "gap_seconds": 0.5,
+        "tail": 1.0
+      },
+      "note": "High (the inner knob) fully counter-clockwise; Low (the outer ring) stays fully clockwise."
+    },
+    {
+      "name": "high-0700-chords",
+      "settings": {
+        "E.Level": "5:00",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Low": "5:00",
+        "High": "7:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "filters-1200-ladder-200",
+      "settings": {
+        "E.Level": "5:00",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Low": "12:00",
+        "High": "12:00"
+      },
+      "signal": {
+        "type": "steps",
+        "freq": 200,
+        "levels_db": [
+          -18,
+          -12,
+          -6,
+          -3,
+          -1.5,
+          0,
+          1.5,
+          3,
+          4
+        ],
+        "step_seconds": 0.1,
+        "gap_seconds": 0.5,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "filters-1200-chords",
+      "settings": {
+        "E.Level": "5:00",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Low": "12:00",
+        "High": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "low-0700-chords",
+      "settings": {
+        "E.Level": "5:00",
+        "Rate": "12:00",
+        "Depth": "7:00",
+        "Low": "7:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "1200-probe",
+      "settings": {
+        "E.Level": "12:00",
+        "Rate": "12:00",
+        "Depth": "12:00",
+        "Low": "5:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 8000,
+        "seconds": 12,
+        "level_db": -30,
+        "tail": 1.0
+      },
+      "note": "Both filters back fully clockwise: they stay there."
+    },
+    {
+      "name": "1200-chords",
+      "settings": {
+        "E.Level": "12:00",
+        "Rate": "12:00",
+        "Depth": "12:00",
+        "Low": "5:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "1200-funk-m12",
+      "settings": {
+        "E.Level": "12:00",
+        "Rate": "12:00",
+        "Depth": "12:00",
+        "Low": "5:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0,
+        "level_db": -12
+      }
+    },
+    {
+      "name": "1200-funk",
+      "settings": {
+        "E.Level": "12:00",
+        "Rate": "12:00",
+        "Depth": "12:00",
+        "Low": "5:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "1200-funk-repeat",
+      "settings": {
+        "E.Level": "12:00",
+        "Rate": "12:00",
+        "Depth": "12:00",
+        "Low": "5:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/funk.wav",
+        "seconds": 12,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "1200-lead",
+      "settings": {
+        "E.Level": "12:00",
+        "Rate": "12:00",
+        "Depth": "12:00",
+        "Low": "5:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/lead.wav",
+        "seconds": 20,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0,
+        "start": 2
+      }
+    },
+    {
+      "name": "depth-0500-probe",
+      "settings": {
+        "E.Level": "12:00",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Low": "5:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 8000,
+        "seconds": 12,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "depth-0500-chords",
+      "settings": {
+        "E.Level": "12:00",
+        "Rate": "12:00",
+        "Depth": "5:00",
+        "Low": "5:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "rate-0500-depth-0500-probe",
+      "settings": {
+        "E.Level": "12:00",
+        "Rate": "5:00",
+        "Depth": "5:00",
+        "Low": "5:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 8000,
+        "seconds": 12,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "rate-0500-depth-0500-chords",
+      "settings": {
+        "E.Level": "12:00",
+        "Rate": "5:00",
+        "Depth": "5:00",
+        "Low": "5:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "rate-0500-depth-0500-lead",
+      "settings": {
+        "E.Level": "12:00",
+        "Rate": "5:00",
+        "Depth": "5:00",
+        "Low": "5:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/lead.wav",
+        "seconds": 20,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0,
+        "start": 2
+      }
+    },
+    {
+      "name": "rate-0700-depth-0500-probe",
+      "settings": {
+        "E.Level": "12:00",
+        "Rate": "7:00",
+        "Depth": "5:00",
+        "Low": "5:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "sine",
+        "freq": 8000,
+        "seconds": 18,
+        "level_db": -30,
+        "tail": 1.0
+      }
+    },
+    {
+      "name": "rate-0700-depth-0500-chords",
+      "settings": {
+        "E.Level": "12:00",
+        "Rate": "7:00",
+        "Depth": "5:00",
+        "Low": "5:00",
+        "High": "5:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "probe": {
+          "freq": 8000,
+          "level_db": -30
+        },
+        "tail": 1.0
+      }
+    }
+  ]
+}

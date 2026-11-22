@@ -1,8 +1,6 @@
 #include "DynamicWahProcessor.h"
 
 #include <algorithm>
-#include <cmath>
-#include <numbers>
 
 #include "Common.h"
 
@@ -10,73 +8,48 @@ namespace namx
 {
 
 void DynamicWahProcessor::on_sample_rate_changed(double sr) {
-    env_attack = static_cast<float>(std::exp(-1.0 / (0.002 * sr)));
-    env_release = static_cast<float>(std::exp(-1.0 / (0.080 * sr)));
+    engine.set_sample_rate(sr);
     reset();
 }
 
 void DynamicWahProcessor::sync_right_channel() {
-    pos_smooth[1] = pos_smooth[0];
-    env_per_channel[1] = env_per_channel[0];
-    svf_lp[1] = svf_lp[0];
-    svf_bp[1] = svf_bp[0];
+    channels[1] = channels[0];
 }
 
 void DynamicWahProcessor::reset() {
-    env_per_channel[0] = env_per_channel[1] = 0.0f;
-    svf_lp[0] = svf_lp[1] = 0.0f;
-    svf_bp[0] = svf_bp[1] = 0.0f;
+    channels[0].reset();
+    channels[1].reset();
 }
 
-void DynamicWahProcessor::process_channel(float* buf, size_t nframes, int ch) {
-    const float sens = sensitivity_pct.load() / 100.0f;
-    const float res = resonance_pct.load() / 100.0f;
-    const float mix = mix_pct.load() / 100.0f;
-    const float q_inv = 1.0f / (0.5f + res * 7.5f);
-    const float sr = static_cast<float>(sample_rate);
+void DynamicWahProcessor::type_edge(int current_type) {
+    // A new mode starts from rest.
+    if (current_type != last_type) {
+        reset();
+        last_type = current_type;
+    }
+}
 
-    const bool current_pedal = pedal.load(std::memory_order_relaxed);
-    const float pos_tgt =
-        std::clamp(position_pct.load(std::memory_order_relaxed), 0.0f, 100.0f) / 100.0f;
-    const float pos_k = 1.0f - std::exp(-1.0f / (0.015f * sr)); // ~15 ms pedal glide
-    float& pos = pos_smooth[ch];
-
-    float& env = env_per_channel[ch];
-    float& lp = svf_lp[ch];
-    float& bp = svf_bp[ch];
-
-    for (size_t i = 0; i < nframes; ++i) {
-        const float dry = buf[i];
-        float level = std::abs(dry);
-        float coeff = (level > env) ? env_attack : env_release;
-        env += (level - env) * (1.0f - coeff);
-
-        float cutoff;
-        if (current_pedal) {
-            // Rocker travel maps exponentially, like a real wah's pot taper.
-            pos += pos_k * (pos_tgt - pos);
-            cutoff = BASE_FREQ * std::pow(PEAK_FREQ / BASE_FREQ, pos);
-        } else {
-            cutoff = std::max(
-                BASE_FREQ, std::min(BASE_FREQ + sens * env * (PEAK_FREQ - BASE_FREQ), PEAK_FREQ));
-        }
-        float f = std::min(2.0f * std::numbers::pi_v<float> * cutoff / sr, 0.5f);
-
-        float hp = dry - q_inv * bp - lp;
-        bp += f * hp;
-        lp += f * bp;
-
-        buf[i] = bp * mix + dry * (1.0f - mix);
+void DynamicWahProcessor::render(float* l, float* r, size_t nframes) {
+    type_edge(type.load());
+    const aw3::Mode mode = last_type == AW3_DOWN    ? aw3::Mode::DOWN
+                           : last_type == AW3_SHARP ? aw3::Mode::SHARP
+                                                    : aw3::Mode::UP;
+    aw3::Settings settings;
+    settings.set(mode, position_pct.load() / 100.0f, sensitivity_pct.load() / 100.0f,
+                 decay_pct.load() / 100.0f);
+    const float mix = std::clamp(mix_pct.load(), 0.0f, 100.0f) / 100.0f;
+    engine.process(l, nframes, settings, mix, channels[0]);
+    if (r != nullptr) {
+        engine.process(r, nframes, settings, mix, channels[1]);
     }
 }
 
 void DynamicWahProcessor::process_block_mono(float* buf, size_t nframes) {
-    process_channel(buf, nframes, 0);
+    render(buf, nullptr, nframes);
 }
 
 void DynamicWahProcessor::process_block_dual(float* l, float* r, size_t nframes) {
-    process_channel(l, nframes, 0);
-    process_channel(r, nframes, 1);
+    render(l, r, nframes);
 }
 
 } // namespace namx

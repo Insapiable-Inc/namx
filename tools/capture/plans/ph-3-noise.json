@@ -1,0 +1,124 @@
+{
+ "pedal": "Boss PH-3 Phase Shifter — Rise on noise: every stage's band and loop at every frequency (mono)",
+ "comment": "Rise's response over its sweep cycle read from white noise at every frequency at once (tools/capture/ph3/noise.py; the study: Rise and Fall, read a third time). Six one-minute takes that sound alike; what differs: the first four are the Res ladder at full Depth (Res at its minimum shows the three stages with their loops nearly shut, the other three show the loops growing), the last two are Depth at 12:00 and fully down with Res at its minimum (how Depth changes the stages' mix and bands). Rate stays at 9:00 for all of them (a cycle of about 4.5 s: slow enough for fine frequency resolution, thirteen cycles a take). Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise; 9:00 and 3:00 pointer horizontal.",
+ "quiet_dbfs": -60,
+ "knobs": [
+  "Mode",
+  "Rate",
+  "Depth",
+  "Res"
+ ],
+ "takes": [
+  {
+   "name": "bypass-noise",
+   "bypass": true,
+   "signal": {
+    "type": "noise",
+    "seconds": 30,
+    "level_db": -12,
+    "seed": 1,
+    "tail": 2
+   },
+   "note": "The pedal off (its LED off): the bypass reference. OUTPUT on input 2, the adapter."
+  },
+  {
+   "name": "rise-res-0700",
+   "settings": {
+    "Mode": "Rise",
+    "Rate": "9:00",
+    "Depth": "5:00",
+    "Res": "7:00"
+   },
+   "signal": {
+    "type": "noise",
+    "seconds": 60,
+    "level_db": -12,
+    "seed": 1,
+    "tail": 2
+   },
+   "note": "The pedal on (its LED lit), the STAGE switch on RISE, Rate 9:00 (pointer horizontal, to the left), Depth fully clockwise, Res fully counter-clockwise. From here only Res moves, one step per take, for four takes."
+  },
+  {
+   "name": "rise-res-1200",
+   "settings": {
+    "Mode": "Rise",
+    "Rate": "9:00",
+    "Depth": "5:00",
+    "Res": "12:00"
+   },
+   "signal": {
+    "type": "noise",
+    "seconds": 60,
+    "level_db": -12,
+    "seed": 1,
+    "tail": 2
+   }
+  },
+  {
+   "name": "rise-res-0300",
+   "settings": {
+    "Mode": "Rise",
+    "Rate": "9:00",
+    "Depth": "5:00",
+    "Res": "3:00"
+   },
+   "signal": {
+    "type": "noise",
+    "seconds": 60,
+    "level_db": -12,
+    "seed": 1,
+    "tail": 2
+   }
+  },
+  {
+   "name": "rise-res-0500",
+   "settings": {
+    "Mode": "Rise",
+    "Rate": "9:00",
+    "Depth": "5:00",
+    "Res": "5:00"
+   },
+   "signal": {
+    "type": "noise",
+    "seconds": 60,
+    "level_db": -12,
+    "seed": 1,
+    "tail": 2
+   },
+   "note": "Res fully clockwise: loud resonances are expected."
+  },
+  {
+   "name": "rise-depth-1200",
+   "settings": {
+    "Mode": "Rise",
+    "Rate": "9:00",
+    "Depth": "12:00",
+    "Res": "7:00"
+   },
+   "signal": {
+    "type": "noise",
+    "seconds": 60,
+    "level_db": -12,
+    "seed": 1,
+    "tail": 2
+   },
+   "note": "Res back fully counter-clockwise, Depth to 12:00. From here only Depth moves."
+  },
+  {
+   "name": "rise-depth-0700",
+   "settings": {
+    "Mode": "Rise",
+    "Rate": "9:00",
+    "Depth": "7:00",
+    "Res": "7:00"
+   },
+   "signal": {
+    "type": "noise",
+    "seconds": 60,
+    "level_db": -12,
+    "seed": 1,
+    "tail": 2
+   }
+  }
+ ]
+}

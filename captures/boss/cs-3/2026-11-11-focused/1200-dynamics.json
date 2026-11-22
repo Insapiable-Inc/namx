@@ -1,0 +1,50 @@
+{
+  "take": "1200-dynamics",
+  "pedal": "Boss CS-3 Compression Sustainer \u2014 focused reamp: guitar excerpts over a quiet probe tone (mono)",
+  "bypass": false,
+  "settings": {
+    "Level": "12:00",
+    "Tone": "12:00",
+    "Attack": "12:00",
+    "Sustain": "12:00"
+  },
+  "note": "",
+  "signal": {
+    "type": "file",
+    "path": "captures/di/dynamics.wav",
+    "seconds": 40,
+    "probe": {
+      "freq": 9000,
+      "level_db": -50
+    },
+    "tail": 1.0
+  },
+  "rate": 48000,
+  "ref_dbfs": -4.67,
+  "marker_start": 14400,
+  "signal_start": 40800,
+  "peaks_dbfs": {
+    "pedal": -25.08,
+    "loop": -20.29
+  },
+  "latency_samples": 577,
+  "latency_quality": 0.998,
+  "xruns": 0,
+  "played_sha256": "e53abbefc5f5eb2f57371d97a5cd1e3e7f7a545989806f8ae1229574678a2c0c",
+  "recorded_at": "2026-11-11T19:00:14",
+  "tool_commit": "12b905c84f062e0544fc4689df9a35c354031018",
+  "rig": {
+    "pedal_out": "Scarlett 8i6 USB Pro:playback_AUX2",
+    "loop_out": "Scarlett 8i6 USB Pro:playback_AUX3",
+    "pedal_in": "Scarlett 8i6 USB Pro:capture_AUX1",
+    "loop_in": "Scarlett 8i6 USB Pro:capture_AUX4",
+    "ref_dbfs": -4.67,
+    "calibration": {
+      "target_dbfs": -13.5,
+      "pedal_dbfs": -13.51,
+      "loop_dbfs": -12.96,
+      "at": "2026-10-26T18:43:48"
+    },
+    "note": "Boss CS-3 on its 9 V adapter: the guitar DI dataset. Input from interface out 3; OUTPUT -> input 2; INST, AIR off, pad on, gain fully counter-clockwise."
+  }
+}

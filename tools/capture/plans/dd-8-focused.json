@@ -1,0 +1,267 @@
+{
+  "pedal": "Boss DD-8 Digital Delay — focused reamp: guitar excerpts chosen for the repeats (mono: Output A)",
+  "comment": "Excerpts of the guitar DI dataset (captures/di/) through the five modes NAM-X models. The stabs (five short chords, each followed by nearly two seconds of silence) are what a delay shows itself on: every repeat sounds alone in the gap, so its level, its tone and its time are read one by one, on guitar. Standard gets the full set: the stabs at full level and at -12 dB (the input clip: what doesn't scale with the level), the same take twice (the pedal against itself), the lead excerpt held out of any fit, Time at 9:00 and 3:00, Level at 9:00 and 5:00, Feedback at 3:00 (many repeats: how each one changes). Analog repeats the Feedback 3:00 take (its repeats darken one by one); Tape, Warm and Mod get the stabs, Mod also the strummed chords (sustained: its sweep). OUTPUT A to input 2, nothing in OUTPUT B; the pedal on its adapter. Clock positions: 7:00 = fully counter-clockwise, 5:00 = fully clockwise; 9:00 and 3:00 pointer horizontal. Each step turns one or two knobs.",
+  "quiet_dbfs": -60,
+  "knobs": [
+    "Mode",
+    "Level",
+    "Feedback",
+    "Time"
+  ],
+  "takes": [
+    {
+      "name": "bypass-stabs",
+      "bypass": true,
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "start": 2,
+        "seconds": 12.5,
+        "tail": 4.0
+      },
+      "note": "The pedal off (its LED off): the bypass reference. OUTPUT A on input 2."
+    },
+    {
+      "name": "standard-stabs",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "start": 2,
+        "seconds": 12.5,
+        "tail": 4.0
+      },
+      "note": "The pedal on (its LED lit)."
+    },
+    {
+      "name": "standard-stabs-m12",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "start": 2,
+        "seconds": 12.5,
+        "tail": 4.0,
+        "level_db": -12
+      }
+    },
+    {
+      "name": "standard-stabs-repeat",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "start": 2,
+        "seconds": 12.5,
+        "tail": 4.0
+      }
+    },
+    {
+      "name": "standard-lead",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/lead.wav",
+        "start": 2,
+        "seconds": 20,
+        "tail": 4.0
+      },
+      "note": "Not used in any fit: the check."
+    },
+    {
+      "name": "standard-time-0900-stabs",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "9:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "start": 2,
+        "seconds": 12.5,
+        "tail": 4.0
+      }
+    },
+    {
+      "name": "standard-time-0300-stabs",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "3:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "start": 2,
+        "seconds": 12.5,
+        "tail": 6.0
+      }
+    },
+    {
+      "name": "standard-level-0900-stabs",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "9:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "start": 2,
+        "seconds": 12.5,
+        "tail": 4.0
+      }
+    },
+    {
+      "name": "standard-level-0500-stabs",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "5:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "start": 2,
+        "seconds": 12.5,
+        "tail": 4.0
+      }
+    },
+    {
+      "name": "standard-feedback-0300-stabs",
+      "settings": {
+        "Mode": "Standard",
+        "Level": "12:00",
+        "Feedback": "3:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "start": 2,
+        "seconds": 12.5,
+        "tail": 10.0
+      }
+    },
+    {
+      "name": "analog-feedback-0300-stabs",
+      "settings": {
+        "Mode": "Analog",
+        "Level": "12:00",
+        "Feedback": "3:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "start": 2,
+        "seconds": 12.5,
+        "tail": 10.0
+      }
+    },
+    {
+      "name": "analog-stabs",
+      "settings": {
+        "Mode": "Analog",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "start": 2,
+        "seconds": 12.5,
+        "tail": 4.0
+      }
+    },
+    {
+      "name": "tape-stabs",
+      "settings": {
+        "Mode": "Tape",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "start": 2,
+        "seconds": 12.5,
+        "tail": 4.0
+      }
+    },
+    {
+      "name": "warm-stabs",
+      "settings": {
+        "Mode": "Warm",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "start": 2,
+        "seconds": 12.5,
+        "tail": 4.0
+      }
+    },
+    {
+      "name": "mod-stabs",
+      "settings": {
+        "Mode": "Mod",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/stabs.wav",
+        "start": 2,
+        "seconds": 12.5,
+        "tail": 4.0
+      }
+    },
+    {
+      "name": "mod-chords",
+      "settings": {
+        "Mode": "Mod",
+        "Level": "12:00",
+        "Feedback": "12:00",
+        "Time": "12:00"
+      },
+      "signal": {
+        "type": "file",
+        "path": "captures/di/chords.wav",
+        "seconds": 25,
+        "tail": 4.0
+      }
+    }
+  ]
+}

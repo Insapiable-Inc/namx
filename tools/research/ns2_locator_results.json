@@ -1,0 +1,864 @@
+{
+  "source_model_commit": "8efe8368502646173d9d58b96ebbaa7d39f404b2",
+  "protocol_sha256": "2fb27ad8698dd3b9ed7d3cc421ed6b679a4d3c59a812323e6785352b1afa4385",
+  "preflight_sha256": "cadcdbba89a93072917df54e6d7f1de6064f9ff2464aca58041901fe4171f477",
+  "integrity": {
+    "bypass-locator-1000": {
+      "xruns": 0,
+      "recorded_at": "2026-10-30T15:53:24",
+      "settings": {},
+      "latency_samples": 455,
+      "marker_quality": 0.998,
+      "played_sha256": "61f3d99e8d580185bfd945bc68ac868dd0067f761ba2d2d56de10412ec89e9a0",
+      "recorded_sha256": "0b7b2012e95d0fed1b75746e1c09d24516fb5aaabde7ce7b20481e9e816e8851",
+      "abs_ge_0999": 0,
+      "tail_rms_dbfs": [
+        -101.29612134673619,
+        -101.76977462228342
+      ]
+    },
+    "threshold-0300-decay-0700-locator-1000": {
+      "xruns": 0,
+      "recorded_at": "2026-10-30T15:55:10",
+      "settings": {
+        "Threshold": "3:00",
+        "Decay": "7:00",
+        "Mode": "Reduction"
+      },
+      "latency_samples": 577,
+      "marker_quality": 0.998,
+      "played_sha256": "61f3d99e8d580185bfd945bc68ac868dd0067f761ba2d2d56de10412ec89e9a0",
+      "recorded_sha256": "1738e0ea36462e13a4c780471d832b3da2852d748d39369a752829a91338709f",
+      "abs_ge_0999": 0,
+      "tail_rms_dbfs": [
+        -99.67638469151622,
+        -101.83172493589777
+      ]
+    }
+  },
+  "windows": [
+    {
+      "step": 0,
+      "input_db": -100,
+      "eligible_gain_data": false,
+      "windows": [
+        {
+          "seconds": [
+            0.1,
+            0.3
+          ],
+          "eligible": false,
+          "gain_db_10ms_magnitude_median": null,
+          "hann_coherent_gain_db": null,
+          "phase_projected_gain_db": null,
+          "frozen_model_gain_db": null,
+          "carrier_peak_dbfs": -149.26034528758592,
+          "carrier_vs_neighbor_bins_db": -6.191487272713966,
+          "bypass_carrier_vs_neighbor_bins_db": 29.799102498728214
+        },
+        {
+          "seconds": [
+            1.0,
+            1.5
+          ],
+          "eligible": false,
+          "gain_db_10ms_magnitude_median": null,
+          "hann_coherent_gain_db": null,
+          "phase_projected_gain_db": null,
+          "frozen_model_gain_db": null,
+          "carrier_peak_dbfs": -141.34177263716833,
+          "carrier_vs_neighbor_bins_db": 9.997881335245557,
+          "bypass_carrier_vs_neighbor_bins_db": 30.339458834640602
+        },
+        {
+          "seconds": [
+            3.0,
+            3.8
+          ],
+          "eligible": false,
+          "gain_db_10ms_magnitude_median": null,
+          "hann_coherent_gain_db": null,
+          "phase_projected_gain_db": null,
+          "frozen_model_gain_db": null,
+          "carrier_peak_dbfs": -148.76593307733518,
+          "carrier_vs_neighbor_bins_db": -2.314846156429005,
+          "bypass_carrier_vs_neighbor_bins_db": 38.78832888121274
+        }
+      ]
+    },
+    {
+      "step": 1,
+      "input_db": -62,
+      "eligible_gain_data": true,
+      "windows": [
+        {
+          "seconds": [
+            0.1,
+            0.3
+          ],
+          "eligible": true,
+          "gain_db_10ms_magnitude_median": -38.14903791845049,
+          "hann_coherent_gain_db": -38.223901041369416,
+          "phase_projected_gain_db": -38.2247150569315,
+          "frozen_model_gain_db": -18.161435467781722,
+          "carrier_peak_dbfs": -114.09550169753575,
+          "carrier_vs_neighbor_bins_db": 30.63232465304139,
+          "bypass_carrier_vs_neighbor_bins_db": 68.68985027820638
+        },
+        {
+          "seconds": [
+            1.0,
+            1.5
+          ],
+          "eligible": true,
+          "gain_db_10ms_magnitude_median": -36.375405462069445,
+          "hann_coherent_gain_db": -36.43127415539642,
+          "phase_projected_gain_db": -36.43346924709645,
+          "frozen_model_gain_db": -18.161435467781843,
+          "carrier_peak_dbfs": -112.30688013427978,
+          "carrier_vs_neighbor_bins_db": 34.71542537345505,
+          "bypass_carrier_vs_neighbor_bins_db": 71.75820584311643
+        },
+        {
+          "seconds": [
+            3.0,
+            3.8
+          ],
+          "eligible": true,
+          "gain_db_10ms_magnitude_median": -32.81743223117083,
+          "hann_coherent_gain_db": -32.7959654334147,
+          "phase_projected_gain_db": -32.798146286016035,
+          "frozen_model_gain_db": -18.161435467782997,
+          "carrier_peak_dbfs": -108.6747086861857,
+          "carrier_vs_neighbor_bins_db": 38.28443887564414,
+          "bypass_carrier_vs_neighbor_bins_db": 73.77127719168922
+        }
+      ],
+      "late_minus_early_gain_db": 5.331605687279662,
+      "frozen_model_late_minus_early_db": -1.2754242106893798e-12,
+      "late_gain_slope_db_per_second": 1.6833048999213422
+    },
+    {
+      "step": 2,
+      "input_db": -60,
+      "eligible_gain_data": true,
+      "windows": [
+        {
+          "seconds": [
+            0.1,
+            0.3
+          ],
+          "eligible": true,
+          "gain_db_10ms_magnitude_median": -31.361665602791774,
+          "hann_coherent_gain_db": -31.279677101647394,
+          "phase_projected_gain_db": -31.28020042583905,
+          "frozen_model_gain_db": -16.383435843476168,
+          "carrier_peak_dbfs": -105.15394152360716,
+          "carrier_vs_neighbor_bins_db": 40.52904223712342,
+          "bypass_carrier_vs_neighbor_bins_db": 66.13491304993738
+        },
+        {
+          "seconds": [
+            1.0,
+            1.5
+          ],
+          "eligible": true,
+          "gain_db_10ms_magnitude_median": -29.50084443981529,
+          "hann_coherent_gain_db": -29.512394307776447,
+          "phase_projected_gain_db": -29.512434467489747,
+          "frozen_model_gain_db": -16.383435843475734,
+          "carrier_peak_dbfs": -103.3902815553055,
+          "carrier_vs_neighbor_bins_db": 42.80318799674069,
+          "bypass_carrier_vs_neighbor_bins_db": 73.0038663855828
+        },
+        {
+          "seconds": [
+            3.0,
+            3.8
+          ],
+          "eligible": true,
+          "gain_db_10ms_magnitude_median": -25.897163910063853,
+          "hann_coherent_gain_db": -25.911024411490175,
+          "phase_projected_gain_db": -25.91119505820151,
+          "frozen_model_gain_db": -16.383435843479784,
+          "carrier_peak_dbfs": -99.78708198649497,
+          "carrier_vs_neighbor_bins_db": 48.652057965502934,
+          "bypass_carrier_vs_neighbor_bins_db": 74.91819402618299
+        }
+      ],
+      "late_minus_early_gain_db": 5.4645016927279215,
+      "frozen_model_late_minus_early_db": -3.61666252501891e-12,
+      "late_gain_slope_db_per_second": 1.478518662374075
+    },
+    {
+      "step": 3,
+      "input_db": -58,
+      "eligible_gain_data": true,
+      "windows": [
+        {
+          "seconds": [
+            0.1,
+            0.3
+          ],
+          "eligible": true,
+          "gain_db_10ms_magnitude_median": -24.015668662745654,
+          "hann_coherent_gain_db": -24.02571629861579,
+          "phase_projected_gain_db": -24.025735719942528,
+          "frozen_model_gain_db": -14.60543539491455,
+          "carrier_peak_dbfs": -95.90345888471461,
+          "carrier_vs_neighbor_bins_db": 49.66428568954855,
+          "bypass_carrier_vs_neighbor_bins_db": 72.8782565889888
+        },
+        {
+          "seconds": [
+            1.0,
+            1.5
+          ],
+          "eligible": true,
+          "gain_db_10ms_magnitude_median": -20.758687299083064,
+          "hann_coherent_gain_db": -20.7408153426393,
+          "phase_projected_gain_db": -20.740870737388136,
+          "frozen_model_gain_db": -14.605435394917151,
+          "carrier_peak_dbfs": -92.61932783964446,
+          "carrier_vs_neighbor_bins_db": 55.6530733684966,
+          "bypass_carrier_vs_neighbor_bins_db": 77.78524268290693
+        },
+        {
+          "seconds": [
+            3.0,
+            3.8
+          ],
+          "eligible": true,
+          "gain_db_10ms_magnitude_median": -17.238623378559247,
+          "hann_coherent_gain_db": -17.250715956307367,
+          "phase_projected_gain_db": -17.250728028595802,
+          "frozen_model_gain_db": -14.60543539492214,
+          "carrier_peak_dbfs": -89.12636440007992,
+          "carrier_vs_neighbor_bins_db": 65.12563442803271,
+          "bypass_carrier_vs_neighbor_bins_db": 79.72796416231321
+        }
+      ],
+      "late_minus_early_gain_db": 6.777045284186407,
+      "frozen_model_late_minus_early_db": -7.58859641791787e-12,
+      "late_gain_slope_db_per_second": 1.269127526669534
+    },
+    {
+      "step": 4,
+      "input_db": -56,
+      "eligible_gain_data": true,
+      "windows": [
+        {
+          "seconds": [
+            0.1,
+            0.3
+          ],
+          "eligible": true,
+          "gain_db_10ms_magnitude_median": -14.211571482770207,
+          "hann_coherent_gain_db": -14.240307772565316,
+          "phase_projected_gain_db": -14.240369863755864,
+          "frozen_model_gain_db": -12.827435612995334,
+          "carrier_peak_dbfs": -84.11729178961272,
+          "carrier_vs_neighbor_bins_db": 59.285413688703706,
+          "bypass_carrier_vs_neighbor_bins_db": 74.15591439972356
+        },
+        {
+          "seconds": [
+            1.0,
+            1.5
+          ],
+          "eligible": true,
+          "gain_db_10ms_magnitude_median": -10.758660496657196,
+          "hann_coherent_gain_db": -10.772749032347587,
+          "phase_projected_gain_db": -10.772751587880048,
+          "frozen_model_gain_db": -12.827435612993378,
+          "carrier_peak_dbfs": -80.64898740795876,
+          "carrier_vs_neighbor_bins_db": 63.37706258879646,
+          "bypass_carrier_vs_neighbor_bins_db": 79.23072688664952
+        },
+        {
+          "seconds": [
+            3.0,
+            3.8
+          ],
+          "eligible": true,
+          "gain_db_10ms_magnitude_median": -8.183558063693095,
+          "hann_coherent_gain_db": -8.2037178855126,
+          "phase_projected_gain_db": -8.203718337122892,
+          "frozen_model_gain_db": -12.827435612989383,
+          "carrier_peak_dbfs": -78.08200816072024,
+          "carrier_vs_neighbor_bins_db": 70.7004562503122,
+          "bypass_carrier_vs_neighbor_bins_db": 76.05180026197851
+        }
+      ],
+      "late_minus_early_gain_db": 6.028013419077112,
+      "frozen_model_late_minus_early_db": 5.950795411990839e-12,
+      "late_gain_slope_db_per_second": 0.8608430281854569
+    },
+    {
+      "step": 5,
+      "input_db": -54,
+      "eligible_gain_data": true,
+      "windows": [
+        {
+          "seconds": [
+            0.1,
+            0.3
+          ],
+          "eligible": true,
+          "gain_db_10ms_magnitude_median": -6.0474184780985505,
+          "hann_coherent_gain_db": -6.051109013347254,
+          "phase_projected_gain_db": -6.051109409422068,
+          "frozen_model_gain_db": -11.049435481223037,
+          "carrier_peak_dbfs": -73.92761207073528,
+          "carrier_vs_neighbor_bins_db": 67.04528667541834,
+          "bypass_carrier_vs_neighbor_bins_db": 71.68039157677471
+        },
+        {
+          "seconds": [
+            1.0,
+            1.5
+          ],
+          "eligible": true,
+          "gain_db_10ms_magnitude_median": -3.3989587527712044,
+          "hann_coherent_gain_db": -3.4060179340033354,
+          "phase_projected_gain_db": -3.4060180826656232,
+          "frozen_model_gain_db": -11.049435481229889,
+          "carrier_peak_dbfs": -71.28307607869182,
+          "carrier_vs_neighbor_bins_db": 70.68522743608415,
+          "bypass_carrier_vs_neighbor_bins_db": 80.93310764939395
+        },
+        {
+          "seconds": [
+            3.0,
+            3.8
+          ],
+          "eligible": true,
+          "gain_db_10ms_magnitude_median": -1.994500346774523,
+          "hann_coherent_gain_db": -1.9953035076614543,
+          "phase_projected_gain_db": -1.995303536961167,
+          "frozen_model_gain_db": -11.049435481248707,
+          "carrier_peak_dbfs": -69.87269597826084,
+          "carrier_vs_neighbor_bins_db": 73.52962312894266,
+          "bypass_carrier_vs_neighbor_bins_db": 84.25139246665708
+        }
+      ],
+      "late_minus_early_gain_db": 4.052918131324027,
+      "frozen_model_late_minus_early_db": -2.567013268617302e-11,
+      "late_gain_slope_db_per_second": 0.24326176565147176
+    },
+    {
+      "step": 6,
+      "input_db": -52,
+      "eligible_gain_data": true,
+      "windows": [
+        {
+          "seconds": [
+            0.1,
+            0.3
+          ],
+          "eligible": true,
+          "gain_db_10ms_magnitude_median": -0.5947775105970192,
+          "hann_coherent_gain_db": -0.6048670550069549,
+          "phase_projected_gain_db": -0.6048673779000469,
+          "frozen_model_gain_db": -9.271435695759338,
+          "carrier_peak_dbfs": -66.4825080530456,
+          "carrier_vs_neighbor_bins_db": 75.7309542844123,
+          "bypass_carrier_vs_neighbor_bins_db": 77.7027732241017
+        },
+        {
+          "seconds": [
+            1.0,
+            1.5
+          ],
+          "eligible": true,
+          "gain_db_10ms_magnitude_median": 0.660413049666175,
+          "hann_coherent_gain_db": 0.661183065199644,
+          "phase_projected_gain_db": 0.6611830466612261,
+          "frozen_model_gain_db": -9.271435695756097,
+          "carrier_peak_dbfs": -65.21670776092748,
+          "carrier_vs_neighbor_bins_db": 75.82538959236858,
+          "bypass_carrier_vs_neighbor_bins_db": 80.67354936017671
+        },
+        {
+          "seconds": [
+            3.0,
+            3.8
+          ],
+          "eligible": true,
+          "gain_db_10ms_magnitude_median": 0.6613175762571631,
+          "hann_coherent_gain_db": 0.6615478263025758,
+          "phase_projected_gain_db": 0.6615477746952867,
+          "frozen_model_gain_db": -9.271435695749908,
+          "carrier_peak_dbfs": -65.21573107627786,
+          "carrier_vs_neighbor_bins_db": 83.62806552379172,
+          "bypass_carrier_vs_neighbor_bins_db": 82.40214481662066
+        }
+      ],
+      "late_minus_early_gain_db": 1.2560950868541823,
+      "frozen_model_late_minus_early_db": 9.43067846037593e-12,
+      "late_gain_slope_db_per_second": -0.0026190524977153184
+    },
+    {
+      "step": 7,
+      "input_db": -50,
+      "eligible_gain_data": true,
+      "windows": [
+        {
+          "seconds": [
+            0.1,
+            0.3
+          ],
+          "eligible": true,
+          "gain_db_10ms_magnitude_median": 0.6607918776460717,
+          "hann_coherent_gain_db": 0.6618888622142682,
+          "phase_projected_gain_db": 0.6618888483241425,
+          "frozen_model_gain_db": -7.493435495429541,
+          "carrier_peak_dbfs": -63.215493037252116,
+          "carrier_vs_neighbor_bins_db": 75.43100813983793,
+          "bypass_carrier_vs_neighbor_bins_db": 82.24816194668244
+        },
+        {
+          "seconds": [
+            1.0,
+            1.5
+          ],
+          "eligible": true,
+          "gain_db_10ms_magnitude_median": 0.660378052302288,
+          "hann_coherent_gain_db": 0.6602769747260451,
+          "phase_projected_gain_db": 0.660276967792976,
+          "frozen_model_gain_db": -7.4934354954319105,
+          "carrier_peak_dbfs": -63.21715912110118,
+          "carrier_vs_neighbor_bins_db": 76.73191058370071,
+          "bypass_carrier_vs_neighbor_bins_db": 88.17686520843621
+        },
+        {
+          "seconds": [
+            3.0,
+            3.8
+          ],
+          "eligible": true,
+          "gain_db_10ms_magnitude_median": 0.6608501115912376,
+          "hann_coherent_gain_db": 0.6602666155500825,
+          "phase_projected_gain_db": 0.6602665994790996,
+          "frozen_model_gain_db": -7.493435495436844,
+          "carrier_peak_dbfs": -63.21666196837573,
+          "carrier_vs_neighbor_bins_db": 83.11288166183958,
+          "bypass_carrier_vs_neighbor_bins_db": 85.62828738720694
+        }
+      ],
+      "late_minus_early_gain_db": 5.823394516590863e-05,
+      "frozen_model_late_minus_early_db": -7.30349114519413e-12,
+      "late_gain_slope_db_per_second": -0.0030563952481479305
+    },
+    {
+      "step": 8,
+      "input_db": -48,
+      "eligible_gain_data": true,
+      "windows": [
+        {
+          "seconds": [
+            0.1,
+            0.3
+          ],
+          "eligible": true,
+          "gain_db_10ms_magnitude_median": 0.6610865928632776,
+          "hann_coherent_gain_db": 0.6611748423636536,
+          "phase_projected_gain_db": 0.6611748328344929,
+          "frozen_model_gain_db": 0.5999999999952679,
+          "carrier_peak_dbfs": -61.215106828466055,
+          "carrier_vs_neighbor_bins_db": 77.3507054194551,
+          "bypass_carrier_vs_neighbor_bins_db": 80.5320419627856
+        },
+        {
+          "seconds": [
+            1.0,
+            1.5
+          ],
+          "eligible": true,
+          "gain_db_10ms_magnitude_median": 0.6609505321596307,
+          "hann_coherent_gain_db": 0.6611212221582039,
+          "phase_projected_gain_db": 0.6611212207737794,
+          "frozen_model_gain_db": 0.5999999999953651,
+          "carrier_peak_dbfs": -61.215454022057614,
+          "carrier_vs_neighbor_bins_db": 81.78724735751194,
+          "bypass_carrier_vs_neighbor_bins_db": 82.0655714116636
+        },
+        {
+          "seconds": [
+            3.0,
+            3.8
+          ],
+          "eligible": true,
+          "gain_db_10ms_magnitude_median": 0.6594712504019241,
+          "hann_coherent_gain_db": 0.6596304685951561,
+          "phase_projected_gain_db": 0.6596304678051303,
+          "frozen_model_gain_db": 0.599999999995646,
+          "carrier_peak_dbfs": -61.21715195163916,
+          "carrier_vs_neighbor_bins_db": 84.14217021238619,
+          "bypass_carrier_vs_neighbor_bins_db": 88.0912497404139
+        }
+      ],
+      "late_minus_early_gain_db": -0.0016153424613535305,
+      "frozen_model_late_minus_early_db": 3.781419621873283e-13,
+      "late_gain_slope_db_per_second": -0.0008769697247180753
+    },
+    {
+      "step": 9,
+      "input_db": -46,
+      "eligible_gain_data": true,
+      "windows": [
+        {
+          "seconds": [
+            0.1,
+            0.3
+          ],
+          "eligible": true,
+          "gain_db_10ms_magnitude_median": 0.6594741776934175,
+          "hann_coherent_gain_db": 0.6597023351508695,
+          "phase_projected_gain_db": 0.6597022646447835,
+          "frozen_model_gain_db": 0.5999999999962525,
+          "carrier_peak_dbfs": -59.21648728361002,
+          "carrier_vs_neighbor_bins_db": 75.66954360471654,
+          "bypass_carrier_vs_neighbor_bins_db": 86.37761249613165
+        },
+        {
+          "seconds": [
+            1.0,
+            1.5
+          ],
+          "eligible": true,
+          "gain_db_10ms_magnitude_median": 0.6600410279465816,
+          "hann_coherent_gain_db": 0.6607055890242152,
+          "phase_projected_gain_db": 0.6607055569945526,
+          "frozen_model_gain_db": 0.59999999999453,
+          "carrier_peak_dbfs": -59.21650169942994,
+          "carrier_vs_neighbor_bins_db": 84.70788345034111,
+          "bypass_carrier_vs_neighbor_bins_db": 84.25524080667071
+        },
+        {
+          "seconds": [
+            3.0,
+            3.8
+          ],
+          "eligible": true,
+          "gain_db_10ms_magnitude_median": 0.6601854117917552,
+          "hann_coherent_gain_db": 0.6605497171016794,
+          "phase_projected_gain_db": 0.6605497169005534,
+          "frozen_model_gain_db": 0.5999999999909337,
+          "carrier_peak_dbfs": -59.21561468515098,
+          "carrier_vs_neighbor_bins_db": 87.89207928650286,
+          "bypass_carrier_vs_neighbor_bins_db": 90.68921006146171
+        }
+      ],
+      "late_minus_early_gain_db": 0.0007112340983376209,
+      "frozen_model_late_minus_early_db": -5.3188564663742e-12,
+      "late_gain_slope_db_per_second": -0.0018417517589556468
+    },
+    {
+      "step": 10,
+      "input_db": -44,
+      "eligible_gain_data": true,
+      "windows": [
+        {
+          "seconds": [
+            0.1,
+            0.3
+          ],
+          "eligible": true,
+          "gain_db_10ms_magnitude_median": 0.6603538538622432,
+          "hann_coherent_gain_db": 0.6600361215581206,
+          "phase_projected_gain_db": 0.6600361106135975,
+          "frozen_model_gain_db": 0.5999999999916321,
+          "carrier_peak_dbfs": -57.216627248588296,
+          "carrier_vs_neighbor_bins_db": 81.27279739576983,
+          "bypass_carrier_vs_neighbor_bins_db": 91.19266391507014
+        },
+        {
+          "seconds": [
+            1.0,
+            1.5
+          ],
+          "eligible": true,
+          "gain_db_10ms_magnitude_median": 0.6601684196507869,
+          "hann_coherent_gain_db": 0.6602012298610793,
+          "phase_projected_gain_db": 0.6602012208902376,
+          "frozen_model_gain_db": 0.5999999999895658,
+          "carrier_peak_dbfs": -57.2162919417061,
+          "carrier_vs_neighbor_bins_db": 87.33107414850899,
+          "bypass_carrier_vs_neighbor_bins_db": 88.22062417123874
+        },
+        {
+          "seconds": [
+            3.0,
+            3.8
+          ],
+          "eligible": true,
+          "gain_db_10ms_magnitude_median": 0.6604054055300015,
+          "hann_coherent_gain_db": 0.660156897805564,
+          "phase_projected_gain_db": 0.660156886979397,
+          "frozen_model_gain_db": 0.5999999999866805,
+          "carrier_peak_dbfs": -57.216380612048994,
+          "carrier_vs_neighbor_bins_db": 91.12944320170648,
+          "bypass_carrier_vs_neighbor_bins_db": 87.02888070381027
+        }
+      ],
+      "late_minus_early_gain_db": 5.155166775827613e-05,
+      "frozen_model_late_minus_early_db": -4.951594689828198e-12,
+      "late_gain_slope_db_per_second": 0.001581848948991509
+    },
+    {
+      "step": 11,
+      "input_db": -12,
+      "eligible_gain_data": true,
+      "windows": [
+        {
+          "seconds": [
+            0.1,
+            0.3
+          ],
+          "eligible": true,
+          "gain_db_10ms_magnitude_median": 0.6600207967644138,
+          "hann_coherent_gain_db": 0.6600277464627871,
+          "phase_projected_gain_db": 0.6600277464622238,
+          "frozen_model_gain_db": 0.6000000000002681,
+          "carrier_peak_dbfs": -25.218128734118594,
+          "carrier_vs_neighbor_bins_db": 111.29267337561595,
+          "bypass_carrier_vs_neighbor_bins_db": 116.11171587535766
+        },
+        {
+          "seconds": [
+            1.0,
+            1.5
+          ],
+          "eligible": true,
+          "gain_db_10ms_magnitude_median": 0.6601160793306511,
+          "hann_coherent_gain_db": 0.6601235678087258,
+          "phase_projected_gain_db": 0.6601235678063199,
+          "frozen_model_gain_db": 0.6000000000037455,
+          "carrier_peak_dbfs": -25.21807558527356,
+          "carrier_vs_neighbor_bins_db": 111.78354362491312,
+          "bypass_carrier_vs_neighbor_bins_db": 115.31133326916375
+        },
+        {
+          "seconds": [
+            3.0,
+            3.8
+          ],
+          "eligible": true,
+          "gain_db_10ms_magnitude_median": 0.660050616414343,
+          "hann_coherent_gain_db": 0.6600414723737381,
+          "phase_projected_gain_db": 0.6600414723709531,
+          "frozen_model_gain_db": 0.6000000000109182,
+          "carrier_peak_dbfs": -25.218143785753742,
+          "carrier_vs_neighbor_bins_db": 116.09281116341648,
+          "bypass_carrier_vs_neighbor_bins_db": 124.24900771801444
+        }
+      ],
+      "late_minus_early_gain_db": 2.9819649929208047e-05,
+      "frozen_model_late_minus_early_db": 1.0650147430624202e-11,
+      "late_gain_slope_db_per_second": 0.00011421754379110308
+    },
+    {
+      "step": 12,
+      "input_db": -100,
+      "eligible_gain_data": false,
+      "windows": [
+        {
+          "seconds": [
+            0.1,
+            0.3
+          ],
+          "eligible": false,
+          "gain_db_10ms_magnitude_median": null,
+          "hann_coherent_gain_db": null,
+          "phase_projected_gain_db": null,
+          "frozen_model_gain_db": null,
+          "carrier_peak_dbfs": -134.42431663730554,
+          "carrier_vs_neighbor_bins_db": 9.000976173901211,
+          "bypass_carrier_vs_neighbor_bins_db": 27.859185474830277
+        },
+        {
+          "seconds": [
+            1.0,
+            1.5
+          ],
+          "eligible": false,
+          "gain_db_10ms_magnitude_median": null,
+          "hann_coherent_gain_db": null,
+          "phase_projected_gain_db": null,
+          "frozen_model_gain_db": null,
+          "carrier_peak_dbfs": -138.61071292811394,
+          "carrier_vs_neighbor_bins_db": 7.404435700801817,
+          "bypass_carrier_vs_neighbor_bins_db": 33.32346108655727
+        },
+        {
+          "seconds": [
+            3.0,
+            3.8
+          ],
+          "eligible": false,
+          "gain_db_10ms_magnitude_median": null,
+          "hann_coherent_gain_db": null,
+          "phase_projected_gain_db": null,
+          "frozen_model_gain_db": null,
+          "carrier_peak_dbfs": -140.0946008060881,
+          "carrier_vs_neighbor_bins_db": 7.844683120955425,
+          "bypass_carrier_vs_neighbor_bins_db": 36.148744840003985
+        }
+      ]
+    }
+  ],
+  "calibration": {
+    "per_level": [
+      {
+        "input_db": -62,
+        "loop_engaged_minus_bypass_db": 0.0006964325854383498,
+        "loop_phase_equivalent_delay_samples": -0.00023077281223701855,
+        "bypass_output_over_played_db": -9.208743182827382
+      },
+      {
+        "input_db": -60,
+        "loop_engaged_minus_bypass_db": -0.002381898824321283,
+        "loop_phase_equivalent_delay_samples": 0.0005149802317534676,
+        "bypass_output_over_played_db": -9.206057535363737
+      },
+      {
+        "input_db": -58,
+        "loop_engaged_minus_bypass_db": -0.0010561667899038419,
+        "loop_phase_equivalent_delay_samples": 0.000638568394293207,
+        "bypass_output_over_played_db": -9.205648407683062
+      },
+      {
+        "input_db": -56,
+        "loop_engaged_minus_bypass_db": -4.7700792817927446e-05,
+        "loop_phase_equivalent_delay_samples": 0.000108188290124523,
+        "bypass_output_over_played_db": -9.20829020782572
+      },
+      {
+        "input_db": -54,
+        "loop_engaged_minus_bypass_db": -0.0004347327061114644,
+        "loop_phase_equivalent_delay_samples": -0.00033384158793426093,
+        "bypass_output_over_played_db": -9.207392492075837
+      },
+      {
+        "input_db": -52,
+        "loop_engaged_minus_bypass_db": -6.615332392864116e-05,
+        "loop_phase_equivalent_delay_samples": -7.866046187546934e-05,
+        "bypass_output_over_played_db": -9.207278886074468
+      },
+      {
+        "input_db": -50,
+        "loop_engaged_minus_bypass_db": 0.0009259133779730253,
+        "loop_phase_equivalent_delay_samples": 0.0003396567510096327,
+        "bypass_output_over_played_db": -9.206928660093308
+      },
+      {
+        "input_db": -48,
+        "loop_engaged_minus_bypass_db": -0.00026243832992477975,
+        "loop_phase_equivalent_delay_samples": -0.00036216774321056665,
+        "bypass_output_over_played_db": -9.206782490024402
+      },
+      {
+        "input_db": -46,
+        "loop_engaged_minus_bypass_db": -0.0002964954995291319,
+        "loop_phase_equivalent_delay_samples": -0.0001739578205233187,
+        "bypass_output_over_played_db": -9.206164387509668
+      },
+      {
+        "input_db": -44,
+        "loop_engaged_minus_bypass_db": 0.0001906047591461894,
+        "loop_phase_equivalent_delay_samples": -8.985733734440316e-05,
+        "bypass_output_over_played_db": -9.206537602581333
+      },
+      {
+        "input_db": -12,
+        "loop_engaged_minus_bypass_db": -4.473281394072948e-05,
+        "loop_phase_equivalent_delay_samples": 1.94543569352193e-06,
+        "bypass_output_over_played_db": -9.208185329814887
+      }
+    ],
+    "loop_edge_checks": [
+      {
+        "at_s": 4,
+        "bypass_ms": -0.0625,
+        "engaged_ms": -0.08333333333333333,
+        "difference_ms": -0.02083333333333333
+      },
+      {
+        "at_s": 8,
+        "bypass_ms": 0.125,
+        "engaged_ms": -0.10416666666666667,
+        "difference_ms": -0.22916666666666669
+      },
+      {
+        "at_s": 12,
+        "bypass_ms": -0.0625,
+        "engaged_ms": -0.041666666666666664,
+        "difference_ms": 0.020833333333333336
+      },
+      {
+        "at_s": 16,
+        "bypass_ms": -0.0625,
+        "engaged_ms": -0.08333333333333333,
+        "difference_ms": -0.02083333333333333
+      },
+      {
+        "at_s": 20,
+        "bypass_ms": 0.10416666666666667,
+        "engaged_ms": -0.08333333333333333,
+        "difference_ms": -0.1875
+      },
+      {
+        "at_s": 24,
+        "bypass_ms": -0.041666666666666664,
+        "engaged_ms": -0.08333333333333333,
+        "difference_ms": -0.041666666666666664
+      },
+      {
+        "at_s": 28,
+        "bypass_ms": -0.0625,
+        "engaged_ms": -0.08333333333333333,
+        "difference_ms": -0.02083333333333333
+      },
+      {
+        "at_s": 32,
+        "bypass_ms": -0.041666666666666664,
+        "engaged_ms": -0.041666666666666664,
+        "difference_ms": 0.0
+      },
+      {
+        "at_s": 36,
+        "bypass_ms": -0.041666666666666664,
+        "engaged_ms": -0.0625,
+        "difference_ms": -0.020833333333333336
+      },
+      {
+        "at_s": 40,
+        "bypass_ms": -0.0625,
+        "engaged_ms": -0.08333333333333333,
+        "difference_ms": -0.02083333333333333
+      },
+      {
+        "at_s": 44,
+        "bypass_ms": -0.0625,
+        "engaged_ms": -0.0625,
+        "difference_ms": 0.0
+      },
+      {
+        "at_s": 48,
+        "bypass_ms": -0.0625,
+        "engaged_ms": -0.0625,
+        "difference_ms": 0.0
+      }
+    ],
+    "new_minus_old_ns2_bypass_at_minus12_db": -0.01997021211892443
+  },
+  "frozen_model_rms_db_on_01_to_38_second_windows": 8.047624397754596,
+  "selected_history_input_levels_db": [
+    -56,
+    -54,
+    -44
+  ],
+  "selection_reason": "-56 dB gives strong partial opening; -54 dB tests approach to fully open; -44 dB is clearly above both measured and nominal-model transition as a prompt-opening control. All are well above the coherent noise floor. Keep Threshold physically unchanged.",
+  "scope": "Adaptive localization; no dynamics fit. 10 ms coherent magnitude and preregistered three window medians; Hann complex gain/phase projection are robustness checks. Neighbor-bin ratio is a noise/leakage proxy, not a confidence interval. Reset levels -100 dB and silence are excluded from gain evaluation. One capture per state; no repeatability confidence interval. Later history must not assume four-second endpoints are equilibrium."
+}
